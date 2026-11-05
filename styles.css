@@ -119,3 +119,23 @@ button{touch-action:manipulation}
 /* Combat-002: show the unit whose initiative has reached the action threshold. */
 .fighter.acting{border-color:#72b1d4;box-shadow:inset 0 0 0 1px #72b1d480}
 .fighter small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Combat-003: compact, thumb-friendly ability selector in landscape. */
+.ability-controls{display:flex;align-items:center;gap:8px;min-width:0;flex-shrink:0}
+.ability-options{display:flex;align-items:center;gap:5px;min-width:0}
+.ability-btn{padding:9px 10px;min-height:44px;background:#ffffff0a;border:1px solid var(--line);color:var(--text);border-radius:8px;font-size:11px;white-space:nowrap}
+.ability-btn.selected{border-color:var(--gold);color:var(--gold);background:#d5ad6518}
+.ability-btn:disabled{opacity:.4;cursor:not-allowed}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .action-panel{flex-wrap:wrap;align-content:center}
+ .ability-controls{width:100%;justify-content:space-between;gap:5px}
+ .ability-options{flex:1}
+ .ability-btn{padding:8px 7px;font-size:10px;flex:1}
+ .ability-controls .primary{padding:10px 9px}
+}
+@media (orientation:landscape) and (max-height:390px) and (max-width:1100px){
+ .action-panel{padding:4px 6px}
+ .ability-btn{min-height:38px;padding:7px 5px}
+ .ability-controls .primary{min-height:38px;padding:7px 9px}
+ .action-panel strong{font-size:10px}
+}

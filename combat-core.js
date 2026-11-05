@@ -8,6 +8,7 @@ const CombatCore = (() => {
     const fighters = heroes.map((hero, index) => ({
       ...hero,
       maxHp: hero.hp,
+      specialCooldown: 0,
       meter: initiative[index].meter,
       index
     }));
@@ -99,17 +100,29 @@ const CombatCore = (() => {
     return true;
   }
 
-  // Player can act only with the actual ready ally and against a living enemy.
-  function performPlayerAttack(battle) {
+  function abilityReady(battle, abilityId) {
     if (!battle.active) return false;
     const actor = battle.fighters[battle.currentActor];
     if (!actor || actor.side !== "ally" || actor.hp <= 0 || actor.meter < 1000 - 1e-8) return false;
+    if (abilityId === "basic") return true;
+    return abilityId === "special" && actor.specialCooldown === 0;
+  }
+
+  // Basic and special are temporary test abilities, not approved character kits.
+  // Cooldown is measured in the hero's own completed actions, not global turns.
+  function performPlayerAbility(battle, abilityId) {
+    if (!abilityReady(battle, abilityId)) return false;
+    const actor = battle.fighters[battle.currentActor];
     const targetIndex = selectEnemy(battle.fighters, battle.selectedEnemy);
     if (targetIndex < 0) return false;
     const target = battle.fighters[targetIndex];
-    target.hp = Math.max(0, target.hp - actor.atk);
-    battle.message = actor.name + " наносит " + actor.atk + " урона: " +
-      target.name + (target.hp === 0 ? " — повержен!" : ".");
+    const damage = abilityId === "special" ? Math.round(actor.atk * 1.5) : actor.atk;
+    target.hp = Math.max(0, target.hp - damage);
+    battle.message = actor.name + (abilityId === "special" ? " применяет особый удар: " : " атакует: ") +
+      target.name + " получает " + damage + " урона" +
+      (target.hp === 0 ? " — повержен!" : ".");
+    if (abilityId === "special") actor.specialCooldown = 2;
+    else actor.specialCooldown = Math.max(0, actor.specialCooldown - 1);
     InitiativeModel.finishTurn(battle.fighters, actor.id);
     battle.turn++;
     battle.currentActor = -1;
@@ -119,8 +132,14 @@ const CombatCore = (() => {
     return true;
   }
 
+  // Backward-compatible basic attack API, including Combat-002 regression tests.
+  function performPlayerAttack(battle) {
+    return performPlayerAbility(battle, "basic");
+  }
+
+
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
-    chooseEnemy, advanceToPlayerTurn, performPlayerAttack
+    chooseEnemy, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady
   });
 })();

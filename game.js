@@ -8,6 +8,7 @@ const HEROES = [
 const $=s=>document.querySelector(s);
 let engine, scene, meshes={};
 let renderLoopRunning=false;
+let selectedAbility="basic";
 let state=CombatCore.createBattle(HEROES);
 function showScreen(id){
  if(id!=="battle")stopBattleRendering();
@@ -31,9 +32,16 @@ function syncBattleUI(){
  const fighters=state.fighters;
  const actor=state.active?fighters[state.currentActor]:null;
  const target=state.active?fighters[state.selectedEnemy]:null;
+ const specialReady=CombatCore.abilityReady(state,"special");
+ if(!specialReady)selectedAbility="basic";
  $("#battleStatus").textContent=actor?"Ход: "+actor.name:"Бой завершён";
  $("#turnChip").textContent="Ход "+state.turn;
- $("#actionTitle").textContent=actor?"Атака: "+actor.name:"Бой завершён";
+ $("#actionTitle").textContent=actor?(selectedAbility==="special"?"Особый удар: ":"Базовая атака: ")+actor.name:"Бой завершён";
+ $("#basicAbilityBtn").disabled=!actor;
+ $("#specialAbilityBtn").disabled=!specialReady;
+ $("#specialAbilityBtn").textContent=actor&&actor.specialCooldown>0?"Особая · "+actor.specialCooldown:"Особая";
+ $("#basicAbilityBtn").classList.toggle("selected",selectedAbility==="basic");
+ $("#specialAbilityBtn").classList.toggle("selected",selectedAbility==="special");
  $("#actionHint").textContent=target?"Цель: "+target.name:"Выбери живого противника";
  $("#attackBtn").textContent=state.active?"Атаковать":"Сыграть снова";
  $("#attackBtn").disabled=state.active&&(!actor||!target);
@@ -50,15 +58,21 @@ function renderCombatants(){
  }));
 }
 function resetBattle(){
+ selectedAbility="basic";
  state=CombatCore.createBattle(HEROES);
  CombatCore.advanceToPlayerTurn(state);
  syncBattleUI();
 }
 function attack(){
- if(CombatCore.performPlayerAttack(state))syncBattleUI();
+ if(CombatCore.performPlayerAbility(state,selectedAbility)){
+  selectedAbility="basic";
+  syncBattleUI();
+ }
 }
 // Exactly one permanent click handler; no onclick replacement on victory.
 $("#attackBtn").addEventListener("click",()=>{if(!state.active)resetBattle();else attack();});
+$("#basicAbilityBtn").addEventListener("click",()=>{if(state.active){selectedAbility="basic";syncBattleUI();}});
+$("#specialAbilityBtn").addEventListener("click",()=>{if(CombatCore.abilityReady(state,"special")){selectedAbility="special";syncBattleUI();}});
 // A single render callback and a single Engine/Scene for the lifetime of this prototype.
 function renderBattleFrame(){if(scene)scene.render();}
 function shouldRenderBattle(){return !!engine && !document.hidden && $("#battle").classList.contains("active");}
@@ -97,7 +111,7 @@ function initBabylon(){
  // Registered only once because initBabylon() runs once.
  window.addEventListener("resize",()=>{if(shouldRenderBattle())engine.resize();});
 }
-function updateMeshes(){if(!scene)return;state.forEach((h,i)=>{if(meshes[i]){const visible=h.hp>0;meshes[i].body.setEnabled(visible);meshes[i].head.setEnabled(visible);meshes[i].base.setEnabled(visible);}});}
+function updateMeshes(){if(!scene)return;state.fighters.forEach((h,i)=>{if(meshes[i]){const visible=h.hp>0;meshes[i].body.setEnabled(visible);meshes[i].head.setEnabled(visible);meshes[i].base.setEnabled(visible);}});}
 // Browsers may keep the tab alive when it is hidden; suspend GPU work until visible.
 document.addEventListener("visibilitychange",()=>{
  if(document.hidden)stopBattleRendering();

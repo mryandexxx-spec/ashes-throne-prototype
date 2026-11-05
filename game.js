@@ -13,15 +13,18 @@ let selectedAbility="basic";
 const ALLIES=HEROES.filter(h=>h.side==="ally");
 const ENEMIES=HEROES.filter(h=>h.side==="enemy");
 const MAX_SQUAD=5;
+const progress=ProgressCore.createProgress(ALLIES);
+let selectedHeroId=ALLIES[0].id;
 let selectedPartyIds=ALLIES.map(h=>h.id);
 let squadReturnScreen="home";
 let state=CombatCore.createBattle(HEROES);
-function selectedParty(){return ALLIES.filter(h=>selectedPartyIds.includes(h.id));}
+function progressedHero(hero){return ProgressCore.heroStats(progress,hero);}
+function selectedParty(){return ALLIES.filter(h=>selectedPartyIds.includes(h.id)).map(progressedHero);}
 function battleLineup(){return [...selectedParty(),...ENEMIES];}
 function renderSquad(){
  const chosen=selectedParty();
  $("#squadCount").textContent=chosen.length+"/"+MAX_SQUAD;
- $("#squadRoster").innerHTML=ALLIES.map(h=>{
+ $("#squadRoster").innerHTML=ALLIES.map(progressedHero).map(h=>{
   const active=selectedPartyIds.includes(h.id);
   return `<button type="button" class="squad-choice ${active?"chosen":""}" data-hero-id="${h.id}" aria-pressed="${active}"><span class="squad-glyph">${h.glyph}</span><span><b>${h.name}</b><small>${h.role} · HP ${h.hp} · ATK ${h.atk}</small></span><strong>${active?"✓":"+"}</strong></button>`;
  }).join("");
@@ -52,6 +55,8 @@ function showScreen(id){
  if(id!=="battle")stopBattleRendering();
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  $("#"+id).classList.add("active");
+ if(id==="collection")renderHeroes();
+ if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
   resetBattle();
   if(!engine)initBabylon();
@@ -72,10 +77,49 @@ $("#squadStart").addEventListener("click",()=>{
  showScreen("battle");
 });
 function renderHeroes(){
- $("#heroList").innerHTML=HEROES.filter(h=>h.side==="ally").map(h=>`<article class="hero-card"><div class="hero-avatar">${h.glyph}</div><h3>${h.name}</h3><p>${h.role} · I уровень</p><div class="stats"><span>Здоровье ${h.hp}</span><span>Сила ${h.atk}</span></div></article>`).join("");
+ $("#heroList").innerHTML=ALLIES.map(progressedHero).map(h=>`<button type="button" class="hero-card hero-open" data-open-hero="${h.id}"><div class="hero-avatar">${h.glyph}</div><h3>${h.name}</h3><p>${h.role} · Уровень ${h.level}</p><div class="stats"><span>Здоровье ${h.hp}</span><span>Сила ${h.atk}</span></div><span class="hero-open-hint">Открыть карточку →</span></button>`).join("");
+ document.querySelectorAll("[data-open-hero]").forEach(node=>node.addEventListener("click",()=>openHeroDetail(node.dataset.openHero)));
 }
+function openHeroDetail(id){
+ if(!ALLIES.some(h=>h.id===id))return false;
+ selectedHeroId=id;
+ showScreen("heroDetail");
+ return true;
+}
+function renderHeroDetail(){
+ const base=ALLIES.find(h=>h.id===selectedHeroId);
+ if(!base)return;
+ const hero=progressedHero(base);
+ const cost=ProgressCore.upgradeCost(progress,base.id);
+ const next=cost===null?null:ProgressCore.heroStats(progress,base,hero.level+1);
+ $("#detailName").textContent=hero.name;
+ $("#detailRole").textContent=hero.role+" · Демонстрационный персонаж";
+ $("#detailGlyph").textContent=hero.glyph;
+ $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>Атака</span><strong>${hero.atk} ATK</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div>`;
+ $("#detailLevel").textContent="Уровень "+hero.level+" / "+ProgressCore.MAX_LEVEL;
+ $("#detailWallet").textContent=String(progress.materials);
+ $("#detailCost").textContent=cost===null?"Максимальный уровень":cost+" мат.";
+ $("#detailPreview").textContent=next?next.hp+" HP · "+next.atk+" ATK":"Достигнут максимум";
+ $("#detailUpgrade").disabled=!ProgressCore.canUpgrade(progress,base.id);
+ $("#detailNotice").textContent=cost===null?"Герой достиг тестового максимума.":progress.materials<cost?"Недостаточно материалов.":"Улучшение доступно.";
+}
+$("#detailBack").addEventListener("click",()=>showScreen("collection"));
+$("#detailHome").addEventListener("click",()=>showScreen("home"));
+$("#detailUpgrade").addEventListener("click",()=>{
+ if(ProgressCore.upgrade(progress,selectedHeroId)){
+  renderHeroDetail();
+  renderHeroes();
+ }
+});
+
 function livingEnemies(){return CombatCore.livingEnemies(state.fighters);}
 function syncBattleUI(){
+ const awarded=ProgressCore.awardVictory(progress,state);
+ const reward=$("#battleReward");
+ if(reward){
+  reward.hidden=state.active;
+  if(!state.active)reward.textContent=state.winner==="ally"?"Победа! +1 учебный материал · Всего: "+progress.materials:"Поражение. Награда: 0 материалов";
+ }
  const fighters=state.fighters;
  const actor=state.active?fighters[state.currentActor]:null;
  const targetIsAlly=!!actor&&selectedAbility==="special"&&actor.id==="kael";

@@ -17,6 +17,11 @@ const storageAdapter=typeof SaveCore==="undefined"?null:SaveCore;
 const loadedProgress=storageAdapter?storageAdapter.load(ALLIES,()=>window.localStorage):null;
 const progress=loadedProgress?loadedProgress.progress:ProgressCore.createProgress(ALLIES);
 let saveAvailable=loadedProgress?loadedProgress.available:false;
+const campaignLoaded=CampaignCore.load(()=>window.localStorage);
+const campaignProgress=campaignLoaded.campaign;
+let campaignSaveAvailable=campaignLoaded.available;
+let battleIsCampaign=false;
+let missionResultShown=false;
 function persistProgress(){
  if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>window.localStorage);
  const notice=$("#progressSaveNote");
@@ -67,8 +72,10 @@ function showScreen(id){
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  $("#"+id).classList.add("active");
  if(id==="collection")renderHeroes();
+ if(id==="campaign")renderCampaign();
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
+  battleIsCampaign=squadReturnScreen==="campaign";
   try {
    if(typeof BABYLON==="undefined" || !BABYLON.Engine || !BABYLON.Scene)
     throw new Error("Babylon.js is unavailable");
@@ -146,6 +153,28 @@ $("#detailUpgrade").addEventListener("click",()=>{
  }
 });
 
+function renderCampaign(){
+ const status=$("#campaignMissionStatus");
+ if(status)status.textContent=campaignProgress.completed[CampaignCore.MISSION_ID]
+  ?"Пройдено · Повторное прохождение доступно"
+  :"Не пройдено";
+ const note=$("#campaignSaveStatus");
+ if(note)note.textContent=campaignSaveAvailable
+  ?"Статус прохождения хранится в этом браузере."
+  :"Сохранение кампании недоступно. После перезагрузки отметка может исчезнуть.";
+}
+function renderMissionResult(){
+ const won=state.winner==="ally";
+ $("#missionResultTitle").textContent=won?"Миссия пройдена":"Миссия не пройдена";
+ $("#missionResultText").textContent=won
+  ?"Засада у Чёрного перевала завершена. +1 учебный материал. Всего: "+progress.materials
+  :"Отряд потерпел поражение. Учебные материалы не начислены.";
+ $("#missionResultRetry").textContent=won?"Пройти ещё раз":"Попробовать снова";
+}
+$("#missionResultBack").addEventListener("click",()=>showScreen("campaign"));
+$("#missionResultRetry").addEventListener("click",()=>openSquad("campaign"));
+$("#missionResultHome").addEventListener("click",()=>showScreen("home"));
+
 function livingEnemies(){return CombatCore.livingEnemies(state.fighters);}
 function renderBattleLog(){
  const summary=$("#battleLogSummary");
@@ -158,6 +187,13 @@ function renderBattleLog(){
 function syncBattleUI(){
  const awarded=ProgressCore.awardVictory(progress,state);
  if(awarded>0)persistProgress();
+ if(battleIsCampaign&&!state.active&&!missionResultShown){
+  if(CampaignCore.complete(campaignProgress,state))
+   campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
+  missionResultShown=true;
+  renderMissionResult();
+  showScreen("missionResult");
+ }
  const reward=$("#battleReward");
  if(reward){
   reward.hidden=state.active;
@@ -205,6 +241,7 @@ function renderCombatants(){
  }));
 }
 function resetBattle(){
+ missionResultShown=false;
  selectedAbility="basic";
  state=CombatCore.createBattle(battleLineup());
  CombatCore.advanceToPlayerTurn(state);

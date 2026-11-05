@@ -3,7 +3,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const source=fs.readFileSync(path.join(__dirname,"..","mission-data.js","campaign-core.js"),"utf8");
+const source=["mission-data.js","campaign-core.js"].map(name=>fs.readFileSync(path.join(__dirname,"..",name),"utf8")).join("\n");
 const core=vm.runInNewContext(source+"\nCampaignCore");
 const map=new Map();
 const storage={getItem:k=>map.has(k)?map.get(k):null,setItem:(k,v)=>map.set(k,v)};

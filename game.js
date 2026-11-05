@@ -58,7 +58,7 @@ function attack(){
  if(CombatCore.performPlayerAttack(state))syncBattleUI();
 }
 // Exactly one permanent click handler; no onclick replacement on victory.
-$("#attackBtn").addEventListener("click",()=>{if(!active)resetBattle();else attack();});
+$("#attackBtn").addEventListener("click",()=>{if(!state.active)resetBattle();else attack();});
 // A single render callback and a single Engine/Scene for the lifetime of this prototype.
 function renderBattleFrame(){if(scene)scene.render();}
 function shouldRenderBattle(){return !!engine && !document.hidden && $("#battle").classList.contains("active");}

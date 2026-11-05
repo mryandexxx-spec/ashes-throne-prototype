@@ -7,7 +7,7 @@ const src=["initiative-model.js","ability-data.js","combat-core.js","progress-co
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","attackBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
- "startBattle","campaignBattle","squadBack","squadStart","squadRoster",
+ "startBattle","campaignBattle","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","detailBack","detailHome","detailUpgrade","squadCount"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},

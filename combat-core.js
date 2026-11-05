@@ -22,6 +22,7 @@ const CombatCore = (() => {
       selectedAlly: firstLivingAlly(fighters),
       active: true,
       winner: null,
+      events: [],
       message: "Отряд готов к бою"
     };
   }
@@ -49,6 +50,12 @@ const CombatCore = (() => {
     return fighters.findIndex(h => h.side === "ally" && h.hp > 0);
   }
 
+  // Events describe only the latest resolved command, including automatic enemy replies.
+  // Keep the existing battle.message as the UI's current short summary.
+  function emit(battle, type, properties) {
+    battle.events.push({type, ...properties});
+  }
+
   function finishIfOver(battle) {
     if (firstLivingEnemy(battle.fighters) < 0) {
       battle.active = false;
@@ -57,6 +64,7 @@ const CombatCore = (() => {
       battle.selectedEnemy = -1;
       battle.selectedAlly = -1;
       battle.message = "Победа! Отряд одержал верх.";
+      emit(battle, "battle-end", {winner: "ally"});
       return true;
     }
     if (firstLivingAlly(battle.fighters) < 0) {
@@ -66,6 +74,7 @@ const CombatCore = (() => {
       battle.selectedEnemy = -1;
       battle.selectedAlly = -1;
       battle.message = "Поражение. Попробуй ещё раз.";
+      emit(battle, "battle-end", {winner: "enemy"});
       return true;
     }
     return false;
@@ -112,7 +121,10 @@ const CombatCore = (() => {
         return battle;
       }
       const target = battle.fighters[targetIndex];
+      emit(battle, "ability", {actorId: actor.id, targetId: target.id, abilityId: "basic"});
       const damage = dealDamage(actor, target, actor.atk);
+      emit(battle, "damage", {actorId: actor.id, targetId: target.id, amount: damage, remainingHp: target.hp});
+      if (target.hp === 0) emit(battle, "death", {targetId: target.id});
       battle.message = actor.name + " атакует " + target.name +
         ": " + damage + " урона.";
       InitiativeModel.finishTurn(battle.fighters, actor.id);
@@ -166,12 +178,21 @@ const CombatCore = (() => {
       :selectEnemy(battle.fighters,battle.selectedEnemy);
     if(targetIndex<0)return false;
     const target=battle.fighters[targetIndex];
+    // Invalid commands leave the previous event batch untouched.
+    battle.events=[];
+    emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
     if(ability.kind==="guard"){
       target.guardHits=ability.guardHits;
+      emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"guard",stacks:ability.guardHits});
       battle.message=actor.name+" защищает "+target.name+": защита ×"+ability.guardHits+".";
     }else{
       const damage=dealDamage(actor,target,Math.round(actor.atk*ability.multiplier));
-      if(ability.weakening>0&&target.hp>0)target.weakenAttacks=ability.weakening;
+      emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp});
+      if(target.hp===0)emit(battle,"death",{targetId:target.id});
+      if(ability.weakening>0&&target.hp>0){
+        target.weakenAttacks=ability.weakening;
+        emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"weaken",stacks:ability.weakening});
+      }
       battle.message=actor.name+(ability.id==="special"?" применяет "+ability.name+": ":" атакует: ")+
         target.name+" получает "+damage+" урона"+
         (target.hp===0?" — повержен!":ability.weakening>0?", ослабление ×"+ability.weakening+".":".");

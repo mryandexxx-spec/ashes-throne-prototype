@@ -58,11 +58,26 @@ function showScreen(id){
  if(id==="collection")renderHeroes();
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
-  resetBattle();
-  if(!engine)initBabylon();
-  engine.resize();
-  updateMeshes();
-  startBattleRendering();
+  try {
+   if(typeof BABYLON==="undefined" || !BABYLON.Engine || !BABYLON.Scene)
+    throw new Error("Babylon.js is unavailable");
+   if(!engine)initBabylon();
+   engine.resize();
+   resetBattle();
+   updateMeshes();
+   startBattleRendering();
+   const notice=$("#battleLoadError");
+   if(notice)notice.hidden=true;
+  } catch(error) {
+   console.error("Не удалось запустить 3D-арену:",error);
+   stopBattleRendering();
+   if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
+   if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
+   scene=undefined;engine=undefined;meshes={};renderLoopRunning=false;
+   showScreen("squad");
+   const notice=$("#battleLoadError");
+   if(notice)notice.hidden=false;
+  }
  }
 }
 document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click",()=>{
@@ -72,6 +87,9 @@ document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click"
 $("#startBattle").addEventListener("click",()=>openSquad("home"));
 $("#campaignBattle").addEventListener("click",()=>openSquad("campaign"));
 $("#squadBack").addEventListener("click",()=>showScreen(squadReturnScreen));
+// If Babylon.js cannot load, show a recoverable message instead of an uncaught crash.
+const retryLoad=$("#retryBattleLoad");
+if(retryLoad)retryLoad.addEventListener("click",()=>window.location.reload());
 $("#squadStart").addEventListener("click",()=>{
  if(selectedParty().length===0)return;
  showScreen("battle");

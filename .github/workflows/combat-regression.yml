@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [feature/combat-003b-tactical-specials]
+    branches: [main]
 jobs:
   node-tests:
     runs-on: ubuntu-latest
@@ -14,10 +14,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Run combat and UI regression tests
-        run: |
-          set -e
-          for file in tests/*.test.js; do
-            echo "Running $file"
-            node "$file"
-          done
+      - name: Check syntax and run regression tests
+        run: npm test

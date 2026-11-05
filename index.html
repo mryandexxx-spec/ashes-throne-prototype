@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Пепельный престол — прототип</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <!-- Fixed Babylon.js release: no unversioned CDN updates during prototype development. -->
+  <script src="https://cdn.babylonjs.com/v9.33.2/babylon.js"></script>
 </head>
 <body>
   <main id="app">
@@ -73,6 +74,11 @@
           <div id="squadSlots" class="squad-slots" aria-label="Пять мест в отряде"></div>
           <p id="squadHint" class="muted" role="status">Выбери хотя бы одного героя.</p>
           <button class="primary squad-start" type="button" id="squadStart">Начать бой</button>
+          <div id="battleLoadError" hidden role="alert" class="battle-load-error">
+            <strong>Не удалось загрузить 3D-арену.</strong>
+            <p>Проверь подключение к интернету и попробуй ещё раз. Подготовка отряда и остальные разделы доступны.</p>
+            <button type="button" class="ghost" id="retryBattleLoad">Повторить загрузку</button>
+          </div>
         </div>
       </div>
     </section>

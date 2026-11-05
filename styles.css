@@ -229,3 +229,8 @@ button{touch-action:manipulation}
  .hero-detail-nav .ghost{padding:9px}
  .battle-reward{font-size:10px;padding:7px}
 }
+
+/* TECH-A01: recoverable 3D-loading error, respecting the mobile layout. */
+[hidden]{display:none!important}
+.battle-load-error{margin-top:12px;padding:12px;border:1px solid var(--red);border-radius:10px;background:var(--panel);color:var(--text)}
+.battle-load-error p{margin:8px 0 12px;color:var(--muted);font-size:13px;line-height:1.4}

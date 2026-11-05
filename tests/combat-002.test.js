@@ -48,6 +48,7 @@ const defeat=core.createBattle([
 core.advanceToPlayerTurn(defeat);
 assert.equal(defeat.winner,"enemy");
 assert.equal(defeat.active,false);
+assert.equal(defeat.selectedAlly,-1,"defeat must clear stale ally target");
 
 const tied=core.createBattle([
  {id:"a",name:"A",side:"ally",hp:20,atk:1,speed:100},

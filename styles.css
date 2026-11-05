@@ -69,8 +69,8 @@ button{touch-action:manipulation}
  .battle-top strong{font-size:12px}
  .battle-top .eyebrow{font-size:9px}
  .turn-chip{padding:6px;font-size:11px;white-space:nowrap}
- .arena-wrap{grid-column:1;grid-row:2;margin:0;height:clamp(170px,calc(100dvh - 128px),330px);min-width:0}
- .battle-bottom{grid-column:2;grid-row:2;display:flex;flex-direction:column;gap:7px;min-width:0;height:clamp(170px,calc(100dvh - 128px),330px)}
+ .arena-wrap{grid-column:1;grid-row:2;margin:0;height:clamp(148px,calc(100dvh - 166px - env(safe-area-inset-bottom, 0px)),330px);min-width:0}
+ .battle-bottom{grid-column:2;grid-row:2;display:flex;flex-direction:column;gap:7px;min-width:0;height:clamp(148px,calc(100dvh - 166px - env(safe-area-inset-bottom, 0px)),330px)}
  .combatants{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;overflow-y:auto;min-height:0;flex:1;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
  .fighter{padding:7px;min-width:0}
  .fighter b{font-size:10px}
@@ -81,10 +81,21 @@ button{touch-action:manipulation}
  .action-panel .eyebrow{font-size:9px}
  .primary,.ghost{padding:10px 12px}
  .action-panel .primary{flex-shrink:0}
- footer{padding:8px 0 12px}
+ footer{padding:6px 0 max(8px,env(safe-area-inset-bottom, 0px))}
 }
 
+/* TECH-002.1: reserve room for footer on short landscape screens.
+   Keep battle columns equal in height; shrink presentation, not touch targets. */
 @media (orientation:landscape) and (max-height:390px) and (max-width:1100px){
+ .topbar{height:44px}
+ .screen{padding-top:6px;padding-bottom:7px}
+ .battle-screen{row-gap:5px}
+ .battle-top strong{margin-top:2px}
+ .arena-wrap,.battle-bottom{height:clamp(142px,calc(100dvh - 166px - env(safe-area-inset-bottom, 0px)),300px)}
+ .fighter{padding:5px 7px}
+ .fighter small{margin:2px 0}
+ .action-panel{padding:5px 7px}
+ footer{padding-top:5px;padding-bottom:max(7px,env(safe-area-inset-bottom, 0px))}
  .action-panel p{display:none}
  .action-panel strong{font-size:11px}
  .battle-message{top:7px;padding:5px 8px;font-size:10px}

@@ -77,6 +77,9 @@ const count=()=>elements.squadCount.textContent;
 // Campaign entrance, not generic arena, activates the mission result screen.
 api.showScreen("campaign");
 assert.match(elements.campaignMissions.innerHTML,/Не пройдено/);
+assert.match(elements.campaignMissions.innerHTML,/Основной путь/);
+assert.match(elements.campaignMissions.innerHTML,/Засада у Чёрного перевала/);
+assert.equal(elements.campaignMissions.innerHTML.includes("Заблокировано"),false,"current single mission is open");
 clickMission();
 assert.equal(elements.squad.classList.active,true);
 click(elements.squadStart);

@@ -33,7 +33,7 @@ click("specialAbilityBtn");
 assert.equal(elements.specialAbilityBtn.classList.selected,true);
 click("attackBtn");
 assert.equal(getBattle().fighters[3].hp,59,"Lyra special deals 31 basic damage");
-assert.equal(getBattle().fighters[3].weakenAttacks,2,"Lyra special applies weakening");
+assert.equal(getBattle().fighters[3].weakenAttacks,1,"weakening applies; enemy may act before next player turn");
 assert.equal(getBattle().fighters[1].specialCooldown,2);
 assert.equal(elements.specialAbilityBtn.classList.selected,false);
 let steps=0;

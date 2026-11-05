@@ -53,4 +53,25 @@ const pkg=JSON.parse(fs.readFileSync(path.join(root,"package.json"),"utf8"));
 assert.equal(pkg.version,"0.2.2");
 assert.match(html,/id="buildVersion"[^>]*>Прототип · v0\.2\.2 · STAR001/);
 assert.match(html,/src="mission-data.js"/);
+// Count only accepted player actions in the actual combat engine.
+const combatSrc=["initiative-model.js","ability-data.js","combat-core.js"]
+ .map(n=>fs.readFileSync(path.join(root,n),"utf8")).join("\n");
+const core=vm.runInNewContext(combatSrc+"\nCombatCore");
+const fightersForBattle=[
+ {id:"kael",name:"Каэль",side:"ally",role:"Страж",hp:1000,atk:1,speed:200},
+ {id:"ves",name:"Вестник",side:"enemy",role:"Противник",hp:1000,atk:1,speed:60}
+];
+const real=core.createBattle(fightersForBattle);
+assert.equal(real.allyActions,0);
+core.advanceToPlayerTurn(real);
+assert.equal(real.allyActions,0,"enemy automatic actions do not count");
+assert.equal(core.performPlayerAbility(real,"not-an-ability"),false);
+assert.equal(real.allyActions,0,"invalid action does not count");
+assert.equal(core.performPlayerAbility(real,"basic"),true);
+assert.equal(real.allyActions,1);
+assert.equal(core.performPlayerAbility(real,"special"),true,"guard counts as an ally action");
+assert.equal(real.allyActions,2);
+assert.equal(core.chooseEnemy(real,500),false);
+assert.equal(real.allyActions,2,"target selection does not count");
+
 console.log("Campaign-Stars-001 8/9 boundary, all-alive, no downgrade, old saves and version passed");

@@ -1,0 +1,9 @@
+{
+  "name": "ashes-throne-prototype",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Mobile browser RPG prototype",
+  "scripts": {
+    "test": "node scripts/run-tests.js"
+  }
+}

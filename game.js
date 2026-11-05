@@ -147,6 +147,14 @@ $("#detailUpgrade").addEventListener("click",()=>{
 });
 
 function livingEnemies(){return CombatCore.livingEnemies(state.fighters);}
+function renderBattleLog(){
+ const summary=$("#battleLogSummary");
+ const content=$("#battleLogEntries");
+ if(!summary||!content)return;
+ const lines=CombatLog.lines(state.events||[],state.fighters);
+ summary.textContent="Журнал боя · "+lines.length+" событий";
+ content.textContent=lines.length?lines.map((line,i)=>(i+1)+". "+line).join("\n"):"Пока нет событий.";
+}
 function syncBattleUI(){
  const awarded=ProgressCore.awardVictory(progress,state);
  if(awarded>0)persistProgress();
@@ -176,6 +184,7 @@ function syncBattleUI(){
  $("#attackBtn").textContent=state.active?(targetIsAlly?"Применить":"Атаковать"):"Сыграть снова";
  $("#attackBtn").disabled=state.active&&(!actor||!validTarget);
  $("#battleMessage").textContent=state.message;
+ renderBattleLog();
  renderCombatants();
  updateMeshes();
 }

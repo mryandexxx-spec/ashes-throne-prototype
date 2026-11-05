@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const root = path.join(__dirname, "..");
-const sources = ["initiative-model.js", "ability-data.js","combat-core.js", "progress-core.js", "mission-data.js","campaign-core.js","game.js"]
+const sources = ["initiative-model.js", "ability-data.js","combat-core.js", "progress-core.js", "mission-data.js","campaign-core.js","campaign-data.js","game.js"]
  .map(file => fs.readFileSync(path.join(root, file), "utf8")).join("\n");
 const ids = ["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint","attackBtn",
  "battleMessage","battle","renderCanvas","startBattle","campaignBattle","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squad","squadBack","squadStart","squadCount","squadRoster","squadSlots","squadHint","detailBack","detailHome","detailUpgrade","basicAbilityBtn","specialAbilityBtn"];

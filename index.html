@@ -56,8 +56,8 @@
     </section>
     <section id="campaign" class="screen">
       <div class="section-heading"><div><div class="eyebrow">ГЛАВА I</div><h2>Пепельный тракт</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
-      <div class="campaign-panel"><div class="node">I</div><div><h3>Засада у Чёрного перевала</h3><p>Разведчики Конклава преградили путь. Разбей их отряд.</p><p class="campaign-mission-status" id="campaignMissionStatus" role="status">Не пройдено</p><button class="primary" id="campaignBattle">Вступить в бой</button></div></div>
-      <p class="muted" id="campaignSaveStatus" role="status">Статус прохождения хранится в этом браузере.</p><p class="muted">Пока доступна одна демонстрационная миссия. Награда за каждую победу: +1 учебный материал.</p>
+      <div class="campaign-panel"><div class="node">I</div><div><h3>Засада у Чёрного перевала</h3><p>Разведчики Конклава преградили путь. Разбей их отряд.</p><p class="campaign-mission-status" id="campaignMissionStatus" role="status">Не пройдено</p><p class="mission-stars" id="campaignMissionStars">Лучшая оценка: ☆☆☆ (0/3)</p><button class="primary" id="campaignBattle">Вступить в бой</button></div></div>
+      <p class="muted" id="campaignChapterProgress">Пройдено миссий: 0/1 · Звёзд: 0/3</p><p class="muted" id="campaignSaveStatus" role="status">Статус прохождения хранится в этом браузере.</p><p class="muted">Пока доступна одна демонстрационная миссия. 1★ — победа, 2★ — без потерь, 3★ — без потерь за 8 или менее действий союзников. Награда за каждую победу: +1 учебный материал.</p>
     </section>
     <section id="squad" class="screen squad-screen" aria-label="Подготовка отряда">
       <div class="section-heading squad-heading">
@@ -87,6 +87,7 @@
         <div class="eyebrow">КАМПАНИЯ · ПЕПЕЛЬНЫЙ ТРАКТ</div>
         <h2 id="missionResultTitle">Результат миссии</h2>
         <p id="missionResultText" role="status"></p>
+        <p class="mission-stars" id="missionResultStars" role="status">Оценка: ☆☆☆</p>
         <div class="mission-result-actions">
           <button type="button" class="primary" id="missionResultBack">К кампании</button>
           <button type="button" class="ghost" id="missionResultRetry">Попробовать снова</button>
@@ -106,7 +107,7 @@
         <div id="battleLogEntries" class="combat-log-entries" role="log" aria-live="off">Пока нет событий.</div>
       </details>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.2.1 · CAM001</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.2.2 · STAR001</span><span>Пепельный престол</span></footer>
   </main>
   <aside class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -121,6 +122,7 @@
   <script src="combat-log.js"></script>
   <script src="progress-core.js"></script>
   <script src="save-core.js"></script>
+  <script src="mission-data.js"></script>
   <script src="campaign-core.js"></script>
   <script src="game.js"></script>
 </body>

@@ -7,13 +7,17 @@ const HEROES = [
 ];
 const $=s=>document.querySelector(s);
 let selectedEnemy=3, turn=1, active=true, engine, scene, meshes={};
+let renderLoopRunning=false;
 let state=HEROES.map(h=>({...h,maxHp:h.hp}));
 function showScreen(id){
+ if(id!=="battle")stopBattleRendering();
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  $("#"+id).classList.add("active");
  if(id==="battle"){
   resetBattle(); // Every entry is a new demonstration battle, regardless of entry point.
-  if(!engine)initBabylon();else engine.resize();
+  if(!engine)initBabylon();
+  engine.resize();
+  startBattleRendering();
  }
 }
 document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click",()=>showScreen(b.dataset.screen)));
@@ -88,8 +92,22 @@ function enemyTurn(){
 }
 // Exactly one permanent click handler; no onclick replacement on victory.
 $("#attackBtn").addEventListener("click",()=>{if(!active)resetBattle();else attack();});
+// A single render callback and a single Engine/Scene for the lifetime of this prototype.
+function renderBattleFrame(){if(scene)scene.render();}
+function shouldRenderBattle(){return !!engine && !document.hidden && $("#battle").classList.contains("active");}
+function startBattleRendering(){
+ if(!shouldRenderBattle()||renderLoopRunning)return;
+ engine.runRenderLoop(renderBattleFrame);
+ renderLoopRunning=true;
+}
+function stopBattleRendering(){
+ if(!engine||!renderLoopRunning)return;
+ engine.stopRenderLoop(renderBattleFrame);
+ renderLoopRunning=false;
+}
+// Reuse the scene rather than re-creating meshes on every battle entry.
 function initBabylon(){
- const canvas=$("#renderCanvas");engine=new BABYLON.Engine(canvas,true,{preserveDrawingBuffer:true,stencil:true});
+ const canvas=$("#renderCanvas");engine=new BABYLON.Engine(canvas,true,{stencil:true});
  scene=new BABYLON.Scene(engine);scene.clearColor=new BABYLON.Color4(.035,.045,.065,1);
  const camera=new BABYLON.ArcRotateCamera("camera",-Math.PI/2,1.05,15,new BABYLON.Vector3(0,1,0),scene);camera.lowerRadiusLimit=11;camera.upperRadiusLimit=18;camera.attachControl(canvas,true);
  const hemi=new BABYLON.HemisphericLight("hemi",new BABYLON.Vector3(0,1,0),scene);hemi.intensity=.8;
@@ -109,7 +127,13 @@ function initBabylon(){
   const base=BABYLON.MeshBuilder.CreateCylinder("base_"+i,{diameter:1.15,height:.12,tessellation:24},scene);base.position=new BABYLON.Vector3(x,.08,z);const bm=new BABYLON.StandardMaterial("basemat_"+i,scene);bm.diffuseColor=h.side==="ally"?new BABYLON.Color3(.65,.48,.2):new BABYLON.Color3(.4,.18,.18);base.material=bm;
   meshes[i]={body,head,base};
  });
- engine.runRenderLoop(()=>{if($("#battle").classList.contains("active"))scene.render();});window.addEventListener("resize",()=>engine.resize());
+ // Registered only once because initBabylon() runs once.
+ window.addEventListener("resize",()=>{if(shouldRenderBattle())engine.resize();});
 }
 function updateMeshes(){if(!scene)return;state.forEach((h,i)=>{if(meshes[i]){const visible=h.hp>0;meshes[i].body.setEnabled(visible);meshes[i].head.setEnabled(visible);meshes[i].base.setEnabled(visible);}});}
+// Browsers may keep the tab alive when it is hidden; suspend GPU work until visible.
+document.addEventListener("visibilitychange",()=>{
+ if(document.hidden)stopBattleRendering();
+ else if(shouldRenderBattle()){engine.resize();startBattleRendering();}
+});
 renderHeroes();renderCombatants();

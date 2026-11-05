@@ -13,3 +13,94 @@ button{font:600 13px Inter,sans-serif;cursor:pointer;transition:.15s}button:hove
 .battle-bottom{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}.combatants{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.fighter{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:11px;cursor:pointer;min-width:0}.fighter.selected{border-color:var(--gold);box-shadow:0 0 0 1px #d5ad6540}.fighter.enemy{border-color:#673c40}.fighter.defeated{opacity:.45;cursor:default}.fighter.enemy.selected{border-color:var(--gold)}.fighter b{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fighter small{display:block;color:var(--muted);font-size:10px;margin:6px 0}.health{height:5px;background:#343a48;border-radius:5px;overflow:hidden}.health span{display:block;height:100%;background:#6fb98c}.enemy .health span{background:#c65d55}.action-panel{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}.action-panel strong{font:600 16px Cinzel,serif}.action-panel p{color:var(--muted);font-size:11px;margin:6px 0 0}
 footer{display:flex;justify-content:space-between;color:#697181;font-size:10px;padding:20px 0 25px;border-top:1px solid #ffffff10}
 @media(max-width:700px){#app{padding:0 12px}.topbar{height:65px}.resources{gap:8px;font-size:10px}.hero-banner{padding:38px 22px}.home-cards,.hero-list{grid-template-columns:1fr}.battle-bottom{grid-template-columns:1fr}.combatants{grid-template-columns:repeat(2,1fr)}.arena-wrap{height:320px}.action-panel{align-items:flex-start}.battle-message{font-size:10px}.brand strong{font-size:11px;letter-spacing:1px}}
+
+
+/* TECH-002: mobile landscape usability. Existing desktop layout stays intact. */
+html,body{max-width:100%;overflow-x:hidden}
+body{min-height:100dvh}
+#app{min-width:0;padding-left:max(22px,env(safe-area-inset-left));padding-right:max(22px,env(safe-area-inset-right))}
+button{touch-action:manipulation}
+#renderCanvas{touch-action:none} /* Babylon camera gestures must not trigger browser scrolling. */
+.battle-message{max-width:calc(100% - 24px);white-space:normal;text-align:center}
+.orientation-prompt{display:none}
+
+@media (max-width:700px){
+ #app{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+ .brand{min-width:0}
+ .brand strong{overflow-wrap:anywhere}
+ .resources{flex-wrap:wrap;justify-content:flex-end;min-width:0}
+ .screen{padding-top:16px;padding-bottom:22px}
+ .hero-banner{min-height:0}
+ .hero-banner h1{font-size:clamp(27px,5vw,42px)}
+ .hero-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+ .home-cards{grid-template-columns:repeat(auto-fit,minmax(min(100%,185px),1fr))}
+ .campaign-panel{min-width:0}
+ .section-heading h2{font-size:clamp(19px,4vw,28px)}
+}
+
+/* Landscape phone: the battle arena and its controls are side by side. */
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .topbar{height:49px;gap:8px}
+ .brand{gap:6px}
+ .brand .sigil{font-size:20px}
+ .brand strong{font-size:11px;letter-spacing:.5px}
+ .brand small{display:none}
+ .resources{gap:7px;font-size:10px}
+ .screen{padding:9px 0 12px}
+ .hero-banner{padding:18px 22px;min-height:0}
+ .hero-banner h1{font-size:clamp(27px,4.4vw,43px);margin:8px 0}
+ .hero-banner p{font-size:12px;line-height:1.35;margin:8px 0 12px;max-width:650px}
+ .home-cards{margin-top:8px;gap:8px;grid-template-columns:repeat(3,minmax(0,1fr))}
+ .nav-card{padding:10px}
+ .nav-card span{font-size:19px;margin-bottom:3px}
+ .nav-card b{font-size:12px}
+ .nav-card small{font-size:10px;margin-top:3px}
+ .section-heading{margin:2px 0 10px}
+ .section-heading h2{font-size:19px}
+ .hero-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .hero-card{padding:10px}
+ .hero-avatar{height:50px;margin-bottom:8px;font-size:30px}
+ .hero-card h3{font-size:13px}
+ .campaign-panel{padding:12px;gap:12px}
+ .campaign-panel h3{font-size:15px}
+ .battle-screen{display:none;grid-template-columns:minmax(0,1.15fr) minmax(245px,.85fr);column-gap:10px;row-gap:8px}
+ .battle-screen.active{display:grid}
+ .battle-top{grid-column:1/-1;min-width:0;gap:8px}
+ .battle-top strong{font-size:12px}
+ .battle-top .eyebrow{font-size:9px}
+ .turn-chip{padding:6px;font-size:11px;white-space:nowrap}
+ .arena-wrap{grid-column:1;grid-row:2;margin:0;height:clamp(170px,calc(100dvh - 128px),330px);min-width:0}
+ .battle-bottom{grid-column:2;grid-row:2;display:flex;flex-direction:column;gap:7px;min-width:0;height:clamp(170px,calc(100dvh - 128px),330px)}
+ .combatants{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;overflow-y:auto;min-height:0;flex:1;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+ .fighter{padding:7px;min-width:0}
+ .fighter b{font-size:10px}
+ .fighter small{font-size:9px;margin:3px 0}
+ .action-panel{flex-shrink:0;min-width:0;padding:8px;gap:7px}
+ .action-panel strong{font-size:12px}
+ .action-panel p{font-size:10px;line-height:1.3;margin-top:3px}
+ .action-panel .eyebrow{font-size:9px}
+ .primary,.ghost{padding:10px 12px}
+ .action-panel .primary{flex-shrink:0}
+ footer{padding:8px 0 12px}
+}
+
+@media (orientation:landscape) and (max-height:390px) and (max-width:1100px){
+ .action-panel p{display:none}
+ .action-panel strong{font-size:11px}
+ .battle-message{top:7px;padding:5px 8px;font-size:10px}
+}
+
+/* Phones and tablets in portrait: an instructional screen, never an orientation lock. */
+@media (orientation:portrait) and (max-width:1100px){
+ .orientation-prompt{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;overflow:auto;text-align:center;padding:max(20px,env(safe-area-inset-top)) max(22px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(22px,env(safe-area-inset-left));background:#0b0d12;color:var(--text)}
+ .orientation-prompt__content{max-width:420px}
+ .orientation-prompt__icon{font-size:54px;color:var(--gold);letter-spacing:10px;line-height:1.3}
+ .orientation-prompt h2{font:600 clamp(21px,6vw,32px) Cinzel,serif;margin:12px 0}
+ .orientation-prompt p{color:var(--muted);font-size:14px;line-height:1.6;margin:0}
+}
+
+@media (pointer:coarse){
+ button{min-height:44px}
+ .fighter.enemy{min-height:44px}
+}
+@media (prefers-reduced-motion:reduce){button{transition:none}}

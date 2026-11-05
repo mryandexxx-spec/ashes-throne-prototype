@@ -8,7 +8,7 @@ const scripts = ["initiative-model.js","combat-core.js","progress-core.js","game
  .map(name=>fs.readFileSync(path.join(root,name),"utf8")).join("\n");
 const ids=["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint",
  "attackBtn","basicAbilityBtn","specialAbilityBtn","battleMessage","battle",
- "renderCanvas","startBattle","campaignBattle","squad","squadBack","squadStart","squadCount","squadRoster","squadSlots","squadHint"];
+ "renderCanvas","startBattle","campaignBattle","squad","squadBack","squadStart","squadCount","squadRoster","squadSlots","squadHint","detailBack","detailHome","detailUpgrade"];
 const elements=Object.fromEntries(ids.map(id=>[id,{
  innerHTML:"",textContent:"",disabled:false,handlers:{},
  classList:{active:id==="battle",contains(n){return !!this[n]},add(n){this[n]=true},

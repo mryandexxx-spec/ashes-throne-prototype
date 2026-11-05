@@ -15,6 +15,8 @@ const CampaignCore=(()=>{
  function validate(data){
   if(!object(data)||!object(data.completed)||(data.version!==1&&data.version!==VERSION))return null;
   if(data.version===VERSION&&!object(data.bestStars))return null;
+  if(Object.keys(data.completed).some(id=>!ids().includes(id)))return null;
+  if(data.version===VERSION&&Object.keys(data.bestStars).some(id=>!ids().includes(id)))return null;
   const result=fresh();
   for(const id of ids()){
    if(!own(data.completed,id))continue; // mission added in a future update

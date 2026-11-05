@@ -89,8 +89,12 @@
         <div class="combatants" id="combatants"></div>
         <div class="action-panel"><div><div class="eyebrow">ДЕЙСТВИЕ</div><strong id="actionTitle">Удар клинком</strong><p id="actionHint">Выбери противника и нажми «Атаковать».</p></div><div class="ability-controls"><div class="ability-options" aria-label="Выбор способности"><button type="button" id="basicAbilityBtn" class="ability-btn selected">Базовая</button><button type="button" id="specialAbilityBtn" class="ability-btn">Особая</button></div><button class="primary" id="attackBtn">Атаковать</button></div></div>
       </div>
+      <details class="combat-log" id="battleLog">
+        <summary id="battleLogSummary">Журнал боя · 0 событий</summary>
+        <div id="battleLogEntries" class="combat-log-entries" role="log" aria-live="off">Пока нет событий.</div>
+      </details>
     </section>
-    <footer><span>Прототип · Версия 0.1</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.2.0 · CL001</span><span>Пепельный престол</span></footer>
   </main>
   <aside class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -102,6 +106,7 @@
   <script src="initiative-model.js"></script>
   <script src="ability-data.js"></script>
   <script src="combat-core.js"></script>
+  <script src="combat-log.js"></script>
   <script src="progress-core.js"></script>
   <script src="save-core.js"></script>
   <script src="game.js"></script>

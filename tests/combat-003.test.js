@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const root = path.join(__dirname,"..");
-const scripts = ["initiative-model.js","combat-core.js","game.js"]
+const scripts = ["initiative-model.js","combat-core.js","progress-core.js","game.js"]
  .map(name=>fs.readFileSync(path.join(root,name),"utf8")).join("\n");
 const ids=["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint",
  "attackBtn","basicAbilityBtn","specialAbilityBtn","battleMessage","battle",

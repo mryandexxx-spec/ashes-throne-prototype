@@ -157,7 +157,7 @@ function syncBattleUI(){
  }
  const fighters=state.fighters;
  const actor=state.active?fighters[state.currentActor]:null;
- const targetIsAlly=!!actor&&selectedAbility==="special"&&actor.id==="kael";
+ const targetIsAlly=!!actor&&CombatCore.abilityTargetSide(state,selectedAbility)==="ally";
  const targetIndex=targetIsAlly?state.selectedAlly:state.selectedEnemy;
  const target=state.active?fighters[targetIndex]:null;
  const validTarget=!!target&&target.hp>0&&target.side===(targetIsAlly?"ally":"enemy");
@@ -181,7 +181,7 @@ function syncBattleUI(){
 }
 function renderCombatants(){
  const actor=state.active?state.fighters[state.currentActor]:null;
- const choosingAlly=!!actor&&selectedAbility==="special"&&actor.id==="kael";
+ const choosingAlly=!!actor&&CombatCore.abilityTargetSide(state,selectedAbility)==="ally";
  $("#combatants").innerHTML=state.fighters.map((h,i)=>{
    const chosen=state.active&&i===(choosingAlly?state.selectedAlly:state.selectedEnemy)&&
      h.side===(choosingAlly?"ally":"enemy");

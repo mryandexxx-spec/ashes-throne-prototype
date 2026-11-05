@@ -9,6 +9,8 @@ const CombatCore = (() => {
       ...hero,
       maxHp: hero.hp,
       specialCooldown: 0,
+      guardHits: 0,
+      weakenAttacks: 0,
       meter: initiative[index].meter,
       index
     }));
@@ -17,6 +19,7 @@ const CombatCore = (() => {
       turn: 1,
       currentActor: -1,
       selectedEnemy: firstLivingEnemy(fighters),
+      selectedAlly: firstLivingAlly(fighters),
       active: true,
       winner: null,
       message: "Отряд готов к бою"
@@ -37,6 +40,11 @@ const CombatCore = (() => {
     return enemies.length ? enemies[0].i : -1;
   }
 
+  function selectAlly(fighters, index) {
+    return Number.isInteger(index) && fighters[index] &&
+      fighters[index].side === "ally" && fighters[index].hp > 0 ? index : -1;
+  }
+
   function firstLivingAlly(fighters) {
     return fighters.findIndex(h => h.side === "ally" && h.hp > 0);
   }
@@ -47,6 +55,7 @@ const CombatCore = (() => {
       battle.winner = "ally";
       battle.currentActor = -1;
       battle.selectedEnemy = -1;
+      battle.selectedAlly = -1;
       battle.message = "Победа! Отряд одержал верх.";
       return true;
     }
@@ -59,6 +68,24 @@ const CombatCore = (() => {
       return true;
     }
     return false;
+  }
+
+  // One deterministic damage path, shared by human and AI attacks.
+  // Weakening is applied before guarding; each step rounds once.
+  function dealDamage(attacker, target, rawDamage) {
+    let damage = Math.max(0, rawDamage);
+    if (attacker.weakenAttacks > 0) damage = Math.round(damage * 0.7);
+    if (target.guardHits > 0) {
+      damage = Math.round(damage * 0.5);
+      target.guardHits--;
+    }
+    target.hp = Math.max(0, target.hp - damage);
+    if (target.hp === 0) {
+      target.guardHits = 0;
+      target.weakenAttacks = 0;
+    }
+    if (attacker.weakenAttacks > 0) attacker.weakenAttacks--;
+    return damage;
   }
 
   // Advance game time to the next living actor; resolve AI actions until an ally is ready.
@@ -84,9 +111,9 @@ const CombatCore = (() => {
         return battle;
       }
       const target = battle.fighters[targetIndex];
-      target.hp = Math.max(0, target.hp - actor.atk);
+      const damage = dealDamage(actor, target, actor.atk);
       battle.message = actor.name + " атакует " + target.name +
-        ": " + actor.atk + " урона.";
+        ": " + damage + " урона.";
       InitiativeModel.finishTurn(battle.fighters, actor.id);
       battle.turn++;
       if (finishIfOver(battle)) return battle;
@@ -100,6 +127,19 @@ const CombatCore = (() => {
     return true;
   }
 
+  function chooseAlly(battle, index) {
+    if (!battle.active || selectAlly(battle.fighters, index) < 0) return false;
+    battle.selectedAlly = index;
+    return true;
+  }
+
+  function specialName(actor) {
+    if (!actor) return "Особая";
+    return actor.id === "kael" ? "Прикрытие" :
+      actor.id === "lyra" ? "Ослабляющий удар" :
+      actor.id === "darin" ? "Сокрушительный удар" : "Особый удар";
+  }
+
   function abilityReady(battle, abilityId) {
     if (!battle.active) return false;
     const actor = battle.fighters[battle.currentActor];
@@ -108,26 +148,37 @@ const CombatCore = (() => {
     return abilityId === "special" && actor.specialCooldown === 0;
   }
 
-  // Basic and special are temporary test abilities, not approved character kits.
-  // Cooldown is measured in the hero's own completed actions, not global turns.
+  // Combat-003B: three test specials; cooldown is spent on the user's own actions.
   function performPlayerAbility(battle, abilityId) {
     if (!abilityReady(battle, abilityId)) return false;
     const actor = battle.fighters[battle.currentActor];
-    const targetIndex = selectEnemy(battle.fighters, battle.selectedEnemy);
+    const guarding = abilityId === "special" && actor.id === "kael";
+    const targetIndex = guarding
+      ? selectAlly(battle.fighters, battle.selectedAlly)
+      : selectEnemy(battle.fighters, battle.selectedEnemy);
     if (targetIndex < 0) return false;
     const target = battle.fighters[targetIndex];
-    const damage = abilityId === "special" ? Math.round(actor.atk * 1.5) : actor.atk;
-    target.hp = Math.max(0, target.hp - damage);
-    battle.message = actor.name + (abilityId === "special" ? " применяет особый удар: " : " атакует: ") +
-      target.name + " получает " + damage + " урона" +
-      (target.hp === 0 ? " — повержен!" : ".");
+    if (guarding) {
+      target.guardHits = 2;
+      battle.message = actor.name + " защищает " + target.name + ": защита ×2.";
+    } else {
+      const rawDamage = abilityId === "special" && actor.id === "darin"
+        ? Math.round(actor.atk * 1.5) : actor.atk;
+      const damage = dealDamage(actor, target, rawDamage);
+      if (abilityId === "special" && actor.id === "lyra" && target.hp > 0)
+        target.weakenAttacks = 2;
+      battle.message = actor.name + (abilityId === "special" ? " применяет " + specialName(actor) + ": " : " атакует: ") +
+        target.name + " получает " + damage + " урона" +
+        (target.hp === 0 ? " — повержен!" :
+          abilityId === "special" && actor.id === "lyra" ? ", ослабление ×2." : ".");
+    }
     if (abilityId === "special") actor.specialCooldown = 2;
     else actor.specialCooldown = Math.max(0, actor.specialCooldown - 1);
     InitiativeModel.finishTurn(battle.fighters, actor.id);
     battle.turn++;
     battle.currentActor = -1;
     if (finishIfOver(battle)) return true;
-    if (target.hp === 0) battle.selectedEnemy = firstLivingEnemy(battle.fighters);
+    if (!guarding && target.hp === 0) battle.selectedEnemy = firstLivingEnemy(battle.fighters);
     advanceToPlayerTurn(battle);
     return true;
   }
@@ -140,6 +191,6 @@ const CombatCore = (() => {
 
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
-    chooseEnemy, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady
+    chooseEnemy, chooseAlly, specialName, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady
   });
 })();

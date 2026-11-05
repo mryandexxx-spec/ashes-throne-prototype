@@ -7,7 +7,7 @@ const root = path.join(__dirname, "..");
 const sources = ["initiative-model.js", "combat-core.js", "game.js"]
  .map(file => fs.readFileSync(path.join(root, file), "utf8")).join("\n");
 const ids = ["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint","attackBtn",
- "battleMessage","battle","renderCanvas","startBattle","campaignBattle"];
+ "battleMessage","battle","renderCanvas","startBattle","campaignBattle","basicAbilityBtn","specialAbilityBtn"];
 const elements = Object.fromEntries(ids.map(id => [id, {
  innerHTML:"", textContent:"", disabled:false, handlers:{},
  classList: { active:id==="battle", contains(name){return !!this[name]},

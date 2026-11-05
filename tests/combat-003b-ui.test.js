@@ -4,11 +4,11 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 const path = require("node:path");
 const root = path.join(__dirname,"..");
-const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","game.js"]
+const src=["initiative-model.js","ability-data.js","combat-core.js","combat-log.js","progress-core.js","game.js"]
  .map(n=>fs.readFileSync(path.join(root,n),"utf8")).join("\n");
 const ids=["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint",
  "attackBtn","basicAbilityBtn","specialAbilityBtn","battleMessage","battle",
- "renderCanvas","startBattle","campaignBattle","squad","squadBack","squadStart","squadCount","squadRoster","squadSlots","squadHint","detailBack","detailHome","detailUpgrade"];
+ "renderCanvas","battleLogSummary","battleLogEntries","startBattle","campaignBattle","squad","squadBack","squadStart","squadCount","squadRoster","squadSlots","squadHint","detailBack","detailHome","detailUpgrade"];
 const elem=()=>({
  innerHTML:"",textContent:"",disabled:false,handlers:{},dataset:{},
  classList:{active:false,contains(n){return !!this[n]},add(n){this[n]=true},
@@ -52,8 +52,12 @@ assert.equal(api.getBattle().selectedEnemy,4);
 click("attackBtn");
 assert.ok(api.getBattle().fighters[4].weakenAttacks>=0 && api.getBattle().fighters[4].weakenAttacks<=2);
 assert.equal(api.getBattle().fighters[4].hp,47,"Lyra deals basic 31 damage to selected enemy");
+assert.match(els.battleLogSummary.textContent,/Журнал боя/);
+assert.match(els.battleLogEntries.textContent,/Лира Соль.*Ослабляющий удар/);
+assert.match(els.battleLogEntries.textContent,/Теневой клинок.*31 HP/);
 assert.equal(els.specialAbilityBtn.classList.selected,false);
 api.resetBattle();
+assert.equal(els.battleLogEntries.textContent,"Пока нет событий.","restart clears previous log");
 let steps=0;
 while(api.getBattle().active && api.getBattle().fighters[api.getBattle().currentActor].id!=="kael" && steps++<12)
  click("attackBtn");
@@ -65,6 +69,8 @@ assert.equal(api.getBattle().selectedAlly,1);
 assert.match(els.actionHint.textContent,/Лира/);
 click("attackBtn");
 assert.equal(api.getBattle().fighters[1].guardHits,2);
+assert.match(els.battleLogEntries.textContent,/Прикрытие/);
+assert.match(els.battleLogEntries.textContent,/Защита ×2/);
 assert.equal(els.attackBtn.textContent,"Атаковать");
 api.resetBattle();
 assert.equal(api.getBattle().fighters[1].guardHits,0);

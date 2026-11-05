@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Пепельный престол — прототип</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+</head>
+<body>
+  <main id="app">
+    <header class="topbar">
+      <div class="brand"><span class="sigil">✦</span><div><strong>ПЕПЕЛЬНЫЙ ПРЕСТОЛ</strong><small>Браузерный RPG-прототип</small></div></div>
+      <div class="resources"><span>◈ 1 250</span><span>✧ 80</span><span>⚡ 12/20</span></div>
+    </header>
+    <section id="home" class="screen active">
+      <div class="hero-banner">
+        <div class="eyebrow">САГА О РАСКОЛОТОЙ ИМПЕРИИ</div>
+        <h1>Собери отряд.<br><em>Измени судьбу.</em></h1>
+        <p>На пепельных рубежах пробуждается древняя сила. Найди союзников и вступи в бой за престол.</p>
+        <button class="primary" id="startBattle">Начать битву</button>
+      </div>
+      <div class="home-cards">
+        <button class="nav-card" data-screen="collection"><span>♙</span><b>Герои</b><small>Коллекция и отряд</small></button>
+        <button class="nav-card" data-screen="campaign"><span>⚔</span><b>Кампания</b><small>Глава I · Пепельный тракт</small></button>
+        <button class="nav-card" data-screen="battle"><span>✦</span><b>Арена</b><small>Пошаговое сражение</small></button>
+      </div>
+    </section>
+    <section id="collection" class="screen">
+      <div class="section-heading"><div><div class="eyebrow">ТВОИ СОЮЗНИКИ</div><h2>Коллекция героев</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
+      <div id="heroList" class="hero-list"></div>
+    </section>
+    <section id="campaign" class="screen">
+      <div class="section-heading"><div><div class="eyebrow">ГЛАВА I</div><h2>Пепельный тракт</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
+      <div class="campaign-panel"><div class="node">I</div><div><h3>Засада у Чёрного перевала</h3><p>Разведчики Конклава преградили путь. Разбей их отряд.</p><button class="primary" id="campaignBattle">Вступить в бой</button></div></div>
+      <p class="muted">Прогресс кампании будет добавлен в следующих версиях прототипа.</p>
+    </section>
+    <section id="battle" class="screen battle-screen">
+      <div class="battle-top"><button class="ghost" data-screen="home">✕ В меню</button><div><div class="eyebrow">СТОЛКНОВЕНИЕ I</div><strong id="battleStatus">Выберите цель</strong></div><div class="turn-chip" id="turnChip">Ход 1</div></div>
+      <div class="arena-wrap"><canvas id="renderCanvas"></canvas><div id="battleMessage" class="battle-message">Отряд готов к бою</div></div>
+      <div class="battle-bottom">
+        <div class="combatants" id="combatants"></div>
+        <div class="action-panel"><div><div class="eyebrow">ДЕЙСТВИЕ</div><strong id="actionTitle">Удар клинком</strong><p id="actionHint">Выбери противника и нажми «Атаковать».</p></div><button class="primary" id="attackBtn">Атаковать</button></div>
+      </div>
+    </section>
+    <footer><span>Прототип · Версия 0.1</span><span>Пепельный престол</span></footer>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>

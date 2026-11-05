@@ -17,6 +17,7 @@ const CombatCore = (() => {
     return {
       fighters,
       turn: 1,
+      allyActions: 0, // successfully executed player abilities, including support; enemies excluded
       currentActor: -1,
       selectedEnemy: firstLivingEnemy(fighters),
       selectedAlly: firstLivingAlly(fighters),
@@ -179,6 +180,7 @@ const CombatCore = (() => {
     if(targetIndex<0)return false;
     const target=battle.fighters[targetIndex];
     // Invalid commands leave the previous event batch untouched.
+    battle.allyActions++;
     battle.events=[];
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
     if(ability.kind==="guard"){

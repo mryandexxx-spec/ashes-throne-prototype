@@ -3,12 +3,12 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","combat-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const src=["initiative-model.js","combat-core.js","progress-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","attackBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","squadBack","squadStart","squadRoster",
- "squadSlots","squadHint","squadCount"];
+ "squadSlots","squadHint","detailBack","detailHome","detailUpgrade","squadCount"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},

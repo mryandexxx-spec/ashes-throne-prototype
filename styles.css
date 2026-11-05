@@ -190,3 +190,42 @@ button{touch-action:manipulation}
 .combatants{align-content:start;grid-auto-rows:max-content}
 .fighter{min-height:0}
 .fighter-status{position:static;display:block;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+
+/* Progress-001: collection opens a detailed hero dossier; no upgrade buttons in collection. */
+.hero-open{width:100%;color:inherit;text-align:left;cursor:pointer;font:inherit}
+.hero-open:hover,.hero-open:focus-visible{border-color:var(--gold)}
+.hero-open-hint{display:block;color:var(--gold);font-size:11px;margin-top:12px}
+.hero-detail-heading{gap:12px}
+.hero-detail-nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.hero-detail-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:14px}
+.hero-detail-panel{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:18px;min-width:0}
+.hero-detail-identity{display:grid;grid-template-columns:110px 1fr;gap:12px;align-content:start}
+.hero-detail-identity .eyebrow{grid-column:2}
+.hero-detail-avatar{grid-row:span 2;display:grid;place-items:center;min-height:110px;font-size:66px;color:var(--gold);background:var(--panel2);border-radius:10px}
+.hero-detail-stats{display:grid;grid-column:2;gap:8px}
+.hero-detail-stats>div,.detail-value{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding:8px 0;font-size:12px}
+.hero-detail-stats span,.detail-value span{color:var(--muted)}
+.hero-detail-stats strong,.detail-value strong{color:var(--gold);text-align:right}
+.hero-detail-panel h3{font:600 20px Cinzel,serif;margin:12px 0}
+.detail-upgrade{width:100%;margin-top:14px}
+.detail-upgrade:disabled{opacity:.45;cursor:not-allowed}
+.detail-session-note{font-size:10px!important;margin-top:12px}
+.battle-reward{position:absolute;left:10px;right:10px;bottom:10px;z-index:1;text-align:center;padding:10px;border:1px solid var(--gold);border-radius:10px;color:var(--gold);background:#0b0d12e8;font-size:12px}
+.battle-reward[hidden]{display:none}
+@media(max-width:700px){.hero-detail-layout{grid-template-columns:1fr}.hero-detail-panel{padding:12px}}
+@media(orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .hero-detail-screen .section-heading{margin-bottom:7px}
+ .hero-detail-screen .section-heading h2{font-size:18px;margin:3px 0}
+ .hero-detail-screen .section-heading .muted{margin:2px 0;font-size:10px}
+ .hero-detail-layout{grid-template-columns:1fr 1fr;gap:8px}
+ .hero-detail-panel{padding:10px}
+ .hero-detail-identity{grid-template-columns:65px 1fr;gap:8px}
+ .hero-detail-avatar{min-height:70px;font-size:36px}
+ .hero-detail-stats{gap:0}
+ .hero-detail-stats>div,.detail-value{padding:4px 0;font-size:10px}
+ .hero-detail-panel h3{font-size:15px;margin:6px 0}
+ .detail-upgrade{margin-top:7px}
+ .detail-session-note{font-size:9px!important;margin:5px 0}
+ .hero-detail-nav .ghost{padding:9px}
+ .battle-reward{font-size:10px;padding:7px}
+}

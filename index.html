@@ -21,7 +21,7 @@
         <button class="primary" id="startBattle">Начать битву</button>
       </div>
       <div class="home-cards">
-        <button class="nav-card" data-screen="collection"><span>♙</span><b>Герои</b><small>Коллекция и отряд</small></button>
+        <button class="nav-card" data-screen="collection"><span>♙</span><b>Герои</b><small>Коллекция и развитие</small></button>
         <button class="nav-card" data-screen="campaign"><span>⚔</span><b>Кампания</b><small>Глава I · Пепельный тракт</small></button>
         <button class="nav-card" data-screen="battle"><span>✦</span><b>Арена</b><small>Пошаговое сражение</small></button>
       </div>
@@ -29,6 +29,29 @@
     <section id="collection" class="screen">
       <div class="section-heading"><div><div class="eyebrow">ТВОИ СОЮЗНИКИ</div><h2>Коллекция героев</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
       <div id="heroList" class="hero-list"></div>
+    </section>
+    <section id="heroDetail" class="screen hero-detail-screen" aria-label="Подробная карточка героя">
+      <div class="section-heading hero-detail-heading">
+        <div><div class="eyebrow">ДОСЬЕ ПЕРСОНАЖА</div><h2 id="detailName">Герой</h2><p id="detailRole" class="muted"></p></div>
+        <div class="hero-detail-nav"><button type="button" class="ghost" id="detailBack">← Назад</button><button type="button" class="ghost" id="detailHome">⌂ Домой</button></div>
+      </div>
+      <div class="hero-detail-layout">
+        <div class="hero-detail-panel hero-detail-identity">
+          <div class="hero-detail-avatar" id="detailGlyph" aria-hidden="true"></div>
+          <div class="eyebrow">ХАРАКТЕРИСТИКИ</div>
+          <div id="detailStats" class="hero-detail-stats"></div>
+        </div>
+        <div class="hero-detail-panel">
+          <div class="eyebrow">РАЗВИТИЕ ПЕРСОНАЖА · ТЕСТ</div>
+          <h3 id="detailLevel">Уровень 1</h3>
+          <div class="detail-value"><span>Доступно учебных материалов</span><strong id="detailWallet">0</strong></div>
+          <div class="detail-value"><span>Стоимость улучшения</span><strong id="detailCost">1</strong></div>
+          <div class="detail-value"><span>После улучшения</span><strong id="detailPreview">—</strong></div>
+          <button type="button" class="primary detail-upgrade" id="detailUpgrade">Повысить уровень</button>
+          <p class="muted" id="detailNotice" role="status"></p>
+          <p class="muted detail-session-note">Тестовый прогресс хранится только до перезагрузки страницы.</p>
+        </div>
+      </div>
     </section>
     <section id="campaign" class="screen">
       <div class="section-heading"><div><div class="eyebrow">ГЛАВА I</div><h2>Пепельный тракт</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
@@ -55,7 +78,7 @@
     </section>
     <section id="battle" class="screen battle-screen">
       <div class="battle-top"><button class="ghost" data-screen="home">✕ В меню</button><div><div class="eyebrow">СТОЛКНОВЕНИЕ I</div><strong id="battleStatus">Выберите цель</strong></div><div class="turn-chip" id="turnChip">Ход 1</div></div>
-      <div class="arena-wrap"><canvas id="renderCanvas"></canvas><div id="battleMessage" class="battle-message">Отряд готов к бою</div></div>
+      <div class="arena-wrap"><canvas id="renderCanvas"></canvas><div id="battleMessage" class="battle-message">Отряд готов к бою</div><div id="battleReward" class="battle-reward" hidden aria-live="polite"></div></div>
       <div class="battle-bottom">
         <div class="combatants" id="combatants"></div>
         <div class="action-panel"><div><div class="eyebrow">ДЕЙСТВИЕ</div><strong id="actionTitle">Удар клинком</strong><p id="actionHint">Выбери противника и нажми «Атаковать».</p></div><div class="ability-controls"><div class="ability-options" aria-label="Выбор способности"><button type="button" id="basicAbilityBtn" class="ability-btn selected">Базовая</button><button type="button" id="specialAbilityBtn" class="ability-btn">Особая</button></div><button class="primary" id="attackBtn">Атаковать</button></div></div>
@@ -72,6 +95,7 @@
   </aside>
   <script src="initiative-model.js"></script>
   <script src="combat-core.js"></script>
+  <script src="progress-core.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

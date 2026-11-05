@@ -8,7 +8,7 @@ const HEROES = [
 const $=s=>document.querySelector(s);
 let selectedEnemy=3, turn=1, active=true, engine, scene, meshes={};
 let renderLoopRunning=false;
-let state=HEROES.map(h=>({...h,maxHp:h.hp}));
+let state=CombatCore.createBattle(HEROES);
 function showScreen(id){
  if(id!=="battle")stopBattleRendering();
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
@@ -26,7 +26,7 @@ $("#campaignBattle").addEventListener("click",()=>showScreen("battle"));
 function renderHeroes(){
  $("#heroList").innerHTML=HEROES.filter(h=>h.side==="ally").map(h=>`<article class="hero-card"><div class="hero-avatar">${h.glyph}</div><h3>${h.name}</h3><p>${h.role} · I уровень</p><div class="stats"><span>Здоровье ${h.hp}</span><span>Сила ${h.atk}</span></div></article>`).join("");
 }
-function livingEnemies(){return state.map((h,i)=>({h,i})).filter(({h})=>h.side==="enemy"&&h.hp>0);}
+function livingEnemies(){return CombatCore.livingEnemies(state);}
 function syncBattleUI(){
  const enemies=livingEnemies();
  if(active && !enemies.some(({i})=>i===selectedEnemy))selectedEnemy=enemies.length?enemies[0].i:-1;
@@ -43,52 +43,27 @@ function renderCombatants(){
  $("#combatants").innerHTML=state.map((h,i)=>`<div class="fighter ${h.side==="enemy"?"enemy":""} ${h.hp<=0?"defeated":""} ${active&&i===selectedEnemy?"selected":""}" data-index="${i}"><b>${h.name}</b><small>${Math.max(0,h.hp)} / ${h.maxHp} HP</small><div class="health"><span style="width:${Math.max(0,h.hp)/h.maxHp*100}%"></span></div></div>`).join("");
  document.querySelectorAll(".fighter.enemy").forEach(el=>el.addEventListener("click",()=>{
   const index=Number(el.dataset.index);
-  if(!active||!state[index]||state[index].side!=="enemy"||state[index].hp<=0)return;
+  if(!active||CombatCore.selectEnemy(state,index)<0)return;
   selectedEnemy=index;
   syncBattleUI();
  }));
 }
 function resetBattle(){
- state=HEROES.map(h=>({...h,maxHp:h.hp}));
- selectedEnemy=state.findIndex(h=>h.side==="enemy"&&h.hp>0);
+ state=CombatCore.createBattle(HEROES);
+ selectedEnemy=CombatCore.firstLivingEnemy(state);
  turn=1;active=true;
  $("#battleMessage").textContent="Отряд готов к бою";
  syncBattleUI();
 }
 function attack(){
  if(!active)return;
- const enemies=livingEnemies();
- if(!enemies.some(({i})=>i===selectedEnemy))selectedEnemy=enemies.length?enemies[0].i:-1;
- const target=state[selectedEnemy];
- const attacker=state.find(h=>h.side==="ally"&&h.hp>0);
- if(!target||!attacker)return;
- target.hp=Math.max(0,target.hp-attacker.atk);
- $("#battleMessage").textContent=`${attacker.name} наносит ${attacker.atk} урона: ${target.name}`;
- if(target.hp<=0){
-  $("#battleMessage").textContent+=" — повержен!";
-  if(livingEnemies().length===0){
-   active=false;
-   $("#battleMessage").textContent="Победа! Отряд одержал верх.";
-   syncBattleUI();
-   return;
-  }
-  selectedEnemy=livingEnemies()[0].i;
- }
- enemyTurn();
+ const result=CombatCore.performAttack(state,selectedEnemy);
+ if(!result)return;
+ selectedEnemy=result.selectedEnemy;
+ active=result.active;
+ turn+=result.turnDelta;
+ $("#battleMessage").textContent=result.message;
  syncBattleUI();
-}
-function enemyTurn(){
- const enemy=state.find(h=>h.side==="enemy"&&h.hp>0);
- const ally=state.find(h=>h.side==="ally"&&h.hp>0);
- if(enemy&&ally){
-  ally.hp=Math.max(0,ally.hp-enemy.atk);
-  $("#battleMessage").textContent+=` · Ответный удар: ${ally.name} получает ${enemy.atk}`;
- }
- if(!state.some(h=>h.side==="ally"&&h.hp>0)){
-  active=false;
-  $("#battleMessage").textContent="Поражение. Попробуй ещё раз.";
- }
- turn++;
 }
 // Exactly one permanent click handler; no onclick replacement on victory.
 $("#attackBtn").addEventListener("click",()=>{if(!active)resetBattle();else attack();});

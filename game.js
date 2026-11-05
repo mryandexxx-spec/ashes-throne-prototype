@@ -9,21 +9,68 @@ const $=s=>document.querySelector(s);
 let engine, scene, meshes={};
 let renderLoopRunning=false;
 let selectedAbility="basic";
+// Squad-001: prepare the party immediately before each battle, independently of collection.
+const ALLIES=HEROES.filter(h=>h.side==="ally");
+const ENEMIES=HEROES.filter(h=>h.side==="enemy");
+const MAX_SQUAD=5;
+let selectedPartyIds=ALLIES.map(h=>h.id);
+let squadReturnScreen="home";
 let state=CombatCore.createBattle(HEROES);
+function selectedParty(){return ALLIES.filter(h=>selectedPartyIds.includes(h.id));}
+function battleLineup(){return [...selectedParty(),...ENEMIES];}
+function renderSquad(){
+ const chosen=selectedParty();
+ $("#squadCount").textContent=chosen.length+"/"+MAX_SQUAD;
+ $("#squadRoster").innerHTML=ALLIES.map(h=>{
+  const active=selectedPartyIds.includes(h.id);
+  return `<button type="button" class="squad-choice ${active?"chosen":""}" data-hero-id="${h.id}" aria-pressed="${active}"><span class="squad-glyph">${h.glyph}</span><span><b>${h.name}</b><small>${h.role} · HP ${h.hp} · ATK ${h.atk}</small></span><strong>${active?"✓":"+"}</strong></button>`;
+ }).join("");
+ $("#squadSlots").innerHTML=Array.from({length:MAX_SQUAD},(_,i)=>{
+  const h=chosen[i];
+  return `<div class="squad-slot ${h?"filled":""}"><span class="squad-slot-number">${i+1}</span><span class="squad-slot-content">${h?h.name:"Свободно"}</span></div>`;
+ }).join("");
+ $("#squadHint").textContent=chosen.length?"Выбрано героев: "+chosen.length+". Можно взять меньше пяти.":"Выбери хотя бы одного героя.";
+ $("#squadStart").disabled=chosen.length===0;
+ document.querySelectorAll("[data-hero-id]").forEach(btn=>btn.addEventListener("click",()=>{
+  toggleSquadHero(btn.dataset.heroId);
+ }));
+}
+function toggleSquadHero(id){
+ if(!ALLIES.some(h=>h.id===id))return false;
+ if(selectedPartyIds.includes(id))selectedPartyIds=selectedPartyIds.filter(x=>x!==id);
+ else if(selectedPartyIds.length<MAX_SQUAD)selectedPartyIds=[...selectedPartyIds,id];
+ else return false;
+ renderSquad();
+ return true;
+}
+function openSquad(returnTo="home"){
+ squadReturnScreen=returnTo;
+ renderSquad();
+ showScreen("squad");
+}
 function showScreen(id){
  if(id!=="battle")stopBattleRendering();
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  $("#"+id).classList.add("active");
  if(id==="battle"){
-  resetBattle(); // Every entry is a new demonstration battle, regardless of entry point.
+  resetBattle();
   if(!engine)initBabylon();
   engine.resize();
+  updateMeshes();
   startBattleRendering();
  }
 }
-document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click",()=>showScreen(b.dataset.screen)));
-$("#startBattle").addEventListener("click",()=>showScreen("battle"));
-$("#campaignBattle").addEventListener("click",()=>showScreen("battle"));
+document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click",()=>{
+ if(b.dataset.screen==="battle")openSquad("home");
+ else showScreen(b.dataset.screen);
+}));
+$("#startBattle").addEventListener("click",()=>openSquad("home"));
+$("#campaignBattle").addEventListener("click",()=>openSquad("campaign"));
+$("#squadBack").addEventListener("click",()=>showScreen(squadReturnScreen));
+$("#squadStart").addEventListener("click",()=>{
+ if(selectedParty().length===0)return;
+ showScreen("battle");
+});
 function renderHeroes(){
  $("#heroList").innerHTML=HEROES.filter(h=>h.side==="ally").map(h=>`<article class="hero-card"><div class="hero-avatar">${h.glyph}</div><h3>${h.name}</h3><p>${h.role} · I уровень</p><div class="stats"><span>Здоровье ${h.hp}</span><span>Сила ${h.atk}</span></div></article>`).join("");
 }
@@ -71,7 +118,7 @@ function renderCombatants(){
 }
 function resetBattle(){
  selectedAbility="basic";
- state=CombatCore.createBattle(HEROES);
+ state=CombatCore.createBattle(battleLineup());
  CombatCore.advanceToPlayerTurn(state);
  syncBattleUI();
 }
@@ -82,7 +129,7 @@ function attack(){
  }
 }
 // Exactly one permanent click handler; no onclick replacement on victory.
-$("#attackBtn").addEventListener("click",()=>{if(!state.active)resetBattle();else attack();});
+$("#attackBtn").addEventListener("click",()=>{if(!state.active)openSquad("home");else attack();});
 $("#basicAbilityBtn").addEventListener("click",()=>{if(state.active){selectedAbility="basic";syncBattleUI();}});
 $("#specialAbilityBtn").addEventListener("click",()=>{if(CombatCore.abilityReady(state,"special")){selectedAbility="special";syncBattleUI();}});
 // A single render callback and a single Engine/Scene for the lifetime of this prototype.
@@ -112,18 +159,37 @@ function initBabylon(){
  gridmat.diffuseColor=new BABYLON.Color3(.14,.17,.21);gridmat.emissiveColor=new BABYLON.Color3(.035,.045,.06);
  gridmat.alpha=.28;gridmat.wireframe=true;gridmat.backFaceCulling=false;grid.material=gridmat;
  // Low-poly stylized fighters: capsule body, sphere head, colored shield.
- state.fighters.forEach((h,i)=>{
+ HEROES.forEach((h,i)=>{
   const x=h.side==="ally"?-3.4:3.4,z=(i%3-1)*1.55;
   const body=BABYLON.MeshBuilder.CreateCapsule("body_"+i,{height:1.5,radius:.42},scene);body.position=new BABYLON.Vector3(x,.8,z);
   const mat=new BABYLON.StandardMaterial("mat_"+i,scene);mat.diffuseColor=h.side==="ally"?new BABYLON.Color3(.28,.55,.76):new BABYLON.Color3(.72,.25,.23);mat.emissiveColor=h.side==="ally"?new BABYLON.Color3(.02,.06,.09):new BABYLON.Color3(.08,.015,.01);body.material=mat;
   const head=BABYLON.MeshBuilder.CreateSphere("head_"+i,{diameter:.62,segments:12},scene);head.position=new BABYLON.Vector3(x,1.8,z);head.material=mat;
   const base=BABYLON.MeshBuilder.CreateCylinder("base_"+i,{diameter:1.15,height:.12,tessellation:24},scene);base.position=new BABYLON.Vector3(x,.08,z);const bm=new BABYLON.StandardMaterial("basemat_"+i,scene);bm.diffuseColor=h.side==="ally"?new BABYLON.Color3(.65,.48,.2):new BABYLON.Color3(.4,.18,.18);base.material=bm;
-  meshes[i]={body,head,base};
+  meshes[h.id]={body,head,base};
  });
  // Registered only once because initBabylon() runs once.
  window.addEventListener("resize",()=>{if(shouldRenderBattle())engine.resize();});
 }
-function updateMeshes(){if(!scene)return;state.fighters.forEach((h,i)=>{if(meshes[i]){const visible=h.hp>0;meshes[i].body.setEnabled(visible);meshes[i].head.setEnabled(visible);meshes[i].base.setEnabled(visible);}});}
+function updateMeshes(){
+ if(!scene)return;
+ for(const h of HEROES){
+  const mesh=meshes[h.id];
+  if(!mesh)continue;
+  const member=state.fighters.find(f=>f.id===h.id);
+  const visible=!!member&&member.hp>0;
+  mesh.body.setEnabled(visible);
+  mesh.head.setEnabled(visible);
+  mesh.base.setEnabled(visible);
+  if(visible){
+   const sideMembers=state.fighters.filter(f=>f.side===member.side);
+   const slot=sideMembers.findIndex(f=>f.id===h.id);
+   const x=member.side==="ally"?-3.4:3.4;
+   const z=(slot-(sideMembers.length-1)/2)*1.55;
+   mesh.body.position.x=mesh.head.position.x=mesh.base.position.x=x;
+   mesh.body.position.z=mesh.head.position.z=mesh.base.position.z=z;
+  }
+ }
+}
 // Browsers may keep the tab alive when it is hidden; suspend GPU work until visible.
 document.addEventListener("visibilitychange",()=>{
  if(document.hidden)stopBattleRendering();

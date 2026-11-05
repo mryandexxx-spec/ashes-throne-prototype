@@ -259,3 +259,9 @@ button{touch-action:manipulation}
  .mission-result-card p{font-size:12px;margin:7px 0}
  .mission-result-actions{margin-top:8px;gap:7px}
 }
+
+/* Campaign-Stars-001: compact, accessible star results for landscape phones. */
+.mission-stars{color:var(--gold)!important;font-size:clamp(12px,1.6vw,15px);font-weight:700;line-height:1.4;overflow-wrap:anywhere;margin:6px 0 10px}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .mission-stars{font-size:11px;margin:5px 0}
+}

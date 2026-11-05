@@ -22,6 +22,7 @@ const campaignProgress=campaignLoaded.campaign;
 let campaignSaveAvailable=campaignLoaded.available;
 let battleIsCampaign=false;
 let missionResultShown=false;
+let lastMissionStars=0;
 function persistProgress(){
  if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>window.localStorage);
  const notice=$("#progressSaveNote");
@@ -158,6 +159,18 @@ function renderCampaign(){
  if(status)status.textContent=campaignProgress.completed[CampaignCore.MISSION_ID]
   ?"Пройдено · Повторное прохождение доступно"
   :"Не пройдено";
+ const stars=$("#campaignMissionStars");
+ if(stars){
+  const best=campaignProgress.bestStars[CampaignCore.MISSION_ID]||0;
+  stars.textContent="Лучшая оценка: "+("★".repeat(best)+"☆".repeat(3-best))+" ("+best+"/3)";
+ }
+ const chapter=$("#campaignChapterProgress");
+ if(chapter){
+  const missions=MissionData.all().filter(m=>m.chapterId==="chapter-1");
+  const completed=missions.filter(m=>campaignProgress.completed[m.id]).length;
+  const earned=missions.reduce((sum,m)=>sum+(campaignProgress.bestStars[m.id]||0),0);
+  chapter.textContent="Пройдено миссий: "+completed+"/"+missions.length+" · Звёзд: "+earned+"/"+(missions.length*3);
+ }
  const note=$("#campaignSaveStatus");
  if(note)note.textContent=campaignSaveAvailable
   ?"Статус прохождения хранится в этом браузере."
@@ -169,6 +182,14 @@ function renderMissionResult(){
  $("#missionResultText").textContent=won
   ?"Засада у Чёрного перевала завершена. +1 учебный материал. Всего: "+progress.materials
   :"Отряд потерпел поражение. Учебные материалы не начислены.";
+ const grade=$("#missionResultStars");
+ if(grade){
+  const best=campaignProgress.bestStars[CampaignCore.MISSION_ID]||0;
+  grade.textContent=won
+   ?"Оценка: "+("★".repeat(lastMissionStars)+"☆".repeat(3-lastMissionStars))+
+      " · Лучший результат: "+best+"/3 · Действий союзников: "+state.allyActions
+   :"Оценка: ☆☆☆ (0/3)";
+ }
  $("#missionResultRetry").textContent=won?"Пройти ещё раз":"Попробовать снова";
 }
 $("#missionResultBack").addEventListener("click",()=>showScreen("campaign"));
@@ -188,7 +209,9 @@ function syncBattleUI(){
  const awarded=ProgressCore.awardVictory(progress,state);
  if(awarded>0)persistProgress();
  if(battleIsCampaign&&!state.active&&!missionResultShown){
-  if(CampaignCore.complete(campaignProgress,state))
+  const result=CampaignCore.recordResult(campaignProgress,CampaignCore.MISSION_ID,state);
+  lastMissionStars=result.earned;
+  if(result.improved)
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
   missionResultShown=true;
   renderMissionResult();
@@ -242,6 +265,7 @@ function renderCombatants(){
 }
 function resetBattle(){
  missionResultShown=false;
+ lastMissionStars=0;
  selectedAbility="basic";
  state=CombatCore.createBattle(battleLineup());
  CombatCore.advanceToPlayerTurn(state);

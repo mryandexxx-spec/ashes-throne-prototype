@@ -29,5 +29,5 @@ const MissionData=(()=>{
   }
   return earned;
  }
- return Object.freeze({get,score});
+ return Object.freeze({get,score,all:()=>Object.values(missions)});
 })();

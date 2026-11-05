@@ -234,3 +234,15 @@ button{touch-action:manipulation}
 [hidden]{display:none!important}
 .battle-load-error{margin-top:12px;padding:12px;border:1px solid var(--red);border-radius:10px;background:var(--panel);color:var(--text)}
 .battle-load-error p{margin:8px 0 12px;color:var(--muted);font-size:13px;line-height:1.4}
+
+
+/* Combat-Log-001: keep the event log compact, optional and scrollable in landscape. */
+.combat-log{margin-top:10px;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--text)}
+.combat-log summary{padding:10px 14px;cursor:pointer;font-size:12px;font-weight:600;color:var(--gold);touch-action:manipulation;min-height:38px}
+.combat-log-entries{white-space:pre-line;overflow-wrap:anywhere;padding:0 14px 10px;max-height:130px;overflow-y:auto;-webkit-overflow-scrolling:touch;font-size:11px;line-height:1.5;color:var(--muted);overscroll-behavior:contain}
+#buildVersion{color:var(--gold);font-weight:600}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .battle-screen .combat-log{grid-column:1/-1;margin-top:0;min-width:0}
+ .combat-log summary{padding:8px 12px;min-height:34px}
+ .combat-log-entries{max-height:95px}
+}

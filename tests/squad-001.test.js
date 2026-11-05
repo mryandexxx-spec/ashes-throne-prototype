@@ -57,7 +57,7 @@ const BABYLON={Engine,Scene,ArcRotateCamera:Camera,HemisphericLight:class{},Dire
   CreateCylinder(){meshCreates++;return new Mesh();}}
 };
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,renderSquad,syncBattleUI})",
+ "\n({getBattle:()=>state,selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openCampaignMission,renderSquad,syncBattleUI})",
  {document,window:{addEventListener(){}},BABYLON});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
@@ -112,7 +112,7 @@ assert.equal(allyIds(),"darin");
 api.openSquad("campaign");
 click(elements.squadBack);
 assert.equal(elements.campaign.classList.active,true,"back returns to campaign");
-click(elements.campaignBattle);
+assert.equal(api.openCampaignMission("black-pass-ambush"),true);
 assert.equal(elements.squad.classList.active,true,"campaign entry routes through squad");
 assert.equal(rendersStarted,3,"only actual combat entries start render loop");
 assert.equal(api.selectedParty().join(","),"darin");

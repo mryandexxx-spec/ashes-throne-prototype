@@ -7,7 +7,7 @@ const source=["initiative-model.js","ability-data.js","combat-core.js"]
  .map(file=>fs.readFileSync(path.join(__dirname,"..",file),"utf8")).join("\n");
 const core=vm.runInNewContext(source+"\nCombatCore");
 const unit=(id,side,hp,atk,speed)=>({id,name:id,side,hp,atk,speed});
-const types=b=>b.events.map(event=>event.type);
+const types=b=>Array.from(b.events,event=>event.type);
 const eventsOf=(b,type)=>b.events.filter(event=>event.type===type);
 
 // Successful actions emit an ordered batch. Existing message and exact values stay the same.

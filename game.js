@@ -31,30 +31,42 @@ function livingEnemies(){return CombatCore.livingEnemies(state.fighters);}
 function syncBattleUI(){
  const fighters=state.fighters;
  const actor=state.active?fighters[state.currentActor]:null;
- const target=state.active?fighters[state.selectedEnemy]:null;
+ const targetIsAlly=!!actor&&selectedAbility==="special"&&actor.id==="kael";
+ const targetIndex=targetIsAlly?state.selectedAlly:state.selectedEnemy;
+ const target=state.active?fighters[targetIndex]:null;
+ const validTarget=!!target&&target.hp>0&&target.side===(targetIsAlly?"ally":"enemy");
  const specialReady=CombatCore.abilityReady(state,"special");
  if(!specialReady)selectedAbility="basic";
+ const name=actor&&selectedAbility==="special"?CombatCore.specialName(actor):"Базовая атака";
  $("#battleStatus").textContent=actor?"Ход: "+actor.name:"Бой завершён";
  $("#turnChip").textContent="Ход "+state.turn;
- $("#actionTitle").textContent=actor?(selectedAbility==="special"?"Особый удар: ":"Базовая атака: ")+actor.name:"Бой завершён";
+ $("#actionTitle").textContent=actor?name+": "+actor.name:"Бой завершён";
  $("#basicAbilityBtn").disabled=!actor;
  $("#specialAbilityBtn").disabled=!specialReady;
  $("#specialAbilityBtn").textContent=actor&&actor.specialCooldown>0?"Особая · "+actor.specialCooldown:"Особая";
  $("#basicAbilityBtn").classList.toggle("selected",selectedAbility==="basic");
  $("#specialAbilityBtn").classList.toggle("selected",selectedAbility==="special");
- $("#actionHint").textContent=target?"Цель: "+target.name:"Выбери живого противника";
- $("#attackBtn").textContent=state.active?"Атаковать":"Сыграть снова";
- $("#attackBtn").disabled=state.active&&(!actor||!target);
+ $("#actionHint").textContent=validTarget?"Цель: "+target.name:(targetIsAlly?"Выбери живого союзника":"Выбери живого противника");
+ $("#attackBtn").textContent=state.active?(targetIsAlly?"Применить":"Атаковать"):"Сыграть снова";
+ $("#attackBtn").disabled=state.active&&(!actor||!validTarget);
  $("#battleMessage").textContent=state.message;
  renderCombatants();
  updateMeshes();
 }
 function renderCombatants(){
- $("#combatants").innerHTML=state.fighters.map((h,i)=>
-   `<div class="fighter ${h.side==="enemy"?"enemy":""} ${h.hp<=0?"defeated":""} ${state.active&&i===state.selectedEnemy?"selected":""} ${state.active&&i===state.currentActor?"acting":""}" data-index="${i}"><b>${h.name}</b><small>${Math.max(0,h.hp)} / ${h.maxHp} HP · СПД ${h.speed}</small><div class="health"><span style="width:${Math.max(0,h.hp)/h.maxHp*100}%"></span></div></div>`
- ).join("");
+ const actor=state.active?state.fighters[state.currentActor]:null;
+ const choosingAlly=!!actor&&selectedAbility==="special"&&actor.id==="kael";
+ $("#combatants").innerHTML=state.fighters.map((h,i)=>{
+   const chosen=state.active&&i===(choosingAlly?state.selectedAlly:state.selectedEnemy)&&
+     h.side===(choosingAlly?"ally":"enemy");
+   const status=[h.guardHits>0?"Защита ×"+h.guardHits:"",h.weakenAttacks>0?"Ослабление ×"+h.weakenAttacks:""].filter(Boolean).join(" · ");
+   return `<div class="fighter ${h.side==="enemy"?"enemy":"ally"} ${h.hp<=0?"defeated":""} ${chosen?"selected":""} ${state.active&&i===state.currentActor?"acting":""}" data-index="${i}"><b>${h.name}</b><small>${Math.max(0,h.hp)} / ${h.maxHp} HP · СПД ${h.speed}</small>${status?`<span class="fighter-status">${status}</span>`:""}<div class="health"><span style="width:${Math.max(0,h.hp)/h.maxHp*100}%"></span></div></div>`;
+ }).join("");
  document.querySelectorAll(".fighter.enemy").forEach(el=>el.addEventListener("click",()=>{
   if(CombatCore.chooseEnemy(state,Number(el.dataset.index)))syncBattleUI();
+ }));
+ if(choosingAlly)document.querySelectorAll(".fighter.ally").forEach(el=>el.addEventListener("click",()=>{
+  if(CombatCore.chooseAlly(state,Number(el.dataset.index)))syncBattleUI();
  }));
 }
 function resetBattle(){

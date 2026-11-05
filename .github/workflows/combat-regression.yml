@@ -1,0 +1,23 @@
+name: Combat regression tests
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feature/combat-003b-tactical-specials]
+jobs:
+  node-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run combat and UI regression tests
+        run: |
+          set -e
+          for file in tests/*.test.js; do
+            echo "Running $file"
+            node "$file"
+          done

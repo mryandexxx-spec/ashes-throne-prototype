@@ -22,6 +22,7 @@ const campaignProgress=campaignLoaded.campaign;
 let campaignSaveAvailable=campaignLoaded.available;
 let battleIsCampaign=false;
 let missionResultShown=false;
+let activeMissionId=null;
 let lastMissionStars=0;
 function persistProgress(){
  if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>window.localStorage);
@@ -76,7 +77,9 @@ function showScreen(id){
  if(id==="campaign")renderCampaign();
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
-  battleIsCampaign=squadReturnScreen==="campaign";
+  battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
+  const label=$("#battleMissionLabel");
+  if(label)label.textContent=battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
   try {
    if(typeof BABYLON==="undefined" || !BABYLON.Engine || !BABYLON.Scene)
     throw new Error("Babylon.js is unavailable");
@@ -104,7 +107,18 @@ document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click"
  else showScreen(b.dataset.screen);
 }));
 $("#startBattle").addEventListener("click",()=>openSquad("home"));
-$("#campaignBattle").addEventListener("click",()=>openSquad("campaign"));
+function openCampaignMission(id){
+ const entry=CampaignData.getMission(id);
+ if(!entry||!CampaignData.available(entry,campaignProgress)||!MissionData.get(id))return false;
+ activeMissionId=id;
+ openSquad("campaign");
+ return true;
+}
+// Delegation allows cards to be rebuilt without installing duplicate handlers.
+$("#campaignMissions").addEventListener("click",event=>{
+ const button=event.target.closest("[data-campaign-mission]");
+ if(button&&$("#campaignMissions").contains(button))openCampaignMission(button.dataset.campaignMission);
+});
 $("#squadBack").addEventListener("click",()=>showScreen(squadReturnScreen));
 // If Babylon.js cannot load, show a recoverable message instead of an uncaught crash.
 const retryLoad=$("#retryBattleLoad");
@@ -155,22 +169,27 @@ $("#detailUpgrade").addEventListener("click",()=>{
 });
 
 function renderCampaign(){
- const status=$("#campaignMissionStatus");
- if(status)status.textContent=campaignProgress.completed[CampaignCore.MISSION_ID]
-  ?"Пройдено · Повторное прохождение доступно"
-  :"Не пройдено";
- const stars=$("#campaignMissionStars");
- if(stars){
-  const best=campaignProgress.bestStars[CampaignCore.MISSION_ID]||0;
-  stars.textContent="Лучшая оценка: "+("★".repeat(best)+"☆".repeat(3-best))+" ("+best+"/3)";
- }
- const chapter=$("#campaignChapterProgress");
- if(chapter){
-  const missions=MissionData.all().filter(m=>m.chapterId==="chapter-1");
-  const completed=missions.filter(m=>campaignProgress.completed[m.id]).length;
-  const earned=missions.reduce((sum,m)=>sum+(campaignProgress.bestStars[m.id]||0),0);
-  chapter.textContent="Пройдено миссий: "+completed+"/"+missions.length+" · Звёзд: "+earned+"/"+(missions.length*3);
- }
+ const list=$("#campaignMissions");
+ const chapters=CampaignData.allChapters();
+ list.innerHTML=chapters.map(chapter=>{
+  const stats=CampaignData.chapterProgress(chapter.id,campaignProgress);
+  const routes=CampaignData.routes().filter(route=>route.chapterId===chapter.id);
+  const cards=routes.map(route=>{
+   const missions=CampaignData.missions(chapter.id).filter(entry=>entry.routeId===route.id);
+   if(!missions.length)return "";
+   const items=missions.map(entry=>{
+   const mission=MissionData.get(entry.missionId);
+   if(!mission)return "";
+   const available=CampaignData.available(entry,campaignProgress);
+   const completed=campaignProgress.completed[entry.missionId]===true;
+   const best=campaignProgress.bestStars[entry.missionId]||0;
+   const status=completed?"Пройдено · Повторное прохождение доступно":available?"Не пройдено":"Заблокировано";
+   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button></div></article>`;
+   }).join("");
+   return `<div class="campaign-route"><h3>${route.title}</h3>${items}</div>`;
+  }).join("");
+  return `<section class="campaign-chapter"><h2>${chapter.title}</h2><p class="muted">Пройдено миссий: ${stats.completed}/${stats.total} · Звёзд: ${stats.stars}/${stats.maxStars}</p>${cards}</section>`;
+ }).join("");
  const note=$("#campaignSaveStatus");
  if(note)note.textContent=campaignSaveAvailable
   ?"Статус прохождения хранится в этом браузере."
@@ -178,13 +197,17 @@ function renderCampaign(){
 }
 function renderMissionResult(){
  const won=state.winner==="ally";
+ const entry=CampaignData.getMission(activeMissionId);
+ const chapter=entry&&CampaignData.allChapters().find(c=>c.id===entry.chapterId);
+ const chapterLabel=$("#missionResultChapter");
+ if(chapterLabel)chapterLabel.textContent=chapter?chapter.title:"Кампания";
  $("#missionResultTitle").textContent=won?"Миссия пройдена":"Миссия не пройдена";
  $("#missionResultText").textContent=won
-  ?"Засада у Чёрного перевала завершена. +1 учебный материал. Всего: "+progress.materials
+  ?MissionData.get(activeMissionId).title+" завершена. +1 учебный материал. Всего: "+progress.materials
   :"Отряд потерпел поражение. Учебные материалы не начислены.";
  const grade=$("#missionResultStars");
  if(grade){
-  const best=campaignProgress.bestStars[CampaignCore.MISSION_ID]||0;
+  const best=campaignProgress.bestStars[activeMissionId]||0;
   grade.textContent=won
    ?"Оценка: "+("★".repeat(lastMissionStars)+"☆".repeat(3-lastMissionStars))+
       " · Лучший результат: "+best+"/3 · Действий союзников: "+state.allyActions
@@ -193,7 +216,7 @@ function renderMissionResult(){
  $("#missionResultRetry").textContent=won?"Пройти ещё раз":"Попробовать снова";
 }
 $("#missionResultBack").addEventListener("click",()=>showScreen("campaign"));
-$("#missionResultRetry").addEventListener("click",()=>openSquad("campaign"));
+$("#missionResultRetry").addEventListener("click",()=>activeMissionId&&openCampaignMission(activeMissionId));
 $("#missionResultHome").addEventListener("click",()=>showScreen("home"));
 
 function livingEnemies(){return CombatCore.livingEnemies(state.fighters);}
@@ -209,7 +232,7 @@ function syncBattleUI(){
  const awarded=ProgressCore.awardVictory(progress,state);
  if(awarded>0)persistProgress();
  if(battleIsCampaign&&!state.active&&!missionResultShown){
-  const result=CampaignCore.recordResult(campaignProgress,CampaignCore.MISSION_ID,state);
+  const result=CampaignCore.recordResult(campaignProgress,activeMissionId,state);
   lastMissionStars=result.earned;
   if(result.improved)
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);

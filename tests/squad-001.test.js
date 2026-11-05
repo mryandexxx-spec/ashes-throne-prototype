@@ -3,11 +3,11 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","mission-data.js","campaign-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","mission-data.js","campaign-core.js","campaign-data.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","attackBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
- "startBattle","campaignBattle","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
+ "startBattle","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","detailBack","detailHome","detailUpgrade","squadCount"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
@@ -57,7 +57,7 @@ const BABYLON={Engine,Scene,ArcRotateCamera:Camera,HemisphericLight:class{},Dire
   CreateCylinder(){meshCreates++;return new Mesh();}}
 };
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,renderSquad,syncBattleUI})",
+ "\n({getBattle:()=>state,selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openCampaignMission,renderSquad,syncBattleUI})",
  {document,window:{addEventListener(){}},BABYLON});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
@@ -112,7 +112,7 @@ assert.equal(allyIds(),"darin");
 api.openSquad("campaign");
 click(elements.squadBack);
 assert.equal(elements.campaign.classList.active,true,"back returns to campaign");
-click(elements.campaignBattle);
+assert.equal(api.openCampaignMission("black-pass-ambush"),true);
 assert.equal(elements.squad.classList.active,true,"campaign entry routes through squad");
 assert.equal(rendersStarted,3,"only actual combat entries start render loop");
 assert.equal(api.selectedParty().join(","),"darin");

@@ -3,11 +3,11 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","attackBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
- "startBattle","campaignBattle","squadBack","squadStart","squadRoster",
+ "startBattle","campaignBattle","campaignMissions","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
@@ -64,6 +64,11 @@ const api=vm.runInNewContext(src+
  "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
+elements.campaignMissions.contains=()=>true;
+function clickMission(id="black-pass-ambush"){
+ const button={dataset:{campaignMission:id}};
+ elements.campaignMissions.handlers.click[0]({target:{closest:()=>button}});
+}
 function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
 const allyIds=()=>api.getBattle().fighters.filter(h=>h.side==="ally").map(h=>h.id).join(",");
 const count=()=>elements.squadCount.textContent;
@@ -71,8 +76,11 @@ const count=()=>elements.squadCount.textContent;
 
 // Campaign entrance, not generic arena, activates the mission result screen.
 api.showScreen("campaign");
-assert.equal(elements.campaignMissionStatus.textContent,"Не пройдено");
-click(elements.campaignBattle);
+assert.match(elements.campaignMissions.innerHTML,/Не пройдено/);
+assert.match(elements.campaignMissions.innerHTML,/Основной путь/);
+assert.match(elements.campaignMissions.innerHTML,/Засада у Чёрного перевала/);
+assert.equal(elements.campaignMissions.innerHTML.includes("Заблокировано"),false,"current single mission is open");
+clickMission();
 assert.equal(elements.squad.classList.active,true);
 click(elements.squadStart);
 assert.equal(elements.battle.classList.active,true);
@@ -100,9 +108,9 @@ api.syncBattleUI();
 assert.equal(api.getMaterials(),1,"re-render must not grant a second reward");
 click(elements.missionResultBack);
 assert.equal(elements.campaign.classList.active,true);
-assert.match(elements.campaignMissionStatus.textContent,/Пройдено/);
+assert.match(elements.campaignMissions.innerHTML,/Пройдено/);
 // Completed missions are replayable and still earn the explicitly approved test material.
-click(elements.campaignBattle);
+clickMission();
 click(elements.squadStart);
 const replay=api.getBattle();
 replay.active=false;replay.winner="ally";

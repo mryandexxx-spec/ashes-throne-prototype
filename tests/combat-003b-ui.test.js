@@ -4,11 +4,11 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 const path = require("node:path");
 const root = path.join(__dirname,"..");
-const src=["initiative-model.js","ability-data.js","combat-core.js","combat-log.js","progress-core.js","mission-data.js","campaign-core.js","game.js"]
+const src=["initiative-model.js","ability-data.js","combat-core.js","combat-log.js","progress-core.js","mission-data.js","campaign-core.js","campaign-data.js","game.js"]
  .map(n=>fs.readFileSync(path.join(root,n),"utf8")).join("\n");
 const ids=["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint",
  "attackBtn","basicAbilityBtn","specialAbilityBtn","battleMessage","battle",
- "renderCanvas","battleLogSummary","battleLogEntries","startBattle","campaignBattle","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squad","squadBack","squadStart","squadCount","squadRoster","squadSlots","squadHint","detailBack","detailHome","detailUpgrade"];
+ "renderCanvas","battleLogSummary","battleLogEntries","startBattle","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squad","squadBack","squadStart","squadCount","squadRoster","squadSlots","squadHint","detailBack","detailHome","detailUpgrade"];
 const elem=()=>({
  innerHTML:"",textContent:"",disabled:false,handlers:{},dataset:{},
  classList:{active:false,contains(n){return !!this[n]},add(n){this[n]=true},

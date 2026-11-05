@@ -60,6 +60,25 @@ core.advanceToPlayerTurn(b);
 assert.equal(core.performPlayerAbility(b,"special"),true);
 assert.equal(b.fighters[1].hp,159,"27 * 1.5 rounds to 41");
 
+
+// Both effects combine in the agreed order: 21 * 0.7 => 15, 15 * 0.5 => 8.
+b=make([unit("kael","ally",100,10,100)],[unit("ves","enemy",100,21,200)]);
+b.fighters[0].guardHits=2;
+b.fighters[1].weakenAttacks=2;
+core.advanceToPlayerTurn(b);
+assert.equal(b.fighters[0].hp,92,"weaken before guard, rounding at each stage");
+assert.equal(b.fighters[0].guardHits,1);
+assert.equal(b.fighters[1].weakenAttacks,1);
+
+// A lethal hit clears protection status of the defeated target.
+b=make([unit("kael","ally",7,10,100)],[unit("ves","enemy",100,21,200)]);
+b.fighters[0].guardHits=2;
+b.fighters[1].weakenAttacks=2;
+core.advanceToPlayerTurn(b);
+assert.equal(b.winner,"enemy");
+assert.equal(b.fighters[0].hp,0);
+assert.equal(b.fighters[0].guardHits,0);
+
 // Dead targets are invalid; new battles clear all statuses and cooldowns.
 b=make([unit("kael","ally",100,10,100),unit("lyra","ally",0,10,100)],
   [unit("ves","enemy",200,10,100)]);

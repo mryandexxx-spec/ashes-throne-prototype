@@ -7,7 +7,7 @@ const root = path.join(__dirname, "..");
 const sources = ["initiative-model.js", "combat-core.js", "game.js"]
  .map(file => fs.readFileSync(path.join(root, file), "utf8")).join("\n");
 const ids = ["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint","attackBtn",
- "battleMessage","battle","renderCanvas","startBattle","campaignBattle","basicAbilityBtn","specialAbilityBtn"];
+ "battleMessage","battle","renderCanvas","startBattle","campaignBattle","squad","squadBack","squadStart","squadCount","squadRoster","squadSlots","squadHint","basicAbilityBtn","specialAbilityBtn"];
 const elements = Object.fromEntries(ids.map(id => [id, {
  innerHTML:"", textContent:"", disabled:false, handlers:{},
  classList: { active:id==="battle", contains(name){return !!this[name]},
@@ -16,7 +16,7 @@ const elements = Object.fromEntries(ids.map(id => [id, {
 }]));
 const document = {
  hidden:false, querySelector(selector){return elements[selector.slice(1)]},
- querySelectorAll(selector){return selector===".screen" ? [elements.battle] : []},
+ querySelectorAll(selector){return selector===".screen" ? [elements.battle,elements.squad] : []},
  addEventListener(){}
 };
 const window = {addEventListener(){}};
@@ -33,6 +33,8 @@ while (api.getBattle().active && clicks++ < 30) attackClick();
 assert.equal(api.getBattle().winner,"ally");
 assert.equal(elements.attackBtn.textContent,"Сыграть снова");
 attackClick();
-assert.equal(api.getBattle().turn,1,"replay resets turns");
+assert.equal(elements.squad.classList.active,true,"replay returns to prebattle selection");
+api.resetBattle();
+assert.equal(api.getBattle().turn,1,"fresh battle resets turns");
 assert.equal(api.getBattle().fighters[3].hp,hpBefore,"replay resets enemy HP");
 console.log("Combat-002 attack button regression passed");

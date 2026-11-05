@@ -3,7 +3,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","combat-core.js","progress-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const src=["initiative-model.js","combat-core.js","progress-core.js","save-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","attackBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
@@ -58,9 +58,11 @@ const BABYLON={Engine,Scene,ArcRotateCamera:Camera,HemisphericLight:class{},Dire
   CreateSphere(){meshCreates++;return new Mesh();},
   CreateCylinder(){meshCreates++;return new Mesh();}}
 };
+const savedData=new Map();
+const localStorage={getItem:k=>savedData.has(k)?savedData.get(k):null,setItem:(k,v)=>savedData.set(k,v)};
 const api=vm.runInNewContext(src+
  "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI})",
- {document,window:{addEventListener(){}},BABYLON});
+ {document,window:{addEventListener(){},localStorage},BABYLON});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
 const allyIds=()=>api.getBattle().fighters.filter(h=>h.side==="ally").map(h=>h.id).join(",");
@@ -89,6 +91,7 @@ battle.active=false;
 battle.winner="ally";
 api.syncBattleUI();
 assert.equal(api.getMaterials(),1);
+assert.ok(savedData.has("ashes-throne.progress.v1"),"victory immediately writes progress");
 assert.match(elements.battleReward.textContent,/\+1 учебный материал/);
 api.syncBattleUI();
 assert.equal(api.getMaterials(),1,"repeat refresh cannot mint resources");
@@ -98,6 +101,13 @@ assert.equal(elements.detailUpgrade.disabled,false);
 click(elements.detailUpgrade);
 assert.equal(api.getLevel("kael"),2);
 assert.equal(api.getMaterials(),0);
+const persisted=JSON.parse(savedData.get("ashes-throne.progress.v1"));
+assert.equal(persisted.levels.kael,2);
+assert.equal(persisted.materials,0);
+const reloaded=vm.runInNewContext(src+"\n({getMaterials:()=>progress.materials,getLevel:id=>ProgressCore.levelOf(progress,id)})",
+ {document,window:{addEventListener(){},localStorage},BABYLON});
+assert.equal(reloaded.getLevel("kael"),2,"level survives page reload");
+assert.equal(reloaded.getMaterials(),0,"balance survives page reload");
 assert.equal(elements.heroDetail.classList.active,true,"remains on hero detail after purchase");
 assert.equal(elements.detailWallet.textContent,"0");
 assert.match(elements.detailStats.innerHTML,/132 HP/);

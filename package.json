@@ -1,1 +1,1 @@
-{"name":"ashes-throne-prototype","private":true,"version":"0.1.0","scripts":{"test":"node --check game.js && node --check combat-core.js && node --check initiative-model.js && node --check progress-core.js && node --check save-core.js && node --test tests/*.test.js"}}
+{"name":"ashes-throne-prototype","private":true,"version":"0.1.0","scripts":{"test":"node --check game.js && node --check ability-data.js && node --check combat-core.js && node --check initiative-model.js && node --check progress-core.js && node --check save-core.js && node --test tests/*.test.js"}}

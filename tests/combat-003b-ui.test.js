@@ -8,7 +8,7 @@ const src=["initiative-model.js","combat-core.js","game.js"]
  .map(n=>fs.readFileSync(path.join(root,n),"utf8")).join("\n");
 const ids=["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint",
  "attackBtn","basicAbilityBtn","specialAbilityBtn","battleMessage","battle",
- "renderCanvas","startBattle","campaignBattle"];
+ "renderCanvas","startBattle","campaignBattle","squad","squadBack","squadStart","squadCount","squadRoster","squadSlots","squadHint"];
 const elem=()=>({
  innerHTML:"",textContent:"",disabled:false,handlers:{},dataset:{},
  classList:{active:false,contains(n){return !!this[n]},add(n){this[n]=true},
@@ -24,7 +24,7 @@ const document={
  hidden:false,
  querySelector(q){return els[q.slice(1)]},
  querySelectorAll(q){
-  if(q===".screen")return [els.battle];
+  if(q===".screen")return [els.battle,els.squad];
   if(q===".fighter.ally")return fighterNodes.slice(0,3);
   if(q===".fighter.enemy")return fighterNodes.slice(3);
   return [];

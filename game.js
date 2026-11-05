@@ -173,7 +173,11 @@ function renderCampaign(){
  const chapters=CampaignData.allChapters();
  list.innerHTML=chapters.map(chapter=>{
   const stats=CampaignData.chapterProgress(chapter.id,campaignProgress);
-  const cards=CampaignData.missions(chapter.id).map(entry=>{
+  const routes=CampaignData.routes().filter(route=>route.chapterId===chapter.id);
+  const cards=routes.map(route=>{
+   const missions=CampaignData.missions(chapter.id).filter(entry=>entry.routeId===route.id);
+   if(!missions.length)return "";
+   const items=missions.map(entry=>{
    const mission=MissionData.get(entry.missionId);
    if(!mission)return "";
    const available=CampaignData.available(entry,campaignProgress);
@@ -181,6 +185,8 @@ function renderCampaign(){
    const best=campaignProgress.bestStars[entry.missionId]||0;
    const status=completed?"Пройдено · Повторное прохождение доступно":available?"Не пройдено":"Заблокировано";
    return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button></div></article>`;
+   }).join("");
+   return `<div class="campaign-route"><h3>${route.title}</h3>${items}</div>`;
   }).join("");
   return `<section class="campaign-chapter"><h2>${chapter.title}</h2><p class="muted">Пройдено миссий: ${stats.completed}/${stats.total} · Звёзд: ${stats.stars}/${stats.maxStars}</p>${cards}</section>`;
  }).join("");

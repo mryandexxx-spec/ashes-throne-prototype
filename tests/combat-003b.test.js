@@ -41,17 +41,17 @@ b=make([unit("lyra","ally",200,30,100)],[unit("ves","enemy",500,20,100)]);
 core.advanceToPlayerTurn(b);
 assert.equal(core.performPlayerAbility(b,"special"),true);
 assert.equal(b.fighters[1].hp,470);
-assert.equal(b.fighters[1].weakenAttacks,2);
+assert.equal(b.fighters[1].weakenAttacks,1,"enemy attacks immediately after special");
+assert.equal(b.fighters[0].hp,186,"first weakened attack deals 14");
 assert.equal(b.fighters[0].specialCooldown,2);
 assert.equal(core.performPlayerAbility(b,"special"),false);
 const hpBefore=b.fighters[0].hp;
 core.performPlayerAbility(b,"basic");
-assert.equal(b.fighters[1].weakenAttacks,1);
-assert.equal(b.fighters[0].hp,hpBefore-14,"first weakened attack = 14");
+assert.equal(b.fighters[1].weakenAttacks,0);
+assert.equal(b.fighters[0].hp,hpBefore-14,"second weakened attack = 14");
 const hpAfter=b.fighters[0].hp;
 core.performPlayerAbility(b,"basic");
-assert.equal(b.fighters[1].weakenAttacks,0);
-assert.equal(b.fighters[0].hp,hpAfter-14,"second weakened attack = 14");
+assert.equal(b.fighters[0].hp,hpAfter-20,"attack after weakening expires = 20");
 assert.equal(b.fighters[0].specialCooldown,0);
 
 // Darin's special is rounded to nearest integer.

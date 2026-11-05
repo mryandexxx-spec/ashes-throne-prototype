@@ -88,7 +88,8 @@ $("#startBattle").addEventListener("click",()=>openSquad("home"));
 $("#campaignBattle").addEventListener("click",()=>openSquad("campaign"));
 $("#squadBack").addEventListener("click",()=>showScreen(squadReturnScreen));
 // If Babylon.js cannot load, show a recoverable message instead of an uncaught crash.
-$("#retryBattleLoad").addEventListener("click",()=>window.location.reload());
+const retryLoad=$("#retryBattleLoad");
+if(retryLoad)retryLoad.addEventListener("click",()=>window.location.reload());
 $("#squadStart").addEventListener("click",()=>{
  if(selectedParty().length===0)return;
  showScreen("battle");

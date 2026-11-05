@@ -11,7 +11,7 @@ const ids = ["heroList","combatants","battleStatus","turnChip","actionTitle","ac
 const elements = Object.fromEntries(ids.map(id => [id, {
  innerHTML:"", textContent:"", disabled:false, handlers:{},
  classList: { active:id==="battle", contains(name){return !!this[name]},
-   add(name){this[name]=true}, remove(name){this[name]=false} },
+   add(name){this[name]=true}, remove(name){this[name]=false}, toggle(name,value){this[name]=!!value} },
  addEventListener(name, callback){(this.handlers[name] ||= []).push(callback)}
 }]));
 const document = {

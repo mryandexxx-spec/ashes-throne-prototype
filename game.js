@@ -13,7 +13,18 @@ let selectedAbility="basic";
 const ALLIES=HEROES.filter(h=>h.side==="ally");
 const ENEMIES=HEROES.filter(h=>h.side==="enemy");
 const MAX_SQUAD=5;
-const progress=ProgressCore.createProgress(ALLIES);
+const storageAdapter=typeof SaveCore==="undefined"?null:SaveCore;
+const loadedProgress=storageAdapter?storageAdapter.load(ALLIES,()=>window.localStorage):null;
+const progress=loadedProgress?loadedProgress.progress:ProgressCore.createProgress(ALLIES);
+let saveAvailable=loadedProgress?loadedProgress.available:false;
+function persistProgress(){
+ if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>window.localStorage);
+ const notice=$("#progressSaveNote");
+ if(notice)notice.textContent=saveAvailable
+  ?"Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить."
+  :"Сохранение сейчас недоступно. Прогресс может сброситься после перезагрузки.";
+}
+
 let selectedHeroId=ALLIES[0].id;
 let selectedPartyIds=ALLIES.map(h=>h.id);
 let squadReturnScreen="home";
@@ -120,11 +131,16 @@ function renderHeroDetail(){
  $("#detailPreview").textContent=next?next.hp+" HP · "+next.atk+" ATK":"Достигнут максимум";
  $("#detailUpgrade").disabled=!ProgressCore.canUpgrade(progress,base.id);
  $("#detailNotice").textContent=cost===null?"Герой достиг тестового максимума.":progress.materials<cost?"Недостаточно материалов.":"Улучшение доступно.";
+ const saveNote=$("#progressSaveNote");
+ if(saveNote)saveNote.textContent=saveAvailable
+  ?"Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить."
+  :"Сохранение сейчас недоступно. Прогресс может сброситься после перезагрузки.";
 }
 $("#detailBack").addEventListener("click",()=>showScreen("collection"));
 $("#detailHome").addEventListener("click",()=>showScreen("home"));
 $("#detailUpgrade").addEventListener("click",()=>{
  if(ProgressCore.upgrade(progress,selectedHeroId)){
+  persistProgress();
   renderHeroDetail();
   renderHeroes();
  }
@@ -133,6 +149,7 @@ $("#detailUpgrade").addEventListener("click",()=>{
 function livingEnemies(){return CombatCore.livingEnemies(state.fighters);}
 function syncBattleUI(){
  const awarded=ProgressCore.awardVictory(progress,state);
+ if(awarded>0)persistProgress();
  const reward=$("#battleReward");
  if(reward){
   reward.hidden=state.active;

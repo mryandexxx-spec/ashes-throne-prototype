@@ -8,7 +8,7 @@ const scripts = ["initiative-model.js","combat-core.js","game.js"]
  .map(name=>fs.readFileSync(path.join(root,name),"utf8")).join("\n");
 const ids=["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint",
  "attackBtn","basicAbilityBtn","specialAbilityBtn","battleMessage","battle",
- "renderCanvas","startBattle","campaignBattle"];
+ "renderCanvas","startBattle","campaignBattle","squad","squadBack","squadStart","squadCount","squadRoster","squadSlots","squadHint"];
 const elements=Object.fromEntries(ids.map(id=>[id,{
  innerHTML:"",textContent:"",disabled:false,handlers:{},
  classList:{active:id==="battle",contains(n){return !!this[n]},add(n){this[n]=true},
@@ -17,7 +17,7 @@ const elements=Object.fromEntries(ids.map(id=>[id,{
 }]));
 const document={
  hidden:false,querySelector(q){return elements[q.slice(1)]},
- querySelectorAll(q){return q===".screen"?[elements.battle]:[]},
+ querySelectorAll(q){return q===".screen"?[elements.battle,elements.squad]:[]},
  addEventListener(){}
 };
 const window={addEventListener(){}};

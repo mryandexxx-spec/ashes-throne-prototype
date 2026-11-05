@@ -5,7 +5,7 @@ const vm = require("node:vm");
 const path = require("node:path");
 const root = path.join(__dirname, "..");
 const load = names => names.map(n => fs.readFileSync(path.join(root, n), "utf8")).join("\n");
-const core = vm.runInNewContext(load(["initiative-model.js","combat-core.js"])+"\nCombatCore");
+const core = vm.runInNewContext(load(["initiative-model.js","ability-data.js","combat-core.js"])+"\nCombatCore");
 const unit = (id,side,hp,atk,speed) => ({id,name:id,side,hp,atk,speed});
 const make = (allies,enemies) => core.createBattle([...allies,...enemies]);
 

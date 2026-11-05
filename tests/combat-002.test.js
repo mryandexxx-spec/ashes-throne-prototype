@@ -6,9 +6,10 @@ const vm = require("node:vm");
 
 const root = path.join(__dirname,"..");
 const modelSrc = fs.readFileSync(path.join(root,"initiative-model.js"),"utf8");
+const abilitySrc = fs.readFileSync(path.join(root,"ability-data.js"),"utf8");
 const coreSrc = fs.readFileSync(path.join(root,"combat-core.js"),"utf8");
 const context = vm.createContext({});
-const core = vm.runInContext(modelSrc+"\n"+coreSrc+"\nCombatCore",context);
+const core = vm.runInContext(modelSrc+"\n"+abilitySrc+"\n"+coreSrc+"\nCombatCore",context);
 
 const party = [
  {id:"kael",name:"Каэль",side:"ally",hp:120,atk:24,speed:110},

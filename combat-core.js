@@ -134,52 +134,55 @@ const CombatCore = (() => {
     return true;
   }
 
+  function abilityDefinition(battle, abilityId) {
+    const actor=battle&&battle.fighters[battle.currentActor];
+    return AbilityData.get(actor,abilityId);
+  }
+
+  function abilityTargetSide(battle,abilityId){
+    const ability=abilityDefinition(battle,abilityId);
+    return ability?ability.target:null;
+  }
+
   function specialName(actor) {
-    if (!actor) return "Особая";
-    return actor.id === "kael" ? "Прикрытие" :
-      actor.id === "lyra" ? "Ослабляющий удар" :
-      actor.id === "darin" ? "Сокрушительный удар" : "Особый удар";
+    const ability=AbilityData.get(actor,"special");
+    return ability?ability.name:"Особая";
   }
 
-  function abilityReady(battle, abilityId) {
-    if (!battle.active) return false;
-    const actor = battle.fighters[battle.currentActor];
-    if (!actor || actor.side !== "ally" || actor.hp <= 0 || actor.meter < 1000 - 1e-8) return false;
-    if (abilityId === "basic") return true;
-    return abilityId === "special" && actor.specialCooldown === 0;
+  function abilityReady(battle,abilityId) {
+    if(!battle||!battle.active)return false;
+    const actor=battle.fighters[battle.currentActor];
+    if(!actor||actor.side!=="ally"||actor.hp<=0||actor.meter<1000-1e-8)return false;
+    const ability=AbilityData.get(actor,abilityId);
+    return !!ability&&(ability.id==="basic"||actor.specialCooldown===0);
   }
 
-  // Combat-003B: three test specials; cooldown is spent on the user's own actions.
-  function performPlayerAbility(battle, abilityId) {
-    if (!abilityReady(battle, abilityId)) return false;
-    const actor = battle.fighters[battle.currentActor];
-    const guarding = abilityId === "special" && actor.id === "kael";
-    const targetIndex = guarding
-      ? selectAlly(battle.fighters, battle.selectedAlly)
-      : selectEnemy(battle.fighters, battle.selectedEnemy);
-    if (targetIndex < 0) return false;
-    const target = battle.fighters[targetIndex];
-    if (guarding) {
-      target.guardHits = 2;
-      battle.message = actor.name + " защищает " + target.name + ": защита ×2.";
-    } else {
-      const rawDamage = abilityId === "special" && actor.id === "darin"
-        ? Math.round(actor.atk * 1.5) : actor.atk;
-      const damage = dealDamage(actor, target, rawDamage);
-      if (abilityId === "special" && actor.id === "lyra" && target.hp > 0)
-        target.weakenAttacks = 2;
-      battle.message = actor.name + (abilityId === "special" ? " применяет " + specialName(actor) + ": " : " атакует: ") +
-        target.name + " получает " + damage + " урона" +
-        (target.hp === 0 ? " — повержен!" :
-          abilityId === "special" && actor.id === "lyra" ? ", ослабление ×2." : ".");
+  function performPlayerAbility(battle,abilityId) {
+    if(!abilityReady(battle,abilityId))return false;
+    const actor=battle.fighters[battle.currentActor];
+    const ability=AbilityData.get(actor,abilityId);
+    const targetIndex=ability.target==="ally"
+      ?selectAlly(battle.fighters,battle.selectedAlly)
+      :selectEnemy(battle.fighters,battle.selectedEnemy);
+    if(targetIndex<0)return false;
+    const target=battle.fighters[targetIndex];
+    if(ability.kind==="guard"){
+      target.guardHits=ability.guardHits;
+      battle.message=actor.name+" защищает "+target.name+": защита ×"+ability.guardHits+".";
+    }else{
+      const damage=dealDamage(actor,target,Math.round(actor.atk*ability.multiplier));
+      if(ability.weakening>0&&target.hp>0)target.weakenAttacks=ability.weakening;
+      battle.message=actor.name+(ability.id==="special"?" применяет "+ability.name+": ":" атакует: ")+
+        target.name+" получает "+damage+" урона"+
+        (target.hp===0?" — повержен!":ability.weakening>0?", ослабление ×"+ability.weakening+".":".");
     }
-    if (abilityId === "special") actor.specialCooldown = 2;
-    else actor.specialCooldown = Math.max(0, actor.specialCooldown - 1);
-    InitiativeModel.finishTurn(battle.fighters, actor.id);
+    if(ability.id==="special")actor.specialCooldown=ability.cooldown;
+    else actor.specialCooldown=Math.max(0,actor.specialCooldown-1);
+    InitiativeModel.finishTurn(battle.fighters,actor.id);
     battle.turn++;
-    battle.currentActor = -1;
-    if (finishIfOver(battle)) return true;
-    if (!guarding && target.hp === 0) battle.selectedEnemy = firstLivingEnemy(battle.fighters);
+    battle.currentActor=-1;
+    if(finishIfOver(battle))return true;
+    if(ability.target==="enemy"&&target.hp===0)battle.selectedEnemy=firstLivingEnemy(battle.fighters);
     advanceToPlayerTurn(battle);
     return true;
   }
@@ -192,6 +195,6 @@ const CombatCore = (() => {
 
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
-    chooseEnemy, chooseAlly, specialName, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady
+    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady
   });
 })();

@@ -70,7 +70,10 @@ const CampaignCore=(()=>{
  }
  // Retain old first-clear helper for Campaign-001 regression clients.
  function complete(campaign,battle){
-  return recordResult(campaign,MISSION_ID,battle).improved;
+  if(!battle||battle.active||battle.winner!=="ally"||campaign.completed[MISSION_ID])return false;
+  campaign.completed[MISSION_ID]=true;
+  campaign.bestStars[MISSION_ID]=Math.max(campaign.bestStars[MISSION_ID],1);
+  return true;
  }
  return Object.freeze({KEY,VERSION,MISSION_ID,validate,fresh,load,save,complete,recordResult});
 })();

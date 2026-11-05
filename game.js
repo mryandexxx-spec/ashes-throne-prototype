@@ -78,6 +78,8 @@ function showScreen(id){
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
+  const label=$("#battleMissionLabel");
+  if(label)label.textContent=battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
   try {
    if(typeof BABYLON==="undefined" || !BABYLON.Engine || !BABYLON.Scene)
     throw new Error("Babylon.js is unavailable");
@@ -189,6 +191,10 @@ function renderCampaign(){
 }
 function renderMissionResult(){
  const won=state.winner==="ally";
+ const entry=CampaignData.getMission(activeMissionId);
+ const chapter=entry&&CampaignData.allChapters().find(c=>c.id===entry.chapterId);
+ const chapterLabel=$("#missionResultChapter");
+ if(chapterLabel)chapterLabel.textContent=chapter?chapter.title:"Кампания";
  $("#missionResultTitle").textContent=won?"Миссия пройдена":"Миссия не пройдена";
  $("#missionResultText").textContent=won
   ?MissionData.get(activeMissionId).title+" завершена. +1 учебный материал. Всего: "+progress.materials

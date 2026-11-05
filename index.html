@@ -35,6 +35,24 @@
       <div class="campaign-panel"><div class="node">I</div><div><h3>Засада у Чёрного перевала</h3><p>Разведчики Конклава преградили путь. Разбей их отряд.</p><button class="primary" id="campaignBattle">Вступить в бой</button></div></div>
       <p class="muted">Прогресс кампании будет добавлен в следующих версиях прототипа.</p>
     </section>
+    <section id="squad" class="screen squad-screen" aria-label="Подготовка отряда">
+      <div class="section-heading squad-heading">
+        <div><div class="eyebrow">ПЕРЕД СРАЖЕНИЕМ</div><h2>Выбор отряда</h2><p class="muted">Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.</p></div>
+        <button class="ghost" type="button" id="squadBack">← Назад</button>
+      </div>
+      <div class="squad-layout">
+        <div class="squad-panel">
+          <div class="eyebrow">ДОСТУПНЫЕ ГЕРОИ</div>
+          <div id="squadRoster" class="squad-roster" aria-label="Герои для выбора"></div>
+        </div>
+        <div class="squad-panel">
+          <div class="eyebrow">БОЕВОЙ СОСТАВ · <span id="squadCount">0/5</span></div>
+          <div id="squadSlots" class="squad-slots" aria-label="Пять мест в отряде"></div>
+          <p id="squadHint" class="muted" role="status">Выбери хотя бы одного героя.</p>
+          <button class="primary squad-start" type="button" id="squadStart">Начать бой</button>
+        </div>
+      </div>
+    </section>
     <section id="battle" class="screen battle-screen">
       <div class="battle-top"><button class="ghost" data-screen="home">✕ В меню</button><div><div class="eyebrow">СТОЛКНОВЕНИЕ I</div><strong id="battleStatus">Выберите цель</strong></div><div class="turn-chip" id="turnChip">Ход 1</div></div>
       <div class="arena-wrap"><canvas id="renderCanvas"></canvas><div id="battleMessage" class="battle-message">Отряд готов к бою</div></div>

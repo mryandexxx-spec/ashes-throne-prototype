@@ -147,3 +147,46 @@ button{touch-action:manipulation}
 @media (orientation:landscape) and (max-height:390px) and (max-width:1100px){
  .fighter-status{font-size:9px;margin:2px 0}
 }
+
+/* Squad-001: a dedicated pre-battle roster, readable in phone landscape. */
+.squad-heading{gap:12px}
+.squad-heading .muted{margin:7px 0 0}
+.squad-layout{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;min-width:0}
+.squad-panel{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:16px;min-width:0}
+.squad-roster{display:grid;gap:8px;margin-top:12px}
+.squad-choice{display:flex;align-items:center;gap:12px;text-align:left;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px;min-width:0;width:100%}
+.squad-choice.chosen{border-color:var(--gold);background:#d5ad6512}
+.squad-choice>span:nth-child(2){flex:1;min-width:0}
+.squad-choice b,.squad-choice small{display:block;overflow-wrap:anywhere}
+.squad-choice b{font-size:13px}
+.squad-choice small{margin-top:4px;color:var(--muted);font-size:10px}
+.squad-choice>strong{color:var(--gold);font-size:18px}
+.squad-glyph{color:var(--gold);font-size:23px;flex-shrink:0}
+.squad-slots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:12px}
+.squad-slot{display:flex;flex-direction:column;justify-content:center;gap:7px;min-width:0;min-height:82px;padding:8px 5px;border:1px dashed var(--line);border-radius:9px;text-align:center;color:var(--muted);font-size:10px}
+.squad-slot.filled{border-style:solid;border-color:var(--gold);background:#d5ad650c;color:var(--text)}
+.squad-slot-number{color:var(--gold);font-weight:700}
+.squad-slot-content{overflow-wrap:anywhere}
+.squad-start{width:100%;margin-top:8px}
+.squad-start:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:700px){.squad-layout{grid-template-columns:1fr}.squad-panel{padding:12px}}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .squad-screen .section-heading{margin-bottom:6px}
+ .squad-screen .section-heading h2{font-size:18px;margin:2px 0}
+ .squad-screen .squad-heading .muted{font-size:10px;margin:2px 0}
+ .squad-layout{grid-template-columns:1fr 1fr;gap:8px}
+ .squad-panel{padding:9px}
+ .squad-roster{gap:5px;margin-top:7px}
+ .squad-choice{padding:6px;gap:7px;min-height:40px}
+ .squad-choice b{font-size:11px}
+ .squad-choice small{font-size:9px;margin-top:2px}
+ .squad-glyph{font-size:17px}
+ .squad-slots{margin-top:7px;gap:4px}
+ .squad-slot{min-height:65px;padding:5px 3px;font-size:9px;gap:4px}
+ .squad-panel .muted{font-size:10px;margin:8px 0}
+ .squad-start{margin-top:4px}
+}
+/* Issue #10: effect rows stay inside their cards rather than overlapping the next row. */
+.combatants{align-content:start;grid-auto-rows:max-content}
+.fighter{min-height:0}
+.fighter-status{position:static;display:block;line-height:1.25;white-space:normal;overflow-wrap:anywhere}

@@ -115,3 +115,7 @@ button{touch-action:manipulation}
  .fighter.enemy{min-height:44px}
 }
 @media (prefers-reduced-motion:reduce){button{transition:none}}
+
+/* Combat-002: show the unit whose initiative has reached the action threshold. */
+.fighter.acting{border-color:#72b1d4;box-shadow:inset 0 0 0 1px #72b1d480}
+.fighter small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

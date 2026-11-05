@@ -1,12 +1,12 @@
 const HEROES = [
-  {id:"kael",name:"Каэль Ворон",role:"Страж",hp:120,atk:24,side:"ally",glyph:"♜"},
-  {id:"lyra",name:"Лира Соль",role:"Следопыт",hp:88,atk:31,side:"ally",glyph:"♧"},
-  {id:"darin",name:"Дарин Пепельный",role:"Мечник",hp:105,atk:27,side:"ally",glyph:"⚔"},
-  {id:"ves",name:"Вестник Конклава",role:"Противник",hp:90,atk:18,side:"enemy",glyph:"☠"},
-  {id:"shade",name:"Теневой клинок",role:"Противник",hp:78,atk:22,side:"enemy",glyph:"♟"}
+  {id:"kael",name:"Каэль Ворон",role:"Страж",hp:120,atk:24,speed:110,side:"ally",glyph:"♜"},
+  {id:"lyra",name:"Лира Соль",role:"Следопыт",hp:88,atk:31,speed:155,side:"ally",glyph:"♧"},
+  {id:"darin",name:"Дарин Пепельный",role:"Мечник",hp:105,atk:27,speed:125,side:"ally",glyph:"⚔"},
+  {id:"ves",name:"Вестник Конклава",role:"Противник",hp:90,atk:18,speed:105,side:"enemy",glyph:"☠"},
+  {id:"shade",name:"Теневой клинок",role:"Противник",hp:78,atk:22,speed:135,side:"enemy",glyph:"♟"}
 ];
 const $=s=>document.querySelector(s);
-let selectedEnemy=3, turn=1, active=true, engine, scene, meshes={};
+let engine, scene, meshes={};
 let renderLoopRunning=false;
 let state=CombatCore.createBattle(HEROES);
 function showScreen(id){
@@ -26,44 +26,36 @@ $("#campaignBattle").addEventListener("click",()=>showScreen("battle"));
 function renderHeroes(){
  $("#heroList").innerHTML=HEROES.filter(h=>h.side==="ally").map(h=>`<article class="hero-card"><div class="hero-avatar">${h.glyph}</div><h3>${h.name}</h3><p>${h.role} · I уровень</p><div class="stats"><span>Здоровье ${h.hp}</span><span>Сила ${h.atk}</span></div></article>`).join("");
 }
-function livingEnemies(){return CombatCore.livingEnemies(state);}
+function livingEnemies(){return CombatCore.livingEnemies(state.fighters);}
 function syncBattleUI(){
- const enemies=livingEnemies();
- if(active && !enemies.some(({i})=>i===selectedEnemy))selectedEnemy=enemies.length?enemies[0].i:-1;
- if(!active)selectedEnemy=-1;
- const target=state[selectedEnemy];
- $("#battleStatus").textContent=active&&target?"Цель: "+target.name:(active?"Нет доступных целей":"Бой завершён");
- $("#turnChip").textContent=`Ход ${turn}`;
- $("#attackBtn").textContent=active?"Атаковать":"Сыграть снова";
- $("#attackBtn").disabled=active&&!target;
+ const fighters=state.fighters;
+ const actor=state.active?fighters[state.currentActor]:null;
+ const target=state.active?fighters[state.selectedEnemy]:null;
+ $("#battleStatus").textContent=actor?"Ход: "+actor.name:"Бой завершён";
+ $("#turnChip").textContent="Ход "+state.turn;
+ $("#actionTitle").textContent=actor?"Атака: "+actor.name:"Бой завершён";
+ $("#actionHint").textContent=target?"Цель: "+target.name:"Выбери живого противника";
+ $("#attackBtn").textContent=state.active?"Атаковать":"Сыграть снова";
+ $("#attackBtn").disabled=state.active&&(!actor||!target);
+ $("#battleMessage").textContent=state.message;
  renderCombatants();
  updateMeshes();
 }
 function renderCombatants(){
- $("#combatants").innerHTML=state.map((h,i)=>`<div class="fighter ${h.side==="enemy"?"enemy":""} ${h.hp<=0?"defeated":""} ${active&&i===selectedEnemy?"selected":""}" data-index="${i}"><b>${h.name}</b><small>${Math.max(0,h.hp)} / ${h.maxHp} HP</small><div class="health"><span style="width:${Math.max(0,h.hp)/h.maxHp*100}%"></span></div></div>`).join("");
+ $("#combatants").innerHTML=state.fighters.map((h,i)=>
+   `<div class="fighter ${h.side==="enemy"?"enemy":""} ${h.hp<=0?"defeated":""} ${state.active&&i===state.selectedEnemy?"selected":""} ${state.active&&i===state.currentActor?"acting":""}" data-index="${i}"><b>${h.name}</b><small>${Math.max(0,h.hp)} / ${h.maxHp} HP · СПД ${h.speed}</small><div class="health"><span style="width:${Math.max(0,h.hp)/h.maxHp*100}%"></span></div></div>`
+ ).join("");
  document.querySelectorAll(".fighter.enemy").forEach(el=>el.addEventListener("click",()=>{
-  const index=Number(el.dataset.index);
-  if(!active||CombatCore.selectEnemy(state,index)<0)return;
-  selectedEnemy=index;
-  syncBattleUI();
+  if(CombatCore.chooseEnemy(state,Number(el.dataset.index)))syncBattleUI();
  }));
 }
 function resetBattle(){
  state=CombatCore.createBattle(HEROES);
- selectedEnemy=CombatCore.firstLivingEnemy(state);
- turn=1;active=true;
- $("#battleMessage").textContent="Отряд готов к бою";
+ CombatCore.advanceToPlayerTurn(state);
  syncBattleUI();
 }
 function attack(){
- if(!active)return;
- const result=CombatCore.performAttack(state,selectedEnemy);
- if(!result)return;
- selectedEnemy=result.selectedEnemy;
- active=result.active;
- turn+=result.turnDelta;
- $("#battleMessage").textContent=result.message;
- syncBattleUI();
+ if(CombatCore.performPlayerAttack(state))syncBattleUI();
 }
 // Exactly one permanent click handler; no onclick replacement on victory.
 $("#attackBtn").addEventListener("click",()=>{if(!active)resetBattle();else attack();});
@@ -94,7 +86,7 @@ function initBabylon(){
  gridmat.diffuseColor=new BABYLON.Color3(.14,.17,.21);gridmat.emissiveColor=new BABYLON.Color3(.035,.045,.06);
  gridmat.alpha=.28;gridmat.wireframe=true;gridmat.backFaceCulling=false;grid.material=gridmat;
  // Low-poly stylized fighters: capsule body, sphere head, colored shield.
- state.forEach((h,i)=>{
+ state.fighters.forEach((h,i)=>{
   const x=h.side==="ally"?-3.4:3.4,z=(i%3-1)*1.55;
   const body=BABYLON.MeshBuilder.CreateCapsule("body_"+i,{height:1.5,radius:.42},scene);body.position=new BABYLON.Vector3(x,.8,z);
   const mat=new BABYLON.StandardMaterial("mat_"+i,scene);mat.diffuseColor=h.side==="ally"?new BABYLON.Color3(.28,.55,.76):new BABYLON.Color3(.72,.25,.23);mat.emissiveColor=h.side==="ally"?new BABYLON.Color3(.02,.06,.09):new BABYLON.Color3(.08,.015,.01);body.material=mat;
@@ -111,4 +103,4 @@ document.addEventListener("visibilitychange",()=>{
  if(document.hidden)stopBattleRendering();
  else if(shouldRenderBattle()){engine.resize();startBattleRendering();}
 });
-renderHeroes();renderCombatants();
+renderHeroes();CombatCore.advanceToPlayerTurn(state);renderCombatants();

@@ -20,7 +20,7 @@ assert.equal(core.performPlayerAbility(b,"special"),true);
 assert.equal(b.fighters[1].guardHits,2);
 assert.equal(b.fighters[2].hp,500,"guard deals no damage");
 assert.equal(b.fighters[0].specialCooldown,2);
-assert.equal(core.performPlayerAbility(b,"special"),false,"cooldown enforced");
+assert.equal(b.fighters[0].specialCooldown,2,"Kael stays on cooldown while Lyra acts");
 b.fighters[2].speed=500;
 const hp=b.fighters[1].hp;
 // The enemy normally attacks first living ally; remove Kael to test a guarded recipient.

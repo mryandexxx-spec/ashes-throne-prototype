@@ -64,6 +64,7 @@ const CombatCore = (() => {
       battle.winner = "enemy";
       battle.currentActor = -1;
       battle.selectedEnemy = -1;
+      battle.selectedAlly = -1;
       battle.message = "Поражение. Попробуй ещё раз.";
       return true;
     }

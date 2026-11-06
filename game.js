@@ -366,29 +366,33 @@ function renderBattleLog(){
  summary.textContent="Журнал боя · "+lines.length+" событий";
  content.textContent=lines.length?lines.map((line,i)=>(i+1)+". "+line).join("\n"):"Пока нет событий.";
 }
-// Combat-008D: show the actor whose turn is active, not the selected target.
-// Levels exist only when provided by current fighter data.
-function renderCurrentFighterHud(){
- const panel=$("#currentFighterHud");
+// Combat-008D: the top-right card follows the valid selected target,
+// including allied support targets. It never shows the current turn owner.
+function renderTargetFighterHud(){
+ const panel=$("#targetFighterHud");
  if(!panel)return;
  const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
- const side=$("#currentFighterSide"),level=$("#currentFighterLevel");
- const name=$("#currentFighterName"),hp=$("#currentFighterHp");
- const stats=$("#currentFighterStats"),fill=$("#currentFighterHealthFill");
- panel.classList.toggle("enemy",!!actor&&actor.side==="enemy");
- if(!actor){
-  side.textContent=isVisualTransition()?"ПЕРЕХОД":"ОЧЕРЕДЬ ХОДОВ";
+ const sideToPick=actor?CombatCore.abilityTargetSide(state,selectedAbility):null;
+ const targetIndex=sideToPick==="ally"?state.selectedAlly:state.selectedEnemy;
+ const target=actor?state.fighters[targetIndex]:null;
+ const valid=!!target&&target.hp>0&&target.side===sideToPick;
+ const side=$("#targetFighterSide"),level=$("#targetFighterLevel");
+ const name=$("#targetFighterName"),hp=$("#targetFighterHp");
+ const stats=$("#targetFighterStats"),fill=$("#targetFighterHealthFill");
+ panel.classList.toggle("enemy",valid&&target.side==="enemy");
+ if(!valid){
+  side.textContent=isVisualTransition()?"ПЕРЕХОД":"ВЫБРАННАЯ ЦЕЛЬ";
   level.textContent="";
-  name.textContent=isVisualTransition()?"Завершение действий":state.active?"Ожидание бойца":"Бой завершён";
+  name.textContent=isVisualTransition()?"Завершение действий":state.active?"Выбери цель":"Бой завершён";
   hp.textContent="";stats.textContent="";fill.style.width="0%";
   return;
  }
- side.textContent=actor.side==="ally"?"СОЮЗНИК":"ПРОТИВНИК";
- level.textContent=Number.isInteger(actor.level)&&actor.level>0?"Ур. "+actor.level:"";
- name.textContent=actor.name;
- hp.textContent="HP "+Math.max(0,actor.hp)+"/"+actor.maxHp;
- stats.textContent="АТК "+actor.atk+" · СКР "+actor.speed;
- fill.style.width=Math.max(0,Math.min(100,actor.hp/Math.max(1,actor.maxHp)*100))+"%";
+ side.textContent=target.side==="ally"?"ЦЕЛЬ: СОЮЗНИК":"ЦЕЛЬ: ПРОТИВНИК";
+ level.textContent=Number.isInteger(target.level)&&target.level>0?"Ур. "+target.level:"";
+ name.textContent=target.name;
+ hp.textContent="HP "+Math.max(0,target.hp)+"/"+target.maxHp;
+ stats.textContent="АТК "+target.atk+" · СКР "+target.speed;
+ fill.style.width=Math.max(0,Math.min(100,target.hp/Math.max(1,target.maxHp)*100))+"%";
 }
 function syncBattleUI(){
  if(!state.active){cancelAutoTimer();autoBattle=false;}
@@ -417,7 +421,7 @@ function syncBattleUI(){
   $("#battleMessage").textContent=state.message;
   renderBattleLog();
   renderCombatants();
-  renderCurrentFighterHud();
+  renderTargetFighterHud();
   renderArenaIndicators();
   updateMeshes();
   return;
@@ -467,7 +471,7 @@ function syncBattleUI(){
  $("#battleMessage").textContent=state.message;
  renderBattleLog();
  renderCombatants();
- renderCurrentFighterHud();
+ renderTargetFighterHud();
  renderArenaIndicators();
  updateMeshes();
  queueAutoAction();

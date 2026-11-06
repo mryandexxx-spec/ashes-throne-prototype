@@ -14,7 +14,7 @@ const required=[
  "battleMissionLabel","battleStatus","autoBattleBtn","autoSpeedBtn",
  "turnChip","battleMessage","battleReward","targetFighterHud","battleLog",
  "battleLogSummary","battleLogEntries","actionTitle","actionHint",
- "basicAbilityBtn","specialAbilityBtn","attackBtn"
+ "basicAbilityBtn","specialAbilityBtn","battleRetryBtn"
 ];
 for(const id of required){
  assert.match(battle,new RegExp('id="'+id+'"'),id+" must be inside arena");
@@ -25,6 +25,8 @@ for(const id of required)assert.ok(battle.indexOf('id="'+id+'"')>canvasAt,id+" f
 assert.doesNotMatch(battle,/<details class="arena-roster">/,"redundant roster is removed");
 assert.doesNotMatch(battle,/id="combatants"/,"fighter list is no longer in arena");
 assert.match(battle,/<details class="combat-log"/,"combat log remains available");
+assert.doesNotMatch(battle,/id="attackBtn"/,"separate attack action was removed");
+assert.match(battle,/id="abilityTooltip"/,"ability hint exists");
 assert.ok(battle.indexOf('id="battleLog"')>0,"combat log remains available");
 assert.match(css,/\.battle-screen\.active\s*\{[^}]*position:fixed;inset:0/);
 assert.match(css,/\.battle-screen \.arena-wrap\s*\{[^}]*position:absolute;inset:0/);

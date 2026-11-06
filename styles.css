@@ -336,3 +336,7 @@ button{touch-action:manipulation}
  .battle-top{flex-wrap:wrap}
  .battle-top-controls{margin-left:auto}
 }
+
+/* Combat-007: status cards are informational; target picks happen on the 3D arena. */
+#combatants .fighter{cursor:default}
+#renderCanvas{cursor:crosshair}

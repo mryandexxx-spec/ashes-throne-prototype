@@ -5,7 +5,8 @@ const AbilityData=(()=>{
  const special={
   kael:Object.freeze({id:"special",name:"Прикрытие",target:"ally",kind:"guard",guardHits:2,cooldown:2}),
   lyra:Object.freeze({id:"special",name:"Ослабляющий удар",target:"enemy",kind:"damage",multiplier:1,weakening:2,cooldown:2}),
-  darin:Object.freeze({id:"special",name:"Сокрушительный удар",target:"enemy",kind:"damage",multiplier:1.5,weakening:0,cooldown:2})
+  darin:Object.freeze({id:"special",name:"Сокрушительный удар",target:"enemy",kind:"damage",multiplier:1.5,weakening:0,cooldown:2}),
+  "medic-demo":Object.freeze({id:"special",name:"Перевязка",target:"ally",kind:"heal",healAmount:30,cooldown:2})
  };
  Object.freeze(special);
  const fallback=Object.freeze({id:"special",name:"Особый удар",target:"enemy",kind:"damage",multiplier:1,weakening:0,cooldown:2});

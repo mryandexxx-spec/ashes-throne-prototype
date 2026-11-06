@@ -39,6 +39,7 @@ const document={
  addEventListener(type,fn){if(type==="visibilitychange")visibilityListeners.push(fn)}
 };
 let meshCreates=0,engineCreates=0,rendersStarted=0;
+let pointerListener=null;
 class Mesh {
  constructor(){this.position={};this.visible=true;}
  setEnabled(v){this.visible=v;}
@@ -51,9 +52,12 @@ class Engine {
 }
 class Material {constructor(){this.diffuseColor=null;this.specularColor=null;this.emissiveColor=null;}}
 class Camera{attachControl(){}}
-class Scene{render(){}}
+class Scene{
+ constructor(){this.onPointerObservable={add(fn){pointerListener=fn;}};}
+ render(){}
+}
 class Vec{constructor(x,y,z){this.x=x;this.y=y;this.z=z;}}
-const BABYLON={Engine,Scene,ArcRotateCamera:Camera,HemisphericLight:class{},DirectionalLight:class{},
+const BABYLON={Engine,Scene,PointerEventTypes:{POINTERPICK:1},ArcRotateCamera:Camera,HemisphericLight:class{},DirectionalLight:class{},
  StandardMaterial:Material,Vector3:Vec,Color3:Vec,Color4:Vec,
  MeshBuilder:{CreateGround(){return new Mesh();},
   CreateCapsule(){meshCreates++;return new Mesh();},
@@ -117,6 +121,14 @@ assert.equal(elements.squad.classList.active,true);
 click(elements.squadStart);
 assert.equal(elements.battle.classList.active,true);
 const first=api.getBattle();
+assert.equal(typeof pointerListener,"function","arena pointer listener registered");
+const firstEnemy=first.fighters.find(f=>f.side==="enemy");
+const secondEnemy=first.fighters.filter(f=>f.side==="enemy")[1];
+pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[secondEnemy.id].body}});
+assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"arena tap selects enemy");
+pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes().kael.head}});
+assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"ally tap cannot switch an enemy attack target");
+assert.equal(api.getMeshes()[secondEnemy.id].base.material.emissiveColor.x,.48,"target is highlighted on arena");
 first.active=false;first.winner="enemy";
 api.syncBattleUI();
 assert.equal(elements.missionResult.classList.active,true,"defeat must show result screen");

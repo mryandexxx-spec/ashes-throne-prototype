@@ -4,7 +4,7 @@ const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
 const root=path.join(__dirname,"..");
-const api=vm.runInNewContext(["battle-speed.js","battle-animation.js"].map(n=>fs.readFileSync(path.join(root,n),"utf8")).join("\n")+"\n({BattleSpeed,BattleAnimation})");
+const api=vm.runInNewContext(["battle-speed.js","animation-profiles.js","battle-animation.js"].map(n=>fs.readFileSync(path.join(root,n),"utf8")).join("\n")+"\n({BattleSpeed,BattleAnimation})");
 const {BattleSpeed:speed,BattleAnimation:motion}=api;
 const hit=(actorId,targetId)=>[{type:"ability",actorId,targetId,abilityId:"basic"},{type:"damage",actorId,targetId,amount:10}];
 const guard=[{type:"ability",actorId:"a",targetId:"a",abilityId:"special"},{type:"effect",actorId:"a",targetId:"a",effect:"guard"}];

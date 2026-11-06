@@ -30,7 +30,7 @@ function formationPosition(side,slot,count){
 let renderLoopRunning=false;
 let indicatorNodes={}; // Rebuilt on combat HUD changes, not each animation frame.
 let inspectionId=null,inspectionGesture=null,suppressInspectionPick=false;
-const INSPECT_HOLD_MS=550,INSPECT_MOVE_PX=12;
+const INSPECT_HOLD_MS=400,INSPECT_MOVE_PX=12;
 let selectedAbility="basic";
 // Combat-004: manual remains the default. Only one cancellable timer may run.
 let autoBattle=false;
@@ -714,6 +714,52 @@ function resetArenaCamera(){
  if(typeof arenaCamera.setTarget==="function")arenaCamera.setTarget(center);
  else arenaCamera.target=center; // Minimal test stub.
 }
+// Combat-008F-CAMERA: explicit orbit/pinch pointer controls.
+// Avoid competing Babylon pointer drags; retain the ArcRotateCamera and wheel zoom.
+function installArenaPointerCamera(canvas,camera){
+ const pointers=new Map();
+ let pinchDistance=0;
+ const bounds=(value,min,max)=>Math.max(min,Math.min(max,value));
+ const distance=()=>{
+  const values=[...pointers.values()];
+  return values.length===2?Math.hypot(values[1].x-values[0].x,values[1].y-values[0].y):0;
+ };
+ const down=event=>{
+  if(event.pointerType==="mouse"&&event.button!==0)return;
+  pointers.set(event.pointerId??1,{x:event.clientX,y:event.clientY});
+  pinchDistance=distance();
+ };
+ const move=event=>{
+  const id=event.pointerId??1,previous=pointers.get(id);
+  if(!previous)return;
+  const x=event.clientX,y=event.clientY;
+  if(pointers.size===1){
+   const dx=x-previous.x,dy=y-previous.y;
+   camera.alpha-=dx/350;
+   camera.beta=bounds(camera.beta-dy/350,camera.lowerBetaLimit,camera.upperBetaLimit);
+  }else if(pointers.size===2){
+   const oldDistance=pinchDistance;
+   previous.x=x;previous.y=y;
+   const current=distance();
+   if(oldDistance>0&&current>0)
+    camera.radius=bounds(camera.radius*oldDistance/current,camera.lowerRadiusLimit,camera.upperRadiusLimit);
+   pinchDistance=current;
+   return;
+  }
+  previous.x=x;previous.y=y;
+ };
+ const up=event=>{
+  pointers.delete(event.pointerId??1);
+  pinchDistance=distance();
+ };
+ canvas.addEventListener("pointerdown",down);
+ canvas.addEventListener("pointermove",move);
+ canvas.addEventListener("pointerup",up);
+ canvas.addEventListener("pointercancel",up);
+ canvas.addEventListener("lostpointercapture",up);
+ window.addEventListener("pointerup",up);
+ window.addEventListener("orientationchange",()=>{pointers.clear();pinchDistance=0;});
+}
 // Reuse the scene rather than re-creating meshes on every battle entry.
 function initBabylon(){
  const canvas=$("#renderCanvas");engine=new BABYLON.Engine(canvas,true,{stencil:true});
@@ -722,6 +768,10 @@ function initBabylon(){
  arenaCamera.lowerRadiusLimit=12;arenaCamera.upperRadiusLimit=21;
  arenaCamera.lowerBetaLimit=.55;arenaCamera.upperBetaLimit=1.30;
  arenaCamera.attachControl(canvas,true);
+ // Disable duplicate Babylon pointer drags, retain wheel zoom.
+ if(arenaCamera.inputs?.removeByType)
+  arenaCamera.inputs.removeByType("ArcRotateCameraPointersInput");
+ installArenaPointerCamera(canvas,arenaCamera);
  const hemi=new BABYLON.HemisphericLight("hemi",new BABYLON.Vector3(0,1,0),scene);hemi.intensity=.8;
  const key=new BABYLON.DirectionalLight("key",new BABYLON.Vector3(-.5,-1,.5),scene);key.intensity=1.1;
  const ground=BABYLON.MeshBuilder.CreateGround("ground",{width:16,height:9},scene);const gm=new BABYLON.StandardMaterial("groundMat",scene);gm.diffuseColor=new BABYLON.Color3(.12,.15,.19);gm.specularColor=new BABYLON.Color3(.1,.1,.1);ground.material=gm;

@@ -585,7 +585,7 @@ function renderFighterInspection(){
  const dialog=$("#fighterInspect");
  if(!dialog||!inspectionId)return;
  const fighter=state.fighters.find(f=>f.id===inspectionId&&f.hp>0);
- if(!fighter||!$("#battle").classList.contains("active")){
+ if(!fighter||isVisualTransition()||!$("#battle").classList.contains("active")){
   closeFighterInspection();return;
  }
  $("#inspectSide").textContent=fighter.side==="ally"?"СОЮЗНИК":"ПРОТИВНИК";
@@ -745,6 +745,10 @@ function initBabylon(){
   if(scene.onPointerObservable&&BABYLON.PointerEventTypes)
    scene.onPointerObservable.add(handleInspectionPointer);
   canvas.addEventListener("contextmenu",event=>event.preventDefault());
+  // Native pointercancel / lost capture are not guaranteed to reach Babylon POINTERUP.
+  canvas.addEventListener("pointercancel",cancelInspectionGesture);
+  canvas.addEventListener("lostpointercapture",cancelInspectionGesture);
+  window.addEventListener("pointerup",cancelInspectionGesture);
   // Registered only once because initBabylon() runs once.
  // Safari resize may fire before the landscape layout has settled.
  // Observe actual arena dimensions and synchronize render buffer after layout.
@@ -771,7 +775,10 @@ function initBabylon(){
   else update();
  }
  window.addEventListener("resize",synchronizeArenaSize);
- window.addEventListener("orientationchange",synchronizeArenaSize);
+ window.addEventListener("orientationchange",()=>{
+  closeFighterInspection(); // Old touch coordinates/modal must not survive rotation.
+  synchronizeArenaSize();
+ });
  if(window.visualViewport?.addEventListener)
   window.visualViewport.addEventListener("resize",synchronizeArenaSize);
  if(typeof window.ResizeObserver==="function"){
@@ -811,7 +818,7 @@ function updateMeshes(){
 }
 // Browsers may keep the tab alive when it is hidden; suspend GPU work until visible.
 document.addEventListener("visibilitychange",()=>{
- if(document.hidden){cancelAutoTimer();stopBattleRendering();}
+ if(document.hidden){closeFighterInspection();cancelAutoTimer();stopBattleRendering();}
  else if(shouldRenderBattle()){engine.resize();startBattleRendering();queueAutoAction();}
 });
 renderHeroes();CombatCore.advanceToPlayerTurn(state);

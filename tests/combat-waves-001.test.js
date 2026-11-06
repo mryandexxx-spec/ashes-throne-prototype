@@ -77,9 +77,26 @@ assert.throws(()=>CombatCore.createBattle([hero,first],[[]]),/future wave/i);
 assert.throws(()=>CombatCore.createBattle([hero,first],[[hero]]),/future wave/i);
 assert.throws(()=>CombatCore.createBattle([hero,first],[[foe("a"),foe("a")]]),/unique id/i);
 assert.throws(()=>CombatCore.createBattle([hero,first],[[foe("hero")]]),/collides with ally/i);
-// Current two missions intentionally retain their already accepted rosters.
-const mission=read("mission-data.js");
-assert.doesNotMatch(mission,/futureEnemyWaves:/);
+// Existing two missions remain single-wave; the third demonstrates 2+3 enemies.
+const definitions=vm.runInNewContext(read("mission-data.js")+"\nMissionData");
+assert.equal(definitions.get("black-pass-ambush").futureEnemyWaves,undefined);
+assert.equal(definitions.get("demo-mission-2").futureEnemyWaves,undefined);
+const demo=definitions.get("demo-mission-3");
+assert.equal(demo.title,"Демонстрационная миссия #3");
+assert.deepEqual(Array.from(demo.futureEnemyWaves[0]),["ves-2","shade-2","ves-3"]);
+assert.equal(demo.stars[2].conditions[2].limit,18);
+const {CampaignCore,CampaignData}=vm.runInNewContext(
+ ["mission-data.js","campaign-data.js","campaign-core.js"].map(read).join("\n")+
+ "\n({CampaignCore,CampaignData})");
+const progress=CampaignCore.fresh();
+assert.equal(CampaignData.available(CampaignData.getMission("demo-mission-3"),progress),false);
+progress.completed["black-pass-ambush"]=true;progress.bestStars["black-pass-ambush"]=1;
+assert.equal(CampaignData.available(CampaignData.getMission("demo-mission-3"),progress),false);
+progress.completed["demo-mission-2"]=true;progress.bestStars["demo-mission-2"]=1;
+assert.equal(CampaignData.available(CampaignData.getMission("demo-mission-3"),progress),true);
+assert.equal(CampaignData.chapterProgress("chapter-1",progress).total,3);
+assert.equal(CampaignData.chapterProgress("chapter-1",progress).maxStars,9);
+
 const game=read("game.js");
 assert.match(game,/battleFutureWaves\(\)/);
 assert.match(game,/CombatCore\.createBattle\(battleLineup\(\),battleFutureWaves\(\)\)/);

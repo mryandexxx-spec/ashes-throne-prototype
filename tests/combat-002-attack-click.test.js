@@ -6,7 +6,7 @@ const vm = require("node:vm");
 const root = path.join(__dirname, "..");
 const sources = ["initiative-model.js", "ability-data.js","combat-core.js", "progress-core.js", "mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"]
  .map(file => fs.readFileSync(path.join(root, file), "utf8")).join("\n");
-const ids = ["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint","attackBtn",
+const ids = ["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn",
  "battleMessage","battle","renderCanvas","startBattle","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squad","squadBack","squadStart","squadCount","squadRoster","squadSlots","squadHint","detailBack","detailHome","detailUpgrade","basicAbilityBtn","specialAbilityBtn"];
 const elements = Object.fromEntries(ids.map(id => [id, {
  innerHTML:"", textContent:"", disabled:false, handlers:{},
@@ -23,18 +23,18 @@ const window = {addEventListener(){}};
 const context = vm.createContext({document,window});
 const api = vm.runInContext(sources+"\n({getBattle:()=>state,resetBattle})",context);
 api.resetBattle();
-const attackClick = elements.attackBtn.handlers.click[0];
-assert.ok(attackClick, "attack button must have a click listener");
+const attackClick = elements.basicAbilityBtn.handlers.click[0];
+assert.ok(attackClick, "basic ability must have a direct cast listener");
 const hpBefore = api.getBattle().fighters[3].hp;
 attackClick();
 assert.ok(api.getBattle().fighters[3].hp < hpBefore, "click must deal damage");
 let clicks = 1;
 while (api.getBattle().active && clicks++ < 30) attackClick();
 assert.equal(api.getBattle().winner,"ally");
-assert.equal(elements.attackBtn.textContent,"Сыграть снова");
-attackClick();
+assert.equal(elements.battleRetryBtn.hidden,false);
+elements.battleRetryBtn.handlers.click[0]();
 assert.equal(elements.squad.classList.active,true,"replay returns to prebattle selection");
 api.resetBattle();
 assert.equal(api.getBattle().turn,1,"fresh battle resets turns");
 assert.equal(api.getBattle().fighters[3].hp,hpBefore,"replay resets enemy HP");
-console.log("Combat-002 attack button regression passed");
+console.log("Combat-002 direct basic attack and replay regression passed");

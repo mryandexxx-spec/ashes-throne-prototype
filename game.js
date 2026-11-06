@@ -15,9 +15,10 @@ const $=s=>document.querySelector(s);
 let engine, scene, meshes={};
 let arenaCamera=null;
 // Combat-008B: allies are near the viewer, enemies farther away.
-const ARENA_VIEW=Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:17,targetY:.9});
+const ARENA_VIEW=Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
 const FORMATION_SPACING=1.6;
 let renderLoopRunning=false;
+let indicatorNodes={}; // Rebuilt on combat HUD changes, not each animation frame.
 let selectedAbility="basic";
 // Combat-004: manual remains the default. Only one cancellable timer may run.
 let autoBattle=false;
@@ -201,7 +202,7 @@ function showScreen(id){
    stopBattleRendering();
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
-   scene=undefined;engine=undefined;arenaCamera=null;meshes={};renderLoopRunning=false;
+   scene=undefined;engine=undefined;arenaCamera=null;meshes={};indicatorNodes={};renderLoopRunning=false;
    showScreen("squad");
    const notice=$("#battleLoadError");
    if(notice)notice.hidden=false;
@@ -382,6 +383,7 @@ function syncBattleUI(){
   $("#battleMessage").textContent=state.message;
   renderBattleLog();
   renderCombatants();
+  renderArenaIndicators();
   updateMeshes();
   return;
  }
@@ -430,6 +432,7 @@ function syncBattleUI(){
  $("#battleMessage").textContent=state.message;
  renderBattleLog();
  renderCombatants();
+ renderArenaIndicators();
  updateMeshes();
  queueAutoAction();
 }
@@ -443,6 +446,51 @@ function renderCombatants(){
    return `<div class="fighter ${h.side==="enemy"?"enemy":"ally"} ${h.hp<=0?"defeated":""} ${chosen?"selected":""} ${state.active&&i===state.currentActor?"acting":""}" data-index="${i}"><b>${h.name}</b><small>${Math.max(0,h.hp)} / ${h.maxHp} HP · СПД ${h.speed}</small>${status?`<span class="fighter-status">${status}</span>`:""}<div class="health"><span style="width:${Math.max(0,h.hp)/h.maxHp*100}%"></span></div></div>`;
  }).join("");
  // Status cards are read-only; all manual targets are picked in 3D.
+}
+// Combat-008C: HTML indicators track the mesh positions without intercepting taps.
+// Both fills are derived from CombatCore, not from a decorative animation.
+function renderArenaIndicators(){
+ const overlay=$("#arenaIndicators");
+ if(!overlay)return;
+ const roster=presentationFighters();
+ overlay.innerHTML=roster.filter(h=>h.hp>0||BattleAnimation.isDying(h.id)).map(h=>{
+  const health=Math.min(100,Math.max(0,h.hp/Math.max(1,h.maxHp)*100));
+  const initiative=Math.min(100,Math.max(0,(h.meter||0)/10));
+  const effects=[h.guardHits>0?`<span class="arena-effect" title="Защита: ${h.guardHits} ударов">◆${h.guardHits}</span>`:"",
+   h.weakenAttacks>0?`<span class="arena-effect debuff" title="Ослабление: ${h.weakenAttacks} атак">↓${h.weakenAttacks}</span>`:""].join("");
+  const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
+  const active=actor?.id===h.id;
+  return `<div class="arena-indicator ${h.side} ${active?"acting":""}" data-fighter-id="${h.id}" aria-label="${h.name}: здоровье ${Math.max(0,h.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
+   <div class="arena-indicator-name">${h.name}</div>
+   <div class="arena-health" title="HP ${Math.max(0,h.hp)} / ${h.maxHp}"><span style="width:${health}%"></span></div>
+   <div class="arena-initiative" title="Инициатива ${Math.round(h.meter||0)} / 1000"><span style="width:${initiative}%"></span></div>
+   ${effects?`<div class="arena-effects">${effects}</div>`:""}
+  </div>`;
+ }).join("");
+ indicatorNodes={};
+ if(typeof overlay.querySelectorAll==="function")for(const node of overlay.querySelectorAll(".arena-indicator"))
+  indicatorNodes[node.dataset.fighterId]=node;
+ positionArenaIndicators();
+}
+// Projection is presentation-only. Babylon pointer picking stays on the canvas.
+function positionArenaIndicators(){
+ if(!scene||!engine||!arenaCamera||!BABYLON.Vector3?.Project||
+    typeof scene.getTransformMatrix!=="function"||typeof engine.getRenderWidth!=="function")return;
+ const width=engine.getRenderWidth(),height=engine.getRenderHeight();
+ if(!width||!height||!arenaCamera.viewport?.toGlobal)return;
+ const viewport=arenaCamera.viewport.toGlobal(width,height);
+ const identity=BABYLON.Matrix?.Identity?.();
+ if(!identity)return;
+ for(const [id,node] of Object.entries(indicatorNodes)){
+  const mesh=meshes[id];
+  if(!mesh||!node?.style)continue;
+  const p=mesh.head.position;
+  const world=new BABYLON.Vector3(p.x,p.y+0.72,p.z);
+  const screen=BABYLON.Vector3.Project(world,identity,scene.getTransformMatrix(),viewport);
+  const visible=screen.z>=0&&screen.z<=1&&screen.x>=0&&screen.x<=width&&screen.y>=0&&screen.y<=height;
+  node.style.display=visible?"":"none";
+  if(visible){node.style.left=screen.x+"px";node.style.top=screen.y+"px";}
+ }
 }
 function resetBattle(){
  cancelAutoTimer();
@@ -518,6 +566,7 @@ function renderBattleFrame(){
   if(visual.body.rotation)visual.body.rotation.z=pose.tilt;
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
  }
+ positionArenaIndicators();
  scene.render();
  // Draw the last animation frame before revealing the next wave/result.
  finishVisualTransition();

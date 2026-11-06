@@ -560,3 +560,37 @@ body.battle-mode #app>footer{visibility:hidden}
 @media (orientation:landscape) and (max-height:390px) and (max-width:1100px){
  .battle-screen .target-fighter-hud{top:calc(45px + env(safe-area-inset-top,0px))}
 }
+
+/* Combat-008D-UI: swap the selected target and top-right battle controls. */
+.battle-screen .battle-top>.target-fighter-hud{
+ position:relative;top:auto;right:auto;justify-self:end;align-self:start;
+ width:clamp(165px,21vw,235px);max-width:100%;
+ margin:0;pointer-events:none;
+}
+.battle-screen .battle-top-controls.arena-hud{
+ position:absolute;top:calc(102px + env(safe-area-inset-top,0px));
+ right:max(12px,env(safe-area-inset-right,0px));
+ left:auto;z-index:3;display:flex;justify-content:flex-end;
+ width:max-content;max-width:calc(100vw - 24px);
+ gap:6px;align-items:center;pointer-events:none;
+}
+.battle-screen .battle-top-controls.arena-hud button{
+ pointer-events:auto;touch-action:manipulation;
+}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .battle-screen .battle-top>.target-fighter-hud{
+  top:auto;right:auto;width:min(190px,27vw);padding:6px 8px;
+ }
+ .battle-screen .battle-top-controls.arena-hud{
+  top:calc(71px + env(safe-area-inset-top,0px));gap:5px;
+ }
+ .battle-screen .battle-top-controls.arena-hud .ghost{
+  min-height:38px;padding:7px 8px;font-size:11px;
+ }
+ .battle-screen .battle-top-controls.arena-hud .auto-speed-btn{min-width:38px}
+}
+@media (orientation:landscape) and (max-height:390px) and (max-width:1100px){
+ .battle-screen .battle-top-controls.arena-hud{top:calc(65px + env(safe-area-inset-top,0px))}
+ .battle-screen .battle-top-controls.arena-hud .ghost{min-height:34px;padding:5px 7px}
+ .battle-screen .battle-top-controls.arena-hud .auto-speed-btn{min-width:34px}
+}

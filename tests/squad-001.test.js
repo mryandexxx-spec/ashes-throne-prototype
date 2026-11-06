@@ -76,7 +76,7 @@ click(elements.squadStart);
 assert.equal(elements.battle.classList.active,true);
 assert.equal(allyIds(),"lyra");
 assert.equal(engineCreates,1);
-assert.equal(meshCreates,24,"eight demo fighter templates get 3D shapes");
+assert.equal(meshCreates,27,"nine demo fighter templates get 3D shapes");
 const enemyIds=()=>api.getBattle().fighters.filter(h=>h.side==="enemy").map(h=>h.id).join(",");
 assert.equal(enemyIds(),"ves,shade");
 assert.equal(api.getBattle().fighters[api.getBattle().currentActor].side,"ally");
@@ -92,7 +92,7 @@ assert.equal(count(),"2/5");
 click(elements.squadStart);
 assert.equal(allyIds(),"kael,lyra");
 assert.equal(engineCreates,1,"scene and engine are reused");
-assert.equal(meshCreates,24,"no 3D allocations on re-entry");
+assert.equal(meshCreates,27,"no 3D allocations on re-entry");
 
 // Empty squads are blocked; restoring a hero re-enables battle.
 api.openSquad();

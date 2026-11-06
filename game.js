@@ -3,7 +3,11 @@ const HEROES = [
   {id:"lyra",name:"Лира Соль",role:"Следопыт",hp:88,atk:31,speed:155,side:"ally",glyph:"♧"},
   {id:"darin",name:"Дарин Пепельный",role:"Мечник",hp:105,atk:27,speed:125,side:"ally",glyph:"⚔"},
   {id:"ves",name:"Вестник Конклава",role:"Противник",hp:90,atk:18,speed:105,side:"enemy",glyph:"☠"},
-  {id:"shade",name:"Теневой клинок",role:"Противник",hp:78,atk:22,speed:135,side:"enemy",glyph:"♟"}
+  {id:"shade",name:"Теневой клинок",role:"Противник",hp:78,atk:22,speed:135,side:"enemy",glyph:"♟"},
+  // Demo-only copies: no new combat stats or lore. First mission still uses two enemies.
+  {id:"ves-2",name:"Вестник Конклава II",role:"Противник",hp:90,atk:18,speed:105,side:"enemy",glyph:"☠"},
+  {id:"shade-2",name:"Теневой клинок II",role:"Противник",hp:78,atk:22,speed:135,side:"enemy",glyph:"♟"},
+  {id:"ves-3",name:"Вестник Конклава III",role:"Противник",hp:90,atk:18,speed:105,side:"enemy",glyph:"☠"}
 ];
 const $=s=>document.querySelector(s);
 let engine, scene, meshes={};
@@ -35,10 +39,14 @@ function persistProgress(){
 let selectedHeroId=ALLIES[0].id;
 let selectedPartyIds=ALLIES.map(h=>h.id);
 let squadReturnScreen="home";
-let state=CombatCore.createBattle(HEROES);
+let state=CombatCore.createBattle([...ALLIES,...ENEMIES.slice(0,2)]);
 function progressedHero(hero){return ProgressCore.heroStats(progress,hero);}
 function selectedParty(){return ALLIES.filter(h=>selectedPartyIds.includes(h.id)).map(progressedHero);}
-function battleLineup(){return [...selectedParty(),...ENEMIES];}
+function battleLineup(){
+ // The original encounter is unchanged; mission #2 tests five enemies at once.
+ const enemies=battleIsCampaign&&activeMissionId==="demo-mission-2"?ENEMIES:ENEMIES.slice(0,2);
+ return [...selectedParty(),...enemies];
+}
 function renderSquad(){
  const chosen=selectedParty();
  $("#squadCount").textContent=chosen.length+"/"+MAX_SQUAD;
@@ -116,6 +124,11 @@ function openCampaignMission(id){
 }
 // Delegation allows cards to be rebuilt without installing duplicate handlers.
 $("#campaignMissions").addEventListener("click",event=>{
+ const simulate=event.target.closest("[data-simulate-mission]");
+ if(simulate&&$("#campaignMissions").contains(simulate)){
+  simulateMission(simulate.dataset.simulateMission);
+  return;
+ }
  const button=event.target.closest("[data-campaign-mission]");
  if(button&&$("#campaignMissions").contains(button))openCampaignMission(button.dataset.campaignMission);
 });
@@ -184,7 +197,7 @@ function renderCampaign(){
    const completed=campaignProgress.completed[entry.missionId]===true;
    const best=campaignProgress.bestStars[entry.missionId]||0;
    const status=completed?"Пройдено · Повторное прохождение доступно":available?"Не пройдено":"Заблокировано";
-   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button></div></article>`;
+   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}">Симуляция</button>`:""}</div></div></article>`;
    }).join("");
    return `<div class="campaign-route"><h3>${route.title}</h3>${items}</div>`;
   }).join("");
@@ -195,6 +208,19 @@ function renderCampaign(){
   ?"Статус прохождения хранится в этом браузере."
   :"Сохранение кампании недоступно. После перезагрузки отметка может исчезнуть.";
 }
+// Simulation is an independent successful reward claim, not a fabricated combat result.
+function simulateMission(id){
+ const entry=CampaignData.getMission(id);
+ if(!entry||!CampaignData.available(entry,campaignProgress)||campaignProgress.bestStars[id]!==3)return false;
+ const reward=ProgressCore.awardVictory(progress,{active:false,winner:"ally",rewardClaimed:false});
+ if(reward<=0)return false;
+ persistProgress();
+ $("#simulationText").textContent="Поздравляем с победой! "+MissionData.get(id).title+
+  ". Награда: +"+reward+" учебный материал. Всего: "+progress.materials+".";
+ $("#simulationDialog").showModal();
+ return true;
+}
+$("#simulationClose").addEventListener("click",()=>$("#simulationDialog").close());
 function renderMissionResult(){
  const won=state.winner==="ally";
  const entry=CampaignData.getMission(activeMissionId);

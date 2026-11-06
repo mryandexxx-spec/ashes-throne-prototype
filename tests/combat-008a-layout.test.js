@@ -33,5 +33,5 @@ assert.match(css,/env\(safe-area-inset-(left|right)/);
 assert.match(css,/\.battle-screen \.arena-hud\{[^}]*pointer-events:none/);
 assert.match(game,/document\.body\.classList\.toggle\("battle-mode",id==="battle"\)/);
 assert.ok(html.indexOf('id="buildVersion"')>html.indexOf("</section>",html.indexOf('<section id="battle"')),"footer stays outside battle");
-assert.match(html,/v0\.3\.6 · CBA008C-FIX/);
+assert.match(html,/v0\.3\.7 · CBA008C-TAP/);
 console.log("Combat-008A fullscreen arena structure, in-arena HUD and version passed");

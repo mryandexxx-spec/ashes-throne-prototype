@@ -7,7 +7,7 @@ const root = path.join(__dirname,"..");
 const src=["initiative-model.js","ability-data.js","combat-core.js","combat-log.js","progress-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"]
  .map(n=>fs.readFileSync(path.join(root,n),"utf8")).join("\n");
 const ids=["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint",
- "attackBtn","basicAbilityBtn","specialAbilityBtn","battleMessage","battle",
+ "battleRetryBtn","basicAbilityBtn","specialAbilityBtn","battleMessage","battle",
  "renderCanvas","battleLogSummary","battleLogEntries","startBattle","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squad","squadBack","squadStart","squadCount","squadRoster","squadSlots","squadHint","detailBack","detailHome","detailUpgrade"];
 const elem=()=>({
  innerHTML:"",textContent:"",disabled:false,handlers:{},dataset:{},
@@ -45,13 +45,11 @@ const clickFighter=i=>{
 assert.ok(fighterNodes.every(el=>!el.handlers.click),"side status cards must not select targets");
 api.resetBattle();
 assert.equal(api.getBattle().fighters[api.getBattle().currentActor].id,"lyra");
-click("specialAbilityBtn");
-assert.match(els.actionTitle.textContent,/Ослабляющий удар/);
 clickFighter(4);
 assert.equal(api.getBattle().selectedEnemy,4);
-click("attackBtn");
-assert.ok(api.getBattle().fighters[4].weakenAttacks>=0 && api.getBattle().fighters[4].weakenAttacks<=2);
-assert.equal(api.getBattle().fighters[4].hp,47,"Lyra deals basic 31 damage to selected enemy");
+click("specialAbilityBtn");
+assert.equal(api.getBattle().fighters[4].hp,47,"direct special deals 31 damage");
+assert.ok(api.getBattle().fighters[4].weakenAttacks>=0&&api.getBattle().fighters[4].weakenAttacks<=2);
 assert.match(els.battleLogSummary.textContent,/Журнал боя/);
 assert.match(els.battleLogEntries.textContent,/Лира Соль.*Ослабляющий удар/);
 assert.match(els.battleLogEntries.textContent,/Теневой клинок.*31 HP/);
@@ -59,20 +57,21 @@ assert.equal(els.specialAbilityBtn.classList.selected,false);
 api.resetBattle();
 assert.equal(els.battleLogEntries.textContent,"Пока нет событий.","restart clears previous log");
 let steps=0;
-while(api.getBattle().active && api.getBattle().fighters[api.getBattle().currentActor].id!=="kael" && steps++<12)
- click("attackBtn");
-assert.ok(api.getBattle().active && steps<12,"Kael must get a turn");
+while(api.getBattle().active&&api.getBattle().fighters[api.getBattle().currentActor].id!=="kael"&&steps++<12)
+ click("basicAbilityBtn");
+assert.ok(api.getBattle().active&&steps<12,"Kael must get a turn");
+const before=api.getBattle().allyActions;
 click("specialAbilityBtn");
-assert.equal(els.attackBtn.textContent,"Применить");
+assert.equal(api.getBattle().allyActions,before,"support ability only enters ally targeting");
+assert.equal(els.specialAbilityBtn.classList.selected,true);
+assert.match(els.actionHint.textContent,/Коснись союзника/);
 clickFighter(1);
-assert.equal(api.getBattle().selectedAlly,1);
-assert.match(els.actionHint.textContent,/Лира/);
-click("attackBtn");
-assert.equal(api.getBattle().fighters[1].guardHits,2);
+assert.equal(api.getBattle().fighters[1].guardHits,2,"tap on ally applies guard");
+assert.equal(api.getBattle().allyActions,before+1);
 assert.match(els.battleLogEntries.textContent,/Прикрытие/);
 assert.match(els.battleLogEntries.textContent,/Защита ×2/);
-assert.equal(els.attackBtn.textContent,"Атаковать");
+assert.equal(els.specialAbilityBtn.classList.selected,false);
 api.resetBattle();
 assert.equal(api.getBattle().fighters[1].guardHits,0);
 assert.equal(els.specialAbilityBtn.disabled,false);
-console.log("Combat-003B actual button and ally/enemy target tests passed");
+console.log("Combat-003B direct enemy cast and ally support cursor tests passed");

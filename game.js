@@ -16,7 +16,17 @@ let engine, scene, meshes={};
 let arenaCamera=null;
 // Combat-008B: allies are near the viewer, enemies farther away.
 const ARENA_VIEW=Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
-const FORMATION_SPACING=1.6;
+// Staggered 3-front / 2-rear formation on each team.
+const FORMATION_SPACING=1.9;
+function formationPosition(side,slot,count){
+ const front=Math.min(3,count);
+ const rear=count-front;
+ const isRear=slot>=front;
+ const rowSize=isRear?rear:front;
+ const lane=isRear?slot-front:slot;
+ const direction=side==="ally"?-1:1;
+ return {x:direction*(isRear?4.05:2.45),z:(lane-(rowSize-1)/2)*FORMATION_SPACING};
+}
 let renderLoopRunning=false;
 let indicatorNodes={}; // Rebuilt on combat HUD changes, not each animation frame.
 let selectedAbility="basic";
@@ -561,7 +571,9 @@ function renderBattleFrame(){
   visual.base.setEnabled(visible);
   if(!visible)continue;
   const pose=BattleAnimation.pose(h.id);
-  const x=h.side==="ally"?-3.4:3.4;
+  const team=presentationFighters().filter(f=>f.side===h.side);
+  const slot=team.findIndex(f=>f.id===h.id);
+  const x=formationPosition(h.side,slot,team.length).x;
   const offset=pose.x*(h.side==="ally"?1:-1);
   visual.body.position.x=visual.head.position.x=visual.base.position.x=x+offset;
   visual.body.position.y=.8+pose.y;
@@ -613,7 +625,8 @@ function initBabylon(){
  gridmat.alpha=.28;gridmat.wireframe=true;gridmat.backFaceCulling=false;grid.material=gridmat;
  // Low-poly stylized fighters: capsule body, sphere head, colored shield.
  HEROES.forEach((h,i)=>{
-  const x=h.side==="ally"?-3.4:3.4,z=(i%3-1)*FORMATION_SPACING;
+  const start=formationPosition(h.side,i%3,3);
+  const x=start.x,z=start.z;
   const body=BABYLON.MeshBuilder.CreateCapsule("body_"+i,{height:1.5,radius:.42},scene);body.position=new BABYLON.Vector3(x,.8,z);
   const mat=new BABYLON.StandardMaterial("mat_"+i,scene);mat.diffuseColor=h.side==="ally"?new BABYLON.Color3(.28,.55,.76):new BABYLON.Color3(.72,.25,.23);mat.emissiveColor=h.side==="ally"?new BABYLON.Color3(.02,.06,.09):new BABYLON.Color3(.08,.015,.01);body.material=mat;
   const head=BABYLON.MeshBuilder.CreateSphere("head_"+i,{diameter:.62,segments:12},scene);head.position=new BABYLON.Vector3(x,1.8,z);head.material=mat;
@@ -629,7 +642,34 @@ function initBabylon(){
    });
   }
   // Registered only once because initBabylon() runs once.
- window.addEventListener("resize",()=>{if(shouldRenderBattle())engine.resize();});
+ // Safari resize may fire before the landscape layout has settled.
+ // Observe actual arena dimensions and synchronize render buffer after layout.
+ let resizeQueued=false,previousLandscape=null;
+ function synchronizeArenaSize(){
+  if(!shouldRenderBattle()||resizeQueued)return;
+  resizeQueued=true;
+  const update=()=>{
+   resizeQueued=false;
+   if(!shouldRenderBattle())return;
+   const landscape=typeof window.innerWidth==="number"&&typeof window.innerHeight==="number"
+    ?window.innerWidth>window.innerHeight:null;
+   if(landscape===true&&previousLandscape===false)resetArenaCamera();
+   if(landscape!==null)previousLandscape=landscape;
+   engine.resize();
+   positionArenaIndicators();
+  };
+  if(typeof window.requestAnimationFrame==="function")
+   window.requestAnimationFrame(()=>window.requestAnimationFrame(update));
+  else update();
+ }
+ window.addEventListener("resize",synchronizeArenaSize);
+ window.addEventListener("orientationchange",synchronizeArenaSize);
+ if(window.visualViewport?.addEventListener)
+  window.visualViewport.addEventListener("resize",synchronizeArenaSize);
+ if(typeof window.ResizeObserver==="function"){
+  const observer=new window.ResizeObserver(synchronizeArenaSize);
+  observer.observe(canvas.parentElement||canvas);
+ }
 }
 function updateMeshes(){
  if(!scene)return;
@@ -645,8 +685,7 @@ function updateMeshes(){
   if(visible){
    const sideMembers=roster.filter(f=>f.side===member.side);
    const slot=sideMembers.findIndex(f=>f.id===h.id);
-   const x=member.side==="ally"?-3.4:3.4;
-   const z=(slot-(sideMembers.length-1)/2)*FORMATION_SPACING;
+   const {x,z}=formationPosition(member.side,slot,sideMembers.length);
    mesh.body.position.x=mesh.head.position.x=mesh.base.position.x=x;
    mesh.body.position.z=mesh.head.position.z=mesh.base.position.z=z;
    const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;

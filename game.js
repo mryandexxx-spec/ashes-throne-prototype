@@ -197,7 +197,9 @@ function renderCampaign(){
    const completed=campaignProgress.completed[entry.missionId]===true;
    const best=campaignProgress.bestStars[entry.missionId]||0;
    const status=completed?"Пройдено · Повторное прохождение доступно":available?"Не пройдено":"Заблокировано";
-   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}">Симуляция</button>`:""}</div></div></article>`;
+   const criteria=mission.stars.map((star,index)=>
+    `<li><span class="mission-criteria-star">${index+1}★</span><span>${star.hint}</span></li>`).join("");
+   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}">Симуляция</button>`:""}</div></div></article>`;
    }).join("");
    return `<div class="campaign-route"><h3>${route.title}</h3>${items}</div>`;
   }).join("");

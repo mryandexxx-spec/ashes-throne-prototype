@@ -115,7 +115,8 @@ api.chooseParty(["kael"]);api.resetBattle();
 b=api.getBattle();
 const kael=b.fighters[0];
 click("powerfulAbilityBtn");
-assert.equal(kael.guardHits,3,"guardian powerful self-guard applies to its caster");
+assert.ok(b.events.some(e=>e.type==="effect"&&e.targetId===kael.id&&e.effect==="guard"&&e.stacks===3),
+ "guardian powerful self-guard applies to its caster");
 assert.equal(kael.powerfulCooldown,2);
 
 api.chooseParty(["lyra"]);api.resetBattle();
@@ -124,7 +125,8 @@ const lyra=b.fighters[0],marked=b.fighters.find(f=>f.id==="ves");
 const hpMarked=marked.hp;
 click("powerfulAbilityBtn");
 assert.equal(marked.hp,hpMarked-Math.round(lyra.atk*1.5));
-assert.equal(marked.weakenAttacks,2,"scout powerful attack also applies weakening");
+assert.ok(b.events.some(e=>e.type==="effect"&&e.targetId===marked.id&&e.effect==="weaken"&&e.stacks===2),
+ "scout powerful attack also applies weakening");
 assert.equal(lyra.powerfulCooldown,2);
 
 api.chooseParty(["darin"]);api.resetBattle();

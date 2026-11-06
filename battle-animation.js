@@ -9,7 +9,8 @@ const BattleAnimation=(()=>{
  function enqueue(events){
   if(!Array.isArray(events))return;
   for(const event of events){
-   if(event.type==="ability"&&typeof event.actorId==="string"&&typeof event.targetId==="string")
+   if(event.type==="ability"&&typeof event.actorId==="string"&&typeof event.targetId==="string"&&
+      events.some(hit=>hit.type==="damage"&&hit.actorId===event.actorId&&hit.targetId===event.targetId))
     queue.push({actorId:event.actorId,targetId:event.targetId});
   }
  }

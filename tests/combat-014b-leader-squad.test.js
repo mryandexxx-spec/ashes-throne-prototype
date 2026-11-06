@@ -172,7 +172,8 @@ const fullShort=vm.runInNewContext(src+
 fullShort.ALLIES.pop();
 fullShort.openSquad();
 assert.equal(fullShort.selectedParty().length,4);
-click(elements.squadStart);
+// Run the latest VM handler, not the original context\u0027s listener.
+elements.squadStart.handlers.click.at(-1)();
 assert.equal(elements.battle.classList.active,true,
  "no warning when all four available heroes are selected");
 

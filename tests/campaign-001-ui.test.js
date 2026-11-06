@@ -39,7 +39,15 @@ const document={
  },
  addEventListener(type,fn){if(type==="visibilitychange")visibilityListeners.push(fn)}
 };
-let meshCreates=0,engineCreates=0,rendersStarted=0;
+let meshCreates=0,engineCreates=0,rendersStarted=0,resizes=0;
+const viewportEvents={};const rafQueue=[];
+const liveWindow={localStorage:null,innerWidth:844,innerHeight:390,
+ addEventListener(type,fn){viewportEvents[type]=fn},
+ requestAnimationFrame(fn){rafQueue.push(fn)},
+ visualViewport:{addEventListener(type,fn){viewportEvents["visual-"+type]=fn}},
+ ResizeObserver:class{constructor(fn){viewportEvents.observer=fn}observe(){}}
+};
+function flushRaf(){let count=0;while(rafQueue.length){assert.ok(++count<12,"no endless layout scheduling");rafQueue.shift()();}}
 let pointerListener=null;
 class Mesh {
  constructor(){this.position={};this.visible=true;}
@@ -47,7 +55,7 @@ class Mesh {
 }
 class Engine {
  constructor(){engineCreates++;}
- resize(){}
+ resize(){resizes++;}
  runRenderLoop(){rendersStarted++;}
  stopRenderLoop(){}
 }
@@ -67,6 +75,7 @@ const BABYLON={Engine,Scene,PointerEventTypes:{POINTERPICK:1},ArcRotateCamera:Ca
 };
 const savedData=new Map();
 const localStorage={getItem:k=>savedData.has(k)?savedData.get(k):null,setItem:(k,v)=>savedData.set(k,v)};
+liveWindow.localStorage=localStorage;
 const timers=new Map();
 const scheduledDelays=new Map();
 let nextTimer=0;
@@ -86,8 +95,8 @@ function tick(){
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), setAutoSpeed})",
- {document,window:{addEventListener(){},localStorage},BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
+ "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), setAutoSpeed})",
+ {document,window:liveWindow,BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 elements.campaignMissions.contains=()=>true;
 function clickMission(id="black-pass-ambush"){
@@ -122,6 +131,27 @@ assert.equal(elements.squad.classList.active,true);
 click(elements.squadStart);
 assert.equal(elements.battle.classList.active,true);
 assert.equal(document.body.classList.contains("battle-mode"),true,"battle hides document scroll behind fullscreen arena");
+// iPhone Safari portrait -> landscape: defer resize until CSS layout is committed.
+assert.equal(typeof viewportEvents.orientationchange,"function");
+assert.equal(typeof viewportEvents["visual-resize"],"function");
+assert.equal(typeof viewportEvents.observer,"function","observe the canvas container");
+const activeCamera=api.getArenaCamera();
+activeCamera.alpha=0; // A user-adjusted view is reset only when returning from portrait.
+liveWindow.innerWidth=390;liveWindow.innerHeight=844;
+viewportEvents.orientationchange();flushRaf();
+assert.equal(activeCamera.alpha,0,"portrait resize does not force camera reset");
+const beforeLandscapeResize=resizes;
+liveWindow.innerWidth=844;liveWindow.innerHeight=390;
+viewportEvents.orientationchange();
+viewportEvents.resize();
+viewportEvents["visual-resize"]();
+viewportEvents.observer();
+assert.equal(resizes,beforeLandscapeResize,"resize is deferred until layout settles");
+flushRaf();
+assert.equal(resizes,beforeLandscapeResize+1,"all events coalesce to one Babylon resize");
+assert.equal(activeCamera.alpha,-3*Math.PI/4,"landscape return restores isometric camera");
+assert.equal(activeCamera.radius,12,"landscape return keeps approved max zoom");
+
 const first=api.getBattle();
 assert.equal(typeof pointerListener,"function","arena pointer listener registered");
 const firstEnemy=first.fighters.find(f=>f.side==="enemy");

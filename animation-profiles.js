@@ -6,15 +6,15 @@ const AnimationProfiles=(()=>{
  const SLOTS=Object.freeze(["idle","basic","special","powerful","passive","leader","guard","ward","hit","death"]);
  const templates=Object.freeze({
   idle:Object.freeze({kind:"idle",durationMs:1200,amplitude:.055}),
-  basic:Object.freeze({kind:"lunge",durationMs:280,amplitude:.55}),
-  special:Object.freeze({kind:"lunge",durationMs:340,amplitude:.7}),
+  basic:Object.freeze({kind:"lunge",durationMs:200,amplitude:.55}),
+  special:Object.freeze({kind:"lunge",durationMs:200,amplitude:.7}),
   powerful:Object.freeze({kind:"lunge",durationMs:420,amplitude:.85}),
   passive:Object.freeze({kind:"ward",durationMs:280,amplitude:.22}),
   leader:Object.freeze({kind:"ward",durationMs:360,amplitude:.3}),
-  guard:Object.freeze({kind:"guard",durationMs:360,amplitude:.32}),
-  ward:Object.freeze({kind:"ward",durationMs:420,amplitude:.25}),
-  hit:Object.freeze({kind:"hit",durationMs:230,amplitude:.18}),
-  death:Object.freeze({kind:"death",durationMs:540,amplitude:.85})
+  guard:Object.freeze({kind:"guard",durationMs:190,amplitude:.32}),
+  ward:Object.freeze({kind:"ward",durationMs:140,amplitude:.25}),
+  hit:Object.freeze({kind:"hit",durationMs:120,amplitude:.18}),
+  death:Object.freeze({kind:"death",durationMs:400,amplitude:.85})
  });
  const overrides=new Map();
  function register(heroId,slots){
@@ -26,7 +26,10 @@ const AnimationProfiles=(()=>{
       !Number.isFinite(definition.durationMs)||definition.durationMs<=0||
       typeof definition.kind!=="string"||
       !["idle","lunge","guard","ward","hit","death"].includes(definition.kind)||
-      !Number.isFinite(definition.amplitude)||definition.amplitude<0)
+      !Number.isFinite(definition.amplitude)||definition.amplitude<0||
+      ((definition.assetId!==undefined||definition.clipName!==undefined)&&
+       (typeof definition.assetId!=="string"||!definition.assetId.trim()||
+        typeof definition.clipName!=="string"||!definition.clipName.trim())))
     throw Error("Invalid animation slot: "+slot);
    resolved[slot]=Object.freeze({...definition});
   }

@@ -40,13 +40,34 @@ const CombatCore = (() => {
     }).map(mod=>({stat:mod.stat,operation:mod.operation,value:mod.value}));
   }
 
+  // Combat-014A: leader selection is explicit. A leader ability in a hero's
+  // data never activates without opting into that exact eligible roster member.
+  // The simple aura adapter deliberately reuses the passive stat operations;
+  // unique leader mechanics and eligibility require separate authoring.
+  function activeLeaderModifiers(battle,recipientId){
+    if(!battle||!battle.active||!battle.leaderId||!Array.isArray(battle.fighters))return [];
+    const leader=battle.fighters.find(f=>f.id===battle.leaderId);
+    const recipient=battle.fighters.find(f=>f.id===recipientId);
+    if(!leader||leader.side!=="ally"||leader.hp<=0||
+       !recipient||recipient.side!=="ally"||recipient.hp<=0)return [];
+    const definition=AbilityData.get(leader,"leader");
+    if(!definition||!Array.isArray(definition.modifiers))return [];
+    return definition.modifiers.filter(mod=>
+      mod&&["atk","speed"].includes(mod.stat)&&mod.operation==="flat"&&
+      Number.isFinite(mod.value)&&
+      (mod.scope==="all-allies"||(mod.scope==="self"&&recipient.id===leader.id))&&
+      mod.when&&mod.when.kind==="always")
+      .map(mod=>({stat:mod.stat,operation:mod.operation,value:mod.value}));
+  }
+
   // Combat-013B: flat modifiers are summed only for the owner while alive.
   // A fresh derived value is used for every action / initiative advance.
   // Never mutate the fighter's base atk/speed fields (Save/UI compatibility).
   function effectiveStat(battle,fighter,stat){
     const base=fighter[stat];
     if(!Number.isFinite(base))return base;
-    const addition=activePassiveModifiers(battle,fighter.id)
+    const addition=[...activePassiveModifiers(battle,fighter.id),
+      ...activeLeaderModifiers(battle,fighter.id)]
       .filter(mod=>mod.stat===stat&&mod.operation==="flat")
       .reduce((total,mod)=>total+mod.value,0);
     return Math.max(stat==="speed"?1:0,base+addition);
@@ -67,7 +88,8 @@ const CombatCore = (() => {
 
   // Optional future waves are separate encounters inside the same battle.
   // Existing single-wave calls keep their original behavior.
-  function createBattle(heroes, futureWaves = []) {
+  function createBattle(heroes, futureWaves = [], options = {}) {
+    if(!options||typeof options!=="object"||Array.isArray(options))throw Error("invalid battle options");
     if (!Array.isArray(futureWaves)) throw Error("futureWaves must be an array");
     if (futureWaves.some(wave => !Array.isArray(wave) || wave.length === 0 ||
         wave.some(enemy => !enemy || enemy.side !== "enemy")))
@@ -81,8 +103,18 @@ const CombatCore = (() => {
     const initiative = InitiativeModel.createInitiative(heroes);
     const fighters = heroes.map((hero,index) =>
       makeFighter(hero,index,initiative[index].meter));
+    // No leader is a valid default for all existing battles and all current
+    // playable heroes. Invalid explicit assignments fail before battle starts.
+    const leaderId=options.leaderId??null;
+    if(leaderId!==null){
+      const leader=fighters.find(f=>f.id===leaderId);
+      if(typeof leaderId!=="string"||!leader||leader.side!=="ally"||
+         leader.hp<=0||!AbilityData.get(leader,"leader"))
+        throw Error("leader must be a living eligible ally in the roster");
+    }
     return {
       fighters,
+      leaderId,
       wave: 1,
       totalWaves: 1 + futureWaves.length,
       // Copy the roster references so callers cannot alter the wave queue.
@@ -487,6 +519,6 @@ const CombatCore = (() => {
 
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
-    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects, abilityTargetIndices, activePassiveModifiers, effectiveStat
+    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects, abilityTargetIndices, activePassiveModifiers, activeLeaderModifiers, effectiveStat
   });
 })();

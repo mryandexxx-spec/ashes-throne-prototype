@@ -366,6 +366,30 @@ function renderBattleLog(){
  summary.textContent="Журнал боя · "+lines.length+" событий";
  content.textContent=lines.length?lines.map((line,i)=>(i+1)+". "+line).join("\n"):"Пока нет событий.";
 }
+// Combat-008D: show the actor whose turn is active, not the selected target.
+// Levels exist only when provided by current fighter data.
+function renderCurrentFighterHud(){
+ const panel=$("#currentFighterHud");
+ if(!panel)return;
+ const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
+ const side=$("#currentFighterSide"),level=$("#currentFighterLevel");
+ const name=$("#currentFighterName"),hp=$("#currentFighterHp");
+ const stats=$("#currentFighterStats"),fill=$("#currentFighterHealthFill");
+ panel.classList.toggle("enemy",!!actor&&actor.side==="enemy");
+ if(!actor){
+  side.textContent=isVisualTransition()?"ПЕРЕХОД":"ОЧЕРЕДЬ ХОДОВ";
+  level.textContent="";
+  name.textContent=isVisualTransition()?"Завершение действий":state.active?"Ожидание бойца":"Бой завершён";
+  hp.textContent="";stats.textContent="";fill.style.width="0%";
+  return;
+ }
+ side.textContent=actor.side==="ally"?"СОЮЗНИК":"ПРОТИВНИК";
+ level.textContent=Number.isInteger(actor.level)&&actor.level>0?"Ур. "+actor.level:"";
+ name.textContent=actor.name;
+ hp.textContent="HP "+Math.max(0,actor.hp)+"/"+actor.maxHp;
+ stats.textContent="АТК "+actor.atk+" · СКР "+actor.speed;
+ fill.style.width=Math.max(0,Math.min(100,actor.hp/Math.max(1,actor.maxHp)*100))+"%";
+}
 function syncBattleUI(){
  if(!state.active){cancelAutoTimer();autoBattle=false;}
  // Commit battle outcome immediately as before, even if the player leaves
@@ -393,6 +417,7 @@ function syncBattleUI(){
   $("#battleMessage").textContent=state.message;
   renderBattleLog();
   renderCombatants();
+  renderCurrentFighterHud();
   renderArenaIndicators();
   updateMeshes();
   return;
@@ -442,6 +467,7 @@ function syncBattleUI(){
  $("#battleMessage").textContent=state.message;
  renderBattleLog();
  renderCombatants();
+ renderCurrentFighterHud();
  renderArenaIndicators();
  updateMeshes();
  queueAutoAction();

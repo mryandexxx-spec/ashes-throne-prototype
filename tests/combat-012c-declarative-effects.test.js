@@ -79,6 +79,13 @@ assert.equal(b.fighters[2].guardHits,1);
 assert.equal(b.fighters[0].weakenAttacks,1,"one weakening stack spent per command");
 assert.equal(of(b,"effect").filter(e=>e.effect==="weaken").length,1);
 
+b=battle("test-all-followups");
+assert.equal(core.performPlayerAbility(b,"special"),true);
+assert.deepEqual(of(b,"effect").map(e=>e.targetId),["first","second"],
+ "all-recipient scope is interpreted from data, not special-cased to primary");
+assert.equal(b.fighters[1].weakenAttacks,1);
+assert.equal(b.fighters[2].weakenAttacks,1);
+
 const original=AbilityData.get({id:"test-primary-bonus"},"special");
 assert.ok(Object.isFrozen(original.followUpEffects));
 for(const id of ["kael","lyra","darin","medic-demo","test-area-damage"]){

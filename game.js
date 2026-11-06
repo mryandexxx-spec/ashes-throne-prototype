@@ -16,7 +16,20 @@ let selectedAbility="basic";
 // Combat-004: manual remains the default. Only one cancellable timer may run.
 let autoBattle=false;
 let autoTimer=null;
+// Combat-004B: UI pacing only; initiative and combat calculations stay unchanged.
 const AUTO_STEP_MS=350;
+const AUTO_SPEEDS=Object.freeze([1,2,4]);
+let autoSpeed=1;
+function autoDelay(){return Math.round(AUTO_STEP_MS/autoSpeed);}
+function setAutoSpeed(speed){
+ if(!AUTO_SPEEDS.includes(speed))return false;
+ if(!autoBattle||!state.active||document.hidden||!$("#battle").classList.contains("active"))return false;
+ if(autoSpeed===speed)return true;
+ autoSpeed=speed;
+ cancelAutoTimer(); // apply new delay immediately without a stale queued step
+ syncBattleUI();
+ return true;
+}
 function cancelAutoTimer(){
  if(autoTimer!==null){clearTimeout(autoTimer);autoTimer=null;}
 }
@@ -30,7 +43,7 @@ function queueAutoAction(){
   if(!CombatCore.performAutoAction(state)){setAutoBattle(false);return;}
   selectedAbility="basic";
   syncBattleUI();
- },AUTO_STEP_MS);
+ },autoDelay());
 }
 function setAutoBattle(enabled){
  cancelAutoTimer();
@@ -337,6 +350,12 @@ function syncBattleUI(){
   autoButton.textContent=autoBattle?"Ручной бой":"Автобой";
   autoButton.setAttribute("aria-pressed",String(autoBattle));
  }
+ const speedButton=$("#autoSpeedBtn");
+ if(speedButton){
+  speedButton.disabled=!state.active||!autoBattle;
+  speedButton.textContent=autoSpeed+"×";
+  speedButton.setAttribute("aria-label","Скорость автобоя "+autoSpeed+"×. Нажми, чтобы изменить");
+ }
  $("#specialAbilityBtn").textContent=actor&&actor.specialCooldown>0?"Особая · "+actor.specialCooldown:"Особая";
  $("#basicAbilityBtn").classList.toggle("selected",selectedAbility==="basic");
  $("#specialAbilityBtn").classList.toggle("selected",selectedAbility==="special");
@@ -368,6 +387,7 @@ function renderCombatants(){
 function resetBattle(){
  cancelAutoTimer();
  autoBattle=false;
+ autoSpeed=1;
  missionResultShown=false;
  lastMissionStars=0;
  selectedAbility="basic";
@@ -386,6 +406,13 @@ function attack(){
 $("#attackBtn").addEventListener("click",()=>{if(!state.active)openSquad("home");else attack();});
 const autoBattleControl=$("#autoBattleBtn");
 if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.active)setAutoBattle(!autoBattle);});
+const autoSpeedControl=$("#autoSpeedBtn");
+if(autoSpeedControl)autoSpeedControl.addEventListener("click",()=>{
+ if(autoBattle&&state.active){
+  const next=AUTO_SPEEDS[(AUTO_SPEEDS.indexOf(autoSpeed)+1)%AUTO_SPEEDS.length];
+  setAutoSpeed(next);
+ }
+});
 $("#basicAbilityBtn").addEventListener("click",()=>{if(state.active&&!autoBattle){selectedAbility="basic";syncBattleUI();}});
 $("#specialAbilityBtn").addEventListener("click",()=>{if(!autoBattle&&CombatCore.abilityReady(state,"special")){selectedAbility="special";syncBattleUI();}});
 // A single render callback and a single Engine/Scene for the lifetime of this prototype.

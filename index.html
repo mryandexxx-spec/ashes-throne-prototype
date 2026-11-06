@@ -101,6 +101,15 @@
       <div class="arena-wrap">
         <canvas id="renderCanvas" aria-label="Трёхмерная арена: коснись бойца, чтобы выбрать цель"></canvas>
         <div id="arenaIndicators" class="arena-indicators" aria-label="Здоровье, инициатива и эффекты бойцов"></div>
+        <div id="fighterInspect" class="fighter-inspect arena-hud" role="dialog" aria-modal="true" aria-labelledby="inspectName" hidden>
+          <div class="fighter-inspect-panel">
+            <div class="fighter-inspect-top"><span id="inspectSide">БОЕЦ</span><button type="button" id="inspectClose" class="ghost" aria-label="Закрыть сведения о бойце">✕</button></div>
+            <h3 id="inspectName">Информация о бойце</h3>
+            <p id="inspectRole" class="fighter-inspect-role"></p>
+            <div id="inspectStats" class="fighter-inspect-stats"></div>
+            <div id="inspectEffects" class="fighter-inspect-effects"></div>
+          </div>
+        </div>
         <div class="battle-top arena-hud" aria-label="Управление боем">
           <button class="ghost" data-screen="home">✕ В меню</button>
           <div class="battle-heading"><div class="eyebrow" id="battleMissionLabel">СТОЛКНОВЕНИЕ</div><strong id="battleStatus">Выберите цель</strong></div>
@@ -142,7 +151,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.9 · CBA008D-UI-UI</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.10 · CBA008E</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

@@ -6,14 +6,15 @@ const vm=require("node:vm");
 const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","attackBtn",
- "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
+ "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
    remove(x){this[x]=false},toggle(x,v){this[x]=!!v}},
-  addEventListener(type,fn){(this.handlers[type]??=[]).push(fn)}
+  addEventListener(type,fn){(this.handlers[type]??=[]).push(fn)},
+  setAttribute(name,value){this[name]=value}
  };
 }
 const elements=Object.fromEntries(ids.map(id=>[id,element(id)]));
@@ -24,6 +25,7 @@ const heroNodes=["kael","lyra","darin"].map(id=>{const e=element();e.dataset.ope
 const arenaNav=element();arenaNav.dataset.screen="battle";
 const collectionNav=element();collectionNav.dataset.screen="collection";
 const allScreens=["home","collection","campaign","squad","battle","heroDetail","missionResult"].map(id=>elements[id]);
+const visibilityListeners=[];
 const document={
  hidden:false,
  querySelector(q){return elements[q.slice(1)]},
@@ -34,7 +36,7 @@ const document={
   if(q==="[data-open-hero]")return heroNodes;
   return [];
  },
- addEventListener(){}
+ addEventListener(type,fn){if(type==="visibilitychange")visibilityListeners.push(fn)}
 };
 let meshCreates=0,engineCreates=0,rendersStarted=0;
 class Mesh {
@@ -60,9 +62,18 @@ const BABYLON={Engine,Scene,ArcRotateCamera:Camera,HemisphericLight:class{},Dire
 };
 const savedData=new Map();
 const localStorage={getItem:k=>savedData.has(k)?savedData.get(k):null,setItem:(k,v)=>savedData.set(k,v)};
+const timers=new Map();
+let nextTimer=0;
+function fakeSetTimeout(fn){const id=++nextTimer;timers.set(id,fn);return id;}
+function fakeClearTimeout(id){timers.delete(id);}
+function tick(){
+ const first=timers.entries().next().value;
+ assert.ok(first,"expected pending autobattle step");
+ timers.delete(first[0]);first[1]();
+}
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI})",
- {document,window:{addEventListener(){},localStorage},BABYLON});
+ "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle})",
+ {document,window:{addEventListener(){},localStorage},BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 elements.campaignMissions.contains=()=>true;
 function clickMission(id="black-pass-ambush"){
@@ -174,4 +185,71 @@ assert.equal(api.getMaterials(),materialsBeforeWaves+1,"repeated UI sync cannot 
 // Return home from mission result does not affect persistent status.
 click(elements.missionResultHome);
 assert.equal(elements.home.classList.active,true);
-console.log("Campaign-001 mission entrance, victory/defeat, reward repeat, persistence and navigation passed");
+// Combat-004 integration: player may interrupt autoplay before a scheduled action.
+api.showScreen("campaign");
+clickMission("black-pass-ambush");
+click(elements.squadStart);
+assert.equal(api.isAuto(),false,"manual by default on every new battle");
+assert.equal(timers.size,0);
+click(elements.autoBattleBtn);
+assert.equal(api.isAuto(),true);
+assert.equal(elements.autoBattleBtn["aria-pressed"],"true");
+assert.equal(timers.size,1,"one action scheduled");
+const before=api.getBattle().allyActions;
+click(elements.attackBtn);
+assert.equal(api.getBattle().allyActions,before,"manual attack ignored during autobattle");
+click(elements.autoBattleBtn);
+assert.equal(api.isAuto(),false);
+assert.equal(timers.size,0,"manual takeover cancels queued action");
+assert.equal(api.getBattle().allyActions,before);
+click(elements.autoBattleBtn);
+assert.equal(timers.size,1);
+tick();
+assert.equal(api.getBattle().allyActions,before+1,"automatic action uses normal combat state");
+assert.equal(timers.size,1,"exactly one next action scheduled");
+api.showScreen("home");
+assert.equal(api.isAuto(),false);
+assert.equal(timers.size,0,"leaving battle cancels pending automatic action");
+// Hidden tab pauses and visible tab resumes a single timer.
+api.showScreen("campaign");
+clickMission("black-pass-ambush");
+click(elements.squadStart);
+click(elements.autoBattleBtn);
+assert.equal(timers.size,1);
+document.hidden=true;
+visibilityListeners.forEach(fn=>fn());
+assert.equal(timers.size,0,"switching to hidden tab cancels the timer");
+assert.equal(api.isAuto(),true,"auto preference remains on while hidden");
+document.hidden=false;
+visibilityListeners.forEach(fn=>fn());
+assert.equal(timers.size,1,"visible tab resumes exactly one action");
+tick();
+assert.ok(api.getBattle().allyActions>0);
+api.showScreen("home");
+assert.equal(api.isAuto(),false);
+assert.equal(timers.size,0);
+// Mission #3: autobattle crosses the wave boundary and rewards only once.
+api.showScreen("campaign");
+clickMission("demo-mission-3");
+click(elements.squadStart);
+const autoWaves=api.getBattle();
+assert.equal(autoWaves.totalWaves,2);
+autoWaves.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
+click(elements.autoBattleBtn);
+let actions=0;
+while(autoWaves.wave===1&&autoWaves.active&&actions++<10)tick();
+assert.equal(autoWaves.wave,2);
+assert.equal(elements.battle.classList.active,true);
+const rewardBeforeFinal=api.getMaterials();
+assert.equal(timers.size,1);
+autoWaves.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
+while(autoWaves.active&&actions++<25)tick();
+assert.ok(actions<25,"auto must finish multi-wave mission");
+assert.equal(autoWaves.winner,"ally");
+assert.equal(api.getMaterials(),rewardBeforeFinal+1);
+assert.equal(timers.size,0,"last automatic action cancels further scheduling");
+assert.equal(api.isAuto(),false,"auto mode clears on victory");
+assert.equal(elements.missionResult.classList.active,true);
+api.syncBattleUI();
+assert.equal(api.getMaterials(),rewardBeforeFinal+1,"no duplicated reward after finished auto battle");
+console.log("Campaign-001 and Combat-004 UI: manual toggle, timer cancellation, click guards and navigation passed");

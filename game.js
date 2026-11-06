@@ -13,6 +13,37 @@ const $=s=>document.querySelector(s);
 let engine, scene, meshes={};
 let renderLoopRunning=false;
 let selectedAbility="basic";
+// Combat-004: manual remains the default. Only one cancellable timer may run.
+let autoBattle=false;
+let autoTimer=null;
+const AUTO_STEP_MS=350;
+function cancelAutoTimer(){
+ if(autoTimer!==null){clearTimeout(autoTimer);autoTimer=null;}
+}
+function queueAutoAction(){
+ if(autoTimer!==null||!autoBattle||!state.active||document.hidden||
+    !$("#battle").classList.contains("active"))return;
+ autoTimer=setTimeout(()=>{
+  autoTimer=null;
+  if(!autoBattle||!state.active||document.hidden||
+     !$("#battle").classList.contains("active"))return;
+  if(!CombatCore.performAutoAction(state)){setAutoBattle(false);return;}
+  selectedAbility="basic";
+  syncBattleUI();
+ },AUTO_STEP_MS);
+}
+function setAutoBattle(enabled){
+ cancelAutoTimer();
+ autoBattle=!!enabled&&state.active&&$("#battle").classList.contains("active");
+ if(autoBattle)selectedAbility="basic";
+ const button=$("#autoBattleBtn");
+ if(button){
+  button.textContent=autoBattle?"Ручной бой":"Автобой";
+  button.setAttribute("aria-pressed",String(autoBattle));
+ }
+ syncBattleUI();
+ return autoBattle;
+}
 // Squad-001: prepare the party immediately before each battle, independently of collection.
 const ALLIES=HEROES.filter(h=>h.side==="ally");
 const ENEMIES=HEROES.filter(h=>h.side==="enemy");
@@ -88,7 +119,7 @@ function openSquad(returnTo="home"){
  showScreen("squad");
 }
 function showScreen(id){
- if(id!=="battle")stopBattleRendering();
+ if(id!=="battle"){cancelAutoTimer();autoBattle=false;stopBattleRendering();}
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  $("#"+id).classList.add("active");
  if(id==="collection")renderHeroes();
@@ -109,6 +140,7 @@ function showScreen(id){
    const notice=$("#battleLoadError");
    if(notice)notice.hidden=true;
   } catch(error) {
+   cancelAutoTimer();autoBattle=false;
    console.error("Не удалось запустить 3D-арену:",error);
    stopBattleRendering();
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
@@ -268,6 +300,7 @@ function renderBattleLog(){
  content.textContent=lines.length?lines.map((line,i)=>(i+1)+". "+line).join("\n"):"Пока нет событий.";
 }
 function syncBattleUI(){
+ if(!state.active){cancelAutoTimer();autoBattle=false;}
  const awarded=ProgressCore.awardVictory(progress,state);
  if(awarded>0)persistProgress();
  if(battleIsCampaign&&!state.active&&!missionResultShown){
@@ -296,18 +329,25 @@ function syncBattleUI(){
  $("#battleStatus").textContent=actor?"Ход: "+actor.name:"Бой завершён";
  $("#turnChip").textContent=(state.totalWaves>1?"Волна "+state.wave+"/"+state.totalWaves+" · ":"")+"Ход "+state.turn;
  $("#actionTitle").textContent=actor?name+": "+actor.name:"Бой завершён";
- $("#basicAbilityBtn").disabled=!actor;
- $("#specialAbilityBtn").disabled=!specialReady;
+ $("#basicAbilityBtn").disabled=!actor||autoBattle;
+ $("#specialAbilityBtn").disabled=!specialReady||autoBattle;
+ const autoButton=$("#autoBattleBtn");
+ if(autoButton){
+  autoButton.disabled=!state.active;
+  autoButton.textContent=autoBattle?"Ручной бой":"Автобой";
+  autoButton.setAttribute("aria-pressed",String(autoBattle));
+ }
  $("#specialAbilityBtn").textContent=actor&&actor.specialCooldown>0?"Особая · "+actor.specialCooldown:"Особая";
  $("#basicAbilityBtn").classList.toggle("selected",selectedAbility==="basic");
  $("#specialAbilityBtn").classList.toggle("selected",selectedAbility==="special");
- $("#actionHint").textContent=validTarget?"Цель: "+target.name:(targetIsAlly?"Выбери живого союзника":"Выбери живого противника");
+ $("#actionHint").textContent=autoBattle?"Автобой: базовые атаки по первой живой цели. Нажми «Ручной бой», чтобы управлять.":validTarget?"Цель: "+target.name:(targetIsAlly?"Выбери живого союзника":"Выбери живого противника");
  $("#attackBtn").textContent=state.active?(targetIsAlly?"Применить":"Атаковать"):"Сыграть снова";
- $("#attackBtn").disabled=state.active&&(!actor||!validTarget);
+ $("#attackBtn").disabled=autoBattle||(state.active&&(!actor||!validTarget));
  $("#battleMessage").textContent=state.message;
  renderBattleLog();
  renderCombatants();
  updateMeshes();
+ queueAutoAction();
 }
 function renderCombatants(){
  const actor=state.active?state.fighters[state.currentActor]:null;
@@ -319,13 +359,15 @@ function renderCombatants(){
    return `<div class="fighter ${h.side==="enemy"?"enemy":"ally"} ${h.hp<=0?"defeated":""} ${chosen?"selected":""} ${state.active&&i===state.currentActor?"acting":""}" data-index="${i}"><b>${h.name}</b><small>${Math.max(0,h.hp)} / ${h.maxHp} HP · СПД ${h.speed}</small>${status?`<span class="fighter-status">${status}</span>`:""}<div class="health"><span style="width:${Math.max(0,h.hp)/h.maxHp*100}%"></span></div></div>`;
  }).join("");
  document.querySelectorAll(".fighter.enemy").forEach(el=>el.addEventListener("click",()=>{
-  if(CombatCore.chooseEnemy(state,Number(el.dataset.index)))syncBattleUI();
+  if(!autoBattle&&CombatCore.chooseEnemy(state,Number(el.dataset.index)))syncBattleUI();
  }));
  if(choosingAlly)document.querySelectorAll(".fighter.ally").forEach(el=>el.addEventListener("click",()=>{
-  if(CombatCore.chooseAlly(state,Number(el.dataset.index)))syncBattleUI();
+  if(!autoBattle&&CombatCore.chooseAlly(state,Number(el.dataset.index)))syncBattleUI();
  }));
 }
 function resetBattle(){
+ cancelAutoTimer();
+ autoBattle=false;
  missionResultShown=false;
  lastMissionStars=0;
  selectedAbility="basic";
@@ -334,6 +376,7 @@ function resetBattle(){
  syncBattleUI();
 }
 function attack(){
+ if(autoBattle)return;
  if(CombatCore.performPlayerAbility(state,selectedAbility)){
   selectedAbility="basic";
   syncBattleUI();
@@ -341,8 +384,10 @@ function attack(){
 }
 // Exactly one permanent click handler; no onclick replacement on victory.
 $("#attackBtn").addEventListener("click",()=>{if(!state.active)openSquad("home");else attack();});
-$("#basicAbilityBtn").addEventListener("click",()=>{if(state.active){selectedAbility="basic";syncBattleUI();}});
-$("#specialAbilityBtn").addEventListener("click",()=>{if(CombatCore.abilityReady(state,"special")){selectedAbility="special";syncBattleUI();}});
+const autoBattleControl=$("#autoBattleBtn");
+if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.active)setAutoBattle(!autoBattle);});
+$("#basicAbilityBtn").addEventListener("click",()=>{if(state.active&&!autoBattle){selectedAbility="basic";syncBattleUI();}});
+$("#specialAbilityBtn").addEventListener("click",()=>{if(!autoBattle&&CombatCore.abilityReady(state,"special")){selectedAbility="special";syncBattleUI();}});
 // A single render callback and a single Engine/Scene for the lifetime of this prototype.
 function renderBattleFrame(){if(scene)scene.render();}
 function shouldRenderBattle(){return !!engine && !document.hidden && $("#battle").classList.contains("active");}
@@ -403,7 +448,7 @@ function updateMeshes(){
 }
 // Browsers may keep the tab alive when it is hidden; suspend GPU work until visible.
 document.addEventListener("visibilitychange",()=>{
- if(document.hidden)stopBattleRendering();
- else if(shouldRenderBattle()){engine.resize();startBattleRendering();}
+ if(document.hidden){cancelAutoTimer();stopBattleRendering();}
+ else if(shouldRenderBattle()){engine.resize();startBattleRendering();queueAutoAction();}
 });
 renderHeroes();CombatCore.advanceToPlayerTurn(state);renderCombatants();

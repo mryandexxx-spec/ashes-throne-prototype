@@ -308,3 +308,16 @@ button{touch-action:manipulation}
  .mission-criteria{font-size:10px;gap:3px;margin:5px 0 8px}
  .mission-criteria li{gap:6px}
 }
+
+/* Combat-004: voluntary autobattle, touch-friendly even on short landscape screens. */
+.battle-top-controls{display:flex;align-items:center;gap:8px;min-width:0;flex-shrink:0}
+.auto-battle-btn{min-height:44px;white-space:nowrap;padding:9px 12px;font-size:12px}
+.auto-battle-btn[aria-pressed="true"]{border-color:var(--gold);color:var(--gold);background:#d5ad6518}
+.auto-battle-btn:disabled{opacity:.45;cursor:default}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .battle-top-controls{gap:5px}
+ .auto-battle-btn{min-height:38px;padding:6px 8px;font-size:11px}
+}
+@media (orientation:landscape) and (max-height:390px) and (max-width:1100px){
+ .auto-battle-btn{min-height:34px;padding:5px 7px;font-size:10px}
+}

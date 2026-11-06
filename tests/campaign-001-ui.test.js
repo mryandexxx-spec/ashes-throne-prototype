@@ -25,6 +25,7 @@ const heroNodes=["kael","lyra","darin"].map(id=>{const e=element();e.dataset.ope
 const arenaNav=element();arenaNav.dataset.screen="battle";
 const collectionNav=element();collectionNav.dataset.screen="collection";
 const allScreens=["home","collection","campaign","squad","battle","heroDetail","missionResult"].map(id=>elements[id]);
+const visibilityListeners=[];
 const document={
  hidden:false,
  querySelector(q){return elements[q.slice(1)]},
@@ -35,7 +36,7 @@ const document={
   if(q==="[data-open-hero]")return heroNodes;
   return [];
  },
- addEventListener(){}
+ addEventListener(type,fn){if(type==="visibilitychange")visibilityListeners.push(fn)}
 };
 let meshCreates=0,engineCreates=0,rendersStarted=0;
 class Mesh {
@@ -216,12 +217,39 @@ click(elements.squadStart);
 click(elements.autoBattleBtn);
 assert.equal(timers.size,1);
 document.hidden=true;
-assert.equal(timers.size,1,"fixture does not invoke visibility callbacks itself");
-// Mode state stays enabled, but stale callback cannot attack while hidden.
-tick();
-assert.equal(timers.size,0);
-assert.equal(api.isAuto(),true);
+visibilityListeners.forEach(fn=>fn());
+assert.equal(timers.size,0,"switching to hidden tab cancels the timer");
+assert.equal(api.isAuto(),true,"auto preference remains on while hidden");
 document.hidden=false;
+visibilityListeners.forEach(fn=>fn());
+assert.equal(timers.size,1,"visible tab resumes exactly one action");
+tick();
+assert.ok(api.getBattle().allyActions>0);
 api.showScreen("home");
 assert.equal(api.isAuto(),false);
+assert.equal(timers.size,0);
+// Mission #3: autobattle crosses the wave boundary and rewards only once.
+api.showScreen("campaign");
+clickMission("demo-mission-3");
+click(elements.squadStart);
+const autoWaves=api.getBattle();
+assert.equal(autoWaves.totalWaves,2);
+autoWaves.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
+click(elements.autoBattleBtn);
+let actions=0;
+while(autoWaves.wave===1&&autoWaves.active&&actions++<10)tick();
+assert.equal(autoWaves.wave,2);
+assert.equal(elements.battle.classList.active,true);
+const rewardBeforeFinal=api.getMaterials();
+assert.equal(timers.size,1);
+autoWaves.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
+while(autoWaves.active&&actions++<25)tick();
+assert.ok(actions<25,"auto must finish multi-wave mission");
+assert.equal(autoWaves.winner,"ally");
+assert.equal(api.getMaterials(),rewardBeforeFinal+1);
+assert.equal(timers.size,0,"last automatic action cancels further scheduling");
+assert.equal(api.isAuto(),false,"auto mode clears on victory");
+assert.equal(elements.missionResult.classList.active,true);
+api.syncBattleUI();
+assert.equal(api.getMaterials(),rewardBeforeFinal+1,"no duplicated reward after finished auto battle");
 console.log("Campaign-001 and Combat-004 UI: manual toggle, timer cancellation, click guards and navigation passed");

@@ -425,10 +425,20 @@ function renderBattleFrame(){
  BattleAnimation.tick(dt,BattleSpeed.multiplier());
  for(const h of state.fighters){
   const visual=meshes[h.id];
-  if(!visual||h.hp<=0)continue;
+  if(!visual)continue;
+  const visible=h.hp>0||BattleAnimation.isDying(h.id);
+  visual.body.setEnabled(visible);
+  visual.head.setEnabled(visible);
+  visual.base.setEnabled(visible);
+  if(!visible)continue;
+  const pose=BattleAnimation.pose(h.id);
   const x=h.side==="ally"?-3.4:3.4;
-  const offset=BattleAnimation.pose(h.id)*(h.side==="ally"?1:-1);
+  const offset=pose.x*(h.side==="ally"?1:-1);
   visual.body.position.x=visual.head.position.x=visual.base.position.x=x+offset;
+  visual.body.position.y=.8+pose.y;
+  visual.head.position.y=1.8+pose.y;
+  if(visual.body.rotation)visual.body.rotation.z=pose.tilt;
+  if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
  }
  scene.render();
 }
@@ -474,7 +484,7 @@ function updateMeshes(){
   const mesh=meshes[h.id];
   if(!mesh)continue;
   const member=state.fighters.find(f=>f.id===h.id);
-  const visible=!!member&&member.hp>0;
+  const visible=!!member&&(member.hp>0||BattleAnimation.isDying(h.id));
   mesh.body.setEnabled(visible);
   mesh.head.setEnabled(visible);
   mesh.base.setEnabled(visible);
@@ -485,6 +495,10 @@ function updateMeshes(){
    const z=(slot-(sideMembers.length-1)/2)*1.55;
    mesh.body.position.x=mesh.head.position.x=mesh.base.position.x=x;
    mesh.body.position.z=mesh.head.position.z=mesh.base.position.z=z;
+   mesh.body.position.y=.8;
+   mesh.head.position.y=1.8;
+   if(mesh.body.rotation)mesh.body.rotation.z=0;
+   if(mesh.head.rotation)mesh.head.rotation.z=0;
   }
  }
 }

@@ -42,7 +42,7 @@ const clickFighter=i=>{
  const h=api.getBattle().fighters[i];
  assert.equal(api.selectArenaTarget({metadata:{fighterId:h.id}}),true);
 };
-assert.equal(fighterNodes.every(el=>!el.handlers.click),"side status cards must not select targets");
+assert.ok(fighterNodes.every(el=>!el.handlers.click),"side status cards must not select targets");
 api.resetBattle();
 assert.equal(api.getBattle().fighters[api.getBattle().currentActor].id,"lyra");
 click("specialAbilityBtn");

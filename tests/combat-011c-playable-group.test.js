@@ -29,7 +29,7 @@ const document={
  addEventListener(){}
 };
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,resetBattle,chooseParty:ids=>{selectedPartyIds=ids},selectArenaTarget,showDeathFrame:()=>{scene={render(){}};engine={getDeltaTime:()=>100};renderBattleFrame()},HEROES,AbilityData,CombatCore,CombatLog,BattleAnimation,SaveCore})",
+ "\n({getBattle:()=>state,resetBattle,chooseParty:ids=>{selectedPartyIds=ids},selectArenaTarget,renderDeathHud:()=>renderArenaIndicators(),showDeathFrame:()=>{scene={render(){}};engine={getDeltaTime:()=>100};renderBattleFrame()},HEROES,AbilityData,CombatCore,CombatLog,BattleAnimation,SaveCore})",
  {document,window:{addEventListener(){}}});
 const click=id=>{const handlers=elements[id].handlers.click;assert.ok(handlers?.length,id+" click");handlers[handlers.length-1]();};
 assert.equal(api.HEROES.filter(h=>h.id==="test-area-damage").length,1);
@@ -85,6 +85,8 @@ api.resetBattle(); // reset must clear stale death state
 const deadAgain=api.getBattle().fighters.find(h=>h.side==="enemy");
 deadAgain.hp=0;
 api.BattleAnimation.enqueue([{type:"death",targetId:deadAgain.id}]);
+api.renderDeathHud(); // The fighter stays in HUD during its death animation.
+assert.equal(api.BattleAnimation.isDying(deadAgain.id),true);
 assert.match(elements.arenaIndicators.innerHTML,/data-fighter-id="ves"/);
 for(let i=0;i<40&&api.BattleAnimation.pending()>0;i++)api.showDeathFrame();
 api.showDeathFrame();

@@ -31,7 +31,7 @@ const document={
  },
  addEventListener(){}
 };
-const api=vm.runInNewContext(src+"\n({getBattle:()=>state,resetBattle,selectArenaTarget,CombatCore,resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=["kael","lyra","darin"];}})",
+const api=vm.runInNewContext(src+"\n({getBattle:()=>state,resetBattle,selectArenaTarget,CombatCore,resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=['kael','lyra','darin'];}})",
  {document,window:{addEventListener(){}}});
 const click=id=>{
  const f=els[id].handlers.click;

@@ -40,6 +40,18 @@ const CombatCore = (() => {
     }).map(mod=>({stat:mod.stat,operation:mod.operation,value:mod.value}));
   }
 
+  // Combat-013B: flat modifiers are summed only for the owner while alive.
+  // A fresh derived value is used for every action / initiative advance.
+  // Never mutate the fighter's base atk/speed fields (Save/UI compatibility).
+  function effectiveStat(battle,fighter,stat){
+    const base=fighter[stat];
+    if(!Number.isFinite(base))return base;
+    const addition=activePassiveModifiers(battle,fighter.id)
+      .filter(mod=>mod.stat===stat&&mod.operation==="flat")
+      .reduce((total,mod)=>total+mod.value,0);
+    return Math.max(stat==="speed"?1:0,base+addition);
+  }
+
   function makeFighter(hero,index,meter) {
     const fighter = {...hero,maxHp:hero.hp,specialCooldown:0,powerfulCooldown:0,
       meter,index,effects:Object.create(null)};
@@ -132,6 +144,16 @@ const CombatCore = (() => {
         battle.events.push({type:"passive-trigger",ownerId:owner.id,passiveId:passive.id,
           triggerIndex:index,sourceEventType:type,sourceActorId:properties.actorId||null,
           sourceTargetId:properties.targetId||null});
+        // Only a documented, safe self-heal is executable in the technical
+        // fixture. Do not re-dispatch generated events: no reaction chains.
+        const effect=trigger.effect;
+        if(!effect||effect.kind!=="heal"||effect.target!=="self"||
+           !Number.isSafeInteger(effect.amount)||effect.amount<=0) return;
+        const restored=Math.min(effect.amount,Math.max(0,owner.maxHp-owner.hp));
+        owner.hp+=restored;
+        battle.events.push({type:"heal",actorId:owner.id,targetId:owner.id,
+          amount:restored,remainingHp:owner.hp,passiveId:passive.id});
+
       });
     }
   }
@@ -202,7 +224,8 @@ const CombatCore = (() => {
   function advanceToPlayerTurn(battle) {
     if (!battle.active || finishIfOver(battle)) return battle;
     for (let steps = 0; steps < 1000; steps++) {
-      const ready = InitiativeModel.nextActor(battle.fighters);
+      const ready = InitiativeModel.nextActor(battle.fighters,
+        fighter=>effectiveStat(battle,fighter,"speed"));
       if (!ready) throw Error("No living actor available");
       const actorIndex = battle.fighters.findIndex(h => h.id === ready.id);
       const actor = battle.fighters[actorIndex];
@@ -221,7 +244,7 @@ const CombatCore = (() => {
       }
       const target = battle.fighters[targetIndex];
       emit(battle, "ability", {actorId: actor.id, targetId: target.id, abilityId: "basic"});
-      const damage = dealDamage(actor, target, actor.atk);
+      const damage = dealDamage(actor, target, effectiveStat(battle,actor,"atk"));
       emit(battle, "damage", {actorId: actor.id, targetId: target.id, amount: damage, remainingHp: target.hp});
       if (target.hp === 0) emit(battle, "death", {targetId: target.id});
       battle.message = actor.name + " атакует " + target.name +
@@ -360,7 +383,7 @@ const CombatCore = (() => {
     const weakened=actor.weakenAttacks>0;
     for(const target of recipients){
       if(ability.kind==="damage"){
-        const damage=dealDamage(actor,target,Math.round(actor.atk*ability.multiplier),false);
+        const damage=dealDamage(actor,target,Math.round(effectiveStat(battle,actor,"atk")*ability.multiplier),false);
         emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp});
         if(target.hp===0)emit(battle,"death",{targetId:target.id});
         if(ability.weakening>0&&target.hp>0){
@@ -425,7 +448,7 @@ const CombatCore = (() => {
       emit(battle,"heal",{actorId:actor.id,targetId:target.id,amount:restored,remainingHp:target.hp});
       battle.message=actor.name+" лечит "+target.name+": +"+restored+" HP.";
     }else{
-      const damage=dealDamage(actor,target,Math.round(actor.atk*ability.multiplier));
+      const damage=dealDamage(actor,target,Math.round(effectiveStat(battle,actor,"atk")*ability.multiplier));
       emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp});
       if(target.hp===0)emit(battle,"death",{targetId:target.id});
       if(ability.weakening>0&&target.hp>0){
@@ -464,6 +487,6 @@ const CombatCore = (() => {
 
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
-    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects, abilityTargetIndices, activePassiveModifiers
+    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects, abilityTargetIndices, activePassiveModifiers, effectiveStat
   });
 })();

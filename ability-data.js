@@ -14,10 +14,17 @@ const AbilityData=(()=>{
   "test-area-weaken":Object.freeze({id:"special",name:"Тест группового ослабления",target:"all-enemies",kind:"damage",multiplier:1,weakening:2,cooldown:2})
  };
  Object.freeze(special);
+ // Combat-012A: engine-only fixture, deliberately absent from the playable HEROES.
+ const powerful=Object.freeze({
+  "test-powerful-damage":Object.freeze({id:"powerful",name:"Тест мощного удара",target:"enemy",
+   kind:"damage",multiplier:1.5,weakening:0,cooldown:2})
+ });
  const fallback=Object.freeze({id:"special",name:"Особый удар",target:"enemy",kind:"damage",multiplier:1,weakening:0,cooldown:2});
  function get(actor,abilityId){
   if(abilityId==="basic")return basic;
-  if(abilityId!=="special"||!actor)return null;
+  if(!actor)return null;
+  if(abilityId==="powerful")return powerful[actor.id]||null;
+  if(abilityId!=="special")return null;
   return Object.prototype.hasOwnProperty.call(special,actor.id)?special[actor.id]:fallback;
  }
  return Object.freeze({get});

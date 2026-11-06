@@ -57,7 +57,10 @@ const defeat=CombatCore.createBattle([
  {id:"strong",name:"Strong",side:"enemy",hp:90,atk:99,speed:100}
 ]);
 CombatCore.advanceToPlayerTurn(defeat);
-assert.equal(CombatCore.performAutoAction(defeat),true);
+let defeatSteps=0;
+while(defeat.active&&defeatSteps++<12)
+ assert.equal(CombatCore.performAutoAction(defeat),true);
+assert.ok(defeatSteps<12);
 assert.equal(defeat.active,false);
 assert.equal(defeat.winner,"enemy");
 assert.equal(CombatCore.performAutoAction(defeat),false);

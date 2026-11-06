@@ -21,7 +21,10 @@ const AbilityData=(()=>{
    followUpEffects:Object.freeze([
     Object.freeze({scope:"primary",status:"weaken",stacks:2}),
     Object.freeze({scope:"self",status:"guard",stacks:1})
-   ])})
+   ])}),
+  "test-all-followups":Object.freeze({id:"special",name:"Тест всех получателей",target:"all-enemies",
+   kind:"damage",multiplier:1,weakening:0,cooldown:2,
+   followUpEffects:Object.freeze([Object.freeze({scope:"all",status:"weaken",stacks:1})])})
  };
  Object.freeze(special);
  // Combat-012A: engine-only fixture, deliberately absent from the playable HEROES.

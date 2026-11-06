@@ -10,7 +10,7 @@ const AbilityData=(()=>{
   // Combat-011B regression fixtures: not in HEROES or campaign content.
   "test-self-guard":Object.freeze({id:"special",name:"Тест защиты себя",target:"self",kind:"guard",guardHits:2,cooldown:2}),
   "test-team-heal":Object.freeze({id:"special",name:"Тест группового лечения",target:"all-allies",kind:"heal",healAmount:30,cooldown:2}),
-  "test-area-damage":Object.freeze({id:"special",name:"Тест группового урона",target:"all-enemies",kind:"damage",multiplier:1,weakening:0,cooldown:2}),
+  "test-area-damage":Object.freeze({id:"special",name:"Учебный широкий удар",target:"all-enemies",kind:"damage",multiplier:1,weakening:0,cooldown:2}),
   "test-area-weaken":Object.freeze({id:"special",name:"Тест группового ослабления",target:"all-enemies",kind:"damage",multiplier:1,weakening:2,cooldown:2})
  };
  Object.freeze(special);

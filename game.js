@@ -137,10 +137,18 @@ function persistProgress(){
 let selectedHeroId=ALLIES[0].id;
 // Keep accepted demo encounters unchanged by default.
 let selectedPartyIds=ALLIES.filter(h=>h.id!=="medic-demo"&&h.id!=="test-area-damage").map(h=>h.id);
+let selectedLeaderId=null; // no existing playable ally has a canonical leader skill
 let squadReturnScreen="home";
 let state=CombatCore.createBattle([...ALLIES,...ENEMIES.slice(0,2)]);
 function progressedHero(hero){return ProgressCore.heroStats(progress,hero);}
-function selectedParty(){return ALLIES.filter(h=>selectedPartyIds.includes(h.id)).map(progressedHero);}
+function leaderEligible(id){
+ const hero=ALLIES.find(h=>h.id===id);
+ return !!hero&&!!AbilityData.get(hero,"leader");
+}
+function selectedParty(){
+ const ids=[...(selectedLeaderId?[selectedLeaderId]:[]),...selectedPartyIds];
+ return ids.map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(progressedHero);
+}
 function battleLineup(){
  // The original encounter is unchanged; mission #2 tests five enemies at once.
  const enemies=battleIsCampaign&&activeMissionId==="demo-mission-2"?ENEMIES:ENEMIES.slice(0,2);
@@ -158,25 +166,53 @@ function battleFutureWaves(){
 }
 function renderSquad(){
  const chosen=selectedParty();
+ const leader=selectedLeaderId?chosen[0]:null;
+ const regular=chosen.filter(h=>h.id!==selectedLeaderId);
  $("#squadCount").textContent=chosen.length+"/"+MAX_SQUAD;
  $("#squadRoster").innerHTML=ALLIES.map(progressedHero).map(h=>{
-  const active=selectedPartyIds.includes(h.id);
-  return `<button type="button" class="squad-choice ${active?"chosen":""}" data-hero-id="${h.id}" aria-pressed="${active}"><span class="squad-glyph">${h.glyph}</span><span><b>${h.name}</b><small>${h.role} · HP ${h.hp} · ATK ${h.atk}</small></span><strong>${active?"✓":"+"}</strong></button>`;
+  const isLeader=selectedLeaderId===h.id;
+  const active=selectedPartyIds.includes(h.id)||isLeader;
+  const eligible=leaderEligible(h.id);
+  return `<div class="squad-choice-row"><button type="button" class="squad-choice ${active?"chosen":""}" data-hero-id="${h.id}" aria-pressed="${active}"><span class="squad-glyph">${h.glyph}</span><span><b>${h.name}</b><small>${h.role} · HP ${h.hp} · ATK ${h.atk}</small></span><strong>${active?"✓":"+"}</strong></button>${eligible?`<button type="button" class="squad-assign-leader ${isLeader?"active":""}" data-leader-id="${h.id}" aria-pressed="${isLeader}" aria-label="${isLeader?"Снять лидера: ":"Назначить лидером: "}${h.name}">${isLeader?"★ Лидер":"★ Лидером"}</button>`:""}</div>`;
  }).join("");
  $("#squadSlots").innerHTML=Array.from({length:MAX_SQUAD},(_,i)=>{
-  const h=chosen[i];
+  const h=i===0?leader:regular[i-1];
+  if(i===0)return `<div class="squad-slot squad-slot-leader ${h?"filled":""}" aria-label="Лидер отряда"><span class="squad-slot-number">★ ЛИДЕР</span><span class="squad-slot-content">${h?h.name:"Не назначен"}</span>${h?'<button class="squad-clear-leader" type="button" data-clear-leader aria-label="Снять лидера">Убрать</button>':""}</div>`;
   return `<div class="squad-slot ${h?"filled":""}"><span class="squad-slot-number">${i+1}</span><span class="squad-slot-content">${h?h.name:"Свободно"}</span></div>`;
  }).join("");
- $("#squadHint").textContent=chosen.length?"Выбрано героев: "+chosen.length+". Можно взять меньше пяти.":"Выбери хотя бы одного героя.";
+ const hasEligible=ALLIES.some(h=>leaderEligible(h.id));
+ $("#squadHint").textContent=hasEligible
+  ?(selectedLeaderId?"Лидер назначен. Остальные четыре ячейки — для союзников.":"Выбери подходящего героя и назначь лидером. Остальные четыре ячейки — для союзников.")
+  :"Лидер пока недоступен: подходящих героев нет. Можно выставить до четырёх союзников.";
  $("#squadStart").disabled=chosen.length===0;
  document.querySelectorAll("[data-hero-id]").forEach(btn=>btn.addEventListener("click",()=>{
   toggleSquadHero(btn.dataset.heroId);
  }));
+ document.querySelectorAll("[data-leader-id]").forEach(btn=>btn.addEventListener("click",()=>{
+  assignSquadLeader(btn.dataset.leaderId);
+ }));
+ document.querySelectorAll("[data-clear-leader]").forEach(btn=>btn.addEventListener("click",()=>{
+  assignSquadLeader(null);
+ }));
+}
+function assignSquadLeader(id){
+ if(id!==null&&!leaderEligible(id))return false;
+ if(id===selectedLeaderId)return true;
+ const prior=selectedLeaderId;
+ let regular=selectedPartyIds.filter(x=>x!==id);
+ // On replacement the former leader returns to a regular slot when possible.
+ if(prior&&regular.length<MAX_SQUAD-1)regular=[prior,...regular];
+ if(regular.length>MAX_SQUAD-1)return false;
+ selectedLeaderId=id;
+ selectedPartyIds=regular;
+ renderSquad();
+ return true;
 }
 function toggleSquadHero(id){
  if(!ALLIES.some(h=>h.id===id))return false;
+ if(id===selectedLeaderId)return assignSquadLeader(null);
  if(selectedPartyIds.includes(id))selectedPartyIds=selectedPartyIds.filter(x=>x!==id);
- else if(selectedPartyIds.length<MAX_SQUAD)selectedPartyIds=[...selectedPartyIds,id];
+ else if(selectedPartyIds.length<MAX_SQUAD-1)selectedPartyIds=[...selectedPartyIds,id];
  else return false;
  renderSquad();
  return true;
@@ -553,7 +589,7 @@ function resetBattle(){
  missionResultRecorded=false;
  lastMissionStars=0;
  selectedAbility="basic";
- state=CombatCore.createBattle(battleLineup(),battleFutureWaves());
+ state=CombatCore.createBattle(battleLineup(),battleFutureWaves(),{leaderId:selectedLeaderId});
  CombatCore.advanceToPlayerTurn(state);
  syncBattleUI();
 }

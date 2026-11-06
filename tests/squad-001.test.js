@@ -62,7 +62,7 @@ const BABYLON={Engine,Scene,ArcRotateCamera:Camera,HemisphericLight:class{},Dire
   CreateCylinder(){meshCreates++;return new Mesh();}}
 };
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openCampaignMission,renderSquad,syncBattleUI})",
+ "\n({getBattle:()=>state,selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openCampaignMission,renderSquad,syncBattleUI,toggleSquadHero})",
  {document,window:{addEventListener(){}},BABYLON});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
@@ -146,17 +146,17 @@ assert.equal(api.selectedParty().join(","),"darin");
 // remain available. Existing five-hero demo roster never gains a fake leader.
 api.openSquad();
 for(const id of ["kael","lyra","medic-demo","test-area-damage"]){
- if(!api.selectedParty().some(h=>h.id===id))toggle(id);
+ if(!api.selectedParty().includes(id))api.toggleSquadHero(id);
 }
 assert.equal(api.selectedParty().length,4,"reserved leader slot reduces regular capacity to four");
 assert.equal(count(),"4/5");
 assert.match(elements.squadSlots.innerHTML,/★ ЛИДЕР/);
 assert.equal(elements.squadStart.disabled,false);
-const pre=api.selectedParty().map(h=>h.id).join(",");
+const pre=api.selectedParty().join(",");
 for(const id of ["kael","lyra","darin","medic-demo","test-area-damage"]){
- if(!api.selectedParty().some(h=>h.id===id))toggle(id);
+ if(!api.selectedParty().includes(id))api.toggleSquadHero(id);
 }
-assert.equal(api.selectedParty().map(h=>h.id).join(","),pre,
+assert.equal(api.selectedParty().join(","),pre,
  "fifth non-leader cannot occupy a reserved leader position");
 click(elements.squadStart);
 assert.equal(api.getBattle().leaderId,null,"no implicit leader in launched battle");

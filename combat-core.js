@@ -139,7 +139,7 @@ const CombatCore = (() => {
 
   // One deterministic damage path, shared by human and AI attacks.
   // Weakening is applied before guarding; each step rounds once.
-  function dealDamage(attacker, target, rawDamage) {
+  function dealDamage(attacker, target, rawDamage, consumeWeakening = true) {
     let damage = Math.max(0, rawDamage);
     if (attacker.weakenAttacks > 0) damage = Math.round(damage * 0.7);
     if (target.guardHits > 0) {
@@ -151,7 +151,7 @@ const CombatCore = (() => {
       target.guardHits = 0;
       target.weakenAttacks = 0;
     }
-    if (attacker.weakenAttacks > 0) attacker.weakenAttacks--;
+    if (consumeWeakening && attacker.weakenAttacks > 0) attacker.weakenAttacks--;
     return damage;
   }
 
@@ -249,14 +249,70 @@ const CombatCore = (() => {
     return !!ability&&(ability.id==="basic"||actor.specialCooldown===0);
   }
 
+  // Combat-011B: atomic resolution of one self/group command. The acting
+  // unit spends exactly one turn and one cooldown. Dead targets are filtered
+  // before the command; wave/victory transitions happen after all targets.
+  function performMultiTargetAbility(battle, actor, ability, targets) {
+    if(!["self","all-enemies","all-allies"].includes(ability.target))return false;
+    if(!["damage","heal","guard"].includes(ability.kind))return false;
+    if(ability.target==="all-enemies"&&ability.kind!=="damage")return false;
+    if((ability.target==="all-allies"||ability.target==="self")&&ability.kind==="damage")return false;
+    if(ability.kind==="damage"&&(!Number.isFinite(ability.multiplier)||ability.multiplier<0))return false;
+    if(ability.kind==="heal"&&(!Number.isFinite(ability.healAmount)||ability.healAmount<0))return false;
+    if(ability.kind==="guard"&&(!Number.isInteger(ability.guardHits)||ability.guardHits<0))return false;
+    if(!targets.length)return false;
+    const recipients=targets.map(i=>battle.fighters[i]);
+    battle.allyActions++;
+    battle.events=[];
+    emit(battle,"ability",{
+      actorId:actor.id,targetId:recipients[0].id,
+      targetIds:recipients.map(f=>f.id),abilityId:ability.id
+    });
+    const weakened=actor.weakenAttacks>0;
+    for(const target of recipients){
+      if(ability.kind==="damage"){
+        const damage=dealDamage(actor,target,Math.round(actor.atk*ability.multiplier),false);
+        emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp});
+        if(target.hp===0)emit(battle,"death",{targetId:target.id});
+        if(ability.weakening>0&&target.hp>0){
+          target.weakenAttacks=ability.weakening;
+          emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"weaken",stacks:ability.weakening});
+        }
+      }else if(ability.kind==="heal"){
+        const restored=Math.min(ability.healAmount,Math.max(0,target.maxHp-target.hp));
+        target.hp+=restored;
+        emit(battle,"heal",{actorId:actor.id,targetId:target.id,amount:restored,remainingHp:target.hp});
+      }else{
+        target.guardHits=ability.guardHits;
+        emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"guard",stacks:ability.guardHits});
+      }
+    }
+    // Weakening counts attacks (commands), not recipients. All group targets
+    // get the same weakened damage; one use is consumed at the end.
+    if(ability.kind==="damage"&&weakened)actor.weakenAttacks--;
+    battle.message=actor.name+" применяет "+ability.name+
+      ": целей "+recipients.length+".";
+    if(ability.id==="special")actor.specialCooldown=ability.cooldown;
+    else actor.specialCooldown=Math.max(0,actor.specialCooldown-1);
+    InitiativeModel.finishTurn(battle.fighters,actor.id);
+    battle.turn++;
+    battle.currentActor=-1;
+    if(finishIfOver(battle))return true;
+    if(ability.target==="all-enemies"&&
+       selectEnemy(battle.fighters,battle.selectedEnemy)<0)
+      battle.selectedEnemy=firstLivingEnemy(battle.fighters);
+    advanceToPlayerTurn(battle);
+    return true;
+  }
+
   function performPlayerAbility(battle,abilityId) {
     if(!abilityReady(battle,abilityId))return false;
     const actor=battle.fighters[battle.currentActor];
     const ability=AbilityData.get(actor,abilityId);
-    // Group/self modes are target previews only; never silently cast at the
-    // first member of a group before full per-target resolution is approved.
-    if(ability.target!=="ally" && ability.target!=="enemy")return false;
     const targets=abilityTargetIndices(battle,ability.target);
+    if(["self","all-enemies","all-allies"].includes(ability.target))
+      return performMultiTargetAbility(battle,actor,ability,targets);
+    if(ability.target!=="ally" && ability.target!=="enemy")return false;
     if(targets.length!==1)return false;
     const targetIndex=targets[0];
     const target=battle.fighters[targetIndex];

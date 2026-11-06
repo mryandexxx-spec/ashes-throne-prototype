@@ -492,7 +492,7 @@ function renderArenaIndicators(){
   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
   const active=actor?.id===h.id;
   const support=!!actor&&!autoBattle&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
-  const groupFocus=!!actor&&!autoBattle&&specialReady&&CombatCore.abilityTargetSide(state,"special")==="all-enemies"&&h.side==="enemy";
+  const groupFocus=!!actor&&!autoBattle&&CombatCore.abilityReady(state,"special")&&CombatCore.abilityTargetSide(state,"special")==="all-enemies"&&h.side==="enemy";
   const focused=!!actor&&!autoBattle&&h.hp>0&&(support?h.side==="ally":groupFocus||h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
   return `<div class="arena-indicator ${h.side} ${active?"acting":""}" data-fighter-id="${h.id}" aria-label="${h.name}: здоровье ${Math.max(0,h.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
    ${focused?`<div class="arena-focus-cursor ${support?"available":groupFocus?"group":"locked"}" aria-hidden="true">▼</div>`:""}

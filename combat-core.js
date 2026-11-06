@@ -3,6 +3,34 @@
 const CombatCore = (() => {
   "use strict";
 
+  // Combat-010: canonical effect counters. Legacy fighter fields remain
+  // writable aliases because existing battle UI and tests use them.
+  const EFFECT_FIELDS = Object.freeze({guardHits:"guard",weakenAttacks:"weaken"});
+  function setEffect(fighter, type, remaining) {
+    if (!Object.values(EFFECT_FIELDS).includes(type)) throw Error("unknown combat effect");
+    if (!Number.isInteger(remaining) || remaining < 0) throw Error("invalid effect duration");
+    if (remaining === 0) delete fighter.effects[type];
+    else fighter.effects[type] = {remaining};
+  }
+  function effectCount(fighter, type) {
+    return fighter.effects[type]?.remaining ?? 0;
+  }
+  function activeEffects(fighter) {
+    return Object.keys(fighter.effects).map(type => ({type,remaining:effectCount(fighter,type)}));
+  }
+  function makeFighter(hero,index,meter) {
+    const fighter = {...hero,maxHp:hero.hp,specialCooldown:0,
+      meter,index,effects:Object.create(null)};
+    for (const [field,type] of Object.entries(EFFECT_FIELDS)) {
+      Object.defineProperty(fighter,field,{
+        enumerable:true,configurable:false,
+        get(){return effectCount(this,type);},
+        set(value){setEffect(this,type,value);}
+      });
+    }
+    return fighter;
+  }
+
   // Optional future waves are separate encounters inside the same battle.
   // Existing single-wave calls keep their original behavior.
   function createBattle(heroes, futureWaves = []) {
@@ -17,15 +45,8 @@ const CombatCore = (() => {
         throw Error("wave enemy id collides with ally id");
     }
     const initiative = InitiativeModel.createInitiative(heroes);
-    const fighters = heroes.map((hero, index) => ({
-      ...hero,
-      maxHp: hero.hp,
-      specialCooldown: 0,
-      guardHits: 0,
-      weakenAttacks: 0,
-      meter: initiative[index].meter,
-      index
-    }));
+    const fighters = heroes.map((hero,index) =>
+      makeFighter(hero,index,initiative[index].meter));
     return {
       fighters,
       wave: 1,
@@ -82,10 +103,8 @@ const CombatCore = (() => {
         const next = battle.pendingWaves.shift();
         const allies = battle.fighters.filter(f => f.side === "ally");
         const initiative = InitiativeModel.createInitiative(next);
-        const enemies = next.map((enemy, i) => ({
-          ...enemy,maxHp:enemy.hp,specialCooldown:0,guardHits:0,
-          weakenAttacks:0,meter:initiative[i].meter,index:allies.length+i
-        }));
+        const enemies = next.map((enemy,i) =>
+          makeFighter(enemy,allies.length+i,initiative[i].meter));
         battle.fighters = [...allies,...enemies];
         battle.fighters.forEach((f,i) => { f.index = i; });
         battle.wave++;
@@ -269,6 +288,6 @@ const CombatCore = (() => {
 
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
-    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction
+    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects
   });
 })();

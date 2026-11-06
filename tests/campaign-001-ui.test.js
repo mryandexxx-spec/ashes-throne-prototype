@@ -184,17 +184,17 @@ const reloaded=vm.runInNewContext(src+"\n({campaign:campaignProgress,materials:p
  {document,window:{addEventListener(){},localStorage},BABYLON});
 assert.equal(reloaded.campaign.completed["black-pass-ambush"],true);
 assert.equal(reloaded.materials,2);
-// Combat-008B: a five-enemy lineup must spread evenly along the far side.
-// This is only presentation geometry; mission status and rewards are unaffected.
+// Combat-008C hotfix: each side uses up to three front / two rear positions.
 api.showScreen("campaign");
 clickMission("demo-mission-2");
 click(elements.squadStart);
 const largeRoster=api.getBattle().fighters.filter(f=>f.side==="enemy");
 assert.equal(largeRoster.length,5);
 const renderedZ=largeRoster.map(f=>api.getMeshes()[f.id].body.position.z);
-assert.equal(renderedZ.join(","),"-3.2,-1.6,0,1.6,3.2","five enemies use five visible lanes");
-assert.ok(largeRoster.every(f=>api.getMeshes()[f.id].body.position.x===3.4),"enemies remain on far side");
-assert.ok(api.getBattle().fighters.filter(f=>f.side==="ally").every(f=>api.getMeshes()[f.id].body.position.x===-3.4),"allies remain on near side");
+assert.equal(renderedZ.join(","),"-1.9,0,1.9,-0.95,0.95","five enemies are arranged three forward and two behind");
+assert.equal(largeRoster.map(f=>api.getMeshes()[f.id].body.position.x).join(","),"2.45,2.45,2.45,4.05,4.05","enemy rows face the allied side");
+const alliesInBattle=api.getBattle().fighters.filter(f=>f.side==="ally");
+assert.equal(alliesInBattle.map(f=>api.getMeshes()[f.id].body.position.x).join(","),"-2.45,-2.45,-2.45","three chosen allies take front row");
 api.showScreen("campaign");
 // Integration: third mission starts with two enemies and advances to three
 // without showing a result, granting an intermediate reward or restarting allies.
@@ -285,7 +285,7 @@ assert.equal(api.getBattle().allyActions,before+1,"automatic action uses normal 
 assert.equal(timers.size,1,"exactly one next action scheduled");
 assert.ok(api.getMotion().pending()>0,"resolved hits queue visible animations");
 api.renderBattleFrame();
-assert.ok(api.getMeshes().lyra.body.position.x>-3.4,"speed-scaled 3D lunge moves attacker");
+assert.ok(api.getMeshes().lyra.body.position.x>-2.45,"speed-scaled 3D lunge moves attacker from the new frontline");
 api.showScreen("home");
 assert.equal(api.getMotion().pending(),0,"exiting battle clears animation queue");
 assert.equal(api.isAuto(),false);

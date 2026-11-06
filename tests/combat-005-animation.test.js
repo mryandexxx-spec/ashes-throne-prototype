@@ -23,10 +23,20 @@ assert.equal(profiles.isCustom("hero","guard"),false);
 profiles.register("hero",{guard:{kind:"guard",durationMs:480,amplitude:.5}});
 assert.equal(profiles.isCustom("hero","guard"),true);
 assert.equal(profiles.resolve("hero","guard").durationMs,480);
-assert.equal(profiles.resolve("hero","basic").durationMs,280,"missing slot has template");
-assert.equal(profiles.resolve("enemy","guard").durationMs,360,"different fighter has template");
+assert.equal(profiles.resolve("hero","basic").durationMs,200,"missing slot has template");
+assert.equal(profiles.resolve("enemy","guard").durationMs,190,"different fighter has template");
 assert.throws(()=>profiles.register("bad",{basic:{kind:"unknown",durationMs:1,amplitude:1}}));
-assert.equal(profiles.resolve("bad","basic").durationMs,280,"invalid profile cannot replace template");
+assert.equal(profiles.resolve("bad","basic").durationMs,200,"invalid profile cannot replace template");
+profiles.register("other",{
+ idle:{kind:"idle",durationMs:900,amplitude:.12,assetId:"future-other-model",clipName:"idle_loop"},
+ death:{kind:"death",durationMs:600,amplitude:1.1}
+});
+assert.equal(profiles.resolve("other","idle").clipName,"idle_loop","future animation asset reference can be stored");
+assert.equal(profiles.resolve("other","death").durationMs,600,"individual death can override fallback");
+assert.equal(profiles.resolve("other","guard").durationMs,190,"unimplemented guard still uses template");
+assert.equal(profiles.isCustom("hero","idle"),false,"one character override does not change another");
+assert.throws(()=>profiles.register("broken",{idle:{kind:"idle",durationMs:100,amplitude:.1,assetId:"missing-clip"}}));
+
 motion.tick(300,1);
 assert.notEqual(motion.pose("hero").y,0,"idle animation runs without combat events");
 motion.clear();

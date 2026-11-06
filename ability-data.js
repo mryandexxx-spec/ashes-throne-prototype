@@ -17,6 +17,9 @@ const AbilityData=(()=>{
  // Combat-012A: engine-only fixture, deliberately absent from the playable HEROES.
  const powerful=Object.freeze({
   "test-powerful-damage":Object.freeze({id:"powerful",name:"Тест мощного удара",target:"enemy",
+   kind:"damage",multiplier:1.5,weakening:0,cooldown:2}),
+  // Combat-012B: same temporary parameters for the existing optional demo fighter.
+  "test-area-damage":Object.freeze({id:"powerful",name:"Учебный мощный удар",target:"enemy",
    kind:"damage",multiplier:1.5,weakening:0,cooldown:2})
  });
  const fallback=Object.freeze({id:"special",name:"Особый удар",target:"enemy",kind:"damage",multiplier:1,weakening:0,cooldown:2});

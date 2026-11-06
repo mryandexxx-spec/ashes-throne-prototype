@@ -135,13 +135,44 @@ function persistProgress(){
 }
 
 let selectedHeroId=ALLIES[0].id;
-// Keep accepted demo encounters unchanged by default.
-let selectedPartyIds=ALLIES.filter(h=>h.id!=="medic-demo"&&h.id!=="test-area-damage").map(h=>h.id);
-let selectedLeaderId=null; // no existing playable ally has a canonical leader skill
+// Formation persists independently of hero levels/campaign saves. On the first
+// visit (or invalid/unavailable storage), use the first five roster heroes.
+const SQUAD_SAVE_KEY="ashes-throne.squad.v1";
+function defaultSquad(){
+ const ids=ALLIES.slice(0,MAX_SQUAD).map(h=>h.id);
+ return {leaderId:ids[0]??null,regularIds:ids.slice(1)};
+}
+function loadSquad(){
+ const fallback=defaultSquad();
+ try{
+  const raw=window.localStorage.getItem(SQUAD_SAVE_KEY);
+  if(raw===null)return fallback;
+  const parsed=JSON.parse(raw);
+  if(!parsed||parsed.version!==1||
+     !Array.isArray(parsed.regularIds)||parsed.regularIds.length>MAX_SQUAD-1||
+     !(parsed.leaderId===null||typeof parsed.leaderId==="string"))return fallback;
+  const ids=[...(parsed.leaderId?[parsed.leaderId]:[]),...parsed.regularIds];
+  const roster=new Set(ALLIES.map(h=>h.id));
+  if(ids.some(id=>typeof id!=="string"||!roster.has(id))||
+     new Set(ids).size!==ids.length)return fallback;
+  return {leaderId:parsed.leaderId,regularIds:parsed.regularIds.slice()};
+ }catch(error){return fallback;}
+}
+function saveSquad(){
+ try{
+  window.localStorage.setItem(SQUAD_SAVE_KEY,JSON.stringify({
+   version:1,leaderId:selectedLeaderId,regularIds:selectedPartyIds
+  }));
+  return true;
+ }catch(error){return false;}
+}
+const loadedSquad=loadSquad();
+let selectedPartyIds=loadedSquad.regularIds;
+let selectedLeaderId=loadedSquad.leaderId;
 let squadReturnScreen="home";
 let state=CombatCore.createBattle([...ALLIES,...ENEMIES.slice(0,2)]);
 function progressedHero(hero){return ProgressCore.heroStats(progress,hero);}
-function leaderEligible(id){
+function hasLeaderSkill(id){
  const hero=ALLIES.find(h=>h.id===id);
  return !!hero&&!!AbilityData.get(hero,"leader");
 }
@@ -172,18 +203,19 @@ function renderSquad(){
  $("#squadRoster").innerHTML=ALLIES.map(progressedHero).map(h=>{
   const isLeader=selectedLeaderId===h.id;
   const active=selectedPartyIds.includes(h.id)||isLeader;
-  const eligible=leaderEligible(h.id);
-  return `<div class="squad-choice-row"><button type="button" class="squad-choice ${active?"chosen":""}" data-hero-id="${h.id}" aria-pressed="${active}"><span class="squad-glyph">${h.glyph}</span><span><b>${h.name}</b><small>${h.role} · HP ${h.hp} · ATK ${h.atk}</small></span><strong>${active?"✓":"+"}</strong></button>${eligible?`<button type="button" class="squad-assign-leader ${isLeader?"active":""}" data-leader-id="${h.id}" aria-pressed="${isLeader}" aria-label="${isLeader?"Снять лидера: ":"Назначить лидером: "}${h.name}">${isLeader?"★ Лидер":"★ Лидером"}</button>`:""}</div>`;
+  const skill=hasLeaderSkill(h.id);
+  return `<div class="squad-choice-row"><button type="button" class="squad-choice ${active?"chosen":""}" data-hero-id="${h.id}" aria-pressed="${active}"><span class="squad-glyph">${h.glyph}</span><span><b>${h.name}</b><small>${h.role} · HP ${h.hp} · ATK ${h.atk}${skill?" · Лидерская способность":""}</small></span><strong>${active?"✓":"+"}</strong></button><button type="button" class="squad-assign-leader ${isLeader?"active":""}" data-leader-id="${h.id}" aria-pressed="${isLeader}" aria-label="Назначить в первый слот лидера: ${h.name}">${isLeader?"★ Лидер":"★ В лидеры"}</button></div>`;
  }).join("");
  $("#squadSlots").innerHTML=Array.from({length:MAX_SQUAD},(_,i)=>{
   const h=i===0?leader:regular[i-1];
   if(i===0)return `<div class="squad-slot squad-slot-leader ${h?"filled":""}" aria-label="Лидер отряда"><span class="squad-slot-number">★ ЛИДЕР</span><span class="squad-slot-content">${h?h.name:"Не назначен"}</span>${h?'<button class="squad-clear-leader" type="button" data-clear-leader aria-label="Снять лидера">Убрать</button>':""}</div>`;
   return `<div class="squad-slot ${h?"filled":""}"><span class="squad-slot-number">${i+1}</span><span class="squad-slot-content">${h?h.name:"Свободно"}</span></div>`;
  }).join("");
- const hasEligible=ALLIES.some(h=>leaderEligible(h.id));
- $("#squadHint").textContent=hasEligible
-  ?(selectedLeaderId?"Лидер назначен. Остальные четыре ячейки — для союзников.":"Выбери подходящего героя и назначь лидером. Остальные четыре ячейки — для союзников.")
-  :"Лидер пока недоступен: подходящих героев нет. Можно выставить до четырёх союзников.";
+ $("#squadHint").textContent=selectedLeaderId
+  ?(hasLeaderSkill(selectedLeaderId)
+     ?"Первый персонаж — лидер; его лидерская способность действует автоматически."
+     :"Первый персонаж — лидер. У него пока нет лидерской способности.")
+  :"Назначь любого героя в первую ячейку кнопкой «В лидеры». Остальные четыре места — для союзников.";
  $("#squadStart").disabled=chosen.length===0;
  document.querySelectorAll("[data-hero-id]").forEach(btn=>btn.addEventListener("click",()=>{
   toggleSquadHero(btn.dataset.heroId);
@@ -196,15 +228,17 @@ function renderSquad(){
  }));
 }
 function assignSquadLeader(id){
- if(id!==null&&!leaderEligible(id))return false;
+ if(id!==null&&!ALLIES.some(h=>h.id===id))return false;
  if(id===selectedLeaderId)return true;
  const prior=selectedLeaderId;
- let regular=selectedPartyIds.filter(x=>x!==id);
- // On replacement the former leader returns to a regular slot when possible.
- if(prior&&regular.length<MAX_SQUAD-1)regular=[prior,...regular];
- if(regular.length>MAX_SQUAD-1)return false;
+ const wasRegular=selectedPartyIds.includes(id);
+ const regular=selectedPartyIds.filter(x=>x!==id);
+ // Swapping the leader with an existing ally keeps the full lineup;
+ // appointing a bench hero to a full squad replaces the former leader.
+ if(prior&&wasRegular&&regular.length<MAX_SQUAD-1)regular.push(prior);
  selectedLeaderId=id;
  selectedPartyIds=regular;
+ saveSquad();
  renderSquad();
  return true;
 }
@@ -214,6 +248,7 @@ function toggleSquadHero(id){
  if(selectedPartyIds.includes(id))selectedPartyIds=selectedPartyIds.filter(x=>x!==id);
  else if(selectedPartyIds.length<MAX_SQUAD-1)selectedPartyIds=[...selectedPartyIds,id];
  else return false;
+ saveSquad();
  renderSquad();
  return true;
 }

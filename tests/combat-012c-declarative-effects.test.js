@@ -107,8 +107,8 @@ for(const followUpEffects of badDefinitions){
   ({id:"basic",name:"Basic",target:"enemy",kind:"damage",multiplier:1,cooldown:0}):
   id==="special"?({id:"special",name:"Invalid test",target:"all-enemies",
    kind:"damage",multiplier:1,cooldown:2,followUpEffects:${JSON.stringify(followUpEffects)}}):null};`;
- const coreBad=vm.runInNewContext(read("initiative-model.js")+"\\n"+stub+"\\n"+
-   read("combat-core.js")+"\\nCombatCore");
+ const coreBad=vm.runInNewContext(read("initiative-model.js")+"\n"+stub+"\n"+
+   read("combat-core.js")+"\nCombatCore");
  const bad=coreBad.createBattle([hero("fixture"),enemy("victim")]);
  coreBad.advanceToPlayerTurn(bad);
  const eventRef=bad.events,turn=bad.turn,hp=bad.fighters[1].hp;

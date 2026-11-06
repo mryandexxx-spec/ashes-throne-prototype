@@ -101,7 +101,7 @@ click(elements.squadStart);
 assert.equal(api.getBattle().leaderId,"kael","selected leader is passed to CombatCore.createBattle");
 assert.equal(api.getBattle().fighters.filter(h=>h.side==="ally").length,5);
 assert.equal(api.getBattle().fighters[0].id,"kael");
-assert.equal(CombatCore.effectiveStat(api.getBattle(),api.getBattle().fighters[1],"atk"),
+assert.equal(api.CombatCore.effectiveStat(api.getBattle(),api.getBattle().fighters[1],"atk"),
  api.getBattle().fighters[1].atk+4,"leader aura applies in actual battle");
 
 // On reopening composition, removing the leader clears the leader slot and

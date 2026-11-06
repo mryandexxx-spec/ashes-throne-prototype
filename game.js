@@ -2,6 +2,8 @@ const HEROES = [
   {id:"kael",name:"Каэль Ворон",role:"Страж",hp:120,atk:24,speed:110,side:"ally",glyph:"♜"},
   {id:"lyra",name:"Лира Соль",role:"Следопыт",hp:88,atk:31,speed:155,side:"ally",glyph:"♧"},
   {id:"darin",name:"Дарин Пепельный",role:"Мечник",hp:105,atk:27,speed:125,side:"ally",glyph:"⚔"},
+  // Combat-007 test-only healer, not canonical or final balance.
+  {id:"medic-demo",name:"Учебный лекарь",role:"Учебная поддержка",hp:90,atk:14,speed:115,side:"ally",glyph:"✚"},
   {id:"ves",name:"Вестник Конклава",role:"Противник",hp:90,atk:18,speed:105,side:"enemy",glyph:"☠"},
   {id:"shade",name:"Теневой клинок",role:"Противник",hp:78,atk:22,speed:135,side:"enemy",glyph:"♟"},
   // Demo-only copies: no new combat stats or lore. First mission still uses two enemies.
@@ -113,7 +115,8 @@ function persistProgress(){
 }
 
 let selectedHeroId=ALLIES[0].id;
-let selectedPartyIds=ALLIES.map(h=>h.id);
+// Keep accepted demo encounters unchanged by default.
+let selectedPartyIds=ALLIES.filter(h=>h.id!=="medic-demo").map(h=>h.id);
 let squadReturnScreen="home";
 let state=CombatCore.createBattle([...ALLIES,...ENEMIES.slice(0,2)]);
 function progressedHero(hero){return ProgressCore.heroStats(progress,hero);}
@@ -413,7 +416,7 @@ function syncBattleUI(){
  $("#specialAbilityBtn").textContent=actor&&actor.specialCooldown>0?"Особая · "+actor.specialCooldown:"Особая";
  $("#basicAbilityBtn").classList.toggle("selected",selectedAbility==="basic");
  $("#specialAbilityBtn").classList.toggle("selected",selectedAbility==="special");
- $("#actionHint").textContent=autoBattle?"Автобой: базовые атаки по первой живой цели. Нажми «Ручной бой», чтобы управлять.":validTarget?"Цель: "+target.name:(targetIsAlly?"Выбери живого союзника":"Выбери живого противника");
+ $("#actionHint").textContent=autoBattle?"Автобой: базовые атаки по первой живой цели. Нажми «Ручной бой», чтобы управлять.":validTarget?"Цель на арене: "+target.name:(targetIsAlly?"Коснись живого союзника на арене":"Коснись живого противника на арене");
  $("#attackBtn").textContent=state.active?(targetIsAlly?"Применить":"Атаковать"):"Сыграть снова";
  $("#attackBtn").disabled=autoBattle||(state.active&&(!actor||!validTarget));
  $("#battleMessage").textContent=state.message;
@@ -431,12 +434,7 @@ function renderCombatants(){
    const status=[h.guardHits>0?"Защита ×"+h.guardHits:"",h.weakenAttacks>0?"Ослабление ×"+h.weakenAttacks:""].filter(Boolean).join(" · ");
    return `<div class="fighter ${h.side==="enemy"?"enemy":"ally"} ${h.hp<=0?"defeated":""} ${chosen?"selected":""} ${state.active&&i===state.currentActor?"acting":""}" data-index="${i}"><b>${h.name}</b><small>${Math.max(0,h.hp)} / ${h.maxHp} HP · СПД ${h.speed}</small>${status?`<span class="fighter-status">${status}</span>`:""}<div class="health"><span style="width:${Math.max(0,h.hp)/h.maxHp*100}%"></span></div></div>`;
  }).join("");
- document.querySelectorAll(".fighter.enemy").forEach(el=>el.addEventListener("click",()=>{
-  if(!autoBattle&&!isVisualTransition()&&CombatCore.chooseEnemy(state,Number(el.dataset.index)))syncBattleUI();
- }));
- if(choosingAlly)document.querySelectorAll(".fighter.ally").forEach(el=>el.addEventListener("click",()=>{
-  if(!autoBattle&&!isVisualTransition()&&CombatCore.chooseAlly(state,Number(el.dataset.index)))syncBattleUI();
- }));
+ // Status cards are read-only; all manual targets are picked in 3D.
 }
 function resetBattle(){
  cancelAutoTimer();
@@ -475,6 +473,20 @@ if(autoSpeedControl)autoSpeedControl.addEventListener("click",()=>{
 });
 $("#basicAbilityBtn").addEventListener("click",()=>{if(state.active&&!autoBattle&&!isVisualTransition()){selectedAbility="basic";syncBattleUI();}});
 $("#specialAbilityBtn").addEventListener("click",()=>{if(!autoBattle&&!isVisualTransition()&&CombatCore.abilityReady(state,"special")){selectedAbility="special";syncBattleUI();}});
+// Manual target picking is independent of which 3D mesh part was touched.
+function selectArenaTarget(pickedMesh){
+ if(!state.active||autoBattle||isVisualTransition()||!pickedMesh)return false;
+ let mesh=pickedMesh;
+ while(mesh&&!mesh.metadata?.fighterId)mesh=mesh.parent;
+ const id=mesh?.metadata?.fighterId;
+ const index=state.fighters.findIndex(f=>f.id===id&&f.hp>0);
+ if(index<0)return false;
+ const side=CombatCore.abilityTargetSide(state,selectedAbility);
+ if(state.fighters[index].side!==side)return false;
+ const picked=side==="ally"?CombatCore.chooseAlly(state,index):CombatCore.chooseEnemy(state,index);
+ if(picked)syncBattleUI();
+ return picked;
+}
 // A single render callback and a single Engine/Scene for the lifetime of this prototype.
 function renderBattleFrame(){
  if(!scene)return;
@@ -533,9 +545,17 @@ function initBabylon(){
   const mat=new BABYLON.StandardMaterial("mat_"+i,scene);mat.diffuseColor=h.side==="ally"?new BABYLON.Color3(.28,.55,.76):new BABYLON.Color3(.72,.25,.23);mat.emissiveColor=h.side==="ally"?new BABYLON.Color3(.02,.06,.09):new BABYLON.Color3(.08,.015,.01);body.material=mat;
   const head=BABYLON.MeshBuilder.CreateSphere("head_"+i,{diameter:.62,segments:12},scene);head.position=new BABYLON.Vector3(x,1.8,z);head.material=mat;
   const base=BABYLON.MeshBuilder.CreateCylinder("base_"+i,{diameter:1.15,height:.12,tessellation:24},scene);base.position=new BABYLON.Vector3(x,.08,z);const bm=new BABYLON.StandardMaterial("basemat_"+i,scene);bm.diffuseColor=h.side==="ally"?new BABYLON.Color3(.65,.48,.2):new BABYLON.Color3(.4,.18,.18);base.material=bm;
-  meshes[h.id]={body,head,base};
+  for(const part of [body,head,base])part.metadata={fighterId:h.id};
+   meshes[h.id]={body,head,base};
  });
- // Registered only once because initBabylon() runs once.
+ // Babylon pointer picking supports mouse and touch, registered once with the scene.
+  if(scene.onPointerObservable&&BABYLON.PointerEventTypes){
+   scene.onPointerObservable.add(info=>{
+    if(info.type===BABYLON.PointerEventTypes.POINTERPICK)
+     selectArenaTarget(info.pickInfo?.pickedMesh);
+   });
+  }
+  // Registered only once because initBabylon() runs once.
  window.addEventListener("resize",()=>{if(shouldRenderBattle())engine.resize();});
 }
 function updateMeshes(){
@@ -556,7 +576,12 @@ function updateMeshes(){
    const z=(slot-(sideMembers.length-1)/2)*1.55;
    mesh.body.position.x=mesh.head.position.x=mesh.base.position.x=x;
    mesh.body.position.z=mesh.head.position.z=mesh.base.position.z=z;
-   mesh.body.position.y=.8;
+   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
+    const targetSide=actor?CombatCore.abilityTargetSide(state,selectedAbility):null;
+    const selected=member.side===targetSide&&h.id===state.fighters[targetSide==="ally"?state.selectedAlly:state.selectedEnemy]?.id;
+    if(mesh.base.material&&BABYLON.Color3)mesh.base.material.emissiveColor=selected
+     ?new BABYLON.Color3(.48,.37,.12):new BABYLON.Color3(0,0,0);
+    mesh.body.position.y=.8;
    mesh.head.position.y=1.8;
    if(mesh.body.rotation)mesh.body.rotation.z=0;
    if(mesh.head.rotation)mesh.head.rotation.z=0;

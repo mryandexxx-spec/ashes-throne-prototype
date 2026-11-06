@@ -43,7 +43,7 @@ const AbilityData=(()=>{
  // Combat-013A: all playable allies have a passive slot. No effects assigned
  // until individual hero identity and synergy design is approved.
  const passiveEmpty=Object.freeze({id:"passive",name:"Пассивная способность (не определена)",
-  triggers:Object.freeze([])});
+  triggers:Object.freeze([]),modifiers:Object.freeze([])});
  const passiveByHero=Object.freeze({
   kael:passiveEmpty,lyra:passiveEmpty,darin:passiveEmpty,
   "medic-demo":passiveEmpty,"test-area-damage":passiveEmpty,
@@ -54,7 +54,17 @@ const AbilityData=(()=>{
    triggers:Object.freeze([Object.freeze({event:"damage",role:"target"})])}),
   "test-passive-both":Object.freeze({id:"passive",name:"Тест двух реакций",
    triggers:Object.freeze([Object.freeze({event:"damage",role:"actor"}),
-    Object.freeze({event:"damage",role:"target"})])})
+    Object.freeze({event:"damage",role:"target"})])}),
+  // Read-only modifiers: no combat stat computation changes in Combat-013A.
+  "test-passive-always":Object.freeze({id:"passive",name:"Тест постоянного бонуса",
+   triggers:Object.freeze([]),modifiers:Object.freeze([
+    Object.freeze({stat:"atk",operation:"flat",value:5,when:Object.freeze({kind:"always"})})
+   ])}),
+  "test-passive-conditional":Object.freeze({id:"passive",name:"Тест условного бонуса",
+   triggers:Object.freeze([]),modifiers:Object.freeze([
+    Object.freeze({stat:"atk",operation:"flat",value:7,
+     when:Object.freeze({kind:"hp-below-percent",percent:50})})
+   ])})
  });
  const fallback=Object.freeze({id:"special",name:"Особый удар",target:"enemy",kind:"damage",multiplier:1,weakening:0,cooldown:2});
  function get(actor,abilityId){

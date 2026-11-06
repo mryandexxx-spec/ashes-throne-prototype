@@ -236,6 +236,14 @@ assert.match(elements.abilityTooltipTitle.textContent,/Базовая атака
 assert.match(elements.abilityTooltipText.textContent,/Урон: 100%/);
 click(elements.basicAbilityBtn);
 assert.equal(first.allyActions,actionsBeforeHint,"hold must never cast even if click follows");
+elements.specialAbilitySlot.handlers.pointerdown[0]({pointerId:23,pointerType:"touch",clientX:90,clientY:25});
+tick();
+assert.equal(elements.abilityTooltip.hidden,false,"special skill also has long-press hint");
+assert.equal(elements.abilityTooltipTitle.textContent,"Ослабляющий удар");
+assert.match(elements.abilityTooltipText.textContent,/Ослабление на 2 атаки/);
+click(elements.specialAbilityBtn);
+assert.equal(first.allyActions,actionsBeforeHint,"holding special cannot cast it");
+
 pointerListener({type:2,event:{pointerId:22,pointerType:"touch",clientX:0,clientY:0},pickInfo:null});
 assert.equal(elements.abilityTooltip.hidden,true,"tapping empty arena closes ability tooltip");
 // A long press reveals combat stats of any fighter without selecting them.

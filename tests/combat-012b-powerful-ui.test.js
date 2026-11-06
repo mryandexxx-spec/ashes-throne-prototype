@@ -37,7 +37,7 @@ const document={
  addEventListener(){}
 };
 const api=vm.runInNewContext(src+
- "\n({resetBattle,getBattle:()=>state,chooseParty:ids=>{selectedPartyIds=ids},selectArenaTarget,showAbilityTooltip,BattleAnimation,AbilityData})",
+ "\n({resetBattle,getBattle:()=>state,chooseParty:ids=>{selectedLeaderId=null;selectedPartyIds=ids},selectArenaTarget,showAbilityTooltip,BattleAnimation,AbilityData})",
  {document,window:{addEventListener(){}}});
 function click(id){const f=els[id].handlers.click;assert.ok(f?.length,"missing click handler for "+id);f[f.length-1]();}
 const powerfulCases=[

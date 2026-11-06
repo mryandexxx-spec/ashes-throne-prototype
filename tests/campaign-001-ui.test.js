@@ -3,7 +3,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","attackBtn",
  "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","autoSpeedBtn","battleMessage","renderCanvas",
@@ -76,7 +76,7 @@ function tick(){
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), setAutoSpeed})",
+ "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, renderBattleFrame, setAutoSpeed})",
  {document,window:{addEventListener(){},localStorage},BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 elements.campaignMissions.contains=()=>true;
@@ -237,7 +237,11 @@ assert.equal(pendingDelay(),88,"autobattle resumes at manually selected 4x");
 tick();
 assert.equal(api.getBattle().allyActions,before+1,"automatic action uses normal combat state");
 assert.equal(timers.size,1,"exactly one next action scheduled");
+assert.ok(api.getMotion().pending()>0,"resolved hits queue visible animations");
+api.renderBattleFrame();
+assert.ok(api.getMeshes().lyra.body.position.x>-3.4,"speed-scaled 3D lunge moves attacker");
 api.showScreen("home");
+assert.equal(api.getMotion().pending(),0,"exiting battle clears animation queue");
 assert.equal(api.isAuto(),false);
 assert.equal(timers.size,0,"leaving battle cancels pending automatic action");
 assert.equal(api.getSpeed(),4,"leaving an encounter does not reset the shared speed until a new battle starts");

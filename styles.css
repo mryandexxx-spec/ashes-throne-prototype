@@ -594,3 +594,35 @@ body.battle-mode #app>footer{visibility:hidden}
  .battle-screen .battle-top-controls.arena-hud .ghost{min-height:34px;padding:5px 7px}
  .battle-screen .battle-top-controls.arena-hud .auto-speed-btn{min-width:34px}
 }
+
+/* Combat-008E: a temporary inspection modal, inside the fullscreen arena. */
+.battle-screen .fighter-inspect{
+ position:absolute;inset:0;z-index:12;display:flex;align-items:center;
+ justify-content:center;padding:max(12px,env(safe-area-inset-top,0px))
+ max(18px,env(safe-area-inset-right,0px))
+ max(12px,env(safe-area-inset-bottom,0px))
+ max(18px,env(safe-area-inset-left,0px));
+ background:#080c15b8;pointer-events:auto;
+}
+.battle-screen .fighter-inspect[hidden]{display:none!important}
+.battle-screen .fighter-inspect-panel{
+ width:min(400px,90vw);max-height:min(80dvh,360px);overflow-y:auto;
+ background:#171d29f5;border:1px solid #d5ad6580;border-radius:13px;
+ padding:16px;box-shadow:0 10px 36px #000a;color:var(--text);
+}
+.battle-screen .fighter-inspect-top{display:flex;align-items:center;
+ justify-content:space-between;gap:12px;color:var(--gold);font-size:11px;
+ font-weight:700;letter-spacing:1px}
+.battle-screen .fighter-inspect-top button{pointer-events:auto;min-height:40px;min-width:40px;
+ touch-action:manipulation}
+.battle-screen .fighter-inspect-panel h3{font:600 20px Cinzel,serif;margin:5px 0 3px}
+.battle-screen .fighter-inspect-role{color:var(--muted);font-size:12px;margin:0 0 12px}
+.battle-screen .fighter-inspect-stats{line-height:1.8;font-size:13px}
+.battle-screen .fighter-inspect-effects{margin-top:10px;padding-top:10px;
+ border-top:1px solid #ffffff30;color:var(--gold);font-size:12px;line-height:1.5}
+@media (orientation:landscape) and (max-height:390px){
+ .battle-screen .fighter-inspect-panel{max-height:calc(100dvh - 24px);padding:10px 14px}
+ .battle-screen .fighter-inspect-panel h3{font-size:16px}
+ .battle-screen .fighter-inspect-role{margin-bottom:4px}
+ .battle-screen .fighter-inspect-stats{font-size:11px;line-height:1.5}
+}

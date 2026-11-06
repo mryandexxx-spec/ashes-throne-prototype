@@ -84,104 +84,121 @@ function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
 const allyIds=()=>api.getBattle().fighters.filter(h=>h.side==="ally").map(h=>h.id).join(",");
 const count=()=>elements.squadCount.textContent;
 
-// Initial composition contains the first five roster heroes with slot 1
-// occupied by Kael; the test-only definition grants him an aura.
+// On first visit the first five roster heroes are selected automatically.
 click(elements.startBattle);
+assert.equal(count(),"5/5");
+assert.equal(api.selectedParty().join(","),"kael,lyra,darin,medic-demo,test-area-damage");
 assert.match(elements.squadSlots.innerHTML,/squad-slot-leader filled/);
 assert.match(elements.squadSlots.innerHTML,/Каэль/);
-assert.equal(api.selectedParty().join(","),"kael,lyra,darin,medic-demo,test-area-damage");
-assert.equal(count(),"5/5");
-assert.match(elements.squadRoster.innerHTML,/data-leader-id="kael"/);
-assert.match(elements.squadRoster.innerHTML,/data-leader-id="lyra"/);
-assert.equal(api.assignSquadLeader("missing"),false);
+assert.doesNotMatch(elements.squadRoster.innerHTML,/data-leader-id|В лидеры|Назначить лидером/,
+ "there is no special leader appointment action");
+assert.equal(api.CombatCore.effectiveStat(
+ api.getBattle(),api.getBattle().fighters[0],"atk"),api.getBattle().fighters[0].atk,
+ "the initial sandbox battle has no selected leader");
+click(elements.squadStart);
+assert.equal(api.getBattle().leaderId,"kael");
+assert.equal(api.CombatCore.effectiveStat(api.getBattle(),
+ api.getBattle().fighters.find(h=>h.id==="lyra"),"atk"),
+ api.getBattle().fighters.find(h=>h.id==="lyra").atk+4,
+ "a leading hero with a leader skill activates it automatically");
 
-// Move Lyra to leader via actual roster control. No leader ability:
-// appointment is allowed, but no one gets Kael's ability in battle.
-leaderNode.dataset.leaderId="lyra";
-click(leaderNode);
+// Removing first hero shifts the next into the first position and disables
+// the previous leader's skill without extra selection controls.
+api.openSquad();
+toggle("kael");
+assert.equal(count(),"4/5");
 assert.equal(api.selectedParty()[0],"lyra");
-assert.equal(api.selectedParty().length,5);
-assert.equal(new Set(api.selectedParty()).size,5,"no duplicates");
-assert.match(elements.squadHint.textContent,/нет лидерской способности/);
+assert.match(elements.squadSlots.innerHTML,/Лира/);
+assert.equal(api.selectedParty().includes("kael"),false);
+assert.equal(api.toggleSquadHero("kael"),true);
+assert.equal(api.selectedParty().join(","),"lyra,darin,medic-demo,test-area-damage,kael",
+ "re-added hero fills last free slot without jumping to leader");
 click(elements.squadStart);
 assert.equal(api.getBattle().leaderId,"lyra");
-assert.equal(api.getBattle().fighters[0].id,"lyra");
-assert.equal(api.CombatCore.activeLeaderModifiers(api.getBattle(),"kael").length,0);
-assert.equal(api.CombatCore.effectiveStat(api.getBattle(),
- api.getBattle().fighters.find(x=>x.id==="kael"),"atk"),
- api.getBattle().fighters.find(x=>x.id==="kael").atk);
+assert.equal(api.CombatCore.activeLeaderModifiers(api.getBattle(),"kael").length,0,
+ "an ability holder in a non-leading slot has no aura");
 
-// Promote Kael: leader skill activates only while in slot 1.
-api.openSquad();
-assert.equal(api.assignSquadLeader("kael"),true);
-assert.equal(api.selectedParty()[0],"kael");
-click(elements.squadStart);
-assert.equal(api.getBattle().leaderId,"kael");
-assert.equal(api.CombatCore.effectiveStat(api.getBattle(),
- api.getBattle().fighters.find(x=>x.id==="lyra"),"atk"),
- api.getBattle().fighters.find(x=>x.id==="lyra").atk+4);
-
-// Removing leader changes the saved formation for the next battle but
-// cannot mutate an already running/finished battle.
-api.openSquad();
-click(clearLeaderNode);
-assert.match(elements.squadSlots.innerHTML,/Не назначен/);
-assert.equal(api.selectedParty().length,4);
-assert.equal(api.getBattle().leaderId,"kael");
-click(elements.squadStart);
-assert.equal(elements.squad.classList.active,true,"first click warns about four heroes");
-assert.match(elements.squadWarning.textContent,/Нажми «Начать бой» ещё раз/);
-click(elements.squadStart);
-assert.equal(api.getBattle().leaderId,null);
-assert.equal(api.getBattle().fighters.filter(x=>x.side==="ally").length,4);
-assert.ok(storageData.has("ashes-throne.squad.v1"));
-
-// A page reload reconstructs the last formation from localStorage.
-const reload=vm.runInNewContext(src+
- "\n({leaderId:selectedLeaderId,regularIds:selectedPartyIds.slice(),selectedParty:()=>selectedParty().map(h=>h.id)})",
- {document,window:{addEventListener(){},localStorage},BABYLON});
-assert.equal(reload.leaderId,null);
-assert.equal(reload.selectedParty().join(","),api.selectedParty().join(","));
-
-// Disband clears both leader and four remaining slots; empty is a legitimate
-// persisted state and must not regenerate the initial five on refresh.
+// Disband clears all positions and its empty state survives a page reload.
 api.openSquad();
 click(elements.squadDisband);
 assert.equal(count(),"0/5");
+assert.equal((elements.squadSlots.innerHTML.match(/Свободно/g)||[]).length,5);
 assert.equal(elements.squadStart.disabled,true);
 assert.equal(api.selectedParty().length,0);
-const stored=JSON.parse(storageData.get("ashes-throne.squad.v1"));
-assert.equal(stored.leaderId,null);
-assert.deepEqual(Array.from(stored.regularIds),[]);
-const emptied=vm.runInNewContext(src+
+assert.ok(storageData.has("ashes-throne.squad.v1"));
+let reload=vm.runInNewContext(src+
  "\n({leaderId:selectedLeaderId,selectedParty:()=>selectedParty().map(h=>h.id)})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
-assert.equal(emptied.leaderId,null);
-assert.equal(emptied.selectedParty().length,0);
+assert.equal(reload.leaderId,null);
+assert.equal(reload.selectedParty().length,0);
 
-// When the roster has fewer than five available allies, an otherwise complete
-// selection launches on the first tap; this rule is roster-derived, not a
-// fixed count of five in the warning condition.
-assert.equal(api.toggleSquadHero("kael"),true);
-assert.equal(api.toggleSquadHero("lyra"),true);
+// The first ordinary tap now fills the highlighted leader slot, even when
+// selecting a hero without a leader skill.
+toggle("lyra");
+assert.equal(count(),"1/5");
+assert.match(elements.squadSlots.innerHTML,/squad-slot-leader filled/);
+assert.match(elements.squadSlots.innerHTML,/Лира/);
+assert.doesNotMatch(elements.squadRoster.innerHTML,/data-leader-id|В лидеры/);
+click(elements.squadStart);
+assert.equal(elements.squad.classList.active,true,
+ "first attempt warns when other combat heroes are available");
+assert.match(elements.squadWarning.textContent,/Нажми «Начать бой» ещё раз/);
 assert.equal(api.toggleSquadHero("darin"),true);
-assert.equal(api.toggleSquadHero("medic-demo"),true);
-const fullShort=vm.runInNewContext(src+
- "\n({getBattle:()=>state,openSquad,renderSquad,ALLIES,selectedParty:()=>selectedParty().map(h=>h.id)})",
- {document,window:{addEventListener(){},localStorage},BABYLON});
-fullShort.ALLIES.pop();
-fullShort.openSquad();
-assert.equal(fullShort.selectedParty().length,4);
-// Run the latest VM handler, not the original context\u0027s listener.
-elements.squadStart.handlers.click.at(-1)();
-assert.equal(elements.battle.classList.active,true,
- "no warning when all four available heroes are selected");
+assert.equal(elements.squadWarning.hidden,true,"changing composition resets consent");
+click(elements.squadStart);
+assert.equal(elements.squad.classList.active,true,"first tap after change warns again");
+click(elements.squadStart);
+assert.equal(api.getBattle().leaderId,"lyra");
+assert.equal(api.getBattle().fighters[0].id,"lyra");
+assert.equal(api.CombatCore.activeLeaderModifiers(api.getBattle(),"darin").length,0);
 
-// A broken save safely falls back to the first five, with the first leading.
-storageData.set("ashes-throne.squad.v1",'{"version":1,"leaderId":"missing","regularIds":["kael"]}');
+// Choose Kael first after clearing, to verify the ability activates only
+// according to the new first-position contract.
+api.openSquad();
+click(elements.squadDisband);
+toggle("kael");
+toggle("lyra");
+assert.equal(api.selectedParty().join(","),"kael,lyra");
+click(elements.squadStart);
+click(elements.squadStart);
+assert.equal(api.getBattle().leaderId,"kael");
+assert.equal(api.CombatCore.effectiveStat(api.getBattle(),
+ api.getBattle().fighters[1],"atk"),api.getBattle().fighters[1].atk+4);
+reload=vm.runInNewContext(src+
+ "\n({leaderId:selectedLeaderId,selectedParty:()=>selectedParty().map(h=>h.id)})",
+ {document,window:{addEventListener(){},localStorage},BABYLON});
+assert.equal(reload.leaderId,"kael");
+assert.equal(reload.selectedParty().join(","),"kael,lyra");
+
+// Old saves with an empty first slot are compacted on restore.
+storageData.set("ashes-throne.squad.v1",
+ '{"version":1,"leaderId":null,"regularIds":["lyra","kael"]}');
+const migrated=vm.runInNewContext(src+
+ "\n({leaderId:selectedLeaderId,selectedParty:()=>selectedParty().map(h=>h.id)})",
+ {document,window:{addEventListener(){},localStorage},BABYLON});
+assert.equal(migrated.leaderId,"lyra");
+assert.equal(migrated.selectedParty().join(","),"lyra,kael");
+
+// A corrupted saved roster falls back safely to the first five.
+storageData.set("ashes-throne.squad.v1",
+ '{"version":1,"leaderId":"missing","regularIds":["kael"]}');
 const recovered=vm.runInNewContext(src+
  "\n({leaderId:selectedLeaderId,selectedParty:()=>selectedParty().map(h=>h.id)})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
 assert.equal(recovered.leaderId,"kael");
 assert.equal(recovered.selectedParty().length,5);
-console.log("Combat-014C any-hero slot, skill gating, default five, storage reload and corrupt-save fallback passed");
+
+// If fewer than five allies are available, a complete smaller roster has
+// no warning, even though it occupies fewer than five slots.
+storageData.set("ashes-throne.squad.v1",
+ '{"version":1,"leaderId":"kael","regularIds":["lyra","darin","medic-demo"]}');
+const short=vm.runInNewContext(src+
+ "\n({getBattle:()=>state,openSquad,ALLIES,selectedParty:()=>selectedParty().map(h=>h.id)})",
+ {document,window:{addEventListener(){},localStorage},BABYLON});
+short.ALLIES.pop();
+short.openSquad();
+assert.equal(short.selectedParty().length,4);
+elements.squadStart.handlers.click.at(-1)();
+assert.equal(elements.battle.classList.active,true,
+ "all available heroes selected: battle starts immediately");
+console.log("Combat-014D ordinary first slot, promotion, ability gating, disband, migration and warning passed");

@@ -6,7 +6,7 @@ const vm=require("node:vm");
 const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","attackBtn","arenaIndicators","orientationPrompt",
- "currentFighterHud","currentFighterSide","currentFighterLevel","currentFighterName","currentFighterHp","currentFighterStats","currentFighterHealthFill",
+ "targetFighterHud","targetFighterSide","targetFighterLevel","targetFighterName","targetFighterHp","targetFighterStats","targetFighterHealthFill",
  "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","autoSpeedBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
@@ -96,7 +96,7 @@ function tick(){
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderCurrentFighterHud, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), setAutoSpeed})",
+ "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderTargetFighterHud, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), setAutoSpeed})",
  {document,window:liveWindow,BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 elements.campaignMissions.contains=()=>true;
@@ -179,11 +179,11 @@ assert.equal(positions(2).map(p=>p.x).join(","),"-2.45,-2.45");
 assert.equal(positions(1)[0].z,0);
 const first=api.getBattle();
 const currentActor=first.fighters[first.currentActor];
-assert.equal(elements.currentFighterName.textContent,currentActor.name,"top-right panel shows current actor");
-assert.equal(elements.currentFighterLevel.textContent,"Ур. "+currentActor.level,"ally uses actual progression");
-assert.match(elements.currentFighterHp.textContent,/HP [0-9]+\/[0-9]+/);
-assert.match(elements.currentFighterStats.textContent,/АТК [0-9]+ · СКР [0-9]+/);
-assert.equal(elements.currentFighterHealthFill.style.width,"100%");
+assert.equal(elements.targetFighterName.textContent,currentActor.name,"top-right panel shows current actor");
+assert.equal(elements.targetFighterLevel.textContent,"Ур. "+currentActor.level,"ally uses actual progression");
+assert.match(elements.targetFighterHp.textContent,/HP [0-9]+\/[0-9]+/);
+assert.match(elements.targetFighterStats.textContent,/АТК [0-9]+ · СКР [0-9]+/);
+assert.equal(elements.targetFighterHealthFill.style.width,"100%");
 // A target change must not swap the turn-owner panel to the selected enemy.
 
 assert.equal(typeof pointerListener,"function","arena pointer listener registered");
@@ -191,17 +191,17 @@ const firstEnemy=first.fighters.find(f=>f.side==="enemy");
 const secondEnemy=first.fighters.filter(f=>f.side==="enemy")[1];
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[secondEnemy.id].body}});
 assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"arena tap selects enemy");
-assert.equal(elements.currentFighterName.textContent,currentActor.name,"selected target is not the actor");
+assert.equal(elements.targetFighterName.textContent,currentActor.name,"selected target is not the actor");
 const originalIndex=first.currentActor;
 first.currentActor=first.fighters.findIndex(f=>f.side==="enemy");
-api.renderCurrentFighterHud();
-assert.equal(elements.currentFighterSide.textContent,"ПРОТИВНИК");
-assert.equal(elements.currentFighterName.textContent,first.fighters[first.currentActor].name);
-assert.equal(elements.currentFighterLevel.textContent,"","enemy level must not be invented");
-assert.equal(elements.currentFighterHud.classList.enemy,true);
+api.renderTargetFighterHud();
+assert.equal(elements.targetFighterSide.textContent,"ПРОТИВНИК");
+assert.equal(elements.targetFighterName.textContent,first.fighters[first.currentActor].name);
+assert.equal(elements.targetFighterLevel.textContent,"","enemy level must not be invented");
+assert.equal(elements.targetFighterHud.classList.enemy,true);
 first.currentActor=originalIndex;
-api.renderCurrentFighterHud();
-assert.equal(elements.currentFighterHud.classList.enemy,false);
+api.renderTargetFighterHud();
+assert.equal(elements.targetFighterHud.classList.enemy,false);
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes().kael.head}});
 assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"ally tap cannot switch an enemy attack target");
 assert.equal(api.getMeshes()[secondEnemy.id].base.material.emissiveColor.x,.48,"target is highlighted on arena");
@@ -222,8 +222,8 @@ assert.match(elements.arenaIndicators.innerHTML,/width:90%/,"HP percent reflects
 first.active=false;first.winner="enemy";
 api.syncBattleUI();
 assert.equal(elements.missionResult.classList.active,true,"defeat must show result screen");
-assert.equal(elements.currentFighterName.textContent,"Бой завершён","finished battle clears stale actor");
-assert.equal(elements.currentFighterLevel.textContent,"","finished battle clears level");
+assert.equal(elements.targetFighterName.textContent,"Бой завершён","finished battle clears stale actor");
+assert.equal(elements.targetFighterLevel.textContent,"","finished battle clears level");
 assert.equal(document.body.classList.contains("battle-mode"),false,"leaving battle restores document scroll");
 assert.match(elements.missionResultTitle.textContent,/не пройдена/);
 assert.equal(api.getMaterials(),0);

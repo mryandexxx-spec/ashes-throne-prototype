@@ -100,7 +100,8 @@ assert.equal(api.getBattle().fighters[api.getBattle().currentActor].side,"ally")
 api.getBattle().active=false;
 api.getBattle().winner="ally";
 api.syncBattleUI();
-click(elements.basicAbilityBtn);
+assert.equal(elements.battleRetryBtn.hidden,false,"training replay is revealed after victory");
+click(elements.battleRetryBtn);
 assert.equal(elements.squad.classList.active,true);
 toggle("kael");
 assert.equal(count(),"2/5");

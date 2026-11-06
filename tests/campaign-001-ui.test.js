@@ -194,6 +194,8 @@ assert.equal(elements.targetFighterHud.classList.enemy,true);
 // Guard is targeted at an ally; the same card must now follow the allied target.
 const originalIndex=first.currentActor;
 first.currentActor=first.fighters.findIndex(f=>f.id==="kael");
+const previousKaelMeter=first.fighters[first.currentActor].meter;
+first.fighters[first.currentActor].meter=1000; // Simulate Kael actually reaching his turn.
 click(elements.specialAbilityBtn);
 const allyTarget=first.fighters.find(f=>f.id==="lyra");
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[allyTarget.id].head}});
@@ -204,6 +206,7 @@ assert.equal(elements.targetFighterLevel.textContent,"Ур. "+allyTarget.level,"
 assert.equal(elements.targetFighterHud.classList.enemy,false);
 click(elements.basicAbilityBtn);
 assert.equal(elements.targetFighterName.textContent,secondEnemy.name,"switch back to attack restores enemy target");
+first.fighters[first.currentActor].meter=previousKaelMeter;
 first.currentActor=originalIndex;
 api.syncBattleUI();
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes().kael.head}});

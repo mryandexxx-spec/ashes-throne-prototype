@@ -467,7 +467,7 @@ function syncBattleUI(){
  $("#specialAbilityBtn").classList.toggle("selected",supportTarget);
  $("#actionHint").textContent=autoBattle?"Автобой активен. Нажми «Ручной бой», чтобы управлять.":
   supportTarget?"Коснись союзника с курсором, чтобы применить способность.":
-  actor&&CombatCore.abilityTargetSide(state,"special")==="all-enemies"?"Групповое умение поражает всех живых врагов. Нажми на него для применения.":
+  actor&&CombatCore.abilityTargetSide(state,"special")==="all-enemies"?"Курсор отмечает основную цель. Учебный широкий удар поражает всех живых врагов.":
   validTarget?"В фокусе: "+target.name+". Нажми на нужную способность.":"Коснись противника, чтобы выбрать цель.";
  const retry=$("#battleRetryBtn");if(retry)retry.hidden=!!state.active;
  $("#abilityControls")?.classList.toggle("battle-finished",!state.active);
@@ -492,10 +492,11 @@ function renderArenaIndicators(){
   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
   const active=actor?.id===h.id;
   const support=!!actor&&!autoBattle&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
-  const groupFocus=!!actor&&!autoBattle&&CombatCore.abilityReady(state,"special")&&CombatCore.abilityTargetSide(state,"special")==="all-enemies"&&h.side==="enemy";
-  const focused=!!actor&&!autoBattle&&h.hp>0&&(support?h.side==="ally":groupFocus||h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
+  // A group ability does not change focus on turn start: exactly one
+  // primary enemy remains selected until the player taps a different one.
+  const focused=!!actor&&!autoBattle&&h.hp>0&&(support?h.side==="ally":h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
   return `<div class="arena-indicator ${h.side} ${active?"acting":""}" data-fighter-id="${h.id}" aria-label="${h.name}: здоровье ${Math.max(0,h.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
-   ${focused?`<div class="arena-focus-cursor ${support?"available":groupFocus?"group":"locked"}" aria-hidden="true">▼</div>`:""}
+   ${focused?`<div class="arena-focus-cursor ${support?"available":"locked"}" aria-hidden="true">▼</div>`:""}
    <div class="arena-indicator-name">${h.name}</div>
    <div class="arena-health" title="HP ${Math.max(0,h.hp)} / ${h.maxHp}"><span style="width:${health}%"></span></div>
    <div class="arena-initiative" title="Инициатива ${Math.round(h.meter||0)} / 1000"><span style="width:${initiative}%"></span></div>
@@ -762,6 +763,12 @@ function renderBattleFrame(){
  // Animation speed is shared with the auto scheduler, never alters combat state.
  const dt=engine&&typeof engine.getDeltaTime==="function"?engine.getDeltaTime():16;
  BattleAnimation.tick(dt,BattleSpeed.multiplier());
+ // Death animation may end without a new combat action. Retire stale
+ // indicators immediately instead of waiting for the following turn.
+ if(Object.keys(indicatorNodes).some(id=>{
+  const fighter=presentationFighters().find(f=>f.id===id);
+  return !fighter||fighter.hp<=0&&!BattleAnimation.isDying(id);
+ }))renderArenaIndicators();
  const roster=presentationFighters();
  const sides={ally:roster.filter(f=>f.side==="ally"),enemy:roster.filter(f=>f.side==="enemy")};
  for(const h of roster){

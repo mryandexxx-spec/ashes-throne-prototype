@@ -718,3 +718,19 @@ body.battle-mode #app>footer{visibility:hidden}
 .battle-screen .ability-controls.battle-finished #battleRetryBtn{
  display:block;width:100%;min-height:44px;
 }
+
+/* Combat-014B: leader is always the first, visually distinctive squad slot. */
+.squad-slot-leader{border:2px solid #72c0d0;background:rgba(43,144,170,.12);color:var(--text)}
+.squad-slot-leader.filled{border-color:#7ad6e2;background:rgba(43,144,170,.2)}
+.squad-slot-leader .squad-slot-number{color:#a1ecf1;letter-spacing:.04em}
+.squad-choice-row{display:flex;align-items:stretch;gap:6px;min-width:0}
+.squad-choice-row .squad-choice{flex:1;min-width:0}
+.squad-assign-leader{border:1px solid #72c0d0;border-radius:9px;background:rgba(43,144,170,.10);color:#a1ecf1;padding:7px;min-width:80px;font-size:11px;cursor:pointer}
+.squad-assign-leader.active{background:rgba(43,144,170,.28);font-weight:700}
+.squad-assign-leader:focus-visible,.squad-clear-leader:focus-visible{outline:2px solid #a1ecf1;outline-offset:2px}
+.squad-clear-leader{border:0;background:transparent;color:#a1ecf1;text-decoration:underline;font-size:10px;cursor:pointer;padding:2px;min-height:24px}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .squad-assign-leader{min-width:70px;padding:4px;font-size:10px}
+ .squad-choice-row{gap:4px}
+ .squad-clear-leader{min-height:20px}
+}

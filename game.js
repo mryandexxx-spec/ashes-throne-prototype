@@ -341,7 +341,7 @@ $("#campaignMissions").addEventListener("click",event=>{
  if(button&&$("#campaignMissions").contains(button))openCampaignMission(button.dataset.campaignMission);
 });
 $("#squadBack").addEventListener("click",()=>showScreen(squadReturnScreen));
-$("#squadDisband").addEventListener("click",disbandSquad);
+$("#squadDisband")?.addEventListener("click",disbandSquad);
 // If Babylon.js cannot load, show a recoverable message instead of an uncaught crash.
 const retryLoad=$("#retryBattleLoad");
 if(retryLoad)retryLoad.addEventListener("click",()=>window.location.reload());

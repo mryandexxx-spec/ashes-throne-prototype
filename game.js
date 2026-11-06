@@ -155,6 +155,10 @@ function loadSquad(){
   const roster=new Set(ALLIES.map(h=>h.id));
   if(ids.some(id=>typeof id!=="string"||!roster.has(id))||
      new Set(ids).size!==ids.length)return fallback;
+  // Old Combat-014C saves may contain allies in slots 2-5 with slot 1
+  // empty. Compact them into consecutive slots without losing the party.
+  if(parsed.leaderId===null&&parsed.regularIds.length)
+   return {leaderId:parsed.regularIds[0],regularIds:parsed.regularIds.slice(1)};
   return {leaderId:parsed.leaderId,regularIds:parsed.regularIds.slice()};
  }catch(error){return fallback;}
 }
@@ -187,7 +191,9 @@ function hasLeaderSkill(id){
  return !!hero&&!!AbilityData.get(hero,"leader");
 }
 function selectedParty(){
- const ids=[...(selectedLeaderId?[selectedLeaderId]:[]),...ALLIES.filter(h=>selectedPartyIds.includes(h.id)).map(h=>h.id)];
+ // The roster is positional: the first selected hero leads, subsequent
+ // selections fill slots 2-5. Preserve the order of the player's taps.
+ const ids=[...(selectedLeaderId?[selectedLeaderId]:[]),...selectedPartyIds];
  return ids.map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(progressedHero);
 }
 function battleLineup(){
@@ -214,51 +220,36 @@ function renderSquad(){
   const isLeader=selectedLeaderId===h.id;
   const active=selectedPartyIds.includes(h.id)||isLeader;
   const skill=hasLeaderSkill(h.id);
-  return `<div class="squad-choice-row"><button type="button" class="squad-choice ${active?"chosen":""}" data-hero-id="${h.id}" aria-pressed="${active}"><span class="squad-glyph">${h.glyph}</span><span><b>${h.name}</b><small>${h.role} · HP ${h.hp} · ATK ${h.atk}${skill?" · Лидерская способность":""}</small></span><strong>${active?"✓":"+"}</strong></button><button type="button" class="squad-assign-leader ${isLeader?"active":""}" data-leader-id="${h.id}" aria-pressed="${isLeader}" aria-label="Назначить в первый слот лидера: ${h.name}">${isLeader?"★ Лидер":"★ В лидеры"}</button></div>`;
+  return `<button type="button" class="squad-choice ${active?"chosen":""}" data-hero-id="${h.id}" aria-pressed="${active}"><span class="squad-glyph">${h.glyph}</span><span><b>${h.name}</b><small>${h.role} · HP ${h.hp} · ATK ${h.atk}${skill?" · Лидерская способность":""}</small></span><strong>${active?"✓":"+"}</strong></button>`;
  }).join("");
  $("#squadSlots").innerHTML=Array.from({length:MAX_SQUAD},(_,i)=>{
   const h=i===0?leader:regular[i-1];
-  if(i===0)return `<div class="squad-slot squad-slot-leader ${h?"filled":""}" aria-label="Лидер отряда"><span class="squad-slot-number">★ ЛИДЕР</span><span class="squad-slot-content">${h?h.name:"Не назначен"}</span>${h?'<button class="squad-clear-leader" type="button" data-clear-leader aria-label="Снять лидера">Убрать</button>':""}</div>`;
+  if(i===0)return `<div class="squad-slot squad-slot-leader ${h?"filled":""}" aria-label="Лидер отряда"><span class="squad-slot-number">★ ЛИДЕР</span><span class="squad-slot-content">${h?h.name:"Свободно"}</span></div>`;
   return `<div class="squad-slot ${h?"filled":""}"><span class="squad-slot-number">${i+1}</span><span class="squad-slot-content">${h?h.name:"Свободно"}</span></div>`;
  }).join("");
  $("#squadHint").textContent=selectedLeaderId
   ?(hasLeaderSkill(selectedLeaderId)
      ?"Первый персонаж — лидер; его лидерская способность действует автоматически."
      :"Первый персонаж — лидер. У него пока нет лидерской способности.")
-  :"Назначь любого героя в первую ячейку кнопкой «В лидеры». Остальные четыре места — для союзников.";
+  :"Нажми на героя слева — он займёт первое свободное место. Первый выбранный герой станет лидером.";
  $("#squadStart").disabled=chosen.length===0;
  document.querySelectorAll("[data-hero-id]").forEach(btn=>btn.addEventListener("click",()=>{
   toggleSquadHero(btn.dataset.heroId);
  }));
- document.querySelectorAll("[data-leader-id]").forEach(btn=>btn.addEventListener("click",()=>{
-  assignSquadLeader(btn.dataset.leaderId);
- }));
- document.querySelectorAll("[data-clear-leader]").forEach(btn=>btn.addEventListener("click",()=>{
-  assignSquadLeader(null);
- }));
-}
-function assignSquadLeader(id){
- if(id!==null&&!ALLIES.some(h=>h.id===id))return false;
- if(id===selectedLeaderId)return true;
- const prior=selectedLeaderId;
- const wasRegular=selectedPartyIds.includes(id);
- const regular=selectedPartyIds.filter(x=>x!==id);
- // Swapping the leader with an existing ally keeps the full lineup;
- // appointing a bench hero to a full squad replaces the former leader.
- if(prior&&wasRegular&&regular.length<MAX_SQUAD-1)regular.push(prior);
- selectedLeaderId=id;
- selectedPartyIds=regular;
- resetSquadWarning();
- saveSquad();
- renderSquad();
- return true;
 }
 function toggleSquadHero(id){
  if(!ALLIES.some(h=>h.id===id))return false;
- if(id===selectedLeaderId)return assignSquadLeader(null);
- if(selectedPartyIds.includes(id))selectedPartyIds=selectedPartyIds.filter(x=>x!==id);
- else if(selectedPartyIds.length<MAX_SQUAD-1)selectedPartyIds=[...selectedPartyIds,id];
- else return false;
+ if(id===selectedLeaderId){
+  // Removing slot 1 shifts every remaining hero left; new first hero leads.
+  selectedLeaderId=selectedPartyIds.shift()??null;
+ }else if(selectedPartyIds.includes(id)){
+  selectedPartyIds=selectedPartyIds.filter(x=>x!==id);
+ }else if(selectedLeaderId===null){
+  // First ordinary selection after disband occupies the leader slot.
+  selectedLeaderId=id;
+ }else if(selectedPartyIds.length<MAX_SQUAD-1){
+  selectedPartyIds.push(id);
+ }else return false;
  resetSquadWarning();
  saveSquad();
  renderSquad();

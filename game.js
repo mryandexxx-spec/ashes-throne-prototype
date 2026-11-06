@@ -101,6 +101,7 @@ const campaignProgress=campaignLoaded.campaign;
 let campaignSaveAvailable=campaignLoaded.available;
 let battleIsCampaign=false;
 let missionResultShown=false;
+let missionResultRecorded=false;
 let activeMissionId=null;
 let lastMissionStars=0;
 function persistProgress(){
@@ -345,8 +346,17 @@ function renderBattleLog(){
 }
 function syncBattleUI(){
  if(!state.active){cancelAutoTimer();autoBattle=false;}
- // Keep result screen and rewards in the normal UI path, after the final
- // visible attack/hit/death has finished. Core state is already final.
+ // Commit battle outcome immediately as before, even if the player leaves
+ // the arena before the final animation ends. Only visual navigation waits.
+ const awarded=ProgressCore.awardVictory(progress,state);
+ if(awarded>0)persistProgress();
+ if(battleIsCampaign&&!state.active&&!missionResultRecorded){
+  const result=CampaignCore.recordResult(campaignProgress,activeMissionId,state);
+  lastMissionStars=result.earned;
+  if(result.improved)
+   campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
+  missionResultRecorded=true;
+ }
  if(isVisualTransition()){
   $("#battleStatus").textContent=visualTransition==="wave"?"Завершение волны…":"Завершение боя…";
   $("#actionTitle").textContent="Анимация завершается";
@@ -364,13 +374,7 @@ function syncBattleUI(){
   updateMeshes();
   return;
  }
- const awarded=ProgressCore.awardVictory(progress,state);
- if(awarded>0)persistProgress();
  if(battleIsCampaign&&!state.active&&!missionResultShown){
-  const result=CampaignCore.recordResult(campaignProgress,activeMissionId,state);
-  lastMissionStars=result.earned;
-  if(result.improved)
-   campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
   missionResultShown=true;
   renderMissionResult();
   showScreen("missionResult");
@@ -441,6 +445,7 @@ function resetBattle(){
  autoBattle=false;
  BattleSpeed.reset();
  missionResultShown=false;
+ missionResultRecorded=false;
  lastMissionStars=0;
  selectedAbility="basic";
  state=CombatCore.createBattle(battleLineup(),battleFutureWaves());

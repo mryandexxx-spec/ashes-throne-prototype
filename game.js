@@ -168,6 +168,9 @@ function openSquad(returnTo="home"){
 }
 function showScreen(id){
  if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();stopBattleRendering();}
+ // Combat-008A: release the document scroll while the arena owns the viewport.
+ // Guard document.body for headless DOM tests and embedded integrations.
+ if(document.body&&document.body.classList)document.body.classList.toggle("battle-mode",id==="battle");
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  $("#"+id).classList.add("active");
  if(id==="collection")renderHeroes();

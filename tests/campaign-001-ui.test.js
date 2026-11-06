@@ -95,7 +95,7 @@ function tick(){
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), setAutoSpeed})",
+ "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), setAutoSpeed})",
  {document,window:liveWindow,BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 elements.campaignMissions.contains=()=>true;
@@ -152,6 +152,13 @@ assert.equal(resizes,beforeLandscapeResize+1,"all events coalesce to one Babylon
 assert.equal(activeCamera.alpha,-3*Math.PI/4,"landscape return restores isometric camera");
 assert.equal(activeCamera.radius,12,"landscape return keeps approved max zoom");
 
+// Formation contract for teams of 1 to 5 without changing the roster or save schema.
+const positions=n=>Array.from({length:n},(_,i)=>api.formationPosition("ally",i,n));
+assert.equal(positions(5).map(p=>p.x).join(","),"-2.45,-2.45,-2.45,-4.05,-4.05");
+assert.equal(positions(5).map(p=>p.z).join(","),"-1.9,0,1.9,-0.95,0.95");
+assert.equal(positions(4).map(p=>p.x).join(","),"-2.45,-2.45,-2.45,-4.05");
+assert.equal(positions(2).map(p=>p.x).join(","),"-2.45,-2.45");
+assert.equal(positions(1)[0].z,0);
 const first=api.getBattle();
 assert.equal(typeof pointerListener,"function","arena pointer listener registered");
 const firstEnemy=first.fighters.find(f=>f.side==="enemy");

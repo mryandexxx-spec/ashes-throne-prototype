@@ -39,7 +39,15 @@ const document={
  },
  addEventListener(type,fn){if(type==="visibilitychange")visibilityListeners.push(fn)}
 };
-let meshCreates=0,engineCreates=0,rendersStarted=0;
+let meshCreates=0,engineCreates=0,rendersStarted=0,resizes=0;
+const viewportEvents={};const rafQueue=[];
+const liveWindow={localStorage:null,innerWidth:844,innerHeight:390,
+ addEventListener(type,fn){viewportEvents[type]=fn},
+ requestAnimationFrame(fn){rafQueue.push(fn)},
+ visualViewport:{addEventListener(type,fn){viewportEvents["visual-"+type]=fn}},
+ ResizeObserver:class{constructor(fn){viewportEvents.observer=fn}observe(){}}
+};
+function flushRaf(){let count=0;while(rafQueue.length){assert.ok(++count<12,"no endless layout scheduling");rafQueue.shift()();}}
 let pointerListener=null;
 class Mesh {
  constructor(){this.position={};this.visible=true;}
@@ -47,7 +55,7 @@ class Mesh {
 }
 class Engine {
  constructor(){engineCreates++;}
- resize(){}
+ resize(){resizes++;}
  runRenderLoop(){rendersStarted++;}
  stopRenderLoop(){}
 }
@@ -67,6 +75,7 @@ const BABYLON={Engine,Scene,PointerEventTypes:{POINTERPICK:1},ArcRotateCamera:Ca
 };
 const savedData=new Map();
 const localStorage={getItem:k=>savedData.has(k)?savedData.get(k):null,setItem:(k,v)=>savedData.set(k,v)};
+liveWindow.localStorage=localStorage;
 const timers=new Map();
 const scheduledDelays=new Map();
 let nextTimer=0;
@@ -86,8 +95,8 @@ function tick(){
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), setAutoSpeed})",
- {document,window:{addEventListener(){},localStorage},BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
+ "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), setAutoSpeed})",
+ {document,window:liveWindow,BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 elements.campaignMissions.contains=()=>true;
 function clickMission(id="black-pass-ambush"){
@@ -122,6 +131,34 @@ assert.equal(elements.squad.classList.active,true);
 click(elements.squadStart);
 assert.equal(elements.battle.classList.active,true);
 assert.equal(document.body.classList.contains("battle-mode"),true,"battle hides document scroll behind fullscreen arena");
+// iPhone Safari portrait -> landscape: defer resize until CSS layout is committed.
+assert.equal(typeof viewportEvents.orientationchange,"function");
+assert.equal(typeof viewportEvents["visual-resize"],"function");
+assert.equal(typeof viewportEvents.observer,"function","observe the canvas container");
+const activeCamera=api.getArenaCamera();
+activeCamera.alpha=0; // A user-adjusted view is reset only when returning from portrait.
+liveWindow.innerWidth=390;liveWindow.innerHeight=844;
+viewportEvents.orientationchange();flushRaf();
+assert.equal(activeCamera.alpha,0,"portrait resize does not force camera reset");
+const beforeLandscapeResize=resizes;
+liveWindow.innerWidth=844;liveWindow.innerHeight=390;
+viewportEvents.orientationchange();
+viewportEvents.resize();
+viewportEvents["visual-resize"]();
+viewportEvents.observer();
+assert.equal(resizes,beforeLandscapeResize,"resize is deferred until layout settles");
+flushRaf();
+assert.equal(resizes,beforeLandscapeResize+1,"all events coalesce to one Babylon resize");
+assert.equal(activeCamera.alpha,-3*Math.PI/4,"landscape return restores isometric camera");
+assert.equal(activeCamera.radius,12,"landscape return keeps approved max zoom");
+
+// Formation contract for teams of 1 to 5 without changing the roster or save schema.
+const positions=n=>Array.from({length:n},(_,i)=>api.formationPosition("ally",i,n));
+assert.equal(positions(5).map(p=>p.x).join(","),"-2.45,-2.45,-2.45,-4.05,-4.05");
+assert.equal(positions(5).map(p=>p.z).join(","),"-1.9,0,1.9,-0.95,0.95");
+assert.equal(positions(4).map(p=>p.x).join(","),"-2.45,-2.45,-2.45,-4.05");
+assert.equal(positions(2).map(p=>p.x).join(","),"-2.45,-2.45");
+assert.equal(positions(1)[0].z,0);
 const first=api.getBattle();
 assert.equal(typeof pointerListener,"function","arena pointer listener registered");
 const firstEnemy=first.fighters.find(f=>f.side==="enemy");
@@ -184,17 +221,17 @@ const reloaded=vm.runInNewContext(src+"\n({campaign:campaignProgress,materials:p
  {document,window:{addEventListener(){},localStorage},BABYLON});
 assert.equal(reloaded.campaign.completed["black-pass-ambush"],true);
 assert.equal(reloaded.materials,2);
-// Combat-008B: a five-enemy lineup must spread evenly along the far side.
-// This is only presentation geometry; mission status and rewards are unaffected.
+// Combat-008C hotfix: each side uses up to three front / two rear positions.
 api.showScreen("campaign");
 clickMission("demo-mission-2");
 click(elements.squadStart);
 const largeRoster=api.getBattle().fighters.filter(f=>f.side==="enemy");
 assert.equal(largeRoster.length,5);
 const renderedZ=largeRoster.map(f=>api.getMeshes()[f.id].body.position.z);
-assert.equal(renderedZ.join(","),"-3.2,-1.6,0,1.6,3.2","five enemies use five visible lanes");
-assert.ok(largeRoster.every(f=>api.getMeshes()[f.id].body.position.x===3.4),"enemies remain on far side");
-assert.ok(api.getBattle().fighters.filter(f=>f.side==="ally").every(f=>api.getMeshes()[f.id].body.position.x===-3.4),"allies remain on near side");
+assert.equal(renderedZ.join(","),"-1.9,0,1.9,-0.95,0.95","five enemies are arranged three forward and two behind");
+assert.equal(largeRoster.map(f=>api.getMeshes()[f.id].body.position.x).join(","),"2.45,2.45,2.45,4.05,4.05","enemy rows face the allied side");
+const alliesInBattle=api.getBattle().fighters.filter(f=>f.side==="ally");
+assert.equal(alliesInBattle.map(f=>api.getMeshes()[f.id].body.position.x).join(","),"-2.45,-2.45,-2.45","three chosen allies take front row");
 api.showScreen("campaign");
 // Integration: third mission starts with two enemies and advances to three
 // without showing a result, granting an intermediate reward or restarting allies.
@@ -285,7 +322,7 @@ assert.equal(api.getBattle().allyActions,before+1,"automatic action uses normal 
 assert.equal(timers.size,1,"exactly one next action scheduled");
 assert.ok(api.getMotion().pending()>0,"resolved hits queue visible animations");
 api.renderBattleFrame();
-assert.ok(api.getMeshes().lyra.body.position.x>-3.4,"speed-scaled 3D lunge moves attacker");
+assert.ok(api.getMeshes().lyra.body.position.x>-2.45,"speed-scaled 3D lunge moves attacker from the new frontline");
 api.showScreen("home");
 assert.equal(api.getMotion().pending(),0,"exiting battle clears animation queue");
 assert.equal(api.isAuto(),false);

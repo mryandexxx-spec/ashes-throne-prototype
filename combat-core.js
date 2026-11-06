@@ -268,22 +268,17 @@ const CombatCore = (() => {
         }
         return battle;
       }
-      // A simple deterministic enemy AI for the first playable battle.
+      // Combat-015C-A: preserve the first-living-ally basic attack policy.
+      // Resolution now uses the same rule path as player commands.
       const targetIndex = firstLivingAlly(battle.fighters);
       if (targetIndex < 0) {
         finishIfOver(battle);
         return battle;
       }
-      const target = battle.fighters[targetIndex];
-      emit(battle, "ability", {actorId: actor.id, targetId: target.id, abilityId: "basic"});
-      const damage = dealDamage(actor, target, effectiveStat(battle,actor,"atk"));
-      emit(battle, "damage", {actorId: actor.id, targetId: target.id, amount: damage, remainingHp: target.hp});
-      if (target.hp === 0) emit(battle, "death", {targetId: target.id});
-      battle.message = actor.name + " атакует " + target.name +
-        ": " + damage + " урона.";
-      InitiativeModel.finishTurn(battle.fighters, actor.id);
-      battle.turn++;
-      if (finishIfOver(battle)) return battle;
+      battle.currentActor=actorIndex;
+      if(!performActorAbility(battle,"basic",targetIndex))
+        throw Error("Ready enemy basic attack rejected");
+      if(!battle.active)return battle;
     }
     throw Error("Turn guard reached: check initiative and actors");
   }
@@ -310,27 +305,31 @@ const CombatCore = (() => {
     return ability?ability.target:null;
   }
 
-  // Combat-011A: read-only target selection for ability planning. Group and
-  // self modes are NOT castable until multi-target resolution is implemented.
-  function abilityTargetIndices(battle, mode) {
-    if (!battle || !battle.active || !Array.isArray(battle.fighters)) return [];
-    const actor=battle.fighters[battle.currentActor];
-    if (!actor || actor.side!=="ally" || actor.hp<=0) return [];
-    if (mode==="self") return [battle.currentActor];
-    if (mode==="enemy") {
-      const i=selectEnemy(battle.fighters,battle.selectedEnemy);
-      return i<0?[]:[i];
-    }
-    if (mode==="ally") {
-      const i=selectAlly(battle.fighters,battle.selectedAlly);
-      return i<0?[]:[i];
-    }
-    if (mode==="all-enemies" || mode==="all-allies") {
-      const side=mode==="all-enemies"?"enemy":"ally";
-      return battle.fighters.flatMap((fighter,i)=>
-        fighter.side===side && fighter.hp>0?[i]:[]);
-    }
-    return [];
+  // Modes are relative to the acting fighter, not to the human player.
+  function actorTargetIndices(battle,actorIndex,mode,primaryIndex){
+    if(!battle||!battle.active||!Array.isArray(battle.fighters)||
+       !Number.isInteger(actorIndex))return [];
+    const actor=battle.fighters[actorIndex];
+    if(!actor||!["ally","enemy"].includes(actor.side)||actor.hp<=0)return [];
+    if(mode==="self")return [actorIndex];
+    const targetSide=mode==="enemy"||mode==="all-enemies"
+      ? actor.side==="ally"?"enemy":"ally"
+      : mode==="ally"||mode==="all-allies"?actor.side:null;
+    if(!targetSide)return [];
+    if(mode==="enemy"||mode==="ally")
+      return Number.isInteger(primaryIndex)&&battle.fighters[primaryIndex]&&
+        battle.fighters[primaryIndex].side===targetSide&&
+        battle.fighters[primaryIndex].hp>0?[primaryIndex]:[];
+    return battle.fighters.flatMap((fighter,i)=>
+      fighter.side===targetSide&&fighter.hp>0?[i]:[]);
+  }
+  // Preserve the existing player-facing selection API.
+  function abilityTargetIndices(battle,mode){
+    const actor=battle?.fighters?.[battle.currentActor];
+    if(!actor||actor.side!=="ally")return [];
+    const primary=mode==="ally"||mode==="all-allies"?
+      battle.selectedAlly:battle.selectedEnemy;
+    return actorTargetIndices(battle,battle.currentActor,mode,primary);
   }
 
   function specialName(actor) {
@@ -338,16 +337,23 @@ const CombatCore = (() => {
     return ability?ability.name:"Особая";
   }
 
-  function abilityReady(battle,abilityId) {
-    if(!battle||!battle.active)return false;
-    const actor=battle.fighters[battle.currentActor];
-    if(!actor||actor.side!=="ally"||actor.hp<=0||actor.meter<1000-1e-8)return false;
+  function actorAbilityReady(battle,actorIndex,abilityId){
+    if(!battle||!battle.active||!Array.isArray(battle.fighters)||
+       !Number.isInteger(actorIndex))return false;
+    const actor=battle.fighters[actorIndex];
+    if(!actor||!["ally","enemy"].includes(actor.side)||actor.hp<=0||
+       actor.meter<1000-1e-8)return false;
     const ability=AbilityData.get(actor,abilityId);
     if(!ability)return false;
     if(abilityId==="basic")return ability.id==="basic";
     if(abilityId==="special")return ability.id==="special"&&actor.specialCooldown===0;
     if(abilityId==="powerful")return ability.id==="powerful"&&actor.powerfulCooldown===0;
     return false;
+  }
+  function abilityReady(battle,abilityId){
+    const actor=battle?.fighters?.[battle.currentActor];
+    return !!actor&&actor.side==="ally"&&
+      actorAbilityReady(battle,battle.currentActor,abilityId);
   }
 
   // Combat-012A: independent cooldowns progress after a successful own action.
@@ -390,7 +396,7 @@ const CombatCore = (() => {
   // Combat-011B: atomic resolution of one self/group command. The acting
   // unit spends exactly one turn and one cooldown. Dead targets are filtered
   // before the command; wave/victory transitions happen after all targets.
-  function performMultiTargetAbility(battle, actor, ability, targets) {
+  function performMultiTargetAbility(battle, actor, ability, targets, chosenPrimaryIndex) {
     if(!["self","all-enemies","all-allies"].includes(ability.target))return false;
     if(!["damage","heal","guard"].includes(ability.kind))return false;
     if(ability.target==="all-enemies"&&ability.kind!=="damage")return false;
@@ -404,10 +410,9 @@ const CombatCore = (() => {
     // every living enemy receives the base effect. Future bonus effects can
     // refer to primaryTargetId without changing recipient selection.
     const primaryIndex=ability.target==="all-enemies"&&
-      targets.includes(battle.selectedEnemy)?battle.selectedEnemy:targets[0];
+      targets.includes(chosenPrimaryIndex)?chosenPrimaryIndex:targets[0];
     const primaryTargetId=battle.fighters[primaryIndex].id;
-    battle.allyActions++;
-    battle.events=[];
+    if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
     emit(battle,"ability",{
       actorId:actor.id,targetId:primaryTargetId,primaryTargetId,
       targetIds:recipients.map(f=>f.id),abilityId:ability.id
@@ -445,13 +450,15 @@ const CombatCore = (() => {
     if(ability.target==="all-enemies"&&
        selectEnemy(battle.fighters,battle.selectedEnemy)<0)
       battle.selectedEnemy=firstLivingEnemy(battle.fighters);
-    advanceToPlayerTurn(battle);
+    if(actor.side==="ally")advanceToPlayerTurn(battle);
     return true;
   }
 
-  function performPlayerAbility(battle,abilityId) {
-    if(!abilityReady(battle,abilityId))return false;
-    const actor=battle.fighters[battle.currentActor];
+  // Shared action executor. Current actor must be ready and have a legal target.
+  function performActorAbility(battle,abilityId,primaryIndex) {
+    const actorIndex=battle?.currentActor;
+    if(!actorAbilityReady(battle,actorIndex,abilityId))return false;
+    const actor=battle.fighters[actorIndex];
     const ability=AbilityData.get(actor,abilityId);
     // Invalid definitions must not consume an action or overwrite events.
     if(!Number.isSafeInteger(ability.cooldown)||ability.cooldown<0||!validFollowUpEffects(ability))return false;
@@ -459,16 +466,15 @@ const CombatCore = (() => {
     if(ability.kind==="damage"&&(!Number.isFinite(ability.multiplier)||ability.multiplier<0))return false;
     if(ability.kind==="heal"&&(!Number.isFinite(ability.healAmount)||ability.healAmount<0))return false;
     if(ability.kind==="guard"&&(!Number.isInteger(ability.guardHits)||ability.guardHits<0))return false;
-    const targets=abilityTargetIndices(battle,ability.target);
+    const targets=actorTargetIndices(battle,actorIndex,ability.target,primaryIndex);
     if(["self","all-enemies","all-allies"].includes(ability.target))
-      return performMultiTargetAbility(battle,actor,ability,targets);
+      return performMultiTargetAbility(battle,actor,ability,targets,primaryIndex);
     if(ability.target!=="ally" && ability.target!=="enemy")return false;
     if(targets.length!==1)return false;
     const targetIndex=targets[0];
     const target=battle.fighters[targetIndex];
     // Invalid commands leave the previous event batch untouched.
-    battle.allyActions++;
-    battle.events=[];
+    if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
     if(ability.kind==="guard"){
       target.guardHits=ability.guardHits;
@@ -487,9 +493,11 @@ const CombatCore = (() => {
         target.weakenAttacks=ability.weakening;
         emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"weaken",stacks:ability.weakening});
       }
-      battle.message=actor.name+(ability.id!=="basic"?" применяет "+ability.name+": ":" атакует: ")+
-        target.name+" получает "+damage+" урона"+
-        (target.hp===0?" — повержен!":ability.weakening>0?", ослабление ×"+ability.weakening+".":".");
+      battle.message=actor.side==="enemy"&&ability.id==="basic"
+        ? actor.name+" атакует "+target.name+": "+damage+" урона."
+        : actor.name+(ability.id!=="basic"?" применяет "+ability.name+": ":" атакует: ")+
+          target.name+" получает "+damage+" урона"+
+          (target.hp===0?" — повержен!":ability.weakening>0?", ослабление ×"+ability.weakening+".":".");
     }
     applyFollowUpEffects(battle,actor,ability,[target],target);
     finishAbilityCooldowns(actor,ability);
@@ -497,9 +505,21 @@ const CombatCore = (() => {
     battle.turn++;
     battle.currentActor=-1;
     if(finishIfOver(battle))return true;
-    if(ability.target==="enemy"&&target.hp===0)battle.selectedEnemy=firstLivingEnemy(battle.fighters);
-    advanceToPlayerTurn(battle);
+    if(actor.side==="ally"){
+      if(ability.target==="enemy"&&target.hp===0)
+        battle.selectedEnemy=firstLivingEnemy(battle.fighters);
+      advanceToPlayerTurn(battle);
+    }
     return true;
+  }
+
+  // Legacy manual and auto APIs use the same core executor.
+  function performPlayerAbility(battle,abilityId){
+    if(!abilityReady(battle,abilityId))return false;
+    const mode=abilityTargetSide(battle,abilityId);
+    const primary=mode==="self"?battle.currentActor:
+      mode==="ally"||mode==="all-allies"?battle.selectedAlly:battle.selectedEnemy;
+    return performActorAbility(battle,abilityId,primary);
   }
 
   // Combat-015B: apply a read-only tactical proposal using the same command
@@ -538,6 +558,7 @@ const CombatCore = (() => {
 
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
-    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects, abilityTargetIndices, activePassiveModifiers, activeLeaderModifiers, effectiveStat
+    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects, abilityTargetIndices, actorTargetIndices, actorAbilityReady, performActorAbility,
+    activePassiveModifiers, activeLeaderModifiers, effectiveStat
   });
 })();

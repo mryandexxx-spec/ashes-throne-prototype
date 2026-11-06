@@ -170,6 +170,16 @@ const loadedSquad=loadSquad();
 let selectedPartyIds=loadedSquad.regularIds;
 let selectedLeaderId=loadedSquad.leaderId;
 let squadReturnScreen="home";
+let undersizedSquadConfirmed=false;
+function resetSquadWarning(){
+ undersizedSquadConfirmed=false;
+ const warning=$("#squadWarning");
+ if(warning){warning.hidden=true;warning.textContent="";}
+}
+function eligibleSquadCount(){
+ // ALLIES is the available/selectable roster, capped to five battle slots.
+ return Math.min(MAX_SQUAD,ALLIES.length);
+}
 let state=CombatCore.createBattle([...ALLIES,...ENEMIES.slice(0,2)]);
 function progressedHero(hero){return ProgressCore.heroStats(progress,hero);}
 function hasLeaderSkill(id){
@@ -238,6 +248,7 @@ function assignSquadLeader(id){
  if(prior&&wasRegular&&regular.length<MAX_SQUAD-1)regular.push(prior);
  selectedLeaderId=id;
  selectedPartyIds=regular;
+ resetSquadWarning();
  saveSquad();
  renderSquad();
  return true;
@@ -248,12 +259,23 @@ function toggleSquadHero(id){
  if(selectedPartyIds.includes(id))selectedPartyIds=selectedPartyIds.filter(x=>x!==id);
  else if(selectedPartyIds.length<MAX_SQUAD-1)selectedPartyIds=[...selectedPartyIds,id];
  else return false;
+ resetSquadWarning();
+ saveSquad();
+ renderSquad();
+ return true;
+}
+function disbandSquad(){
+ if(selectedLeaderId===null&&selectedPartyIds.length===0)return false;
+ selectedLeaderId=null;
+ selectedPartyIds=[];
+ resetSquadWarning();
  saveSquad();
  renderSquad();
  return true;
 }
 function openSquad(returnTo="home"){
  squadReturnScreen=returnTo;
+ resetSquadWarning();
  renderSquad();
  showScreen("squad");
 }
@@ -319,11 +341,23 @@ $("#campaignMissions").addEventListener("click",event=>{
  if(button&&$("#campaignMissions").contains(button))openCampaignMission(button.dataset.campaignMission);
 });
 $("#squadBack").addEventListener("click",()=>showScreen(squadReturnScreen));
+$("#squadDisband").addEventListener("click",disbandSquad);
 // If Babylon.js cannot load, show a recoverable message instead of an uncaught crash.
 const retryLoad=$("#retryBattleLoad");
 if(retryLoad)retryLoad.addEventListener("click",()=>window.location.reload());
 $("#squadStart").addEventListener("click",()=>{
- if(selectedParty().length===0)return;
+ const count=selectedParty().length;
+ if(count===0)return;
+ if(count<eligibleSquadCount()&&!undersizedSquadConfirmed){
+  undersizedSquadConfirmed=true;
+  const warning=$("#squadWarning");
+  if(warning){
+   warning.textContent=`В отряде ${count} из ${eligibleSquadCount()} доступных героев. Можно добавить бойцов. Нажми «Начать бой» ещё раз, чтобы вступить в сражение этим составом.`;
+   warning.hidden=false;
+  }
+  return;
+ }
+ resetSquadWarning();
  showScreen("battle");
 });
 function renderHeroes(){

@@ -30,7 +30,7 @@ const MissionData=(()=>{
    stars:Object.freeze([
     Object.freeze({conditions:Object.freeze([{type:"victory"}]),hint:"Победить во всех волнах"}),
     Object.freeze({conditions:Object.freeze([{type:"victory"},{type:"all-allies-alive"}]),hint:"Победить во всех волнах без потерь"}),
-    Object.freeze({conditions:Object.freeze([{type:"victory"},{type:"all-allies-alive"},{type:"max-ally-actions",limit:9}]),hint:"Победить во всех волнах без потерь за 9 действий союзников или меньше"})
+    Object.freeze({conditions:Object.freeze([{type:"victory"},{type:"all-allies-alive"},{type:"max-ally-actions",limit:18}]),hint:"Победить во всех волнах без потерь за 18 действий союзников или меньше"})
    ])
   })
  });

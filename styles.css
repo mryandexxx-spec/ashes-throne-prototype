@@ -675,6 +675,14 @@ body.battle-mode #app>footer{visibility:hidden}
 .battle-screen .ability-controls{position:relative;width:100%}
 .battle-screen .ability-options{width:100%;display:flex;gap:6px}
 .battle-screen .ability-slot{flex:1;min-width:0;display:flex;pointer-events:auto}
+/* Combat-012B: retain the accepted two-button bar for existing heroes.
+   Give the optional three-button trainer readable wrapping and touch areas. */
+.battle-screen .ability-slot[hidden]{display:none!important}
+.battle-screen .ability-options.has-powerful .ability-btn{
+ white-space:normal;overflow-wrap:anywhere;line-height:1.15;
+ min-height:44px;padding:5px 4px;font-size:10px;
+}
+
 .battle-screen .ability-slot .ability-btn{
  display:block;flex:1;width:100%;min-width:0;
  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;

@@ -11,7 +11,7 @@ const {MissionData,CampaignData,CampaignCore,ProgressCore}=vm.runInNewContext(
 );
 const first="black-pass-ambush",second="demo-mission-2";
 assert.equal(CampaignData.catalogIsValid(),true);
-assert.equal(MissionData.all().length,2);
+assert.equal(MissionData.all().length,3);
 assert.equal(CampaignData.getMission(second).order,2);
 assert.deepEqual(Array.from(CampaignData.getMission(second).requiredMissionIds),[first]);
 assert.equal(MissionData.get(second).title,"Демонстрационная миссия #2");

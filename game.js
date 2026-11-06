@@ -420,7 +420,6 @@ function syncBattleUI(){
   if(speedControl)speedControl.disabled=!state.active;
   $("#battleMessage").textContent=state.message;
   renderBattleLog();
-  renderCombatants();
   renderTargetFighterHud();
   renderArenaIndicators();
   updateMeshes();
@@ -470,22 +469,10 @@ function syncBattleUI(){
  $("#attackBtn").disabled=autoBattle||(state.active&&(!actor||!validTarget));
  $("#battleMessage").textContent=state.message;
  renderBattleLog();
- renderCombatants();
  renderTargetFighterHud();
  renderArenaIndicators();
  updateMeshes();
  queueAutoAction();
-}
-function renderCombatants(){
- const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
- const choosingAlly=!!actor&&CombatCore.abilityTargetSide(state,selectedAbility)==="ally";
- $("#combatants").innerHTML=presentationFighters().map((h,i)=>{
-   const chosen=state.active&&i===(choosingAlly?state.selectedAlly:state.selectedEnemy)&&
-     h.side===(choosingAlly?"ally":"enemy");
-   const status=[h.guardHits>0?"Защита ×"+h.guardHits:"",h.weakenAttacks>0?"Ослабление ×"+h.weakenAttacks:""].filter(Boolean).join(" · ");
-   return `<div class="fighter ${h.side==="enemy"?"enemy":"ally"} ${h.hp<=0?"defeated":""} ${chosen?"selected":""} ${state.active&&i===state.currentActor?"acting":""}" data-index="${i}"><b>${h.name}</b><small>${Math.max(0,h.hp)} / ${h.maxHp} HP · СПД ${h.speed}</small>${status?`<span class="fighter-status">${status}</span>`:""}<div class="health"><span style="width:${Math.max(0,h.hp)/h.maxHp*100}%"></span></div></div>`;
- }).join("");
- // Status cards are read-only; all manual targets are picked in 3D.
 }
 // Combat-008C: HTML indicators track the mesh positions without intercepting taps.
 // Both fills are derived from CombatCore, not from a decorative animation.

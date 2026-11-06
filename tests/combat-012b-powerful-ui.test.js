@@ -40,10 +40,26 @@ const api=vm.runInNewContext(src+
  "\n({resetBattle,getBattle:()=>state,chooseParty:ids=>{selectedPartyIds=ids},selectArenaTarget,showAbilityTooltip,BattleAnimation,AbilityData})",
  {document,window:{addEventListener(){}}});
 function click(id){const f=els[id].handlers.click;assert.ok(f?.length,"missing click handler for "+id);f[f.length-1]();}
-api.chooseParty(["kael"]);api.resetBattle();
-assert.equal(els.powerfulAbilitySlot.hidden,true,"existing heroes never show unusable third skill");
-assert.equal(els.abilityOptions.classList["has-powerful"],false);
-assert.equal(api.AbilityData.get({id:"kael"},"powerful"),null);
+const powerfulCases=[
+ ["kael","Учебный бастион","self"],
+ ["lyra","Учебная метка","enemy"],
+ ["darin","Учебный натиск","enemy"],
+ ["medic-demo","Учебное исцеление отряда","all-allies"],
+ ["test-area-damage","Учебный мощный удар","enemy"]
+];
+for(const [id,name,target] of powerfulCases){
+ assert.equal(api.AbilityData.get({id},"powerful")?.name,name,
+  "every playable ally has a temporary powerful skill: "+id);
+ assert.equal(api.AbilityData.get({id},"powerful").target,target);
+ api.chooseParty([id]);api.resetBattle();
+ assert.equal(els.powerfulAbilitySlot.hidden,false,"third button visible for "+id);
+ assert.equal(els.abilityOptions.classList["has-powerful"],true);
+ assert.equal(els.powerfulAbilityBtn.disabled,false,"powerful ready on first turn: "+id);
+ assert.match(els.powerfulAbilityBtn.textContent,new RegExp(name));
+ assert.equal((els.arenaIndicators.innerHTML.match(/arena-focus-cursor locked/g)||[]).length,1,
+  "one primary enemy cursor on "+id+"'s turn");
+}
+assert.equal(api.AbilityData.get({id:"unknown"},"powerful"),null);
 api.chooseParty(["test-area-damage"]);api.resetBattle();
 let b=api.getBattle(),actor=b.fighters[0];
 // Keep this UI test about button/cooldown behavior, not enemy kill speed.
@@ -94,6 +110,39 @@ assert.equal(els.powerfulAbilityBtn.disabled,false);
 api.resetBattle();
 assert.equal(api.getBattle().fighters[0].powerfulCooldown,0);
 assert.equal(els.powerfulAbilityBtn.disabled,false,"replay restores readiness");
+// Test the actual powerful button handler for every playable role.
+api.chooseParty(["kael"]);api.resetBattle();
+b=api.getBattle();
+const kael=b.fighters[0];
+click("powerfulAbilityBtn");
+assert.equal(kael.guardHits,3,"guardian powerful self-guard applies to its caster");
+assert.equal(kael.powerfulCooldown,2);
+
 api.chooseParty(["lyra"]);api.resetBattle();
-assert.equal(els.powerfulAbilitySlot.hidden,true,"switching to ordinary hero hides the extra control");
-console.log("Combat-012B third-button clicks, selected target, cooldown, tooltip, layout and replay passed");
+b=api.getBattle();
+const lyra=b.fighters[0],marked=b.fighters.find(f=>f.id==="ves");
+const hpMarked=marked.hp;
+click("powerfulAbilityBtn");
+assert.equal(marked.hp,hpMarked-Math.round(lyra.atk*1.5));
+assert.equal(marked.weakenAttacks,2,"scout powerful attack also applies weakening");
+assert.equal(lyra.powerfulCooldown,2);
+
+api.chooseParty(["darin"]);api.resetBattle();
+b=api.getBattle();
+const darin=b.fighters[0],struck=b.fighters.find(f=>f.id==="ves");
+const beforeStrike=struck.hp;
+click("powerfulAbilityBtn");
+assert.equal(struck.hp,beforeStrike-darin.atk*2,"swordsman powerful attack doubles damage");
+assert.equal(darin.powerfulCooldown,2);
+
+api.chooseParty(["medic-demo"]);api.resetBattle();
+b=api.getBattle();
+const medic=b.fighters[0];
+const hpMedic=medic.hp;
+click("powerfulAbilityBtn");
+assert.ok(medic.hp>=hpMedic,"group healing never injures its caster");
+assert.equal(medic.powerfulCooldown,2);
+assert.equal(b.events.filter(e=>e.type==="heal"&&e.actorId===medic.id).length,1);
+assert.equal((els.arenaIndicators.innerHTML.match(/arena-focus-cursor locked/g)||[]).length,1,
+ "all-allies powerful must not create extra enemy target cursors");
+console.log("Combat-012B five playable powerful skills, button clicks, cooldown, tooltip, layout and replay passed");

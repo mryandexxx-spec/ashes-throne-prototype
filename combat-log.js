@@ -8,7 +8,8 @@ const CombatLog=(()=>{
    switch(e.type){
     case "ability":{
      const actor=fighters.find(f=>f.id===e.actorId);
-     const title=e.abilityId==="special" ? AbilityData.get(actor,"special")?.name||"Особая" : "Базовая атака";
+     const title=e.abilityId==="basic"?"Базовая атака":
+      AbilityData.get(actor,e.abilityId)?.name||"Неизвестная способность";
      return name(e.actorId)+": "+title+" → "+(Array.isArray(e.targetIds)&&e.targetIds.length>1?e.targetIds.map(name).join(", "):name(e.targetId));
     }
     case "damage":return name(e.targetId)+": −"+e.amount+" HP (осталось "+e.remainingHp+")";

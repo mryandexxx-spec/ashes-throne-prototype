@@ -76,6 +76,7 @@ assert.equal(triple.allyActions,4);
 assert.throws(()=>CombatCore.createBattle([hero,first],[[]]),/future wave/i);
 assert.throws(()=>CombatCore.createBattle([hero,first],[[hero]]),/future wave/i);
 assert.throws(()=>CombatCore.createBattle([hero,first],[[foe("a"),foe("a")]]),/unique id/i);
+assert.throws(()=>CombatCore.createBattle([hero,first],[[foe("hero")]]),/collides with ally/i);
 // Current two missions intentionally retain their already accepted rosters.
 const mission=read("mission-data.js");
 assert.doesNotMatch(mission,/futureEnemyWaves:/);

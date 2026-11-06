@@ -581,6 +581,70 @@ if(autoSpeedControl)autoSpeedControl.addEventListener("click",()=>{
  }
 });
 
+// Combat-009: an ability hold explains the current demo definition without casting.
+function cancelAbilityHintGesture(){
+ if(abilityHintGesture?.timer!=null)clearTimeout(abilityHintGesture.timer);
+ abilityHintGesture=null;
+}
+function hideAbilityTooltip(){
+ cancelAbilityHintGesture();
+ const tooltip=$("#abilityTooltip");
+ if(tooltip)tooltip.hidden=true;
+}
+function showAbilityTooltip(abilityId){
+ const actor=state.fighters[state.currentActor];
+ const definition=AbilityData.get(actor,abilityId);
+ const tooltip=$("#abilityTooltip");
+ if(!definition||!tooltip)return;
+ const effects=[];
+ if(definition.kind==="damage"){
+  effects.push("Урон: "+(definition.multiplier===1?"100%":Math.round(definition.multiplier*100)+"%")+" атаки.");
+  if(definition.weakening)effects.push("Ослабление на "+definition.weakening+" атаки.");
+ }else if(definition.kind==="guard")
+  effects.push("Защита от "+definition.guardHits+" ударов.");
+ else if(definition.kind==="heal")
+  effects.push("Восстанавливает до "+definition.healAmount+" HP.");
+ effects.push("Цель: "+(definition.target==="ally"?"союзник":"противник")+".");
+ if(definition.cooldown)effects.push("Перезарядка: "+definition.cooldown+" хода.");
+ $("#abilityTooltipTitle").textContent=definition.name;
+ $("#abilityTooltipText").textContent=effects.join(" ");
+ tooltip.classList.toggle("on-special",abilityId==="special");
+ tooltip.hidden=false;
+}
+function wireAbilityHint(slotId,abilityId){
+ const slot=$("#"+slotId);
+ if(!slot)return;
+ slot.addEventListener("pointerdown",event=>{
+  hideAbilityTooltip();
+  abilityHintSuppressClick=null;
+  if(event.pointerType==="mouse"&&event.button!==0)return;
+  const gesture={id:abilityId,pointerId:event.pointerId??null,x:event.clientX??0,y:event.clientY??0,timer:null};
+  abilityHintGesture=gesture;
+  gesture.timer=setTimeout(()=>{
+   if(abilityHintGesture!==gesture)return;
+   abilityHintGesture=null;
+   abilityHintSuppressClick=abilityId;
+   showAbilityTooltip(abilityId);
+  },400);
+ });
+ slot.addEventListener("pointermove",event=>{
+  if(!abilityHintGesture||abilityHintGesture.id!==abilityId)return;
+  if(abilityHintGesture.pointerId!==null&&event.pointerId!==abilityHintGesture.pointerId||
+   Math.hypot((event.clientX??0)-abilityHintGesture.x,(event.clientY??0)-abilityHintGesture.y)>12)
+   cancelAbilityHintGesture();
+ });
+ for(const eventName of ["pointerup","pointercancel","lostpointercapture"])
+  slot.addEventListener(eventName,cancelAbilityHintGesture);
+}
+wireAbilityHint("basicAbilitySlot","basic");
+wireAbilityHint("specialAbilitySlot","special");
+// Dismiss on all external taps, including an empty part of the arena.
+document.addEventListener("pointerdown",event=>{
+ if(!event.target?.closest?.(".ability-slot"))hideAbilityTooltip();
+},true);
+document.addEventListener("click",event=>{
+ if(!event.target?.closest?.(".ability-slot"))hideAbilityTooltip();
+},true);
 // Combat-008E: long press inspects any living ally or enemy; never changes targets.
 function inspectedFighterId(mesh){
  while(mesh&&!mesh.metadata?.fighterId)mesh=mesh.parent;
@@ -639,6 +703,7 @@ function handleInspectionPointer(info){
  if(!BABYLON.PointerEventTypes)return;
  const type=info.type,event=info.event||{};
  if(type===BABYLON.PointerEventTypes.POINTERDOWN){
+  hideAbilityTooltip();
   startInspectionGesture(info);return;
  }
  if(type===BABYLON.PointerEventTypes.POINTERMOVE&&inspectionGesture){
@@ -887,7 +952,7 @@ function updateMeshes(){
 }
 // Browsers may keep the tab alive when it is hidden; suspend GPU work until visible.
 document.addEventListener("visibilitychange",()=>{
- if(document.hidden){closeFighterInspection();cancelAutoTimer();stopBattleRendering();}
+ if(document.hidden){closeFighterInspection();hideAbilityTooltip();cancelAutoTimer();stopBattleRendering();}
  else if(shouldRenderBattle()){engine.resize();startBattleRendering();queueAutoAction();}
 });
 renderHeroes();CombatCore.advanceToPlayerTurn(state);

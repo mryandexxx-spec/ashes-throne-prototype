@@ -35,6 +35,7 @@ const document={
  addEventListener(){}
 };
 let meshCreates=0,engineCreates=0,rendersStarted=0;
+const createdCameras=[];
 class Mesh {
  constructor(){this.position={};this.visible=true;}
  setEnabled(v){this.visible=v;}
@@ -46,7 +47,11 @@ class Engine {
  stopRenderLoop(){}
 }
 class Material {constructor(){this.diffuseColor=null;this.specularColor=null;this.emissiveColor=null;}}
-class Camera{attachControl(){}}
+class Camera{
+ constructor(name,alpha,beta,radius,target){this.name=name;this.alpha=alpha;this.beta=beta;this.radius=radius;this.target=target;createdCameras.push(this);}
+ attachControl(){}
+ setTarget(target){this.target=target;}
+}
 class Scene{render(){}}
 class Vec{constructor(x,y,z){this.x=x;this.y=y;this.z=z;}}
 const BABYLON={Engine,Scene,ArcRotateCamera:Camera,HemisphericLight:class{},DirectionalLight:class{},
@@ -77,6 +82,14 @@ assert.equal(elements.battle.classList.active,true);
 assert.equal(allyIds(),"lyra");
 assert.equal(engineCreates,1);
 assert.equal(meshCreates,27,"nine demo fighter templates get 3D shapes");
+assert.equal(createdCameras.length,1,"one 3D camera allocated");
+const camera=createdCameras[0];
+assert.ok(Math.abs(camera.alpha+3*Math.PI/4)<1e-9,"front-left isometric camera (allies foreground)");
+assert.equal(camera.beta,.96);
+assert.equal(camera.radius,17);
+assert.equal(camera.target.y,.9);
+assert.equal(camera.lowerBetaLimit,.55);
+assert.equal(camera.upperBetaLimit,1.30);
 const enemyIds=()=>api.getBattle().fighters.filter(h=>h.side==="enemy").map(h=>h.id).join(",");
 assert.equal(enemyIds(),"ves,shade");
 assert.equal(api.getBattle().fighters[api.getBattle().currentActor].side,"ally");
@@ -89,8 +102,13 @@ click(elements.attackBtn);
 assert.equal(elements.squad.classList.active,true);
 toggle("kael");
 assert.equal(count(),"2/5");
+camera.alpha=0;camera.beta=1.2;camera.radius=12; // Player rotated/zoomed the camera during a previous fight.
 click(elements.squadStart);
 assert.equal(allyIds(),"kael,lyra");
+assert.equal(camera.alpha,-3*Math.PI/4,"restart restores isometric angle");
+assert.equal(camera.beta,.96,"restart restores camera elevation");
+assert.equal(camera.radius,17,"restart restores complete team framing");
+assert.equal(createdCameras.length,1,"camera reused across encounters");
 assert.equal(engineCreates,1,"scene and engine are reused");
 assert.equal(meshCreates,27,"no 3D allocations on re-entry");
 

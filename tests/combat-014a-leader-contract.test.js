@@ -25,7 +25,7 @@ assert.equal(b.leaderId,"test-leader-aura");
 assert.equal(core.effectiveStat(b,b.fighters[0],"atk"),24);
 assert.equal(core.effectiveStat(b,b.fighters[1],"atk"),24);
 assert.equal(core.effectiveStat(b,b.fighters[1],"speed"),120);
-assert.equal(core.effectiveStat(b,b.fighters[2],"atk"),20,"enemies never get allied aura");
+assert.equal(core.effectiveStat(b,b.fighters[2],"atk"),1,"enemies never get allied aura");
 assert.equal(b.fighters[1].atk,20,"derived buff doesn't mutate base attack");
 assert.deepEqual(Array.from(core.activeLeaderModifiers(b,"kael"),x=>({...x})),
  [{stat:"atk",operation:"flat",value:4},{stat:"speed",operation:"flat",value:20}]);

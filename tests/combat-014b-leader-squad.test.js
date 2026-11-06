@@ -129,6 +129,9 @@ assert.match(elements.squadSlots.innerHTML,/Не назначен/);
 assert.equal(api.selectedParty().length,4);
 assert.equal(api.getBattle().leaderId,"kael");
 click(elements.squadStart);
+assert.equal(elements.squad.classList.active,true,"first click warns about four heroes");
+assert.match(elements.squadWarning.textContent,/Нажми «Начать бой» ещё раз/);
+click(elements.squadStart);
 assert.equal(api.getBattle().leaderId,null);
 assert.equal(api.getBattle().fighters.filter(x=>x.side==="ally").length,4);
 assert.ok(storageData.has("ashes-throne.squad.v1"));
@@ -139,6 +142,39 @@ const reload=vm.runInNewContext(src+
  {document,window:{addEventListener(){},localStorage},BABYLON});
 assert.equal(reload.leaderId,null);
 assert.equal(reload.selectedParty().join(","),api.selectedParty().join(","));
+
+// Disband clears both leader and four remaining slots; empty is a legitimate
+// persisted state and must not regenerate the initial five on refresh.
+api.openSquad();
+click(elements.squadDisband);
+assert.equal(count(),"0/5");
+assert.equal(elements.squadStart.disabled,true);
+assert.equal(api.selectedParty().length,0);
+const stored=JSON.parse(storageData.get("ashes-throne.squad.v1"));
+assert.equal(stored.leaderId,null);
+assert.deepEqual(Array.from(stored.regularIds),[]);
+const emptied=vm.runInNewContext(src+
+ "\n({leaderId:selectedLeaderId,selectedParty:()=>selectedParty().map(h=>h.id)})",
+ {document,window:{addEventListener(){},localStorage},BABYLON});
+assert.equal(emptied.leaderId,null);
+assert.equal(emptied.selectedParty().length,0);
+
+// When the roster has fewer than five available allies, an otherwise complete
+// selection launches on the first tap; this rule is roster-derived, not a
+// fixed count of five in the warning condition.
+assert.equal(api.toggleSquadHero("kael"),true);
+assert.equal(api.toggleSquadHero("lyra"),true);
+assert.equal(api.toggleSquadHero("darin"),true);
+assert.equal(api.toggleSquadHero("medic-demo"),true);
+const fullShort=vm.runInNewContext(src+
+ "\n({getBattle:()=>state,openSquad,renderSquad,ALLIES,selectedParty:()=>selectedParty().map(h=>h.id)})",
+ {document,window:{addEventListener(){},localStorage},BABYLON});
+fullShort.ALLIES.pop();
+fullShort.openSquad();
+assert.equal(fullShort.selectedParty().length,4);
+click(elements.squadStart);
+assert.equal(elements.battle.classList.active,true,
+ "no warning when all four available heroes are selected");
 
 // A broken save safely falls back to the first five, with the first leading.
 storageData.set("ashes-throne.squad.v1",'{"version":1,"leaderId":"missing","regularIds":["kael"]}');

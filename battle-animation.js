@@ -11,8 +11,8 @@ const BattleAnimation=(()=>{
   for(let i=0;i<events.length;i++){
    const event=events[i];
    if(event.type==="ability"&&typeof event.actorId==="string"){
-    const guard=events.slice(i+1).some(next=>next.type==="effect"&&next.actorId===event.actorId&&
-     next.targetId===event.targetId&&(next.effect==="guard"||next.type==="heal"));
+    const guard=events.slice(i+1).some(next=>(next.type==="effect"&&next.effect==="guard"||next.type==="heal")&&
+     next.actorId===event.actorId&&next.targetId===event.targetId);
     queue.push({id:event.actorId,slot:guard?"guard":
      AnimationProfiles.slots.includes(event.abilityId)?event.abilityId:"special"});
    }else if(event.type==="heal"&&typeof event.targetId==="string"){

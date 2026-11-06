@@ -5,7 +5,7 @@ const path=require("node:path");
 const vm=require("node:vm");
 const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
- "battleStatus","turnChip","actionTitle","actionHint","attackBtn",
+ "battleStatus","turnChip","actionTitle","actionHint","attackBtn","arenaIndicators",
  "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","autoSpeedBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
@@ -131,6 +131,20 @@ assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"arena tap se
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes().kael.head}});
 assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"ally tap cannot switch an enemy attack target");
 assert.equal(api.getMeshes()[secondEnemy.id].base.material.emissiveColor.x,.48,"target is highlighted on arena");
+const indicatorMarkup=elements.arenaIndicators.innerHTML;
+assert.match(indicatorMarkup,/class="arena-indicator ally/,"allied 3D labels are rendered");
+assert.match(indicatorMarkup,/class="arena-indicator enemy/,"enemy 3D labels are rendered");
+assert.match(indicatorMarkup,/class="arena-health"/,"HP bar is present");
+assert.match(indicatorMarkup,/class="arena-initiative"/,"real initiative bar is present");
+assert.match(indicatorMarkup,/инициатива [0-9]+ из 1000/,"initiative comes from state");
+first.fighters[0].hp=Math.max(1,first.fighters[0].maxHp-12);
+first.fighters[0].guardHits=2;
+first.fighters[0].weakenAttacks=3;
+api.syncBattleUI();
+assert.match(elements.arenaIndicators.innerHTML,/◆2/,"guard stacks appear above fighter");
+assert.match(elements.arenaIndicators.innerHTML,/↓3/,"weakening stacks appear above fighter");
+assert.match(elements.arenaIndicators.innerHTML,/width:90%/,"HP percent reflects damage");
+
 first.active=false;first.winner="enemy";
 api.syncBattleUI();
 assert.equal(elements.missionResult.classList.active,true,"defeat must show result screen");

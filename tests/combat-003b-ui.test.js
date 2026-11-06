@@ -31,7 +31,7 @@ const document={
  },
  addEventListener(){}
 };
-const api=vm.runInNewContext(src+"\n({getBattle:()=>state,resetBattle,CombatCore})",
+const api=vm.runInNewContext(src+"\n({getBattle:()=>state,resetBattle,selectArenaTarget,CombatCore})",
  {document,window:{addEventListener(){}}});
 const click=id=>{
  const f=els[id].handlers.click;
@@ -39,10 +39,10 @@ const click=id=>{
  f[f.length-1]();
 };
 const clickFighter=i=>{
- const f=fighterNodes[i].handlers.click;
- assert.ok(f&&f.length,"fighter "+i+" should be interactive");
- f[f.length-1]();
+ const h=api.getBattle().fighters[i];
+ assert.equal(api.selectArenaTarget({metadata:{fighterId:h.id}}),true);
 };
+assert.equal(fighterNodes.every(el=>!el.handlers.click),"side status cards must not select targets");
 api.resetBattle();
 assert.equal(api.getBattle().fighters[api.getBattle().currentActor].id,"lyra");
 click("specialAbilityBtn");

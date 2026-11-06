@@ -224,6 +224,11 @@ const CombatCore = (() => {
       target.guardHits=ability.guardHits;
       emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"guard",stacks:ability.guardHits});
       battle.message=actor.name+" защищает "+target.name+": защита ×"+ability.guardHits+".";
+    }else if(ability.kind==="heal"){
+      const restored=Math.min(ability.healAmount,Math.max(0,target.maxHp-target.hp));
+      target.hp+=restored;
+      emit(battle,"heal",{actorId:actor.id,targetId:target.id,amount:restored,remainingHp:target.hp});
+      battle.message=actor.name+" лечит "+target.name+": +"+restored+" HP.";
     }else{
       const damage=dealDamage(actor,target,Math.round(actor.atk*ability.multiplier));
       emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp});

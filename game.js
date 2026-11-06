@@ -605,7 +605,7 @@ function startInspectionGesture(info){
  suppressInspectionPick=false;
  if(!state.active||isVisualTransition()||inspectionId)return;
  const event=info.event||{};
- if(event.pointerType==="mouse"&&event.button!==0)return;
+ if((event.pointerType==="mouse"&&event.button!==0)||event.isPrimary===false)return;
  const fighterId=inspectedFighterId(info.pickInfo?.pickedMesh);
  if(!fighterId)return;
  const gesture={pointerId:event.pointerId??null,x:event.clientX??0,y:event.clientY??0,timer:null};

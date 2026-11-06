@@ -3,7 +3,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","attackBtn",
  "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","autoSpeedBtn","battleMessage","renderCanvas",

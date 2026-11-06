@@ -513,6 +513,7 @@ function positionArenaIndicators(){
  // Render pixels can differ from CSS pixels on retina/HiDPI iPhones.
  const cssWidth=overlay.clientWidth||width,cssHeight=overlay.clientHeight||height;
  const viewport=arenaCamera.viewport.toGlobal(width,height);
+ const transform=scene.getTransformMatrix();
  const identity=BABYLON.Matrix?.Identity?.();
  if(!identity)return;
  for(const [id,node] of Object.entries(indicatorNodes)){
@@ -520,7 +521,7 @@ function positionArenaIndicators(){
   if(!mesh||!node?.style)continue;
   const p=mesh.head.position;
   const world=new BABYLON.Vector3(p.x,p.y+0.72,p.z);
-  const screen=BABYLON.Vector3.Project(world,identity,scene.getTransformMatrix(),viewport);
+  const screen=BABYLON.Vector3.Project(world,identity,transform,viewport);
   const visible=screen.z>=0&&screen.z<=1&&screen.x>=0&&screen.x<=width&&screen.y>=0&&screen.y<=height;
   node.style.display=visible?"":"none";
   if(visible){node.style.left=screen.x*cssWidth/width+"px";node.style.top=screen.y*cssHeight/height+"px";}
@@ -666,7 +667,9 @@ function renderBattleFrame(){
  // Animation speed is shared with the auto scheduler, never alters combat state.
  const dt=engine&&typeof engine.getDeltaTime==="function"?engine.getDeltaTime():16;
  BattleAnimation.tick(dt,BattleSpeed.multiplier());
- for(const h of presentationFighters()){
+ const roster=presentationFighters();
+ const sides={ally:roster.filter(f=>f.side==="ally"),enemy:roster.filter(f=>f.side==="enemy")};
+ for(const h of roster){
   const visual=meshes[h.id];
   if(!visual)continue;
   const visible=h.hp>0||BattleAnimation.isDying(h.id);
@@ -675,7 +678,7 @@ function renderBattleFrame(){
   visual.base.setEnabled(visible);
   if(!visible)continue;
   const pose=BattleAnimation.pose(h.id);
-  const team=presentationFighters().filter(f=>f.side===h.side);
+  const team=sides[h.side];
   const slot=team.findIndex(f=>f.id===h.id);
   const x=formationPosition(h.side,slot,team.length).x;
   const offset=pose.x*(h.side==="ally"?1:-1);
@@ -778,17 +781,18 @@ function initBabylon(){
 }
 function updateMeshes(){
  if(!scene)return;
+ const roster=presentationFighters();
+ const sideMembersBySide={ally:roster.filter(f=>f.side==="ally"),enemy:roster.filter(f=>f.side==="enemy")};
  for(const h of HEROES){
   const mesh=meshes[h.id];
   if(!mesh)continue;
-  const roster=presentationFighters();
   const member=roster.find(f=>f.id===h.id);
   const visible=!!member&&(member.hp>0||BattleAnimation.isDying(h.id));
   mesh.body.setEnabled(visible);
   mesh.head.setEnabled(visible);
   mesh.base.setEnabled(visible);
   if(visible){
-   const sideMembers=roster.filter(f=>f.side===member.side);
+   const sideMembers=sideMembersBySide[member.side];
    const slot=sideMembers.findIndex(f=>f.id===h.id);
    const {x,z}=formationPosition(member.side,slot,sideMembers.length);
    mesh.body.position.x=mesh.head.position.x=mesh.base.position.x=x;

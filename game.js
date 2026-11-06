@@ -220,7 +220,8 @@ function simulateMission(id){
  $("#simulationDialog").showModal();
  return true;
 }
-$("#simulationClose").addEventListener("click",()=>$("#simulationDialog").close());
+const simulationClose=$("#simulationClose");
+if(simulationClose)simulationClose.addEventListener("click",()=>$("#simulationDialog").close());
 function renderMissionResult(){
  const won=state.winner==="ally";
  const entry=CampaignData.getMission(activeMissionId);

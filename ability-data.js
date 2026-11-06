@@ -11,7 +11,20 @@ const AbilityData=(()=>{
   "test-self-guard":Object.freeze({id:"special",name:"Тест защиты себя",target:"self",kind:"guard",guardHits:2,cooldown:2}),
   "test-team-heal":Object.freeze({id:"special",name:"Тест группового лечения",target:"all-allies",kind:"heal",healAmount:30,cooldown:2}),
   "test-area-damage":Object.freeze({id:"special",name:"Учебный широкий удар",target:"all-enemies",kind:"damage",multiplier:1,weakening:0,cooldown:2}),
-  "test-area-weaken":Object.freeze({id:"special",name:"Тест группового ослабления",target:"all-enemies",kind:"damage",multiplier:1,weakening:2,cooldown:2})
+  "test-area-weaken":Object.freeze({id:"special",name:"Тест группового ослабления",target:"all-enemies",kind:"damage",multiplier:1,weakening:2,cooldown:2}),
+  // Combat-012C fixtures: follow-up statuses are described by data, not hero ID.
+  "test-primary-bonus":Object.freeze({id:"special",name:"Тест основной цели",target:"all-enemies",
+   kind:"damage",multiplier:1,weakening:0,cooldown:2,
+   followUpEffects:Object.freeze([Object.freeze({scope:"primary",status:"weaken",stacks:2})])}),
+  "test-composed-effects":Object.freeze({id:"special",name:"Тест составных эффектов",target:"all-enemies",
+   kind:"damage",multiplier:1,weakening:0,cooldown:2,
+   followUpEffects:Object.freeze([
+    Object.freeze({scope:"primary",status:"weaken",stacks:2}),
+    Object.freeze({scope:"self",status:"guard",stacks:1})
+   ])}),
+  "test-all-followups":Object.freeze({id:"special",name:"Тест всех получателей",target:"all-enemies",
+   kind:"damage",multiplier:1,weakening:0,cooldown:2,
+   followUpEffects:Object.freeze([Object.freeze({scope:"all",status:"weaken",stacks:1})])})
  };
  Object.freeze(special);
  // Combat-012A: engine-only fixture, deliberately absent from the playable HEROES.

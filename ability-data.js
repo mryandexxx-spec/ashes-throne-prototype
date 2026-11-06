@@ -84,14 +84,26 @@ const AbilityData=(()=>{
      effect:Object.freeze({kind:"heal",target:"self",amount:12})})
    ])})
  });
+ // Combat-014A: only nonplayable fixtures can be leaders until the owner
+ // approves actual hero eligibility and leader effects.
+ const leaderByHero=Object.freeze({
+  "test-leader-aura":Object.freeze({id:"leader",name:"Тест ауры лидера",
+   modifiers:Object.freeze([
+    Object.freeze({stat:"atk",operation:"flat",value:4,scope:"all-allies",when:Object.freeze({kind:"always"})}),
+    Object.freeze({stat:"speed",operation:"flat",value:20,scope:"all-allies",when:Object.freeze({kind:"always"})})
+   ])}),
+  "test-leader-self":Object.freeze({id:"leader",name:"Тест личного бонуса лидера",
+   modifiers:Object.freeze([
+    Object.freeze({stat:"atk",operation:"flat",value:9,scope:"self",when:Object.freeze({kind:"always"})})
+   ])})
+ });
  const fallback=Object.freeze({id:"special",name:"Особый удар",target:"enemy",kind:"damage",multiplier:1,weakening:0,cooldown:2});
  function get(actor,abilityId){
   if(abilityId==="basic")return basic;
   if(!actor)return null;
   if(abilityId==="powerful")return powerful[actor.id]||null;
   if(abilityId==="passive")return Object.prototype.hasOwnProperty.call(passiveByHero,actor.id)?passiveByHero[actor.id]:null;
-  // Leader mechanics remain Combat-014. A vacant slot is not an active leader effect.
-  if(abilityId==="leader")return null;
+  if(abilityId==="leader")return Object.prototype.hasOwnProperty.call(leaderByHero,actor.id)?leaderByHero[actor.id]:null;
   if(abilityId!=="special")return null;
   return Object.prototype.hasOwnProperty.call(special,actor.id)?special[actor.id]:fallback;
  }

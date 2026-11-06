@@ -36,7 +36,7 @@ const document={
  addEventListener(){}
 };
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,resetBattle,chooseParty:ids=>{selectedPartyIds=ids},selectArenaTarget,renderDeathHud:()=>renderArenaIndicators(),showDeathFrame:()=>{scene={render(){}};engine={getDeltaTime:()=>100};renderBattleFrame()},HEROES,AbilityData,CombatCore,CombatLog,BattleAnimation,SaveCore})",
+ "\n({getBattle:()=>state,resetBattle,chooseParty:ids=>{selectedLeaderId=null;selectedPartyIds=ids},selectArenaTarget,renderDeathHud:()=>renderArenaIndicators(),showDeathFrame:()=>{scene={render(){}};engine={getDeltaTime:()=>100};renderBattleFrame()},HEROES,AbilityData,CombatCore,CombatLog,BattleAnimation,SaveCore})",
  {document,window:{addEventListener(){}}});
 const click=id=>{const handlers=elements[id].handlers.click;assert.ok(handlers?.length,id+" click");handlers[handlers.length-1]();};
 assert.equal(api.HEROES.filter(h=>h.id==="test-area-damage").length,1);

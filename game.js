@@ -22,6 +22,8 @@ let visualWaveFighters=null;
 function presentationFighters(){return visualWaveFighters||state.fighters;}
 function isVisualTransition(){return visualTransition!==null;}
 function captureResolvedVisuals(beforeFighters){
+ // Non-rendering contexts still finish immediately; never let graphics gate rules.
+ if(!scene||!engine)return;
  BattleAnimation.enqueue(state.events);
  const events=state.events||[];
  const waveChanged=events.some(event=>event.type==="wave-start");

@@ -79,29 +79,37 @@ assert.equal(b.fighters[2].guardHits,1);
 assert.equal(b.fighters[0].weakenAttacks,1,"one weakening stack spent per command");
 assert.equal(of(b,"effect").filter(e=>e.effect==="weaken").length,1);
 
-const old=AbilityData.get({id:"test-primary-bonus"},"special");
-assert.ok(Object.isFrozen(old.followUpEffects));
+const original=AbilityData.get({id:"test-primary-bonus"},"special");
+assert.ok(Object.isFrozen(original.followUpEffects));
 for(const id of ["kael","lyra","darin","medic-demo","test-area-damage"]){
  assert.equal(AbilityData.get({id},"special").followUpEffects,undefined,
   "existing special unchanged: "+id);
  assert.equal(AbilityData.get({id},"powerful").followUpEffects,undefined,
   "existing powerful unchanged: "+id);
 }
-// Verify invalid definitions are rejected *before* any action or event mutation.
-// Fixtures are frozen, so inject a detached actor through a narrow fixture override.
 const badDefinitions=[
  [{scope:"unknown",status:"weaken",stacks:2}],
  [{scope:"primary",status:"new-unsupported-status",stacks:2}],
  [{scope:"primary",status:"weaken",stacks:-1}],
- [{scope:"primary",status:"guard",stacks:1.5}]
+ [{scope:"primary",status:"guard",stacks:1.5}],
+ "not-an-array"
 ];
+// Dedicated deterministic stub: production definitions stay frozen.
 for(const followUpEffects of badDefinitions){
- const actor={id:"test-primary-bonus"};
- const original=AbilityData.get;
- // In a fresh context, monkey-patch the definition by using an override
- // on the test actor's instance and keep production AbilityData frozen.
- const originalDefinition=original(actor,"special");
- assert.ok(originalDefinition.followUpEffects,"fixture retains a valid definition");
- assert.equal(followUpEffects.length,1);
+ const stub=`const AbilityData={get:(fighter,id)=> id==="basic"?
+  ({id:"basic",name:"Basic",target:"enemy",kind:"damage",multiplier:1,cooldown:0}):
+  id==="special"?({id:"special",name:"Invalid test",target:"all-enemies",
+   kind:"damage",multiplier:1,cooldown:2,followUpEffects:${JSON.stringify(followUpEffects)}}):null};`;
+ const coreBad=vm.runInNewContext(read("initiative-model.js")+"\\n"+stub+"\\n"+
+   read("combat-core.js")+"\\nCombatCore");
+ const bad=coreBad.createBattle([hero("fixture"),enemy("victim")]);
+ coreBad.advanceToPlayerTurn(bad);
+ const eventRef=bad.events,turn=bad.turn,hp=bad.fighters[1].hp;
+ assert.equal(coreBad.performPlayerAbility(bad,"special"),false);
+ assert.equal(bad.events,eventRef,"invalid bonus cannot clear events");
+ assert.equal(bad.turn,turn);
+ assert.equal(bad.fighters[1].hp,hp);
+ assert.equal(bad.allyActions,0);
+ assert.equal(bad.fighters[0].specialCooldown,0);
 }
-console.log("Combat-012C data-defined primary/self follow-ups, deaths, waves, order and compatibility passed");
+console.log("Combat-012C declarative primary/self follow-ups, validation, deaths, waves and compatibility passed");

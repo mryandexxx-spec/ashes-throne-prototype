@@ -26,6 +26,8 @@ const elements=Object.fromEntries(ids.map(id=>[id,element(id)]));
 const chooseNodes=["kael","lyra","darin"].map(id=>{
  const e=element();e.dataset.heroId=id;return e;
 });
+const leaderNode=element();leaderNode.dataset.leaderId="kael";
+const clearLeaderNode=element();
 const arenaNav=element();arenaNav.dataset.screen="battle";
 const collectionNav=element();collectionNav.dataset.screen="collection";
 const allScreens=["home","collection","campaign","squad","battle"].map(id=>elements[id]);
@@ -36,6 +38,8 @@ const document={
   if(q===".screen")return allScreens;
   if(q==="[data-screen]")return [arenaNav,collectionNav];
   if(q==="[data-hero-id]")return chooseNodes;
+  if(q==="[data-leader-id]")return [leaderNode];
+  if(q==="[data-clear-leader]")return [clearLeaderNode];
   return [];
  },
  addEventListener(){}
@@ -82,7 +86,7 @@ assert.match(elements.squadRoster.innerHTML,/data-leader-id="kael"/);
 assert.doesNotMatch(elements.squadRoster.innerHTML,/data-leader-id="lyra"/);
 assert.equal(api.assignSquadLeader("lyra"),false,"ineligible character cannot lead");
 assert.equal(api.assignSquadLeader("missing"),false);
-assert.equal(api.assignSquadLeader("kael"),true);
+click(leaderNode); // exercise the actual leader selection listener
 assert.match(elements.squadSlots.innerHTML,/★ ЛИДЕР/);
 assert.match(elements.squadSlots.innerHTML,/squad-slot-leader filled/);
 assert.match(elements.squadSlots.innerHTML,/Каэль/);
@@ -107,7 +111,7 @@ assert.equal(api.CombatCore.effectiveStat(api.getBattle(),api.getBattle().fighte
 // On reopening composition, removing the leader clears the leader slot and
 // restores the four regular places without assigning anybody else.
 api.openSquad();
-assert.equal(api.assignSquadLeader(null),true);
+click(clearLeaderNode); // exercise the leader slot removal listener
 assert.equal(api.getBattle().leaderId,"kael","an already started battle remains immutable");
 assert.match(elements.squadSlots.innerHTML,/Не назначен/);
 assert.equal(api.selectedParty().length,4);

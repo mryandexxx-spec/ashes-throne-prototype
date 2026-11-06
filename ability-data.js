@@ -64,6 +64,24 @@ const AbilityData=(()=>{
    triggers:Object.freeze([]),modifiers:Object.freeze([
     Object.freeze({stat:"atk",operation:"flat",value:7,
      when:Object.freeze({kind:"hp-below-percent",percent:50})})
+   ])}),
+  // Combat-013B: technical effects are never assigned to playable HEROES.
+  "test-passive-speed":Object.freeze({id:"passive",name:"Тест скорости",
+   triggers:Object.freeze([]),modifiers:Object.freeze([
+    Object.freeze({stat:"speed",operation:"flat",value:50,
+     when:Object.freeze({kind:"always"})})
+   ])}),
+  "test-passive-combined":Object.freeze({id:"passive",name:"Тест совместных бонусов",
+   triggers:Object.freeze([]),modifiers:Object.freeze([
+    Object.freeze({stat:"atk",operation:"flat",value:3,
+     when:Object.freeze({kind:"always"})}),
+    Object.freeze({stat:"atk",operation:"flat",value:7,
+     when:Object.freeze({kind:"hp-below-percent",percent:50})})
+   ])}),
+  "test-passive-healer":Object.freeze({id:"passive",name:"Тест реакции лечения",
+   modifiers:Object.freeze([]),triggers:Object.freeze([
+    Object.freeze({event:"damage",role:"target",
+     effect:Object.freeze({kind:"heal",target:"self",amount:12})})
    ])})
  });
  const fallback=Object.freeze({id:"special",name:"Особый удар",target:"enemy",kind:"damage",multiplier:1,weakening:0,cooldown:2});

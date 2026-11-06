@@ -28,7 +28,7 @@ const heroNodes=["kael","lyra","darin"].map(id=>{const e=element();e.dataset.ope
 const arenaNav=element();arenaNav.dataset.screen="battle";
 const collectionNav=element();collectionNav.dataset.screen="collection";
 const allScreens=["home","collection","campaign","squad","battle","heroDetail","missionResult"].map(id=>elements[id]);
-const visibilityListeners=[];
+const visibilityListeners=[];const domEvents={};
 const document={
  body:element("body"),
  hidden:false,
@@ -40,7 +40,7 @@ const document={
   if(q==="[data-open-hero]")return heroNodes;
   return [];
  },
- addEventListener(type,fn){if(type==="visibilitychange")visibilityListeners.push(fn)}
+ addEventListener(type,fn){if(type==="visibilitychange")visibilityListeners.push(fn);else (domEvents[type]??=[]).push(fn)}
 };
 let meshCreates=0,engineCreates=0,rendersStarted=0,resizes=0;
 const viewportEvents={};const rafQueue=[];
@@ -230,6 +230,9 @@ const hintDown={pointerId:21,pointerType:"touch",clientX:40,clientY:25};
 const actionsBeforeHint=first.allyActions;
 elements.basicAbilitySlot.handlers.pointerdown[0](hintDown);
 assert.equal(pendingDelay(),400,"ability hint shares 400ms hold");
+elements.basicAbilitySlot.handlers.pointerleave[0]();
+assert.equal(timers.size,0,"moving off ability cancels pending tooltip");
+elements.basicAbilitySlot.handlers.pointerdown[0](hintDown);
 tick();
 assert.equal(elements.abilityTooltip.hidden,false);
 assert.match(elements.abilityTooltipTitle.textContent,/Базовая атака/);
@@ -243,6 +246,8 @@ assert.equal(elements.abilityTooltipTitle.textContent,"Ослабляющий у
 assert.match(elements.abilityTooltipText.textContent,/Ослабление на 2 атаки/);
 click(elements.specialAbilityBtn);
 assert.equal(first.allyActions,actionsBeforeHint,"holding special cannot cast it");
+domEvents.pointerdown.forEach(fn=>fn({target:{closest(){return null}}}));
+assert.equal(elements.abilityTooltip.hidden,true,"tap on any other UI area closes hint");
 
 pointerListener({type:2,event:{pointerId:22,pointerType:"touch",clientX:0,clientY:0},pickInfo:null});
 assert.equal(elements.abilityTooltip.hidden,true,"tapping empty arena closes ability tooltip");

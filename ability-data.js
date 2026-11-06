@@ -6,7 +6,12 @@ const AbilityData=(()=>{
   kael:Object.freeze({id:"special",name:"Прикрытие",target:"ally",kind:"guard",guardHits:2,cooldown:2}),
   lyra:Object.freeze({id:"special",name:"Ослабляющий удар",target:"enemy",kind:"damage",multiplier:1,weakening:2,cooldown:2}),
   darin:Object.freeze({id:"special",name:"Сокрушительный удар",target:"enemy",kind:"damage",multiplier:1.5,weakening:0,cooldown:2}),
-  "medic-demo":Object.freeze({id:"special",name:"Перевязка",target:"ally",kind:"heal",healAmount:30,cooldown:2})
+  "medic-demo":Object.freeze({id:"special",name:"Перевязка",target:"ally",kind:"heal",healAmount:30,cooldown:2}),
+  // Combat-011B regression fixtures: not in HEROES or campaign content.
+  "test-self-guard":Object.freeze({id:"special",name:"Тест защиты себя",target:"self",kind:"guard",guardHits:2,cooldown:2}),
+  "test-team-heal":Object.freeze({id:"special",name:"Тест группового лечения",target:"all-allies",kind:"heal",healAmount:30,cooldown:2}),
+  "test-area-damage":Object.freeze({id:"special",name:"Тест группового урона",target:"all-enemies",kind:"damage",multiplier:1,weakening:0,cooldown:2}),
+  "test-area-weaken":Object.freeze({id:"special",name:"Тест группового ослабления",target:"all-enemies",kind:"damage",multiplier:1,weakening:2,cooldown:2})
  };
  Object.freeze(special);
  const fallback=Object.freeze({id:"special",name:"Особый удар",target:"enemy",kind:"damage",multiplier:1,weakening:0,cooldown:2});

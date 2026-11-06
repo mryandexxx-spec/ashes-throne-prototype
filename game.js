@@ -418,6 +418,7 @@ function syncBattleUI(){
   $("#actionTitle").textContent="Анимация завершается";
   $("#actionHint").textContent="Следующий этап появится после завершения действий.";
   $("#battleRetryBtn").hidden=true;
+  $("#abilityControls").classList.remove("battle-finished");
   $("#basicAbilityBtn").disabled=true;
   $("#specialAbilityBtn").disabled=true;
   const autoControl=$("#autoBattleBtn");
@@ -466,6 +467,7 @@ function syncBattleUI(){
   supportTarget?"Коснись союзника с курсором, чтобы применить способность.":
   validTarget?"В фокусе: "+target.name+". Нажми на нужную способность.":"Коснись противника, чтобы выбрать цель.";
  const retry=$("#battleRetryBtn");if(retry)retry.hidden=!!state.active;
+ $("#abilityControls").classList.toggle("battle-finished",!state.active);
  $("#battleMessage").textContent=state.message;
  renderBattleLog();
  renderTargetFighterHud();
@@ -633,11 +635,14 @@ function wireAbilityHint(slotId,abilityId){
    Math.hypot((event.clientX??0)-abilityHintGesture.x,(event.clientY??0)-abilityHintGesture.y)>12)
    cancelAbilityHintGesture();
  });
- for(const eventName of ["pointerup","pointercancel","lostpointercapture"])
+ slot.addEventListener("contextmenu",event=>event.preventDefault());
+ for(const eventName of ["pointerup","pointercancel","lostpointercapture","pointerleave"])
   slot.addEventListener(eventName,cancelAbilityHintGesture);
 }
 wireAbilityHint("basicAbilitySlot","basic");
 wireAbilityHint("specialAbilitySlot","special");
+window.addEventListener("pointerup",cancelAbilityHintGesture);
+window.addEventListener("pointercancel",cancelAbilityHintGesture);
 // Dismiss on all external taps, including an empty part of the arena.
 document.addEventListener("pointerdown",event=>{
  if(!event.target?.closest?.(".ability-slot"))hideAbilityTooltip();

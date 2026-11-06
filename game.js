@@ -418,7 +418,7 @@ function syncBattleUI(){
   $("#actionTitle").textContent="Анимация завершается";
   $("#actionHint").textContent="Следующий этап появится после завершения действий.";
   $("#battleRetryBtn").hidden=true;
-  $("#abilityControls").classList.remove("battle-finished");
+  $("#abilityControls")?.classList.remove("battle-finished");
   $("#basicAbilityBtn").disabled=true;
   $("#specialAbilityBtn").disabled=true;
   const autoControl=$("#autoBattleBtn");
@@ -467,7 +467,7 @@ function syncBattleUI(){
   supportTarget?"Коснись союзника с курсором, чтобы применить способность.":
   validTarget?"В фокусе: "+target.name+". Нажми на нужную способность.":"Коснись противника, чтобы выбрать цель.";
  const retry=$("#battleRetryBtn");if(retry)retry.hidden=!!state.active;
- $("#abilityControls").classList.toggle("battle-finished",!state.active);
+ $("#abilityControls")?.classList.toggle("battle-finished",!state.active);
  $("#battleMessage").textContent=state.message;
  renderBattleLog();
  renderTargetFighterHud();

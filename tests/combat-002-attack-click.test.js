@@ -21,7 +21,7 @@ const document = {
 };
 const window = {addEventListener(){}};
 const context = vm.createContext({document,window});
-const api = vm.runInContext(sources+"\n({getBattle:()=>state,resetBattle,resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=["kael","lyra","darin"];}})",context);
+const api = vm.runInContext(sources+"\n({getBattle:()=>state,resetBattle,resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=['kael','lyra','darin'];}})",context);
 api.resetLegacySquad();
 api.resetBattle();
 const attackClick = elements.basicAbilityBtn.handlers.click[0];

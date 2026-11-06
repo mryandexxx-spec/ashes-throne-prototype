@@ -40,11 +40,40 @@ const AbilityData=(()=>{
   "test-area-damage":Object.freeze({id:"powerful",name:"Учебный мощный удар",target:"enemy",
    kind:"damage",multiplier:1.5,weakening:0,cooldown:2})
  });
+ // Combat-013A: all playable allies have a passive slot. No effects assigned
+ // until individual hero identity and synergy design is approved.
+ const passiveEmpty=Object.freeze({id:"passive",name:"Пассивная способность (не определена)",
+  triggers:Object.freeze([]),modifiers:Object.freeze([])});
+ const passiveByHero=Object.freeze({
+  kael:passiveEmpty,lyra:passiveEmpty,darin:passiveEmpty,
+  "medic-demo":passiveEmpty,"test-area-damage":passiveEmpty,
+  // Nonplayable fixtures verify automatic trigger registration and ownership.
+  "test-passive-attacker":Object.freeze({id:"passive",name:"Тест реакции атакующего",
+   triggers:Object.freeze([Object.freeze({event:"damage",role:"actor"})])}),
+  "test-passive-defender":Object.freeze({id:"passive",name:"Тест реакции получателя",
+   triggers:Object.freeze([Object.freeze({event:"damage",role:"target"})])}),
+  "test-passive-both":Object.freeze({id:"passive",name:"Тест двух реакций",
+   triggers:Object.freeze([Object.freeze({event:"damage",role:"actor"}),
+    Object.freeze({event:"damage",role:"target"})])}),
+  // Read-only modifiers: no combat stat computation changes in Combat-013A.
+  "test-passive-always":Object.freeze({id:"passive",name:"Тест постоянного бонуса",
+   triggers:Object.freeze([]),modifiers:Object.freeze([
+    Object.freeze({stat:"atk",operation:"flat",value:5,when:Object.freeze({kind:"always"})})
+   ])}),
+  "test-passive-conditional":Object.freeze({id:"passive",name:"Тест условного бонуса",
+   triggers:Object.freeze([]),modifiers:Object.freeze([
+    Object.freeze({stat:"atk",operation:"flat",value:7,
+     when:Object.freeze({kind:"hp-below-percent",percent:50})})
+   ])})
+ });
  const fallback=Object.freeze({id:"special",name:"Особый удар",target:"enemy",kind:"damage",multiplier:1,weakening:0,cooldown:2});
  function get(actor,abilityId){
   if(abilityId==="basic")return basic;
   if(!actor)return null;
   if(abilityId==="powerful")return powerful[actor.id]||null;
+  if(abilityId==="passive")return Object.prototype.hasOwnProperty.call(passiveByHero,actor.id)?passiveByHero[actor.id]:null;
+  // Leader mechanics remain Combat-014. A vacant slot is not an active leader effect.
+  if(abilityId==="leader")return null;
   if(abilityId!=="special")return null;
   return Object.prototype.hasOwnProperty.call(special,actor.id)?special[actor.id]:fallback;
  }

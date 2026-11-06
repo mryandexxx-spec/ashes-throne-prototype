@@ -18,6 +18,28 @@ const CombatCore = (() => {
   function activeEffects(fighter) {
     return Object.keys(fighter.effects).map(type => ({type,remaining:effectCount(fighter,type)}));
   }
+  // Combat-013A: read-only passive modifier selection; applying stat changes
+  // belongs to Combat-013B after the stacking and rounding rules are agreed.
+  // Conditions are evaluated against current state, not cached at battle start.
+  function activePassiveModifiers(battle,ownerId) {
+    if(!battle||!Array.isArray(battle.fighters))return [];
+    const owner=battle.fighters.find(f=>f.id===ownerId);
+    if(!owner||owner.side!=="ally"||owner.hp<=0)return [];
+    const passive=AbilityData.get(owner,"passive");
+    if(!passive||!Array.isArray(passive.modifiers))return [];
+    return passive.modifiers.filter(mod=>{
+      if(!mod||!["atk","speed"].includes(mod.stat)||
+         mod.operation!=="flat"||!Number.isFinite(mod.value)||
+         !mod.when)return false;
+      if(mod.when.kind==="always")return true;
+      if(mod.when.kind==="hp-below-percent"&&
+         Number.isFinite(mod.when.percent)&&mod.when.percent>0&&
+         mod.when.percent<=100&&owner.maxHp>0)
+        return owner.hp*100<owner.maxHp*mod.when.percent;
+      return false; // unsupported conditions never activate by accident
+    }).map(mod=>({stat:mod.stat,operation:mod.operation,value:mod.value}));
+  }
+
   function makeFighter(hero,index,meter) {
     const fighter = {...hero,maxHp:hero.hp,specialCooldown:0,powerfulCooldown:0,
       meter,index,effects:Object.create(null)};
@@ -90,8 +112,28 @@ const CombatCore = (() => {
 
   // Events describe only the latest resolved command, including automatic enemy replies.
   // Keep the existing battle.message as the UI's current short summary.
+  // Combat-013A: passive registration is event-driven and read-only.
+  // It records which passive would fire; applying effects comes in 013B.
+  // The derived event never dispatches another trigger, preventing loops.
+  const PASSIVE_EVENTS=Object.freeze(["ability","damage","heal","effect","death",
+    "wave-start","battle-end"]);
   function emit(battle, type, properties) {
     battle.events.push({type, ...properties});
+    if(!PASSIVE_EVENTS.includes(type))return;
+    for(const owner of battle.fighters){
+      if(owner.side!=="ally"||owner.hp<=0)continue;
+      const passive=AbilityData.get(owner,"passive");
+      if(!passive||!Array.isArray(passive.triggers))continue;
+      passive.triggers.forEach((trigger,index)=>{
+        if(!trigger||trigger.event!==type||!["actor","target"].includes(trigger.role))
+          return;
+        const matchedId=trigger.role==="actor"?properties.actorId:properties.targetId;
+        if(matchedId!==owner.id)return;
+        battle.events.push({type:"passive-trigger",ownerId:owner.id,passiveId:passive.id,
+          triggerIndex:index,sourceEventType:type,sourceActorId:properties.actorId||null,
+          sourceTargetId:properties.targetId||null});
+      });
+    }
   }
 
   function finishIfOver(battle) {
@@ -422,6 +464,6 @@ const CombatCore = (() => {
 
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
-    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects, abilityTargetIndices
+    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects, abilityTargetIndices, activePassiveModifiers
   });
 })();

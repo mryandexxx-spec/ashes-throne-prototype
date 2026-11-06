@@ -125,7 +125,7 @@ function openCampaignMission(id){
 // Delegation allows cards to be rebuilt without installing duplicate handlers.
 $("#campaignMissions").addEventListener("click",event=>{
  const simulate=event.target.closest("[data-simulate-mission]");
- if(simulate&&$("#campaignMissions").contains(simulate)){
+ if(simulate&&simulate.dataset.simulateMission&&$("#campaignMissions").contains(simulate)){
   simulateMission(simulate.dataset.simulateMission);
   return;
  }

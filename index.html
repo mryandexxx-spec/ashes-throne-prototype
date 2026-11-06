@@ -110,6 +110,12 @@
             <div class="turn-chip" id="turnChip">Ход 1</div>
           </div>
         </div>
+        <aside id="currentFighterHud" class="current-fighter-hud arena-hud" aria-label="Информация о текущем бойце">
+          <div class="current-fighter-heading"><span id="currentFighterSide">ОЧЕРЕДЬ ХОДОВ</span><span id="currentFighterLevel"></span></div>
+          <strong id="currentFighterName">Ожидание бойца</strong>
+          <div class="current-fighter-vitals"><span id="currentFighterHp"></span><span id="currentFighterStats"></span></div>
+          <div class="current-fighter-track" aria-hidden="true"><span id="currentFighterHealthFill"></span></div>
+        </aside>
         <div id="battleMessage" class="battle-message arena-hud" role="status">Отряд готов к бою</div>
         <div id="battleReward" class="battle-reward arena-hud" hidden aria-live="polite"></div>
         <div class="arena-utility arena-hud">
@@ -140,7 +146,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.7 · CBA008C-TAP</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.8 · CBA008D</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

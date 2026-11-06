@@ -11,7 +11,7 @@ const ids=["home","collection","campaign","squad","battle","heroList","combatant
  "targetFighterHud","targetFighterSide","targetFighterLevel","targetFighterName","targetFighterHp","targetFighterStats","targetFighterHealthFill",
  "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","autoSpeedBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","squadBack","squadStart","squadRoster",
- "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
+ "squadSlots","squadHint","squadWarning","squadDisband","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},style:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
@@ -106,7 +106,10 @@ const api=vm.runInNewContext(src+
  {document,window:liveWindow,BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 // Campaign regression fixture: preserve historical three-hero combat expectations.
 api.resetLegacySquad();
-function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
+function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();
+ // This legacy campaign test accepts the warning to exercise existing combat cases.
+ if(el===elements.squadStart&&!elements.squadWarning.hidden)h[0]();
+}
 elements.campaignMissions.contains=()=>true;
 function clickMission(id="black-pass-ambush"){
  const button={dataset:{campaignMission:id}};

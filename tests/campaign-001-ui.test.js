@@ -27,6 +27,7 @@ const collectionNav=element();collectionNav.dataset.screen="collection";
 const allScreens=["home","collection","campaign","squad","battle","heroDetail","missionResult"].map(id=>elements[id]);
 const visibilityListeners=[];
 const document={
+ body:element("body"),
  hidden:false,
  querySelector(q){return elements[q.slice(1)]},
  querySelectorAll(q){
@@ -120,6 +121,7 @@ clickMission();
 assert.equal(elements.squad.classList.active,true);
 click(elements.squadStart);
 assert.equal(elements.battle.classList.active,true);
+assert.equal(document.body.classList.contains("battle-mode"),true,"battle hides document scroll behind fullscreen arena");
 const first=api.getBattle();
 assert.equal(typeof pointerListener,"function","arena pointer listener registered");
 const firstEnemy=first.fighters.find(f=>f.side==="enemy");
@@ -132,6 +134,7 @@ assert.equal(api.getMeshes()[secondEnemy.id].base.material.emissiveColor.x,.48,"
 first.active=false;first.winner="enemy";
 api.syncBattleUI();
 assert.equal(elements.missionResult.classList.active,true,"defeat must show result screen");
+assert.equal(document.body.classList.contains("battle-mode"),false,"leaving battle restores document scroll");
 assert.match(elements.missionResultTitle.textContent,/не пройдена/);
 assert.equal(api.getMaterials(),0);
 assert.equal(api.getCampaignCompleted(),false);

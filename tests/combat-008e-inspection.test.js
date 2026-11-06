@@ -7,7 +7,7 @@ const html=read('index.html'),css=read('styles.css'),game=read('game.js');
 for(const id of ['fighterInspect','inspectClose','inspectName','inspectStats','inspectEffects'])assert.ok(html.includes('id="'+id+'"'));
 assert.ok(html.includes('aria-modal="true"'));
 assert.ok(css.includes('.fighter-inspect[hidden]'));
-assert.ok(game.includes('INSPECT_HOLD_MS=550'));
+assert.ok(game.includes('INSPECT_HOLD_MS=400'));
 assert.ok(game.includes('function handleInspectionPointer(info)'));
 assert.ok(game.includes('suppressInspectionPick'));
 assert.ok(html.includes('v0.3.12 · CBA008F-CAMERA'));

@@ -3,10 +3,10 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","attackBtn",
- "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","battleMessage","renderCanvas",
+ "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","autoSpeedBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
 function element(id=""){
@@ -63,16 +63,20 @@ const BABYLON={Engine,Scene,ArcRotateCamera:Camera,HemisphericLight:class{},Dire
 const savedData=new Map();
 const localStorage={getItem:k=>savedData.has(k)?savedData.get(k):null,setItem:(k,v)=>savedData.set(k,v)};
 const timers=new Map();
+const scheduledDelays=new Map();
 let nextTimer=0;
-function fakeSetTimeout(fn){const id=++nextTimer;timers.set(id,fn);return id;}
-function fakeClearTimeout(id){timers.delete(id);}
+function fakeSetTimeout(fn,delay){
+ const id=++nextTimer;timers.set(id,fn);scheduledDelays.set(id,delay);return id;
+}
+function fakeClearTimeout(id){timers.delete(id);scheduledDelays.delete(id);}
+function pendingDelay(){return scheduledDelays.values().next().value;}
 function tick(){
  const first=timers.entries().next().value;
  assert.ok(first,"expected pending autobattle step");
- timers.delete(first[0]);first[1]();
+ timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle})",
+ "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), setAutoSpeed})",
  {document,window:{addEventListener(){},localStorage},BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 elements.campaignMissions.contains=()=>true;
@@ -195,12 +199,31 @@ click(elements.autoBattleBtn);
 assert.equal(api.isAuto(),true);
 assert.equal(elements.autoBattleBtn["aria-pressed"],"true");
 assert.equal(timers.size,1,"one action scheduled");
+assert.equal(pendingDelay(),350,"default 1x has the accepted pacing");
+assert.equal(elements.autoSpeedBtn.disabled,false);
+assert.equal(elements.autoSpeedBtn.textContent,"1×");
+click(elements.autoSpeedBtn);
+assert.equal(api.getSpeed(),2);
+assert.equal(elements.autoSpeedBtn.textContent,"2×");
+assert.equal(pendingDelay(),175,"2x must halve UI delay");
+assert.equal(timers.size,1,"speed change replaces, not duplicates, a pending action");
+click(elements.autoSpeedBtn);
+assert.equal(api.getSpeed(),4);
+assert.equal(api.getAnimationSpeed(),4,"the same speed is exposed to future animation drivers");
+assert.equal(pendingDelay(),88,"4x uses rounded quarter delay");
+assert.equal(timers.size,1);
+click(elements.autoSpeedBtn);
+assert.equal(api.getSpeed(),1,"speed cycles back to 1x");
+assert.equal(pendingDelay(),350);
 const before=api.getBattle().allyActions;
 click(elements.attackBtn);
 assert.equal(api.getBattle().allyActions,before,"manual attack ignored during autobattle");
 click(elements.autoBattleBtn);
 assert.equal(api.isAuto(),false);
 assert.equal(timers.size,0,"manual takeover cancels queued action");
+assert.equal(elements.autoSpeedBtn.disabled,true,"speed control disabled in manual mode");
+assert.equal(api.setAutoSpeed(4),false,"speed cannot change when manual");
+assert.equal(api.getSpeed(),1);
 assert.equal(api.getBattle().allyActions,before);
 click(elements.autoBattleBtn);
 assert.equal(timers.size,1);
@@ -210,11 +233,14 @@ assert.equal(timers.size,1,"exactly one next action scheduled");
 api.showScreen("home");
 assert.equal(api.isAuto(),false);
 assert.equal(timers.size,0,"leaving battle cancels pending automatic action");
+assert.equal(api.getSpeed(),1,"speed is reset for the next battle");
 // Hidden tab pauses and visible tab resumes a single timer.
 api.showScreen("campaign");
 clickMission("black-pass-ambush");
 click(elements.squadStart);
 click(elements.autoBattleBtn);
+click(elements.autoSpeedBtn);
+assert.equal(pendingDelay(),175);
 assert.equal(timers.size,1);
 document.hidden=true;
 visibilityListeners.forEach(fn=>fn());
@@ -223,6 +249,7 @@ assert.equal(api.isAuto(),true,"auto preference remains on while hidden");
 document.hidden=false;
 visibilityListeners.forEach(fn=>fn());
 assert.equal(timers.size,1,"visible tab resumes exactly one action");
+assert.equal(pendingDelay(),175,"speed survives Safari visibility pause");
 tick();
 assert.ok(api.getBattle().allyActions>0);
 api.showScreen("home");
@@ -234,8 +261,14 @@ clickMission("demo-mission-3");
 click(elements.squadStart);
 const autoWaves=api.getBattle();
 assert.equal(autoWaves.totalWaves,2);
+assert.equal(api.getSpeed(),1,"new mission resets speed");
+assert.equal(elements.autoSpeedBtn.disabled,true);
 autoWaves.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
 click(elements.autoBattleBtn);
+click(elements.autoSpeedBtn);
+click(elements.autoSpeedBtn);
+assert.equal(api.getSpeed(),4);
+assert.equal(pendingDelay(),88);
 let actions=0;
 while(autoWaves.wave===1&&autoWaves.active&&actions++<10)tick();
 assert.equal(autoWaves.wave,2);
@@ -248,8 +281,9 @@ assert.ok(actions<25,"auto must finish multi-wave mission");
 assert.equal(autoWaves.winner,"ally");
 assert.equal(api.getMaterials(),rewardBeforeFinal+1);
 assert.equal(timers.size,0,"last automatic action cancels further scheduling");
+assert.equal(elements.autoSpeedBtn.disabled,true);
 assert.equal(api.isAuto(),false,"auto mode clears on victory");
 assert.equal(elements.missionResult.classList.active,true);
 api.syncBattleUI();
 assert.equal(api.getMaterials(),rewardBeforeFinal+1,"no duplicated reward after finished auto battle");
-console.log("Campaign-001 and Combat-004 UI: manual toggle, timer cancellation, click guards and navigation passed");
+console.log("Campaign-001, Combat-004 and 004B UI: 1x/2x/4x pacing, cancel, visibility, waves and rewards passed");

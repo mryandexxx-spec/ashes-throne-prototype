@@ -502,13 +502,32 @@ const CombatCore = (() => {
     return true;
   }
 
-  // Combat-004: first-stage auto strategy uses an ordinary basic attack against
-  // the first living enemy. No alternate damage/initiative/reward code path.
-  function performAutoAction(battle) {
+  // Combat-015B: apply a read-only tactical proposal using the same command
+  // path as manual abilities. The optional argument keeps Combat-004 callers
+  // compatible (basic attack against the first living enemy).
+  function performAutoAction(battle, plan) {
     if (!battle || !battle.active || !abilityReady(battle, "basic")) return false;
-    const target = firstLivingEnemy(battle.fighters);
-    if (target < 0 || !chooseEnemy(battle, target)) return false;
-    return performPlayerAbility(battle, "basic");
+    if (plan && ["basic", "special", "powerful"].includes(plan.abilityId) &&
+        abilityReady(battle, plan.abilityId)) {
+      const mode = abilityTargetSide(battle, plan.abilityId);
+      const target = plan.targetIndex;
+      const actor = battle.currentActor;
+      const legal = Number.isInteger(target) &&
+        (mode === "enemy" || mode === "all-enemies" ?
+          selectEnemy(battle.fighters, target) >= 0 :
+         mode === "ally" ? selectAlly(battle.fighters, target) >= 0 :
+         mode === "self" || mode === "all-allies" ? target === actor : false);
+      if (legal) {
+        if (mode === "enemy" || mode === "all-enemies") chooseEnemy(battle, target);
+        else if (mode === "ally") chooseAlly(battle, target);
+        if (performPlayerAbility(battle, plan.abilityId)) return true;
+      }
+    }
+    // A stale/unsupported decision must never leave autoplay stuck. This also
+    // preserves the original no-plan Combat-004 behavior for legacy callers.
+    const first = firstLivingEnemy(battle.fighters);
+    return first >= 0 && chooseEnemy(battle, first) &&
+      performPlayerAbility(battle, "basic");
   }
 
   // Backward-compatible basic attack API, including Combat-002 regression tests.

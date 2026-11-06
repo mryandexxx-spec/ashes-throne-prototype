@@ -92,7 +92,9 @@ function queueAutoAction(){
   if(isVisualTransition()||!autoBattle||!state.active||document.hidden||
      !$("#battle").classList.contains("active"))return;
   const before=state.fighters.map(f=>({...f}));
-  if(!CombatCore.performAutoAction(state)){setAutoBattle(false);return;}
+  // Combat-015B: plan only when the scheduled auto step actually executes.
+  const plan=AutoDecision.chooseAction(state);
+  if(!CombatCore.performAutoAction(state,plan)){setAutoBattle(false);return;}
   captureResolvedVisuals(before);
   selectedAbility="basic";
   syncBattleUI();

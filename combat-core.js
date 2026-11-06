@@ -247,6 +247,15 @@ const CombatCore = (() => {
     return true;
   }
 
+  // Combat-004: first-stage auto strategy uses an ordinary basic attack against
+  // the first living enemy. No alternate damage/initiative/reward code path.
+  function performAutoAction(battle) {
+    if (!battle || !battle.active || !abilityReady(battle, "basic")) return false;
+    const target = firstLivingEnemy(battle.fighters);
+    if (target < 0 || !chooseEnemy(battle, target)) return false;
+    return performPlayerAbility(battle, "basic");
+  }
+
   // Backward-compatible basic attack API, including Combat-002 regression tests.
   function performPlayerAttack(battle) {
     return performPlayerAbility(battle, "basic");
@@ -255,6 +264,6 @@ const CombatCore = (() => {
 
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
-    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady
+    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction
   });
 })();

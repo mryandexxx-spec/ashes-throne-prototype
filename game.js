@@ -39,6 +39,7 @@ function queueAutoAction(){
   if(!autoBattle||!state.active||document.hidden||
      !$("#battle").classList.contains("active"))return;
   if(!CombatCore.performAutoAction(state)){setAutoBattle(false);return;}
+  BattleAnimation.enqueue(state.events);
   selectedAbility="basic";
   syncBattleUI();
  },BattleSpeed.duration(AUTO_STEP_MS));
@@ -130,7 +131,7 @@ function openSquad(returnTo="home"){
  showScreen("squad");
 }
 function showScreen(id){
- if(id!=="battle"){cancelAutoTimer();autoBattle=false;stopBattleRendering();}
+ if(id!=="battle"){cancelAutoTimer();autoBattle=false;BattleAnimation.clear();stopBattleRendering();}
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  $("#"+id).classList.add("active");
  if(id==="collection")renderHeroes();
@@ -384,6 +385,7 @@ function renderCombatants(){
 }
 function resetBattle(){
  cancelAutoTimer();
+ BattleAnimation.clear();
  autoBattle=false;
  BattleSpeed.reset();
  missionResultShown=false;
@@ -396,6 +398,7 @@ function resetBattle(){
 function attack(){
  if(autoBattle)return;
  if(CombatCore.performPlayerAbility(state,selectedAbility)){
+  BattleAnimation.enqueue(state.events);
   selectedAbility="basic";
   syncBattleUI();
  }
@@ -415,7 +418,20 @@ if(autoSpeedControl)autoSpeedControl.addEventListener("click",()=>{
 $("#basicAbilityBtn").addEventListener("click",()=>{if(state.active&&!autoBattle){selectedAbility="basic";syncBattleUI();}});
 $("#specialAbilityBtn").addEventListener("click",()=>{if(!autoBattle&&CombatCore.abilityReady(state,"special")){selectedAbility="special";syncBattleUI();}});
 // A single render callback and a single Engine/Scene for the lifetime of this prototype.
-function renderBattleFrame(){if(scene)scene.render();}
+function renderBattleFrame(){
+ if(!scene)return;
+ // Animation speed is shared with the auto scheduler, never alters combat state.
+ const dt=engine&&typeof engine.getDeltaTime==="function"?engine.getDeltaTime():16;
+ BattleAnimation.tick(dt,BattleSpeed.multiplier());
+ for(const h of state.fighters){
+  const visual=meshes[h.id];
+  if(!visual||h.hp<=0)continue;
+  const x=h.side==="ally"?-3.4:3.4;
+  const offset=BattleAnimation.pose(h.id)*(h.side==="ally"?1:-1);
+  visual.body.position.x=visual.head.position.x=visual.base.position.x=x+offset;
+ }
+ scene.render();
+}
 function shouldRenderBattle(){return !!engine && !document.hidden && $("#battle").classList.contains("active");}
 function startBattleRendering(){
  if(!shouldRenderBattle()||renderLoopRunning)return;

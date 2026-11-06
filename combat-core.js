@@ -262,6 +262,34 @@ const CombatCore = (() => {
     else actor.powerfulCooldown=Math.max(0,actor.powerfulCooldown-1);
   }
 
+  // Combat-012C: optional data-defined follow-up statuses, not hero-specific
+  // branching. Existing statuses are intentionally reused; new status types
+  // require separate rules and tests rather than implicit interpretation.
+  const FOLLOW_UP_SCOPES=Object.freeze(["primary","all","self"]);
+  function validFollowUpEffects(ability) {
+    if(ability.followUpEffects===undefined)return true;
+    return Array.isArray(ability.followUpEffects)&&
+      ability.followUpEffects.every(effect=>effect&&
+        FOLLOW_UP_SCOPES.includes(effect.scope)&&
+        ["guard","weaken"].includes(effect.status)&&
+        Number.isSafeInteger(effect.stacks)&&effect.stacks>0);
+  }
+  // Recipients were selected before the primary action. Bonus effects resolve
+  // afterwards, but only on survivors; a fallen primary is never replaced.
+  function applyFollowUpEffects(battle,actor,ability,recipients,primary){
+    for(const effect of ability.followUpEffects||[]){
+      const affected=effect.scope==="self"?[actor]:
+        effect.scope==="primary"?[primary]:recipients;
+      for(const target of affected){
+        if(!target||target.hp<=0)continue;
+        const remaining=Math.max(effectCount(target,effect.status),effect.stacks);
+        setEffect(target,effect.status,remaining);
+        emit(battle,"effect",{actorId:actor.id,targetId:target.id,
+          effect:effect.status,stacks:remaining});
+      }
+    }
+  }
+
   // Combat-011B: atomic resolution of one self/group command. The acting
   // unit spends exactly one turn and one cooldown. Dead targets are filtered
   // before the command; wave/victory transitions happen after all targets.
@@ -306,6 +334,7 @@ const CombatCore = (() => {
         emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"guard",stacks:ability.guardHits});
       }
     }
+    applyFollowUpEffects(battle,actor,ability,recipients,battle.fighters[primaryIndex]);
     // Weakening counts attacks (commands), not recipients. All group targets
     // get the same weakened damage; one use is consumed at the end.
     if(ability.kind==="damage"&&weakened)actor.weakenAttacks--;
@@ -328,7 +357,7 @@ const CombatCore = (() => {
     const actor=battle.fighters[battle.currentActor];
     const ability=AbilityData.get(actor,abilityId);
     // Invalid definitions must not consume an action or overwrite events.
-    if(!Number.isSafeInteger(ability.cooldown)||ability.cooldown<0)return false;
+    if(!Number.isSafeInteger(ability.cooldown)||ability.cooldown<0||!validFollowUpEffects(ability))return false;
     if(!["damage","heal","guard"].includes(ability.kind))return false;
     if(ability.kind==="damage"&&(!Number.isFinite(ability.multiplier)||ability.multiplier<0))return false;
     if(ability.kind==="heal"&&(!Number.isFinite(ability.healAmount)||ability.healAmount<0))return false;
@@ -365,6 +394,7 @@ const CombatCore = (() => {
         target.name+" получает "+damage+" урона"+
         (target.hp===0?" — повержен!":ability.weakening>0?", ослабление ×"+ability.weakening+".":".");
     }
+    applyFollowUpEffects(battle,actor,ability,[target],target);
     finishAbilityCooldowns(actor,ability);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
     battle.turn++;

@@ -16,6 +16,35 @@ let selectedAbility="basic";
 // Combat-004: manual remains the default. Only one cancellable timer may run.
 let autoBattle=false;
 let autoTimer=null;
+// Combat-006: presentation waits, never a delay inside CombatCore.
+let visualTransition=null; // "wave" or "result"
+let visualWaveFighters=null;
+function presentationFighters(){return visualWaveFighters||state.fighters;}
+function isVisualTransition(){return visualTransition!==null;}
+function captureResolvedVisuals(beforeFighters){
+ BattleAnimation.enqueue(state.events);
+ const events=state.events||[];
+ const waveChanged=events.some(event=>event.type==="wave-start");
+ const ended=events.some(event=>event.type==="battle-end");
+ if(!waveChanged&&!ended)return;
+ cancelAutoTimer();
+ visualTransition=waveChanged?"wave":"result";
+ if(waveChanged){
+  // Core advances waves synchronously; retain the old lineup until its
+  // attack/death events have been drawn. This does not restore combat HP.
+  const dead=new Set(events.filter(e=>e.type==="death").map(e=>e.targetId));
+  visualWaveFighters=beforeFighters.map(f=>({...f,hp:dead.has(f.id)?0:f.hp}));
+ }
+}
+function finishVisualTransition(){
+ if(!visualTransition||BattleAnimation.pending()!==0)return;
+ visualTransition=null;
+ visualWaveFighters=null;
+ syncBattleUI(); // campaign result, reward UI, or next wave auto-step
+}
+function cancelVisualTransition(){
+ visualTransition=null;visualWaveFighters=null;
+}
 // All battle presentation timing shares one speed source. Future visual
 // effects can call BattleSpeed.multiplier() / BattleSpeed.duration(baseMs).
 const AUTO_STEP_MS=350;
@@ -32,14 +61,15 @@ function cancelAutoTimer(){
  if(autoTimer!==null){clearTimeout(autoTimer);autoTimer=null;}
 }
 function queueAutoAction(){
- if(autoTimer!==null||!autoBattle||!state.active||document.hidden||
+ if(autoTimer!==null||isVisualTransition()||!autoBattle||!state.active||document.hidden||
     !$("#battle").classList.contains("active"))return;
  autoTimer=setTimeout(()=>{
   autoTimer=null;
-  if(!autoBattle||!state.active||document.hidden||
+  if(isVisualTransition()||!autoBattle||!state.active||document.hidden||
      !$("#battle").classList.contains("active"))return;
+  const before=state.fighters.map(f=>({...f}));
   if(!CombatCore.performAutoAction(state)){setAutoBattle(false);return;}
-  BattleAnimation.enqueue(state.events);
+  captureResolvedVisuals(before);
   selectedAbility="basic";
   syncBattleUI();
  },BattleSpeed.duration(AUTO_STEP_MS));
@@ -131,7 +161,7 @@ function openSquad(returnTo="home"){
  showScreen("squad");
 }
 function showScreen(id){
- if(id!=="battle"){cancelAutoTimer();autoBattle=false;BattleAnimation.clear();stopBattleRendering();}
+ if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();stopBattleRendering();}
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  $("#"+id).classList.add("active");
  if(id==="collection")renderHeroes();
@@ -313,6 +343,23 @@ function renderBattleLog(){
 }
 function syncBattleUI(){
  if(!state.active){cancelAutoTimer();autoBattle=false;}
+ // Keep result screen and rewards in the normal UI path, after the final
+ // visible attack/hit/death has finished. Core state is already final.
+ if(isVisualTransition()){
+  $("#battleStatus").textContent=visualTransition==="wave"?"Завершение волны…":"Завершение боя…";
+  $("#actionTitle").textContent="Анимация завершается";
+  $("#actionHint").textContent="Следующий этап появится после завершения действий.";
+  $("#attackBtn").disabled=true;
+  $("#basicAbilityBtn").disabled=true;
+  $("#specialAbilityBtn").disabled=true;
+  $("#autoBattleBtn").disabled=!state.active;
+  $("#autoSpeedBtn").disabled=!state.active;
+  $("#battleMessage").textContent=state.message;
+  renderBattleLog();
+  renderCombatants();
+  updateMeshes();
+  return;
+ }
  const awarded=ProgressCore.awardVictory(progress,state);
  if(awarded>0)persistProgress();
  if(battleIsCampaign&&!state.active&&!missionResultShown){
@@ -368,23 +415,24 @@ function syncBattleUI(){
  queueAutoAction();
 }
 function renderCombatants(){
- const actor=state.active?state.fighters[state.currentActor]:null;
+ const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
  const choosingAlly=!!actor&&CombatCore.abilityTargetSide(state,selectedAbility)==="ally";
- $("#combatants").innerHTML=state.fighters.map((h,i)=>{
+ $("#combatants").innerHTML=presentationFighters().map((h,i)=>{
    const chosen=state.active&&i===(choosingAlly?state.selectedAlly:state.selectedEnemy)&&
      h.side===(choosingAlly?"ally":"enemy");
    const status=[h.guardHits>0?"Защита ×"+h.guardHits:"",h.weakenAttacks>0?"Ослабление ×"+h.weakenAttacks:""].filter(Boolean).join(" · ");
    return `<div class="fighter ${h.side==="enemy"?"enemy":"ally"} ${h.hp<=0?"defeated":""} ${chosen?"selected":""} ${state.active&&i===state.currentActor?"acting":""}" data-index="${i}"><b>${h.name}</b><small>${Math.max(0,h.hp)} / ${h.maxHp} HP · СПД ${h.speed}</small>${status?`<span class="fighter-status">${status}</span>`:""}<div class="health"><span style="width:${Math.max(0,h.hp)/h.maxHp*100}%"></span></div></div>`;
  }).join("");
  document.querySelectorAll(".fighter.enemy").forEach(el=>el.addEventListener("click",()=>{
-  if(!autoBattle&&CombatCore.chooseEnemy(state,Number(el.dataset.index)))syncBattleUI();
+  if(!autoBattle&&!isVisualTransition()&&CombatCore.chooseEnemy(state,Number(el.dataset.index)))syncBattleUI();
  }));
  if(choosingAlly)document.querySelectorAll(".fighter.ally").forEach(el=>el.addEventListener("click",()=>{
-  if(!autoBattle&&CombatCore.chooseAlly(state,Number(el.dataset.index)))syncBattleUI();
+  if(!autoBattle&&!isVisualTransition()&&CombatCore.chooseAlly(state,Number(el.dataset.index)))syncBattleUI();
  }));
 }
 function resetBattle(){
  cancelAutoTimer();
+ cancelVisualTransition();
  BattleAnimation.clear();
  autoBattle=false;
  BattleSpeed.reset();
@@ -396,15 +444,16 @@ function resetBattle(){
  syncBattleUI();
 }
 function attack(){
- if(autoBattle)return;
+ if(autoBattle||isVisualTransition())return;
+ const before=state.fighters.map(f=>({...f}));
  if(CombatCore.performPlayerAbility(state,selectedAbility)){
-  BattleAnimation.enqueue(state.events);
+  captureResolvedVisuals(before);
   selectedAbility="basic";
   syncBattleUI();
  }
 }
 // Exactly one permanent click handler; no onclick replacement on victory.
-$("#attackBtn").addEventListener("click",()=>{if(!state.active)openSquad("home");else attack();});
+$("#attackBtn").addEventListener("click",()=>{if(isVisualTransition())return;if(!state.active)openSquad("home");else attack();});
 const autoBattleControl=$("#autoBattleBtn");
 if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.active)setAutoBattle(!autoBattle);});
 const autoSpeedControl=$("#autoSpeedBtn");
@@ -415,15 +464,15 @@ if(autoSpeedControl)autoSpeedControl.addEventListener("click",()=>{
   setAutoSpeed(next);
  }
 });
-$("#basicAbilityBtn").addEventListener("click",()=>{if(state.active&&!autoBattle){selectedAbility="basic";syncBattleUI();}});
-$("#specialAbilityBtn").addEventListener("click",()=>{if(!autoBattle&&CombatCore.abilityReady(state,"special")){selectedAbility="special";syncBattleUI();}});
+$("#basicAbilityBtn").addEventListener("click",()=>{if(state.active&&!autoBattle&&!isVisualTransition()){selectedAbility="basic";syncBattleUI();}});
+$("#specialAbilityBtn").addEventListener("click",()=>{if(!autoBattle&&!isVisualTransition()&&CombatCore.abilityReady(state,"special")){selectedAbility="special";syncBattleUI();}});
 // A single render callback and a single Engine/Scene for the lifetime of this prototype.
 function renderBattleFrame(){
  if(!scene)return;
  // Animation speed is shared with the auto scheduler, never alters combat state.
  const dt=engine&&typeof engine.getDeltaTime==="function"?engine.getDeltaTime():16;
  BattleAnimation.tick(dt,BattleSpeed.multiplier());
- for(const h of state.fighters){
+ for(const h of presentationFighters()){
   const visual=meshes[h.id];
   if(!visual)continue;
   const visible=h.hp>0||BattleAnimation.isDying(h.id);
@@ -441,6 +490,8 @@ function renderBattleFrame(){
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
  }
  scene.render();
+ // Draw the last animation frame before revealing the next wave/result.
+ finishVisualTransition();
 }
 function shouldRenderBattle(){return !!engine && !document.hidden && $("#battle").classList.contains("active");}
 function startBattleRendering(){
@@ -483,13 +534,14 @@ function updateMeshes(){
  for(const h of HEROES){
   const mesh=meshes[h.id];
   if(!mesh)continue;
-  const member=state.fighters.find(f=>f.id===h.id);
+  const roster=presentationFighters();
+  const member=roster.find(f=>f.id===h.id);
   const visible=!!member&&(member.hp>0||BattleAnimation.isDying(h.id));
   mesh.body.setEnabled(visible);
   mesh.head.setEnabled(visible);
   mesh.base.setEnabled(visible);
   if(visible){
-   const sideMembers=state.fighters.filter(f=>f.side===member.side);
+   const sideMembers=roster.filter(f=>f.side===member.side);
    const slot=sideMembers.findIndex(f=>f.id===h.id);
    const x=member.side==="ally"?-3.4:3.4;
    const z=(slot-(sideMembers.length-1)/2)*1.55;

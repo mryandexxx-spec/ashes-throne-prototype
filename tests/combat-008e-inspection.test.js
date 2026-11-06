@@ -10,5 +10,5 @@ assert.ok(css.includes('.fighter-inspect[hidden]'));
 assert.ok(game.includes('INSPECT_HOLD_MS=400'));
 assert.ok(game.includes('function handleInspectionPointer(info)'));
 assert.ok(game.includes('suppressInspectionPick'));
-assert.ok(html.includes('v0.3.12 · CBA008F-CAMERA'));
+assert.ok(html.includes('v0.3.13 · CBA009'));
 console.log('Combat-008E inspection markup and gesture handling passed');

@@ -18,5 +18,5 @@ assert.match(game,/CombatCore\.abilityTargetSide\(state,selectedAbility\)/);
 assert.match(game,/state\.selectedAlly/);
 assert.match(game,/state\.selectedEnemy/);
 assert.match(game,/function renderTargetFighterHud\(\)/);
-assert.match(html,/v0\.3\.8 · CBA008D/);
+assert.match(html,/v0\.3\.9 · CBA008D-UI/);
 console.log("Combat-008D selected-target panel structure and version passed");

@@ -213,6 +213,29 @@ const CombatCore = (() => {
     return ability?ability.target:null;
   }
 
+  // Combat-011A: read-only target selection for ability planning. Group and
+  // self modes are NOT castable until multi-target resolution is implemented.
+  function abilityTargetIndices(battle, mode) {
+    if (!battle || !battle.active || !Array.isArray(battle.fighters)) return [];
+    const actor=battle.fighters[battle.currentActor];
+    if (!actor || actor.side!=="ally" || actor.hp<=0) return [];
+    if (mode==="self") return [battle.currentActor];
+    if (mode==="enemy") {
+      const i=selectEnemy(battle.fighters,battle.selectedEnemy);
+      return i<0?[]:[i];
+    }
+    if (mode==="ally") {
+      const i=selectAlly(battle.fighters,battle.selectedAlly);
+      return i<0?[]:[i];
+    }
+    if (mode==="all-enemies" || mode==="all-allies") {
+      const side=mode==="all-enemies"?"enemy":"ally";
+      return battle.fighters.flatMap((fighter,i)=>
+        fighter.side===side && fighter.hp>0?[i]:[]);
+    }
+    return [];
+  }
+
   function specialName(actor) {
     const ability=AbilityData.get(actor,"special");
     return ability?ability.name:"Особая";
@@ -230,10 +253,12 @@ const CombatCore = (() => {
     if(!abilityReady(battle,abilityId))return false;
     const actor=battle.fighters[battle.currentActor];
     const ability=AbilityData.get(actor,abilityId);
-    const targetIndex=ability.target==="ally"
-      ?selectAlly(battle.fighters,battle.selectedAlly)
-      :selectEnemy(battle.fighters,battle.selectedEnemy);
-    if(targetIndex<0)return false;
+    // Group/self modes are target previews only; never silently cast at the
+    // first member of a group before full per-target resolution is approved.
+    if(ability.target!=="ally" && ability.target!=="enemy")return false;
+    const targets=abilityTargetIndices(battle,ability.target);
+    if(targets.length!==1)return false;
+    const targetIndex=targets[0];
     const target=battle.fighters[targetIndex];
     // Invalid commands leave the previous event batch untouched.
     battle.allyActions++;
@@ -288,6 +313,6 @@ const CombatCore = (() => {
 
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
-    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects
+    chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects, abilityTargetIndices
   });
 })();

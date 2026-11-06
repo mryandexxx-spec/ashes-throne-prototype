@@ -268,22 +268,17 @@ const CombatCore = (() => {
         }
         return battle;
       }
-      // A simple deterministic enemy AI for the first playable battle.
+      // Combat-015C-A: preserve the first-living-ally basic attack policy.
+      // Resolution now uses the same rule path as player commands.
       const targetIndex = firstLivingAlly(battle.fighters);
       if (targetIndex < 0) {
         finishIfOver(battle);
         return battle;
       }
-      const target = battle.fighters[targetIndex];
-      emit(battle, "ability", {actorId: actor.id, targetId: target.id, abilityId: "basic"});
-      const damage = dealDamage(actor, target, effectiveStat(battle,actor,"atk"));
-      emit(battle, "damage", {actorId: actor.id, targetId: target.id, amount: damage, remainingHp: target.hp});
-      if (target.hp === 0) emit(battle, "death", {targetId: target.id});
-      battle.message = actor.name + " атакует " + target.name +
-        ": " + damage + " урона.";
-      InitiativeModel.finishTurn(battle.fighters, actor.id);
-      battle.turn++;
-      if (finishIfOver(battle)) return battle;
+      battle.currentActor=actorIndex;
+      if(!performActorAbility(battle,"basic",targetIndex))
+        throw Error("Ready enemy basic attack rejected");
+      if(!battle.active)return battle;
     }
     throw Error("Turn guard reached: check initiative and actors");
   }
@@ -310,27 +305,31 @@ const CombatCore = (() => {
     return ability?ability.target:null;
   }
 
-  // Combat-011A: read-only target selection for ability planning. Group and
-  // self modes are NOT castable until multi-target resolution is implemented.
-  function abilityTargetIndices(battle, mode) {
-    if (!battle || !battle.active || !Array.isArray(battle.fighters)) return [];
-    const actor=battle.fighters[battle.currentActor];
-    if (!actor || actor.side!=="ally" || actor.hp<=0) return [];
-    if (mode==="self") return [battle.currentActor];
-    if (mode==="enemy") {
-      const i=selectEnemy(battle.fighters,battle.selectedEnemy);
-      return i<0?[]:[i];
-    }
-    if (mode==="ally") {
-      const i=selectAlly(battle.fighters,battle.selectedAlly);
-      return i<0?[]:[i];
-    }
-    if (mode==="all-enemies" || mode==="all-allies") {
-      const side=mode==="all-enemies"?"enemy":"ally";
-      return battle.fighters.flatMap((fighter,i)=>
-        fighter.side===side && fighter.hp>0?[i]:[]);
-    }
-    return [];
+  // Modes are relative to the acting fighter, not to the human player.
+  function actorTargetIndices(battle,actorIndex,mode,primaryIndex){
+    if(!battle||!battle.active||!Array.isArray(battle.fighters)||
+       !Number.isInteger(actorIndex))return [];
+    const actor=battle.fighters[actorIndex];
+    if(!actor||!["ally","enemy"].includes(actor.side)||actor.hp<=0)return [];
+    if(mode==="self")return [actorIndex];
+    const targetSide=mode==="enemy"||mode==="all-enemies"
+      ? actor.side==="ally"?"enemy":"ally"
+      : mode==="ally"||mode==="all-allies"?actor.side:null;
+    if(!targetSide)return [];
+    if(mode==="enemy"||mode==="ally")
+      return Number.isInteger(primaryIndex)&&battle.fighters[primaryIndex]&&
+        battle.fighters[primaryIndex].side===targetSide&&
+        battle.fighters[primaryIndex].hp>0?[primaryIndex]:[];
+    return battle.fighters.flatMap((fighter,i)=>
+      fighter.side===targetSide&&fighter.hp>0?[i]:[]);
+  }
+  // Preserve the existing player-facing selection API.
+  function abilityTargetIndices(battle,mode){
+    const actor=battle?.fighters?.[battle.currentActor];
+    if(!actor||actor.side!=="ally")return [];
+    const primary=mode==="ally"||mode==="all-allies"?
+      battle.selectedAlly:battle.selectedEnemy;
+    return actorTargetIndices(battle,battle.currentActor,mode,primary);
   }
 
   function specialName(actor) {
@@ -338,16 +337,23 @@ const CombatCore = (() => {
     return ability?ability.name:"Особая";
   }
 
-  function abilityReady(battle,abilityId) {
-    if(!battle||!battle.active)return false;
-    const actor=battle.fighters[battle.currentActor];
-    if(!actor||actor.side!=="ally"||actor.hp<=0||actor.meter<1000-1e-8)return false;
+  function actorAbilityReady(battle,actorIndex,abilityId){
+    if(!battle||!battle.active||!Array.isArray(battle.fighters)||
+       !Number.isInteger(actorIndex))return false;
+    const actor=battle.fighters[actorIndex];
+    if(!actor||!["ally","enemy"].includes(actor.side)||actor.hp<=0||
+       actor.meter<1000-1e-8)return false;
     const ability=AbilityData.get(actor,abilityId);
     if(!ability)return false;
     if(abilityId==="basic")return ability.id==="basic";
     if(abilityId==="special")return ability.id==="special"&&actor.specialCooldown===0;
     if(abilityId==="powerful")return ability.id==="powerful"&&actor.powerfulCooldown===0;
     return false;
+  }
+  function abilityReady(battle,abilityId){
+    const actor=battle?.fighters?.[battle.currentActor];
+    return !!actor&&actor.side==="ally"&&
+      actorAbilityReady(battle,battle.currentActor,abilityId);
   }
 
   // Combat-012A: independent cooldowns progress after a successful own action.

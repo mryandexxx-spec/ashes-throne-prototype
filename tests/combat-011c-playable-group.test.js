@@ -22,6 +22,13 @@ const el=id=>({
  addEventListener(name,fn){(this.handlers[name]??=[]).push(fn)}
 });
 const elements=Object.fromEntries(ids.map(id=>[id,el(id)]));
+// Mimic the browser's indicator DOM collection so the render loop can
+// detect a stale health bar after death animation finishes.
+elements.arenaIndicators.querySelectorAll=selector=>
+ selector===".arena-indicator"
+  ?[...elements.arenaIndicators.innerHTML.matchAll(/data-fighter-id="([^"]+)"/g)]
+    .map(m=>({dataset:{fighterId:m[1]},style:{}}))
+  :[];
 const document={
  hidden:false,
  querySelector:s=>elements[s.slice(1)],

@@ -1,0 +1,78 @@
+"use strict";
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const vm=require("node:vm");
+const path=require("node:path");
+const source=["initiative-model.js","ability-data.js","combat-core.js","combat-log.js","animation-profiles.js","battle-animation.js"]
+ .map(name=>fs.readFileSync(path.join(__dirname,"..",name),"utf8")).join("\n");
+const {AbilityData,CombatCore:core,CombatLog,BattleAnimation}=vm.runInNewContext(source+"\n({AbilityData,CombatCore,CombatLog,BattleAnimation})");
+const unit=(id,side="ally",hp=100,atk=20,speed=150)=>({id,name:id,side,hp,atk,speed});
+function make(enemies=[unit("enemy","enemy",900,1,1)],waves=[]){
+ const b=core.createBattle([unit("test-powerful-damage"),...enemies],waves);
+ core.advanceToPlayerTurn(b);
+ return b;
+}
+let b=make();
+const actor=b.fighters[0];
+assert.equal(AbilityData.get(actor,"powerful").id,"powerful");
+assert.equal(AbilityData.get({id:"kael"},"powerful"),null,"playable heroes have no powerful definition yet");
+assert.equal(core.abilityReady(b,"powerful"),true,"training powerful skill starts ready for engine tests");
+assert.equal(core.abilityReady(b,"special"),true);
+assert.equal(core.abilityReady(b,"unknown"),false);
+assert.equal(actor.powerfulCooldown,0);
+assert.equal(actor.specialCooldown,0);
+assert.equal(core.performPlayerAbility(b,"unknown"),false);
+assert.equal(b.allyActions,0);
+assert.equal(core.performPlayerAbility(b,"powerful"),true);
+assert.equal(b.allyActions,1,"powerful consumes exactly one own action");
+assert.equal(actor.powerfulCooldown,2);
+assert.equal(actor.specialCooldown,0,"powerful does not set special cooldown");
+assert.equal(b.events.find(e=>e.type==="ability"&&e.actorId===actor.id).abilityId,"powerful");
+assert.equal(b.events.find(e=>e.type==="damage"&&e.actorId===actor.id).amount,30);
+assert.match(CombatLog.lines(b.events,b.fighters).join(" / "),/Тест мощного удара/);
+BattleAnimation.clear();
+BattleAnimation.enqueue(b.events);
+assert.ok(BattleAnimation.pending()>=2,"powerful produces an attack and a hit animation");
+const prev=b.events,actions=b.allyActions;
+assert.equal(core.performPlayerAbility(b,"powerful"),false,"cannot cast on cooldown");
+assert.equal(b.events,prev,"refusal leaves existing events unchanged");
+assert.equal(b.allyActions,actions);
+assert.equal(core.performPlayerAbility(b,"special"),true,"special remains available despite powerful cooldown");
+assert.equal(actor.specialCooldown,2);
+assert.equal(actor.powerfulCooldown,1,"special decrements powerful cooldown once");
+assert.equal(core.performPlayerAbility(b,"basic"),true);
+assert.equal(actor.powerfulCooldown,0,"basic decrements powerful cooldown independently");
+assert.equal(actor.specialCooldown,1,"basic also decreases special cooldown");
+assert.equal(core.performPlayerAbility(b,"powerful"),true);
+assert.equal(actor.powerfulCooldown,2);
+assert.equal(actor.specialCooldown,0,"powerful also decreases pending special cooldown");
+assert.equal(b.allyActions,4);
+
+b=make([unit("weak","enemy",10,1,1)],[[unit("next","enemy",1000,1,1)]]);
+assert.equal(core.performPlayerAbility(b,"powerful"),true);
+assert.equal(b.wave,2,"powerful attack can finish the current wave");
+assert.equal(b.fighters[0].powerfulCooldown,2,"counter survives wave transition");
+assert.equal(b.fighters[0].specialCooldown,0);
+assert.equal(b.events.filter(e=>e.type==="wave-start").length,1);
+const afterWave=core.performPlayerAbility(b,"powerful");
+assert.equal(afterWave,false,"no second powerful use at start of next wave");
+const fresh=make();
+assert.equal(fresh.fighters[0].powerfulCooldown,0,"new battle clears powerful cooldown");
+assert.equal(fresh.fighters[0].specialCooldown,0);
+
+b=make([unit("boss","enemy",20,1,1)]);
+assert.equal(core.performPlayerAbility(b,"powerful"),true);
+assert.equal(b.active,false);
+assert.equal(b.winner,"ally");
+assert.equal(b.events.filter(e=>e.type==="battle-end").length,1);
+assert.equal(core.performPlayerAbility(b,"powerful"),false,"finished battle cannot cast powerful again");
+
+const other=core.createBattle([unit("kael"),unit("foe","enemy",200,1,1)]);
+core.advanceToPlayerTurn(other);
+assert.equal(core.performPlayerAbility(other,"powerful"),false,"no definition means no action");
+assert.equal(other.allyActions,0);
+assert.equal(other.fighters[0].powerfulCooldown,0);
+assert.equal(core.performPlayerAbility(other,"special"),true,"existing playable special still works");
+assert.equal(other.fighters[0].specialCooldown,2);
+assert.equal(other.fighters[0].powerfulCooldown,0);
+console.log("Combat-012A powerful definition, independent cooldowns, actions, waves, logs, animations and reset passed");

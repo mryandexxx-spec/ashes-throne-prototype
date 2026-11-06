@@ -21,10 +21,10 @@ let autoTimer=null;
 const AUTO_STEP_MS=350;
 function setAutoSpeed(speed){
  if(!BattleSpeed.levels.includes(speed))return false;
- if(!autoBattle||!state.active||document.hidden||!$("#battle").classList.contains("active"))return false;
+ if(!state.active||document.hidden||!$("#battle").classList.contains("active"))return false;
  if(BattleSpeed.get()===speed)return true;
  BattleSpeed.set(speed);
- cancelAutoTimer(); // replace pending auto action with a newly scaled delay
+ if(autoBattle)cancelAutoTimer(); // replace an auto timer only if autoplay is running
  syncBattleUI();
  return true;
 }
@@ -350,9 +350,9 @@ function syncBattleUI(){
  }
  const speedButton=$("#autoSpeedBtn");
  if(speedButton){
-  speedButton.disabled=!state.active||!autoBattle;
+  speedButton.disabled=!state.active;
   speedButton.textContent=BattleSpeed.get()+"×";
-  speedButton.setAttribute("aria-label","Скорость автобоя "+BattleSpeed.get()+"×. Нажми, чтобы изменить");
+  speedButton.setAttribute("aria-label","Скорость боя "+BattleSpeed.get()+"×. Нажми, чтобы изменить");
  }
  $("#specialAbilityBtn").textContent=actor&&actor.specialCooldown>0?"Особая · "+actor.specialCooldown:"Особая";
  $("#basicAbilityBtn").classList.toggle("selected",selectedAbility==="basic");
@@ -406,7 +406,7 @@ const autoBattleControl=$("#autoBattleBtn");
 if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.active)setAutoBattle(!autoBattle);});
 const autoSpeedControl=$("#autoSpeedBtn");
 if(autoSpeedControl)autoSpeedControl.addEventListener("click",()=>{
- if(autoBattle&&state.active){
+ if(state.active){
   const levels=BattleSpeed.levels;
   const next=levels[(levels.indexOf(BattleSpeed.get())+1)%levels.length];
   setAutoSpeed(next);

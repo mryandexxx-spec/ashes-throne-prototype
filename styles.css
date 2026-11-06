@@ -471,3 +471,47 @@ body.battle-mode #app>footer{visibility:hidden}
  .battle-screen .action-panel{padding:5px 7px}
  .battle-screen .battle-message{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 }
+
+/* Combat-008C: indicators float above each 3D head and never capture touch. */
+.battle-screen .arena-indicators{
+ position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;
+}
+.battle-screen .arena-indicator{
+ position:absolute;transform:translate(-50%,-100%);width:clamp(66px,10vw,98px);
+ max-width:100px;display:flex;flex-direction:column;gap:2px;align-items:stretch;
+ font:600 9px Inter,system-ui,sans-serif;text-shadow:0 1px 3px #000,0 0 4px #000;
+ pointer-events:none;will-change:transform;
+}
+.battle-screen .arena-indicator-name{
+ display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+ color:#f5eee2;text-align:center;font-size:9px;line-height:1.2;
+}
+.battle-screen .arena-indicator.acting .arena-indicator-name{color:var(--gold)}
+.battle-screen .arena-health,
+.battle-screen .arena-initiative{
+ height:6px;border-radius:6px;background:#0b101adb;border:1px solid #d7d4c64a;
+ overflow:hidden;box-shadow:0 1px 3px #000b;
+}
+.battle-screen .arena-health span,.battle-screen .arena-initiative span{
+ display:block;height:100%;transition:width .15s linear;
+}
+.battle-screen .arena-health span{background:#67bb7a}
+.battle-screen .arena-indicator.enemy .arena-health span{background:#d6756c}
+.battle-screen .arena-initiative{height:4px}
+.battle-screen .arena-initiative span{background:var(--gold)}
+.battle-screen .arena-effects{display:flex;justify-content:center;gap:3px;min-height:13px}
+.battle-screen .arena-effect{
+ display:inline-flex;align-items:center;justify-content:center;min-width:21px;
+ height:13px;padding:0 3px;border-radius:4px;font-size:10px;
+ line-height:1;color:#dff5ff;background:#28566dd9;border:1px solid #98c6e555;
+}
+.battle-screen .arena-effect.debuff{color:#ffe1ce;background:#772b31d9;border-color:#df8b7b88}
+@media (orientation:landscape) and (max-height:390px) and (max-width:1100px){
+ .battle-screen .arena-indicator{width:70px;gap:1px}
+ .battle-screen .arena-indicator-name{font-size:8px}
+ .battle-screen .arena-health{height:5px}
+ .battle-screen .arena-initiative{height:3px}
+}
+@media(prefers-reduced-motion:reduce){
+ .battle-screen .arena-health span,.battle-screen .arena-initiative span{transition:none}
+}

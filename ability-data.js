@@ -16,6 +16,11 @@ const AbilityData=(()=>{
  Object.freeze(special);
  // Combat-012A: engine-only fixture, deliberately absent from the playable HEROES.
  const powerful=Object.freeze({
+  // Combat-012B: noncanonical demonstration skills for every playable ally.
+  kael:Object.freeze({id:"powerful",name:"Учебный бастион",target:"self",kind:"guard",guardHits:3,cooldown:2}),
+  lyra:Object.freeze({id:"powerful",name:"Учебная метка",target:"enemy",kind:"damage",multiplier:1.5,weakening:2,cooldown:2}),
+  darin:Object.freeze({id:"powerful",name:"Учебный натиск",target:"enemy",kind:"damage",multiplier:2,weakening:0,cooldown:2}),
+  "medic-demo":Object.freeze({id:"powerful",name:"Учебное исцеление отряда",target:"all-allies",kind:"heal",healAmount:25,cooldown:2}),
   "test-powerful-damage":Object.freeze({id:"powerful",name:"Тест мощного удара",target:"enemy",
    kind:"damage",multiplier:1.5,weakening:0,cooldown:2}),
   // Combat-012B: same temporary parameters for the existing optional demo fighter.

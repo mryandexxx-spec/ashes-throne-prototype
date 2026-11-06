@@ -477,7 +477,10 @@ function positionArenaIndicators(){
  if(!scene||!engine||!arenaCamera||!BABYLON.Vector3?.Project||
     typeof scene.getTransformMatrix!=="function"||typeof engine.getRenderWidth!=="function")return;
  const width=engine.getRenderWidth(),height=engine.getRenderHeight();
- if(!width||!height||!arenaCamera.viewport?.toGlobal)return;
+ const overlay=$("#arenaIndicators");
+ if(!width||!height||!overlay||!arenaCamera.viewport?.toGlobal)return;
+ // Render pixels can differ from CSS pixels on retina/HiDPI iPhones.
+ const cssWidth=overlay.clientWidth||width,cssHeight=overlay.clientHeight||height;
  const viewport=arenaCamera.viewport.toGlobal(width,height);
  const identity=BABYLON.Matrix?.Identity?.();
  if(!identity)return;
@@ -489,7 +492,7 @@ function positionArenaIndicators(){
   const screen=BABYLON.Vector3.Project(world,identity,scene.getTransformMatrix(),viewport);
   const visible=screen.z>=0&&screen.z<=1&&screen.x>=0&&screen.x<=width&&screen.y>=0&&screen.y<=height;
   node.style.display=visible?"":"none";
-  if(visible){node.style.left=screen.x+"px";node.style.top=screen.y+"px";}
+  if(visible){node.style.left=screen.x*cssWidth/width+"px";node.style.top=screen.y*cssHeight/height+"px";}
  }
 }
 function resetBattle(){

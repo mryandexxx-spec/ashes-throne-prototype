@@ -70,13 +70,18 @@ function fakeSetTimeout(fn,delay){
 }
 function fakeClearTimeout(id){timers.delete(id);scheduledDelays.delete(id);}
 function pendingDelay(){return scheduledDelays.values().next().value;}
+function flushVisual(){
+ let frames=0;
+ while(api.isVisualTransition()&&frames++<250)api.renderBattleFrame();
+ assert.ok(frames<250,"visual transition should complete");
+}
 function tick(){
  const first=timers.entries().next().value;
  assert.ok(first,"expected pending autobattle step");
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, renderBattleFrame, setAutoSpeed})",
+ "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), setAutoSpeed})",
  {document,window:{addEventListener(){},localStorage},BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 elements.campaignMissions.contains=()=>true;
@@ -285,13 +290,23 @@ while(autoWaves.wave===1&&autoWaves.active&&actions++<10)tick();
 assert.equal(autoWaves.wave,2);
 assert.equal(elements.battle.classList.active,true);
 const rewardBeforeFinal=api.getMaterials();
-assert.equal(timers.size,1);
+assert.equal(api.isVisualTransition(),true,"wave switches core state before its visual transition");
+assert.equal(api.getVisualFighters().filter(f=>f.side==="enemy").length,2,
+ "old wave roster remains visible through queued hit/death animations");
+assert.equal(timers.size,0,"next wave must not start while previous wave animations run");
+flushVisual();
+assert.equal(timers.size,1,"autobattle resumes after wave animations");
 autoWaves.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
 while(autoWaves.active&&actions++<25)tick();
 assert.ok(actions<25,"auto must finish multi-wave mission");
 assert.equal(autoWaves.winner,"ally");
-assert.equal(api.getMaterials(),rewardBeforeFinal+1);
+assert.equal(api.isVisualTransition(),true,"battle result waits for final animation");
+assert.equal(elements.missionResult.classList.active,false,"final screen must not interrupt death sequence");
+assert.equal(api.getMaterials(),rewardBeforeFinal,"victory is rewarded in the normal UI path after animation");
 assert.equal(timers.size,0,"last automatic action cancels further scheduling");
+flushVisual();
+assert.equal(api.getMaterials(),rewardBeforeFinal+1);
+assert.equal(elements.missionResult.classList.active,true,"battle result opens after animation");
 assert.equal(elements.autoSpeedBtn.disabled,true,"finished battle disables speed");
 assert.equal(api.isAuto(),false,"auto mode clears on victory");
 assert.equal(elements.missionResult.classList.active,true);

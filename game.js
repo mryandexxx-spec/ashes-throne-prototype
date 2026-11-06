@@ -423,7 +423,8 @@ function syncBattleUI(){
   $("#abilityControls")?.classList.remove("battle-finished");
   $("#basicAbilityBtn").disabled=true;
   $("#specialAbilityBtn").disabled=true;
-  $("#powerfulAbilityBtn").disabled=true;
+  const powerfulTransitionBtn=$("#powerfulAbilityBtn");
+  if(powerfulTransitionBtn)powerfulTransitionBtn.disabled=true;
   const autoControl=$("#autoBattleBtn");
   if(autoControl)autoControl.disabled=!state.active;
   const speedControl=$("#autoSpeedBtn");
@@ -461,16 +462,17 @@ function syncBattleUI(){
  $("#basicAbilityBtn").disabled=!actor||autoBattle;
  $("#specialAbilityBtn").disabled=!specialReady||autoBattle;
  const powerfulSlot=$("#powerfulAbilitySlot");
- powerfulSlot.hidden=!powerful;
- $("#abilityOptions").classList.toggle("has-powerful",!!powerful);
- $("#powerfulAbilityBtn").disabled=!powerfulReady||autoBattle;
+ if(powerfulSlot)powerfulSlot.hidden=!powerful;
+ $("#abilityOptions")?.classList.toggle("has-powerful",!!powerful);
+ const powerfulButton=$("#powerfulAbilityBtn");
+ if(powerfulButton)powerfulButton.disabled=!powerfulReady||autoBattle;
  const autoButton=$("#autoBattleBtn");
  if(autoButton){autoButton.disabled=!state.active;autoButton.textContent=autoBattle?"Ручной бой":"Автобой";autoButton.setAttribute("aria-pressed",String(autoBattle));}
  const speedButton=$("#autoSpeedBtn");
  if(speedButton){speedButton.disabled=!state.active;speedButton.textContent=BattleSpeed.get()+"×";speedButton.setAttribute("aria-label","Скорость боя "+BattleSpeed.get()+"×. Нажми, чтобы изменить");}
  $("#basicAbilityBtn").textContent="Базовая атака";
  $("#specialAbilityBtn").textContent=actor?CombatCore.specialName(actor)+(actor.specialCooldown>0?" · "+actor.specialCooldown:""):"Особая способность";
- $("#powerfulAbilityBtn").textContent=powerful?powerful.name+(actor.powerfulCooldown>0?" · "+actor.powerfulCooldown:""):"Мощная способность";
+ if(powerfulButton)powerfulButton.textContent=powerful?powerful.name+(actor.powerfulCooldown>0?" · "+actor.powerfulCooldown:""):"Мощная способность";
  $("#basicAbilityBtn").classList.toggle("selected",false);
  $("#specialAbilityBtn").classList.toggle("selected",supportTarget);
  $("#actionHint").textContent=autoBattle?"Автобой активен. Нажми «Ручной бой», чтобы управлять.":
@@ -586,7 +588,7 @@ function pressAbility(abilityId){
 }
 $("#basicAbilityBtn").addEventListener("click",()=>pressAbility("basic"));
 $("#specialAbilityBtn").addEventListener("click",()=>pressAbility("special"));
-$("#powerfulAbilityBtn").addEventListener("click",()=>pressAbility("powerful"));
+$("#powerfulAbilityBtn")?.addEventListener("click",()=>pressAbility("powerful"));
 $("#battleRetryBtn").addEventListener("click",()=>{if(!state.active&&!isVisualTransition())openSquad("home");});
 const autoBattleControl=$("#autoBattleBtn");
 if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.active)setAutoBattle(!autoBattle);});

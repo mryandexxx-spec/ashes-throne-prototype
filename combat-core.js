@@ -262,10 +262,16 @@ const CombatCore = (() => {
     if(ability.kind==="guard"&&(!Number.isInteger(ability.guardHits)||ability.guardHits<0))return false;
     if(!targets.length)return false;
     const recipients=targets.map(i=>battle.fighters[i]);
+    // A group attack has one player-selected primary target, even though
+    // every living enemy receives the base effect. Future bonus effects can
+    // refer to primaryTargetId without changing recipient selection.
+    const primaryIndex=ability.target==="all-enemies"&&
+      targets.includes(battle.selectedEnemy)?battle.selectedEnemy:targets[0];
+    const primaryTargetId=battle.fighters[primaryIndex].id;
     battle.allyActions++;
     battle.events=[];
     emit(battle,"ability",{
-      actorId:actor.id,targetId:recipients[0].id,
+      actorId:actor.id,targetId:primaryTargetId,primaryTargetId,
       targetIds:recipients.map(f=>f.id),abilityId:ability.id
     });
     const weakened=actor.weakenAttacks>0;

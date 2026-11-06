@@ -75,7 +75,8 @@
           <div class="eyebrow">БОЕВОЙ СОСТАВ · <span id="squadCount">0/5</span></div>
           <div id="squadSlots" class="squad-slots" aria-label="Пять мест в отряде"></div>
           <p id="squadHint" class="muted" role="status">Выбери хотя бы одного героя.</p>
-          <button class="primary squad-start" type="button" id="squadStart">Начать бой</button>
+          <p id="squadWarning" class="squad-warning" role="alert" hidden></p>
+          <div class="squad-actions"><button class="ghost squad-disband" type="button" id="squadDisband">Распустить</button><button class="primary squad-start" type="button" id="squadStart">Начать бой</button></div>
           <div id="battleLoadError" hidden role="alert" class="battle-load-error">
             <strong>Не удалось загрузить 3D-арену.</strong>
             <p>Проверь подключение к интернету и попробуй ещё раз. Подготовка отряда и остальные разделы доступны.</p>

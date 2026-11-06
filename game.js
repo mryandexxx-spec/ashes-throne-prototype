@@ -146,7 +146,7 @@ function leaderEligible(id){
  return !!hero&&!!AbilityData.get(hero,"leader");
 }
 function selectedParty(){
- const ids=[...(selectedLeaderId?[selectedLeaderId]:[]),...selectedPartyIds];
+ const ids=[...(selectedLeaderId?[selectedLeaderId]:[]),...ALLIES.filter(h=>selectedPartyIds.includes(h.id)).map(h=>h.id)];
  return ids.map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(progressedHero);
 }
 function battleLineup(){

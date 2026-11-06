@@ -41,7 +41,7 @@ const b=api.getBattle();
 assert.equal(b.fighters[0].id,"test-area-damage");
 assert.equal(b.fighters[b.currentActor].id,"test-area-damage");
 assert.equal(elements.specialAbilityBtn.disabled,false);
-assert.match(elements.specialAbilityBtn.textContent,/Тест группового урона/);
+assert.match(elements.specialAbilityBtn.textContent,/Учебный широкий удар/);
 assert.match(elements.actionHint.textContent,/всех живых врагов/);
 assert.equal((elements.arenaIndicators.innerHTML.match(/arena-focus-cursor group/g)||[]).length,2,
  "all living enemies are marked, not only the selected target");

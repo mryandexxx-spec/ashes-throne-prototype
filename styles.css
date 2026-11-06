@@ -285,3 +285,16 @@ button{touch-action:manipulation}
  .campaign-route{margin:5px 0 8px}
  .campaign-route>h3{font-size:11px;margin:4px 0}
 }
+
+/* Campaign-Content-003: one-tap farm action and compact native dialog. */
+.campaign-mission-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.simulation-dialog{max-width:min(440px,calc(100vw - 28px));max-height:calc(100dvh - 28px);overflow-y:auto;box-sizing:border-box;color:var(--text);background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:18px}
+.simulation-dialog::backdrop{background:#000b}
+.simulation-dialog h2{font-size:20px;margin:0 0 12px;color:var(--gold)}
+.simulation-dialog p{font-size:13px;line-height:1.5;overflow-wrap:anywhere;margin:0 0 16px}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .campaign-mission-actions{gap:6px}
+ .simulation-dialog{padding:12px}
+ .simulation-dialog h2{font-size:17px;margin-bottom:6px}
+ .simulation-dialog p{font-size:12px;margin-bottom:8px}
+}

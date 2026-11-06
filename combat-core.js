@@ -268,15 +268,20 @@ const CombatCore = (() => {
         }
         return battle;
       }
-      // Combat-015C-A: preserve the first-living-ally basic attack policy.
-      // Resolution now uses the same rule path as player commands.
-      const targetIndex = firstLivingAlly(battle.fighters);
-      if (targetIndex < 0) {
+      // Combat-015C-B: tactical policies are opt-in per enemy template.
+      // Unconfigured live mission enemies retain their original first-alive
+      // basic attack. An invalid proposal falls back without a lost turn.
+      const targetIndex=firstLivingAlly(battle.fighters);
+      if(targetIndex<0){
         finishIfOver(battle);
         return battle;
       }
       battle.currentActor=actorIndex;
-      if(!performActorAbility(battle,"basic",targetIndex))
+      const plan=actor.aiProfile&&typeof EnemyDecision!=="undefined"
+        ?EnemyDecision.chooseAction(battle,actorIndex):null;
+      const executed=plan&&["basic","special","powerful"].includes(plan.abilityId)
+        ?performActorAbility(battle,plan.abilityId,plan.targetIndex):false;
+      if(!executed&&!performActorAbility(battle,"basic",targetIndex))
         throw Error("Ready enemy basic attack rejected");
       if(!battle.active)return battle;
     }

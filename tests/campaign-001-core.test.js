@@ -34,6 +34,6 @@ assert.equal(core.save(core.fresh(),()=>({setItem(){throw Error("quota");}})),fa
 const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
 const pkg=JSON.parse(fs.readFileSync(path.join(__dirname,"..","package.json"),"utf8"));
 assert.equal(pkg.version,"0.3.10");
-assert.match(html,/id="buildVersion"[^>]*>Прототип · v0[.]3[.]9 · CBA008E/);
+assert.match(html,/id="buildVersion"[^>]*>Прототип · v0[.]3[.]10 · CBA008E/);
 assert.match(html,/src="campaign-core.js"/);
 console.log("Campaign-001 persistence, corrupt data handling and build version passed");

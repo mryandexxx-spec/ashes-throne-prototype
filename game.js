@@ -93,7 +93,7 @@ function queueAutoAction(){
      !$("#battle").classList.contains("active"))return;
   const before=state.fighters.map(f=>({...f}));
   // Combat-015B: plan only when the scheduled auto step actually executes.
-  const plan=typeof AutoDecision!=="undefined"?AutoDecision.chooseAction(state):null;
+  const plan=AutoDecision.chooseAction(state);
   if(!CombatCore.performAutoAction(state,plan)){setAutoBattle(false);return;}
   captureResolvedVisuals(before);
   selectedAbility="basic";

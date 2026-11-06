@@ -15,7 +15,7 @@ function make(enemies=[unit("enemy","enemy",900,1,1)],waves=[]){
 let b=make();
 const actor=b.fighters[0];
 assert.equal(AbilityData.get(actor,"powerful").id,"powerful");
-assert.equal(AbilityData.get({id:"kael"},"powerful"),null,"playable heroes have no powerful definition yet");
+assert.equal(AbilityData.get({id:"unknown-fighter"},"powerful"),null,"unknown fighter has no powerful definition");
 assert.equal(core.abilityReady(b,"powerful"),true,"training powerful skill starts ready for engine tests");
 assert.equal(core.abilityReady(b,"special"),true);
 assert.equal(core.abilityReady(b,"unknown"),false);
@@ -67,12 +67,12 @@ assert.equal(b.winner,"ally");
 assert.equal(b.events.filter(e=>e.type==="battle-end").length,1);
 assert.equal(core.performPlayerAbility(b,"powerful"),false,"finished battle cannot cast powerful again");
 
-const other=core.createBattle([unit("kael"),unit("foe","enemy",200,1,1)]);
+const other=core.createBattle([unit("unknown-fighter"),unit("foe","enemy",200,1,1)]);
 core.advanceToPlayerTurn(other);
 assert.equal(core.performPlayerAbility(other,"powerful"),false,"no definition means no action");
 assert.equal(other.allyActions,0);
 assert.equal(other.fighters[0].powerfulCooldown,0);
-assert.equal(core.performPlayerAbility(other,"special"),true,"existing playable special still works");
+assert.equal(core.performPlayerAbility(other,"special"),true,"fallback special still works");
 assert.equal(other.fighters[0].specialCooldown,2);
 assert.equal(other.fighters[0].powerfulCooldown,0);
 console.log("Combat-012A powerful definition, independent cooldowns, actions, waves, logs, animations and reset passed");

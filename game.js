@@ -423,6 +423,8 @@ function syncBattleUI(){
   $("#abilityControls")?.classList.remove("battle-finished");
   $("#basicAbilityBtn").disabled=true;
   $("#specialAbilityBtn").disabled=true;
+  const powerfulTransitionBtn=$("#powerfulAbilityBtn");
+  if(powerfulTransitionBtn)powerfulTransitionBtn.disabled=true;
   const autoControl=$("#autoBattleBtn");
   if(autoControl)autoControl.disabled=!state.active;
   const speedControl=$("#autoSpeedBtn");
@@ -447,6 +449,8 @@ function syncBattleUI(){
  const fighters=state.fighters;
  const actor=state.active?fighters[state.currentActor]:null;
  const specialReady=CombatCore.abilityReady(state,"special");
+ const powerful=actor?AbilityData.get(actor,"powerful"):null;
+ const powerfulReady=!!powerful&&CombatCore.abilityReady(state,"powerful");
  if(!specialReady)selectedAbility="basic";
  const supportTarget=!!actor&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
  const targetIndex=supportTarget?state.selectedAlly:state.selectedEnemy;
@@ -457,12 +461,18 @@ function syncBattleUI(){
  $("#actionTitle").textContent=actor?(supportTarget?"Выбери союзника":"Способности: "+actor.name):"Бой завершён";
  $("#basicAbilityBtn").disabled=!actor||autoBattle;
  $("#specialAbilityBtn").disabled=!specialReady||autoBattle;
+ const powerfulSlot=$("#powerfulAbilitySlot");
+ if(powerfulSlot)powerfulSlot.hidden=!powerful;
+ $("#abilityOptions")?.classList.toggle("has-powerful",!!powerful);
+ const powerfulButton=$("#powerfulAbilityBtn");
+ if(powerfulButton)powerfulButton.disabled=!powerfulReady||autoBattle;
  const autoButton=$("#autoBattleBtn");
  if(autoButton){autoButton.disabled=!state.active;autoButton.textContent=autoBattle?"Ручной бой":"Автобой";autoButton.setAttribute("aria-pressed",String(autoBattle));}
  const speedButton=$("#autoSpeedBtn");
  if(speedButton){speedButton.disabled=!state.active;speedButton.textContent=BattleSpeed.get()+"×";speedButton.setAttribute("aria-label","Скорость боя "+BattleSpeed.get()+"×. Нажми, чтобы изменить");}
  $("#basicAbilityBtn").textContent="Базовая атака";
  $("#specialAbilityBtn").textContent=actor?CombatCore.specialName(actor)+(actor.specialCooldown>0?" · "+actor.specialCooldown:""):"Особая способность";
+ if(powerfulButton)powerfulButton.textContent=powerful?powerful.name+(actor.powerfulCooldown>0?" · "+actor.powerfulCooldown:""):"Мощная способность";
  $("#basicAbilityBtn").classList.toggle("selected",false);
  $("#specialAbilityBtn").classList.toggle("selected",supportTarget);
  $("#actionHint").textContent=autoBattle?"Автобой активен. Нажми «Ручной бой», чтобы управлять.":
@@ -578,6 +588,7 @@ function pressAbility(abilityId){
 }
 $("#basicAbilityBtn").addEventListener("click",()=>pressAbility("basic"));
 $("#specialAbilityBtn").addEventListener("click",()=>pressAbility("special"));
+$("#powerfulAbilityBtn")?.addEventListener("click",()=>pressAbility("powerful"));
 $("#battleRetryBtn").addEventListener("click",()=>{if(!state.active&&!isVisualTransition())openSquad("home");});
 const autoBattleControl=$("#autoBattleBtn");
 if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.active)setAutoBattle(!autoBattle);});
@@ -617,7 +628,7 @@ function showAbilityTooltip(abilityId){
  if(definition.cooldown)effects.push("Перезарядка: "+definition.cooldown+" хода.");
  $("#abilityTooltipTitle").textContent=definition.name;
  $("#abilityTooltipText").textContent=effects.join(" ");
- tooltip.classList.toggle("on-special",abilityId==="special");
+ tooltip.classList.toggle("on-special",abilityId!=="basic");
  tooltip.hidden=false;
 }
 function wireAbilityHint(slotId,abilityId){
@@ -648,6 +659,7 @@ function wireAbilityHint(slotId,abilityId){
 }
 wireAbilityHint("basicAbilitySlot","basic");
 wireAbilityHint("specialAbilitySlot","special");
+wireAbilityHint("powerfulAbilitySlot","powerful");
 window.addEventListener("pointerup",cancelAbilityHintGesture);
 window.addEventListener("pointercancel",cancelAbilityHintGesture);
 // Dismiss on all external taps, including an empty part of the arena.

@@ -11,7 +11,10 @@ const CampaignData=(()=>{
  const entries=Object.freeze([
   Object.freeze({missionId:"black-pass-ambush",chapterId:"chapter-1",routeId:"main",
    order:1,requiredMissionIds:Object.freeze([]),
-   description:"Разведчики Конклава преградили путь. Разбей их отряд."})
+   description:"Разведчики Конклава преградили путь. Разбей их отряд."}),
+  Object.freeze({missionId:"demo-mission-2",chapterId:"chapter-1",routeId:"main",
+   order:2,requiredMissionIds:Object.freeze(["black-pass-ambush"]),
+   description:"Заглушка под описание сюжета миссии #2"})
  ]);
  // All entries must refer to known chapters, routes and mission definitions.
  function catalogIsValid(ch=chapters,rt=routes,en=entries){

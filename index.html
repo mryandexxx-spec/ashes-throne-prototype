@@ -137,21 +137,29 @@
           <div class="action-panel">
             <div class="action-description">
               <div class="eyebrow">ДЕЙСТВИЕ</div>
-              <strong id="actionTitle">Удар клинком</strong>
-              <p id="actionHint">Коснись противника и нажми «Атаковать».</p>
+              <strong id="actionTitle">Способности</strong>
+              <p id="actionHint">Выбери противника и нажми на способность.</p>
             </div>
-            <div class="ability-controls">
-              <div class="ability-options" aria-label="Выбор способности">
-                <button type="button" id="basicAbilityBtn" class="ability-btn selected">Базовая</button>
-                <button type="button" id="specialAbilityBtn" class="ability-btn">Особая</button>
+            <div id="abilityControls" class="ability-controls">
+              <div class="ability-options" aria-label="Применение способностей">
+                <div id="basicAbilitySlot" class="ability-slot">
+                  <button type="button" id="basicAbilityBtn" class="ability-btn">Базовая атака</button>
+                </div>
+                <div id="specialAbilitySlot" class="ability-slot">
+                  <button type="button" id="specialAbilityBtn" class="ability-btn">Особая способность</button>
+                </div>
               </div>
-              <button class="primary" id="attackBtn">Атаковать</button>
+              <div id="abilityTooltip" class="ability-tooltip" role="tooltip" hidden>
+                <strong id="abilityTooltipTitle"></strong>
+                <p id="abilityTooltipText"></p>
+              </div>
+              <button type="button" id="battleRetryBtn" class="primary" hidden>Сыграть снова</button>
             </div>
           </div>
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.12 · CBA008F-CAMERA</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.13 · CBA009</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

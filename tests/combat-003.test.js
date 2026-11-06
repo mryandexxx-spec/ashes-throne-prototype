@@ -7,7 +7,7 @@ const root = path.join(__dirname,"..");
 const scripts = ["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"]
  .map(name=>fs.readFileSync(path.join(root,name),"utf8")).join("\n");
 const ids=["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint",
- "attackBtn","basicAbilityBtn","specialAbilityBtn","battleMessage","battle",
+ "battleRetryBtn","basicAbilityBtn","specialAbilityBtn","battleMessage","battle",
  "renderCanvas","startBattle","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squad","squadBack","squadStart","squadCount","squadRoster","squadSlots","squadHint","detailBack","detailHome","detailUpgrade"];
 const elements=Object.fromEntries(ids.map(id=>[id,{
  innerHTML:"",textContent:"",disabled:false,handlers:{},
@@ -29,29 +29,31 @@ resetBattle();
 assert.equal(getBattle().fighters[getBattle().currentActor].id,"lyra");
 assert.equal(elements.specialAbilityBtn.disabled,false);
 const click=id=>elements[id].handlers.click[0]();
+const enemy=getBattle().fighters[getBattle().selectedEnemy];
+const enemyHp=enemy.hp;
 click("specialAbilityBtn");
-assert.equal(elements.specialAbilityBtn.classList.selected,true);
-click("attackBtn");
-assert.equal(getBattle().fighters[3].hp,59,"Lyra special deals 31 basic damage");
-assert.ok(getBattle().fighters[3].weakenAttacks>=1 && getBattle().fighters[3].weakenAttacks<=2,"weakening applies; AI may advance");
+assert.equal(enemy.hp,enemyHp-31,"tapping damage skill casts at focused enemy immediately");
 assert.equal(getBattle().fighters[1].specialCooldown,2);
-assert.equal(elements.specialAbilityBtn.classList.selected,false);
+assert.equal(elements.specialAbilityBtn.classList.selected,false,"damaging skill does not stay armed");
 let steps=0;
-while(getBattle().active && getBattle().fighters[getBattle().currentActor].id!=="lyra" && steps++<20)
- click("attackBtn");
-assert.ok(getBattle().active && steps<20);
-assert.equal(elements.specialAbilityBtn.disabled,true);
+while(getBattle().active&&getBattle().fighters[getBattle().currentActor].id!=="lyra"&&steps++<20)
+ click("basicAbilityBtn");
+assert.ok(getBattle().active&&steps<20,"Lyra should get another turn");
+assert.equal(elements.specialAbilityBtn.disabled,true,"special skill respects cooldown");
+const turns=getBattle().turn;
+click("specialAbilityBtn");
+assert.equal(getBattle().turn,turns,"cooldown skill cannot trigger attack");
 assert.equal(CombatCore.performPlayerAbility(getBattle(),"special"),false);
-click("attackBtn");
+click("basicAbilityBtn");
 assert.equal(getBattle().fighters[1].specialCooldown,1);
 steps=0;
-while(getBattle().active && getBattle().fighters[getBattle().currentActor].id!=="lyra" && steps++<20)
- click("attackBtn");
+while(getBattle().active&&getBattle().fighters[getBattle().currentActor].id!=="lyra"&&steps++<20)
+ click("basicAbilityBtn");
 if(getBattle().active){
- click("attackBtn");
+ click("basicAbilityBtn");
  assert.equal(getBattle().fighters[1].specialCooldown,0);
 }
 resetBattle();
 assert.equal(getBattle().fighters[1].specialCooldown,0,"reset clears cooldown");
 assert.equal(elements.specialAbilityBtn.disabled,false);
-console.log("Combat-003 ability selection and cooldown tests passed");
+console.log("Combat-003 direct ability and cooldown tests passed");

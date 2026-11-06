@@ -5,7 +5,7 @@ const path=require("node:path");
 const vm=require("node:vm");
 const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
- "battleStatus","turnChip","actionTitle","actionHint","attackBtn",
+ "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","detailBack","detailHome","detailUpgrade","squadCount"];
@@ -100,7 +100,8 @@ assert.equal(api.getBattle().fighters[api.getBattle().currentActor].side,"ally")
 api.getBattle().active=false;
 api.getBattle().winner="ally";
 api.syncBattleUI();
-click(elements.attackBtn);
+assert.equal(elements.battleRetryBtn.hidden,false,"training replay is revealed after victory");
+click(elements.battleRetryBtn);
 assert.equal(elements.squad.classList.active,true);
 toggle("kael");
 assert.equal(count(),"2/5");

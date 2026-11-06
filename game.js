@@ -31,7 +31,8 @@ let renderLoopRunning=false;
 let indicatorNodes={}; // Rebuilt on combat HUD changes, not each animation frame.
 let inspectionId=null,inspectionGesture=null,suppressInspectionPick=false;
 const INSPECT_HOLD_MS=400,INSPECT_MOVE_PX=12;
-let selectedAbility="basic";
+let selectedAbility="basic"; // "special" is only armed while choosing an ally.
+let abilityHintGesture=null,abilityHintSuppressClick=null;
 // Combat-004: manual remains the default. Only one cancellable timer may run.
 let autoBattle=false;
 let autoTimer=null;
@@ -184,7 +185,7 @@ function openSquad(returnTo="home"){
  showScreen("squad");
 }
 function showScreen(id){
- if(id!=="battle")closeFighterInspection();
+ if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();}
  if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();stopBattleRendering();}
  // Combat-008A: release the document scroll while the arena owns the viewport.
  // Guard document.body for headless DOM tests and embedded integrations.
@@ -399,6 +400,7 @@ function renderTargetFighterHud(){
 }
 function syncBattleUI(){
  if(inspectionId)renderFighterInspection();
+ if(!state.active||isVisualTransition())hideAbilityTooltip();
  if(!state.active){cancelAutoTimer();autoBattle=false;}
  // Commit battle outcome immediately as before, even if the player leaves
  // the arena before the final animation ends. Only visual navigation waits.
@@ -415,7 +417,8 @@ function syncBattleUI(){
   $("#battleStatus").textContent=visualTransition==="wave"?"Завершение волны…":"Завершение боя…";
   $("#actionTitle").textContent="Анимация завершается";
   $("#actionHint").textContent="Следующий этап появится после завершения действий.";
-  $("#attackBtn").disabled=true;
+  $("#battleRetryBtn").hidden=true;
+  $("#abilityControls")?.classList.remove("battle-finished");
   $("#basicAbilityBtn").disabled=true;
   $("#specialAbilityBtn").disabled=true;
   const autoControl=$("#autoBattleBtn");
@@ -441,36 +444,30 @@ function syncBattleUI(){
  }
  const fighters=state.fighters;
  const actor=state.active?fighters[state.currentActor]:null;
- const targetIsAlly=!!actor&&CombatCore.abilityTargetSide(state,selectedAbility)==="ally";
- const targetIndex=targetIsAlly?state.selectedAlly:state.selectedEnemy;
- const target=state.active?fighters[targetIndex]:null;
- const validTarget=!!target&&target.hp>0&&target.side===(targetIsAlly?"ally":"enemy");
  const specialReady=CombatCore.abilityReady(state,"special");
  if(!specialReady)selectedAbility="basic";
- const name=actor&&selectedAbility==="special"?CombatCore.specialName(actor):"Базовая атака";
+ const supportTarget=!!actor&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
+ const targetIndex=supportTarget?state.selectedAlly:state.selectedEnemy;
+ const target=state.active?fighters[targetIndex]:null;
+ const validTarget=!!target&&target.hp>0&&target.side===(supportTarget?"ally":"enemy");
  $("#battleStatus").textContent=actor?"Ход: "+actor.name:"Бой завершён";
  $("#turnChip").textContent=(state.totalWaves>1?"Волна "+state.wave+"/"+state.totalWaves+" · ":"")+"Ход "+state.turn;
- $("#actionTitle").textContent=actor?name+": "+actor.name:"Бой завершён";
+ $("#actionTitle").textContent=actor?(supportTarget?"Выбери союзника":"Способности: "+actor.name):"Бой завершён";
  $("#basicAbilityBtn").disabled=!actor||autoBattle;
  $("#specialAbilityBtn").disabled=!specialReady||autoBattle;
  const autoButton=$("#autoBattleBtn");
- if(autoButton){
-  autoButton.disabled=!state.active;
-  autoButton.textContent=autoBattle?"Ручной бой":"Автобой";
-  autoButton.setAttribute("aria-pressed",String(autoBattle));
- }
+ if(autoButton){autoButton.disabled=!state.active;autoButton.textContent=autoBattle?"Ручной бой":"Автобой";autoButton.setAttribute("aria-pressed",String(autoBattle));}
  const speedButton=$("#autoSpeedBtn");
- if(speedButton){
-  speedButton.disabled=!state.active;
-  speedButton.textContent=BattleSpeed.get()+"×";
-  speedButton.setAttribute("aria-label","Скорость боя "+BattleSpeed.get()+"×. Нажми, чтобы изменить");
- }
- $("#specialAbilityBtn").textContent=actor&&actor.specialCooldown>0?"Особая · "+actor.specialCooldown:"Особая";
- $("#basicAbilityBtn").classList.toggle("selected",selectedAbility==="basic");
- $("#specialAbilityBtn").classList.toggle("selected",selectedAbility==="special");
- $("#actionHint").textContent=autoBattle?"Автобой: базовые атаки по первой живой цели. Нажми «Ручной бой», чтобы управлять.":validTarget?"Цель на арене: "+target.name:(targetIsAlly?"Коснись живого союзника на арене":"Коснись живого противника на арене");
- $("#attackBtn").textContent=state.active?(targetIsAlly?"Применить":"Атаковать"):"Сыграть снова";
- $("#attackBtn").disabled=autoBattle||(state.active&&(!actor||!validTarget));
+ if(speedButton){speedButton.disabled=!state.active;speedButton.textContent=BattleSpeed.get()+"×";speedButton.setAttribute("aria-label","Скорость боя "+BattleSpeed.get()+"×. Нажми, чтобы изменить");}
+ $("#basicAbilityBtn").textContent="Базовая атака";
+ $("#specialAbilityBtn").textContent=actor?CombatCore.specialName(actor)+(actor.specialCooldown>0?" · "+actor.specialCooldown:""):"Особая способность";
+ $("#basicAbilityBtn").classList.toggle("selected",false);
+ $("#specialAbilityBtn").classList.toggle("selected",supportTarget);
+ $("#actionHint").textContent=autoBattle?"Автобой активен. Нажми «Ручной бой», чтобы управлять.":
+  supportTarget?"Коснись союзника с курсором, чтобы применить способность.":
+  validTarget?"В фокусе: "+target.name+". Нажми на нужную способность.":"Коснись противника, чтобы выбрать цель.";
+ const retry=$("#battleRetryBtn");if(retry)retry.hidden=!!state.active;
+ $("#abilityControls")?.classList.toggle("battle-finished",!state.active);
  $("#battleMessage").textContent=state.message;
  renderBattleLog();
  renderTargetFighterHud();
@@ -491,7 +488,10 @@ function renderArenaIndicators(){
    h.weakenAttacks>0?`<span class="arena-effect debuff" title="Ослабление: ${h.weakenAttacks} атак">↓${h.weakenAttacks}</span>`:""].join("");
   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
   const active=actor?.id===h.id;
+  const support=!!actor&&!autoBattle&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
+  const focused=!!actor&&!autoBattle&&h.hp>0&&(support?h.side==="ally":h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
   return `<div class="arena-indicator ${h.side} ${active?"acting":""}" data-fighter-id="${h.id}" aria-label="${h.name}: здоровье ${Math.max(0,h.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
+   ${focused?`<div class="arena-focus-cursor ${support?"available":"locked"}" aria-hidden="true">▼</div>`:""}
    <div class="arena-indicator-name">${h.name}</div>
    <div class="arena-health" title="HP ${Math.max(0,h.hp)} / ${h.maxHp}"><span style="width:${health}%"></span></div>
    <div class="arena-initiative" title="Инициатива ${Math.round(h.meter||0)} / 1000"><span style="width:${initiative}%"></span></div>
@@ -528,7 +528,7 @@ function positionArenaIndicators(){
  }
 }
 function resetBattle(){
- closeFighterInspection();
+ closeFighterInspection();hideAbilityTooltip();
  cancelAutoTimer();
  cancelVisualTransition();
  BattleAnimation.clear();
@@ -542,17 +542,36 @@ function resetBattle(){
  CombatCore.advanceToPlayerTurn(state);
  syncBattleUI();
 }
-function attack(){
- if(autoBattle||isVisualTransition())return;
+// Combat-009: instant offensive abilities; allied skills wait for an ally tap.
+function applyManualAbility(abilityId){
+ if(autoBattle||isVisualTransition()||!CombatCore.abilityReady(state,abilityId))return false;
+ const side=CombatCore.abilityTargetSide(state,abilityId);
+ const index=side==="ally"?state.selectedAlly:state.selectedEnemy;
+ const target=state.fighters[index];
+ if(!target||target.hp<=0||target.side!==side)return false;
  const before=state.fighters.map(f=>({...f}));
- if(CombatCore.performPlayerAbility(state,selectedAbility)){
-  captureResolvedVisuals(before);
-  selectedAbility="basic";
+ if(!CombatCore.performPlayerAbility(state,abilityId))return false;
+ captureResolvedVisuals(before);
+ selectedAbility="basic";
+ hideAbilityTooltip();
+ syncBattleUI();
+ return true;
+}
+function pressAbility(abilityId){
+ if(abilityHintSuppressClick===abilityId){abilityHintSuppressClick=null;return;}
+ hideAbilityTooltip();
+ if(!state.active||autoBattle||isVisualTransition()||!CombatCore.abilityReady(state,abilityId))return;
+ if(CombatCore.abilityTargetSide(state,abilityId)==="ally"){
+  selectedAbility="special";
   syncBattleUI();
+ }else{
+  selectedAbility="basic";
+  applyManualAbility(abilityId);
  }
 }
-// Exactly one permanent click handler; no onclick replacement on victory.
-$("#attackBtn").addEventListener("click",()=>{if(isVisualTransition())return;if(!state.active)openSquad("home");else attack();});
+$("#basicAbilityBtn").addEventListener("click",()=>pressAbility("basic"));
+$("#specialAbilityBtn").addEventListener("click",()=>pressAbility("special"));
+$("#battleRetryBtn").addEventListener("click",()=>{if(!state.active&&!isVisualTransition())openSquad("home");});
 const autoBattleControl=$("#autoBattleBtn");
 if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.active)setAutoBattle(!autoBattle);});
 const autoSpeedControl=$("#autoSpeedBtn");
@@ -563,8 +582,74 @@ if(autoSpeedControl)autoSpeedControl.addEventListener("click",()=>{
   setAutoSpeed(next);
  }
 });
-$("#basicAbilityBtn").addEventListener("click",()=>{if(state.active&&!autoBattle&&!isVisualTransition()){selectedAbility="basic";syncBattleUI();}});
-$("#specialAbilityBtn").addEventListener("click",()=>{if(!autoBattle&&!isVisualTransition()&&CombatCore.abilityReady(state,"special")){selectedAbility="special";syncBattleUI();}});
+
+// Combat-009: an ability hold explains the current demo definition without casting.
+function cancelAbilityHintGesture(){
+ if(abilityHintGesture?.timer!=null)clearTimeout(abilityHintGesture.timer);
+ abilityHintGesture=null;
+}
+function hideAbilityTooltip(){
+ cancelAbilityHintGesture();
+ const tooltip=$("#abilityTooltip");
+ if(tooltip)tooltip.hidden=true;
+}
+function showAbilityTooltip(abilityId){
+ const actor=state.fighters[state.currentActor];
+ const definition=AbilityData.get(actor,abilityId);
+ const tooltip=$("#abilityTooltip");
+ if(!definition||!tooltip)return;
+ const effects=[];
+ if(definition.kind==="damage"){
+  effects.push("Урон: "+(definition.multiplier===1?"100%":Math.round(definition.multiplier*100)+"%")+" атаки.");
+  if(definition.weakening)effects.push("Ослабление на "+definition.weakening+" атаки.");
+ }else if(definition.kind==="guard")
+  effects.push("Защита от "+definition.guardHits+" ударов.");
+ else if(definition.kind==="heal")
+  effects.push("Восстанавливает до "+definition.healAmount+" HP.");
+ effects.push("Цель: "+(definition.target==="ally"?"союзник":"противник")+".");
+ if(definition.cooldown)effects.push("Перезарядка: "+definition.cooldown+" хода.");
+ $("#abilityTooltipTitle").textContent=definition.name;
+ $("#abilityTooltipText").textContent=effects.join(" ");
+ tooltip.classList.toggle("on-special",abilityId==="special");
+ tooltip.hidden=false;
+}
+function wireAbilityHint(slotId,abilityId){
+ const slot=$("#"+slotId);
+ if(!slot)return;
+ slot.addEventListener("pointerdown",event=>{
+  hideAbilityTooltip();
+  abilityHintSuppressClick=null;
+  if(event.pointerType==="mouse"&&event.button!==0)return;
+  const gesture={id:abilityId,pointerId:event.pointerId??null,x:event.clientX??0,y:event.clientY??0,timer:null};
+  abilityHintGesture=gesture;
+  gesture.timer=setTimeout(()=>{
+   if(abilityHintGesture!==gesture)return;
+   abilityHintGesture=null;
+   abilityHintSuppressClick=abilityId;
+   showAbilityTooltip(abilityId);
+  },400);
+ });
+ slot.addEventListener("pointermove",event=>{
+  if(!abilityHintGesture||abilityHintGesture.id!==abilityId)return;
+  if(abilityHintGesture.pointerId!==null&&event.pointerId!==abilityHintGesture.pointerId||
+   Math.hypot((event.clientX??0)-abilityHintGesture.x,(event.clientY??0)-abilityHintGesture.y)>12)
+   cancelAbilityHintGesture();
+ });
+ slot.addEventListener("contextmenu",event=>event.preventDefault());
+ for(const eventName of ["pointerup","pointercancel","lostpointercapture","pointerleave"])
+  slot.addEventListener(eventName,cancelAbilityHintGesture);
+}
+wireAbilityHint("basicAbilitySlot","basic");
+wireAbilityHint("specialAbilitySlot","special");
+window.addEventListener("pointerup",cancelAbilityHintGesture);
+window.addEventListener("pointercancel",cancelAbilityHintGesture);
+// Dismiss on all external taps, including an empty part of the arena.
+document.addEventListener("pointerdown",event=>{
+ if(!event.target?.closest?.(".ability-slot"))hideAbilityTooltip();
+},true);
+document.addEventListener("click",event=>{
+ if(!event.target?.closest?.(".ability-slot"))hideAbilityTooltip();
+},true);
 // Combat-008E: long press inspects any living ally or enemy; never changes targets.
 function inspectedFighterId(mesh){
  while(mesh&&!mesh.metadata?.fighterId)mesh=mesh.parent;
@@ -623,6 +708,7 @@ function handleInspectionPointer(info){
  if(!BABYLON.PointerEventTypes)return;
  const type=info.type,event=info.event||{};
  if(type===BABYLON.PointerEventTypes.POINTERDOWN){
+  hideAbilityTooltip();
   startInspectionGesture(info);return;
  }
  if(type===BABYLON.PointerEventTypes.POINTERMOVE&&inspectionGesture){
@@ -658,7 +744,10 @@ function selectArenaTarget(pickedMesh){
  const side=CombatCore.abilityTargetSide(state,selectedAbility);
  if(state.fighters[index].side!==side)return false;
  const picked=side==="ally"?CombatCore.chooseAlly(state,index):CombatCore.chooseEnemy(state,index);
- if(picked)syncBattleUI();
+ if(picked){
+  if(side==="ally"&&selectedAbility==="special")applyManualAbility("special");
+  else syncBattleUI();
+ }
  return picked;
 }
 // A single render callback and a single Engine/Scene for the lifetime of this prototype.
@@ -868,7 +957,7 @@ function updateMeshes(){
 }
 // Browsers may keep the tab alive when it is hidden; suspend GPU work until visible.
 document.addEventListener("visibilitychange",()=>{
- if(document.hidden){closeFighterInspection();cancelAutoTimer();stopBattleRendering();}
+ if(document.hidden){closeFighterInspection();hideAbilityTooltip();cancelAutoTimer();stopBattleRendering();}
  else if(shouldRenderBattle()){engine.resize();startBattleRendering();queueAutoAction();}
 });
 renderHeroes();CombatCore.advanceToPlayerTurn(state);

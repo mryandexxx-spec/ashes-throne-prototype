@@ -157,6 +157,9 @@ assert.equal(elements.orientationPrompt.hidden,true,"landscape removes portrait 
 const speedBeforeTap=api.getSpeed();
 click(elements.autoSpeedBtn);
 assert.equal(api.getSpeed(),speedBeforeTap===1?2:4,"speed button still responds after rotation");
+click(elements.autoSpeedBtn);
+click(elements.autoSpeedBtn);
+assert.equal(api.getSpeed(),speedBeforeTap,"speed restored for subsequent battle regressions");
 click(elements.specialAbilityBtn);
 assert.ok(elements.specialAbilityBtn.handlers.click.length>0,"special ability button still has its handler");
 click(elements.basicAbilityBtn);

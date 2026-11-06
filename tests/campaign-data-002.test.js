@@ -50,5 +50,5 @@ assert.equal(CampaignData.chapterProgress("chapter-1",loaded).stars,2);
 const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
 assert.match(html,/id="campaignMissions"/);
 assert.match(html,/src="campaign-data.js"/);
-assert.match(html,/id="buildVersion"[^>]*>Прототип · v0[.]3[.]29 · CBA015CA/);
+assert.match(html,/id="buildVersion"[^>]*>Прототип · v0[.]3[.]29 · CBA015CB/);
 console.log("Campaign-Data-002 catalog, prerequisites, branches, completion and persistence passed");

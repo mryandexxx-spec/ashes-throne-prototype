@@ -142,7 +142,8 @@ b=api.getBattle();
 const medic=b.fighters[0];
 const hpMedic=medic.hp;
 click("powerfulAbilityBtn");
-assert.ok(medic.hp>=hpMedic,"group healing never injures its caster");
+assert.ok(b.events.some(e=>e.type==="heal"&&e.targetId===medic.id&&e.amount>=0),
+ "healer powerful produces a healing event; later enemy replies may cause damage");
 assert.equal(medic.powerfulCooldown,2);
 assert.equal(b.events.filter(e=>e.type==="heal"&&e.actorId===medic.id).length,1);
 assert.equal((els.arenaIndicators.innerHTML.match(/arena-focus-cursor locked/g)||[]).length,1,

@@ -726,4 +726,4 @@ document.addEventListener("visibilitychange",()=>{
  if(document.hidden){cancelAutoTimer();stopBattleRendering();}
  else if(shouldRenderBattle()){engine.resize();startBattleRendering();queueAutoAction();}
 });
-renderHeroes();CombatCore.advanceToPlayerTurn(state);renderCombatants();
+renderHeroes();CombatCore.advanceToPlayerTurn(state);

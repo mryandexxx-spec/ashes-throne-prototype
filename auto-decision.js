@@ -66,7 +66,8 @@ const AutoDecision = (() => {
     if (isArea && enemies.length === 1 && !stronger && !effectUseful) return null;
     const selected = effectUseful && !stronger ? lowestHp(weakenedCandidates) : lowestHp(enemies);
     return {abilityId, targetIndex: selected.index,
-      priority: isArea && enemies.length >= 2 ? 70 : stronger ? 60 : 50};
+      priority: isArea && enemies.length >= 2 ? 70 : stronger ?
+        60 + Math.min(9, Math.round((ability.multiplier - 1) * 10)) : 50};
   }
   function chooseAction(battle) {
     if (!battle || !battle.active || !Array.isArray(battle.fighters) ||

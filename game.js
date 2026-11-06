@@ -259,7 +259,7 @@ function toggleSquadHero(id){
  return true;
 }
 function disbandSquad(){
- if(selectedLeaderId===null&&selectedPartyIds.length===0)return false;
+ if(selectedLeaderId===null&&selectedPartyIds.every(id=>id===null))return false;
  selectedLeaderId=null;
  selectedPartyIds=Array(MAX_SQUAD-1).fill(null);
  resetSquadWarning();

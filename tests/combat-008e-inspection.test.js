@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const read=name=>fs.readFileSync(path.join(__dirname,'..',name),'utf8');
+const html=read('index.html'),css=read('styles.css'),game=read('game.js');
+for(const id of ['fighterInspect','inspectClose','inspectName','inspectStats','inspectEffects'])assert.ok(html.includes('id="'+id+'"'));
+assert.ok(html.includes('aria-modal="true"'));
+assert.ok(css.includes('.fighter-inspect[hidden]'));
+assert.ok(game.includes('INSPECT_HOLD_MS=550'));
+assert.ok(game.includes('function handleInspectionPointer(info)'));
+assert.ok(game.includes('suppressInspectionPick'));
+assert.ok(html.includes('v0.3.10 · CBA008E'));
+console.log('Combat-008E inspection markup and gesture handling passed');

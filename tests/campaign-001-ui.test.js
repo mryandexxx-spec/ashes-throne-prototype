@@ -6,6 +6,7 @@ const vm=require("node:vm");
 const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","attackBtn","arenaIndicators","orientationPrompt",
+ "fighterInspect","inspectClose","inspectSide","inspectName","inspectRole","inspectStats","inspectEffects",
  "targetFighterHud","targetFighterSide","targetFighterLevel","targetFighterName","targetFighterHp","targetFighterStats","targetFighterHealthFill",
  "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","autoSpeedBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","squadBack","squadStart","squadRoster",
@@ -67,7 +68,7 @@ class Scene{
  render(){}
 }
 class Vec{constructor(x,y,z){this.x=x;this.y=y;this.z=z;}}
-const BABYLON={Engine,Scene,PointerEventTypes:{POINTERPICK:1},ArcRotateCamera:Camera,HemisphericLight:class{},DirectionalLight:class{},
+const BABYLON={Engine,Scene,PointerEventTypes:{POINTERPICK:1,POINTERDOWN:2,POINTERUP:3,POINTERMOVE:4},ArcRotateCamera:Camera,HemisphericLight:class{},DirectionalLight:class{},
  StandardMaterial:Material,Vector3:Vec,Color3:Vec,Color4:Vec,
  MeshBuilder:{CreateGround(){return new Mesh();},
   CreateCapsule(){meshCreates++;return new Mesh();},
@@ -191,6 +192,39 @@ pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[secondEnemy.id].bod
 assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"arena tap selects enemy");
 assert.equal(elements.targetFighterName.textContent,secondEnemy.name,"target card follows arena selection");
 assert.equal(elements.targetFighterHud.classList.enemy,true);
+// A long press reveals combat stats of any fighter without selecting them.
+const selectedBeforeInspect=first.selectedEnemy;
+const holdEvent=(pointerId=11,x=40,y=40)=>({pointerId,clientX:x,clientY:y,pointerType:"touch"});
+pointerListener({type:2,event:holdEvent(),pickInfo:{pickedMesh:api.getMeshes().kael.head}});
+assert.equal(timers.size,1,"one pending long-press timer");
+pointerListener({type:4,event:holdEvent(11,65,40)});
+assert.equal(timers.size,0,"moving finger cancels long press");
+assert.equal(elements.fighterInspect.hidden!==false,true);
+pointerListener({type:2,event:holdEvent(),pickInfo:{pickedMesh:api.getMeshes().kael.head}});
+tick();
+assert.equal(elements.fighterInspect.hidden,false,"long press opens inspection");
+assert.equal(elements.inspectName.textContent,"Каэль Ворон");
+assert.match(elements.inspectRole.textContent,/Уровень [0-9]+/);
+assert.match(elements.inspectStats.textContent,/Инициатива:/);
+assert.equal(first.selectedEnemy,selectedBeforeInspect,"long press never selects ally for attack");
+pointerListener({type:3,event:holdEvent()});
+pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes().kael.head}});
+assert.equal(first.selectedEnemy,selectedBeforeInspect,"release after hold cannot select fighter");
+click(elements.inspectClose);
+assert.equal(elements.fighterInspect.hidden,true,"close button hides inspection");
+pointerListener({type:2,event:holdEvent(12),pickInfo:{pickedMesh:api.getMeshes()[secondEnemy.id].body}});
+tick();
+assert.equal(elements.inspectName.textContent,secondEnemy.name,"enemy can also be inspected");
+assert.doesNotMatch(elements.inspectRole.textContent,/Уровень/,"enemy has no invented level");
+click(elements.inspectClose);
+pointerListener({type:2,event:holdEvent(13),pickInfo:{pickedMesh:api.getMeshes()[firstEnemy.id].body}});
+pointerListener({type:3,event:holdEvent(13)});
+assert.equal(timers.size,0,"short press clears timer without opening dialog");
+pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[firstEnemy.id].body}});
+assert.equal(first.fighters[first.selectedEnemy].id,firstEnemy.id,"short tap still selects enemy");
+pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[secondEnemy.id].body}});
+assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"ordinary targeting remains intact");
+
 // Guard is targeted at an ally; the same card must now follow the allied target.
 const originalIndex=first.currentActor;
 first.currentActor=first.fighters.findIndex(f=>f.id==="kael");

@@ -29,6 +29,8 @@ function formationPosition(side,slot,count){
 }
 let renderLoopRunning=false;
 let indicatorNodes={}; // Rebuilt on combat HUD changes, not each animation frame.
+let inspectionId=null,inspectionGesture=null,suppressInspectionPick=false;
+const INSPECT_HOLD_MS=550,INSPECT_MOVE_PX=12;
 let selectedAbility="basic";
 // Combat-004: manual remains the default. Only one cancellable timer may run.
 let autoBattle=false;
@@ -182,6 +184,7 @@ function openSquad(returnTo="home"){
  showScreen("squad");
 }
 function showScreen(id){
+ if(id!=="battle")closeFighterInspection();
  if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();stopBattleRendering();}
  // Combat-008A: release the document scroll while the arena owns the viewport.
  // Guard document.body for headless DOM tests and embedded integrations.
@@ -395,6 +398,7 @@ function renderTargetFighterHud(){
  fill.style.width=Math.max(0,Math.min(100,target.hp/Math.max(1,target.maxHp)*100))+"%";
 }
 function syncBattleUI(){
+ if(inspectionId)renderFighterInspection();
  if(!state.active){cancelAutoTimer();autoBattle=false;}
  // Commit battle outcome immediately as before, even if the player leaves
  // the arena before the final animation ends. Only visual navigation waits.
@@ -523,6 +527,7 @@ function positionArenaIndicators(){
  }
 }
 function resetBattle(){
+ closeFighterInspection();
  cancelAutoTimer();
  cancelVisualTransition();
  BattleAnimation.clear();
@@ -559,6 +564,88 @@ if(autoSpeedControl)autoSpeedControl.addEventListener("click",()=>{
 });
 $("#basicAbilityBtn").addEventListener("click",()=>{if(state.active&&!autoBattle&&!isVisualTransition()){selectedAbility="basic";syncBattleUI();}});
 $("#specialAbilityBtn").addEventListener("click",()=>{if(!autoBattle&&!isVisualTransition()&&CombatCore.abilityReady(state,"special")){selectedAbility="special";syncBattleUI();}});
+// Combat-008E: long press inspects any living ally or enemy; never changes targets.
+function inspectedFighterId(mesh){
+ while(mesh&&!mesh.metadata?.fighterId)mesh=mesh.parent;
+ const id=mesh?.metadata?.fighterId;
+ return state.fighters.some(f=>f.id===id&&f.hp>0)?id:null;
+}
+function cancelInspectionGesture(){
+ if(inspectionGesture?.timer!=null)clearTimeout(inspectionGesture.timer);
+ inspectionGesture=null;
+}
+function closeFighterInspection(){
+ cancelInspectionGesture();
+ inspectionId=null;
+ const dialog=$("#fighterInspect");
+ if(dialog)dialog.hidden=true;
+}
+function renderFighterInspection(){
+ const dialog=$("#fighterInspect");
+ if(!dialog||!inspectionId)return;
+ const fighter=state.fighters.find(f=>f.id===inspectionId&&f.hp>0);
+ if(!fighter||!$("#battle").classList.contains("active")){
+  closeFighterInspection();return;
+ }
+ $("#inspectSide").textContent=fighter.side==="ally"?"СОЮЗНИК":"ПРОТИВНИК";
+ $("#inspectName").textContent=fighter.name;
+ $("#inspectRole").textContent=fighter.role+(Number.isInteger(fighter.level)?" · Уровень "+fighter.level:"");
+ $("#inspectStats").textContent="Здоровье: "+fighter.hp+" / "+fighter.maxHp+
+  " · Атака: "+fighter.atk+" · Скорость: "+fighter.speed+
+  " · Инициатива: "+Math.round(fighter.meter)+" / 1000"+
+  (fighter.side==="ally"?" · Перезарядка: "+fighter.specialCooldown:"");
+ const effects=[];
+ if(fighter.guardHits>0)effects.push("Защита: "+fighter.guardHits+" удар.");
+ if(fighter.weakenAttacks>0)effects.push("Ослабление: "+fighter.weakenAttacks+" атак.");
+ $("#inspectEffects").textContent=effects.length?effects.join(" · "):"Активных эффектов нет";
+ dialog.hidden=false;
+}
+function startInspectionGesture(info){
+ cancelInspectionGesture();
+ suppressInspectionPick=false;
+ if(!state.active||isVisualTransition()||inspectionId)return;
+ const event=info.event||{};
+ if((event.pointerType==="mouse"&&event.button!==0)||event.isPrimary===false)return;
+ const fighterId=inspectedFighterId(info.pickInfo?.pickedMesh);
+ if(!fighterId)return;
+ const gesture={pointerId:event.pointerId??null,x:event.clientX??0,y:event.clientY??0,timer:null};
+ inspectionGesture=gesture;
+ gesture.timer=setTimeout(()=>{
+  if(inspectionGesture!==gesture)return;
+  inspectionGesture=null;
+  inspectionId=fighterId;
+  suppressInspectionPick=true;
+  renderFighterInspection();
+ },INSPECT_HOLD_MS);
+}
+function handleInspectionPointer(info){
+ if(!BABYLON.PointerEventTypes)return;
+ const type=info.type,event=info.event||{};
+ if(type===BABYLON.PointerEventTypes.POINTERDOWN){
+  startInspectionGesture(info);return;
+ }
+ if(type===BABYLON.PointerEventTypes.POINTERMOVE&&inspectionGesture){
+  if(inspectionGesture.pointerId!==null&&event.pointerId!==inspectionGesture.pointerId){
+   cancelInspectionGesture();return;
+  }
+  if(Math.hypot((event.clientX??0)-inspectionGesture.x,(event.clientY??0)-inspectionGesture.y)>INSPECT_MOVE_PX)
+   cancelInspectionGesture();
+ }
+ if(type===BABYLON.PointerEventTypes.POINTERUP)cancelInspectionGesture();
+ if(type===BABYLON.PointerEventTypes.POINTERPICK){
+  if(suppressInspectionPick){suppressInspectionPick=false;return;}
+  if(!inspectionId)selectArenaTarget(info.pickInfo?.pickedMesh);
+ }
+}
+const inspectClose=$("#inspectClose");
+if(inspectClose)inspectClose.addEventListener("click",closeFighterInspection);
+const inspectOverlay=$("#fighterInspect");
+if(inspectOverlay)inspectOverlay.addEventListener("click",event=>{
+ if(event.target===inspectOverlay)closeFighterInspection();
+});
+document.addEventListener("keydown",event=>{
+ if(event.key==="Escape"&&inspectionId)closeFighterInspection();
+});
 // Manual target picking is independent of which 3D mesh part was touched.
 function selectArenaTarget(pickedMesh){
  if(!state.active||autoBattle||isVisualTransition()||!pickedMesh)return false;
@@ -652,12 +739,9 @@ function initBabylon(){
    meshes[h.id]={body,head,base};
  });
  // Babylon pointer picking supports mouse and touch, registered once with the scene.
-  if(scene.onPointerObservable&&BABYLON.PointerEventTypes){
-   scene.onPointerObservable.add(info=>{
-    if(info.type===BABYLON.PointerEventTypes.POINTERPICK)
-     selectArenaTarget(info.pickInfo?.pickedMesh);
-   });
-  }
+  if(scene.onPointerObservable&&BABYLON.PointerEventTypes)
+   scene.onPointerObservable.add(handleInspectionPointer);
+  canvas.addEventListener("contextmenu",event=>event.preventDefault());
   // Registered only once because initBabylon() runs once.
  // Safari resize may fire before the landscape layout has settled.
  // Observe actual arena dimensions and synchronize render buffer after layout.

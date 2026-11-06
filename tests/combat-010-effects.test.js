@@ -1,0 +1,41 @@
+"use strict";
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const vm=require("node:vm");
+const path=require("node:path");
+const source=["initiative-model.js","ability-data.js","combat-core.js"]
+  .map(name=>fs.readFileSync(path.join(__dirname,"..",name),"utf8")).join("\n");
+const core=vm.runInNewContext(source+"\nCombatCore");
+const unit=(id,side,hp=100,atk=20,speed=100)=>({id,name:id,side,hp,atk,speed});
+const b=core.createBattle([unit("kael","ally",100,10,200),unit("enemy","enemy",100,5,10)],
+  [[unit("next","enemy",100,5,10)]]);
+assert.equal(core.activeEffects(b.fighters[0]).length,0,"fresh allies have no effects");
+assert.equal(core.activeEffects(b.fighters[1]).length,0,"fresh enemies have no effects");
+b.fighters[0].guardHits=2;
+b.fighters[1].weakenAttacks=2;
+assert.equal(b.fighters[0].effects.guard.remaining,2);
+assert.equal(b.fighters[1].effects.weaken.remaining,2);
+assert.deepEqual(Array.from(core.activeEffects(b.fighters[0]),e=>e.type),["guard"]);
+assert.deepEqual(Array.from(core.activeEffects(b.fighters[1]),e=>e.remaining),[2]);
+assert.throws(()=>{b.fighters[0].guardHits=-1;},/duration/);
+assert.throws(()=>{b.fighters[0].guardHits=1.5;},/duration/);
+assert.equal(b.fighters[0].guardHits,2,"invalid update does not mutate");
+b.fighters[0].guardHits=0;
+assert.equal(b.fighters[0].effects.guard,undefined,"zero removes effect");
+core.advanceToPlayerTurn(b);
+assert.equal(core.performPlayerAbility(b,"basic"),true);
+assert.equal(b.wave,2,"first enemy defeated");
+assert.equal(b.fighters[0].guardHits,0);
+assert.equal(b.fighters[0].effects.guard,undefined);
+assert.equal(core.activeEffects(b.fighters[1]).length,0,"new wave enemy has no inherited effect");
+b.fighters[0].guardHits=2;
+const preserved=b.fighters[0];
+b.fighters[1].hp=1;
+assert.equal(core.performPlayerAbility(b,"basic"),true);
+assert.equal(b.winner,"ally");
+assert.equal(b.fighters[0],preserved,"ally state is retained");
+assert.equal(b.fighters[0].guardHits,2,"surviving status retains count");
+// Existing damage rules and legacy writable counters are checked in Combat-003B.
+const fresh=core.createBattle([unit("kael","ally"),unit("enemy","enemy")]);
+assert.equal(core.activeEffects(fresh.fighters[0]).length,0,"new battle resets effects");
+console.log("Combat-010 effects registry, legacy aliases, wave transfer and reset passed");

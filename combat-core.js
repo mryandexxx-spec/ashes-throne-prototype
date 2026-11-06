@@ -10,7 +10,12 @@ const CombatCore = (() => {
     if (futureWaves.some(wave => !Array.isArray(wave) || wave.length === 0 ||
         wave.some(enemy => !enemy || enemy.side !== "enemy")))
       throw Error("each future wave requires at least one enemy");
-    for (const wave of futureWaves) InitiativeModel.createInitiative(wave);
+    const allyIds = new Set(heroes.filter(f => f.side === "ally").map(f => f.id));
+    for (const wave of futureWaves) {
+      InitiativeModel.createInitiative(wave);
+      if (wave.some(enemy => allyIds.has(enemy.id)))
+        throw Error("wave enemy id collides with ally id");
+    }
     const initiative = InitiativeModel.createInitiative(heroes);
     const fighters = heroes.map((hero, index) => ({
       ...hero,

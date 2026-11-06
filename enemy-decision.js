@@ -29,7 +29,9 @@ const EnemyDecision=(()=>{
      const def=ability(id);
      if(!def||!["damage","heal","guard"].includes(def.kind))continue;
      const targetMode=def.target;
-     const targetable=CombatCore.actorTargetIndices(battle,actorIndex,targetMode,actorIndex);
+     const targetable=targetMode==="self"?[actorIndex]:
+       targetMode==="enemy"||targetMode==="all-enemies"?opponents:
+       targetMode==="ally"||targetMode==="all-allies"?allies:[];
      if(!targetable.length)continue;
      const supporting=targetMode==="ally"||targetMode==="self"||targetMode==="all-allies";
      const attacking=targetMode==="enemy"||targetMode==="all-enemies";

@@ -9,7 +9,7 @@ const CombatLog=(()=>{
     case "ability":{
      const actor=fighters.find(f=>f.id===e.actorId);
      const title=e.abilityId==="special" ? AbilityData.get(actor,"special")?.name||"Особая" : "Базовая атака";
-     return name(e.actorId)+": "+title+" → "+name(e.targetId);
+     return name(e.actorId)+": "+title+" → "+(Array.isArray(e.targetIds)&&e.targetIds.length>1?e.targetIds.map(name).join(", "):name(e.targetId));
     }
     case "damage":return name(e.targetId)+": −"+e.amount+" HP (осталось "+e.remainingHp+")";
     case "heal":return name(e.targetId)+": +"+e.amount+" HP (теперь "+e.remainingHp+")";

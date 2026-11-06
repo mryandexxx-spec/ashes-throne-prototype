@@ -31,7 +31,7 @@ const document={
  },
  addEventListener(){}
 };
-const api=vm.runInNewContext(src+"\n({getBattle:()=>state,resetBattle,selectArenaTarget,CombatCore})",
+const api=vm.runInNewContext(src+"\n({getBattle:()=>state,resetBattle,selectArenaTarget,CombatCore,resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=["kael","lyra","darin"];}})",
  {document,window:{addEventListener(){}}});
 const click=id=>{
  const f=els[id].handlers.click;
@@ -43,6 +43,7 @@ const clickFighter=i=>{
  assert.equal(api.selectArenaTarget({metadata:{fighterId:h.id}}),true);
 };
 assert.ok(fighterNodes.every(el=>!el.handlers.click),"side status cards must not select targets");
+api.resetLegacySquad();
 api.resetBattle();
 assert.equal(api.getBattle().fighters[api.getBattle().currentActor].id,"lyra");
 clickFighter(4);

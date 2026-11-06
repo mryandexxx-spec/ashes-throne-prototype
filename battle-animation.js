@@ -13,7 +13,10 @@ const BattleAnimation=(()=>{
    if(event.type==="ability"&&typeof event.actorId==="string"){
     const guard=events.slice(i+1).some(next=>next.type==="effect"&&next.actorId===event.actorId&&
      next.targetId===event.targetId&&next.effect==="guard");
-    queue.push({id:event.actorId,slot:guard?"guard":event.abilityId==="special"?"special":"basic"});
+    queue.push({id:event.actorId,slot:guard?"guard":
+     AnimationProfiles.slots.includes(event.abilityId)?event.abilityId:"special"});
+   }else if(event.type==="effect"&&event.effect==="guard"&&typeof event.targetId==="string"){
+    queue.push({id:event.targetId,slot:"ward"});
    }else if(event.type==="damage"&&typeof event.targetId==="string"){
     queue.push({id:event.targetId,slot:"hit"});
    }else if(event.type==="death"&&typeof event.targetId==="string"){
@@ -50,6 +53,7 @@ const BattleAnimation=(()=>{
    case "idle":return {x:0,y:Math.sin(progress*Math.PI*2)*a,tilt:0};
    case "lunge":return {x:a*pulse,y:.07*pulse,tilt:-.14*pulse};
    case "guard":return {x:-.05*pulse,y:a*pulse,tilt:.11*pulse};
+   case "ward":return {x:0,y:a*Math.sin(progress*Math.PI),tilt:.05*pulse};
    case "hit":return {x:-a*pulse,y:0,tilt:.14*pulse};
    case "death":return {x:0,y:-a*progress,tilt:Math.PI*.38*progress};
    default:return empty();

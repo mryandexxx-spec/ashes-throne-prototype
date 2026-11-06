@@ -58,8 +58,9 @@
       <div class="section-heading"><div><div class="eyebrow">КАМПАНИЯ</div><h2>Путь к престолу</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
       <div id="campaignMissions" aria-label="Главы и миссии кампании"></div>
       <p class="muted" id="campaignSaveStatus" role="status">Статус прохождения хранится в этом браузере.</p>
-      <p class="muted">Пока доступна одна демонстрационная миссия. 1★ — победа, 2★ — без потерь, 3★ — без потерь за 8 или менее действий союзников. Награда за каждую победу: +1 учебный материал.</p>
+      <p class="muted">Доступны две демонстрационные миссии. 1★ — победа, 2★ — без потерь, 3★ — без потерь за 8 действий союзников в первой миссии или за 9 во второй. Награда за победу и симуляцию после 3★: +1 учебный материал.</p>
     </section>
+    <dialog id="simulationDialog" class="simulation-dialog" aria-labelledby="simulationTitle"><h2 id="simulationTitle">Победа!</h2><p id="simulationText" role="status"></p><button type="button" class="primary" id="simulationClose">Закрыть</button></dialog>
     <section id="squad" class="screen squad-screen" aria-label="Подготовка отряда">
       <div class="section-heading squad-heading">
         <div><div class="eyebrow">ПЕРЕД СРАЖЕНИЕМ</div><h2>Выбор отряда</h2><p class="muted">Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.</p></div>
@@ -108,7 +109,7 @@
         <div id="battleLogEntries" class="combat-log-entries" role="log" aria-live="off">Пока нет событий.</div>
       </details>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.2.3 · CD002</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.2.4 · CC003</span><span>Пепельный престол</span></footer>
   </main>
   <aside class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

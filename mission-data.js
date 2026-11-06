@@ -11,6 +11,15 @@ const MissionData=(()=>{
     Object.freeze({conditions:Object.freeze([{type:"victory"},{type:"all-allies-alive"}]),hint:"Победить без потерь"}),
     Object.freeze({conditions:Object.freeze([{type:"victory"},{type:"all-allies-alive"},{type:"max-ally-actions",limit:8}]),hint:"Победить без потерь за 8 действий союзников или меньше"})
    ])
+  }),
+  "demo-mission-2":Object.freeze({
+   id:"demo-mission-2",chapterId:"chapter-1",branchId:"main",
+   title:"Демонстрационная миссия #2",
+   stars:Object.freeze([
+    Object.freeze({conditions:Object.freeze([{type:"victory"}]),hint:"Победить"}),
+    Object.freeze({conditions:Object.freeze([{type:"victory"},{type:"all-allies-alive"}]),hint:"Победить без потерь"}),
+    Object.freeze({conditions:Object.freeze([{type:"victory"},{type:"all-allies-alive"},{type:"max-ally-actions",limit:9}]),hint:"Победить без потерь за 9 действий союзников или меньше"})
+   ])
   })
  });
  const predicates=Object.freeze({

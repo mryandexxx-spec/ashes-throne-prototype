@@ -523,3 +523,40 @@ body.battle-mode #app>footer{visibility:hidden}
 /* A HUD button should always be a direct hit target after a viewport change. */
 .battle-screen .battle-top button,
 .battle-screen .ability-controls button{pointer-events:auto;touch-action:manipulation}
+
+/* Combat-008D: compact noninteractive active-fighter dossier inside the arena. */
+.battle-screen .target-fighter-hud{
+ top:calc(69px + env(safe-area-inset-top,0px));
+ right:max(12px,env(safe-area-inset-right,0px));
+ width:clamp(165px,21vw,235px);min-width:0;max-width:calc(100vw - 24px);
+ padding:9px 11px;border:1px solid #d5ad654f;border-radius:11px;
+ background:#0b0d12c8;color:var(--text);text-shadow:0 1px 3px #000a;
+ backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+ pointer-events:none;
+}
+.battle-screen .target-fighter-hud.enemy{border-color:#b6666570}
+.battle-screen .target-fighter-heading{display:flex;justify-content:space-between;gap:4px;
+ color:var(--gold);font-size:9px;font-weight:700;letter-spacing:1.1px}
+.battle-screen .target-fighter-hud.enemy .target-fighter-heading{color:#efa29c}
+.battle-screen #targetFighterName{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ font:600 13px Cinzel,serif;margin:4px 0}
+.battle-screen .target-fighter-vitals{display:flex;justify-content:space-between;gap:5px;
+ font-size:9px;color:#c9ced8;white-space:nowrap;overflow:hidden}
+.battle-screen .target-fighter-vitals span{overflow:hidden;text-overflow:ellipsis}
+.battle-screen .target-fighter-track{height:5px;margin-top:6px;background:#282f3a;
+ border-radius:5px;overflow:hidden}
+.battle-screen .target-fighter-track span{display:block;height:100%;background:#71c48e}
+.battle-screen .target-fighter-hud.enemy .target-fighter-track span{background:#cc7770}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .battle-screen .target-fighter-hud{
+  top:calc(52px + env(safe-area-inset-top,0px));width:min(190px,27vw);
+  padding:6px 8px;border-radius:8px;
+ }
+ .battle-screen .target-fighter-heading{font-size:8px;letter-spacing:.5px}
+ .battle-screen #targetFighterName{font-size:11px;margin:2px 0}
+ .battle-screen .target-fighter-vitals{font-size:8px}
+ .battle-screen .target-fighter-track{margin-top:4px;height:4px}
+}
+@media (orientation:landscape) and (max-height:390px) and (max-width:1100px){
+ .battle-screen .target-fighter-hud{top:calc(45px + env(safe-area-inset-top,0px))}
+}

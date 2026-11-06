@@ -6,11 +6,12 @@ const vm=require("node:vm");
 const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","attackBtn","arenaIndicators","orientationPrompt",
+ "targetFighterHud","targetFighterSide","targetFighterLevel","targetFighterName","targetFighterHp","targetFighterStats","targetFighterHealthFill",
  "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","autoSpeedBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
 function element(id=""){
- return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
+ return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},style:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
    remove(x){this[x]=false},toggle(x,v){this[x]=!!v}},
   addEventListener(type,fn){(this.handlers[type]??=[]).push(fn)},
@@ -95,7 +96,7 @@ function tick(){
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), setAutoSpeed})",
+ "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderTargetFighterHud, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), setAutoSpeed})",
  {document,window:liveWindow,BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 elements.campaignMissions.contains=()=>true;
@@ -177,11 +178,37 @@ assert.equal(positions(4).map(p=>p.x).join(","),"-2.45,-2.45,-2.45,-4.05");
 assert.equal(positions(2).map(p=>p.x).join(","),"-2.45,-2.45");
 assert.equal(positions(1)[0].z,0);
 const first=api.getBattle();
+const firstEnemy=first.fighters[first.selectedEnemy];
+assert.equal(elements.targetFighterName.textContent,firstEnemy.name,"top-right shows the initially selected target");
+assert.equal(elements.targetFighterLevel.textContent,"","enemy level is not invented");
+assert.match(elements.targetFighterHp.textContent,/HP [0-9]+\/[0-9]+/);
+assert.match(elements.targetFighterStats.textContent,/АТК [0-9]+ · СКР [0-9]+/);
+assert.equal(elements.targetFighterHealthFill.style.width,"100%");
+assert.equal(elements.targetFighterSide.textContent,"ЦЕЛЬ: ПРОТИВНИК");
 assert.equal(typeof pointerListener,"function","arena pointer listener registered");
-const firstEnemy=first.fighters.find(f=>f.side==="enemy");
 const secondEnemy=first.fighters.filter(f=>f.side==="enemy")[1];
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[secondEnemy.id].body}});
 assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"arena tap selects enemy");
+assert.equal(elements.targetFighterName.textContent,secondEnemy.name,"target card follows arena selection");
+assert.equal(elements.targetFighterHud.classList.enemy,true);
+// Guard is targeted at an ally; the same card must now follow the allied target.
+const originalIndex=first.currentActor;
+first.currentActor=first.fighters.findIndex(f=>f.id==="kael");
+const previousKaelMeter=first.fighters[first.currentActor].meter;
+first.fighters[first.currentActor].meter=1000; // Simulate Kael actually reaching his turn.
+click(elements.specialAbilityBtn);
+const allyTarget=first.fighters.find(f=>f.id==="lyra");
+pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[allyTarget.id].head}});
+assert.equal(first.fighters[first.selectedAlly].id,allyTarget.id);
+assert.equal(elements.targetFighterName.textContent,allyTarget.name,"support target card shows selected ally");
+assert.equal(elements.targetFighterSide.textContent,"ЦЕЛЬ: СОЮЗНИК");
+assert.equal(elements.targetFighterLevel.textContent,"Ур. "+allyTarget.level,"ally uses actual progression level");
+assert.equal(elements.targetFighterHud.classList.enemy,false);
+click(elements.basicAbilityBtn);
+assert.equal(elements.targetFighterName.textContent,secondEnemy.name,"switch back to attack restores enemy target");
+first.fighters[first.currentActor].meter=previousKaelMeter;
+first.currentActor=originalIndex;
+api.syncBattleUI();
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes().kael.head}});
 assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"ally tap cannot switch an enemy attack target");
 assert.equal(api.getMeshes()[secondEnemy.id].base.material.emissiveColor.x,.48,"target is highlighted on arena");
@@ -202,6 +229,8 @@ assert.match(elements.arenaIndicators.innerHTML,/width:90%/,"HP percent reflects
 first.active=false;first.winner="enemy";
 api.syncBattleUI();
 assert.equal(elements.missionResult.classList.active,true,"defeat must show result screen");
+assert.equal(elements.targetFighterName.textContent,"Бой завершён","finished battle clears stale actor");
+assert.equal(elements.targetFighterLevel.textContent,"","finished battle clears level");
 assert.equal(document.body.classList.contains("battle-mode"),false,"leaving battle restores document scroll");
 assert.match(elements.missionResultTitle.textContent,/не пройдена/);
 assert.equal(api.getMaterials(),0);

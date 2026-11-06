@@ -80,10 +80,11 @@ assert.match(elements.campaignMissions.innerHTML,/Не пройдено/);
 assert.match(elements.campaignMissions.innerHTML,/Основной путь/);
 assert.match(elements.campaignMissions.innerHTML,/Засада у Чёрного перевала/);
 const cards=elements.campaignMissions.innerHTML.split('<article class="campaign-panel campaign-mission">').slice(1);
-assert.equal(cards.length,2,"both mission cards must render");
+assert.equal(cards.length,3,"three mission cards must render");
 assert.match(cards[0],/8 действий союзников или меньше/,"first mission must show its own 3-star condition");
 assert.doesNotMatch(cards[0],/9 действий союзников или меньше/,"first mission must not show second mission condition");
 assert.match(cards[1],/9 действий союзников или меньше/,"second mission must show its own 3-star condition");
+assert.match(cards[2],/18 действий союзников или меньше/,"third mission shows the wave-wide 3-star criterion");
 for(const card of cards){
  assert.match(card,/Условия получения звёзд/);
  assert.match(card,/1★/);

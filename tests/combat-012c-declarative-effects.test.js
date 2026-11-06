@@ -14,7 +14,7 @@ function battle(id,enemies=[enemy("first"),enemy("second")],waves=[]){
  core.advanceToPlayerTurn(b);
  return b;
 }
-const of=(b,type)=>b.events.filter(e=>e.type===type);
+const of=(b,type)=>Array.from(b.events).filter(e=>e.type===type);
 
 let b=battle("test-primary-bonus");
 assert.equal(core.chooseEnemy(b,2),true,"select the second enemy manually");

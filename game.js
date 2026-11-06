@@ -4,6 +4,8 @@ const HEROES = [
   {id:"darin",name:"Дарин Пепельный",role:"Мечник",hp:105,atk:27,speed:125,side:"ally",glyph:"⚔"},
   // Combat-007 test-only healer, not canonical or final balance.
   {id:"medic-demo",name:"Учебный лекарь",role:"Учебная поддержка",hp:90,atk:14,speed:115,side:"ally",glyph:"✚"},
+  // Combat-011C: optional training-only group attacker, not canonical lore or final balance.
+  {id:"test-area-damage",name:"Учебный боец группы",role:"Тренировка массовых атак",hp:90,atk:20,speed:120,side:"ally",glyph:"✧"},
   {id:"ves",name:"Вестник Конклава",role:"Противник",hp:90,atk:18,speed:105,side:"enemy",glyph:"☠"},
   {id:"shade",name:"Теневой клинок",role:"Противник",hp:78,atk:22,speed:135,side:"enemy",glyph:"♟"},
   // Demo-only copies: no new combat stats or lore. First mission still uses two enemies.
@@ -134,7 +136,7 @@ function persistProgress(){
 
 let selectedHeroId=ALLIES[0].id;
 // Keep accepted demo encounters unchanged by default.
-let selectedPartyIds=ALLIES.filter(h=>h.id!=="medic-demo").map(h=>h.id);
+let selectedPartyIds=ALLIES.filter(h=>h.id!=="medic-demo"&&h.id!=="test-area-damage").map(h=>h.id);
 let squadReturnScreen="home";
 let state=CombatCore.createBattle([...ALLIES,...ENEMIES.slice(0,2)]);
 function progressedHero(hero){return ProgressCore.heroStats(progress,hero);}
@@ -465,6 +467,7 @@ function syncBattleUI(){
  $("#specialAbilityBtn").classList.toggle("selected",supportTarget);
  $("#actionHint").textContent=autoBattle?"Автобой активен. Нажми «Ручной бой», чтобы управлять.":
   supportTarget?"Коснись союзника с курсором, чтобы применить способность.":
+  actor&&CombatCore.abilityTargetSide(state,"special")==="all-enemies"?"Групповое умение поражает всех живых врагов. Нажми на него для применения.":
   validTarget?"В фокусе: "+target.name+". Нажми на нужную способность.":"Коснись противника, чтобы выбрать цель.";
  const retry=$("#battleRetryBtn");if(retry)retry.hidden=!!state.active;
  $("#abilityControls")?.classList.toggle("battle-finished",!state.active);
@@ -489,7 +492,8 @@ function renderArenaIndicators(){
   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
   const active=actor?.id===h.id;
   const support=!!actor&&!autoBattle&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
-  const focused=!!actor&&!autoBattle&&h.hp>0&&(support?h.side==="ally":h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
+  const groupFocus=!!actor&&!autoBattle&&CombatCore.abilityTargetSide(state,"special")==="all-enemies"&&h.side==="enemy";
+  const focused=!!actor&&!autoBattle&&h.hp>0&&(support?h.side==="ally":groupFocus||h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
   return `<div class="arena-indicator ${h.side} ${active?"acting":""}" data-fighter-id="${h.id}" aria-label="${h.name}: здоровье ${Math.max(0,h.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
    ${focused?`<div class="arena-focus-cursor ${support?"available":"locked"}" aria-hidden="true">▼</div>`:""}
    <div class="arena-indicator-name">${h.name}</div>
@@ -546,9 +550,11 @@ function resetBattle(){
 function applyManualAbility(abilityId){
  if(autoBattle||isVisualTransition()||!CombatCore.abilityReady(state,abilityId))return false;
  const side=CombatCore.abilityTargetSide(state,abilityId);
- const index=side==="ally"?state.selectedAlly:state.selectedEnemy;
- const target=state.fighters[index];
- if(!target||target.hp<=0||target.side!==side)return false;
+ const targets=CombatCore.abilityTargetIndices(state,side);
+ if(!targets.length)return false;
+ // Group/self actions need no manual target tap; CombatCore resolves all
+ // recipients atomically. Single-target behavior stays unchanged.
+ if(side!=="enemy"&&side!=="ally"&&side!=="self"&&side!=="all-enemies"&&side!=="all-allies")return false;
  const before=state.fighters.map(f=>({...f}));
  if(!CombatCore.performPlayerAbility(state,abilityId))return false;
  captureResolvedVisuals(before);
@@ -606,7 +612,7 @@ function showAbilityTooltip(abilityId){
   effects.push("Защита от "+definition.guardHits+" ударов.");
  else if(definition.kind==="heal")
   effects.push("Восстанавливает до "+definition.healAmount+" HP.");
- effects.push("Цель: "+(definition.target==="ally"?"союзник":"противник")+".");
+ effects.push("Цель: "+({ally:"союзник",enemy:"противник",self:"сам герой","all-allies":"все живые союзники","all-enemies":"все живые противники"}[definition.target]||"неизвестная")+".");
  if(definition.cooldown)effects.push("Перезарядка: "+definition.cooldown+" хода.");
  $("#abilityTooltipTitle").textContent=definition.name;
  $("#abilityTooltipText").textContent=effects.join(" ");

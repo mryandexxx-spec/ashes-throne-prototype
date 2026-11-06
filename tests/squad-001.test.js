@@ -81,7 +81,7 @@ click(elements.squadStart);
 assert.equal(elements.battle.classList.active,true);
 assert.equal(allyIds(),"lyra");
 assert.equal(engineCreates,1);
-assert.equal(meshCreates,27,"nine demo fighter templates get 3D shapes");
+assert.equal(meshCreates,30,"ten demo fighter templates get 3D shapes");
 assert.equal(createdCameras.length,1,"one 3D camera allocated");
 const camera=createdCameras[0];
 assert.ok(Math.abs(camera.alpha+3*Math.PI/4)<1e-9,"front-left isometric camera (allies foreground)");
@@ -113,7 +113,7 @@ assert.equal(camera.beta,.96,"restart restores camera elevation");
 assert.equal(camera.radius,12,"restart restores complete team framing");
 assert.equal(createdCameras.length,1,"camera reused across encounters");
 assert.equal(engineCreates,1,"scene and engine are reused");
-assert.equal(meshCreates,27,"no 3D allocations on re-entry");
+assert.equal(meshCreates,30,"no 3D allocations on re-entry");
 
 // Empty squads are blocked; restoring a hero re-enables battle.
 api.openSquad();

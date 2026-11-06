@@ -9,12 +9,12 @@ const SaveCore=(()=>{
   if(!plain(data)||data.version!==VERSION||!plain(data.levels))return null;
   if(!Number.isSafeInteger(data.materials)||data.materials<0)return null;
   const ids=heroes.filter(h=>h.side==="ally").map(h=>h.id);
-  // Allow only the Combat-007 test healer to be absent in existing v1 saves.
+  // New training heroes may be absent in older v1 saves.
   // All old levels and materials remain untouched; unknown ids are rejected.
   const savedIds=Object.keys(data.levels);
   if(savedIds.some(id=>!ids.includes(id)))return null;
   const missing=ids.filter(id=>!own(data.levels,id));
-  if(missing.some(id=>id!=="medic-demo"))return null;
+  if(missing.some(id=>id!=="medic-demo"&&id!=="test-area-damage"))return null;
   const levels={};
   for(const id of ids){
    const level=own(data.levels,id)?data.levels[id]:1;

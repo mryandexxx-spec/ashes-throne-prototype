@@ -672,6 +672,10 @@ body.battle-mode #app>footer{visibility:hidden}
 .battle-screen .arena-focus-cursor.available{
  color:#a7ecce;text-shadow:0 1px 2px #000,0 0 8px #50f3a8;
 }
+/* Combat-011C: multiple eligible foes for a ready training area attack. */
+.battle-screen .arena-focus-cursor.group{
+ color:#ffd5a5;text-shadow:0 1px 2px #000,0 0 8px #ff9753;
+}
 .battle-screen .ability-controls{position:relative;width:100%}
 .battle-screen .ability-options{width:100%;display:flex;gap:6px}
 .battle-screen .ability-slot{flex:1;min-width:0;display:flex;pointer-events:auto}

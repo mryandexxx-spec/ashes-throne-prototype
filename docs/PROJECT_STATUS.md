@@ -9,9 +9,9 @@
 - Репозиторий: https://github.com/mryandexxx-spec/ashes-throne-prototype
 - Основная ветка: `main`
 - Опубликованная версия: https://mryandexxx-spec.github.io/ashes-throne-prototype/
-- Последний принятый этап: **Combat-008E** (`v0.3.10 · CBA008E`, 6 ноября 2026 года): карточка подробных данных бойца по удержанию 3D-фигуры, без изменения выбранной цели. Владелец после мобильной проверки сообщил «Все ок».
-- Последний слитый кодовый PR: [#55 — Combat-008E](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/55), merge-коммит `3f0c41f1f6a71524c852470201b6de5cbeac1050`. Перед ним: [#54 — 008D-UI](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/54).
-- Мобильная приёмка: **Combat-008E** — «Все ок» после проверки `v0.3.10 · CBA008E`; **Combat-008D-UI** — «все норм»; **Combat-008C-TAP** — «все ок» после проверки поворотов.
+- Последний принятый этап: **Combat-008F-CAMERA** (`v0.3.12 · CBA008F-CAMERA`, 6 ноября 2026 года): восстановлено вращение камеры и уменьшено время удержания до 400 мс. Владелец подтвердил «Все ок».
+- Последний слитый кодовый PR: [#57 — Combat-008F-CAMERA](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/57), merge-коммит `736fcb35b23cccb430b8ec6539a9f62b153748b7`. Перед ним: [#56 — 008F](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/56).
+- Мобильная приёмка: **Combat-008F-CAMERA** — «Все ок» для `v0.3.12 · CBA008F-CAMERA`; ранее Combat-008E и Combat-008D-UI также приняты.
 
 **Важно:** сведения выше — снимок на указанную дату, а не утверждение, что `main` никогда не изменится. При входе в новый чат сначала проверять последние PR, историю и актуальный код.
 

@@ -351,4 +351,23 @@ assert.equal(api.isVisualTransition(),false,"exit cancels pending visual handoff
 assert.equal(api.getMotion().pending(),0);
 api.renderBattleFrame();
 assert.equal(elements.home.classList.active,true,"no stale result on home screen");
-console.log("Campaign-001, Combat-006 UI: manual and auto visual handoff, wave and reward passed");
+// Combat-006 defeat: death animation holds the arena but cannot grant reward.
+api.showScreen("campaign");
+clickMission("black-pass-ambush");
+click(elements.squadStart);
+const losing=api.getBattle();
+losing.fighters.filter(f=>f.side==="ally").forEach(f=>{f.hp=1;});
+losing.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=10000;f.maxHp=10000;});
+const beforeDefeatReward=api.getMaterials();
+let defeatActions=0;
+while(losing.active&&defeatActions++<35)click(elements.attackBtn);
+assert.ok(defeatActions<35,"controlled losing battle should finish");
+assert.equal(losing.winner,"enemy");
+assert.equal(api.isVisualTransition(),true,"defeat waits for the last death animations");
+assert.equal(elements.battle.classList.active,true,"arena stays visible until defeat animations finish");
+assert.equal(api.getMaterials(),beforeDefeatReward,"defeat never grants a reward");
+flushVisual();
+assert.equal(elements.missionResult.classList.active,true);
+assert.match(elements.missionResultTitle.textContent,/не пройдена/);
+assert.equal(api.getMaterials(),beforeDefeatReward);
+console.log("Campaign-001, Combat-006 UI: manual and auto victory, defeat, wave handoff and reward passed");

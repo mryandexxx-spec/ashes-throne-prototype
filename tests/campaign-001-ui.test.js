@@ -240,7 +240,7 @@ assert.equal(timers.size,1,"exactly one next action scheduled");
 api.showScreen("home");
 assert.equal(api.isAuto(),false);
 assert.equal(timers.size,0,"leaving battle cancels pending automatic action");
-assert.equal(api.getSpeed(),1,"speed is reset for the next battle");
+assert.equal(api.getSpeed(),4,"leaving an encounter does not reset the shared speed until a new battle starts");
 // Hidden tab pauses and visible tab resumes a single timer.
 api.showScreen("campaign");
 clickMission("black-pass-ambush");

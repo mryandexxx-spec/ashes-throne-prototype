@@ -734,3 +734,16 @@ body.battle-mode #app>footer{visibility:hidden}
  .squad-choice-row{gap:4px}
  .squad-clear-leader{min-height:20px}
 }
+
+/* Combat-014C: partial-squad confirmation and touch-sized disband control. */
+.squad-actions{display:flex;gap:8px;align-items:stretch;margin-top:8px;min-width:0}
+.squad-actions .squad-start{flex:1;min-width:0;margin-top:0}
+.squad-disband{flex:0 0 auto;min-height:44px;padding:9px 12px;border:1px solid var(--line)}
+.squad-warning{color:#f0ca83;background:rgba(185,115,33,.12);border:1px solid rgba(240,202,131,.5);border-radius:9px;padding:10px;font-size:12px;line-height:1.4;margin:10px 0 0}
+.squad-warning[hidden]{display:none}
+@media (max-width:350px){.squad-actions{flex-wrap:wrap}.squad-actions .squad-start{flex-basis:100%}}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .squad-actions{gap:6px;margin-top:4px}
+ .squad-disband{padding:6px 8px;min-height:38px}
+ .squad-warning{padding:6px;font-size:10px;margin-top:5px}
+}

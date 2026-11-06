@@ -3,6 +3,6 @@
   "private": true,
   "version": "0.3.0",
   "scripts": {
-    "test": "node --check battle-speed.js && node --check battle-animation.js && node --check game.js && node --check ability-data.js && node --check combat-core.js && node --check combat-log.js && node --check initiative-model.js && node --check progress-core.js && node --check save-core.js && node --check mission-data.js && node --check campaign-core.js && node --check campaign-data.js && node --test tests/*.test.js"
+    "test": "node --check battle-speed.js && node --check animation-profiles.js && node --check battle-animation.js && node --check game.js && node --check ability-data.js && node --check combat-core.js && node --check combat-log.js && node --check initiative-model.js && node --check progress-core.js && node --check save-core.js && node --check mission-data.js && node --check campaign-core.js && node --check campaign-data.js && node --test tests/*.test.js"
   }
 }

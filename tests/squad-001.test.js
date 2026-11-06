@@ -8,7 +8,7 @@ const ids=["home","collection","campaign","squad","battle","heroList","combatant
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
- "squadSlots","squadHint","detailBack","detailHome","detailUpgrade","squadCount"];
+ "squadSlots","squadHint","squadWarning","squadDisband","detailBack","detailHome","detailUpgrade","squadCount"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
@@ -69,97 +69,95 @@ function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
 const allyIds=()=>api.getBattle().fighters.filter(h=>h.side==="ally").map(h=>h.id).join(",");
 const count=()=>elements.squadCount.textContent;
 
-// All entry points open preparation, never the arena directly.
+// On first start the first five roster heroes fill all positions.
 click(elements.startBattle);
 assert.equal(elements.squad.classList.active,true);
 assert.equal(elements.battle.classList.active,false);
-assert.equal(count(),"3/5");
-assert.match(elements.squadSlots.innerHTML,/Свободно/);
-assert.match(elements.squadSlots.innerHTML,/squad-slot-leader/,"first position is reserved for a leader");
-assert.match(elements.squadSlots.innerHTML,/★ ЛИДЕР/);
+assert.equal(count(),"5/5");
+assert.match(elements.squadSlots.innerHTML,/squad-slot-leader filled/);
+assert.match(elements.squadSlots.innerHTML,/Каэль/);
+assert.equal(api.getBattle().leaderId,null,"initial sandbox battle is still legacy");
+assert.match(elements.squadHint.textContent,/нет лидерской способности/);
+assert.equal(api.toggleSquadHero("kael"),true,"regular click removes first-slot leader");
+assert.equal(count(),"4/5");
 assert.match(elements.squadSlots.innerHTML,/Не назначен/);
-assert.match(elements.squadHint.textContent,/подходящих героев нет/);
-assert.equal(api.getBattle().leaderId,null);
-toggle("kael");toggle("darin");
+assert.equal(api.toggleSquadHero("darin"),true);
+assert.equal(count(),"3/5");
+assert.equal(api.toggleSquadHero("lyra"),true);
+assert.equal(count(),"2/5");
+assert.equal(api.toggleSquadHero("medic-demo"),true);
+assert.equal(count(),"1/5");
+assert.equal(api.toggleSquadHero("test-area-damage"),true);
+assert.equal(count(),"0/5");
+assert.equal(elements.squadStart.disabled,true,"empty party cannot start");
+assert.equal(api.toggleSquadHero("lyra"),true);
 assert.equal(count(),"1/5");
 click(elements.squadStart);
+assert.equal(elements.squad.classList.active,true,"first click warns before a short-handed battle");
+assert.match(elements.squadWarning.textContent,/Нажми «Начать бой» ещё раз/);
+assert.equal(elements.squadWarning.hidden,false);
+click(elements.squadStart);
+assert.equal(elements.squadWarning.hidden,true);
 assert.equal(elements.battle.classList.active,true);
 assert.equal(allyIds(),"lyra");
+assert.equal(api.getBattle().leaderId,null);
 assert.equal(engineCreates,1);
 assert.equal(meshCreates,30,"ten demo fighter templates get 3D shapes");
 assert.equal(createdCameras.length,1,"one 3D camera allocated");
 const camera=createdCameras[0];
-assert.ok(Math.abs(camera.alpha+3*Math.PI/4)<1e-9,"front-left isometric camera (allies foreground)");
+assert.ok(Math.abs(camera.alpha+3*Math.PI/4)<1e-9);
 assert.equal(camera.beta,.96);
 assert.equal(camera.radius,12);
 assert.equal(camera.target.y,.9);
 assert.equal(camera.lowerBetaLimit,.55);
-assert.equal(camera.lowerRadiusLimit,12,"minimum allowed zoom unchanged");
-assert.equal(camera.upperRadiusLimit,21,"maximum allowed distance unchanged");
+assert.equal(camera.lowerRadiusLimit,12);
+assert.equal(camera.upperRadiusLimit,21);
 assert.equal(camera.upperBetaLimit,1.30);
-const enemyIds=()=>api.getBattle().fighters.filter(h=>h.side==="enemy").map(h=>h.id).join(",");
-assert.equal(enemyIds(),"ves,shade");
 assert.equal(api.getBattle().fighters[api.getBattle().currentActor].side,"ally");
 
-// Replay must re-open composition; a different lineup must reuse engine and meshes.
+// Replay returns to the same saved composition, without 3D reallocation.
 api.getBattle().active=false;
 api.getBattle().winner="ally";
 api.syncBattleUI();
-assert.equal(elements.battleRetryBtn.hidden,false,"training replay is revealed after victory");
+assert.equal(elements.battleRetryBtn.hidden,false);
 click(elements.battleRetryBtn);
 assert.equal(elements.squad.classList.active,true);
-toggle("kael");
+assert.equal(count(),"1/5");
+assert.equal(api.toggleSquadHero("kael"),true);
 assert.equal(count(),"2/5");
-camera.alpha=0;camera.beta=1.2;camera.radius=12; // Player rotated/zoomed the camera during a previous fight.
+camera.alpha=0;camera.beta=1.2;camera.radius=12;
 click(elements.squadStart);
-assert.equal(allyIds(),"kael,lyra");
-assert.equal(camera.alpha,-3*Math.PI/4,"restart restores isometric angle");
-assert.equal(camera.beta,.96,"restart restores camera elevation");
-assert.equal(camera.radius,12,"restart restores complete team framing");
-assert.equal(createdCameras.length,1,"camera reused across encounters");
-assert.equal(engineCreates,1,"scene and engine are reused");
-assert.equal(meshCreates,30,"no 3D allocations on re-entry");
+assert.equal(elements.squad.classList.active,true,"retry confirmation resets on squad change");
+click(elements.squadStart);
+assert.equal(allyIds(),"kael,lyra","legacy ally order is stable without assigned leader");
+assert.equal(camera.alpha,-3*Math.PI/4);
+assert.equal(camera.beta,.96);
+assert.equal(camera.radius,12);
+assert.equal(createdCameras.length,1);
+assert.equal(engineCreates,1);
+assert.equal(meshCreates,30);
 
-// Empty squads are blocked; restoring a hero re-enables battle.
+// All entry points still route through the composition screen.
 api.openSquad();
-toggle("kael");toggle("lyra");
-assert.equal(count(),"0/5");
-assert.equal(elements.squadStart.disabled,true);
-click(elements.squadStart);
-assert.equal(elements.squad.classList.active,true);
-toggle("darin");
-assert.equal(elements.squadStart.disabled,false);
 click(elements.squadBack);
 assert.equal(elements.home.classList.active,true);
 click(arenaNav);
-assert.equal(elements.squad.classList.active,true,"arena entry routes through squad");
-click(elements.squadStart);
-assert.equal(allyIds(),"darin");
+assert.equal(elements.squad.classList.active,true);
 api.openSquad("campaign");
 click(elements.squadBack);
-assert.equal(elements.campaign.classList.active,true,"back returns to campaign");
+assert.equal(elements.campaign.classList.active,true);
 assert.equal(api.openCampaignMission("black-pass-ambush"),true);
-assert.equal(elements.squad.classList.active,true,"campaign entry routes through squad");
-assert.equal(rendersStarted,3,"only actual combat entries start render loop");
-assert.equal(api.selectedParty().join(","),"darin");
-// With no eligible leader, first slot stays empty and four regular slots
-// remain available. Existing five-hero demo roster never gains a fake leader.
-api.openSquad();
-for(const id of ["kael","lyra","medic-demo","test-area-damage"]){
- if(!api.selectedParty().includes(id))api.toggleSquadHero(id);
-}
-assert.equal(api.selectedParty().length,4,"reserved leader slot reduces regular capacity to four");
-assert.equal(count(),"4/5");
-assert.match(elements.squadSlots.innerHTML,/★ ЛИДЕР/);
-assert.equal(elements.squadStart.disabled,false);
-const pre=api.selectedParty().join(",");
-for(const id of ["kael","lyra","darin","medic-demo","test-area-damage"]){
- if(!api.selectedParty().includes(id))api.toggleSquadHero(id);
-}
-assert.equal(api.selectedParty().join(","),pre,
- "fifth non-leader cannot occupy a reserved leader position");
+assert.equal(elements.squad.classList.active,true);
+assert.equal(api.selectedParty().join(","),"lyra,kael");
+// Disband is explicit, clears all five displayed positions and prevents
+// entry until at least one hero is selected again.
+click(elements.squadDisband);
+assert.equal(count(),"0/5");
+assert.equal(elements.squadStart.disabled,true);
+assert.match(elements.squadSlots.innerHTML,/Не назначен/);
+assert.equal((elements.squadSlots.innerHTML.match(/Свободно/g)||[]).length,4);
+assert.equal(elements.squadWarning.hidden,true);
 click(elements.squadStart);
-assert.equal(api.getBattle().leaderId,null,"no implicit leader in launched battle");
-assert.equal(api.getBattle().fighters.filter(h=>h.side==="ally").length,4);
-
-console.log("Squad-001 prebattle selection, entry points, replay and 3D reuse passed");
+assert.equal(elements.squad.classList.active,true);
+assert.equal(api.selectedParty().length,0);
+console.log("Squad-001 first-five, undersized warning and second tap, disband, replay and 3D reuse passed");

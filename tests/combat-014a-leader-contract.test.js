@@ -68,9 +68,16 @@ assert.equal(b.leaderId,"test-leader-aura");
 assert.equal(core.effectiveStat(b,b.fighters[1],"atk"),24);
 assert.equal(core.effectiveStat(b,b.fighters[2],"atk"),1);
 
-for(const bad of ["kael","foe","missing",17,{},false]){
- assert.throws(()=>battle([h("test-leader-aura"),h("kael")],[h("foe","enemy")],bad),
-  "invalid or ineligible leader assignment rejected: "+String(bad));
+// Any ally may occupy the first leader slot, even without a leader skill.
+// The skill is evaluated only for the slot occupant.
+b=battle([h("kael"),h("test-leader-aura")],[h("foe","enemy")],"kael");
+assert.equal(b.leaderId,"kael");
+assert.equal(core.activeLeaderModifiers(b,"test-leader-aura").length,0,
+ "a leader skill on a non-leading ally does not activate");
+assert.equal(core.effectiveStat(b,b.fighters[1],"atk"),20);
+for(const bad of ["foe","missing",17,{},false,"test-leader-aura"]){
+ assert.throws(()=>battle([h("kael"),h("test-leader-aura")],[h("foe","enemy")],bad),
+  "invalid or out-of-slot leader assignment rejected: "+String(bad));
 }
 assert.throws(()=>battle([h("test-leader-aura","ally",0),h("kael")],
  [h("foe","enemy")],"test-leader-aura"),"dead leaders can't be assigned");

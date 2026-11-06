@@ -40,10 +40,9 @@ const CombatCore = (() => {
     }).map(mod=>({stat:mod.stat,operation:mod.operation,value:mod.value}));
   }
 
-  // Combat-014A: leader selection is explicit. A leader ability in a hero's
-  // data never activates without opting into that exact eligible roster member.
-  // The simple aura adapter deliberately reuses the passive stat operations;
-  // unique leader mechanics and eligibility require separate authoring.
+  // Combat-014C: any living ally may occupy the leader slot; the aura is
+  // automatic only if the hero in that slot has a leader ability. No skill
+  // definition means no leader bonus.
   function activeLeaderModifiers(battle,recipientId){
     if(!battle||!battle.active||!battle.leaderId||!Array.isArray(battle.fighters))return [];
     const leader=battle.fighters.find(f=>f.id===battle.leaderId);
@@ -103,14 +102,15 @@ const CombatCore = (() => {
     const initiative = InitiativeModel.createInitiative(heroes);
     const fighters = heroes.map((hero,index) =>
       makeFighter(hero,index,initiative[index].meter));
-    // No leader is a valid default for all existing battles and all current
-    // playable heroes. Invalid explicit assignments fail before battle starts.
+    // Leadership is a formation slot, not an ability entitlement. Any living
+    // ally can occupy the first position; only heroes with a leader skill grant
+    // its effects (activeLeaderModifiers already checks for that definition).
     const leaderId=options.leaderId??null;
     if(leaderId!==null){
       const leader=fighters.find(f=>f.id===leaderId);
       if(typeof leaderId!=="string"||!leader||leader.side!=="ally"||
-         leader.hp<=0||!AbilityData.get(leader,"leader"))
-        throw Error("leader must be a living eligible ally in the roster");
+         leader.hp<=0||fighters.findIndex(f=>f.id===leaderId)!==0)
+        throw Error("leader must be the first living ally in the roster");
     }
     return {
       fighters,

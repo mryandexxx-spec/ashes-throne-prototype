@@ -90,8 +90,28 @@ const CombatCore = (() => {
 
   // Events describe only the latest resolved command, including automatic enemy replies.
   // Keep the existing battle.message as the UI's current short summary.
+  // Combat-013A: passive registration is event-driven and read-only.
+  // It records which passive would fire; applying effects comes in 013B.
+  // The derived event never dispatches another trigger, preventing loops.
+  const PASSIVE_EVENTS=Object.freeze(["ability","damage","heal","effect","death",
+    "wave-start","battle-end"]);
   function emit(battle, type, properties) {
     battle.events.push({type, ...properties});
+    if(!PASSIVE_EVENTS.includes(type))return;
+    for(const owner of battle.fighters){
+      if(owner.side!=="ally"||owner.hp<=0)continue;
+      const passive=AbilityData.get(owner,"passive");
+      if(!passive||!Array.isArray(passive.triggers))continue;
+      passive.triggers.forEach((trigger,index)=>{
+        if(!trigger||trigger.event!==type||!["actor","target"].includes(trigger.role))
+          return;
+        const matchedId=trigger.role==="actor"?properties.actorId:properties.targetId;
+        if(matchedId!==owner.id)return;
+        battle.events.push({type:"passive-trigger",ownerId:owner.id,passiveId:passive.id,
+          triggerIndex:index,sourceEventType:type,sourceActorId:properties.actorId||null,
+          sourceTargetId:properties.targetId||null});
+      });
+    }
   }
 
   function finishIfOver(battle) {

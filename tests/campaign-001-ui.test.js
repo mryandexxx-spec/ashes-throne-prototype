@@ -62,7 +62,11 @@ class Engine {
  stopRenderLoop(){}
 }
 class Material {constructor(){this.diffuseColor=null;this.specularColor=null;this.emissiveColor=null;}}
-class Camera{attachControl(){}}
+class Camera{
+ constructor(_name,alpha,beta,radius){this.alpha=alpha;this.beta=beta;this.radius=radius;
+  this.inputs={removed:[],removeByType:(type)=>this.inputs.removed.push(type)};}
+ attachControl(){}
+}
 class Scene{
  constructor(){this.onPointerObservable={add(fn){pointerListener=fn;}};}
  render(){}
@@ -187,6 +191,30 @@ assert.match(elements.targetFighterStats.textContent,/АТК [0-9]+ · СКР [0
 assert.equal(elements.targetFighterHealthFill.style.width,"100%");
 assert.equal(elements.targetFighterSide.textContent,"ЦЕЛЬ: ПРОТИВНИК");
 assert.equal(typeof pointerListener,"function","arena pointer listener registered");
+assert.ok(elements.renderCanvas.handlers.pointerdown?.length,"native orbit pointerdown registered");
+assert.ok(elements.renderCanvas.handlers.pointermove?.length,"native orbit pointermove registered");
+const drag=(type,pointerId,x,y)=>elements.renderCanvas.handlers[type][0]({pointerId,clientX:x,clientY:y,pointerType:"touch",button:0});
+const camera=api.getArenaCamera();
+const originalAlpha=camera.alpha,originalBeta=camera.beta,originalRadius=camera.radius;
+drag("pointerdown",71,90,90);
+drag("pointermove",71,170,120);
+assert.notEqual(camera.alpha,originalAlpha,"single-finger drag rotates camera horizontally");
+assert.notEqual(camera.beta,originalBeta,"single-finger drag rotates camera vertically");
+drag("pointerup",71,170,120);
+const orbitAfterUp=camera.alpha;
+drag("pointermove",71,220,120);
+assert.equal(camera.alpha,orbitAfterUp,"released finger no longer rotates camera");
+drag("pointerdown",72,100,100);
+drag("pointerdown",73,200,100);
+drag("pointermove",73,260,100);
+assert.ok(camera.radius<=originalRadius,"pinch out zooms toward camera lower radius");
+drag("pointerup",72,100,100);
+drag("pointerup",73,260,100);
+assert.ok(camera.radius>=camera.lowerRadiusLimit&&camera.radius<=camera.upperRadiusLimit,"pinch respects camera zoom limits");
+api.getArenaCamera().alpha=originalAlpha;
+api.getArenaCamera().beta=originalBeta;
+api.getArenaCamera().radius=originalRadius;
+
 const secondEnemy=first.fighters.filter(f=>f.side==="enemy")[1];
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[secondEnemy.id].body}});
 assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"arena tap selects enemy");
@@ -197,6 +225,7 @@ const selectedBeforeInspect=first.selectedEnemy;
 const holdEvent=(pointerId=11,x=40,y=40)=>({pointerId,clientX:x,clientY:y,pointerType:"touch"});
 pointerListener({type:2,event:holdEvent(),pickInfo:{pickedMesh:api.getMeshes().kael.head}});
 assert.equal(timers.size,1,"one pending long-press timer");
+assert.equal(pendingDelay(),400,"inspector opens after reduced 400ms hold");
 pointerListener({type:4,event:holdEvent(11,65,40)});
 assert.equal(timers.size,0,"moving finger cancels long press");
 pointerListener({type:2,event:holdEvent(14),pickInfo:{pickedMesh:api.getMeshes().kael.head}});

@@ -11,7 +11,7 @@ const ids=["home","collection","campaign","squad","battle","heroList","combatant
  "startBattle","campaignBattle","campaignMissions","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
 function element(id=""){
- return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
+ return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},style:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
    remove(x){this[x]=false},toggle(x,v){this[x]=!!v}},
   addEventListener(type,fn){(this.handlers[type]??=[]).push(fn)},

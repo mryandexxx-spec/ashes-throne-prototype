@@ -81,7 +81,8 @@ assert.match(elements.squadHint.textContent,/нет лидерской спос�
 assert.equal(api.toggleSquadHero("kael"),true,"regular click removes first-slot leader");
 assert.equal(count(),"4/5");
 assert.match(elements.squadSlots.innerHTML,/★ ЛИДЕР/);
-assert.match(elements.squadSlots.innerHTML,/Лира/,"second hero automatically moves into the leader slot");
+assert.match(elements.squadSlots.innerHTML,/squad-slot-leader[^]*?Свободно/,"leader slot remains empty");
+assert.match(elements.squadSlots.innerHTML,/squad-slot filled[^]*?Лира/,"second hero remains in position 2");
 assert.equal(api.toggleSquadHero("darin"),true);
 assert.equal(count(),"3/5");
 assert.equal(api.toggleSquadHero("lyra"),true);
@@ -101,7 +102,7 @@ click(elements.squadStart);
 assert.equal(elements.squadWarning.hidden,true);
 assert.equal(elements.battle.classList.active,true);
 assert.equal(allyIds(),"lyra");
-assert.equal(api.getBattle().leaderId,"lyra","first selected hero leads without an extra control");
+assert.equal(api.getBattle().leaderId,"lyra","first selected hero after an empty squad occupies slot 1");
 assert.equal(engineCreates,1);
 assert.equal(meshCreates,30,"ten demo fighter templates get 3D shapes");
 assert.equal(createdCameras.length,1,"one 3D camera allocated");

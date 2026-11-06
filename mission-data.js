@@ -20,6 +20,18 @@ const MissionData=(()=>{
     Object.freeze({conditions:Object.freeze([{type:"victory"},{type:"all-allies-alive"}]),hint:"Победить без потерь"}),
     Object.freeze({conditions:Object.freeze([{type:"victory"},{type:"all-allies-alive"},{type:"max-ally-actions",limit:9}]),hint:"Победить без потерь за 9 действий союзников или меньше"})
    ])
+  }),
+  "demo-mission-3":Object.freeze({
+   id:"demo-mission-3",chapterId:"chapter-1",branchId:"main",
+   title:"Демонстрационная миссия #3",
+   // First wave inherits the two default opponents. The next has three:
+   // five existing test templates, without new art, abilities or stats.
+   futureEnemyWaves:Object.freeze([Object.freeze(["ves-2","shade-2","ves-3"])]),
+   stars:Object.freeze([
+    Object.freeze({conditions:Object.freeze([{type:"victory"}]),hint:"Победить во всех волнах"}),
+    Object.freeze({conditions:Object.freeze([{type:"victory"},{type:"all-allies-alive"}]),hint:"Победить во всех волнах без потерь"}),
+    Object.freeze({conditions:Object.freeze([{type:"victory"},{type:"all-allies-alive"},{type:"max-ally-actions",limit:9}]),hint:"Победить во всех волнах без потерь за 9 действий союзников или меньше"})
+   ])
   })
  });
  const predicates=Object.freeze({

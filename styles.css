@@ -700,3 +700,13 @@ body.battle-mode #app>footer{visibility:hidden}
  .battle-screen .ability-tooltip strong{font-size:11px}
  .battle-screen .ability-tooltip p{font-size:10px}
 }
+
+/* Combat-009 Safari: hold on a skill belongs to the game, not text selection. */
+.battle-screen .ability-slot,
+.battle-screen .ability-slot .ability-btn{
+ -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
+}
+.battle-screen .ability-controls.battle-finished .ability-options{display:none}
+.battle-screen .ability-controls.battle-finished #battleRetryBtn{
+ display:block;width:100%;min-height:44px;
+}

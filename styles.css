@@ -321,3 +321,18 @@ button{touch-action:manipulation}
 @media (orientation:landscape) and (max-height:390px) and (max-width:1100px){
  .auto-battle-btn{min-height:34px;padding:5px 7px;font-size:10px}
 }
+
+/* Combat-004B: small dedicated speed control without enlarging the arena. */
+.auto-speed-btn{min-width:44px;min-height:44px;padding:9px 8px;white-space:nowrap;border-color:#d5ad6544;color:var(--gold);font-size:12px}
+.auto-speed-btn:disabled{opacity:.4;cursor:default}
+.battle-top-controls{max-width:100%}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .auto-speed-btn{min-width:38px;min-height:38px;padding:6px 5px;font-size:11px}
+}
+@media (orientation:landscape) and (max-height:390px) and (max-width:1100px){
+ .auto-speed-btn{min-width:34px;min-height:34px;padding:5px 4px;font-size:10px}
+}
+@media (orientation:landscape) and (max-width:700px){
+ .battle-top{flex-wrap:wrap}
+ .battle-top-controls{margin-left:auto}
+}

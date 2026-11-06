@@ -19,7 +19,7 @@ const CombatCore = (() => {
     return Object.keys(fighter.effects).map(type => ({type,remaining:effectCount(fighter,type)}));
   }
   function makeFighter(hero,index,meter) {
-    const fighter = {...hero,maxHp:hero.hp,specialCooldown:0,
+    const fighter = {...hero,maxHp:hero.hp,specialCooldown:0,powerfulCooldown:0,
       meter,index,effects:Object.create(null)};
     for (const [field,type] of Object.entries(EFFECT_FIELDS)) {
       Object.defineProperty(fighter,field,{
@@ -246,7 +246,20 @@ const CombatCore = (() => {
     const actor=battle.fighters[battle.currentActor];
     if(!actor||actor.side!=="ally"||actor.hp<=0||actor.meter<1000-1e-8)return false;
     const ability=AbilityData.get(actor,abilityId);
-    return !!ability&&(ability.id==="basic"||actor.specialCooldown===0);
+    if(!ability)return false;
+    if(abilityId==="basic")return ability.id==="basic";
+    if(abilityId==="special")return ability.id==="special"&&actor.specialCooldown===0;
+    if(abilityId==="powerful")return ability.id==="powerful"&&actor.powerfulCooldown===0;
+    return false;
+  }
+
+  // Combat-012A: independent cooldowns progress after a successful own action.
+  // The executed ability starts its cooldown; the other counter decreases once.
+  function finishAbilityCooldowns(actor,ability){
+    if(ability.id==="special")actor.specialCooldown=ability.cooldown;
+    else actor.specialCooldown=Math.max(0,actor.specialCooldown-1);
+    if(ability.id==="powerful")actor.powerfulCooldown=ability.cooldown;
+    else actor.powerfulCooldown=Math.max(0,actor.powerfulCooldown-1);
   }
 
   // Combat-011B: atomic resolution of one self/group command. The acting
@@ -298,8 +311,7 @@ const CombatCore = (() => {
     if(ability.kind==="damage"&&weakened)actor.weakenAttacks--;
     battle.message=actor.name+" применяет "+ability.name+
       ": целей "+recipients.length+".";
-    if(ability.id==="special")actor.specialCooldown=ability.cooldown;
-    else actor.specialCooldown=Math.max(0,actor.specialCooldown-1);
+    finishAbilityCooldowns(actor,ability);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
     battle.turn++;
     battle.currentActor=-1;
@@ -315,6 +327,12 @@ const CombatCore = (() => {
     if(!abilityReady(battle,abilityId))return false;
     const actor=battle.fighters[battle.currentActor];
     const ability=AbilityData.get(actor,abilityId);
+    // Invalid definitions must not consume an action or overwrite events.
+    if(!Number.isSafeInteger(ability.cooldown)||ability.cooldown<0)return false;
+    if(!["damage","heal","guard"].includes(ability.kind))return false;
+    if(ability.kind==="damage"&&(!Number.isFinite(ability.multiplier)||ability.multiplier<0))return false;
+    if(ability.kind==="heal"&&(!Number.isFinite(ability.healAmount)||ability.healAmount<0))return false;
+    if(ability.kind==="guard"&&(!Number.isInteger(ability.guardHits)||ability.guardHits<0))return false;
     const targets=abilityTargetIndices(battle,ability.target);
     if(["self","all-enemies","all-allies"].includes(ability.target))
       return performMultiTargetAbility(battle,actor,ability,targets);
@@ -343,12 +361,11 @@ const CombatCore = (() => {
         target.weakenAttacks=ability.weakening;
         emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"weaken",stacks:ability.weakening});
       }
-      battle.message=actor.name+(ability.id==="special"?" применяет "+ability.name+": ":" атакует: ")+
+      battle.message=actor.name+(ability.id!=="basic"?" применяет "+ability.name+": ":" атакует: ")+
         target.name+" получает "+damage+" урона"+
         (target.hp===0?" — повержен!":ability.weakening>0?", ослабление ×"+ability.weakening+".":".");
     }
-    if(ability.id==="special")actor.specialCooldown=ability.cooldown;
-    else actor.specialCooldown=Math.max(0,actor.specialCooldown-1);
+    finishAbilityCooldowns(actor,ability);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
     battle.turn++;
     battle.currentActor=-1;

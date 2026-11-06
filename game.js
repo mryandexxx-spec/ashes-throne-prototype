@@ -16,17 +16,15 @@ let selectedAbility="basic";
 // Combat-004: manual remains the default. Only one cancellable timer may run.
 let autoBattle=false;
 let autoTimer=null;
-// Combat-004B: UI pacing only; initiative and combat calculations stay unchanged.
+// All battle presentation timing shares one speed source. Future visual
+// effects can call BattleSpeed.multiplier() / BattleSpeed.duration(baseMs).
 const AUTO_STEP_MS=350;
-const AUTO_SPEEDS=Object.freeze([1,2,4]);
-let autoSpeed=1;
-function autoDelay(){return Math.round(AUTO_STEP_MS/autoSpeed);}
 function setAutoSpeed(speed){
- if(!AUTO_SPEEDS.includes(speed))return false;
+ if(!BattleSpeed.levels.includes(speed))return false;
  if(!autoBattle||!state.active||document.hidden||!$("#battle").classList.contains("active"))return false;
- if(autoSpeed===speed)return true;
- autoSpeed=speed;
- cancelAutoTimer(); // apply new delay immediately without a stale queued step
+ if(BattleSpeed.get()===speed)return true;
+ BattleSpeed.set(speed);
+ cancelAutoTimer(); // replace pending auto action with a newly scaled delay
  syncBattleUI();
  return true;
 }
@@ -43,7 +41,7 @@ function queueAutoAction(){
   if(!CombatCore.performAutoAction(state)){setAutoBattle(false);return;}
   selectedAbility="basic";
   syncBattleUI();
- },autoDelay());
+ },BattleSpeed.duration(AUTO_STEP_MS));
 }
 function setAutoBattle(enabled){
  cancelAutoTimer();
@@ -353,8 +351,8 @@ function syncBattleUI(){
  const speedButton=$("#autoSpeedBtn");
  if(speedButton){
   speedButton.disabled=!state.active||!autoBattle;
-  speedButton.textContent=autoSpeed+"×";
-  speedButton.setAttribute("aria-label","Скорость автобоя "+autoSpeed+"×. Нажми, чтобы изменить");
+  speedButton.textContent=BattleSpeed.get()+"×";
+  speedButton.setAttribute("aria-label","Скорость автобоя "+BattleSpeed.get()+"×. Нажми, чтобы изменить");
  }
  $("#specialAbilityBtn").textContent=actor&&actor.specialCooldown>0?"Особая · "+actor.specialCooldown:"Особая";
  $("#basicAbilityBtn").classList.toggle("selected",selectedAbility==="basic");
@@ -387,7 +385,7 @@ function renderCombatants(){
 function resetBattle(){
  cancelAutoTimer();
  autoBattle=false;
- autoSpeed=1;
+ BattleSpeed.reset();
  missionResultShown=false;
  lastMissionStars=0;
  selectedAbility="basic";
@@ -409,7 +407,8 @@ if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.ac
 const autoSpeedControl=$("#autoSpeedBtn");
 if(autoSpeedControl)autoSpeedControl.addEventListener("click",()=>{
  if(autoBattle&&state.active){
-  const next=AUTO_SPEEDS[(AUTO_SPEEDS.indexOf(autoSpeed)+1)%AUTO_SPEEDS.length];
+  const levels=BattleSpeed.levels;
+  const next=levels[(levels.indexOf(BattleSpeed.get())+1)%levels.length];
   setAutoSpeed(next);
  }
 });

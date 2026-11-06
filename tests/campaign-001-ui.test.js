@@ -70,13 +70,18 @@ function fakeSetTimeout(fn,delay){
 }
 function fakeClearTimeout(id){timers.delete(id);scheduledDelays.delete(id);}
 function pendingDelay(){return scheduledDelays.values().next().value;}
+function flushVisual(){
+ let frames=0;
+ while(api.isVisualTransition()&&frames++<250)api.renderBattleFrame();
+ assert.ok(frames<250,"visual transition should complete");
+}
 function tick(){
  const first=timers.entries().next().value;
  assert.ok(first,"expected pending autobattle step");
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, renderBattleFrame, setAutoSpeed})",
+ "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), setAutoSpeed})",
  {document,window:{addEventListener(){},localStorage},BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 elements.campaignMissions.contains=()=>true;
@@ -285,16 +290,84 @@ while(autoWaves.wave===1&&autoWaves.active&&actions++<10)tick();
 assert.equal(autoWaves.wave,2);
 assert.equal(elements.battle.classList.active,true);
 const rewardBeforeFinal=api.getMaterials();
-assert.equal(timers.size,1);
+assert.equal(api.isVisualTransition(),true,"wave switches core state before its visual transition");
+assert.equal(api.getVisualFighters().filter(f=>f.side==="enemy").length,2,
+ "old wave roster remains visible through queued hit/death animations");
+assert.equal(timers.size,0,"next wave must not start while previous wave animations run");
+flushVisual();
+assert.equal(timers.size,1,"autobattle resumes after wave animations");
 autoWaves.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
 while(autoWaves.active&&actions++<25)tick();
 assert.ok(actions<25,"auto must finish multi-wave mission");
 assert.equal(autoWaves.winner,"ally");
-assert.equal(api.getMaterials(),rewardBeforeFinal+1);
+assert.equal(api.isVisualTransition(),true,"battle result waits for final animation");
+assert.equal(elements.missionResult.classList.active,false,"final screen must not interrupt death sequence");
+assert.equal(api.getMaterials(),rewardBeforeFinal+1,"reward persists immediately even while result animation runs");
 assert.equal(timers.size,0,"last automatic action cancels further scheduling");
+flushVisual();
+assert.equal(api.getMaterials(),rewardBeforeFinal+1);
+assert.equal(elements.missionResult.classList.active,true,"battle result opens after animation");
 assert.equal(elements.autoSpeedBtn.disabled,true,"finished battle disables speed");
 assert.equal(api.isAuto(),false,"auto mode clears on victory");
 assert.equal(elements.missionResult.classList.active,true);
 api.syncBattleUI();
 assert.equal(api.getMaterials(),rewardBeforeFinal+1,"no duplicated reward after finished auto battle");
-console.log("Campaign-001, Combat-004B UI: manual speed choice, auto handoff, timer cancel, visibility, waves and reward passed");
+// Combat-006 manual victory: damage/reward computed by core immediately,
+// but campaign navigation waits until the visual queue is exhausted.
+api.showScreen("campaign");
+clickMission("black-pass-ambush");
+click(elements.squadStart);
+const manualFinish=api.getBattle();
+const rewardBeforeManual=api.getMaterials();
+manualFinish.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
+let manualActions=0;
+while(manualFinish.active&&manualActions++<20)click(elements.attackBtn);
+assert.ok(manualActions<20,"manual encounter completes");
+assert.equal(manualFinish.winner,"ally");
+assert.equal(api.isVisualTransition(),true);
+assert.equal(elements.battle.classList.active,true,"manual final hit remains on arena");
+assert.equal(elements.attackBtn.disabled,true,"buttons locked during final animation");
+assert.equal(api.getMaterials(),rewardBeforeManual+1,"manual victory is committed immediately");
+api.syncBattleUI();
+assert.equal(api.getMaterials(),rewardBeforeManual+1,"UI re-sync cannot duplicate reward during animation");
+flushVisual();
+assert.equal(elements.missionResult.classList.active,true);
+assert.equal(api.getMaterials(),rewardBeforeManual+1,"visual handoff never awards twice");
+api.syncBattleUI();
+assert.equal(api.getMaterials(),rewardBeforeManual+1,"no duplicate manual victory reward");
+// Exit during a pending result animation must cancel it, never show a stale result.
+api.showScreen("campaign");
+clickMission("black-pass-ambush");
+click(elements.squadStart);
+const interrupted=api.getBattle();
+const rewardBeforeInterrupt=api.getMaterials();
+interrupted.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
+let interruptActions=0;
+while(interrupted.active&&interruptActions++<20)click(elements.attackBtn);
+assert.equal(api.isVisualTransition(),true);
+assert.equal(api.getMaterials(),rewardBeforeInterrupt+1,"completed combat reward persists before exit");
+api.showScreen("home");
+assert.equal(api.isVisualTransition(),false,"exit cancels pending visual handoff");
+assert.equal(api.getMotion().pending(),0);
+api.renderBattleFrame();
+assert.equal(elements.home.classList.active,true,"no stale result on home screen");
+// Combat-006 defeat: death animation holds the arena but cannot grant reward.
+api.showScreen("campaign");
+clickMission("black-pass-ambush");
+click(elements.squadStart);
+const losing=api.getBattle();
+losing.fighters.filter(f=>f.side==="ally").forEach(f=>{f.hp=1;});
+losing.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=10000;f.maxHp=10000;});
+const beforeDefeatReward=api.getMaterials();
+let defeatActions=0;
+while(losing.active&&defeatActions++<35)click(elements.attackBtn);
+assert.ok(defeatActions<35,"controlled losing battle should finish");
+assert.equal(losing.winner,"enemy");
+assert.equal(api.isVisualTransition(),true,"defeat waits for the last death animations");
+assert.equal(elements.battle.classList.active,true,"arena stays visible until defeat animations finish");
+assert.equal(api.getMaterials(),beforeDefeatReward,"defeat never grants a reward");
+flushVisual();
+assert.equal(elements.missionResult.classList.active,true);
+assert.match(elements.missionResultTitle.textContent,/не пройдена/);
+assert.equal(api.getMaterials(),beforeDefeatReward);
+console.log("Campaign-001, Combat-006 UI: manual and auto victory, defeat, wave handoff and reward passed");

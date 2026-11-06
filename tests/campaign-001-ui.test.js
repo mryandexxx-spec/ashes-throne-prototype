@@ -170,6 +170,18 @@ const reloaded=vm.runInNewContext(src+"\n({campaign:campaignProgress,materials:p
  {document,window:{addEventListener(){},localStorage},BABYLON});
 assert.equal(reloaded.campaign.completed["black-pass-ambush"],true);
 assert.equal(reloaded.materials,2);
+// Combat-008B: a five-enemy lineup must spread evenly along the far side.
+// This is only presentation geometry; mission status and rewards are unaffected.
+api.showScreen("campaign");
+clickMission("demo-mission-2");
+click(elements.squadStart);
+const largeRoster=api.getBattle().fighters.filter(f=>f.side==="enemy");
+assert.equal(largeRoster.length,5);
+const renderedZ=largeRoster.map(f=>api.getMeshes()[f.id].body.position.z);
+assert.equal(renderedZ.join(","),"-3.2,-1.6,0,1.6,3.2","five enemies use five visible lanes");
+assert.ok(largeRoster.every(f=>api.getMeshes()[f.id].body.position.x===3.4),"enemies remain on far side");
+assert.ok(api.getBattle().fighters.filter(f=>f.side==="ally").every(f=>api.getMeshes()[f.id].body.position.x===-3.4),"allies remain on near side");
+api.showScreen("campaign");
 // Integration: third mission starts with two enemies and advances to three
 // without showing a result, granting an intermediate reward or restarting allies.
 api.getCampaignProgress().completed["demo-mission-2"]=true;

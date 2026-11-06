@@ -13,6 +13,10 @@ const HEROES = [
 ];
 const $=s=>document.querySelector(s);
 let engine, scene, meshes={};
+let arenaCamera=null;
+// Combat-008B: allies are near the viewer, enemies farther away.
+const ARENA_VIEW=Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:17,targetY:.9});
+const FORMATION_SPACING=1.6;
 let renderLoopRunning=false;
 let selectedAbility="basic";
 // Combat-004: manual remains the default. Only one cancellable timer may run.
@@ -184,6 +188,7 @@ function showScreen(id){
    if(typeof BABYLON==="undefined" || !BABYLON.Engine || !BABYLON.Scene)
     throw new Error("Babylon.js is unavailable");
    if(!engine)initBabylon();
+   resetArenaCamera(); // Start every encounter from the approved perspective.
    engine.resize();
    resetBattle();
    updateMeshes();
@@ -196,7 +201,7 @@ function showScreen(id){
    stopBattleRendering();
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
-   scene=undefined;engine=undefined;meshes={};renderLoopRunning=false;
+   scene=undefined;engine=undefined;arenaCamera=null;meshes={};renderLoopRunning=false;
    showScreen("squad");
    const notice=$("#battleLoadError");
    if(notice)notice.hidden=false;
@@ -528,11 +533,24 @@ function stopBattleRendering(){
  engine.stopRenderLoop(renderBattleFrame);
  renderLoopRunning=false;
 }
+// Reuse the camera and GPU resources on every battle entry.
+function resetArenaCamera(){
+ if(!arenaCamera)return;
+ arenaCamera.alpha=ARENA_VIEW.alpha;
+ arenaCamera.beta=ARENA_VIEW.beta;
+ arenaCamera.radius=ARENA_VIEW.radius;
+ const center=new BABYLON.Vector3(0,ARENA_VIEW.targetY,0);
+ if(typeof arenaCamera.setTarget==="function")arenaCamera.setTarget(center);
+ else arenaCamera.target=center; // Minimal test stub.
+}
 // Reuse the scene rather than re-creating meshes on every battle entry.
 function initBabylon(){
  const canvas=$("#renderCanvas");engine=new BABYLON.Engine(canvas,true,{stencil:true});
  scene=new BABYLON.Scene(engine);scene.clearColor=new BABYLON.Color4(.035,.045,.065,1);
- const camera=new BABYLON.ArcRotateCamera("camera",-Math.PI/2,1.05,15,new BABYLON.Vector3(0,1,0),scene);camera.lowerRadiusLimit=11;camera.upperRadiusLimit=18;camera.attachControl(canvas,true);
+ arenaCamera=new BABYLON.ArcRotateCamera("camera",ARENA_VIEW.alpha,ARENA_VIEW.beta,ARENA_VIEW.radius,new BABYLON.Vector3(0,ARENA_VIEW.targetY,0),scene);
+ arenaCamera.lowerRadiusLimit=12;arenaCamera.upperRadiusLimit=21;
+ arenaCamera.lowerBetaLimit=.55;arenaCamera.upperBetaLimit=1.30;
+ arenaCamera.attachControl(canvas,true);
  const hemi=new BABYLON.HemisphericLight("hemi",new BABYLON.Vector3(0,1,0),scene);hemi.intensity=.8;
  const key=new BABYLON.DirectionalLight("key",new BABYLON.Vector3(-.5,-1,.5),scene);key.intensity=1.1;
  const ground=BABYLON.MeshBuilder.CreateGround("ground",{width:16,height:9},scene);const gm=new BABYLON.StandardMaterial("groundMat",scene);gm.diffuseColor=new BABYLON.Color3(.12,.15,.19);gm.specularColor=new BABYLON.Color3(.1,.1,.1);ground.material=gm;
@@ -543,7 +561,7 @@ function initBabylon(){
  gridmat.alpha=.28;gridmat.wireframe=true;gridmat.backFaceCulling=false;grid.material=gridmat;
  // Low-poly stylized fighters: capsule body, sphere head, colored shield.
  HEROES.forEach((h,i)=>{
-  const x=h.side==="ally"?-3.4:3.4,z=(i%3-1)*1.55;
+  const x=h.side==="ally"?-3.4:3.4,z=(i%3-1)*FORMATION_SPACING;
   const body=BABYLON.MeshBuilder.CreateCapsule("body_"+i,{height:1.5,radius:.42},scene);body.position=new BABYLON.Vector3(x,.8,z);
   const mat=new BABYLON.StandardMaterial("mat_"+i,scene);mat.diffuseColor=h.side==="ally"?new BABYLON.Color3(.28,.55,.76):new BABYLON.Color3(.72,.25,.23);mat.emissiveColor=h.side==="ally"?new BABYLON.Color3(.02,.06,.09):new BABYLON.Color3(.08,.015,.01);body.material=mat;
   const head=BABYLON.MeshBuilder.CreateSphere("head_"+i,{diameter:.62,segments:12},scene);head.position=new BABYLON.Vector3(x,1.8,z);head.material=mat;
@@ -576,7 +594,7 @@ function updateMeshes(){
    const sideMembers=roster.filter(f=>f.side===member.side);
    const slot=sideMembers.findIndex(f=>f.id===h.id);
    const x=member.side==="ally"?-3.4:3.4;
-   const z=(slot-(sideMembers.length-1)/2)*1.55;
+   const z=(slot-(sideMembers.length-1)/2)*FORMATION_SPACING;
    mesh.body.position.x=mesh.head.position.x=mesh.base.position.x=x;
    mesh.body.position.z=mesh.head.position.z=mesh.base.position.z=z;
    const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;

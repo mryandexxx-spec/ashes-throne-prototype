@@ -19,6 +19,7 @@ for(const id of ["kael","lyra","darin","medic-demo","test-area-damage"]){
  const definition=AbilityData.get({id},"passive");
  assert.equal(definition.id,"passive","passive slot exists for "+id);
  assert.equal(definition.triggers.length,0,"no unapproved passives fire for "+id);
+ assert.equal(definition.modifiers.length,0,"no unapproved permanent/conditional bonuses for "+id);
  assert.equal(AbilityData.get({id},"leader"),null,"leader mechanics remain unassigned");
 }
 assert.equal(AbilityData.get({id:"unknown"},"passive"),null);
@@ -70,4 +71,45 @@ assert.equal(triggers(b).length,1);
 assert.equal(b.events.filter(e=>e.type==="battle-end").length,1);
 const fresh=make("test-passive-attacker");
 assert.equal(triggers(fresh).length,0,"no passive triggers leak across battles");
-console.log("Combat-013A passive slots, deterministic triggers, enemy hits, no recursion and reset passed");
+// Permanent and conditional modifiers are a read-only contract, never an
+// implicit combat stat buff during Combat-013A.
+b=make("test-passive-always");
+const passiveAlways=b.fighters[0],atkAlways=passiveAlways.atk;
+assert.deepEqual(Array.from(core.activePassiveModifiers(b,passiveAlways.id),x=>({ ...x })),
+ [{stat:"atk",operation:"flat",value:5}],
+ "permanent modifier is listed even before any action");
+assert.equal(passiveAlways.atk,atkAlways,"read-only query must not change attack");
+passiveAlways.hp=10;
+assert.equal(core.activePassiveModifiers(b,passiveAlways.id).length,1,
+ "permanent modifier remains active while alive");
+passiveAlways.hp=0;
+assert.equal(core.activePassiveModifiers(b,passiveAlways.id).length,0,
+ "passive stops applying when owner dies");
+
+b=make("test-passive-conditional");
+const conditional=b.fighters[0],baseAtk=conditional.atk;
+assert.equal(core.activePassiveModifiers(b,conditional.id).length,0,
+ "conditional modifier is inactive at full health");
+conditional.hp=50;
+assert.equal(core.activePassiveModifiers(b,conditional.id).length,0,
+ "hp-below-percent uses strict threshold");
+conditional.hp=49;
+assert.deepEqual(Array.from(core.activePassiveModifiers(b,conditional.id),x=>({...x})),
+ [{stat:"atk",operation:"flat",value:7}],
+ "conditional becomes active below threshold without a turn or tap");
+assert.equal(conditional.atk,baseAtk,"no actual stat adjustment before Combat-013B");
+conditional.hp=80;
+assert.equal(core.activePassiveModifiers(b,conditional.id).length,0,
+ "conditional deactivates immediately on healing");
+assert.equal(core.activePassiveModifiers(b,"missing").length,0);
+assert.equal(core.abilityReady(b,"passive"),false);
+assert.equal(core.performPlayerAbility(b,"passive"),false);
+const restarted=make("test-passive-conditional");
+assert.equal(core.activePassiveModifiers(restarted,"test-passive-conditional").length,0,
+ "new battle resets condition to full health");
+for(const id of ["kael","lyra","darin","medic-demo","test-area-damage"]){
+ const safe=make(id);
+ assert.equal(core.activePassiveModifiers(safe,id).length,0);
+}
+
+console.log("Combat-013A reactive, permanent and conditional passive contracts, without gameplay side effects passed");

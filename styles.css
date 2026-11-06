@@ -626,3 +626,36 @@ body.battle-mode #app>footer{visibility:hidden}
  .battle-screen .fighter-inspect-role{margin-bottom:4px}
  .battle-screen .fighter-inspect-stats{font-size:11px;line-height:1.5}
 }
+
+/* Combat-008F: compact landscape touch targets and separated top-right HUD. */
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .battle-screen .battle-top-controls.arena-hud{
+  top:calc(84px + env(safe-area-inset-top,0px));
+ }
+ .battle-screen .battle-top-controls.arena-hud .ghost{
+  min-height:40px;
+ }
+ .battle-screen .battle-top>.ghost{
+  min-height:40px;
+ }
+}
+@media (orientation:landscape) and (max-height:390px) and (max-width:1100px){
+ .battle-screen .battle-top-controls.arena-hud{
+  top:calc(76px + env(safe-area-inset-top,0px));
+ }
+ .battle-screen .battle-top-controls.arena-hud .ghost{
+  min-height:40px;
+ }
+ .battle-screen .battle-top>.ghost{
+  min-height:40px;
+ }
+}
+@media (orientation:landscape) and (max-height:330px) and (max-width:1100px){
+ .battle-screen .target-fighter-vitals{font-size:8px}
+ .battle-screen .battle-top>.target-fighter-hud{padding:4px 7px}
+ .battle-screen .battle-top-controls.arena-hud{top:calc(68px + env(safe-area-inset-top,0px))}
+ .battle-screen .arena-utility{max-height:calc(100dvh - 106px)}
+ .battle-screen .battle-bottom{bottom:max(5px,env(safe-area-inset-bottom,0px))}
+ .battle-screen .action-panel{padding:5px 7px}
+ .battle-screen .fighter-inspect-panel{max-height:calc(100dvh - 16px)}
+}

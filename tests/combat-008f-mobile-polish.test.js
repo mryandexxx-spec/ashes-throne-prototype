@@ -1,0 +1,17 @@
+"use strict";
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const path=require("node:path");
+const read=name=>fs.readFileSync(path.join(__dirname,"..",name),"utf8");
+const game=read("game.js"),css=read("styles.css"),html=read("index.html");
+assert.match(game,/canvas\.addEventListener\("pointercancel",cancelInspectionGesture\)/);
+assert.match(game,/canvas\.addEventListener\("lostpointercapture",cancelInspectionGesture\)/);
+assert.match(game,/window\.addEventListener\("orientationchange",\(\)=>\{/);
+assert.match(game,/if\(document\.hidden\)\{closeFighterInspection\(\)/);
+assert.match(game,/const transform=scene\.getTransformMatrix\(\)/);
+assert.match(game,/const sides=\{ally:roster\.filter/);
+assert.match(game,/const sideMembersBySide=\{ally:roster\.filter/);
+assert.match(css,/\.battle-screen \.battle-top-controls\.arena-hud\s*\{[^}]*top:calc\(76px/);
+assert.match(css,/min-height:40px/);
+assert.match(html,/v0\.3\.11 · CBA008F/);
+console.log("Combat-008F mobile-polish and gesture lifecycle contract passed");

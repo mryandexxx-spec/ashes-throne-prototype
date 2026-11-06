@@ -141,12 +141,15 @@
               <p id="actionHint">Выбери противника и нажми на способность.</p>
             </div>
             <div id="abilityControls" class="ability-controls">
-              <div class="ability-options" aria-label="Применение способностей">
+              <div id="abilityOptions" class="ability-options" aria-label="Применение способностей">
                 <div id="basicAbilitySlot" class="ability-slot">
                   <button type="button" id="basicAbilityBtn" class="ability-btn">Базовая атака</button>
                 </div>
                 <div id="specialAbilitySlot" class="ability-slot">
                   <button type="button" id="specialAbilityBtn" class="ability-btn">Особая способность</button>
+                </div>
+                <div id="powerfulAbilitySlot" class="ability-slot" hidden>
+                  <button type="button" id="powerfulAbilityBtn" class="ability-btn" disabled>Мощная способность</button>
                 </div>
               </div>
               <div id="abilityTooltip" class="ability-tooltip" role="tooltip" hidden>

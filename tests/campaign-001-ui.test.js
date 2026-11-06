@@ -79,7 +79,7 @@ api.showScreen("campaign");
 assert.match(elements.campaignMissions.innerHTML,/Не пройдено/);
 assert.match(elements.campaignMissions.innerHTML,/Основной путь/);
 assert.match(elements.campaignMissions.innerHTML,/Засада у Чёрного перевала/);
-assert.equal(elements.campaignMissions.innerHTML.includes("Заблокировано"),false,"current single mission is open");
+assert.match(elements.campaignMissions.innerHTML,/Заблокировано/,"second mission stays locked until first victory");
 clickMission();
 assert.equal(elements.squad.classList.active,true);
 click(elements.squadStart);

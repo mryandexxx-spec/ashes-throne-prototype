@@ -298,3 +298,13 @@ button{touch-action:manipulation}
  .simulation-dialog h2{font-size:17px;margin-bottom:6px}
  .simulation-dialog p{font-size:12px;margin-bottom:8px}
 }
+
+/* Mission-local criteria: compact and sourced from MissionData.stars[].hint. */
+.mission-criteria{list-style:none;display:grid;gap:5px;min-width:0;margin:7px 0 12px;padding:0;font-size:12px;line-height:1.4;color:var(--muted)}
+.mission-criteria li{display:flex;align-items:baseline;gap:9px;min-width:0}
+.mission-criteria-star{flex:none;min-width:25px;font-weight:700;color:var(--gold)}
+.mission-criteria li span:last-child{min-width:0;overflow-wrap:anywhere}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .mission-criteria{font-size:10px;gap:3px;margin:5px 0 8px}
+ .mission-criteria li{gap:6px}
+}

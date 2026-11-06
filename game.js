@@ -352,8 +352,10 @@ function syncBattleUI(){
   $("#attackBtn").disabled=true;
   $("#basicAbilityBtn").disabled=true;
   $("#specialAbilityBtn").disabled=true;
-  $("#autoBattleBtn").disabled=!state.active;
-  $("#autoSpeedBtn").disabled=!state.active;
+  const autoControl=$("#autoBattleBtn");
+  if(autoControl)autoControl.disabled=!state.active;
+  const speedControl=$("#autoSpeedBtn");
+  if(speedControl)speedControl.disabled=!state.active;
   $("#battleMessage").textContent=state.message;
   renderBattleLog();
   renderCombatants();

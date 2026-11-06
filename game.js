@@ -650,9 +650,13 @@ function initBabylon(){
   resizeQueued=true;
   const update=()=>{
    resizeQueued=false;
-   if(!shouldRenderBattle())return;
    const landscape=typeof window.innerWidth==="number"&&typeof window.innerHeight==="number"
     ?window.innerWidth>window.innerHeight:null;
+   // Explicitly remove the portrait hint from the hit-test/paint tree.
+   // Safari may retain the previous orientation media-query style briefly.
+   const prompt=$("#orientationPrompt");
+   if(prompt&&landscape!==null)prompt.hidden=landscape;
+   if(!shouldRenderBattle())return;
    if(landscape===true&&previousLandscape===false)resetArenaCamera();
    if(landscape!==null)previousLandscape=landscape;
    engine.resize();

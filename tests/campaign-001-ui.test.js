@@ -5,7 +5,7 @@ const path=require("node:path");
 const vm=require("node:vm");
 const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
- "battleStatus","turnChip","actionTitle","actionHint","attackBtn","arenaIndicators",
+ "battleStatus","turnChip","actionTitle","actionHint","attackBtn","arenaIndicators","orientationPrompt",
  "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","autoSpeedBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
@@ -140,6 +140,7 @@ activeCamera.alpha=0; // A user-adjusted view is reset only when returning from 
 liveWindow.innerWidth=390;liveWindow.innerHeight=844;
 viewportEvents.orientationchange();flushRaf();
 assert.equal(activeCamera.alpha,0,"portrait resize does not force camera reset");
+assert.equal(elements.orientationPrompt.hidden,false,"portrait hint is visible while phone is upright");
 const beforeLandscapeResize=resizes;
 liveWindow.innerWidth=844;liveWindow.innerHeight=390;
 viewportEvents.orientationchange();
@@ -151,6 +152,22 @@ flushRaf();
 assert.equal(resizes,beforeLandscapeResize+1,"all events coalesce to one Babylon resize");
 assert.equal(activeCamera.alpha,-3*Math.PI/4,"landscape return restores isometric camera");
 assert.equal(activeCamera.radius,12,"landscape return keeps approved max zoom");
+assert.equal(elements.orientationPrompt.hidden,true,"landscape removes portrait touch shield");
+// Regression: UI callbacks must still respond after portrait -> landscape.
+const speedBeforeTap=api.getSpeed();
+click(elements.autoSpeedBtn);
+assert.equal(api.getSpeed(),speedBeforeTap===1?2:4,"speed button still responds after rotation");
+click(elements.autoSpeedBtn);
+click(elements.autoSpeedBtn);
+assert.equal(api.getSpeed(),speedBeforeTap,"speed restored for subsequent battle regressions");
+click(elements.specialAbilityBtn);
+assert.ok(elements.specialAbilityBtn.handlers.click.length>0,"special ability button still has its handler");
+click(elements.basicAbilityBtn);
+assert.equal(elements.basicAbilityBtn.classList.contains("selected"),true,"ability controls remain responsive");
+const enemyPickBefore=api.getBattle().selectedEnemy;
+pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes().shade.body}});
+assert.equal(api.getBattle().fighters[api.getBattle().selectedEnemy].id,"shade","3D picking still works after rotation");
+
 
 // Formation contract for teams of 1 to 5 without changing the roster or save schema.
 const positions=n=>Array.from({length:n},(_,i)=>api.formationPosition("ally",i,n));

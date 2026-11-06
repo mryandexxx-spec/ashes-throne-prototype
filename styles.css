@@ -344,7 +344,7 @@ button{touch-action:manipulation}
 /* Combat-008A: the 3D arena owns the entire battle viewport.
    HUD is layered inside the same arena, never laid out beside the canvas.
    Scoped to active battle so collection, squad, campaign and results stay intact. */
-body.battle-mode{overflow:hidden;height:100dvh;touch-action:none}
+body.battle-mode{overflow:hidden;height:100dvh}
 body.battle-mode #app>.topbar,
 body.battle-mode #app>footer{visibility:hidden}
 .battle-screen.active{
@@ -515,3 +515,11 @@ body.battle-mode #app>footer{visibility:hidden}
 @media(prefers-reduced-motion:reduce){
  .battle-screen .arena-health span,.battle-screen .arena-initiative span{transition:none}
 }
+
+/* Combat-008C-TAP: portrait advice is informational, never a touch shield.
+   Safari can briefly keep portrait media-query styling during rotation. */
+#orientationPrompt{pointer-events:none!important}
+#orientationPrompt[hidden]{display:none!important}
+/* A HUD button should always be a direct hit target after a viewport change. */
+.battle-screen .battle-top button,
+.battle-screen .ability-controls button{pointer-events:auto;touch-action:manipulation}

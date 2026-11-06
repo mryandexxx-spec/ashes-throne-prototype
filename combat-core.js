@@ -3,7 +3,19 @@
 const CombatCore = (() => {
   "use strict";
 
-  function createBattle(heroes) {
+  // Optional future waves are separate encounters inside the same battle.
+  // Existing single-wave calls keep their original behavior.
+  function createBattle(heroes, futureWaves = []) {
+    if (!Array.isArray(futureWaves)) throw Error("futureWaves must be an array");
+    if (futureWaves.some(wave => !Array.isArray(wave) || wave.length === 0 ||
+        wave.some(enemy => !enemy || enemy.side !== "enemy")))
+      throw Error("each future wave requires at least one enemy");
+    const allyIds = new Set(heroes.filter(f => f.side === "ally").map(f => f.id));
+    for (const wave of futureWaves) {
+      InitiativeModel.createInitiative(wave);
+      if (wave.some(enemy => allyIds.has(enemy.id)))
+        throw Error("wave enemy id collides with ally id");
+    }
     const initiative = InitiativeModel.createInitiative(heroes);
     const fighters = heroes.map((hero, index) => ({
       ...hero,
@@ -16,6 +28,10 @@ const CombatCore = (() => {
     }));
     return {
       fighters,
+      wave: 1,
+      totalWaves: 1 + futureWaves.length,
+      // Copy the roster references so callers cannot alter the wave queue.
+      pendingWaves: futureWaves.map(wave => wave.map(enemy => ({...enemy}))),
       turn: 1,
       allyActions: 0, // successfully executed player abilities, including support; enemies excluded
       currentActor: -1,
@@ -59,6 +75,27 @@ const CombatCore = (() => {
 
   function finishIfOver(battle) {
     if (firstLivingEnemy(battle.fighters) < 0) {
+      // A wave is not a mission victory. Keep surviving allies (HP, initiative,
+      // cooldowns and effects) and replace defeated enemies with the next wave.
+      if (battle.pendingWaves && battle.pendingWaves.length &&
+          firstLivingAlly(battle.fighters) >= 0) {
+        const next = battle.pendingWaves.shift();
+        const allies = battle.fighters.filter(f => f.side === "ally");
+        const initiative = InitiativeModel.createInitiative(next);
+        const enemies = next.map((enemy, i) => ({
+          ...enemy,maxHp:enemy.hp,specialCooldown:0,guardHits:0,
+          weakenAttacks:0,meter:initiative[i].meter,index:allies.length+i
+        }));
+        battle.fighters = [...allies,...enemies];
+        battle.fighters.forEach((f,i) => { f.index = i; });
+        battle.wave++;
+        battle.currentActor = -1;
+        battle.selectedEnemy = firstLivingEnemy(battle.fighters);
+        battle.selectedAlly = firstLivingAlly(battle.fighters);
+        battle.message = "Волна " + battle.wave + " из " + battle.totalWaves + ". Противники вступают в бой.";
+        emit(battle,"wave-start",{wave:battle.wave,total:battle.totalWaves});
+        return false;
+      }
       battle.active = false;
       battle.winner = "ally";
       battle.currentActor = -1;

@@ -61,7 +61,7 @@ const BABYLON={Engine,Scene,ArcRotateCamera:Camera,HemisphericLight:class{},Dire
 const savedData=new Map();
 const localStorage={getItem:k=>savedData.has(k)?savedData.get(k):null,setItem:(k,v)=>savedData.set(k,v)};
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI})",
+ "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 elements.campaignMissions.contains=()=>true;
@@ -80,10 +80,11 @@ assert.match(elements.campaignMissions.innerHTML,/Не пройдено/);
 assert.match(elements.campaignMissions.innerHTML,/Основной путь/);
 assert.match(elements.campaignMissions.innerHTML,/Засада у Чёрного перевала/);
 const cards=elements.campaignMissions.innerHTML.split('<article class="campaign-panel campaign-mission">').slice(1);
-assert.equal(cards.length,2,"both mission cards must render");
+assert.equal(cards.length,3,"three mission cards must render");
 assert.match(cards[0],/8 действий союзников или меньше/,"first mission must show its own 3-star condition");
 assert.doesNotMatch(cards[0],/9 действий союзников или меньше/,"first mission must not show second mission condition");
 assert.match(cards[1],/9 действий союзников или меньше/,"second mission must show its own 3-star condition");
+assert.match(cards[2],/18 действий союзников или меньше/,"third mission shows the wave-wide 3-star criterion");
 for(const card of cards){
  assert.match(card,/Условия получения звёзд/);
  assert.match(card,/1★/);
@@ -134,6 +135,42 @@ const reloaded=vm.runInNewContext(src+"\n({campaign:campaignProgress,materials:p
  {document,window:{addEventListener(){},localStorage},BABYLON});
 assert.equal(reloaded.campaign.completed["black-pass-ambush"],true);
 assert.equal(reloaded.materials,2);
+// Integration: third mission starts with two enemies and advances to three
+// without showing a result, granting an intermediate reward or restarting allies.
+api.getCampaignProgress().completed["demo-mission-2"]=true;
+api.getCampaignProgress().bestStars["demo-mission-2"]=1;
+api.showScreen("campaign");
+clickMission("demo-mission-3");
+assert.equal(elements.squad.classList.active,true,"third mission opens after second");
+click(elements.squadStart);
+const waveBattle=api.getBattle();
+assert.equal(waveBattle.wave,1);
+assert.equal(waveBattle.totalWaves,2);
+assert.equal(waveBattle.fighters.filter(h=>h.side==="enemy").length,2);
+assert.match(elements.turnChip.textContent,/Волна 1\/2/);
+const materialsBeforeWaves=api.getMaterials();
+const heroBeforeWave=waveBattle.fighters.find(f=>f.side==="ally");
+heroBeforeWave.hp-=3;
+const health=heroBeforeWave.hp;
+waveBattle.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=0;});
+api.CombatCore.advanceToPlayerTurn(waveBattle);
+api.syncBattleUI();
+assert.equal(waveBattle.wave,2);
+assert.equal(waveBattle.active,true);
+assert.equal(waveBattle.winner,null);
+assert.equal(waveBattle.fighters.filter(f=>f.side==="enemy").length,3);
+assert.match(elements.turnChip.textContent,/Волна 2\/2/);
+assert.equal(waveBattle.fighters.find(f=>f.id===heroBeforeWave.id).hp,health);
+assert.equal(api.getMaterials(),materialsBeforeWaves,"first wave cannot grant reward");
+assert.equal(elements.battle.classList.active,true,"do not show mission result between waves");
+waveBattle.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=0;});
+api.CombatCore.advanceToPlayerTurn(waveBattle);
+api.syncBattleUI();
+assert.equal(waveBattle.winner,"ally");
+assert.equal(elements.missionResult.classList.active,true);
+assert.equal(api.getMaterials(),materialsBeforeWaves+1,"final wave grants exactly one reward");
+api.syncBattleUI();
+assert.equal(api.getMaterials(),materialsBeforeWaves+1,"repeated UI sync cannot duplicate final wave reward");
 // Return home from mission result does not affect persistent status.
 click(elements.missionResultHome);
 assert.equal(elements.home.classList.active,true);

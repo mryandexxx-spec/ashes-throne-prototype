@@ -11,7 +11,7 @@ const {MissionData,CampaignData,CampaignCore,ProgressCore}=vm.runInNewContext(
 );
 const first="black-pass-ambush",second="demo-mission-2";
 assert.equal(CampaignData.catalogIsValid(),true);
-assert.equal(MissionData.all().length,2);
+assert.equal(MissionData.all().length,3);
 assert.equal(CampaignData.getMission(second).order,2);
 assert.deepEqual(Array.from(CampaignData.getMission(second).requiredMissionIds),[first]);
 assert.equal(MissionData.get(second).title,"Демонстрационная миссия #2");
@@ -62,5 +62,5 @@ assert.match(game,/campaignProgress\.bestStars\[id\]!==3/);
 assert.match(game,/data-simulate-mission/);
 const html=read("index.html");
 assert.match(html,/id="simulationDialog"/);
-assert.match(html,/v0\.2\.5 · CC003-UI/);
+assert.match(html,/v0\.2\.6 · CW001/);
 console.log("Campaign-Content-003 demo: catalog, stars, save, reward and roster assertions passed");

@@ -14,6 +14,7 @@ const CombatLog=(()=>{
     case "damage":return name(e.targetId)+": −"+e.amount+" HP (осталось "+e.remainingHp+")";
     case "effect":return name(e.targetId)+": "+(e.effect==="guard"?"Защита":e.effect==="weaken"?"Ослабление":e.effect)+" ×"+e.stacks;
     case "death":return name(e.targetId)+": повержен";
+    case "wave-start":return "Волна " + e.wave + "/" + e.total + ": новые противники";
     case "battle-end":return e.winner==="ally"?"Победа отряда":"Поражение отряда";
     default:return "";
    }

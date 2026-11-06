@@ -47,6 +47,16 @@ function battleLineup(){
  const enemies=battleIsCampaign&&activeMissionId==="demo-mission-2"?ENEMIES:ENEMIES.slice(0,2);
  return [...selectedParty(),...enemies];
 }
+// Optional future wave rosters live in mission data. Existing missions have no
+// future waves, so their accepted encounters and balance remain unchanged.
+function battleFutureWaves(){
+ const mission=battleIsCampaign&&MissionData.get(activeMissionId);
+ return (mission&&mission.futureEnemyWaves||[]).map(ids=>ids.map(id=>{
+  const enemy=ENEMIES.find(h=>h.id===id);
+  if(!enemy)throw Error("Unknown wave enemy template: "+id);
+  return enemy;
+ }));
+}
 function renderSquad(){
  const chosen=selectedParty();
  $("#squadCount").textContent=chosen.length+"/"+MAX_SQUAD;
@@ -284,7 +294,7 @@ function syncBattleUI(){
  if(!specialReady)selectedAbility="basic";
  const name=actor&&selectedAbility==="special"?CombatCore.specialName(actor):"Базовая атака";
  $("#battleStatus").textContent=actor?"Ход: "+actor.name:"Бой завершён";
- $("#turnChip").textContent="Ход "+state.turn;
+ $("#turnChip").textContent=(state.totalWaves>1?"Волна "+state.wave+"/"+state.totalWaves+" · ":"")+"Ход "+state.turn;
  $("#actionTitle").textContent=actor?name+": "+actor.name:"Бой завершён";
  $("#basicAbilityBtn").disabled=!actor;
  $("#specialAbilityBtn").disabled=!specialReady;
@@ -319,7 +329,7 @@ function resetBattle(){
  missionResultShown=false;
  lastMissionStars=0;
  selectedAbility="basic";
- state=CombatCore.createBattle(battleLineup());
+ state=CombatCore.createBattle(battleLineup(),battleFutureWaves());
  CombatCore.advanceToPlayerTurn(state);
  syncBattleUI();
 }

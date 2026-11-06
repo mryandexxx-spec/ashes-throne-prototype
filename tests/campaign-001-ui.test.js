@@ -5,7 +5,8 @@ const path=require("node:path");
 const vm=require("node:vm");
 const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
- "battleStatus","turnChip","actionTitle","actionHint","attackBtn","arenaIndicators","orientationPrompt",
+ "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn","arenaIndicators","orientationPrompt",
+ "basicAbilitySlot","specialAbilitySlot","abilityTooltip","abilityTooltipTitle","abilityTooltipText",
  "fighterInspect","inspectClose","inspectSide","inspectName","inspectRole","inspectStats","inspectEffects",
  "targetFighterHud","targetFighterSide","targetFighterLevel","targetFighterName","targetFighterHp","targetFighterStats","targetFighterHealthFill",
  "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","autoSpeedBtn","battleMessage","renderCanvas",
@@ -166,10 +167,9 @@ assert.equal(api.getSpeed(),speedBeforeTap===1?2:4,"speed button still responds 
 click(elements.autoSpeedBtn);
 click(elements.autoSpeedBtn);
 assert.equal(api.getSpeed(),speedBeforeTap,"speed restored for subsequent battle regressions");
-click(elements.specialAbilityBtn);
-assert.ok(elements.specialAbilityBtn.handlers.click.length>0,"special ability button still has its handler");
-click(elements.basicAbilityBtn);
-assert.equal(elements.basicAbilityBtn.classList.contains("selected"),true,"ability controls remain responsive");
+assert.ok(elements.specialAbilityBtn.handlers.click.length>0,"special ability direct-cast handler survives rotation");
+assert.ok(elements.basicAbilityBtn.handlers.click.length>0,"basic ability direct-cast handler survives rotation");
+assert.equal(api.getBattle().allyActions,0,"rotation controls do not trigger an attack");
 const enemyPickBefore=api.getBattle().selectedEnemy;
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes().shade.body}});
 assert.equal(api.getBattle().fighters[api.getBattle().selectedEnemy].id,"shade","3D picking still works after rotation");
@@ -223,6 +223,21 @@ pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[secondEnemy.id].bod
 assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"arena tap selects enemy");
 assert.equal(elements.targetFighterName.textContent,secondEnemy.name,"target card follows arena selection");
 assert.equal(elements.targetFighterHud.classList.enemy,true);
+assert.equal((elements.arenaIndicators.innerHTML.match(/arena-focus-cursor/g)||[]).length,1,"one attack focus cursor");
+assert.match(elements.arenaIndicators.innerHTML,/arena-focus-cursor locked/);
+// Holding an ability previews the actual effect without applying it.
+const hintDown={pointerId:21,pointerType:"touch",clientX:40,clientY:25};
+const actionsBeforeHint=first.allyActions;
+elements.basicAbilitySlot.handlers.pointerdown[0](hintDown);
+assert.equal(pendingDelay(),400,"ability hint shares 400ms hold");
+tick();
+assert.equal(elements.abilityTooltip.hidden,false);
+assert.match(elements.abilityTooltipTitle.textContent,/Базовая атака/);
+assert.match(elements.abilityTooltipText.textContent,/Урон: 100%/);
+click(elements.basicAbilityBtn);
+assert.equal(first.allyActions,actionsBeforeHint,"hold must never cast even if click follows");
+pointerListener({type:2,event:{pointerId:22,pointerType:"touch",clientX:0,clientY:0},pickInfo:null});
+assert.equal(elements.abilityTooltip.hidden,true,"tapping empty arena closes ability tooltip");
 // A long press reveals combat stats of any fighter without selecting them.
 const selectedBeforeInspect=first.selectedEnemy;
 const holdEvent=(pointerId=11,x=40,y=40)=>({pointerId,clientX:x,clientY:y,pointerType:"touch"});
@@ -269,27 +284,30 @@ assert.equal(first.fighters[first.selectedEnemy].id,firstEnemy.id,"short tap sti
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[secondEnemy.id].body}});
 assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"ordinary targeting remains intact");
 
-// Guard is targeted at an ally; the same card must now follow the allied target.
+// Kael's support skill first highlights every ally, then a 3D ally tap casts.
 const originalIndex=first.currentActor;
 first.currentActor=first.fighters.findIndex(f=>f.id==="kael");
 const previousKaelMeter=first.fighters[first.currentActor].meter;
-first.fighters[first.currentActor].meter=1000; // Simulate Kael actually reaching his turn.
+first.fighters[first.currentActor].meter=1000;
+const allyActionsBefore=first.allyActions;
 click(elements.specialAbilityBtn);
+assert.equal(first.allyActions,allyActionsBefore,"arming support has no effect");
+assert.equal((elements.arenaIndicators.innerHTML.match(/arena-focus-cursor available/g)||[]).length,3,"all living allies show cursor");
+assert.equal(elements.arenaIndicators.innerHTML.includes("arena-focus-cursor locked"),false,"enemy cursor hides during support");
 const allyTarget=first.fighters.find(f=>f.id==="lyra");
+assert.equal(elements.targetFighterSide.textContent,"ЦЕЛЬ: СОЮЗНИК");
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[allyTarget.id].head}});
 assert.equal(first.fighters[first.selectedAlly].id,allyTarget.id);
-assert.equal(elements.targetFighterName.textContent,allyTarget.name,"support target card shows selected ally");
-assert.equal(elements.targetFighterSide.textContent,"ЦЕЛЬ: СОЮЗНИК");
-assert.equal(elements.targetFighterLevel.textContent,"Ур. "+allyTarget.level,"ally uses actual progression level");
-assert.equal(elements.targetFighterHud.classList.enemy,false);
-click(elements.basicAbilityBtn);
-assert.equal(elements.targetFighterName.textContent,secondEnemy.name,"switch back to attack restores enemy target");
+assert.equal(first.allyActions,allyActionsBefore+1,"tapping ally casts support immediately");
+assert.equal(allyTarget.guardHits,2);
+assert.equal(elements.targetFighterName.textContent,secondEnemy.name,"after casting, focus returns to enemy");
+assert.equal(elements.targetFighterHud.classList.enemy,true);
 first.fighters[first.currentActor].meter=previousKaelMeter;
 first.currentActor=originalIndex;
 api.syncBattleUI();
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes().kael.head}});
 assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"ally tap cannot switch an enemy attack target");
-assert.equal(api.getMeshes()[secondEnemy.id].base.material.emissiveColor.x,.48,"target is highlighted on arena");
+assert.equal(api.getMeshes()[secondEnemy.id].base.material.emissiveColor.x,.48,"target stays highlighted");
 const indicatorMarkup=elements.arenaIndicators.innerHTML;
 assert.match(indicatorMarkup,/class="arena-indicator ally/,"allied 3D labels are rendered");
 assert.match(indicatorMarkup,/class="arena-indicator enemy/,"enemy 3D labels are rendered");
@@ -428,7 +446,7 @@ click(elements.autoSpeedBtn);
 assert.equal(api.getSpeed(),2,"speed cycles back to 2x");
 assert.equal(pendingDelay(),175);
 const before=api.getBattle().allyActions;
-click(elements.attackBtn);
+click(elements.basicAbilityBtn);
 assert.equal(api.getBattle().allyActions,before,"manual attack ignored during autobattle");
 click(elements.autoBattleBtn);
 assert.equal(api.isAuto(),false);
@@ -524,12 +542,12 @@ const manualFinish=api.getBattle();
 const rewardBeforeManual=api.getMaterials();
 manualFinish.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
 let manualActions=0;
-while(manualFinish.active&&manualActions++<20)click(elements.attackBtn);
+while(manualFinish.active&&manualActions++<20)click(elements.basicAbilityBtn);
 assert.ok(manualActions<20,"manual encounter completes");
 assert.equal(manualFinish.winner,"ally");
 assert.equal(api.isVisualTransition(),true);
 assert.equal(elements.battle.classList.active,true,"manual final hit remains on arena");
-assert.equal(elements.attackBtn.disabled,true,"buttons locked during final animation");
+assert.equal(elements.basicAbilityBtn.disabled,true,"abilities locked during final animation");
 assert.equal(api.getMaterials(),rewardBeforeManual+1,"manual victory is committed immediately");
 api.syncBattleUI();
 assert.equal(api.getMaterials(),rewardBeforeManual+1,"UI re-sync cannot duplicate reward during animation");
@@ -546,7 +564,7 @@ const interrupted=api.getBattle();
 const rewardBeforeInterrupt=api.getMaterials();
 interrupted.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
 let interruptActions=0;
-while(interrupted.active&&interruptActions++<20)click(elements.attackBtn);
+while(interrupted.active&&interruptActions++<20)click(elements.basicAbilityBtn);
 assert.equal(api.isVisualTransition(),true);
 assert.equal(api.getMaterials(),rewardBeforeInterrupt+1,"completed combat reward persists before exit");
 api.showScreen("home");
@@ -563,7 +581,7 @@ losing.fighters.filter(f=>f.side==="ally").forEach(f=>{f.hp=1;});
 losing.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=10000;f.maxHp=10000;});
 const beforeDefeatReward=api.getMaterials();
 let defeatActions=0;
-while(losing.active&&defeatActions++<35)click(elements.attackBtn);
+while(losing.active&&defeatActions++<35)click(elements.basicAbilityBtn);
 assert.ok(defeatActions<35,"controlled losing battle should finish");
 assert.equal(losing.winner,"enemy");
 assert.equal(api.isVisualTransition(),true,"defeat waits for the last death animations");

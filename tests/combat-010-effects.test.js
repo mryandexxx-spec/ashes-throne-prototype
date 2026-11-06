@@ -7,7 +7,7 @@ const source=["initiative-model.js","ability-data.js","combat-core.js"]
   .map(name=>fs.readFileSync(path.join(__dirname,"..",name),"utf8")).join("\n");
 const core=vm.runInNewContext(source+"\nCombatCore");
 const unit=(id,side,hp=100,atk=20,speed=100)=>({id,name:id,side,hp,atk,speed});
-const b=core.createBattle([unit("kael","ally",100,10,200),unit("enemy","enemy",100,5,10)],
+const b=core.createBattle([unit("kael","ally",100,10,200),unit("enemy","enemy",5,5,10)],
   [[unit("next","enemy",100,5,10)]]);
 assert.equal(core.activeEffects(b.fighters[0]).length,0,"fresh allies have no effects");
 assert.equal(core.activeEffects(b.fighters[1]).length,0,"fresh enemies have no effects");

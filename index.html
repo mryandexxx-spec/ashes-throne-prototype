@@ -104,25 +104,21 @@
         <div class="battle-top arena-hud" aria-label="Управление боем">
           <button class="ghost" data-screen="home">✕ В меню</button>
           <div class="battle-heading"><div class="eyebrow" id="battleMissionLabel">СТОЛКНОВЕНИЕ</div><strong id="battleStatus">Выберите цель</strong></div>
-          <div class="battle-top-controls">
-            <button type="button" id="autoBattleBtn" class="ghost auto-battle-btn" aria-pressed="false">Автобой</button>
-            <button type="button" id="autoSpeedBtn" class="ghost auto-speed-btn" aria-label="Скорость боя 1×. Нажми, чтобы изменить" title="Скорость боя: 1× → 2× → 4×">1×</button>
-            <div class="turn-chip" id="turnChip">Ход 1</div>
-          </div>
+          <aside id="targetFighterHud" class="target-fighter-hud arena-hud" aria-label="Информация о выбранной цели">
+            <div class="target-fighter-heading"><span id="targetFighterSide">ВЫБРАННАЯ ЦЕЛЬ</span><span id="targetFighterLevel"></span></div>
+            <strong id="targetFighterName">Выбери цель</strong>
+            <div class="target-fighter-vitals"><span id="targetFighterHp"></span><span id="targetFighterStats"></span></div>
+            <div class="target-fighter-track" aria-hidden="true"><span id="targetFighterHealthFill"></span></div>
+          </aside>
         </div>
-        <aside id="targetFighterHud" class="target-fighter-hud arena-hud" aria-label="Информация о выбранной цели">
-          <div class="target-fighter-heading"><span id="targetFighterSide">ВЫБРАННАЯ ЦЕЛЬ</span><span id="targetFighterLevel"></span></div>
-          <strong id="targetFighterName">Выбери цель</strong>
-          <div class="target-fighter-vitals"><span id="targetFighterHp"></span><span id="targetFighterStats"></span></div>
-          <div class="target-fighter-track" aria-hidden="true"><span id="targetFighterHealthFill"></span></div>
-        </aside>
+        <div class="battle-top-controls arena-hud">
+          <button type="button" id="autoBattleBtn" class="ghost auto-battle-btn" aria-pressed="false">Автобой</button>
+          <button type="button" id="autoSpeedBtn" class="ghost auto-speed-btn" aria-label="Скорость боя 1×. Нажми, чтобы изменить" title="Скорость боя: 1× → 2× → 4×">1×</button>
+          <div class="turn-chip" id="turnChip">Ход 1</div>
+        </div>
         <div id="battleMessage" class="battle-message arena-hud" role="status">Отряд готов к бою</div>
         <div id="battleReward" class="battle-reward arena-hud" hidden aria-live="polite"></div>
         <div class="arena-utility arena-hud">
-          <details class="arena-roster">
-            <summary>Бойцы</summary>
-            <div class="combatants" id="combatants" aria-label="Состояние бойцов"></div>
-          </details>
           <details class="combat-log" id="battleLog">
             <summary id="battleLogSummary">Журнал боя · 0 событий</summary>
             <div id="battleLogEntries" class="combat-log-entries" role="log" aria-live="off">Пока нет событий.</div>
@@ -146,7 +142,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.8 · CBA008D</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.9 · CBA008D-UI</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

@@ -13,13 +13,19 @@ const InitiativeModel = (() => {
     return { id: f.id, speed: f.speed, hp: f.hp, meter: 0, index };
   });
 }
-  function nextActor(state) {
+  function nextActor(state, speedOf = f => f.speed) {
   const living = state.filter(f => f.hp > 0);
   if (!living.length) return null;
+  // Optional effective speed is sampled at the beginning of this initiative
+  // advance. The zero-argument path remains identical for legacy consumers.
+  const speeds = living.map(f => speedOf(f));
+  if (speeds.some(speed => !Number.isFinite(speed) || speed <= 0))
+    throw Error("positive effective speed required");
   let delta = Infinity;
-  for (const f of living) delta = Math.min(delta, Math.max(0,(1000-f.meter)/f.speed));
+  for (let i=0;i<living.length;i++)
+    delta = Math.min(delta, Math.max(0,(1000-living[i].meter)/speeds[i]));
   if (!Number.isFinite(delta)) throw Error("invalid time");
-  for (const f of living) f.meter += f.speed * delta;
+  for (let i=0;i<living.length;i++) living[i].meter += speeds[i] * delta;
   // Floating point tie tolerance; no arbitrary random order.
   const ready = living.filter(f => f.meter >= 1000 - 1e-8);
   ready.sort((a,b) => a.index - b.index);

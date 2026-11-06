@@ -9,11 +9,16 @@ const SaveCore=(()=>{
   if(!plain(data)||data.version!==VERSION||!plain(data.levels))return null;
   if(!Number.isSafeInteger(data.materials)||data.materials<0)return null;
   const ids=heroes.filter(h=>h.side==="ally").map(h=>h.id);
-  if(Object.keys(data.levels).length!==ids.length)return null;
+  // Allow only the Combat-007 test healer to be absent in existing v1 saves.
+  // All old levels and materials remain untouched; unknown ids are rejected.
+  const savedIds=Object.keys(data.levels);
+  if(savedIds.some(id=>!ids.includes(id)))return null;
+  const missing=ids.filter(id=>!own(data.levels,id));
+  if(missing.some(id=>id!=="medic-demo"))return null;
   const levels={};
   for(const id of ids){
-   const level=data.levels[id];
-   if(!own(data.levels,id)||!Number.isInteger(level)||level<1||level>ProgressCore.MAX_LEVEL)return null;
+   const level=own(data.levels,id)?data.levels[id]:1;
+   if(!Number.isInteger(level)||level<1||level>ProgressCore.MAX_LEVEL)return null;
    levels[id]=level;
   }
   return {materials:data.materials,levels};

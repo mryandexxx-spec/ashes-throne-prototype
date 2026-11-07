@@ -207,6 +207,14 @@ button{touch-action:manipulation}
 .hero-detail-stats>div,.detail-value{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding:8px 0;font-size:12px}
 .hero-detail-stats span,.detail-value span{color:var(--muted)}
 .hero-detail-stats strong,.detail-value strong{color:var(--gold);text-align:right}
+/* Stats-001A: compact, opt-in 14-stat vocabulary, never overflows narrow Safari screens. */
+.stat-catalog-details{min-width:0;border-top:1px solid var(--line);padding:8px 0}
+.stat-catalog-details summary{cursor:pointer;color:var(--gold);font-weight:600;font-size:12px;line-height:1.5}
+.stat-catalog-details .muted{font-size:11px;line-height:1.5}
+.stat-catalog-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);font-size:11px}
+.stat-catalog-row span{min-width:0;overflow-wrap:anywhere}
+.stat-catalog-row strong{flex:0 0 auto;color:var(--gold);font-size:11px;text-align:right}
+
 .hero-detail-panel h3{font:600 20px Cinzel,serif;margin:12px 0}
 .detail-upgrade{width:100%;margin-top:14px}
 .detail-upgrade:disabled{opacity:.45;cursor:not-allowed}

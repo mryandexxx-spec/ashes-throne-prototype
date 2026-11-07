@@ -67,7 +67,9 @@ const SaveCore=(()=>{
     if(restored)return {progress:restored,available:true,fresh:stage.status==="staged"&&stage.profile.migration.sourceVersion===null,blocked:false};
    }
    // Damaged saves must not be silently overwritten by a new profile.
-   return {progress:ProgressCore.createProgress(heroes),available:false,fresh:true,blocked:true,
+   const fallback=ProgressCore.createProgress(heroes);
+   fallback.saveBlocked=true;
+   return {progress:fallback,available:false,fresh:true,blocked:true,
     reason:stage.reason??"invalid-v3"};
   }
   const fallback=ProgressCore.createProgress(heroes);
@@ -79,6 +81,7 @@ const SaveCore=(()=>{
   }catch(error){return {progress:fallback,available:false,fresh:true};}
  }
  function save(progress,getStorage){
+  if(progress?.saveBlocked===true)return false;
   if(progress?.saveVersion===3){
    return typeof ProgressV3Core!=="undefined"&&ProgressV3Core.persist(progress,getStorage);
   }

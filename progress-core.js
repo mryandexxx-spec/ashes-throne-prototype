@@ -65,7 +65,9 @@ const ProgressCore=(()=>{
   const materials={};
   if(progress.saveVersion===3&&typeof GearData!=="undefined"&&progress.materials){
    for(const id of GearData.MATERIALS){
-    materials[id]=Math.max(0,GearData.FLOOR[id]-progress.materials[id]);
+    const floor=Object.values(progress.gear||{}).some(g=>g.mode==="itemized"&&g.tier>=2)
+     ?GearData.G2_FLOOR:GearData.FLOOR;
+    materials[id]=Math.max(0,floor[id]-progress.materials[id]);
     progress.materials[id]+=materials[id];
    }
   }
@@ -172,7 +174,8 @@ const ProgressCore=(()=>{
  }
  function gearPromotionCost(progress,id){
   const state=gearState(progress,id);
-  if(!state||state.mode==="itemized"||state.tier>=3||installedInTier(state)!==SLOT_COUNT)return null;
+  if(!state||state.tier>=3||installedInTier(state)!==SLOT_COUNT)return null;
+  if(state.mode==="itemized"&&state.tier!==1)return null;
   return {from:state.tier,to:state.tier+1,currency:GEAR_PROMOTION_CURRENCY[state.tier],
    heroLevel:GEAR[state.tier+1].heroLevel};
  }
@@ -189,22 +192,26 @@ const ProgressCore=(()=>{
   if(!canPromoteGear(progress,id))return null;
   const cost=gearPromotionCost(progress,id),state=gearState(progress,id);
   progress.currency-=cost.currency;
+  if(state.mode==="itemized"){
+   state.history=state.history||{};
+   state.history[String(state.tier)]=state.slots.slice();
+  }
   state.tier=cost.to;
-  state.slots=Array(SLOT_COUNT).fill(false);
+  state.slots=Array(SLOT_COUNT).fill(state.mode==="itemized"?null:false);
   return {...cost};
  }
  // Gear-003A2: G1 only. Each purchase produces one permanent installed item.
  function itemOffer(progress,id,slotId){
   const state=gearState(progress,id);
-  if(progress.saveVersion!==3||state?.mode!=="itemized"||state.tier!==1||
+  if(progress.saveVersion!==3||state?.mode!=="itemized"||![1,2].includes(state.tier)||
      !progress.classes||!Object.prototype.hasOwnProperty.call(progress.classes,id)||
      typeof GearData==="undefined")return [];
-  return GearData.offered(progress.classes[id],slotId);
+  return GearData.offered(progress.classes[id],slotId,state.tier);
  }
  function itemCost(progress,id,itemId){
   const state=gearState(progress,id);
   const item=typeof GearData!=="undefined"?GearData.get(itemId):null;
-  if(!item||!state||state.mode!=="itemized"||state.tier!==1||
+  if(!item||!state||state.mode!=="itemized"||item.tier!==state.tier||
      !itemOffer(progress,id,item.slotId).some(x=>x.id===item.id))return null;
   const slotIndex=GearData.SLOTS.findIndex(x=>x.id===item.slotId);
   if(state.slots[slotIndex]!==null)return null;
@@ -235,12 +242,18 @@ const ProgressCore=(()=>{
   if(!state)return {hp:0,atk:0};
   if(state.mode==="itemized"){
    let hp=0,atk=0;
-   for(const itemId of state.slots){
-    if(!itemId)continue;
-    const item=typeof GearData!=="undefined"?GearData.get(itemId):null;
-    if(!item)continue;
-    hp+=item.bonuses.hp;atk+=item.bonuses.atk;
+   for(let tier=1;tier<=state.tier;tier++){
+    const slots=tier===state.tier?state.slots:state.history?.[String(tier)];
+    if(!Array.isArray(slots))continue;
+    for(const itemId of slots){
+     if(!itemId)continue;
+     const item=typeof GearData!=="undefined"?GearData.get(itemId):null;
+     if(!item||item.tier!==tier)continue;
+     hp+=item.bonuses.hp;atk+=item.bonuses.atk;
+    }
    }
+   hp+=(state.tier-1)*GEAR_PROMOTION_STAT_BONUS;
+   atk+=(state.tier-1)*GEAR_PROMOTION_STAT_BONUS;
    return {hp,atk};
   }
   let hp=0,atk=0;

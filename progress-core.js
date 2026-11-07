@@ -58,7 +58,15 @@ const ProgressCore=(()=>{
   progress.gearMaterials+=material;
   progress.energy.value=ENERGY_MAX;
   progress.energy.updatedAt=now;
-  return {currency,material,energy};
+  const materials={};
+  if(progress.saveVersion===3&&typeof GearData!=="undefined"&&progress.materials){
+   for(const id of GearData.MATERIALS){
+    if(!Number.isSafeInteger(progress.materials[id])||progress.materials[id]<0)return null;
+    materials[id]=Math.max(0,GearData.FLOOR[id]-progress.materials[id]);
+    progress.materials[id]+=materials[id];
+   }
+  }
+  return {currency,material,energy,materials};
  }
  const freshEnergy=(now=Date.now())=>({value:ENERGY_MAX,updatedAt:now});
  function refreshEnergy(progress,now=Date.now()){
@@ -134,7 +142,7 @@ const ProgressCore=(()=>{
  }
  function gearCost(progress,id,slot){
   const state=gearState(progress,id),level=levelOf(progress,id);
-  if(!state||level===null||!Number.isInteger(slot)||slot<0||slot>=SLOT_COUNT||state.slots[slot])return null;
+  if(!state||state.mode==="itemized"||level===null||!Number.isInteger(slot)||slot<0||slot>=SLOT_COUNT||state.slots[slot])return null;
   return gearItem(state.tier,slot);
  }
  function gearBlockReason(progress,id,slot){
@@ -161,7 +169,7 @@ const ProgressCore=(()=>{
  }
  function gearPromotionCost(progress,id){
   const state=gearState(progress,id);
-  if(!state||state.tier>=3||installedInTier(state)!==SLOT_COUNT)return null;
+  if(!state||state.mode==="itemized"||state.tier>=3||installedInTier(state)!==SLOT_COUNT)return null;
   return {from:state.tier,to:state.tier+1,currency:GEAR_PROMOTION_CURRENCY[state.tier],
    heroLevel:GEAR[state.tier+1].heroLevel};
  }
@@ -182,9 +190,56 @@ const ProgressCore=(()=>{
   state.slots=Array(SLOT_COUNT).fill(false);
   return {...cost};
  }
+ // Gear-003A2: G1 only. Each purchase produces one permanent installed item.
+ function itemOffer(progress,id,slotId){
+  const state=gearState(progress,id);
+  if(progress.saveVersion!==3||state?.mode!=="itemized"||state.tier!==1||
+     !progress.classes||!Object.prototype.hasOwnProperty.call(progress.classes,id)||
+     typeof GearData==="undefined")return [];
+  return GearData.offered(progress.classes[id],slotId);
+ }
+ function itemCost(progress,id,itemId){
+  const state=gearState(progress,id);
+  const item=typeof GearData!=="undefined"?GearData.get(itemId):null;
+  if(!item||!state||state.mode!=="itemized"||state.tier!==1||
+     !itemOffer(progress,id,item.slotId).some(x=>x.id===item.id))return null;
+  const slotIndex=GearData.SLOTS.findIndex(x=>x.id===item.slotId);
+  if(state.slots[slotIndex]!==null)return null;
+  return item;
+ }
+ function itemBlockReason(progress,id,itemId){
+  const item=itemCost(progress,id,itemId);
+  if(!item)return "Предмет недоступен для выбранного героя или слот уже занят.";
+  if(progress.currency<item.currency)return "Недостаточно игровой валюты.";
+  const missing=GearData.missing(item,progress.materials);
+  if(!missing||Object.keys(missing).length)return "Недостаточно компонентов: "+
+   Object.entries(missing||{}).map(([name,n])=>name+" ×"+n).join(", ")+".";
+  return "";
+ }
+ function canEquipItem(progress,id,itemId){
+  return itemCost(progress,id,itemId)!==null&&!itemBlockReason(progress,id,itemId);
+ }
+ function equipItem(progress,id,itemId){
+  if(!canEquipItem(progress,id,itemId))return false;
+  const item=itemCost(progress,id,itemId);
+  for(const [name,count] of Object.entries(item.ingredients))progress.materials[name]-=count;
+  progress.currency-=item.currency;
+  progress.gear[id].slots[GearData.SLOTS.findIndex(x=>x.id===item.slotId)]=item.id;
+  return true;
+ }
  function gearBonuses(progress,id){
   const state=gearState(progress,id);
   if(!state)return {hp:0,atk:0};
+  if(state.mode==="itemized"){
+   let hp=0,atk=0;
+   for(const itemId of state.slots){
+    if(!itemId)continue;
+    const item=typeof GearData!=="undefined"?GearData.get(itemId):null;
+    if(!item)continue;
+    hp+=item.bonuses.hp;atk+=item.bonuses.atk;
+   }
+   return {hp,atk};
+  }
   let hp=0,atk=0;
   for(let tier=1;tier<=state.tier;tier++){
    for(let slot=0;slot<SLOT_COUNT;slot++){
@@ -218,7 +273,8 @@ const ProgressCore=(()=>{
  }
  return Object.freeze({MAX_LEVEL,MAX_ACCOUNT_LEVEL,FIRST_CLEAR_REWARDS,createProgress,xpCost,
   accountLevel,levelOf,upgradeCost,canUpgrade,upgrade,heroStats,claimFirstClear,
-  GEAR,SLOT_COUNT,SLOT_NAMES,gearItem,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,gearBonuses,
+  GEAR,SLOT_COUNT,SLOT_NAMES,gearItem,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,
+  itemOffer,itemCost,itemBlockReason,canEquipItem,equipItem,gearBonuses,
   GEAR_PROMOTION_CURRENCY,GEAR_PROMOTION_STAT_BONUS,gearPromotionCost,gearPromotionBlockReason,canPromoteGear,promoteGear,
   ENERGY_MAX,ENERGY_REGEN_MS,MISSION_FARM,TEST_RESOURCE_FLOOR,grantTestResources,freshEnergy,refreshEnergy,
   missionEnergyCost,affordableRuns,spendEnergy,refundEnergy,simulate});

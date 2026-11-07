@@ -127,4 +127,31 @@ assert.equal(again.getProgress().materials.Fe,2);
 assert.equal(again.getProgress().energy.value,0);
 assert.equal(again.getCampaignProgress().completed["black-pass-ambush"],true,"restores missing campaign marker");
 assert.equal(JSON.parse(savedData.get("ashes-throne.campaign.v1")).completed["black-pass-ambush"],true,"repaired campaign key persisted");
+// Regression: storage quota failure must not grant a first-clear reward only in RAM.
+savedData.delete("ashes-throne.progress.v3");
+savedData.delete("ashes-throne.campaign.v1");
+const failed=vm.runInNewContext(src+
+ "\\n({getProgress:()=>progress,getCampaignProgress:()=>campaignProgress,getBattle:()=>state,openCampaignMission,showScreen,syncBattleUI})",
+ {document,window:{addEventListener(){},localStorage},BABYLON});
+const pf=failed.getProgress();
+pf.energy.value=0;pf.energy.updatedAt=Date.now();
+assert.equal(failed.openCampaignMission("black-pass-ambush"),true);
+failed.showScreen("battle");
+const fb=failed.getBattle();
+for(const fighter of fb.fighters)if(fighter.side==="enemy")fighter.hp=0;
+fb.active=false;fb.winner="ally";fb.allyActions=6;
+const realWrite=localStorage.setItem;
+localStorage.setItem=(key,value)=>{
+ if(key==="ashes-throne.progress.v3")throw Error("quota exceeded");
+ return realWrite(key,value);
+};
+failed.syncBattleUI();
+localStorage.setItem=realWrite;
+assert.equal(pf.currency,0,"failed first-clear write cannot keep unpersisted currency");
+assert.equal(pf.materials.Fe,0,"failed first-clear write cannot keep unpersisted raw materials");
+assert.equal(pf.claimedMissions.length,0,"failed first-clear write cannot consume unique bonus");
+assert.equal(failed.getCampaignProgress().completed["black-pass-ambush"],false,"mission must remain locked on payout failure");
+assert.match(elements.missionResultText.textContent,/Ошибка сохранения наград/);
+assert.equal(JSON.parse(savedData.get("ashes-throne.progress.v3")).currency,0,"stored wallet remains intact");
+console.log("Energy/Save-001 first-clear zero energy, campaign recovery, failed-write rollback passed");
 console.log("Gear-004B first-clear actual campaign UI: baseline+bonus, seven materials, no C, preview, save and reload passed");

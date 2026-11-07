@@ -521,7 +521,26 @@ $("#gearSlots")?.addEventListener("click",event=>{
 });
 $("#gearEquipNext")?.addEventListener("click",()=>{
  const base=ALLIES.find(h=>h.id===selectedHeroId);
- if(!base)return;
+ if(!base||saveBlocked)return;
+ const current=ProgressCore.gearState(progress,selectedHeroId);
+ if(current?.mode==="itemized"){
+  const slot=GearData.SLOTS[selectedGearSlot];
+  const item=slot?ProgressCore.itemOffer(progress,selectedHeroId,slot.id)[0]:null;
+  if(!item||!ProgressCore.canEquipItem(progress,selectedHeroId,item.id)){
+   renderHeroDetail();return;
+  }
+  const before=JSON.stringify(progress);
+  if(!ProgressCore.equipItem(progress,selectedHeroId,item.id))return;
+  if(!persistProgress()){
+   // Restore wallet, resources and gear when localStorage rejects the purchase.
+   Object.keys(progress).forEach(k=>delete progress[k]);
+   Object.assign(progress,JSON.parse(before));
+   renderHeroDetail();
+   $("#gearNotice").textContent="Покупка не сохранена. Материалы и валюта возвращены.";
+   return;
+  }
+  renderHeroDetail();renderHeroes();return;
+ }
  const promotion=ProgressCore.gearPromotionCost(progress,selectedHeroId);
  if(promotion){
   const before=ProgressCore.heroStats(progress,base);
@@ -552,10 +571,17 @@ $("#gearPromotionClose")?.addEventListener("click",()=>$("#gearPromotionDialog")
 $("#detailBack").addEventListener("click",()=>showScreen("collection"));
 $("#detailHome").addEventListener("click",()=>showScreen("home"));
 $("#detailUpgrade").addEventListener("click",()=>{
+ if(saveBlocked)return;
+ const before=progress.saveVersion===3?JSON.stringify(progress):null;
  if(ProgressCore.upgrade(progress,selectedHeroId)){
-  persistProgress();
-  renderHeroDetail();
-  renderHeroes();
+  if(!persistProgress()&&before){
+   Object.keys(progress).forEach(k=>delete progress[k]);
+   Object.assign(progress,JSON.parse(before));
+   renderHeroDetail();
+   $("#detailNotice").textContent="Уровень не сохранён. Валюта возвращена.";
+   return;
+  }
+  renderHeroDetail();renderHeroes();
  }
 });
 

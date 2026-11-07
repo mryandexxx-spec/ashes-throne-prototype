@@ -478,7 +478,26 @@ function renderCampaign(){
   :"Сохранение кампании недоступно. После перезагрузки отметка может исчезнуть.";
 }
 // A visible campaign can be left open while energy regenerates.
-$("#energyRefresh")?.addEventListener("click",()=>renderCampaign());
+function energyRefreshFeedback(now=Date.now()){
+ const before=progress.energy.value;
+ const restored=ProgressCore.refreshEnergy(progress,now);
+ if(restored>0)persistProgress();
+ renderCampaign();
+ const status=$("#energyRefreshStatus");
+ if(!status)return restored;
+ if(restored>0){
+  status.textContent="Восстановлено: +"+restored+" ⚡. Сейчас "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX+".";
+ }else if(progress.energy.value>=ProgressCore.ENERGY_MAX){
+  status.textContent="Энергия уже полная ("+ProgressCore.ENERGY_MAX+"/"+ProgressCore.ENERGY_MAX+").";
+ }else{
+  const elapsed=Math.max(0,now-progress.energy.updatedAt);
+  const remaining=ProgressCore.ENERGY_REGEN_MS-elapsed%ProgressCore.ENERGY_REGEN_MS;
+  const minutes=Math.ceil(remaining/60000);
+  status.textContent="Пока без изменений. Следующая +1 ⚡ примерно через "+minutes+" мин.";
+ }
+ return progress.energy.value-before;
+}
+$("#energyRefresh")?.addEventListener("click",()=>energyRefreshFeedback());
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden&&$("#campaign")?.classList.contains("active"))renderCampaign();
 });

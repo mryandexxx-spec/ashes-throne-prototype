@@ -64,7 +64,7 @@ const SaveCore=(()=>{
    const stage=ProgressV3Core.stage(heroes,getStorage);
    if(stage.status==="staged"||stage.status==="existing"){
     const restored=ProgressV3Core.toRuntime(stage.profile,heroes);
-    if(restored)return {progress:restored,available:true,fresh:stage.status==="staged",blocked:false};
+    if(restored)return {progress:restored,available:true,fresh:stage.status==="staged"&&stage.profile.migration.sourceVersion===null,blocked:false};
    }
    // Damaged saves must not be silently overwritten by a new profile.
    return {progress:ProgressCore.createProgress(heroes),available:false,fresh:true,blocked:true,

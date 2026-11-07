@@ -52,7 +52,7 @@ const recipes={
  "g2-belt":{Cl:2,Le:1,Fa:2}
 };
 for(const [id,recipe] of Object.entries(recipes))
- assert.equal(JSON.stringify(G.get(id).ingredients),JSON.stringify(recipe),id+" recipe");
+ assert.equal(JSON.stringify(Object.entries(G.get(id).ingredients).sort()),JSON.stringify(Object.entries(recipe).sort()),id+" recipe");
 const total=Object.fromEntries(G.MATERIALS.map(id=>[id,0]));
 for(const cls of G.CLASS_IDS)for(const slot of G.SLOTS){
  const item=G.offered(cls,slot.id,2)[0];

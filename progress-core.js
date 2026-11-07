@@ -51,6 +51,10 @@ const ProgressCore=(()=>{
   if(!progress||!progress.energy||!Number.isSafeInteger(now)||now<0||
      !Number.isSafeInteger(progress.currency)||progress.currency<0||
      !Number.isSafeInteger(progress.gearMaterials)||progress.gearMaterials<0)return null;
+  if(progress.saveVersion===3&&
+     (typeof GearData==="undefined"||!progress.materials||
+      GearData.MATERIALS.some(id=>!Number.isSafeInteger(progress.materials[id])||progress.materials[id]<0)))
+   return null;
   const currency=Math.max(0,TEST_RESOURCE_FLOOR.currency-progress.currency);
   const material=Math.max(0,TEST_RESOURCE_FLOOR.material-progress.gearMaterials);
   const energy=ENERGY_MAX-progress.energy.value;
@@ -61,7 +65,6 @@ const ProgressCore=(()=>{
   const materials={};
   if(progress.saveVersion===3&&typeof GearData!=="undefined"&&progress.materials){
    for(const id of GearData.MATERIALS){
-    if(!Number.isSafeInteger(progress.materials[id])||progress.materials[id]<0)return null;
     materials[id]=Math.max(0,GearData.FLOOR[id]-progress.materials[id]);
     progress.materials[id]+=materials[id];
    }

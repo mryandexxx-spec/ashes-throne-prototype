@@ -339,7 +339,7 @@ function openCampaignMission(id){
 // Delegation allows cards to be rebuilt without installing duplicate handlers.
 $("#campaignMissions").addEventListener("click",event=>{
  const farmButton=event.target.closest("[data-resource-farm]");
- if(farmButton&&$("#campaignMissions").contains(farmButton)){
+ if(farmButton?.dataset?.resourceFarm&&farmButton?.dataset?.farmMission&&$("#campaignMissions").contains(farmButton)){
   const id=farmButton.dataset.farmMission,kind=farmButton.dataset.resourceFarm;
   const entry=CampaignData.getMission(id);
   if(!entry||!CampaignData.available(entry,campaignProgress))return;

@@ -8,7 +8,7 @@ const ids=["home","collection","campaign","squad","battle","heroList","combatant
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
- "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward"];
+ "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","gearTier","gearSlots","gearMaterial","gearPrice","gearEquipNext","gearNotice"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
@@ -63,7 +63,7 @@ savedData.set("ashes-throne.progress.v2",JSON.stringify({version:2,accountXp:80,
  levels:{kael:1,lyra:1,darin:1,"medic-demo":1,"test-area-damage":1},claimedMissions:["black-pass-ambush"]}));
 const localStorage={getItem:k=>savedData.has(k)?savedData.get(k):null,setItem:(k,v)=>savedData.set(k,v)};
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI})",
+ "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getProgress:()=>progress,getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
@@ -138,4 +138,18 @@ api.getBattle().winner="enemy";
 api.syncBattleUI();
 assert.equal(api.getCurrency(),461);
 assert.match(elements.battleReward.textContent,/без наград/);
-console.log("Progress-001 hero detail navigation, reward and battle scaling passed");
+// Verify real gear purchase button and battle/hero stat refresh (not only core function).
+api.getProgress().gearMaterials=12;
+api.getProgress().currency+=1000;
+api.openHeroDetail("kael");
+assert.equal(elements.gearTier.textContent,"G1 · 0/6");
+assert.equal(elements.gearMaterial.textContent,"12");
+assert.equal(elements.gearEquipNext.disabled,false);
+click(elements.gearEquipNext);
+assert.equal(api.getProgress().gear.kael.slots,1);
+assert.equal(api.getProgress().gearMaterials,10);
+assert.equal(api.getCurrency(),1294);
+assert.equal(elements.gearTier.textContent,"G1 · 1/6");
+assert.match(elements.detailStats.innerHTML,/126 HP/);
+assert.equal(JSON.parse(savedData.get("ashes-throne.progress.v2")).gear.kael.slots,1);
+console.log("Progress VS-001B hero details, gear button, reward and battle scaling passed");

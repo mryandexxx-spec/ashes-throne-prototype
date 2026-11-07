@@ -496,7 +496,7 @@ function renderHeroDetail(){
  $("#detailGlyph").textContent=hero.glyph;
  // Keep the existing battle-tested HP/ATK/speed display unchanged.
  // Other approved stats are shown as TBD, never as misleading zero bonuses.
- const statRows=GearData.statOverview(hero).map(stat=>
+ const statRows=(typeof GearData!=="undefined"&&GearData.statOverview?GearData.statOverview(hero):[]).map(stat=>
   '<div class="stat-catalog-row"><span>'+stat.label+'</span><strong>'+
    (stat.active?stat.value:'Не рассчитано')+'</strong></div>').join("");
  $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>Атака (общая, тест)</span><strong>${hero.atk} ATK</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · 12 ожидают формулы</summary><p class="muted">В бою сейчас работают HP, общая тестовая ATK и скорость. Общая ATK ещё не разделена на физическую и магическую. Protection — отдельный поглотитель урона до HP. Остальные значения и правила расчёта не утверждены.</p>${statRows}</details>`;

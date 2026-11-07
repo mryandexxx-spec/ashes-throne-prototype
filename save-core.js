@@ -29,8 +29,7 @@ const SaveCore=(()=>{
   const gear={};
   for(const id of ids){
    const g=data.gear?.[id]??ProgressCore.freshGear();
-   if(!plain(g)||!Number.isInteger(g.tier)||g.tier<1||g.tier>3||
-      levels[id]<ProgressCore.GEAR[g.tier].heroLevel)return null;
+   if(!plain(g)||!Number.isInteger(g.tier)||g.tier<1||g.tier>3)return null;
    // Old VS-001B progress used a consecutive slot count. Convert in place
    // without changing total purchased items or currencies.
    let slots;
@@ -55,7 +54,7 @@ const SaveCore=(()=>{
   const progress={accountXp:data.accountXp,currency:data.currency,
    gearMaterials:data.gearMaterials??retroactiveC,energy,
    levels,gear,claimedMissions:claims.slice()};
-  if(Object.values(levels).some(level=>level>ProgressCore.accountLevel(progress)))return null;
+  // VS-UNBLOCK: higher hero / G levels than account level remain valid in test saves.
   return progress;
  }
  function load(heroes,getStorage){

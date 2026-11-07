@@ -15,7 +15,7 @@ const roster=vm.runInNewContext(game.slice(0,game.indexOf("const $="))+"\nHEROES
 const allies=roster.filter(h=>h.side==="ally");
 const enemies=roster.filter(h=>h.side==="enemy");
 const ids=allies.map(h=>h.id);
-assert.deepEqual(ids,["kael","lyra","darin","medic-demo","test-area-damage"]);
+assert.deepEqual(Array.from(ids),["kael","lyra","darin","medic-demo","test-area-damage"]);
 assert.equal(enemies.length,5);
 const mission=MissionData.get("demo-mission-2");
 assert.equal(mission.enemyAiProfiles.shade,"aggressive");

@@ -18,5 +18,5 @@ assert.match(game,/arena-focus-cursor/);
 assert.match(game,/function showAbilityTooltip\(abilityId\)/);
 assert.match(css,/\.battle-screen \.arena-focus-cursor/);
 assert.match(css,/\.battle-screen \.ability-tooltip/);
-assert.match(html,/v0\.3\.47 · GEAR004B/);
+assert.match(html,/v0\.3\.48 · ENSAVE001/);
 console.log("Combat-009 direct ability, ally focus and tooltip structural checks passed");

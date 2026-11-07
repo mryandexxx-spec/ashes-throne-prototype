@@ -44,6 +44,34 @@ const ProgressCore=(()=>{
   "demo-mission-2":Object.freeze({cost:12,material:0,currency:200,xp:5}),
   "demo-mission-3":Object.freeze({cost:16,material:24,currency:0,xp:5})
  });
+ // Gear-004A: approved vertical-slice material farm for active v3 profiles.
+ // Legacy v2 simulation rewards stay intact for backward-compatible archives.
+ const MISSION_GEAR_FARM=Object.freeze({
+  "black-pass-ambush":Object.freeze({cost:10,currency:850,xp:5,materials:Object.freeze({Fe:2,Le:3,Cl:4,Wo:1,Fa:2,Th:2,Gl:0})}),
+  "demo-mission-2":Object.freeze({cost:12,currency:1020,xp:5,materials:Object.freeze({Fe:4,Le:2,Cl:5,Wo:0,Fa:2,Th:1,Gl:1})}),
+  "demo-mission-3":Object.freeze({cost:16,currency:1360,xp:5,materials:Object.freeze({Fe:3,Le:3,Cl:6,Wo:0,Fa:2,Th:1,Gl:0})})
+ });
+ function isGearFarm(progress){
+  return progress?.saveVersion===3 && progress.materials &&
+   typeof GearData!=="undefined" && GearData.MATERIALS.every(id=>
+    Number.isSafeInteger(progress.materials[id])&&progress.materials[id]>=0);
+ }
+ function farmAward(progress,id,count){
+  const reward=MISSION_GEAR_FARM[id];
+  if(!reward||!isGearFarm(progress)||!Number.isSafeInteger(count)||count<1)return null;
+  const materials=Object.fromEntries(GearData.MATERIALS.map(id=>[id,reward.materials[id]*count]));
+  if(!Number.isSafeInteger(progress.currency+reward.currency*count)||
+     !Number.isSafeInteger(progress.accountXp+reward.xp*count)||
+     GearData.MATERIALS.some(id=>!Number.isSafeInteger(progress.materials[id]+materials[id])))return null;
+  progress.currency+=reward.currency*count;
+  progress.accountXp+=reward.xp*count;
+  for(const id of GearData.MATERIALS)progress.materials[id]+=materials[id];
+  return {count,energy:reward.cost*count,currency:reward.currency*count,xp:reward.xp*count,material:0,materials};
+ }
+ // Caller must validate a completed repeat victory and invoke once per battle.
+ function grantRepeatFarm(progress,id){
+  return farmAward(progress,id,1);
+ }
  // DEV-RES-001: temporary repeatable test tool, NOT normal economy or reward.
  // Replenishes to useful minimum balances without uncontrolled accumulation.
  const TEST_RESOURCE_FLOOR=Object.freeze({currency:5000,material:100});
@@ -111,7 +139,17 @@ const ProgressCore=(()=>{
  }
  function simulate(progress,id,bestStars,count,now=Date.now()){
   const reward=MISSION_FARM[id];
-  if(!reward||bestStars!==3||!spendEnergy(progress,id,count,now))return null;
+  if(!reward||bestStars!==3)return null;
+  if(isGearFarm(progress)){
+   const gearReward=MISSION_GEAR_FARM[id];
+   if(!gearReward||!Number.isSafeInteger(count)||count<1||
+      !Number.isSafeInteger(progress.currency+gearReward.currency*count)||
+      !Number.isSafeInteger(progress.accountXp+gearReward.xp*count)||
+      GearData.MATERIALS.some(key=>!Number.isSafeInteger(progress.materials[key]+gearReward.materials[key]*count))||
+      !spendEnergy(progress,id,count,now))return null;
+   return farmAward(progress,id,count);
+  }
+  if(!spendEnergy(progress,id,count,now))return null;
   const result={count,energy:count*reward.cost,material:count*reward.material,
    currency:count*reward.currency,xp:count*reward.xp};
   progress.gearMaterials+=result.material;
@@ -292,6 +330,6 @@ const ProgressCore=(()=>{
   GEAR,SLOT_COUNT,SLOT_NAMES,gearItem,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,
   itemOffer,itemCost,itemBlockReason,canEquipItem,equipItem,gearBonuses,
   GEAR_PROMOTION_CURRENCY,GEAR_PROMOTION_STAT_BONUS,gearPromotionCost,gearPromotionBlockReason,canPromoteGear,promoteGear,
-  ENERGY_MAX,ENERGY_REGEN_MS,MISSION_FARM,TEST_RESOURCE_FLOOR,grantTestResources,freshEnergy,refreshEnergy,
+  ENERGY_MAX,ENERGY_REGEN_MS,MISSION_FARM,MISSION_GEAR_FARM,grantRepeatFarm,TEST_RESOURCE_FLOOR,grantTestResources,freshEnergy,refreshEnergy,
   missionEnergyCost,affordableRuns,spendEnergy,refundEnergy,simulate});
 })();

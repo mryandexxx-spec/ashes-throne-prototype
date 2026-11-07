@@ -8,7 +8,7 @@ const ids=["home","collection","campaign","squad","battle","heroList","combatant
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
- "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","gearTier","gearSlots","gearMaterial","gearPrice","gearPriceLabel","gearStatBonus","gearStatBonusLabel","gearEquipNext","gearNotice","gearPromotionDialog","gearPromotionTitle","gearPromotionLevel","gearPromotionCost","gearPromotionStats","gearPromotionClose"];
+ "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","gearTier","gearSlots","gearMaterial","gearWallet","gearPrice","gearPriceLabel","gearStatBonus","gearStatBonusLabel","gearEquipNext","gearNotice","gearPromotionDialog","gearPromotionTitle","gearPromotionLevel","gearPromotionCost","gearPromotionStats","gearPromotionClose"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
@@ -147,6 +147,7 @@ api.getProgress().currency+=1000;
 api.openHeroDetail("kael");
 assert.equal(elements.gearTier.textContent,"G1 · 0/6");
 assert.equal(elements.gearMaterial.textContent,"12");
+assert.equal(elements.gearWallet.textContent,"1461");
 assert.equal(elements.gearEquipNext.disabled,false);
 assert.match(elements.gearSlots.innerHTML,/data-gear-slot="5"/);
 function selectGear(slot){
@@ -162,6 +163,7 @@ assert.equal(api.getProgress().gear.kael.slots[0],false);
 assert.equal(api.getProgress().gearMaterials,10);
 assert.equal(api.getCurrency(),1295);
 assert.equal(elements.gearTier.textContent,"G1 · 1/6");
+assert.equal(elements.gearWallet.textContent,"1295","gear balance refreshes after spending");
 assert.equal(elements.gearEquipNext.disabled,true,"cannot install filled slot twice");
 click(elements.gearEquipNext);
 assert.equal(api.getProgress().gearMaterials,10,"no duplicate purchase");
@@ -210,4 +212,15 @@ click(elements.gearEquipNext);
 assert.equal(api.getCurrency(),beforePromotion-250,"cannot pay twice through second press");
 click(elements.gearPromotionClose);
 assert.equal(elements.gearPromotionDialog.open,false);
-console.log("Gear-002B UI: filled six slots, paid promotion, before/after modal and persistence passed");
+// Unaffordable equipment must explain WHICH resource is missing and by how much.
+api.getProgress().currency=100;
+api.getProgress().gearMaterials=3;
+api.openHeroDetail("kael");
+assert.equal(elements.gearWallet.textContent,"100");
+assert.equal(elements.gearEquipNext.disabled,true);
+assert.match(elements.gearNotice.textContent,/есть 100, нужно 334 \(не хватает 234\)/);
+api.getProgress().currency=1000;
+api.getProgress().gearMaterials=0;
+api.openHeroDetail("kael");
+assert.match(elements.gearNotice.textContent,/материала C: есть 0, нужно 3/);
+console.log("Gear-002C UI: balances, exact shortages, button state and G promotion passed");

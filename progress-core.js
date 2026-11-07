@@ -65,8 +65,8 @@ const ProgressCore=(()=>{
   const materials={};
   if(progress.saveVersion===3&&typeof GearData!=="undefined"&&progress.materials){
    for(const id of GearData.MATERIALS){
-    const floor=Object.values(progress.gear||{}).some(g=>g.mode==="itemized"&&g.tier>=2)
-     ?GearData.G2_FLOOR:GearData.FLOOR;
+    const maxTier=Math.max(1,...Object.values(progress.gear||{}).filter(g=>g?.mode==="itemized").map(g=>g.tier));
+    const floor=maxTier>=3?GearData.G3_FLOOR:maxTier>=2?GearData.G2_FLOOR:GearData.FLOOR;
     materials[id]=Math.max(0,floor[id]-progress.materials[id]);
     progress.materials[id]+=materials[id];
    }
@@ -175,7 +175,7 @@ const ProgressCore=(()=>{
  function gearPromotionCost(progress,id){
   const state=gearState(progress,id);
   if(!state||state.tier>=3||installedInTier(state)!==SLOT_COUNT)return null;
-  if(state.mode==="itemized"&&state.tier!==1)return null;
+  if(state.mode==="itemized"&&![1,2].includes(state.tier))return null;
   return {from:state.tier,to:state.tier+1,currency:GEAR_PROMOTION_CURRENCY[state.tier],
    heroLevel:GEAR[state.tier+1].heroLevel};
  }
@@ -203,7 +203,7 @@ const ProgressCore=(()=>{
  // Gear-003A2: G1 only. Each purchase produces one permanent installed item.
  function itemOffer(progress,id,slotId){
   const state=gearState(progress,id);
-  if(progress.saveVersion!==3||state?.mode!=="itemized"||![1,2].includes(state.tier)||
+  if(progress.saveVersion!==3||state?.mode!=="itemized"||![1,2,3].includes(state.tier)||
      !progress.classes||!Object.prototype.hasOwnProperty.call(progress.classes,id)||
      typeof GearData==="undefined")return [];
   return GearData.offered(progress.classes[id],slotId,state.tier);

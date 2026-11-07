@@ -10,6 +10,17 @@ const GearData=(()=>{
  const CLASS_IDS=Object.freeze(["melee","ranged","mage","support","tank"]);
  const MATERIALS=Object.freeze(["Fe","Le","Cl","Wo","Fa","Th","Gl"]);
  const FLOOR=Object.freeze({Fe:20,Le:30,Cl:30,Wo:10,Fa:15,Th:20,Gl:0});
+ const MATERIAL_LABELS=Object.freeze({
+  Fe:"Железо",Le:"Кожа",Cl:"Ткань",Wo:"Древесина",
+  Fa:"Крепёж",Th:"Прочная нить",Gl:"Стекло"
+ });
+ // Future 14-stat vocabulary only. This is NOT a combat formula; G1 currently
+ // applies temporary HP/ATK bonuses and does not modify any other stat.
+ const FUTURE_STAT_KEYS=Object.freeze([
+  "hp","protection","physicalAttack","magicAttack","physicalDefense",
+  "magicDefense","speed","critChance","critDamage","accuracy",
+  "evasion","defensePenetration","debuffPotency","debuffResistance"
+ ]);
  // Test-only composite recipes. Produced inline; no inventory for intermediate parts.
  const COMPOSITES=Object.freeze({
   U:Object.freeze({Fe:2,Fa:1}),
@@ -66,6 +77,6 @@ const GearData=(()=>{
   return Object.fromEntries(Object.entries(item.ingredients).filter(([id,n])=>
    !Number.isSafeInteger(materials[id])||materials[id]<n).map(([id,n])=>[id,Math.max(0,n-(materials[id]||0))]));
  }
- return Object.freeze({SLOTS,CLASS_IDS,MATERIALS,FLOOR,COMPOSITES,ITEMS,get,offered,missing,flatten});
+ return Object.freeze({SLOTS,CLASS_IDS,MATERIALS,MATERIAL_LABELS,FUTURE_STAT_KEYS,FLOOR,COMPOSITES,ITEMS,get,offered,missing,flatten});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=GearData;

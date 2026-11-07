@@ -131,6 +131,8 @@ let missionResultRecorded=false;
 let activeMissionId=null;
 let lastMissionStars=0;
 let lastMissionReward=null;
+let lastMissionFarmReward=null;
+let lastMissionEnergyRefunded=false;
 let simulationMissionId=null;
 function renderAccountHeader(){
  ProgressCore.refreshEnergy(progress);
@@ -322,6 +324,8 @@ function showScreen(id){
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
   lastMissionReward=null;
+  lastMissionFarmReward=null;
+  lastMissionEnergyRefunded=false;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
   const label=$("#battleMissionLabel");
   if(label)label.textContent=battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
@@ -735,6 +739,7 @@ $("#simulationConfirm")?.addEventListener("click",()=>{
  $("#simulationText").textContent="Выполнено симуляций: "+gain.count+". Потрачено: "+gain.energy+" ⚡.";
  $("#simulationRewards").textContent=[
   gain.material?"+ "+gain.material+" материалов C":null,
+  gain.materials?GearData.MATERIALS.filter(key=>gain.materials[key]>0).map(key=>"+ "+gain.materials[key]+" "+GearData.MATERIAL_LABELS[key]).join(" · "):null,
   gain.currency?"+ "+gain.currency+" валюты":null,
   gain.xp?"+ "+gain.xp+" Account XP":null
  ].filter(Boolean).map(item=>"• "+item).join("\n");
@@ -755,8 +760,10 @@ function renderMissionResult(){
  $("#missionResultText").textContent=won
   ?MissionData.get(activeMissionId).title+" завершена. "+(lastMissionReward?
    "Первая победа: +"+lastMissionReward.xp+" XP, +"+lastMissionReward.currency+" валюты, +"+lastMissionReward.material+" C.":
+   lastMissionFarmReward?"Повтор: +"+lastMissionFarmReward.currency+" валюты, "+
+    GearData.MATERIALS.filter(key=>lastMissionFarmReward.materials[key]>0).map(key=>GearData.MATERIAL_LABELS[key]+" ×"+lastMissionFarmReward.materials[key]).join(", ")+".":
    "Повтор без экономических наград.")
-  :"Отряд потерпел поражение. Экономические награды не начислены.";
+  :"Отряд потерпел поражение. Наград нет."+(lastMissionEnergyRefunded?" Энергия за ресурсный повтор возвращена.":"");
  const grade=$("#missionResultStars");
  if(grade){
   const best=campaignProgress.bestStars[activeMissionId]||0;
@@ -820,6 +827,14 @@ function syncBattleUI(){
   if(firstClear){
    lastMissionReward=ProgressCore.claimFirstClear(progress,activeMissionId,state);
    if(lastMissionReward)persistProgress();
+  }else if(state.winner==="ally"&&progress.saveVersion===3&&
+           campaignProgress.completed[activeMissionId]){
+   lastMissionFarmReward=ProgressCore.grantRepeatFarm(progress,activeMissionId);
+   if(lastMissionFarmReward)persistProgress();
+  }else if(state.winner==="enemy"&&progress.saveVersion===3&&
+           campaignProgress.completed[activeMissionId]){
+   lastMissionEnergyRefunded=ProgressCore.refundEnergy(progress,activeMissionId);
+   if(lastMissionEnergyRefunded)persistProgress();
   }
   lastMissionStars=result.earned;
   if(result.improved)
@@ -856,8 +871,9 @@ function syncBattleUI(){
  if(reward){
   reward.hidden=state.active;
   if(!state.active)reward.textContent=state.winner==="ally"?
-   (battleIsCampaign&&lastMissionReward?"Первая победа: +"+lastMissionReward.xp+" XP · +"+lastMissionReward.currency+" валюты · +"+lastMissionReward.material+" C":"Победа · без экономических наград"):
-   "Поражение · без наград";
+   (battleIsCampaign&&lastMissionReward?"Первая победа: +"+lastMissionReward.xp+" XP · +"+lastMissionReward.currency+" валюты · +"+lastMissionReward.material+" C":
+    lastMissionFarmReward?"Повтор: +"+lastMissionFarmReward.currency+" валюты · материалы G начислены":"Победа · без экономических наград"):
+   "Поражение · без наград"+(lastMissionEnergyRefunded?" · энергия возвращена":"");
  }
  const fighters=state.fighters;
  const actor=state.active?fighters[state.currentActor]:null;

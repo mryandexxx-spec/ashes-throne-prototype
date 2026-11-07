@@ -147,6 +147,7 @@ let lastMissionReward=null;
 let lastMissionFarmReward=null;
 let lastMissionEnergyRefunded=false;
 let missionEntryPaid=false;
+let missionResultSaveFailed=false;
 let simulationMissionId=null;
 function renderAccountHeader(){
  ProgressCore.refreshEnergy(progress);
@@ -342,6 +343,7 @@ function showScreen(id){
   lastMissionFarmReward=null;
   lastMissionEnergyRefunded=false;
   missionEntryPaid=false;
+  missionResultSaveFailed=false;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
   const label=$("#battleMissionLabel");
   if(label)label.textContent=battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
@@ -799,8 +801,9 @@ function renderMissionResult(){
  const first=lastMissionReward
   ?"Дополнительно за первую победу: +"+lastMissionReward.currency+" валюты, +"+lastMissionReward.xp+" XP"+
     (lastMissionReward.material?", +"+lastMissionReward.material+" C":"")+".":"";
- $("#missionResultText").textContent=won
-  ?MissionData.get(activeMissionId).title+" завершена. "+(base+first||"Повтор без экономических наград.")
+ $("#missionResultText").textContent=missionResultSaveFailed
+  ?"Ошибка сохранения наград. Прогресс этой победы не записан. Проверь хранилище браузера и повтори миссию."
+  :won?MissionData.get(activeMissionId).title+" завершена. "+(base+first||"Повтор без экономических наград.")
   :"Отряд потерпел поражение. Наград нет."+(lastMissionEnergyRefunded?" Энергия за ресурсный повтор возвращена.":"");
  const grade=$("#missionResultStars");
  if(grade){
@@ -881,6 +884,7 @@ function syncBattleUI(){
    Object.assign(progress,beforeWallet);
    Object.assign(campaignProgress,beforeCampaign);
    lastMissionFarmReward=null;lastMissionReward=null;lastMissionEnergyRefunded=false;
+   missionResultSaveFailed=true;
    renderAccountHeader();
   }
   lastMissionStars=result.earned;

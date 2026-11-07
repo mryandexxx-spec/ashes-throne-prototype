@@ -424,14 +424,25 @@ function renderHeroDetail(){
    (installed?'◆':'◇')+'</button>';
  }).join("");
  $("#gearMaterial").textContent=String(progress.gearMaterials);
- $("#gearPrice").textContent=item?(item.name+": "+item.material+" C · "+item.currency+" валюты"):"—";
+ const ready=completed===ProgressCore.SLOT_COUNT;
+ const promotion=ProgressCore.gearPromotionCost(progress,base.id);
+ const maxed=ready&&gear.tier===3;
+ $("#gearPriceLabel").textContent=ready?"Стоимость перехода":"Выбранный предмет";
+ $("#gearStatBonusLabel").textContent=ready?"Бонус повышения":"Бонус предмета";
+ $("#gearPrice").textContent=ready
+  ?(maxed?"Тестовый максимум":promotion?.currency+" игровой валюты · G"+promotion.from+" → G"+promotion.to)
+  :(item?item.name+": "+item.material+" C · "+item.currency+" валюты":"—");
  const preview=$("#gearStatBonus");
- if(preview)preview.textContent=item?
-  (item.hpBonus?"HP +"+Math.round(item.hpBonus*100)+"%":"ATK +"+Math.round(item.atkBonus*100)+"%"):"—";
- $("#gearEquipNext").disabled=!available||!ProgressCore.canEquip(progress,base.id,selectedGearSlot);
- $("#gearEquipNext").textContent=gear.slots[selectedGearSlot]?"Уже установлено":"Установить выбранный предмет";
- $("#gearNotice").textContent=ProgressCore.gearBlockReason(progress,base.id,selectedGearSlot)||
-  "Предмет доступен. Можно выбирать слоты в любом порядке.";
+ if(preview)preview.textContent=ready
+  ?(maxed?"—":"HP и ATK +"+Math.round(ProgressCore.GEAR_PROMOTION_STAT_BONUS*100)+"%")
+  :(item?(item.hpBonus?"HP +"+Math.round(item.hpBonus*100)+"%":"ATK +"+Math.round(item.atkBonus*100)+"%"):"—");
+ $("#gearEquipNext").disabled=ready?!promotion||!ProgressCore.canPromoteGear(progress,base.id)
+  :!available||!ProgressCore.canEquip(progress,base.id,selectedGearSlot);
+ $("#gearEquipNext").textContent=ready?(maxed?"Достигнут максимум":"Поднять уровень")
+  :(gear.slots[selectedGearSlot]?"Уже установлено":"Установить выбранный предмет");
+ $("#gearNotice").textContent=ready
+  ?(maxed?"Доступные G1–G3 полностью пройдены.":ProgressCore.gearPromotionBlockReason(progress,base.id)||"Все шесть слотов заполнены. Можно повысить G-ступень.")
+  :(ProgressCore.gearBlockReason(progress,base.id,selectedGearSlot)||"Предмет доступен. Можно выбирать слоты в любом порядке.");
  }
 
  const saveNote=$("#progressSaveNote");
@@ -448,14 +459,35 @@ $("#gearSlots")?.addEventListener("click",event=>{
  renderHeroDetail();
 });
 $("#gearEquipNext")?.addEventListener("click",()=>{
- const oldTier=ProgressCore.gearState(progress,selectedHeroId)?.tier;
+ const base=ALLIES.find(h=>h.id===selectedHeroId);
+ if(!base)return;
+ const promotion=ProgressCore.gearPromotionCost(progress,selectedHeroId);
+ if(promotion){
+  const before=ProgressCore.heroStats(progress,base);
+  const result=ProgressCore.promoteGear(progress,selectedHeroId);
+  if(!result){renderHeroDetail();return;}
+  const after=ProgressCore.heroStats(progress,base);
+  selectedGearSlot=0;
+  persistProgress();
+  renderHeroDetail();
+  renderHeroes();
+  $("#gearPromotionTitle").textContent="Поздравляем!";
+  $("#gearPromotionLevel").textContent="Уровень экипировки: G"+result.from+" → G"+result.to+
+   ". Герой остался на уровне "+before.level+".";
+  $("#gearPromotionCost").textContent="Потрачено "+result.currency+" игровой валюты.";
+  $("#gearPromotionStats").textContent="Здоровье: "+before.hp+" → "+after.hp+" HP\n"+
+   "Атака: "+before.atk+" → "+after.atk+" ATK\n"+
+   "Скорость: "+before.speed+" → "+after.speed+" (без изменений)";
+  $("#gearPromotionDialog").showModal();
+  return;
+ }
  if(ProgressCore.equip(progress,selectedHeroId,selectedGearSlot)){
-  if(ProgressCore.gearState(progress,selectedHeroId).tier!==oldTier)selectedGearSlot=0;
   persistProgress();
   renderHeroDetail();
   renderHeroes();
  }
 });
+$("#gearPromotionClose")?.addEventListener("click",()=>$("#gearPromotionDialog").close());
 $("#detailBack").addEventListener("click",()=>showScreen("collection"));
 $("#detailHome").addEventListener("click",()=>showScreen("home"));
 $("#detailUpgrade").addEventListener("click",()=>{

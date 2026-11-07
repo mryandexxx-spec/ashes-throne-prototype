@@ -30,6 +30,10 @@ const ProgressCore=(()=>{
   return {tier,slot,material:recipe.material,currency,heroLevel:recipe.heroLevel,
    name:SLOT_NAMES[slot],hpBonus,atkBonus};
  };
+ // Gear-002B: promotion is a distinct paid step after the sixth item.
+ // These fees and stats are PROTOTYPE balance, not approved GDD values.
+ const GEAR_PROMOTION_CURRENCY=Object.freeze({1:250,2:500});
+ const GEAR_PROMOTION_STAT_BONUS=0.03;
  const freshGear=()=>({tier:1,slots:Array(SLOT_COUNT).fill(false)});
  const installedInTier=state=>state.slots.filter(Boolean).length;
  // VS-001C UX revision: mission entry costs energy regardless of manual/simulation mode.
@@ -136,10 +140,32 @@ const ProgressCore=(()=>{
   const cost=gearCost(progress,id,slot),state=gearState(progress,id);
   progress.gearMaterials-=cost.material;progress.currency-=cost.currency;
   state.slots[slot]=true;
-  if(installedInTier(state)===SLOT_COUNT&&state.tier<3){
-   state.tier++;state.slots=Array(SLOT_COUNT).fill(false);
-  }
+  // Never auto-promote; six filled slots unlock an explicit paid action.
   return true;
+ }
+ function gearPromotionCost(progress,id){
+  const state=gearState(progress,id);
+  if(!state||state.tier>=3||installedInTier(state)!==SLOT_COUNT)return null;
+  return {from:state.tier,to:state.tier+1,currency:GEAR_PROMOTION_CURRENCY[state.tier],
+   heroLevel:GEAR[state.tier+1].heroLevel};
+ }
+ function gearPromotionBlockReason(progress,id){
+  const cost=gearPromotionCost(progress,id);
+  if(!cost)return "Сначала установи все шесть предметов текущей G-ступени.";
+  if(levelOf(progress,id)<cost.heroLevel)return "Для G"+cost.to+" нужен уровень героя "+cost.heroLevel+".";
+  if(progress.currency<cost.currency)return "Недостаточно игровой валюты.";
+  return "";
+ }
+ function canPromoteGear(progress,id){
+  return gearPromotionCost(progress,id)!==null&&!gearPromotionBlockReason(progress,id);
+ }
+ function promoteGear(progress,id){
+  if(!canPromoteGear(progress,id))return null;
+  const cost=gearPromotionCost(progress,id),state=gearState(progress,id);
+  progress.currency-=cost.currency;
+  state.tier=cost.to;
+  state.slots=Array(SLOT_COUNT).fill(false);
+  return {...cost};
  }
  function gearBonuses(progress,id){
   const state=gearState(progress,id);
@@ -152,6 +178,9 @@ const ProgressCore=(()=>{
     hp+=item.hpBonus;atk+=item.atkBonus;
    }
   }
+  // Tier transitions grant a small permanent bonus separately from item pieces.
+  hp+=(state.tier-1)*GEAR_PROMOTION_STAT_BONUS;
+  atk+=(state.tier-1)*GEAR_PROMOTION_STAT_BONUS;
   return {hp,atk};
  }
  function heroStats(progress,hero,levelOverride){
@@ -175,6 +204,7 @@ const ProgressCore=(()=>{
  return Object.freeze({MAX_LEVEL,MAX_ACCOUNT_LEVEL,FIRST_CLEAR_REWARDS,createProgress,xpCost,
   accountLevel,levelOf,upgradeCost,canUpgrade,upgrade,heroStats,claimFirstClear,
   GEAR,SLOT_COUNT,SLOT_NAMES,gearItem,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,gearBonuses,
+  GEAR_PROMOTION_CURRENCY,GEAR_PROMOTION_STAT_BONUS,gearPromotionCost,gearPromotionBlockReason,canPromoteGear,promoteGear,
   ENERGY_MAX,ENERGY_REGEN_MS,MISSION_FARM,freshEnergy,refreshEnergy,
   missionEnergyCost,affordableRuns,spendEnergy,refundEnergy,simulate});
 })();

@@ -56,8 +56,8 @@
             <div id="gearSlots" class="gear-slots" aria-label="Шесть слотов экипировки"></div>
             <div class="detail-value"><span>Материал C</span><strong id="gearMaterial">0</strong></div>
             <p class="muted gear-hint">Выбери любой из шести слотов. Для каждого предмета свой рецепт и бонус.</p>
-            <div class="detail-value"><span>Выбранный предмет</span><strong id="gearPrice">—</strong></div>
-            <div class="detail-value"><span>Бонус предмета</span><strong id="gearStatBonus">—</strong></div>
+            <div class="detail-value"><span id="gearPriceLabel">Выбранный предмет</span><strong id="gearPrice">—</strong></div>
+            <div class="detail-value"><span id="gearStatBonusLabel">Бонус предмета</span><strong id="gearStatBonus">—</strong></div>
             <button type="button" class="primary" id="gearEquipNext">Установить выбранный предмет</button>
             <p class="muted" id="gearNotice" role="status"></p>
           </div>
@@ -72,6 +72,14 @@
       <p class="muted" id="campaignSaveStatus" role="status">Статус прохождения хранится в этом браузере.</p>
       <p class="muted">Стоимость энергии указана в каждой миссии для ручного боя и симуляции. После 3★ симуляция даёт повторные ресурсы и Account XP; награды первого прохождения повторно не выдаются.</p>
     </section>
+    <dialog id="gearPromotionDialog" class="simulation-dialog" aria-labelledby="gearPromotionTitle">
+      <h2 id="gearPromotionTitle">Поздравляем!</h2>
+      <p id="gearPromotionLevel"></p>
+      <p id="gearPromotionCost" class="muted"></p>
+      <p class="muted">Изменение характеристик:</p>
+      <p id="gearPromotionStats" class="gear-promotion-stats"></p>
+      <button type="button" class="primary" id="gearPromotionClose">Продолжить</button>
+    </dialog>
     <dialog id="simulationDialog" class="simulation-dialog" aria-labelledby="simulationTitle">
       <h2 id="simulationTitle">Симуляция</h2>
       <div id="simulationSetup">
@@ -189,7 +197,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.38 · GEAR002</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.39 · GEAR002B</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

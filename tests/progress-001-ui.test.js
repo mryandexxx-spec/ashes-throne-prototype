@@ -145,10 +145,9 @@ assert.equal(elements.heroDetail.classList.active,true,"remains on hero detail a
 assert.equal(elements.detailWallet.textContent,"461");
 assert.match(elements.detailStats.innerHTML,/125 HP/);
 assert.match(elements.detailStats.innerHTML,/25 ATK/);
-assert.equal(elements.detailCost.textContent,"Недоступно");
-assert.equal(elements.detailUpgrade.disabled,true);
-click(elements.detailUpgrade);
-assert.equal(api.getLevel("kael"),2,"no double spend");
+assert.equal(elements.detailCost.textContent,"42 валюты");
+assert.equal(elements.detailUpgrade.disabled,false,"hero upgrade available above account level");
+assert.match(elements.detailNotice.textContent,/Улучшение доступно/);
 
 // Prepared team inherits upgraded stats; enemies and other heroes do not.
 api.openSquad("home");
@@ -214,13 +213,8 @@ assert.equal(api.getProgress().gear.kael.slots.filter(Boolean).length,6);
 assert.equal(elements.gearEquipNext.textContent,"Поднять уровень");
 assert.equal(elements.gearPriceLabel.textContent,"Стоимость перехода");
 assert.match(elements.gearPrice.textContent,/250 игровой валюты/);
-assert.equal(elements.gearEquipNext.disabled,true,"G2 promotion requires hero level 6");
-const beforeBlocked=api.getCurrency();
-click(elements.gearEquipNext);
-assert.equal(api.getCurrency(),beforeBlocked,"blocked promotion costs nothing");
-// Give the hero its prerequisite level without changing the tier.
-api.getProgress().levels.kael=6;
-api.getProgress().accountXp=100000;
+assert.equal(elements.gearEquipNext.disabled,false,"G2 promotion available at hero level 2");
+// No prerequisite hero or account level is needed for this prototype action.
 api.openHeroDetail("kael");
 const fromHp=Number(elements.detailStats.innerHTML.match(/(\d+) HP/)[1]);
 const fromAtk=Number(elements.detailStats.innerHTML.match(/(\d+) ATK/)[1]);

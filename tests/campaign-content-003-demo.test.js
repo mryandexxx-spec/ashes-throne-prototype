@@ -62,5 +62,5 @@ assert.match(game,/campaignProgress\.bestStars\[id\]!==3/);
 assert.match(game,/data-simulate-mission/);
 const html=read("index.html");
 assert.match(html,/id="simulationDialog"/);
-assert.match(html,/v0\.3\.44 · GEAR003B1/);
+assert.match(html,/v0\.3\.45 · GEAR003B2/);
 console.log("Campaign-Content-003 demo: catalog, stars, save, reward and roster assertions passed");

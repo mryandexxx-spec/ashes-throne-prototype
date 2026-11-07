@@ -10,7 +10,7 @@ const ids=["energyStatus","missionResultChapter","missionResultStars","missionRe
  "startBattle","devResourcesGrant","devResourcesNotice","accountStatus","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","gearTier","gearSlots","gearMaterial","gearWallet","gearPrice","gearPriceLabel","gearStatBonus","gearStatBonusLabel","gearEquipNext","gearNotice","gearPromotionDialog","gearPromotionTitle","gearPromotionLevel","gearPromotionCost","gearPromotionStats","gearPromotionClose"];
 function element(id=""){
- return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
+ return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},style:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
    remove(x){this[x]=false},toggle(x,v){this[x]=!!v}},
   setAttribute(name,value){this[name]=value},

@@ -13,5 +13,5 @@ assert.match(game,/const sides=\{ally:roster\.filter/);
 assert.match(game,/const sideMembersBySide=\{ally:roster\.filter/);
 assert.match(css,/\.battle-screen \.battle-top-controls\.arena-hud\s*\{[^}]*top:calc\(76px/);
 assert.match(css,/min-height:40px/);
-assert.match(html,/v0\.3\.45 · GEAR003B2/);
+assert.match(html,/v0\.3\.45 · GEAR004A/);
 console.log("Combat-008F mobile-polish and gesture lifecycle contract passed");

@@ -417,10 +417,13 @@ function openHeroDetail(id){
 }
 function renderItemizedGear(base,gear){
  const completed=gear.slots.filter(Boolean).length;
+ const ready=completed===ProgressCore.SLOT_COUNT;
  const slot=GearData.SLOTS[selectedGearSlot]||GearData.SLOTS[0];
  const offered=ProgressCore.itemOffer(progress,base.id,slot.id),item=offered[0]||null;
  const installed=gear.slots[selectedGearSlot];
- $("#gearTier").textContent="G1 · "+completed+"/6"+(completed===6?" · завершено":"");
+ const promotion=ready?ProgressCore.gearPromotionCost(progress,base.id):null;
+ $("#gearTier").textContent="G"+gear.tier+" · "+completed+"/6"+
+  (ready&&gear.tier===2?" · тестовый максимум":"");
  $("#gearSlots").innerHTML=GearData.SLOTS.map((entry,i)=>{
   const filled=gear.slots[i],selected=i===selectedGearSlot;
   return '<button type="button" class="gear-slot '+(filled?'filled ':'')+
@@ -428,24 +431,28 @@ function renderItemizedGear(base,gear){
    '" aria-label="'+entry.label+' · '+(filled?'установлен':'пустой')+'">'+
    '<span aria-hidden="true">'+(filled?'◆':'◇')+'</span><small>'+entry.label+'</small></button>';
  }).join("");
- const label=$("#gearMaterialLabel");if(label)label.textContent="Компоненты G1";
+ const label=$("#gearMaterialLabel");if(label)label.textContent="Компоненты G"+gear.tier;
  $("#gearMaterial").textContent=GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(" · ");
  $("#gearWallet").textContent=String(progress.currency);
- $("#gearPriceLabel").textContent="Выбранный предмет";
- $("#gearStatBonusLabel").textContent="Фиксированный бонус";
+ $("#gearPriceLabel").textContent=ready?"Стоимость перехода":"Выбранный предмет";
+ $("#gearStatBonusLabel").textContent=ready?"Бонус повышения":"Фиксированный бонус";
  const chosen=installed?GearData.get(installed):item;
- $("#gearPrice").textContent=chosen?chosen.name+" · "+
-  Object.entries(chosen.ingredients).map(([id,n])=>GearData.MATERIAL_LABELS[id]+" ×"+n).join(", ")+
-  " · "+chosen.currency+" валюты":"—";
- $("#gearStatBonus").textContent=chosen?
-  [chosen.bonuses.hp?"HP +"+Math.round(chosen.bonuses.hp*100)+"%":"",
+ $("#gearPrice").textContent=ready?(promotion?promotion.currency+" валюты · G1 → G2":"G2 · тестовый максимум"):
+  chosen?chosen.name+" · "+Object.entries(chosen.ingredients).map(([id,n])=>
+   GearData.MATERIAL_LABELS[id]+" ×"+n).join(", ")+" · "+chosen.currency+" валюты":"—";
+ $("#gearStatBonus").textContent=ready?(promotion?"HP и ATK +3%":"—"):
+  chosen?[chosen.bonuses.hp?"HP +"+Math.round(chosen.bonuses.hp*100)+"%":"",
    chosen.bonuses.atk?"ATK +"+Math.round(chosen.bonuses.atk*100)+"%":""].filter(Boolean).join(" · "):"—";
  const button=$("#gearEquipNext");
- button.disabled=saveBlocked||!!installed||!item||!ProgressCore.canEquipItem(progress,base.id,item.id);
- button.textContent=completed===6?"G1 завершён":installed?"Предмет установлен":"Изготовить и установить";
+ button.disabled=saveBlocked||(ready?!promotion||!ProgressCore.canPromoteGear(progress,base.id):
+  !!installed||!item||!ProgressCore.canEquipItem(progress,base.id,item.id));
+ button.textContent=ready?(promotion?"Повысить экипировку до G2":"G2 завершён"):
+  installed?"Предмет установлен":"Изготовить и установить";
  $("#gearNotice").textContent=saveBlocked
   ?"Обнаружена проблема сохранения: покупки заблокированы."
-  :completed===6?"G1 завершён. G2 появится в отдельном этапе."
+  :ready?(promotion?(ProgressCore.gearPromotionBlockReason(progress,base.id)||
+   "Все шесть предметов G1 установлены. Можно повысить G за 250 валюты."):
+   "G2 завершён. G3 будет реализован отдельным этапом.")
   :installed?"Установлено: "+chosen.name+"."
   :item?(ProgressCore.itemBlockReason(progress,base.id,item.id)||
    "Тестовый предмет доступен. Материалы — в кнопке «Тестовые ресурсы».")
@@ -534,6 +541,33 @@ $("#gearEquipNext")?.addEventListener("click",()=>{
  if(!base||saveBlocked)return;
  const current=ProgressCore.gearState(progress,selectedHeroId);
  if(current?.mode==="itemized"){
+  const ready=current.slots.every(Boolean);
+  if(ready){
+   const cost=ProgressCore.gearPromotionCost(progress,selectedHeroId);
+   if(!cost||!ProgressCore.canPromoteGear(progress,selectedHeroId)){
+    renderHeroDetail();return;
+   }
+   const before=JSON.stringify(progress),oldStats=ProgressCore.heroStats(progress,base);
+   const result=ProgressCore.promoteGear(progress,selectedHeroId);
+   if(!result)return;
+   if(!persistProgress()){
+    Object.keys(progress).forEach(k=>delete progress[k]);
+    Object.assign(progress,JSON.parse(before));
+    renderAccountHeader();renderHeroDetail();
+    $("#gearNotice").textContent="Переход не сохранён. Валюта и G1 восстановлены.";
+    return;
+   }
+   const newStats=ProgressCore.heroStats(progress,base);
+   selectedGearSlot=0;renderHeroDetail();renderHeroes();
+   $("#gearPromotionTitle").textContent="Поздравляем!";
+   $("#gearPromotionLevel").textContent="G1 → G2. Предметы G1 сохранены в истории.";
+   $("#gearPromotionCost").textContent="Потрачено "+result.currency+" валюты.";
+   $("#gearPromotionStats").textContent="Здоровье: "+oldStats.hp+" → "+newStats.hp+" HP\n"+
+    "Атака: "+oldStats.atk+" → "+newStats.atk+" ATK\n"+
+    "Скорость: "+oldStats.speed+" → "+newStats.speed+" (без изменений)";
+   $("#gearPromotionDialog").showModal();
+   return;
+  }
   const slot=GearData.SLOTS[selectedGearSlot];
   const item=slot?ProgressCore.itemOffer(progress,selectedHeroId,slot.id)[0]:null;
   if(!item||!ProgressCore.canEquipItem(progress,selectedHeroId,item.id)){
@@ -542,11 +576,9 @@ $("#gearEquipNext")?.addEventListener("click",()=>{
   const before=JSON.stringify(progress);
   if(!ProgressCore.equipItem(progress,selectedHeroId,item.id))return;
   if(!persistProgress()){
-   // Restore wallet, resources and gear when localStorage rejects the purchase.
    Object.keys(progress).forEach(k=>delete progress[k]);
    Object.assign(progress,JSON.parse(before));
-   renderAccountHeader();
-   renderHeroDetail();
+   renderAccountHeader();renderHeroDetail();
    $("#gearNotice").textContent="Покупка не сохранена. Материалы и валюта возвращены.";
    return;
   }

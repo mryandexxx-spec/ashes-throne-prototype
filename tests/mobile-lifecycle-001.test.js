@@ -39,7 +39,7 @@ const document={
   if(q==="[data-open-hero]")return heroNodes;
   return [];
  },
- addEventListener(){}
+ addEventListener(type,fn){(this.handlers[type]??=[]).push(fn)}
 };
 let meshCreates=0,engineCreates=0,rendersStarted=0,rendersStopped=0;
 class Mesh {

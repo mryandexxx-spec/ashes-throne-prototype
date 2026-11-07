@@ -33,8 +33,8 @@ assert.equal(damages(b)[0].damageType,"magical");
 b=battle(ally("test-magical-group",{physicalAttack:90,magicAttack:31}),
  [enemy("foe"),enemy("foe2")]);
 assert.equal(core.performPlayerAbility(b,"special"),true);
-assert.deepEqual(b.fighters.slice(1).map(x=>x.hp),[169,169]);
-assert.deepEqual(damages(b).map(x=>x.damageType),["magical","magical"]);
+assert.deepEqual(Array.from(b.fighters.slice(1),x=>x.hp),[169,169]);
+assert.deepEqual(Array.from(damages(b),x=>x.damageType),["magical","magical"]);
 b=battle(ally("test-magical-strike"));
 const pre=JSON.stringify(b),events=b.events;
 assert.equal(core.performPlayerAbility(b,"special"),false,"no magicAttack is not zero and never atk fallback");
@@ -49,7 +49,7 @@ assert.equal(damages(b)[0].damageType,undefined,"legacy combat log remains uncha
 b=battle(ally("test-area-damage",{atk:21,physicalAttack:900,magicAttack:900}),
  [enemy("foe"),enemy("foe2")]);
 assert.equal(core.performPlayerAbility(b,"special"),true);
-assert.deepEqual(b.fighters.slice(1).map(x=>x.hp),[179,179],
+assert.deepEqual(Array.from(b.fighters.slice(1),x=>x.hp),[179,179],
  "legacy multi-target damage must retain original general atk");
 assert.ok(damages(b).every(x=>!Object.hasOwn(x,"damageType")));
 console.log("Stats-001B: explicit physical/magical single/group damage, validation and legacy compatibility passed");

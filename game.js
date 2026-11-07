@@ -423,7 +423,7 @@ function renderItemizedGear(base,gear){
  const installed=gear.slots[selectedGearSlot];
  const promotion=ready?ProgressCore.gearPromotionCost(progress,base.id):null;
  $("#gearTier").textContent="G"+gear.tier+" · "+completed+"/6"+
-  (ready&&gear.tier===2?" · тестовый максимум":"");
+  (ready&&gear.tier===3?" · тестовый максимум":"");
  $("#gearSlots").innerHTML=GearData.SLOTS.map((entry,i)=>{
   const filled=gear.slots[i],selected=i===selectedGearSlot;
   return '<button type="button" class="gear-slot '+(filled?'filled ':'')+
@@ -437,7 +437,7 @@ function renderItemizedGear(base,gear){
  $("#gearPriceLabel").textContent=ready?"Стоимость перехода":"Выбранный предмет";
  $("#gearStatBonusLabel").textContent=ready?"Бонус повышения":"Фиксированный бонус";
  const chosen=installed?GearData.get(installed):item;
- $("#gearPrice").textContent=ready?(promotion?promotion.currency+" валюты · G1 → G2":"G2 · тестовый максимум"):
+ $("#gearPrice").textContent=ready?(promotion?promotion.currency+" валюты · G"+promotion.from+" → G"+promotion.to:"G3 · тестовый максимум"):
   chosen?chosen.name+" · "+Object.entries(chosen.ingredients).map(([id,n])=>
    GearData.MATERIAL_LABELS[id]+" ×"+n).join(", ")+" · "+chosen.currency+" валюты":"—";
  $("#gearStatBonus").textContent=ready?(promotion?"HP и ATK +3%":"—"):
@@ -446,13 +446,13 @@ function renderItemizedGear(base,gear){
  const button=$("#gearEquipNext");
  button.disabled=saveBlocked||(ready?!promotion||!ProgressCore.canPromoteGear(progress,base.id):
   !!installed||!item||!ProgressCore.canEquipItem(progress,base.id,item.id));
- button.textContent=ready?(promotion?"Повысить экипировку до G2":"G2 завершён"):
+ button.textContent=ready?(promotion?"Повысить экипировку до G"+promotion.to:"G3 завершён"):
   installed?"Предмет установлен":"Изготовить и установить";
  $("#gearNotice").textContent=saveBlocked
   ?"Обнаружена проблема сохранения: покупки заблокированы."
   :ready?(promotion?(ProgressCore.gearPromotionBlockReason(progress,base.id)||
-   "Все шесть предметов G1 установлены. Можно повысить G за 250 валюты."):
-   "G2 завершён. G3 будет реализован отдельным этапом.")
+   "Все шесть предметов G"+gear.tier+" установлены. Можно повысить до G"+promotion.to+" за "+promotion.currency+" валюты."):
+   "G3 завершён. Следующие ступени появятся отдельным этапом.")
   :installed?"Установлено: "+chosen.name+"."
   :item?(ProgressCore.itemBlockReason(progress,base.id,item.id)||
    "Тестовый предмет доступен. Материалы — в кнопке «Тестовые ресурсы».")
@@ -560,7 +560,7 @@ $("#gearEquipNext")?.addEventListener("click",()=>{
    const newStats=ProgressCore.heroStats(progress,base);
    selectedGearSlot=0;renderHeroDetail();renderHeroes();
    $("#gearPromotionTitle").textContent="Поздравляем!";
-   $("#gearPromotionLevel").textContent="G1 → G2. Предметы G1 сохранены в истории.";
+   $("#gearPromotionLevel").textContent="G"+result.from+" → G"+result.to+". Предметы прошлых G сохранены в истории.";
    $("#gearPromotionCost").textContent="Потрачено "+result.currency+" валюты.";
    $("#gearPromotionStats").textContent="Здоровье: "+oldStats.hp+" → "+newStats.hp+" HP\n"+
     "Атака: "+oldStats.atk+" → "+newStats.atk+" ATK\n"+

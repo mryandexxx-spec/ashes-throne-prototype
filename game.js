@@ -390,6 +390,7 @@ function renderHeroDetail(){
  $("#detailPreview").textContent=next?next.hp+" HP · "+next.atk+" ATK":"Достигнут максимум";
  $("#detailUpgrade").disabled=!ProgressCore.canUpgrade(progress,base.id);
  $("#detailNotice").textContent=hero.level>=ProgressCore.MAX_LEVEL?"Герой достиг тестового максимума.":hero.level>=ProgressCore.accountLevel(progress)?"Нужен следующий уровень аккаунта.":progress.currency<cost?"Недостаточно валюты.":"Улучшение доступно.";
+ if($("#gearTier")){
  const gear=ProgressCore.gearState(progress,base.id);
  const recipe=ProgressCore.gearCost(progress,base.id);
  const completed=gear?.slots??0;
@@ -401,13 +402,14 @@ function renderHeroDetail(){
  $("#gearPrice").textContent=recipe?recipe.material+" C · "+recipe.currency+" валюты":"Все слоты заполнены";
  $("#gearEquipNext").disabled=!ProgressCore.canEquip(progress,base.id);
  $("#gearNotice").textContent=ProgressCore.gearBlockReason(progress,base.id)||"Можно установить следующий предмет.";
+ }
 
  const saveNote=$("#progressSaveNote");
  if(saveNote)saveNote.textContent=saveAvailable
   ?"Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить."
   :"Сохранение сейчас недоступно. Прогресс может сброситься после перезагрузки.";
 }
-$("#gearEquipNext").addEventListener("click",()=>{
+$("#gearEquipNext")?.addEventListener("click",()=>{
  if(ProgressCore.equip(progress,selectedHeroId)){
   persistProgress();
   renderHeroDetail();

@@ -147,6 +147,7 @@ function persistProgress(){
 }
 
 let selectedHeroId=ALLIES[0].id;
+let selectedGearSlot=0;
 // Formation persists independently of hero levels/campaign saves. On the first
 // visit (or invalid/unavailable storage), use the first five roster heroes.
 const SQUAD_SAVE_KEY="ashes-throne.squad.v1";
@@ -386,6 +387,8 @@ function renderHeroes(){
 function openHeroDetail(id){
  if(!ALLIES.some(h=>h.id===id))return false;
  selectedHeroId=id;
+ const current=ProgressCore.gearState(progress,id);
+ selectedGearSlot=current?Math.max(0,current.slots.findIndex(installed=>!installed)):0;
  showScreen("heroDetail");
  return true;
 }
@@ -407,16 +410,28 @@ function renderHeroDetail(){
  $("#detailNotice").textContent=hero.level>=ProgressCore.MAX_LEVEL?"Герой достиг тестового максимума.":hero.level>=ProgressCore.accountLevel(progress)?"Нужен следующий уровень аккаунта.":progress.currency<cost?"Недостаточно валюты.":"Улучшение доступно.";
  if($("#gearTier")){
  const gear=ProgressCore.gearState(progress,base.id);
- const recipe=ProgressCore.gearCost(progress,base.id);
- const completed=gear?.slots??0;
- $("#gearTier").textContent=recipe?"G"+gear.tier+" · "+completed+"/6":"G3 · 6/6 (тестовый максимум)";
- $("#gearSlots").innerHTML=Array.from({length:6},(_,i)=>
-  '<span class="gear-slot '+(i<completed?'filled':'')+'" aria-label="Слот '+(i+1)+(i<completed?' установлен':' пустой')+'">'+
-  (i<completed?'◆':'◇')+'</span>').join("");
+ const completed=gear.slots.filter(Boolean).length;
+ const item=ProgressCore.gearItem(gear.tier,selectedGearSlot);
+ const available=ProgressCore.gearCost(progress,base.id,selectedGearSlot);
+ $("#gearTier").textContent="G"+gear.tier+" · "+completed+"/6"+
+  (gear.tier===3&&completed===6?" (тестовый максимум)":"");
+ $("#gearSlots").innerHTML=gear.slots.map((installed,i)=>{
+  const label=ProgressCore.SLOT_NAMES[i];
+  const selected=i===selectedGearSlot;
+  return '<button type="button" class="gear-slot '+(installed?'filled ':'')+
+   (selected?'selected':'')+'" data-gear-slot="'+i+'" aria-pressed="'+selected+
+   '" aria-label="Слот '+(i+1)+' · '+label+' · '+(installed?'установлен':'пустой')+'">'+
+   (installed?'◆':'◇')+'</button>';
+ }).join("");
  $("#gearMaterial").textContent=String(progress.gearMaterials);
- $("#gearPrice").textContent=recipe?recipe.material+" C · "+recipe.currency+" валюты":"Все слоты заполнены";
- $("#gearEquipNext").disabled=!ProgressCore.canEquip(progress,base.id);
- $("#gearNotice").textContent=ProgressCore.gearBlockReason(progress,base.id)||"Можно установить следующий предмет.";
+ $("#gearPrice").textContent=item?(item.name+": "+item.material+" C · "+item.currency+" валюты"):"—";
+ const preview=$("#gearStatBonus");
+ if(preview)preview.textContent=item?
+  (item.hpBonus?"HP +"+Math.round(item.hpBonus*100)+"%":"ATK +"+Math.round(item.atkBonus*100)+"%"):"—";
+ $("#gearEquipNext").disabled=!available||!ProgressCore.canEquip(progress,base.id,selectedGearSlot);
+ $("#gearEquipNext").textContent=gear.slots[selectedGearSlot]?"Уже установлено":"Установить выбранный предмет";
+ $("#gearNotice").textContent=ProgressCore.gearBlockReason(progress,base.id,selectedGearSlot)||
+  "Предмет доступен. Можно выбирать слоты в любом порядке.";
  }
 
  const saveNote=$("#progressSaveNote");
@@ -424,8 +439,18 @@ function renderHeroDetail(){
   ?"Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить."
   :"Сохранение сейчас недоступно. Прогресс может сброситься после перезагрузки.";
 }
+$("#gearSlots")?.addEventListener("click",event=>{
+ const button=event.target.closest?.("[data-gear-slot]");
+ if(!button||!$("#gearSlots").contains(button))return;
+ const slot=Number(button.dataset.gearSlot);
+ if(!Number.isInteger(slot)||slot<0||slot>=ProgressCore.SLOT_COUNT)return;
+ selectedGearSlot=slot;
+ renderHeroDetail();
+});
 $("#gearEquipNext")?.addEventListener("click",()=>{
- if(ProgressCore.equip(progress,selectedHeroId)){
+ const oldTier=ProgressCore.gearState(progress,selectedHeroId)?.tier;
+ if(ProgressCore.equip(progress,selectedHeroId,selectedGearSlot)){
+  if(ProgressCore.gearState(progress,selectedHeroId).tier!==oldTier)selectedGearSlot=0;
   persistProgress();
   renderHeroDetail();
   renderHeroes();

@@ -13,6 +13,7 @@ assert.equal(SaveCore.KEY,"ashes-throne.progress.v2");
 map.set("ashes-throne.progress.v1",JSON.stringify({version:1,materials:50,levels:{kael:3,lyra:3,darin:3}}));
 let result=SaveCore.load(heroes,get);
 assert.equal(result.available,true);
+assert.equal(result.fresh,true,"old progress does not count as new economy save");
 assert.equal(result.progress.currency,0,"old demo economy is intentionally reset");
 assert.equal(result.progress.levels.kael,1);
 assert.equal(result.progress.accountXp,0);
@@ -20,6 +21,7 @@ assert.equal(ProgressCore.claimFirstClear(result.progress,"black-pass-ambush",{a
 assert.equal(ProgressCore.upgrade(result.progress,"kael"),true);
 assert.equal(SaveCore.save(result.progress,get),true);
 const restored=SaveCore.load(heroes,get);
+assert.equal(restored.fresh,false,"saved v2 economy reloads without reset");
 assert.equal(restored.progress.currency,461);
 assert.equal(restored.progress.accountXp,80);
 assert.equal(restored.progress.levels.kael,2);

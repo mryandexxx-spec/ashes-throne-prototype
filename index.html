@@ -65,12 +65,26 @@
     </section>
     <section id="campaign" class="screen">
       <div class="section-heading"><div><div class="eyebrow">КАМПАНИЯ</div><h2>Путь к престолу</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
-      <div class="energy-toolbar"><p class="muted" id="energyStatus">Энергия: 240/240 · 1 за 6 минут</p><button type="button" class="ghost" id="energyRefresh">Обновить энергию</button></div><p id="farmNotice" class="muted" role="status" aria-live="polite"></p>
+      <div class="energy-toolbar"><p class="muted" id="energyStatus">Энергия: 240/240 · 1 за 6 минут</p><button type="button" class="ghost" id="energyRefresh">Обновить энергию</button></div>
       <div id="campaignMissions" aria-label="Главы и миссии кампании"></div>
       <p class="muted" id="campaignSaveStatus" role="status">Статус прохождения хранится в этом браузере.</p>
-      <p class="muted">За первое прохождение: Account XP, валюта и C. Сюжетные повторы и учебная симуляция — без наград. Автодобыча ресурсов после 3★ первой миссии расходует энергию.</p>
+      <p class="muted">Стоимость энергии указана в каждой миссии для ручного боя и симуляции. После 3★ симуляция даёт повторные ресурсы и Account XP; награды первого прохождения повторно не выдаются.</p>
     </section>
-    <dialog id="simulationDialog" class="simulation-dialog" aria-labelledby="simulationTitle"><h2 id="simulationTitle">Победа!</h2><p id="simulationText" role="status"></p><button type="button" class="primary" id="simulationClose">Закрыть</button></dialog>
+    <dialog id="simulationDialog" class="simulation-dialog" aria-labelledby="simulationTitle">
+      <h2 id="simulationTitle">Симуляция</h2>
+      <div id="simulationSetup">
+        <label class="simulation-slider-label" for="simulationCount">Количество: <strong id="simulationQuantity">1</strong></label>
+        <input type="range" id="simulationCount" min="1" max="1" value="1" step="1" aria-label="Количество симуляций">
+        <p class="muted">Потратим: <strong id="simulationCost">10 ⚡</strong></p>
+        <p class="muted">Доступно: <strong id="simulationAvailable">240 ⚡</strong></p>
+        <button type="button" class="primary" id="simulationConfirm">Начать симуляцию</button>
+      </div>
+      <div id="simulationResults" hidden aria-live="polite">
+        <p id="simulationText" role="status"></p>
+        <p id="simulationRewards" class="simulation-rewards"></p>
+      </div>
+      <button type="button" class="ghost" id="simulationClose">Отмена</button>
+    </dialog>
     <section id="squad" class="screen squad-screen" aria-label="Подготовка отряда">
       <div class="section-heading squad-heading">
         <div><div class="eyebrow">ПЕРЕД СРАЖЕНИЕМ</div><h2>Выбор отряда</h2><p class="muted">Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.</p></div>
@@ -173,7 +187,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.35 · PVS001C</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.36 · SIM001</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

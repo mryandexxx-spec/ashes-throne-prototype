@@ -130,20 +130,30 @@ const ProgressV3Core=(()=>{
      new Set(data.claimedMissions).size!==data.claimedMissions.length)return null;
   if(Object.keys(data.heroes).length!==ids.length||ids.some(id=>!own(data.heroes,id)))return null;
   for(const id of ids){
-   const hero=data.heroes[id],gear=hero?.gear,slots=gear?.installedByTier?.["1"];
+   const hero=data.heroes[id],gear=hero?.gear;
    if(!object(hero)||hero.classId!==TEST_CLASSES[id]||
       !Number.isInteger(hero.level)||hero.level<1||hero.level>ProgressCore.MAX_LEVEL||
-      !object(gear)||gear.tier!==1||!object(gear.installedByTier)||
-      Object.keys(gear.installedByTier).length!==1||
-      !Array.isArray(slots)||slots.length!==SLOTS.length)return null;
-   for(let i=0;i<SLOTS.length;i++){
-    const entry=slots[i];
-    if(entry===null)continue;
-    if(!object(entry)||entry.kind!=="item"||typeof entry.itemId!=="string"||
-       typeof GearData==="undefined")return null;
-    const item=GearData.get(entry.itemId);
-    if(!item||item.tier!==1||item.slotId!==SLOTS[i]||
-       !item.allowedClasses.includes(hero.classId))return null;
+      !object(gear)||![1,2].includes(gear.tier)||!object(gear.installedByTier))
+    return null;
+   const keys=Object.keys(gear.installedByTier).sort();
+   const expected=gear.tier===1?["1"]:["1","2"];
+   if(JSON.stringify(keys)!==JSON.stringify(expected))return null;
+   for(let tier=1;tier<=gear.tier;tier++){
+    const slots=gear.installedByTier[String(tier)];
+    if(!Array.isArray(slots)||slots.length!==SLOTS.length)return null;
+    for(let i=0;i<SLOTS.length;i++){
+     const entry=slots[i];
+     if(entry===null){
+      // Past stages must be complete before promotion.
+      if(tier<gear.tier)return null;
+      continue;
+     }
+     if(!object(entry)||entry.kind!=="item"||typeof entry.itemId!=="string"||
+        typeof GearData==="undefined")return null;
+     const item=GearData.get(entry.itemId);
+     if(!item||item.tier!==tier||item.slotId!==SLOTS[i]||
+        !item.allowedClasses.includes(hero.classId))return null;
+    }
    }
   }
   if(Object.keys(data.materials).length!==MATERIALS.length||
@@ -162,10 +172,14 @@ const ProgressV3Core=(()=>{
    materials:source.materials,
    classes:Object.fromEntries(ids.map(id=>[id,source.heroes[id].classId])),
    levels:Object.fromEntries(ids.map(id=>[id,source.heroes[id].level])),
-   gear:Object.fromEntries(ids.map(id=>[id,{
-    tier:1,mode:"itemized",
-    slots:source.heroes[id].gear.installedByTier["1"].map(x=>x?.itemId??null)
-   }])),
+   gear:Object.fromEntries(ids.map(id=>{
+    const gear=source.heroes[id].gear;
+    return [id,{
+     tier:gear.tier,mode:"itemized",
+     slots:gear.installedByTier[String(gear.tier)].map(x=>x?.itemId??null),
+     history:gear.tier===2?{"1":gear.installedByTier["1"].map(x=>x?.itemId??null)}:{}
+    }];
+   })),
    migration:source.migration
   };
  }
@@ -183,7 +197,10 @@ const ProgressV3Core=(()=>{
    migration:p.migration??{strategy:"clean-heroes-v1",sourceVersion:null},
    heroes:Object.fromEntries(ids.map(id=>[id,{
     classId:p.classes[id],level:p.levels[id],
-    gear:{tier:1,installedByTier:{"1":p.gear[id].slots.map(x=>x===null?null:{kind:"item",itemId:x})}}
+    gear:{tier:p.gear[id].tier,installedByTier:p.gear[id].tier===2?{
+     "1":(p.gear[id].history?.["1"]||[]).map(x=>x===null?null:{kind:"item",itemId:x}),
+     "2":p.gear[id].slots.map(x=>x===null?null:{kind:"item",itemId:x})
+    }:{"1":p.gear[id].slots.map(x=>x===null?null:{kind:"item",itemId:x})}}
    }]))
   };
   return validateActive(source,ids.map(id=>({id,side:"ally"})));

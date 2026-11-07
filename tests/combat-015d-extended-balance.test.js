@@ -42,8 +42,9 @@ function simulation(partyIds,level,mode,pilot){
   for(const id of partyIds)progress.levels[id]=level;
   const party=partyIds.map(id=>ProgressCore.heroStats(progress,
     allies.find(f=>f.id===id)));
-  const foes=enemies.map(f=>({...f,...(pilot&&mission.enemyAiProfiles[f.id]
-    ?{aiProfile:mission.enemyAiProfiles[f.id]}:{})}));
+  // Reproduce the historical single-shade pilot without reintroducing
+  // mission-level AI overrides into production.
+  const foes=enemies.map(f=>({...f,aiProfile:pilot&&f.id==="shade"?"aggressive":"ordinary"}));
   const b=CombatCore.createBattle([...party,...foes],[],{leaderId:partyIds[0]});
   const initial=party.reduce((sum,x)=>sum+x.hp,0);
   CombatCore.advanceToPlayerTurn(b);

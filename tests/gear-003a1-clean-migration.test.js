@@ -148,11 +148,13 @@ function assertClean(result){
  assert.deepEqual(JSON.stringify(next.energy),JSON.stringify(old.energy));
  assert.deepEqual(JSON.stringify(next.claimedMissions),JSON.stringify(old.claimedMissions));
 }
-// A1 is intentionally inert: neither index.html nor game.js imports the module.
+// A1's original isolated contract is preserved; A2 activates v3 only after
+// the explicit A2 authorization, using the versioned browser bundle.
 {
  const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
  const game=fs.readFileSync(path.join(__dirname,"..","game.js"),"utf8");
- assert.ok(!html.includes("progress-v3-core.js"));
- assert.ok(!game.includes("ProgressV3Core"));
+ assert.ok(html.includes('<script src="progress-v3-core.js"></script>'));
+ assert.ok(html.includes('<script src="gear-data.js"></script>'));
+ assert.ok(!game.includes("ProgressV3Core.stage("),"migration stays in SaveCore");
 }
-console.log("Gear-003A1 inert clean-hero v3 staging and rollback contracts passed");
+console.log("Gear-003A1 clean-hero v3 staging and rollback contracts passed");

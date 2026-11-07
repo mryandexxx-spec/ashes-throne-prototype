@@ -44,6 +44,22 @@ const ProgressCore=(()=>{
   "demo-mission-2":Object.freeze({cost:12,material:0,currency:200,xp:5}),
   "demo-mission-3":Object.freeze({cost:16,material:24,currency:0,xp:5})
  });
+ // DEV-RES-001: temporary repeatable test tool, NOT normal economy or reward.
+ // Replenishes to useful minimum balances without uncontrolled accumulation.
+ const TEST_RESOURCE_FLOOR=Object.freeze({currency:5000,material:100});
+ function grantTestResources(progress,now=Date.now()){
+  if(!progress||!progress.energy||!Number.isSafeInteger(now)||now<0||
+     !Number.isSafeInteger(progress.currency)||progress.currency<0||
+     !Number.isSafeInteger(progress.gearMaterials)||progress.gearMaterials<0)return null;
+  const currency=Math.max(0,TEST_RESOURCE_FLOOR.currency-progress.currency);
+  const material=Math.max(0,TEST_RESOURCE_FLOOR.material-progress.gearMaterials);
+  const energy=ENERGY_MAX-progress.energy.value;
+  progress.currency+=currency;
+  progress.gearMaterials+=material;
+  progress.energy.value=ENERGY_MAX;
+  progress.energy.updatedAt=now;
+  return {currency,material,energy};
+ }
  const freshEnergy=(now=Date.now())=>({value:ENERGY_MAX,updatedAt:now});
  function refreshEnergy(progress,now=Date.now()){
   if(!Number.isSafeInteger(now)||now<0||!progress.energy)return 0;
@@ -205,6 +221,6 @@ const ProgressCore=(()=>{
   accountLevel,levelOf,upgradeCost,canUpgrade,upgrade,heroStats,claimFirstClear,
   GEAR,SLOT_COUNT,SLOT_NAMES,gearItem,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,gearBonuses,
   GEAR_PROMOTION_CURRENCY,GEAR_PROMOTION_STAT_BONUS,gearPromotionCost,gearPromotionBlockReason,canPromoteGear,promoteGear,
-  ENERGY_MAX,ENERGY_REGEN_MS,MISSION_FARM,freshEnergy,refreshEnergy,
+  ENERGY_MAX,ENERGY_REGEN_MS,MISSION_FARM,TEST_RESOURCE_FLOOR,grantTestResources,freshEnergy,refreshEnergy,
   missionEnergyCost,affordableRuns,spendEnergy,refundEnergy,simulate});
 })();

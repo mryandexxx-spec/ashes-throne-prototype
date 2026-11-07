@@ -773,3 +773,10 @@ body.battle-mode #app>footer{visibility:hidden}
 
 /* Gear-002C: unaffordable item actions must look disabled, including Safari. */
 .gear-panel #gearEquipNext:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.35);transform:none}
+
+/* DEV-RES-001: clearly separated prototype-only controls, touch-safe on iPhone. */
+.dev-resources{border:1px dashed var(--line);border-radius:12px;background:var(--panel);padding:14px 18px;margin:18px 0;max-width:700px}
+.dev-resources p{font-size:12px;line-height:1.5;margin:8px 0}
+.dev-resources #devResourcesGrant{min-height:44px;touch-action:manipulation}
+.dev-resources #devResourcesNotice{color:var(--gold);overflow-wrap:anywhere}
+@media(max-width:700px){.dev-resources{padding:12px;margin:12px 0}.dev-resources #devResourcesGrant{width:100%}}

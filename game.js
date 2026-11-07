@@ -633,6 +633,18 @@ $("#detailUpgrade").addEventListener("click",()=>{
  }
 });
 
+function missionRewardLabel(id){
+ const reward=ProgressCore.MISSION_GEAR_FARM[id];
+ if(progress.saveVersion!==3||!reward)return "";
+ const components=GearData.MATERIALS.filter(key=>reward.materials[key]>0)
+  .map(key=>GearData.MATERIAL_LABELS[key]+" ×"+reward.materials[key]).join(" · ");
+ const first=ProgressCore.FIRST_CLEAR_REWARDS[id];
+ const bonus=first&&!progress.claimedMissions.includes(id)
+  ?"<p class=\"muted\">Дополнительно за первую победу: "+first.currency+" валюты · "+first.xp+" XP.</p>":"";
+ return "<p class=\"muted\"><b>Награды за победу:</b> "+reward.currency+
+  " валюты · "+reward.xp+" XP · "+components+
+  ". Выдаются при первой победе и каждом повторе (от 1★). Симуляция после 3★.</p>"+bonus;
+}
 function renderCampaign(){
  ProgressCore.refreshEnergy(progress);
  renderAccountHeader();
@@ -658,7 +670,7 @@ function renderCampaign(){
    const status=completed?"Пройдено · Повторное прохождение доступно":available?"Не пройдено":"Заблокировано";
    const criteria=mission.stars.map((star,index)=>
     `<li><span class="mission-criteria-star">${index+1}★</span><span>${star.hint}</span></li>`).join("");
-   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="muted">Стоимость входа: ${cost} ⚡ за попытку (бой или симуляция)</p><p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available&&enough?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}" ${enough?"":"disabled"}>Симуляция</button>`:""}</div></div></article>`;
+   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="muted">Стоимость входа: ${cost} ⚡ за попытку (бой или симуляция)</p>${missionRewardLabel(mission.id)}<p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available&&enough?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}" ${enough?"":"disabled"}>Симуляция</button>`:""}</div></div></article>`;
    }).join("");
    return `<div class="campaign-route"><h3>${route.title}</h3>${items}</div>`;
   }).join("");
@@ -757,12 +769,16 @@ function renderMissionResult(){
  const chapterLabel=$("#missionResultChapter");
  if(chapterLabel)chapterLabel.textContent=chapter?chapter.title:"Кампания";
  $("#missionResultTitle").textContent=won?"Миссия пройдена":"Миссия не пройдена";
+ const components=lastMissionFarmReward?.materials
+  ?GearData.MATERIALS.filter(key=>lastMissionFarmReward.materials[key]>0)
+    .map(key=>GearData.MATERIAL_LABELS[key]+" ×"+lastMissionFarmReward.materials[key]).join(", "):"";
+ const base=lastMissionFarmReward
+  ?"Получено: +"+lastMissionFarmReward.currency+" валюты, +"+lastMissionFarmReward.xp+" XP, "+components+". ":"";
+ const first=lastMissionReward
+  ?"Дополнительно за первую победу: +"+lastMissionReward.currency+" валюты, +"+lastMissionReward.xp+" XP"+
+    (lastMissionReward.material?", +"+lastMissionReward.material+" C":"")+".":"";
  $("#missionResultText").textContent=won
-  ?MissionData.get(activeMissionId).title+" завершена. "+(lastMissionReward?
-   "Первая победа: +"+lastMissionReward.xp+" XP, +"+lastMissionReward.currency+" валюты, +"+lastMissionReward.material+" C.":
-   lastMissionFarmReward?"Повтор: +"+lastMissionFarmReward.currency+" валюты, "+
-    GearData.MATERIALS.filter(key=>lastMissionFarmReward.materials[key]>0).map(key=>GearData.MATERIAL_LABELS[key]+" ×"+lastMissionFarmReward.materials[key]).join(", ")+".":
-   "Повтор без экономических наград.")
+  ?MissionData.get(activeMissionId).title+" завершена. "+(base+first||"Победа без экономических наград.")
   :"Отряд потерпел поражение. Наград нет."+(lastMissionEnergyRefunded?" Энергия за ресурсный повтор возвращена.":"");
  const grade=$("#missionResultStars");
  if(grade){
@@ -824,13 +840,14 @@ function syncBattleUI(){
  if(battleIsCampaign&&!state.active&&!missionResultRecorded){
   const firstClear=state.winner==="ally"&&!campaignProgress.completed[activeMissionId];
   const result=CampaignCore.recordResult(campaignProgress,activeMissionId,state);
-  if(firstClear){
-   lastMissionReward=ProgressCore.claimFirstClear(progress,activeMissionId,state);
-   if(lastMissionReward)persistProgress();
-  }else if(state.winner==="ally"&&progress.saveVersion===3&&
-           campaignProgress.completed[activeMissionId]){
-   lastMissionFarmReward=ProgressCore.grantRepeatFarm(progress,activeMissionId);
-   if(lastMissionFarmReward)persistProgress();
+  if(state.winner==="ally"){
+   // First and subsequent victories share one deterministic v3 resource payout.
+   // The unique first-clear bonus is additional, not a replacement.
+   if(progress.saveVersion===3)
+    lastMissionFarmReward=ProgressCore.grantRepeatFarm(progress,activeMissionId);
+   if(firstClear)
+    lastMissionReward=ProgressCore.claimFirstClear(progress,activeMissionId,state);
+   if(lastMissionFarmReward||lastMissionReward)persistProgress();
   }else if(state.winner==="enemy"&&progress.saveVersion===3&&
            campaignProgress.completed[activeMissionId]){
    lastMissionEnergyRefunded=ProgressCore.refundEnergy(progress,activeMissionId);
@@ -871,8 +888,9 @@ function syncBattleUI(){
  if(reward){
   reward.hidden=state.active;
   if(!state.active)reward.textContent=state.winner==="ally"?
-   (battleIsCampaign&&lastMissionReward?"Первая победа: +"+lastMissionReward.xp+" XP · +"+lastMissionReward.currency+" валюты · +"+lastMissionReward.material+" C":
-    lastMissionFarmReward?"Повтор: +"+lastMissionFarmReward.currency+" валюты · материалы G начислены":"Победа · без экономических наград"):
+   (lastMissionFarmReward?"Победа: +"+lastMissionFarmReward.currency+" валюты · материалы G начислены"+
+      (lastMissionReward?" · бонус первой победы +"+lastMissionReward.currency+" валюты":""):
+    battleIsCampaign&&lastMissionReward?"Первая победа: +"+lastMissionReward.xp+" XP · +"+lastMissionReward.currency+" валюты · +"+lastMissionReward.material+" C":"Победа · без экономических наград"):
    "Поражение · без наград"+(lastMissionEnergyRefunded?" · энергия возвращена":"");
  }
  const fighters=state.fighters;

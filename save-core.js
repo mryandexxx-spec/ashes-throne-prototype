@@ -22,7 +22,20 @@ const SaveCore=(()=>{
   const claims=data.claimedMissions;
   const known=Object.keys(ProgressCore.FIRST_CLEAR_REWARDS);
   if(claims.some(id=>typeof id!=="string"||!known.includes(id))||new Set(claims).size!==claims.length)return null;
-  const progress={accountXp:data.accountXp,currency:data.currency,levels,claimedMissions:claims.slice()};
+  // Optional fields preserve v2 profiles created by VS-001A without resetting them.
+  if(data.gearMaterials!==undefined&&(!Number.isSafeInteger(data.gearMaterials)||data.gearMaterials<0))return null;
+  if(data.gear!==undefined&&!plain(data.gear))return null;
+  if(data.gear&&Object.keys(data.gear).some(id=>!ids.includes(id)))return null;
+  const gear={};
+  for(const id of ids){
+   const g=data.gear?.[id]??ProgressCore.freshGear();
+   if(!plain(g)||!Number.isInteger(g.tier)||g.tier<1||g.tier>3||
+      !Number.isInteger(g.slots)||g.slots<0||g.slots>6||
+      (g.slots===6&&g.tier!==3)||levels[id]<ProgressCore.GEAR[g.tier].heroLevel)return null;
+   gear[id]={tier:g.tier,slots:g.slots};
+  }
+  const progress={accountXp:data.accountXp,currency:data.currency,gearMaterials:data.gearMaterials??0,
+   levels,gear,claimedMissions:claims.slice()};
   if(Object.values(levels).some(level=>level>ProgressCore.accountLevel(progress)))return null;
   return progress;
  }
@@ -39,7 +52,8 @@ const SaveCore=(()=>{
   try{
    const storage=getStorage();if(!storage)return false;
    storage.setItem(KEY,JSON.stringify({version:VERSION,accountXp:progress.accountXp,
-    currency:progress.currency,levels:progress.levels,claimedMissions:progress.claimedMissions}));
+    currency:progress.currency,gearMaterials:progress.gearMaterials,levels:progress.levels,
+    gear:progress.gear,claimedMissions:progress.claimedMissions}));
    return true;
   }catch(error){return false;}
  }

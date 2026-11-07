@@ -780,3 +780,13 @@ body.battle-mode #app>footer{visibility:hidden}
 .dev-resources #devResourcesGrant{min-height:44px;touch-action:manipulation}
 .dev-resources #devResourcesNotice{color:var(--gold);overflow-wrap:anywhere}
 @media(max-width:700px){.dev-resources{padding:12px;margin:12px 0}.dev-resources #devResourcesGrant{width:100%}}
+
+/* Gear-003A2: touch-friendly G1 item cards; long component summaries must wrap. */
+.gear-panel .gear-slots{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.gear-panel .gear-slot{display:flex;flex-direction:column;gap:2px;justify-content:center;align-items:center;
+ min-height:56px;line-height:1.1;padding:5px 2px;box-sizing:border-box;overflow:hidden}
+.gear-panel .gear-slot small{font-size:10px;line-height:1.2;max-width:100%;overflow-wrap:anywhere}
+.gear-panel #gearMaterial{font-size:11px;line-height:1.4;overflow-wrap:anywhere;text-align:right;min-width:0}
+.gear-panel #gearPrice{overflow-wrap:anywhere;text-align:right;min-width:0}
+.gear-panel #gearNotice{overflow-wrap:anywhere;line-height:1.45}
+@media(max-width:700px){.gear-panel .gear-slot{min-height:48px}}

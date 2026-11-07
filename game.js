@@ -119,9 +119,11 @@ const MAX_SQUAD=5;
 const storageAdapter=typeof SaveCore==="undefined"?null:SaveCore;
 const loadedProgress=storageAdapter?storageAdapter.load(ALLIES,()=>window.localStorage):null;
 const progress=loadedProgress?loadedProgress.progress:ProgressCore.createProgress(ALLIES);
+const saveBlocked=Boolean(loadedProgress?.blocked);
 let saveAvailable=loadedProgress?loadedProgress.available:false;
 const campaignLoaded=CampaignCore.load(()=>window.localStorage);
-const campaignProgress=loadedProgress?.fresh?CampaignCore.fresh():campaignLoaded.campaign;
+const campaignProgress=progress.saveVersion===3?campaignLoaded.campaign:
+ (loadedProgress?.fresh?CampaignCore.fresh():campaignLoaded.campaign);
 let campaignSaveAvailable=campaignLoaded.available;
 let battleIsCampaign=false;
 let missionResultShown=false;
@@ -144,16 +146,26 @@ function persistProgress(){
  if(notice)notice.textContent=saveAvailable
   ?"Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить."
   :"Сохранение сейчас недоступно. Прогресс может сброситься после перезагрузки.";
+ return saveAvailable;
 }
 
 // DEV-RES-001: temporary prototype tool, separate from campaign and rewards.
 $("#devResourcesGrant")?.addEventListener("click",()=>{
+ if(saveBlocked){$("#devResourcesNotice").textContent="Повреждённое сохранение. Выдача ресурсов заблокирована.";return;}
+ const before=progress.saveVersion===3?JSON.stringify(progress):null;
  const granted=ProgressCore.grantTestResources(progress);
  if(!granted)return;
- persistProgress();
+ if(!persistProgress()&&before){
+  Object.keys(progress).forEach(k=>delete progress[k]);
+  Object.assign(progress,JSON.parse(before));
+  renderAccountHeader();
+  $("#devResourcesNotice").textContent="Не удалось сохранить выдачу. Запасы не изменены.";
+  return;
+ }
  const status=$("#devResourcesNotice");
  if(status)status.textContent="Тестовый запас готов: энергия "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX+
   ", игровая валюта "+progress.currency+", материал C "+progress.gearMaterials+
+  (progress.saveVersion===3?" · G1: "+GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(", "):"")+
   (saveAvailable?". Сохранено в этом браузере.":". Внимание: сохранение недоступно.");
 });
 
@@ -403,6 +415,42 @@ function openHeroDetail(id){
  showScreen("heroDetail");
  return true;
 }
+function renderItemizedGear(base,gear){
+ const completed=gear.slots.filter(Boolean).length;
+ const slot=GearData.SLOTS[selectedGearSlot]||GearData.SLOTS[0];
+ const offered=ProgressCore.itemOffer(progress,base.id,slot.id),item=offered[0]||null;
+ const installed=gear.slots[selectedGearSlot];
+ $("#gearTier").textContent="G1 · "+completed+"/6"+(completed===6?" · завершено":"");
+ $("#gearSlots").innerHTML=GearData.SLOTS.map((entry,i)=>{
+  const filled=gear.slots[i],selected=i===selectedGearSlot;
+  return '<button type="button" class="gear-slot '+(filled?'filled ':'')+
+   (selected?'selected':'')+'" data-gear-slot="'+i+'" aria-pressed="'+selected+
+   '" aria-label="'+entry.label+' · '+(filled?'установлен':'пустой')+'">'+
+   '<span aria-hidden="true">'+(filled?'◆':'◇')+'</span><small>'+entry.label+'</small></button>';
+ }).join("");
+ const label=$("#gearMaterialLabel");if(label)label.textContent="Компоненты G1";
+ $("#gearMaterial").textContent=GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(" · ");
+ $("#gearWallet").textContent=String(progress.currency);
+ $("#gearPriceLabel").textContent="Выбранный предмет";
+ $("#gearStatBonusLabel").textContent="Фиксированный бонус";
+ const chosen=installed?GearData.get(installed):item;
+ $("#gearPrice").textContent=chosen?chosen.name+" · "+
+  Object.entries(chosen.ingredients).map(([id,n])=>GearData.MATERIAL_LABELS[id]+" ×"+n).join(", ")+
+  " · "+chosen.currency+" валюты":"—";
+ $("#gearStatBonus").textContent=chosen?
+  [chosen.bonuses.hp?"HP +"+Math.round(chosen.bonuses.hp*100)+"%":"",
+   chosen.bonuses.atk?"ATK +"+Math.round(chosen.bonuses.atk*100)+"%":""].filter(Boolean).join(" · "):"—";
+ const button=$("#gearEquipNext");
+ button.disabled=saveBlocked||!!installed||!item||!ProgressCore.canEquipItem(progress,base.id,item.id);
+ button.textContent=completed===6?"G1 завершён":installed?"Предмет установлен":"Изготовить и установить";
+ $("#gearNotice").textContent=saveBlocked
+  ?"Обнаружена проблема сохранения: покупки заблокированы."
+  :completed===6?"G1 завершён. G2 появится в отдельном этапе."
+  :installed?"Установлено: "+chosen.name+"."
+  :item?(ProgressCore.itemBlockReason(progress,base.id,item.id)||
+   "Тестовый предмет доступен. Материалы — в кнопке «Тестовые ресурсы».")
+  :"Для класса нет доступного предмета.";
+}
 function renderHeroDetail(){
  const base=ALLIES.find(h=>h.id===selectedHeroId);
  if(!base)return;
@@ -417,10 +465,12 @@ function renderHeroDetail(){
  $("#detailWallet").textContent=String(progress.currency);
  $("#detailCost").textContent=cost===null?"Недоступно":cost+" валюты";
  $("#detailPreview").textContent=next?next.hp+" HP · "+next.atk+" ATK":"Достигнут максимум";
- $("#detailUpgrade").disabled=!ProgressCore.canUpgrade(progress,base.id);
+ $("#detailUpgrade").disabled=saveBlocked||!ProgressCore.canUpgrade(progress,base.id);
  $("#detailNotice").textContent=hero.level>=ProgressCore.MAX_LEVEL?"Герой достиг тестового максимума.":progress.currency<cost?"Недостаточно игровой валюты.":"Улучшение доступно (временное правило тестового прототипа).";
  if($("#gearTier")){
  const gear=ProgressCore.gearState(progress,base.id);
+ if(gear.mode==="itemized")renderItemizedGear(base,gear);
+ else {
  const completed=gear.slots.filter(Boolean).length;
  const item=ProgressCore.gearItem(gear.tier,selectedGearSlot);
  const available=ProgressCore.gearCost(progress,base.id,selectedGearSlot);
@@ -463,10 +513,12 @@ function renderHeroDetail(){
    shortage?"Недостаточно игровой валюты: есть "+progress.currency+", нужно "+item.currency+" (не хватает "+shortage+").":
    ProgressCore.gearBlockReason(progress,base.id,selectedGearSlot)||"Предмет доступен. Можно выбирать слоты в любом порядке.");
  }
+ }
 
  const saveNote=$("#progressSaveNote");
- if(saveNote)saveNote.textContent=saveAvailable
-  ?"Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить."
+ if(saveNote)saveNote.textContent=saveBlocked
+  ?"Сохранение повреждено или недоступно. Покупки заблокированы, прежние данные не перезаписаны."
+  :saveAvailable?"Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить."
   :"Сохранение сейчас недоступно. Прогресс может сброситься после перезагрузки.";
 }
 $("#gearSlots")?.addEventListener("click",event=>{
@@ -479,7 +531,27 @@ $("#gearSlots")?.addEventListener("click",event=>{
 });
 $("#gearEquipNext")?.addEventListener("click",()=>{
  const base=ALLIES.find(h=>h.id===selectedHeroId);
- if(!base)return;
+ if(!base||saveBlocked)return;
+ const current=ProgressCore.gearState(progress,selectedHeroId);
+ if(current?.mode==="itemized"){
+  const slot=GearData.SLOTS[selectedGearSlot];
+  const item=slot?ProgressCore.itemOffer(progress,selectedHeroId,slot.id)[0]:null;
+  if(!item||!ProgressCore.canEquipItem(progress,selectedHeroId,item.id)){
+   renderHeroDetail();return;
+  }
+  const before=JSON.stringify(progress);
+  if(!ProgressCore.equipItem(progress,selectedHeroId,item.id))return;
+  if(!persistProgress()){
+   // Restore wallet, resources and gear when localStorage rejects the purchase.
+   Object.keys(progress).forEach(k=>delete progress[k]);
+   Object.assign(progress,JSON.parse(before));
+   renderAccountHeader();
+   renderHeroDetail();
+   $("#gearNotice").textContent="Покупка не сохранена. Материалы и валюта возвращены.";
+   return;
+  }
+  renderHeroDetail();renderHeroes();return;
+ }
  const promotion=ProgressCore.gearPromotionCost(progress,selectedHeroId);
  if(promotion){
   const before=ProgressCore.heroStats(progress,base);
@@ -510,10 +582,18 @@ $("#gearPromotionClose")?.addEventListener("click",()=>$("#gearPromotionDialog")
 $("#detailBack").addEventListener("click",()=>showScreen("collection"));
 $("#detailHome").addEventListener("click",()=>showScreen("home"));
 $("#detailUpgrade").addEventListener("click",()=>{
+ if(saveBlocked)return;
+ const before=progress.saveVersion===3?JSON.stringify(progress):null;
  if(ProgressCore.upgrade(progress,selectedHeroId)){
-  persistProgress();
-  renderHeroDetail();
-  renderHeroes();
+  if(!persistProgress()&&before){
+   Object.keys(progress).forEach(k=>delete progress[k]);
+   Object.assign(progress,JSON.parse(before));
+   renderAccountHeader();
+   renderHeroDetail();
+   $("#detailNotice").textContent="Уровень не сохранён. Валюта возвращена.";
+   return;
+  }
+  renderHeroDetail();renderHeroes();
  }
 });
 

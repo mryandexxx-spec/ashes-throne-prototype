@@ -30,9 +30,18 @@ const SaveCore=(()=>{
   for(const id of ids){
    const g=data.gear?.[id]??ProgressCore.freshGear();
    if(!plain(g)||!Number.isInteger(g.tier)||g.tier<1||g.tier>3||
-      !Number.isInteger(g.slots)||g.slots<0||g.slots>6||
-      (g.slots===6&&g.tier!==3)||levels[id]<ProgressCore.GEAR[g.tier].heroLevel)return null;
-   gear[id]={tier:g.tier,slots:g.slots};
+      levels[id]<ProgressCore.GEAR[g.tier].heroLevel)return null;
+   // Old VS-001B progress used a consecutive slot count. Convert in place
+   // without changing total purchased items or currencies.
+   let slots;
+   if(Number.isInteger(g.slots)&&g.slots>=0&&g.slots<=ProgressCore.SLOT_COUNT)
+    slots=Array.from({length:ProgressCore.SLOT_COUNT},(_,slot)=>slot<g.slots);
+   else if(Array.isArray(g.slots)&&g.slots.length===ProgressCore.SLOT_COUNT&&
+      g.slots.every(value=>typeof value==="boolean"))
+    slots=g.slots.slice();
+   else return null;
+   if(slots.every(Boolean)&&g.tier!==3)return null;
+   gear[id]={tier:g.tier,slots};
   }
   // VS-001A profiles already claimed first clears before C existed.
   // Credit their one-time C drops exactly once when upgrading the saved v2 shape.

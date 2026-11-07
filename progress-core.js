@@ -213,7 +213,7 @@ const ProgressCore=(()=>{
   if(progress.currency<item.currency)return "Недостаточно игровой валюты.";
   const missing=GearData.missing(item,progress.materials);
   if(!missing||Object.keys(missing).length)return "Недостаточно компонентов: "+
-   Object.entries(missing||{}).map(([name,n])=>name+" ×"+n).join(", ")+".";
+   Object.entries(missing||{}).map(([name,n])=>GearData.MATERIAL_LABELS[name]+" ×"+n).join(", ")+".";
   return "";
  }
  function canEquipItem(progress,id,itemId){

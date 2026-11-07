@@ -3,7 +3,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","auto-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const src=["initiative-model.js","ability-data.js","combat-core.js","auto-decision.js","enemy-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn","arenaIndicators","orientationPrompt",
  "basicAbilitySlot","specialAbilitySlot","abilityTooltip","abilityTooltipTitle","abilityTooltipText",
@@ -188,6 +188,8 @@ assert.equal(positions(4).map(p=>p.x).join(","),"-2.45,-2.45,-2.45,-4.05");
 assert.equal(positions(2).map(p=>p.x).join(","),"-2.45,-2.45");
 assert.equal(positions(1)[0].z,0);
 const first=api.getBattle();
+assert.ok(first.fighters.filter(h=>h.side==="enemy").every(h=>!h.aiProfile),
+ "first story mission retains baseline enemy AI");
 const firstEnemy=first.fighters[first.selectedEnemy];
 assert.equal(elements.targetFighterName.textContent,firstEnemy.name,"top-right shows the initially selected target");
 assert.equal(elements.targetFighterLevel.textContent,"","enemy level is not invented");
@@ -387,10 +389,34 @@ clickMission("demo-mission-2");
 click(elements.squadStart);
 const largeRoster=api.getBattle().fighters.filter(f=>f.side==="enemy");
 assert.equal(largeRoster.length,5);
+assert.equal(largeRoster.filter(f=>f.aiProfile).length,1,
+ "only one existing enemy in mission 2 receives a tactical profile");
+assert.equal(largeRoster.find(f=>f.id==="shade").aiProfile,"aggressive");
+assert.ok(largeRoster.filter(f=>f.id!=="shade").every(f=>!f.aiProfile));
+assert.equal(largeRoster.find(f=>f.id==="shade").hp,78);
+assert.equal(largeRoster.find(f=>f.id==="shade").atk,22);
+assert.equal(largeRoster.find(f=>f.id==="shade").speed,135);
 const renderedZ=largeRoster.map(f=>api.getMeshes()[f.id].body.position.z);
 assert.equal(renderedZ.join(","),"-1.9,0,1.9,-0.95,0.95","five enemies are arranged three forward and two behind");
 assert.equal(largeRoster.map(f=>api.getMeshes()[f.id].body.position.x).join(","),"2.45,2.45,2.45,4.05,4.05","enemy rows face the allied side");
 const alliesInBattle=api.getBattle().fighters.filter(f=>f.side==="ally");
+// Actual initiative cycle: profile selects a weakened hero; legacy target
+// selection would hit the first living hero. Test-only speeds isolate one turn.
+const isolatedAllies=alliesInBattle.map((f,i)=>({...f,hp:i===1?50:100,speed:110}));
+const isolatedEnemies=largeRoster.map(f=>({...f,speed:f.id==="shade"?135:1}));
+const pilot=api.CombatCore.createBattle([...isolatedAllies,...isolatedEnemies]);
+api.CombatCore.advanceToPlayerTurn(pilot);
+assert.equal(pilot.events[0].actorId,"shade");
+assert.equal(pilot.events[0].targetId,isolatedAllies[1].id,
+ "mission-2 shade attacks the lowest-current-HP hero through initiative");
+const baseline=api.CombatCore.createBattle([...isolatedAllies,...isolatedEnemies.map(f=>{
+ const copy={...f};delete copy.aiProfile;return copy;
+})]);
+api.CombatCore.advanceToPlayerTurn(baseline);
+assert.equal(baseline.events[0].targetId,isolatedAllies[0].id,
+ "without pilot, identical opponent attacks first living ally");
+assert.equal(pilot.allyActions,0);
+assert.equal(baseline.allyActions,0);
 assert.equal(alliesInBattle.map(f=>api.getMeshes()[f.id].body.position.x).join(","),"-2.45,-2.45,-2.45","three chosen allies take front row");
 api.showScreen("campaign");
 // Integration: third mission starts with two enemies and advances to three
@@ -405,6 +431,8 @@ const waveBattle=api.getBattle();
 assert.equal(waveBattle.wave,1);
 assert.equal(waveBattle.totalWaves,2);
 assert.equal(waveBattle.fighters.filter(h=>h.side==="enemy").length,2);
+assert.ok(waveBattle.fighters.filter(h=>h.side==="enemy").every(h=>!h.aiProfile),
+ "third mission first wave must not inherit the second mission pilot");
 assert.match(elements.turnChip.textContent,/Волна 1\/2/);
 const materialsBeforeWaves=api.getMaterials();
 const heroBeforeWave=waveBattle.fighters.find(f=>f.side==="ally");
@@ -417,6 +445,8 @@ assert.equal(waveBattle.wave,2);
 assert.equal(waveBattle.active,true);
 assert.equal(waveBattle.winner,null);
 assert.equal(waveBattle.fighters.filter(f=>f.side==="enemy").length,3);
+assert.ok(waveBattle.fighters.filter(h=>h.side==="enemy").every(h=>!h.aiProfile),
+ "third mission follow-up wave must not inherit the second mission pilot");
 assert.match(elements.turnChip.textContent,/Волна 2\/2/);
 assert.equal(waveBattle.fighters.find(f=>f.id===heroBeforeWave.id).hp,health);
 assert.equal(api.getMaterials(),materialsBeforeWaves,"first wave cannot grant reward");

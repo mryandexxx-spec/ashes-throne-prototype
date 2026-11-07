@@ -158,7 +158,7 @@ $("#devResourcesGrant")?.addEventListener("click",()=>{
  const status=$("#devResourcesNotice");
  if(status)status.textContent="Тестовый запас готов: энергия "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX+
   ", игровая валюта "+progress.currency+", материал C "+progress.gearMaterials+
-  (progress.saveVersion===3?" · G1: "+GearData.MATERIALS.map(id=>id+" "+progress.materials[id]).join(", "):"")+
+  (progress.saveVersion===3?" · G1: "+GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(", "):"")+
   (saveAvailable?". Сохранено в этом браузере.":". Внимание: сохранение недоступно.");
 });
 
@@ -422,13 +422,13 @@ function renderItemizedGear(base,gear){
    '<span aria-hidden="true">'+(filled?'◆':'◇')+'</span><small>'+entry.label+'</small></button>';
  }).join("");
  const label=$("#gearMaterialLabel");if(label)label.textContent="Компоненты G1";
- $("#gearMaterial").textContent=GearData.MATERIALS.map(id=>id+" "+progress.materials[id]).join(" · ");
+ $("#gearMaterial").textContent=GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(" · ");
  $("#gearWallet").textContent=String(progress.currency);
  $("#gearPriceLabel").textContent="Выбранный предмет";
  $("#gearStatBonusLabel").textContent="Фиксированный бонус";
  const chosen=installed?GearData.get(installed):item;
  $("#gearPrice").textContent=chosen?chosen.name+" · "+
-  Object.entries(chosen.ingredients).map(([id,n])=>id+" ×"+n).join(", ")+
+  Object.entries(chosen.ingredients).map(([id,n])=>GearData.MATERIAL_LABELS[id]+" ×"+n).join(", ")+
   " · "+chosen.currency+" валюты":"—";
  $("#gearStatBonus").textContent=chosen?
   [chosen.bonuses.hp?"HP +"+Math.round(chosen.bonuses.hp*100)+"%":"",

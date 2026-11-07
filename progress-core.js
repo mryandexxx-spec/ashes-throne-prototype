@@ -322,8 +322,10 @@ const ProgressCore=(()=>{
   progress.claimedMissions.push(missionId);
   progress.accountXp+=reward.xp;
   progress.currency+=reward.currency;
-  progress.gearMaterials+=reward.material||0;
-  return {...reward};
+  // v3 uses seven real crafting materials; legacy C is reserved for v2 saves.
+  const material=progress.saveVersion===3?0:(reward.material||0);
+  progress.gearMaterials+=material;
+  return {...reward,material};
  }
  return Object.freeze({MAX_LEVEL,MAX_ACCOUNT_LEVEL,FIRST_CLEAR_REWARDS,createProgress,xpCost,
   accountLevel,levelOf,upgradeCost,canUpgrade,upgrade,heroStats,claimFirstClear,

@@ -15,9 +15,6 @@ const MissionData=(()=>{
   "demo-mission-2":Object.freeze({
    id:"demo-mission-2",chapterId:"chapter-1",branchId:"main",
    title:"Демонстрационная миссия #2",
-   // Combat-015D-A approved pilot: only this mission's original shade
-   // targets the lowest-current-HP opponent; no new skills or stat changes.
-   enemyAiProfiles:Object.freeze({shade:"aggressive"}),
    stars:Object.freeze([
     Object.freeze({conditions:Object.freeze([{type:"victory"}]),hint:"Победить"}),
     Object.freeze({conditions:Object.freeze([{type:"victory"},{type:"all-allies-alive"}]),hint:"Победить без потерь"}),

@@ -1,6 +1,6 @@
-/* Combat-015C-B: read-only, deterministic enemy tactical profiles.
- * Only enemy templates with explicit aiProfile opt in. Existing missions
- * do not assign profiles, abilities or new stats.
+/* Combat-015E: deterministic tactical planning for every enemy.
+ * Aggressive is the universal default; optional explicit profiles remain
+ * available for technical testing and later design, not mission wiring.
  */
 const EnemyDecision=(()=>{
  "use strict";
@@ -10,7 +10,7 @@ const EnemyDecision=(()=>{
  const hpRatio=f=>f.maxHp>0?f.hp/f.maxHp:1;
  function chooseAction(battle,actorIndex){
    const actor=battle?.fighters?.[actorIndex];
-   if(!actor||actor.side!=="enemy"||!PROFILES.includes(actor.aiProfile)||
+   if(!actor||actor.side!=="enemy"||
       !CombatCore.actorAbilityReady(battle,actorIndex,"basic"))return null;
    const opponents=CombatCore.actorTargetIndices(battle,actorIndex,"all-enemies",actorIndex);
    const allies=CombatCore.actorTargetIndices(battle,actorIndex,"all-allies",actorIndex);
@@ -23,7 +23,8 @@ const EnemyDecision=(()=>{
    const can=id=>CombatCore.actorAbilityReady(battle,actorIndex,id);
    const ability=id=>can(id)?AbilityData.get(actor,id):null;
    const decision=(abilityId,targetIndex)=>({abilityId,targetIndex});
-   if(actor.aiProfile==="ordinary")return decision("basic",first);
+   const profile=PROFILES.includes(actor.aiProfile)?actor.aiProfile:"aggressive";
+   if(profile==="ordinary")return decision("basic",first);
    const candidates=[];
    for(const id of ["special","powerful"]){
      const def=ability(id);
@@ -63,7 +64,7 @@ const EnemyDecision=(()=>{
      }
    }
    let allowed;
-   switch(actor.aiProfile){
+   switch(profile){
      case "guardian":allowed=candidates.filter(x=>x.role==="guardian");break;
      case "support":allowed=candidates.filter(x=>x.role==="support");break;
      case "aggressive":allowed=candidates.filter(x=>x.role==="attack");break;
@@ -73,7 +74,7 @@ const EnemyDecision=(()=>{
    if(picked)return decision(picked.abilityId,picked.targetIndex);
    // Aggressive and tactical enemies target vulnerable heroes; guardians,
    // supporters and ordinary fighters retain predictable first-alive fallback.
-   return decision("basic",["aggressive","tactical"].includes(actor.aiProfile)?weak:first);
+   return decision("basic",["aggressive","tactical"].includes(profile)?weak:first);
  }
  return Object.freeze({profiles:PROFILES,chooseAction});
 })();

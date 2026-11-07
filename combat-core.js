@@ -268,21 +268,26 @@ const CombatCore = (() => {
         }
         return battle;
       }
-      // Combat-015C-B: tactical policies are opt-in per enemy template.
-      // Unconfigured live mission enemies retain their original first-alive
-      // basic attack. An invalid proposal falls back without a lost turn.
+      // Combat-015E: every enemy uses the shared tactical planner.
+      // The default is aggressive, independent of mission and enemy ID.
+      // Fallback is a guaranteed basic hit when a proposal is invalid.
       const targetIndex=firstLivingAlly(battle.fighters);
       if(targetIndex<0){
         finishIfOver(battle);
         return battle;
       }
       battle.currentActor=actorIndex;
-      const plan=actor.aiProfile&&typeof EnemyDecision!=="undefined"
+      const plan=typeof EnemyDecision!=="undefined"
         ?EnemyDecision.chooseAction(battle,actorIndex):null;
       const executed=plan&&["basic","special","powerful"].includes(plan.abilityId)
         ?performActorAbility(battle,plan.abilityId,plan.targetIndex):false;
-      if(!executed&&!performActorAbility(battle,"basic",targetIndex))
-        throw Error("Ready enemy basic attack rejected");
+      if(!executed){
+        const opponents=actorTargetIndices(battle,actorIndex,"all-enemies",targetIndex);
+        const fallback=opponents.reduce((best,i)=>best===null||
+            battle.fighters[i].hp<battle.fighters[best].hp?i:best,null);
+        if(fallback===null||!performActorAbility(battle,"basic",fallback))
+          throw Error("Ready enemy basic attack rejected");
+      }
       if(!battle.active)return battle;
     }
     throw Error("Turn guard reached: check initiative and actors");

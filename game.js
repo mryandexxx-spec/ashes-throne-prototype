@@ -201,17 +201,10 @@ function selectedParty(){
  return squadSlots().filter(Boolean)
   .map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(progressedHero);
 }
-// Combat-015D-A: mission-specific AI belongs to each battle instance, never
-// to shared HEROES/ENEMIES templates or saved squad composition.
-function enemyForMission(enemy,mission){
- const profile=mission?.enemyAiProfiles?.[enemy.id];
- return profile?{...enemy,aiProfile:profile}:{...enemy};
-}
 function battleLineup(){
- // The original encounter is unchanged; mission #2 tests five enemies at once.
+ // Mission #2 tests five enemies; the shared enemy AI is mission-independent.
  const enemies=battleIsCampaign&&activeMissionId==="demo-mission-2"?ENEMIES:ENEMIES.slice(0,2);
- const mission=battleIsCampaign?MissionData.get(activeMissionId):null;
- return [...selectedParty(),...enemies.map(enemy=>enemyForMission(enemy,mission))];
+ return [...selectedParty(),...enemies.map(enemy=>({...enemy}))];
 }
 // Optional future wave rosters live in mission data. Existing missions have no
 // future waves, so their accepted encounters and balance remain unchanged.
@@ -220,7 +213,7 @@ function battleFutureWaves(){
  return (mission&&mission.futureEnemyWaves||[]).map(ids=>ids.map(id=>{
   const enemy=ENEMIES.find(h=>h.id===id);
   if(!enemy)throw Error("Unknown wave enemy template: "+id);
-  return enemyForMission(enemy,mission);
+  return {...enemy};
  }));
 }
 function renderSquad(){

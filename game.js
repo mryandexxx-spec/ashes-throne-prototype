@@ -152,9 +152,16 @@ function persistProgress(){
 // DEV-RES-001: temporary prototype tool, separate from campaign and rewards.
 $("#devResourcesGrant")?.addEventListener("click",()=>{
  if(saveBlocked){$("#devResourcesNotice").textContent="Повреждённое сохранение. Выдача ресурсов заблокирована.";return;}
+ const before=progress.saveVersion===3?JSON.stringify(progress):null;
  const granted=ProgressCore.grantTestResources(progress);
  if(!granted)return;
- persistProgress();
+ if(!persistProgress()&&before){
+  Object.keys(progress).forEach(k=>delete progress[k]);
+  Object.assign(progress,JSON.parse(before));
+  renderAccountHeader();
+  $("#devResourcesNotice").textContent="Не удалось сохранить выдачу. Запасы не изменены.";
+  return;
+ }
  const status=$("#devResourcesNotice");
  if(status)status.textContent="Тестовый запас готов: энергия "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX+
   ", игровая валюта "+progress.currency+", материал C "+progress.gearMaterials+

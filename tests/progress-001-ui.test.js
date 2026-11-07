@@ -218,7 +218,7 @@ api.getProgress().gearMaterials=3;
 api.openHeroDetail("kael");
 assert.equal(elements.gearWallet.textContent,"100");
 assert.equal(elements.gearEquipNext.disabled,true);
-assert.match(elements.gearNotice.textContent,/есть 100, нужно 167 \(не хватает 67\)/);
+assert.match(elements.gearNotice.textContent,/есть 100, нужно 334 \(не хватает 234\)/);
 api.getProgress().currency=1000;
 api.getProgress().gearMaterials=0;
 api.openHeroDetail("kael");

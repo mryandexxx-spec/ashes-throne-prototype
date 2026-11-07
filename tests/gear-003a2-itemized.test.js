@@ -53,8 +53,8 @@ function checkFullKit(p,hero){
  assert.ok(Math.abs(sumHp-.06)<1e-10,hero.id+" must receive +6% HP");
  assert.ok(Math.abs(sumAtk-.06)<1e-10,hero.id+" must receive +6% ATK");
  assert.equal(P.gearInstalled(p,hero.id),6);
- assert.equal(P.gearPromotionCost(p,hero.id),null,"itemized G2 not introduced yet");
- assert.equal(P.promoteGear(p,hero.id),null);
+ assert.equal(P.gearPromotionCost(p,hero.id)?.currency,250,"completed G1 permits a paid G2 transition");
+ assert.equal(P.gearState(p,hero.id).tier,1,"G1 must not auto-promote");
  const after=P.heroStats(p,hero);
  assert.equal(after.speed,hero.speed,"speed must not increase");
  assert.ok(after.hp>=initialHp.hp);
@@ -63,8 +63,9 @@ function checkFullKit(p,hero){
 // Catalog contract: no arbitrary extra choices, complete coverage and floors.
 assert.equal(G.SLOTS.length,6);
 assert.equal(G.FUTURE_STAT_KEYS.length,14,"14-stat schema is reserved but inert");
-assert.equal(G.ITEMS.length,12);
-assert.equal(new Set(G.ITEMS.map(x=>x.id)).size,12);
+assert.equal(G.ITEMS.filter(item=>item.tier===1).length,12);
+assert.equal(G.ITEMS.filter(item=>item.tier===2).length,12);
+assert.equal(new Set(G.ITEMS.map(x=>x.id)).size,24);
 for(const item of G.ITEMS){
  assert.ok(G.SLOTS.some(slot=>slot.id===item.slotId));
  assert.ok(Object.keys(item.ingredients).length);
@@ -76,7 +77,7 @@ assert.equal(G.offered("melee","feet")[0].id,"g1-bootlight");
 assert.equal(G.offered("support","feet")[0].id,"g1-bootheavy");
 assert.deepEqual(Array.from(G.offered("unknown","weapon")),[]);
 assert.equal(G.get("__proto__"),null);
-assert.equal(G.get("g2-bow"),null);
+assert.equal(G.get("g3-bow"),null);
 // Existing v2 with G3 is reset only in v3. Account resources and campaign claims survive.
 {
  const {map,get}=getStorage(),old=oldFixture(),raw=JSON.stringify(old);

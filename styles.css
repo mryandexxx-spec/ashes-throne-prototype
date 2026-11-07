@@ -770,3 +770,6 @@ body.battle-mode #app>footer{visibility:hidden}
 /* Gear-002B: result dialog for manual equipment-tier promotion. */
 .gear-promotion-stats{white-space:pre-line;line-height:1.7;font-weight:600;color:var(--gold)}
 #gearPromotionDialog #gearPromotionClose{min-height:44px;width:100%;max-width:100%;touch-action:manipulation}
+
+/* Gear-002C: unaffordable item actions must look disabled, including Safari. */
+.gear-panel #gearEquipNext:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.35);transform:none}

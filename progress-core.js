@@ -17,8 +17,46 @@ const ProgressCore=(()=>{
   3:Object.freeze({heroLevel:12,material:4,currency:3000})
  });
  const freshGear=()=>({tier:1,slots:0});
+ // VS-001C: independent resource auto-farm unlocked at 3★ of the demo mission.
+ // Numbers are prototype assumptions, NOT final GDD balance.
+ const ENERGY_MAX=240,ENERGY_REGEN_MS=6*60*1000,ENERGY_FARM_COST=10;
+ const FARM_MISSION_ID="black-pass-ambush";
+ const FARM_OPTIONS=Object.freeze({
+  materials:Object.freeze({material:12,currency:0,xp:5}),
+  currency:Object.freeze({material:0,currency:200,xp:5})
+ });
+ const freshEnergy=(now=Date.now())=>({value:ENERGY_MAX,updatedAt:now});
+ function refreshEnergy(progress,now=Date.now()){
+  if(!Number.isSafeInteger(now)||now<0||!progress.energy)return 0;
+  const e=progress.energy;
+  if(now<=e.updatedAt)return 0;
+  const elapsed=now-e.updatedAt;
+  const ticks=Math.floor(elapsed/ENERGY_REGEN_MS);
+  if(ticks<=0)return 0;
+  const restored=Math.min(ENERGY_MAX-e.value,ticks);
+  e.value+=restored;
+  e.updatedAt=e.value===ENERGY_MAX?now:e.updatedAt+ticks*ENERGY_REGEN_MS;
+  return restored;
+ }
+ function canFarm(progress,missionId,bestStars,kind,now=Date.now()){
+  refreshEnergy(progress,now);
+  return missionId===FARM_MISSION_ID&&bestStars===3&&
+   Object.prototype.hasOwnProperty.call(FARM_OPTIONS,kind)&&
+   progress.energy?.value>=ENERGY_FARM_COST;
+ }
+ function farm(progress,missionId,bestStars,kind,now=Date.now()){
+  if(!canFarm(progress,missionId,bestStars,kind,now))return null;
+  const reward=FARM_OPTIONS[kind];
+  // Keep energy, XP and items in one progress record.
+  progress.energy.value-=ENERGY_FARM_COST;
+  progress.energy.updatedAt=now;
+  progress.accountXp+=reward.xp;
+  progress.gearMaterials+=reward.material;
+  progress.currency+=reward.currency;
+  return {...reward,energy:ENERGY_FARM_COST};
+ }
  function createProgress(heroes){
-  return {accountXp:0,currency:0,gearMaterials:0,levels:Object.fromEntries(heroes.filter(h=>h.side==="ally").map(h=>[h.id,1])),gear:Object.fromEntries(heroes.filter(h=>h.side==="ally").map(h=>[h.id,freshGear()])),claimedMissions:[]};
+  return {accountXp:0,currency:0,gearMaterials:0,energy:freshEnergy(),levels:Object.fromEntries(heroes.filter(h=>h.side==="ally").map(h=>[h.id,1])),gear:Object.fromEntries(heroes.filter(h=>h.side==="ally").map(h=>[h.id,freshGear()])),claimedMissions:[]};
  }
  const xpCost=l=>Math.round(40+7*l+0.28*l*l);
  function accountLevel(progress){
@@ -86,5 +124,6 @@ const ProgressCore=(()=>{
  }
  return Object.freeze({MAX_LEVEL,MAX_ACCOUNT_LEVEL,FIRST_CLEAR_REWARDS,createProgress,xpCost,
   accountLevel,levelOf,upgradeCost,canUpgrade,upgrade,heroStats,claimFirstClear,
-  GEAR,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip});
+  GEAR,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,
+  ENERGY_MAX,ENERGY_REGEN_MS,ENERGY_FARM_COST,FARM_MISSION_ID,FARM_OPTIONS,freshEnergy,refreshEnergy,canFarm,farm});
 })();

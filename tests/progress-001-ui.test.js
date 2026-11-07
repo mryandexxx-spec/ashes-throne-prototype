@@ -59,9 +59,11 @@ const BABYLON={Engine,Scene,ArcRotateCamera:Camera,HemisphericLight:class{},Dire
   CreateCylinder(){meshCreates++;return new Mesh();}}
 };
 const savedData=new Map();
+savedData.set("ashes-throne.progress.v2",JSON.stringify({version:2,accountXp:80,currency:500,
+ levels:{kael:1,lyra:1,darin:1,"medic-demo":1,"test-area-damage":1},claimedMissions:["black-pass-ambush"]}));
 const localStorage={getItem:k=>savedData.has(k)?savedData.get(k):null,setItem:(k,v)=>savedData.set(k,v)};
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI})",
+ "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
@@ -76,43 +78,42 @@ assert.doesNotMatch(elements.heroList.innerHTML,/Повысить уровень
 click(heroNodes[0]);
 assert.equal(elements.heroDetail.classList.active,true);
 assert.equal(elements.detailName.textContent,"Каэль Ворон");
-assert.equal(elements.detailWallet.textContent,"0");
-assert.equal(elements.detailCost.textContent,"1 мат.");
-assert.equal(elements.detailUpgrade.disabled,true,"cannot buy without reward");
+assert.equal(elements.detailWallet.textContent,"500");
+assert.equal(elements.detailCost.textContent,"39 валюты");
+assert.equal(elements.detailUpgrade.disabled,false,"currency from saved test account");
 click(elements.detailBack);
 assert.equal(elements.collection.classList.active,true);
 click(heroNodes[0]);
 click(elements.detailHome);
 assert.equal(elements.home.classList.active,true,"home bypasses collection");
 
-// One result grants at most one resource, even after repeated rendering.
+// Arena wins do not mint campaign first-clear currency.
 const battle=api.getBattle();
 battle.active=false;
 battle.winner="ally";
 api.syncBattleUI();
-assert.equal(api.getMaterials(),1);
-assert.ok(savedData.has("ashes-throne.progress.v1"),"victory immediately writes progress");
-assert.match(elements.battleReward.textContent,/\+1 учебный материал/);
+assert.equal(api.getCurrency(),500);
+assert.match(elements.battleReward.textContent,/без экономических наград/);
 api.syncBattleUI();
-assert.equal(api.getMaterials(),1,"repeat refresh cannot mint resources");
+assert.equal(api.getCurrency(),500,"repeat refresh cannot mint resources");
 
 api.openHeroDetail("kael");
 assert.equal(elements.detailUpgrade.disabled,false);
 click(elements.detailUpgrade);
 assert.equal(api.getLevel("kael"),2);
-assert.equal(api.getMaterials(),0);
-const persisted=JSON.parse(savedData.get("ashes-throne.progress.v1"));
+assert.equal(api.getCurrency(),461);
+const persisted=JSON.parse(savedData.get("ashes-throne.progress.v2"));
 assert.equal(persisted.levels.kael,2);
-assert.equal(persisted.materials,0);
-const reloaded=vm.runInNewContext(src+"\n({getMaterials:()=>progress.materials,getLevel:id=>ProgressCore.levelOf(progress,id)})",
+assert.equal(persisted.currency,461);
+const reloaded=vm.runInNewContext(src+"\n({getCurrency:()=>progress.currency,getLevel:id=>ProgressCore.levelOf(progress,id)})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
 assert.equal(reloaded.getLevel("kael"),2,"level survives page reload");
-assert.equal(reloaded.getMaterials(),0,"balance survives page reload");
+assert.equal(reloaded.getCurrency(),461,"balance survives page reload");
 assert.equal(elements.heroDetail.classList.active,true,"remains on hero detail after purchase");
-assert.equal(elements.detailWallet.textContent,"0");
-assert.match(elements.detailStats.innerHTML,/132 HP/);
-assert.match(elements.detailStats.innerHTML,/26 ATK/);
-assert.equal(elements.detailCost.textContent,"2 мат.");
+assert.equal(elements.detailWallet.textContent,"461");
+assert.match(elements.detailStats.innerHTML,/125 HP/);
+assert.match(elements.detailStats.innerHTML,/25 ATK/);
+assert.equal(elements.detailCost.textContent,"Недоступно");
 assert.equal(elements.detailUpgrade.disabled,true);
 click(elements.detailUpgrade);
 assert.equal(api.getLevel("kael"),2,"no double spend");
@@ -124,17 +125,17 @@ const fighters=api.getBattle().fighters;
 const kael=fighters.find(x=>x.id==="kael");
 const lyra=fighters.find(x=>x.id==="lyra");
 const ves=fighters.find(x=>x.id==="ves");
-assert.equal(kael.maxHp,132);
-assert.equal(kael.atk,26);
+assert.equal(kael.maxHp,125);
+assert.equal(kael.atk,25);
 assert.equal(lyra.maxHp,88);
 assert.equal(ves.maxHp,90);
-assert.equal(api.getMaterials(),0);
+assert.equal(api.getCurrency(),461);
 assert.equal(elements.battleReward.hidden,true,"new battle hides old result");
 
 // Defeats do not mint progress.
 api.getBattle().active=false;
 api.getBattle().winner="enemy";
 api.syncBattleUI();
-assert.equal(api.getMaterials(),0);
-assert.match(elements.battleReward.textContent,/Награда: 0/);
+assert.equal(api.getCurrency(),461);
+assert.match(elements.battleReward.textContent,/без наград/);
 console.log("Progress-001 hero detail navigation, reward and battle scaling passed");

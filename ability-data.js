@@ -26,6 +26,13 @@ const AbilityData=(()=>{
    kind:"damage",multiplier:1,weakening:0,cooldown:2,
    followUpEffects:Object.freeze([Object.freeze({scope:"all",status:"weaken",stacks:1})])})
  };
+ // Stats-001B: typed examples are regression-only; not assigned to campaign heroes.
+ special["test-physical-strike"]=Object.freeze({id:"special",name:"Тест физического удара",
+  target:"enemy",kind:"damage",damageType:"physical",multiplier:1,weakening:0,cooldown:2});
+ special["test-magical-strike"]=Object.freeze({id:"special",name:"Тест магического удара",
+  target:"enemy",kind:"damage",damageType:"magical",multiplier:1,weakening:0,cooldown:2});
+ special["test-magical-group"]=Object.freeze({id:"special",name:"Тест групповой магии",
+  target:"all-enemies",kind:"damage",damageType:"magical",multiplier:1,weakening:0,cooldown:2});
  Object.freeze(special);
  // Combat-012A: engine-only fixture, deliberately absent from the playable HEROES.
  const powerful=Object.freeze({
@@ -107,5 +114,18 @@ const AbilityData=(()=>{
   if(abilityId!=="special")return null;
   return Object.prototype.hasOwnProperty.call(special,actor.id)?special[actor.id]:fallback;
  }
- return Object.freeze({get});
+ // Missing damageType is explicitly legacy: its historical general atk
+ // calculation is preserved, NOT silently labelled as physical or magical.
+ function damageStat(ability){
+  if(!ability||ability.kind!=="damage")return null;
+  if(ability.damageType===undefined)return "atk";
+  if(ability.damageType==="physical")return "physicalAttack";
+  if(ability.damageType==="magical")return "magicAttack";
+  return null; // Explicit but unknown type must not fall back to atk.
+ }
+ function damageType(ability){
+  const stat=damageStat(ability);
+  return stat==="atk"?"legacy":stat==="physicalAttack"?"physical":stat==="magicAttack"?"magical":null;
+ }
+ return Object.freeze({get,damageStat,damageType});
 })();

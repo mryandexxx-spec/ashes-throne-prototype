@@ -72,9 +72,12 @@ const old={version:2,accountXp:80,currency:400,levels:{kael:2},claimedMissions:[
 const migrated=S.validate(old,[hero,foe]);
 assert.equal(migrated.levels.kael,2);
 assert.equal(migrated.currency,400);
-assert.equal(migrated.gearMaterials,0);
+assert.equal(migrated.gearMaterials,12,"already claimed first clear is credited on v2 gear upgrade");
 assert.equal(migrated.gear.kael.tier,1);
 assert.equal(migrated.gear.kael.slots,0);
+assert.equal(S.save(migrated,get),true);
+const credited=S.load([hero,foe],get).progress;
+assert.equal(credited.gearMaterials,12,"retroactive grant is not duplicated on reload");
 assert.equal(S.validate({...old,gear:{kael:{tier:3,slots:6}}},[hero,foe]),null,"no high gear on underlevelled hero");
 assert.equal(S.validate({...old,gearMaterials:-1},[hero,foe]),null);
 assert.equal(S.validate({...old,gear:{kael:{tier:1,slots:7}}},[hero,foe]),null);

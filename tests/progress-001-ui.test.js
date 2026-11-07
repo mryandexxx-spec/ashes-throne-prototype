@@ -214,6 +214,7 @@ click(elements.gearPromotionClose);
 assert.equal(elements.gearPromotionDialog.open,false);
 // Unaffordable equipment must explain WHICH resource is missing and by how much.
 api.getProgress().currency=100;
+api.getProgress().gearMaterials=3;
 api.openHeroDetail("kael");
 assert.equal(elements.gearWallet.textContent,"100");
 assert.equal(elements.gearEquipNext.disabled,true);

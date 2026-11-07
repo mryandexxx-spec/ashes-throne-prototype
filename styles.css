@@ -745,3 +745,9 @@ body.battle-mode #app>footer{visibility:hidden}
 .gear-slot.filled{border-color:var(--gold);color:var(--gold);background:#d5ad6518}
 .gear-panel .primary{width:100%;min-height:44px;margin-top:10px}
 @media(max-width:700px){.gear-slots{gap:4px}.gear-slot{min-height:34px;font-size:18px}}
+
+/* Progress-VS-001C: energy actions remain touch-friendly in narrow landscape. */
+.energy-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:10px 0}
+.energy-toolbar .muted{margin:0}
+.energy-toolbar button{min-height:40px;white-space:normal}
+.campaign-mission-actions [data-resource-farm]{min-height:42px;max-width:100%;white-space:normal}

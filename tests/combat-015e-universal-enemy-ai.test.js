@@ -63,6 +63,6 @@ explicit.currentActor=2;
 explicit.fighters[2].meter=1000;
 assert.equal(EnemyDecision.chooseAction(explicit,2).targetIndex,0,
  "technical explicit profile remains available for historical tests only");
-assert.match(read("index.html"),/v0\.3\.34 · PVS001B/);
-assert.equal(JSON.parse(read("package.json")).version,"0.3.34");
+assert.match(read("index.html"),/v0\.3\.35 · PVS001C/);
+assert.equal(JSON.parse(read("package.json")).version,"0.3.35");
 console.log("Combat-015E universal enemy tactical policy and wave inheritance passed");

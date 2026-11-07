@@ -130,9 +130,11 @@ let activeMissionId=null;
 let lastMissionStars=0;
 let lastMissionReward=null;
 function renderAccountHeader(){
+ ProgressCore.refreshEnergy(progress);
  const summary=$("#accountStatus");
  if(summary)summary.textContent="Аккаунт "+ProgressCore.accountLevel(progress)+"/"+ProgressCore.MAX_ACCOUNT_LEVEL+
-  " (тест) · XP "+progress.accountXp+" · Валюта "+progress.currency+" · C "+progress.gearMaterials;
+  " (тест) · XP "+progress.accountXp+" · Валюта "+progress.currency+" · C "+progress.gearMaterials+
+  " · ⚡ "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX;
 }
 function persistProgress(){
  if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>window.localStorage);
@@ -336,6 +338,20 @@ function openCampaignMission(id){
 }
 // Delegation allows cards to be rebuilt without installing duplicate handlers.
 $("#campaignMissions").addEventListener("click",event=>{
+ const farmButton=event.target.closest("[data-resource-farm]");
+ if(farmButton?.dataset?.resourceFarm&&farmButton?.dataset?.farmMission&&$("#campaignMissions").contains(farmButton)){
+  const id=farmButton.dataset.farmMission,kind=farmButton.dataset.resourceFarm;
+  const entry=CampaignData.getMission(id);
+  if(!entry||!CampaignData.available(entry,campaignProgress))return;
+  const gain=ProgressCore.farm(progress,id,campaignProgress.bestStars[id],kind);
+  if(!gain){renderCampaign();return;}
+  persistProgress();
+  renderCampaign();
+  const note=$("#farmNotice");
+  if(note)note.textContent="Получено: "+(gain.material?"+"+gain.material+" C":"+"+gain.currency+" валюты")+
+   ", +"+gain.xp+" XP. Энергия −"+gain.energy+".";
+  return;
+ }
  const simulate=event.target.closest("[data-simulate-mission]");
  if(simulate&&simulate.dataset.simulateMission&&$("#campaignMissions").contains(simulate)){
   simulateMission(simulate.dataset.simulateMission);
@@ -427,6 +443,11 @@ $("#detailUpgrade").addEventListener("click",()=>{
 });
 
 function renderCampaign(){
+ ProgressCore.refreshEnergy(progress);
+ renderAccountHeader();
+ const resource=$("#energyStatus");
+ if(resource)resource.textContent="Энергия: "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX+
+  " · 1 за 6 минут · автофарм после 3★ первой миссии.";
  const list=$("#campaignMissions");
  const chapters=CampaignData.allChapters();
  list.innerHTML=chapters.map(chapter=>{
@@ -444,7 +465,7 @@ function renderCampaign(){
    const status=completed?"Пройдено · Повторное прохождение доступно":available?"Не пройдено":"Заблокировано";
    const criteria=mission.stars.map((star,index)=>
     `<li><span class="mission-criteria-star">${index+1}★</span><span>${star.hint}</span></li>`).join("");
-   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}">Симуляция</button>`:""}</div></div></article>`;
+   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}">Симуляция</button>`:""}${mission.id===ProgressCore.FARM_MISSION_ID&&best===3?`<button type="button" class="ghost" data-resource-farm="materials" data-farm-mission="${mission.id}" ${progress.energy.value>=ProgressCore.ENERGY_FARM_COST?"":"disabled"}>Автодобыча: +12 C · −10 ⚡</button><button type="button" class="ghost" data-resource-farm="currency" data-farm-mission="${mission.id}" ${progress.energy.value>=ProgressCore.ENERGY_FARM_COST?"":"disabled"}>Автодобыча: +200 валюты · −10 ⚡</button>`:""}</div></div></article>`;
    }).join("");
    return `<div class="campaign-route"><h3>${route.title}</h3>${items}</div>`;
   }).join("");
@@ -455,12 +476,17 @@ function renderCampaign(){
   ?"Статус прохождения хранится в этом браузере."
   :"Сохранение кампании недоступно. После перезагрузки отметка может исчезнуть.";
 }
+// A visible campaign can be left open while energy regenerates.
+$("#energyRefresh")?.addEventListener("click",()=>renderCampaign());
+document.addEventListener("visibilitychange",()=>{
+ if(!document.hidden&&$("#campaign")?.classList.contains("active"))renderCampaign();
+});
 // Three-star simulation is a no-reward training replay until resource farming is implemented.
 function simulateMission(id){
  const entry=CampaignData.getMission(id);
  if(!entry||!CampaignData.available(entry,campaignProgress)||campaignProgress.bestStars[id]!==3)return false;
  $("#simulationText").textContent=MissionData.get(id).title+
-  ". Учебная симуляция без наград. Ресурсный фарм появится в следующем этапе.";
+  ". Учебная симуляция без наград. Ресурсная автодобыча — отдельная кнопка в карточке первой миссии после 3★.";
  $("#simulationDialog").showModal();
  return true;
 }

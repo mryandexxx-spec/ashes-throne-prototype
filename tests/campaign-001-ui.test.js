@@ -105,7 +105,7 @@ function tick(){
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=['kael','lyra','darin'];},getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderTargetFighterHud, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), enemyTemplates:()=>ENEMIES, configuredLineup:()=>battleLineup(), setAutoSpeed})",
+ "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getEnergy:()=>progress.energy.value,getGearMaterials:()=>progress.gearMaterials,getAccountXp:()=>progress.accountXp,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=['kael','lyra','darin'];},getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderTargetFighterHud, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), enemyTemplates:()=>ENEMIES, configuredLineup:()=>battleLineup(), setAutoSpeed})",
  {document,window:liveWindow,BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 // Campaign regression fixture: preserve historical three-hero combat expectations.
 api.resetLegacySquad();
@@ -647,4 +647,15 @@ flushVisual();
 assert.equal(elements.missionResult.classList.active,true);
 assert.match(elements.missionResultTitle.textContent,/не пройдена/);
 assert.equal(api.getCurrency(),beforeDefeatReward);
-console.log("Campaign-001, Combat-006 UI: manual and auto victory, defeat, wave handoff and reward passed");
+// Separate 3★ resource auto-farm is energy-gated; story repeat rewards stay unchanged.
+api.getCampaignProgress().bestStars["black-pass-ambush"]=3;
+api.showScreen("campaign");
+assert.match(elements.campaignMissions.innerHTML,/data-resource-farm="materials"/);
+const currencyBeforeFarm=api.getCurrency(),energyBeforeFarm=api.getEnergy(),xpBeforeFarm=api.getAccountXp();
+const farmButton={dataset:{farmMission:"black-pass-ambush",resourceFarm:"currency"}};
+elements.campaignMissions.handlers.click[0]({target:{closest:selector=>selector==="[data-resource-farm]"?farmButton:null}});
+assert.equal(api.getCurrency(),currencyBeforeFarm+200);
+assert.equal(api.getEnergy(),energyBeforeFarm-10);
+assert.equal(api.getAccountXp(),xpBeforeFarm+5);
+assert.equal(JSON.parse(savedData.get("ashes-throne.progress.v2")).energy.value,api.getEnergy());
+console.log("Campaign-001 UI: battle, wave, repeat and 3-star resource farming passed");

@@ -778,7 +778,7 @@ function renderMissionResult(){
   ?"Дополнительно за первую победу: +"+lastMissionReward.currency+" валюты, +"+lastMissionReward.xp+" XP"+
     (lastMissionReward.material?", +"+lastMissionReward.material+" C":"")+".":"";
  $("#missionResultText").textContent=won
-  ?MissionData.get(activeMissionId).title+" завершена. "+(base+first||"Победа без экономических наград.")
+  ?MissionData.get(activeMissionId).title+" завершена. "+(base+first||"Повтор без экономических наград.")
   :"Отряд потерпел поражение. Наград нет."+(lastMissionEnergyRefunded?" Энергия за ресурсный повтор возвращена.":"");
  const grade=$("#missionResultStars");
  if(grade){

@@ -147,6 +147,7 @@ assert.match(elements.campaignMissions.innerHTML,/Заблокировано/,"s
 clickMission();
 assert.equal(elements.squad.classList.active,true);
 click(elements.squadStart);
+assert.equal(api.getEnergy(),230,"first manual mission entry spends 10 energy");
 assert.equal(elements.battle.classList.active,true);
 assert.equal(document.body.classList.contains("battle-mode"),true,"battle hides document scroll behind fullscreen arena");
 // iPhone Safari portrait -> landscape: defer resize until CSS layout is committed.
@@ -358,8 +359,10 @@ assert.match(elements.missionResultTitle.textContent,/не пройдена/);
 assert.equal(api.getCurrency(),0);
 assert.equal(api.getCampaignCompleted(),false);
 click(elements.missionResultRetry);
+assert.equal(api.getEnergy(),230,"defeat retains entry cost");
 assert.equal(elements.squad.classList.active,true,"retry returns to squad preparation");
 click(elements.squadStart);
+assert.equal(api.getEnergy(),220,"retry charges energy again");
 assert.equal(elements.battle.classList.active,true);
 const win=api.getBattle();
 win.active=false;win.winner="ally";

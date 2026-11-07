@@ -58,6 +58,18 @@ const SaveCore=(()=>{
   return progress;
  }
  function load(heroes,getStorage){
+  // A2: clean-start migration is intentionally activated only in the real
+  // browser bundle that imports ProgressV3Core and GearData.
+  if(typeof ProgressV3Core!=="undefined"&&typeof GearData!=="undefined"){
+   const stage=ProgressV3Core.stage(heroes,getStorage);
+   if(stage.status==="staged"||stage.status==="existing"){
+    const restored=ProgressV3Core.toRuntime(stage.profile,heroes);
+    if(restored)return {progress:restored,available:true,fresh:stage.status==="staged",blocked:false};
+   }
+   // Damaged saves must not be silently overwritten by a new profile.
+   return {progress:ProgressCore.createProgress(heroes),available:false,fresh:true,blocked:true,
+    reason:stage.reason??"invalid-v3"};
+  }
   const fallback=ProgressCore.createProgress(heroes);
   try{
    const storage=getStorage();if(!storage)return {progress:fallback,available:false,fresh:true};
@@ -67,6 +79,9 @@ const SaveCore=(()=>{
   }catch(error){return {progress:fallback,available:false,fresh:true};}
  }
  function save(progress,getStorage){
+  if(progress?.saveVersion===3){
+   return typeof ProgressV3Core!=="undefined"&&ProgressV3Core.persist(progress,getStorage);
+  }
   try{
    const storage=getStorage();if(!storage)return false;
    storage.setItem(KEY,JSON.stringify({version:VERSION,accountXp:progress.accountXp,

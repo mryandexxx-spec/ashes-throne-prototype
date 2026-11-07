@@ -8,7 +8,7 @@ const ids=["home","collection","campaign","squad","battle","heroList","combatant
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
- "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","gearTier","gearSlots","gearMaterial","gearPrice","gearStatBonus","gearEquipNext","gearNotice"];
+ "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","gearTier","gearSlots","gearMaterial","gearPrice","gearPriceLabel","gearStatBonus","gearStatBonusLabel","gearEquipNext","gearNotice","gearPromotionDialog","gearPromotionTitle","gearPromotionLevel","gearPromotionCost","gearPromotionStats","gearPromotionClose"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
@@ -18,6 +18,8 @@ function element(id=""){
 }
 const elements=Object.fromEntries(ids.map(id=>[id,element(id)]));
 elements.gearSlots.contains=()=>true;
+elements.gearPromotionDialog.showModal=function(){this.open=true;};
+elements.gearPromotionDialog.close=function(){this.open=false;};
 const chooseNodes=["kael","lyra","darin"].map(id=>{
  const e=element();e.dataset.heroId=id;return e;
 });
@@ -174,4 +176,38 @@ assert.equal(elements.gearTier.textContent,"G1 · 2/6");
 assert.match(elements.detailStats.innerHTML,/127 HP/);
 assert.deepEqual(Array.from(JSON.parse(savedData.get("ashes-throne.progress.v2")).gear.kael.slots),
  [true,false,false,false,false,true]);
-console.log("Gear-002 UI: independent selection, item previews, purchases, save and battle scaling passed");
+// Finishing the set must show a manual paid gear-tier action, not auto-advance.
+for(const i of [1,2,3,4]){selectGear(i);click(elements.gearEquipNext);}
+assert.equal(api.getProgress().gear.kael.tier,1,"full six do not auto-promote");
+assert.equal(api.getProgress().gear.kael.slots.filter(Boolean).length,6);
+assert.equal(elements.gearEquipNext.textContent,"Поднять уровень");
+assert.equal(elements.gearPriceLabel.textContent,"Стоимость перехода");
+assert.match(elements.gearPrice.textContent,/250 игровой валюты/);
+assert.equal(elements.gearEquipNext.disabled,true,"G2 promotion requires hero level 6");
+const beforeBlocked=api.getCurrency();
+click(elements.gearEquipNext);
+assert.equal(api.getCurrency(),beforeBlocked,"blocked promotion costs nothing");
+// Give the hero its prerequisite level without changing the tier.
+api.getProgress().levels.kael=6;
+api.getProgress().accountXp=100000;
+api.openHeroDetail("kael");
+const fromHp=Number(elements.detailStats.innerHTML.match(/(\\d+) HP/)[1]);
+const fromAtk=Number(elements.detailStats.innerHTML.match(/(\\d+) ATK/)[1]);
+const beforePromotion=api.getCurrency();
+assert.equal(elements.gearEquipNext.disabled,false);
+click(elements.gearEquipNext);
+assert.equal(api.getCurrency(),beforePromotion-250);
+assert.equal(api.getProgress().gear.kael.tier,2);
+assert.equal(elements.gearTier.textContent,"G2 · 0/6");
+assert.equal(elements.gearPromotionDialog.open,true);
+assert.match(elements.gearPromotionLevel.textContent,/G1 → G2/);
+assert.match(elements.gearPromotionCost.textContent,/250/);
+assert.match(elements.gearPromotionStats.textContent,new RegExp("Здоровье: "+fromHp+" → "));
+assert.match(elements.gearPromotionStats.textContent,new RegExp("Атака: "+fromAtk+" → "));
+assert.match(elements.gearPromotionStats.textContent,/Скорость: 110 → 110/);
+assert.equal(JSON.parse(savedData.get("ashes-throne.progress.v2")).gear.kael.tier,2,"promotion is persisted");
+click(elements.gearEquipNext);
+assert.equal(api.getCurrency(),beforePromotion-250,"cannot pay twice through second press");
+click(elements.gearPromotionClose);
+assert.equal(elements.gearPromotionDialog.open,false);
+console.log("Gear-002B UI: filled six slots, paid promotion, before/after modal and persistence passed");

@@ -34,7 +34,11 @@ const SaveCore=(()=>{
       (g.slots===6&&g.tier!==3)||levels[id]<ProgressCore.GEAR[g.tier].heroLevel)return null;
    gear[id]={tier:g.tier,slots:g.slots};
   }
-  const progress={accountXp:data.accountXp,currency:data.currency,gearMaterials:data.gearMaterials??0,
+  // VS-001A profiles already claimed first clears before C existed.
+  // Credit their one-time C drops exactly once when upgrading the saved v2 shape.
+  const retroactiveC=claims.reduce((sum,id)=>sum+(ProgressCore.FIRST_CLEAR_REWARDS[id].material||0),0);
+  const progress={accountXp:data.accountXp,currency:data.currency,
+   gearMaterials:data.gearMaterials??retroactiveC,
    levels,gear,claimedMissions:claims.slice()};
   if(Object.values(levels).some(level=>level>ProgressCore.accountLevel(progress)))return null;
   return progress;

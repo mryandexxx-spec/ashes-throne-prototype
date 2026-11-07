@@ -1,47 +1,45 @@
-/* Save-001: versioned local-only storage for temporary hero progress. */
+/* Progress-VS-001A: intentionally reset old Progress-001 demo resources.
+   New economic rewards and claimed mission IDs live together in one record. */
 const SaveCore=(()=>{
  "use strict";
- const KEY="ashes-throne.progress.v1";
- const VERSION=1;
- const own=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);
- const plain=value=>!!value && typeof value==="object" && !Array.isArray(value);
+ const KEY="ashes-throne.progress.v2";
+ const VERSION=2;
+ const plain=x=>!!x&&typeof x==="object"&&!Array.isArray(x);
+ const own=(x,k)=>Object.prototype.hasOwnProperty.call(x,k);
  function validate(data,heroes){
-  if(!plain(data)||data.version!==VERSION||!plain(data.levels))return null;
-  if(!Number.isSafeInteger(data.materials)||data.materials<0)return null;
+  if(!plain(data)||data.version!==VERSION||!plain(data.levels)||!Array.isArray(data.claimedMissions))
+   return null;
+  if(!Number.isSafeInteger(data.currency)||data.currency<0||
+     !Number.isSafeInteger(data.accountXp)||data.accountXp<0)return null;
   const ids=heroes.filter(h=>h.side==="ally").map(h=>h.id);
-  // New training heroes may be absent in older v1 saves.
-  // All old levels and materials remain untouched; unknown ids are rejected.
-  const savedIds=Object.keys(data.levels);
-  if(savedIds.some(id=>!ids.includes(id)))return null;
-  const missing=ids.filter(id=>!own(data.levels,id));
-  if(missing.some(id=>id!=="medic-demo"&&id!=="test-area-damage"))return null;
+  if(Object.keys(data.levels).some(id=>!ids.includes(id)))return null;
   const levels={};
   for(const id of ids){
    const level=own(data.levels,id)?data.levels[id]:1;
    if(!Number.isInteger(level)||level<1||level>ProgressCore.MAX_LEVEL)return null;
    levels[id]=level;
   }
-  return {materials:data.materials,levels};
+  const claims=data.claimedMissions;
+  const known=Object.keys(ProgressCore.FIRST_CLEAR_REWARDS);
+  if(claims.some(id=>typeof id!=="string"||!known.includes(id))||new Set(claims).size!==claims.length)return null;
+  const progress={accountXp:data.accountXp,currency:data.currency,levels,claimedMissions:claims.slice()};
+  if(Object.values(levels).some(level=>level>ProgressCore.accountLevel(progress)))return null;
+  return progress;
  }
- // Storage access is lazy: Safari can throw while accessing window.localStorage.
  function load(heroes,getStorage){
   const fallback=ProgressCore.createProgress(heroes);
   try{
-   const storage=getStorage();
-   if(!storage)return {progress:fallback,available:false};
+   const storage=getStorage();if(!storage)return {progress:fallback,available:false,fresh:true};
    const raw=storage.getItem(KEY);
-   if(raw===null)return {progress:fallback,available:true};
-   const restored=validate(JSON.parse(raw),heroes);
-   return {progress:restored||fallback,available:true};
-  }catch(error){
-   return {progress:fallback,available:false};
-  }
+   const restored=raw===null?null:validate(JSON.parse(raw),heroes);
+   return {progress:restored||fallback,available:true,fresh:!restored};
+  }catch(error){return {progress:fallback,available:false,fresh:true};}
  }
  function save(progress,getStorage){
   try{
-   const storage=getStorage();
-   if(!storage)return false;
-   storage.setItem(KEY,JSON.stringify({version:VERSION,materials:progress.materials,levels:progress.levels}));
+   const storage=getStorage();if(!storage)return false;
+   storage.setItem(KEY,JSON.stringify({version:VERSION,accountXp:progress.accountXp,
+    currency:progress.currency,levels:progress.levels,claimedMissions:progress.claimedMissions}));
    return true;
   }catch(error){return false;}
  }

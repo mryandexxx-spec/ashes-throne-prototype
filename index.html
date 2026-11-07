@@ -12,7 +12,7 @@
   <main id="app">
     <header class="topbar">
       <div class="brand"><span class="sigil">✦</span><div><strong>ПЕПЕЛЬНЫЙ ПРЕСТОЛ</strong><small>Браузерный RPG-прототип</small></div></div>
-      <div class="resources"><span>◈ 1 250</span><span>✧ 80</span><span>⚡ 12/20</span></div>
+      <div class="resources"><span id="accountStatus">Аккаунт 1/15 (тест) · XP 0 · Валюта 0</span></div>
     </header>
     <section id="home" class="screen active">
       <div class="hero-banner">
@@ -45,7 +45,7 @@
         <div class="hero-detail-panel">
           <div class="eyebrow">РАЗВИТИЕ ПЕРСОНАЖА · ТЕСТ</div>
           <h3 id="detailLevel">Уровень 1</h3>
-          <div class="detail-value"><span>Доступно учебных материалов</span><strong id="detailWallet">0</strong></div>
+          <div class="detail-value"><span>Доступно основной валюты</span><strong id="detailWallet">0</strong></div>
           <div class="detail-value"><span>Стоимость улучшения</span><strong id="detailCost">1</strong></div>
           <div class="detail-value"><span>После улучшения</span><strong id="detailPreview">—</strong></div>
           <button type="button" class="primary detail-upgrade" id="detailUpgrade">Повысить уровень</button>
@@ -163,7 +163,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.32 · CBA015E</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.33 · PVS001A</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

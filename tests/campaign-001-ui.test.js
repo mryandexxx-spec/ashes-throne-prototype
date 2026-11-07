@@ -81,6 +81,9 @@ const BABYLON={Engine,Scene,PointerEventTypes:{POINTERPICK:1,POINTERDOWN:2,POINT
   CreateCylinder(){meshCreates++;return new Mesh();}}
 };
 const savedData=new Map();
+// Older demo mission completion is intentionally reset when no v2 economy exists.
+savedData.set("ashes-throne.campaign.v1",JSON.stringify({version:2,
+ completed:{"black-pass-ambush":true},bestStars:{"black-pass-ambush":3}}));
 const localStorage={getItem:k=>savedData.has(k)?savedData.get(k):null,setItem:(k,v)=>savedData.set(k,v)};
 liveWindow.localStorage=localStorage;
 const timers=new Map();
@@ -102,7 +105,7 @@ function tick(){
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=['kael','lyra','darin'];},getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderTargetFighterHud, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), enemyTemplates:()=>ENEMIES, configuredLineup:()=>battleLineup(), setAutoSpeed})",
+ "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=['kael','lyra','darin'];},getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderTargetFighterHud, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), enemyTemplates:()=>ENEMIES, configuredLineup:()=>battleLineup(), setAutoSpeed})",
  {document,window:liveWindow,BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 // Campaign regression fixture: preserve historical three-hero combat expectations.
 api.resetLegacySquad();
@@ -349,7 +352,7 @@ assert.equal(elements.targetFighterName.textContent,"Бой завершён","f
 assert.equal(elements.targetFighterLevel.textContent,"","finished battle clears level");
 assert.equal(document.body.classList.contains("battle-mode"),false,"leaving battle restores document scroll");
 assert.match(elements.missionResultTitle.textContent,/не пройдена/);
-assert.equal(api.getMaterials(),0);
+assert.equal(api.getCurrency(),0);
 assert.equal(api.getCampaignCompleted(),false);
 click(elements.missionResultRetry);
 assert.equal(elements.squad.classList.active,true,"retry returns to squad preparation");
@@ -359,30 +362,30 @@ const win=api.getBattle();
 win.active=false;win.winner="ally";
 api.syncBattleUI();
 assert.equal(elements.missionResult.classList.active,true);
-assert.equal(api.getMaterials(),1);
+assert.equal(api.getCurrency(),500);
 assert.equal(api.getCampaignCompleted(),true);
-assert.match(elements.missionResultText.textContent,/\+1 учебный материал/);
+assert.match(elements.missionResultText.textContent,/\+500 валюты/);
 assert.ok(savedData.has("ashes-throne.campaign.v1"));
-assert.ok(savedData.has("ashes-throne.progress.v1"));
+assert.ok(savedData.has("ashes-throne.progress.v2"));
 api.syncBattleUI();
-assert.equal(api.getMaterials(),1,"re-render must not grant a second reward");
+assert.equal(api.getCurrency(),500,"re-render must not grant a second reward");
 click(elements.missionResultBack);
 assert.equal(elements.campaign.classList.active,true);
 assert.match(elements.campaignMissions.innerHTML,/Пройдено/);
-// Completed missions are replayable and still earn the explicitly approved test material.
+// Completed mission replays remain available but cannot repeat first-clear rewards.
 clickMission();
 click(elements.squadStart);
 const replay=api.getBattle();
 replay.active=false;replay.winner="ally";
 api.syncBattleUI();
-assert.equal(api.getMaterials(),2);
-assert.match(elements.missionResultText.textContent,/Всего: 2/);
+assert.equal(api.getCurrency(),500);
+assert.match(elements.missionResultText.textContent,/Повтор без экономических наград/);
 assert.equal(api.getCampaignCompleted(),true);
 // New JS instance restores campaign flag, levels and materials.
-const reloaded=vm.runInNewContext(src+"\n({campaign:campaignProgress,materials:progress.materials})",
+const reloaded=vm.runInNewContext(src+"\n({campaign:campaignProgress,currency:progress.currency})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
 assert.equal(reloaded.campaign.completed["black-pass-ambush"],true);
-assert.equal(reloaded.materials,2);
+assert.equal(reloaded.currency,500);
 // Combat-008C hotfix: each side uses up to three front / two rear positions.
 api.showScreen("campaign");
 clickMission("demo-mission-2");
@@ -439,7 +442,7 @@ assert.equal(waveBattle.fighters.filter(h=>h.side==="enemy").length,2);
 assert.ok(waveBattle.fighters.filter(h=>h.side==="enemy").every(h=>!h.aiProfile),
  "third mission uses no per-mission AI profiles");
 assert.match(elements.turnChip.textContent,/Волна 1\/2/);
-const materialsBeforeWaves=api.getMaterials();
+const currencyBeforeWaves=api.getCurrency();
 const heroBeforeWave=waveBattle.fighters.find(f=>f.side==="ally");
 heroBeforeWave.hp-=3;
 const health=heroBeforeWave.hp;
@@ -454,16 +457,16 @@ assert.ok(waveBattle.fighters.filter(h=>h.side==="enemy").every(h=>!h.aiProfile)
  "future waves use no per-mission AI profiles");
 assert.match(elements.turnChip.textContent,/Волна 2\/2/);
 assert.equal(waveBattle.fighters.find(f=>f.id===heroBeforeWave.id).hp,health);
-assert.equal(api.getMaterials(),materialsBeforeWaves,"first wave cannot grant reward");
+assert.equal(api.getCurrency(),currencyBeforeWaves,"first wave cannot grant reward");
 assert.equal(elements.battle.classList.active,true,"do not show mission result between waves");
 waveBattle.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=0;});
 api.CombatCore.advanceToPlayerTurn(waveBattle);
 api.syncBattleUI();
 assert.equal(waveBattle.winner,"ally");
 assert.equal(elements.missionResult.classList.active,true);
-assert.equal(api.getMaterials(),materialsBeforeWaves+1,"final wave grants exactly one reward");
+assert.equal(api.getCurrency(),currencyBeforeWaves+900,"third mission first clear gives 900 currency");
 api.syncBattleUI();
-assert.equal(api.getMaterials(),materialsBeforeWaves+1,"repeated UI sync cannot duplicate final wave reward");
+assert.equal(api.getCurrency(),currencyBeforeWaves+900,"repeated UI sync cannot duplicate final wave reward");
 // Return home from mission result does not affect persistent status.
 click(elements.missionResultHome);
 assert.equal(elements.home.classList.active,true);
@@ -563,7 +566,7 @@ let actions=0;
 while(autoWaves.wave===1&&autoWaves.active&&actions++<10)tick();
 assert.equal(autoWaves.wave,2);
 assert.equal(elements.battle.classList.active,true);
-const rewardBeforeFinal=api.getMaterials();
+const rewardBeforeFinal=api.getCurrency();
 assert.equal(api.isVisualTransition(),true,"wave switches core state before its visual transition");
 assert.equal(api.getVisualFighters().filter(f=>f.side==="enemy").length,2,
  "old wave roster remains visible through queued hit/death animations");
@@ -576,23 +579,23 @@ assert.ok(actions<25,"auto must finish multi-wave mission");
 assert.equal(autoWaves.winner,"ally");
 assert.equal(api.isVisualTransition(),true,"battle result waits for final animation");
 assert.equal(elements.missionResult.classList.active,false,"final screen must not interrupt death sequence");
-assert.equal(api.getMaterials(),rewardBeforeFinal+1,"reward persists immediately even while result animation runs");
+assert.equal(api.getCurrency(),rewardBeforeFinal,"repeat victory gives no new currency while result animation runs");
 assert.equal(timers.size,0,"last automatic action cancels further scheduling");
 flushVisual();
-assert.equal(api.getMaterials(),rewardBeforeFinal+1);
+assert.equal(api.getCurrency(),rewardBeforeFinal);
 assert.equal(elements.missionResult.classList.active,true,"battle result opens after animation");
 assert.equal(elements.autoSpeedBtn.disabled,true,"finished battle disables speed");
 assert.equal(api.isAuto(),false,"auto mode clears on victory");
 assert.equal(elements.missionResult.classList.active,true);
 api.syncBattleUI();
-assert.equal(api.getMaterials(),rewardBeforeFinal+1,"no duplicated reward after finished auto battle");
+assert.equal(api.getCurrency(),rewardBeforeFinal,"no duplicated reward after finished auto battle");
 // Combat-006 manual victory: damage/reward computed by core immediately,
 // but campaign navigation waits until the visual queue is exhausted.
 api.showScreen("campaign");
 clickMission("black-pass-ambush");
 click(elements.squadStart);
 const manualFinish=api.getBattle();
-const rewardBeforeManual=api.getMaterials();
+const rewardBeforeManual=api.getCurrency();
 manualFinish.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
 let manualActions=0;
 while(manualFinish.active&&manualActions++<20)click(elements.basicAbilityBtn);
@@ -601,25 +604,25 @@ assert.equal(manualFinish.winner,"ally");
 assert.equal(api.isVisualTransition(),true);
 assert.equal(elements.battle.classList.active,true,"manual final hit remains on arena");
 assert.equal(elements.basicAbilityBtn.disabled,true,"abilities locked during final animation");
-assert.equal(api.getMaterials(),rewardBeforeManual+1,"manual victory is committed immediately");
+assert.equal(api.getCurrency(),rewardBeforeManual,"repeat manual victory must not grant currency");
 api.syncBattleUI();
-assert.equal(api.getMaterials(),rewardBeforeManual+1,"UI re-sync cannot duplicate reward during animation");
+assert.equal(api.getCurrency(),rewardBeforeManual,"UI re-sync cannot duplicate reward during animation");
 flushVisual();
 assert.equal(elements.missionResult.classList.active,true);
-assert.equal(api.getMaterials(),rewardBeforeManual+1,"visual handoff never awards twice");
+assert.equal(api.getCurrency(),rewardBeforeManual,"visual handoff never awards twice");
 api.syncBattleUI();
-assert.equal(api.getMaterials(),rewardBeforeManual+1,"no duplicate manual victory reward");
+assert.equal(api.getCurrency(),rewardBeforeManual,"no duplicate manual victory reward");
 // Exit during a pending result animation must cancel it, never show a stale result.
 api.showScreen("campaign");
 clickMission("black-pass-ambush");
 click(elements.squadStart);
 const interrupted=api.getBattle();
-const rewardBeforeInterrupt=api.getMaterials();
+const rewardBeforeInterrupt=api.getCurrency();
 interrupted.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
 let interruptActions=0;
 while(interrupted.active&&interruptActions++<20)click(elements.basicAbilityBtn);
 assert.equal(api.isVisualTransition(),true);
-assert.equal(api.getMaterials(),rewardBeforeInterrupt+1,"completed combat reward persists before exit");
+assert.equal(api.getCurrency(),rewardBeforeInterrupt,"repeat combat does not mint currency before exit");
 api.showScreen("home");
 assert.equal(api.isVisualTransition(),false,"exit cancels pending visual handoff");
 assert.equal(api.getMotion().pending(),0);
@@ -632,16 +635,16 @@ click(elements.squadStart);
 const losing=api.getBattle();
 losing.fighters.filter(f=>f.side==="ally").forEach(f=>{f.hp=1;});
 losing.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=10000;f.maxHp=10000;});
-const beforeDefeatReward=api.getMaterials();
+const beforeDefeatReward=api.getCurrency();
 let defeatActions=0;
 while(losing.active&&defeatActions++<35)click(elements.basicAbilityBtn);
 assert.ok(defeatActions<35,"controlled losing battle should finish");
 assert.equal(losing.winner,"enemy");
 assert.equal(api.isVisualTransition(),true,"defeat waits for the last death animations");
 assert.equal(elements.battle.classList.active,true,"arena stays visible until defeat animations finish");
-assert.equal(api.getMaterials(),beforeDefeatReward,"defeat never grants a reward");
+assert.equal(api.getCurrency(),beforeDefeatReward,"defeat never grants a reward");
 flushVisual();
 assert.equal(elements.missionResult.classList.active,true);
 assert.match(elements.missionResultTitle.textContent,/не пройдена/);
-assert.equal(api.getMaterials(),beforeDefeatReward);
+assert.equal(api.getCurrency(),beforeDefeatReward);
 console.log("Campaign-001, Combat-006 UI: manual and auto victory, defeat, wave handoff and reward passed");

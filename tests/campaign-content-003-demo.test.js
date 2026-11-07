@@ -47,12 +47,12 @@ assert.equal(restored.bestStars[second],0);
 assert.equal(CampaignCore.save(restored,()=>adapter),true);
 assert.equal(CampaignCore.load(()=>adapter).campaign.bestStars[first],3);
 assert.equal(CampaignCore.load(()=>adapter).campaign.bestStars[second],0);
-// Simulation uses the existing reward path, but must never modify stars.
-const materials=ProgressCore.createProgress([{id:"ally",side:"ally"}]);
-const simulated={winner:"ally",active:false,rewardClaimed:false};
-assert.equal(ProgressCore.awardVictory(materials,simulated),1);
-assert.equal(ProgressCore.awardVictory(materials,simulated),0);
-assert.equal(materials.materials,1);
+// New first-clear reward is idempotent and separate from campaign star evaluation.
+const economy=ProgressCore.createProgress([{id:"ally",side:"ally"}]);
+const simulated={winner:"ally",active:false};
+assert.equal(ProgressCore.claimFirstClear(economy,first,simulated).currency,500);
+assert.equal(ProgressCore.claimFirstClear(economy,first,simulated),null);
+assert.equal(economy.currency,500);
 assert.equal(progress.bestStars[second],3);
 // Confirm the original first encounter retains exactly two enemies.
 const game=read("game.js");
@@ -62,5 +62,5 @@ assert.match(game,/campaignProgress\.bestStars\[id\]!==3/);
 assert.match(game,/data-simulate-mission/);
 const html=read("index.html");
 assert.match(html,/id="simulationDialog"/);
-assert.match(html,/v0\.3\.32 · CBA015E/);
+assert.match(html,/v0\.3\.33 · PVS001A/);
 console.log("Campaign-Content-003 demo: catalog, stars, save, reward and roster assertions passed");

@@ -30,7 +30,7 @@ assert.ok(fight.fighters[0].hp>0);
 assert.equal(fight.fighters.every((f,i)=>f.index===i),true,"fighter indices reset");
 assert.ok(fight.fighters.some(f=>f.side==="enemy"&&f.id==="third"));
 assert.ok(fight.events.some(e=>e.type==="wave-start"&&e.wave===2&&e.total===2));
-assert.equal(ProgressCore.awardVictory(reward,fight),0,"no reward between waves");
+assert.equal(ProgressCore.claimFirstClear(reward,"black-pass-ambush",fight),null,"no reward between waves");
 assert.ok(CombatLog.lines(fight.events,fight.fighters).some(line=>line.includes("Волна 2/2")));
 let actions=0;
 while(fight.active&&actions++<15){
@@ -42,8 +42,8 @@ assert.equal(fight.winner,"ally");
 assert.equal(fight.wave,2);
 assert.equal(fight.allyActions,3);
 assert.ok(fight.events.some(e=>e.type==="battle-end"&&e.winner==="ally"));
-assert.equal(ProgressCore.awardVictory(reward,fight),1,"reward once at final victory");
-assert.equal(ProgressCore.awardVictory(reward,fight),0,"repeat UI sync cannot duplicate reward");
+assert.equal(ProgressCore.claimFirstClear(reward,"black-pass-ambush",fight).currency,500,"reward once at final victory");
+assert.equal(ProgressCore.claimFirstClear(reward,"black-pass-ambush",fight),null,"repeat UI sync cannot duplicate reward");
 // No-wave mode keeps the old contract and win at first encounter.
 const legacy=CombatCore.createBattle([hero,first]);
 assert.equal(legacy.totalWaves,1);
@@ -62,7 +62,7 @@ assert.ok(lossSteps<20);
 assert.equal(loss.winner,"enemy");
 assert.equal(loss.wave,1);
 assert.equal(loss.pendingWaves.length,1);
-assert.equal(ProgressCore.awardVictory(reward,loss),0);
+assert.equal(ProgressCore.claimFirstClear(reward,"black-pass-ambush",loss),null);
 // Three-wave sequence and mixed wave sizes.
 const triple=CombatCore.createBattle([hero,first],[[second,third],[foe("final")]]);
 CombatCore.advanceToPlayerTurn(triple);

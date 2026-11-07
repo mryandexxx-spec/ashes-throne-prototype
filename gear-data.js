@@ -24,6 +24,28 @@ const GearData=(()=>{
   "magicDefense","speed","critChance","critDamage","accuracy",
   "evasion","defensePenetration","debuffPotency","debuffResistance"
  ]);
+ // Stats-001A: approved names and meanings, no unapproved combat formulas.
+ // The prototype has actual HP and speed; its general ATK is not yet split
+ // into physicalAttack / magicAttack. Unknown stats must never be invented.
+ const STAT_LABELS=Object.freeze({
+  hp:"Здоровье (HP)",protection:"Защита (Protection)",
+  physicalAttack:"Физическая атака",magicAttack:"Магическая атака",
+  physicalDefense:"Физическая оборона",magicDefense:"Магическая оборона",
+  speed:"Скорость",critChance:"Шанс критического удара",
+  critDamage:"Критический урон",accuracy:"Точность",evasion:"Уклонение",
+  defensePenetration:"Пробивание обороны",
+  debuffPotency:"Эффективность ослаблений",
+  debuffResistance:"Сопротивление ослаблениям"
+ });
+ function statOverview(hero){
+  return FUTURE_STAT_KEYS.map(id=>{
+   const supported=(id==="hp"||id==="speed")&&Number.isFinite(hero?.[id]);
+   return Object.freeze({id,label:STAT_LABELS[id],
+    value:supported?hero[id]:null,
+    active:supported});
+  });
+ }
+
  // Test-only composite recipes. Produced inline; no inventory for intermediate parts.
  const COMPOSITES=Object.freeze({
   U:Object.freeze({Fe:2,Fa:1}),
@@ -108,6 +130,6 @@ const GearData=(()=>{
   return Object.fromEntries(Object.entries(item.ingredients).filter(([id,n])=>
    !Number.isSafeInteger(materials[id])||materials[id]<n).map(([id,n])=>[id,Math.max(0,n-(materials[id]||0))]));
  }
- return Object.freeze({SLOTS,CLASS_IDS,MATERIALS,MATERIAL_LABELS,FUTURE_STAT_KEYS,FLOOR,G2_FLOOR,G3_FLOOR,COMPOSITES,ITEMS,get,offered,missing,flatten});
+ return Object.freeze({SLOTS,CLASS_IDS,MATERIALS,MATERIAL_LABELS,FUTURE_STAT_KEYS,STAT_LABELS,statOverview,FLOOR,G2_FLOOR,G3_FLOOR,COMPOSITES,ITEMS,get,offered,missing,flatten});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=GearData;

@@ -121,7 +121,7 @@ const loadedProgress=storageAdapter?storageAdapter.load(ALLIES,()=>window.localS
 const progress=loadedProgress?loadedProgress.progress:ProgressCore.createProgress(ALLIES);
 let saveAvailable=loadedProgress?loadedProgress.available:false;
 const campaignLoaded=CampaignCore.load(()=>window.localStorage);
-const campaignProgress=campaignLoaded.campaign;
+const campaignProgress=loadedProgress?.fresh?CampaignCore.fresh():campaignLoaded.campaign;
 let campaignSaveAvailable=campaignLoaded.available;
 let battleIsCampaign=false;
 let missionResultShown=false;

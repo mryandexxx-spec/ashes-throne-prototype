@@ -40,7 +40,7 @@ const SaveCore=(()=>{
       g.slots.every(value=>typeof value==="boolean"))
     slots=g.slots.slice();
    else return null;
-   if(slots.every(Boolean)&&g.tier!==3)return null;
+   // Gear-002B: a full set at G1/G2 is now valid while awaiting paid promotion.
    gear[id]={tier:g.tier,slots};
   }
   // VS-001A profiles already claimed first clears before C existed.

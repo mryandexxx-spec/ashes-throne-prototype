@@ -13,6 +13,7 @@ function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
    remove(x){this[x]=false},toggle(x,v){this[x]=!!v}},
+  setAttribute(name,value){this[name]=value},
   addEventListener(type,fn){(this.handlers[type]??=[]).push(fn)}
  };
 }

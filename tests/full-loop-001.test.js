@@ -67,7 +67,7 @@ savedData.set("ashes-throne.progress.v2",JSON.stringify({version:2,accountXp:0,c
  levels:{kael:1,lyra:1,darin:1,"medic-demo":1,"test-area-damage":1},claimedMissions:[]}));
 const localStorage={getItem:k=>savedData.has(k)?savedData.get(k):null,setItem:(k,v)=>savedData.set(k,v)};
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getProgress:()=>progress,getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openCampaignMission,openHeroDetail,renderSquad,syncBattleUI,getCampaignProgress:()=>campaignProgress})",
+ "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getProgress:()=>progress,getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openCampaignMission,openHeroDetail,renderSquad,syncBattleUI,getCampaignProgress:()=>campaignProgress,CampaignData})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
@@ -80,7 +80,7 @@ const p=api.getProgress(),campaign=api.getCampaignProgress();
 assert.equal(p.saveVersion,3);
 assert.equal(p.currency,0);
 assert.equal(campaign.completed["black-pass-ambush"],false);
-assert.equal(CampaignData.available(CampaignData.getMission("demo-mission-2"),campaign),false);
+assert.equal(api.CampaignData.available(api.CampaignData.getMission("demo-mission-2"),campaign),false);
 function win(id,actions=6){
  assert.equal(api.openCampaignMission(id),true,"mission "+id+" must be available");
  api.showScreen("battle");
@@ -95,7 +95,7 @@ win("black-pass-ambush");
 assert.equal(p.currency,1350);
 assert.equal(p.accountXp,85);
 assert.deepEqual(JSON.parse(JSON.stringify(p.materials)),{Fe:2,Le:3,Cl:4,Wo:1,Fa:2,Th:2,Gl:0});
-assert.equal(CampaignData.available(CampaignData.getMission("demo-mission-2"),campaign),true,
+assert.equal(api.CampaignData.available(api.CampaignData.getMission("demo-mission-2"),campaign),true,
  "first win unlocks next mission");
 assert.equal(api.openHeroDetail("kael"),true);
 const beforeLevel=p.currency;
@@ -115,7 +115,7 @@ p.energy.value=0;p.energy.updatedAt=Date.now();
 win("demo-mission-2");
 assert.equal(p.currency,1350-39-167+1020+700);
 assert.equal(p.materials.Gl,1,"second mission introduces glass");
-assert.equal(CampaignData.available(CampaignData.getMission("demo-mission-3"),campaign),true);
+assert.equal(api.CampaignData.available(api.CampaignData.getMission("demo-mission-3"),campaign),true);
 assert.equal(p.energy.value,0);
 const saved=JSON.parse(savedData.get("ashes-throne.progress.v3"));
 assert.equal(saved.heroes.kael.level,2);
@@ -130,5 +130,5 @@ assert.equal(reloaded.progress.materials.Gl,1);
 assert.equal(reloaded.progress.currency,p.currency);
 assert.equal(reloaded.campaignProgress.completed["black-pass-ambush"],true);
 assert.equal(reloaded.campaignProgress.completed["demo-mission-2"],true);
-assert.equal(CampaignData.available(CampaignData.getMission("demo-mission-3"),reloaded.campaignProgress),true);
+assert.equal(api.CampaignData.available(api.CampaignData.getMission("demo-mission-3"),reloaded.campaignProgress),true);
 console.log("FullLoop-001: first mission -> payout -> level up -> craft G1 -> second mission -> glass -> next unlock -> Safari-style reload passed");

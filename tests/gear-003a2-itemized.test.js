@@ -62,6 +62,7 @@ function checkFullKit(p,hero){
 }
 // Catalog contract: no arbitrary extra choices, complete coverage and floors.
 assert.equal(G.SLOTS.length,6);
+assert.equal(G.FUTURE_STAT_KEYS.length,14,"14-stat schema is reserved but inert");
 assert.equal(G.ITEMS.length,12);
 assert.equal(new Set(G.ITEMS.map(x=>x.id)).size,12);
 for(const item of G.ITEMS){

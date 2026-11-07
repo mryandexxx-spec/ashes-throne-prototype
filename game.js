@@ -138,7 +138,8 @@ function renderAccountHeader(){
  ProgressCore.refreshEnergy(progress);
  const summary=$("#accountStatus");
  if(summary)summary.textContent="Аккаунт "+ProgressCore.accountLevel(progress)+"/"+ProgressCore.MAX_ACCOUNT_LEVEL+
-  " (тест) · XP "+progress.accountXp+" · Валюта "+progress.currency+" · C "+progress.gearMaterials+
+  " (тест) · XP "+progress.accountXp+" · Валюта "+progress.currency+
+  (progress.saveVersion===3?"":" · C "+progress.gearMaterials)+
   " · ⚡ "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX;
 }
 function persistProgress(){

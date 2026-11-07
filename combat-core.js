@@ -430,8 +430,9 @@ const CombatCore = (() => {
     const weakened=actor.weakenAttacks>0;
     for(const target of recipients){
       if(ability.kind==="damage"){
-        const damage=dealDamage(actor,target,Math.round(effectiveStat(battle,actor,"atk")*ability.multiplier),false);
-        emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp});
+        const damage=dealDamage(actor,target,Math.round(effectiveStat(battle,actor,AbilityData.damageStat(ability))*ability.multiplier),false);
+        emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
+          ...(AbilityData.damageType(ability)==="legacy"?{}:{damageType:AbilityData.damageType(ability)})});
         if(target.hp===0)emit(battle,"death",{targetId:target.id});
         if(ability.weakening>0&&target.hp>0){
           target.weakenAttacks=ability.weakening;
@@ -471,6 +472,10 @@ const CombatCore = (() => {
     const actor=battle.fighters[actorIndex];
     const ability=AbilityData.get(actor,abilityId);
     // Invalid definitions must not consume an action or overwrite events.
+    // Stats-001B: explicit typed attacks require a valid matching attack value.
+    // Legacy abilities keep using the historical general atk without reclassification.
+    const damageStat=ability.kind==="damage"?AbilityData.damageStat(ability):null;
+    if(ability.kind==="damage"&&(!damageStat||!Number.isFinite(actor[damageStat])||actor[damageStat]<0))return false;
     if(!Number.isSafeInteger(ability.cooldown)||ability.cooldown<0||!validFollowUpEffects(ability))return false;
     if(!["damage","heal","guard"].includes(ability.kind))return false;
     if(ability.kind==="damage"&&(!Number.isFinite(ability.multiplier)||ability.multiplier<0))return false;
@@ -496,8 +501,9 @@ const CombatCore = (() => {
       emit(battle,"heal",{actorId:actor.id,targetId:target.id,amount:restored,remainingHp:target.hp});
       battle.message=actor.name+" лечит "+target.name+": +"+restored+" HP.";
     }else{
-      const damage=dealDamage(actor,target,Math.round(effectiveStat(battle,actor,"atk")*ability.multiplier));
-      emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp});
+      const damage=dealDamage(actor,target,Math.round(effectiveStat(battle,actor,damageStat)*ability.multiplier));
+      emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
+          ...(AbilityData.damageType(ability)==="legacy"?{}:{damageType:AbilityData.damageType(ability)})});
       if(target.hp===0)emit(battle,"death",{targetId:target.id});
       if(ability.weakening>0&&target.hp>0){
         target.weakenAttacks=ability.weakening;

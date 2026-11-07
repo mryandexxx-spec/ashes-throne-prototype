@@ -17,13 +17,13 @@ const ProgressCore=(()=>{
   3:Object.freeze({heroLevel:12,material:4,currency:3000})
  });
  const freshGear=()=>({tier:1,slots:0});
- // VS-001C: independent resource auto-farm unlocked at 3★ of the demo mission.
- // Numbers are prototype assumptions, NOT final GDD balance.
- const ENERGY_MAX=240,ENERGY_REGEN_MS=6*60*1000,ENERGY_FARM_COST=10;
- const FARM_MISSION_ID="black-pass-ambush";
- const FARM_OPTIONS=Object.freeze({
-  materials:Object.freeze({material:12,currency:0,xp:5}),
-  currency:Object.freeze({material:0,currency:200,xp:5})
+ // VS-001C UX revision: mission entry costs energy regardless of manual/simulation mode.
+ // All numbers are provisional; simulation becomes available after 3★ only.
+ const ENERGY_MAX=240,ENERGY_REGEN_MS=6*60*1000;
+ const MISSION_FARM=Object.freeze({
+  "black-pass-ambush":Object.freeze({cost:10,material:12,currency:0,xp:5}),
+  "demo-mission-2":Object.freeze({cost:12,material:0,currency:200,xp:5}),
+  "demo-mission-3":Object.freeze({cost:16,material:24,currency:0,xp:5})
  });
  const freshEnergy=(now=Date.now())=>({value:ENERGY_MAX,updatedAt:now});
  function refreshEnergy(progress,now=Date.now()){
@@ -38,23 +38,38 @@ const ProgressCore=(()=>{
   e.updatedAt=e.value===ENERGY_MAX?now:e.updatedAt+ticks*ENERGY_REGEN_MS;
   return restored;
  }
- function canFarm(progress,missionId,bestStars,kind,now=Date.now()){
+ function missionEnergyCost(id){return MISSION_FARM[id]?.cost??null;}
+ function affordableRuns(progress,id,now=Date.now()){
   refreshEnergy(progress,now);
-  return missionId===FARM_MISSION_ID&&bestStars===3&&
-   Object.prototype.hasOwnProperty.call(FARM_OPTIONS,kind)&&
-   progress.energy?.value>=ENERGY_FARM_COST;
+  const cost=missionEnergyCost(id);
+  return cost?Math.floor(progress.energy.value/cost):0;
  }
- function farm(progress,missionId,bestStars,kind,now=Date.now()){
-  if(!canFarm(progress,missionId,bestStars,kind,now))return null;
-  const reward=FARM_OPTIONS[kind];
-  // Keep energy, XP and items in one progress record.
+ function spendEnergy(progress,id,count=1,now=Date.now()){
+  refreshEnergy(progress,now);
+  const cost=missionEnergyCost(id);
+  if(!cost||!Number.isSafeInteger(count)||count<1||count>Math.floor(progress.energy.value/cost))return false;
   const wasFull=progress.energy.value===ENERGY_MAX;
-  progress.energy.value-=ENERGY_FARM_COST;
-  if(wasFull)progress.energy.updatedAt=now; // no regeneration credit while capped
-  progress.accountXp+=reward.xp;
-  progress.gearMaterials+=reward.material;
-  progress.currency+=reward.currency;
-  return {...reward,energy:ENERGY_FARM_COST};
+  progress.energy.value-=cost*count;
+  if(wasFull)progress.energy.updatedAt=now;
+  return true;
+ }
+ function refundEnergy(progress,id,now=Date.now()){
+  const cost=missionEnergyCost(id);
+  if(!cost)return false;
+  refreshEnergy(progress,now);
+  progress.energy.value=Math.min(ENERGY_MAX,progress.energy.value+cost);
+  if(progress.energy.value===ENERGY_MAX)progress.energy.updatedAt=now;
+  return true;
+ }
+ function simulate(progress,id,bestStars,count,now=Date.now()){
+  const reward=MISSION_FARM[id];
+  if(!reward||bestStars!==3||!spendEnergy(progress,id,count,now))return null;
+  const result={count,energy:count*reward.cost,material:count*reward.material,
+   currency:count*reward.currency,xp:count*reward.xp};
+  progress.gearMaterials+=result.material;
+  progress.currency+=result.currency;
+  progress.accountXp+=result.xp;
+  return result;
  }
  function createProgress(heroes){
   return {accountXp:0,currency:0,gearMaterials:0,energy:freshEnergy(),levels:Object.fromEntries(heroes.filter(h=>h.side==="ally").map(h=>[h.id,1])),gear:Object.fromEntries(heroes.filter(h=>h.side==="ally").map(h=>[h.id,freshGear()])),claimedMissions:[]};
@@ -126,5 +141,6 @@ const ProgressCore=(()=>{
  return Object.freeze({MAX_LEVEL,MAX_ACCOUNT_LEVEL,FIRST_CLEAR_REWARDS,createProgress,xpCost,
   accountLevel,levelOf,upgradeCost,canUpgrade,upgrade,heroStats,claimFirstClear,
   GEAR,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,
-  ENERGY_MAX,ENERGY_REGEN_MS,ENERGY_FARM_COST,FARM_MISSION_ID,FARM_OPTIONS,freshEnergy,refreshEnergy,canFarm,farm});
+  ENERGY_MAX,ENERGY_REGEN_MS,MISSION_FARM,freshEnergy,refreshEnergy,
+  missionEnergyCost,affordableRuns,spendEnergy,refundEnergy,simulate});
 })();

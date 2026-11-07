@@ -528,7 +528,7 @@ $("#simulationConfirm")?.addEventListener("click",()=>{
   gain.material?"+ "+gain.material+" материалов C":null,
   gain.currency?"+ "+gain.currency+" валюты":null,
   gain.xp?"+ "+gain.xp+" Account XP":null
- ].filter(Boolean).join(" · ");
+ ].filter(Boolean).map(item=>"• "+item).join("\n");
  $("#simulationClose").textContent="Закрыть";
  renderCampaign();
 });

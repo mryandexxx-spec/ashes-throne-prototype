@@ -519,6 +519,8 @@ $("#simulationConfirm")?.addEventListener("click",()=>{
  // Revalidate immediately before charging: energy may have changed while modal was open.
  const gain=ProgressCore.simulate(progress,simulationMissionId,campaignProgress.bestStars[simulationMissionId],count);
  if(!gain){renderSimulationPreview();return;}
+ // Prevent a second confirmation from paying the same visible result again.
+ simulationMissionId=null;
  persistProgress();
  $("#simulationSetup").hidden=true;
  $("#simulationResults").hidden=false;

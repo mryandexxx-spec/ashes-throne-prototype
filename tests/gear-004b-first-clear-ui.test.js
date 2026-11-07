@@ -131,7 +131,7 @@ assert.equal(JSON.parse(savedData.get("ashes-throne.campaign.v1")).completed["bl
 savedData.delete("ashes-throne.progress.v3");
 savedData.delete("ashes-throne.campaign.v1");
 const failed=vm.runInNewContext(src+
- "\\n({getProgress:()=>progress,getCampaignProgress:()=>campaignProgress,getBattle:()=>state,openCampaignMission,showScreen,syncBattleUI})",
+ "\n({getProgress:()=>progress,getCampaignProgress:()=>campaignProgress,getBattle:()=>state,openCampaignMission,showScreen,syncBattleUI})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
 const pf=failed.getProgress();
 pf.energy.value=0;pf.energy.updatedAt=Date.now();

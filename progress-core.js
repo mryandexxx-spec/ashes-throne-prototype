@@ -48,8 +48,9 @@ const ProgressCore=(()=>{
   if(!canFarm(progress,missionId,bestStars,kind,now))return null;
   const reward=FARM_OPTIONS[kind];
   // Keep energy, XP and items in one progress record.
+  const wasFull=progress.energy.value===ENERGY_MAX;
   progress.energy.value-=ENERGY_FARM_COST;
-  progress.energy.updatedAt=now;
+  if(wasFull)progress.energy.updatedAt=now; // no regeneration credit while capped
   progress.accountXp+=reward.xp;
   progress.gearMaterials+=reward.material;
   progress.currency+=reward.currency;

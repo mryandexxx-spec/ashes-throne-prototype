@@ -40,10 +40,7 @@ function run(party,levels,mode,pilot){
   party.forEach((id,i)=>{upgrades.levels[id]=levels[i]});
   const fighters=party.map(id=>ProgressCore.heroStats(upgrades,
     regular.find(f=>f.id===id)));
-  const foes=enemies.map(f=>({
-    ...f,...pilot&&mission.enemyAiProfiles[f.id]
-      ?{aiProfile:mission.enemyAiProfiles[f.id]}:{}
-  }));
+  const foes=enemies.map(f=>({...f,aiProfile:pilot&&f.id==="shade"?"aggressive":"ordinary"}));
   const battle=CombatCore.createBattle([...fighters,...foes],[],{leaderId:party[0]});
   const initialHp=fighters.reduce((n,f)=>n+f.hp,0);
   CombatCore.advanceToPlayerTurn(battle);

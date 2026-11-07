@@ -766,3 +766,7 @@ body.battle-mode #app>footer{visibility:hidden}
 .gear-slot:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .gear-hint{font-size:12px;line-height:1.45;margin:4px 0 12px}
 @media(max-width:700px){.gear-slot{min-height:44px}}
+
+/* Gear-002B: result dialog for manual equipment-tier promotion. */
+.gear-promotion-stats{white-space:pre-line;line-height:1.7;font-weight:600;color:var(--gold)}
+#gearPromotionDialog #gearPromotionClose{min-height:44px;width:100%;max-width:100%;touch-action:manipulation}

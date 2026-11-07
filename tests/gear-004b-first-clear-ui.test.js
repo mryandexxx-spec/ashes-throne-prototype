@@ -99,6 +99,7 @@ assert.equal(p.materials.Fe,2);
 assert.equal(p.materials.Cl,4);
 assert.equal(p.materials.Gl,0);
 assert.equal(p.gearMaterials,0,"no obsolete C in active v3");
+assert.doesNotMatch(elements.accountStatus.textContent,/ · C /,"v3 wallet must hide obsolete C");
 assert.match(elements.missionResultText.textContent,/Железо ×2/);
 assert.match(elements.missionResultText.textContent,/Дополнительно за первую победу: \+500/);
 api.syncBattleUI();

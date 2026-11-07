@@ -7,7 +7,7 @@ const src=["initiative-model.js","ability-data.js","combat-core.js","progress-co
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
- "startBattle","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
+ "startBattle","devResourcesGrant","devResourcesNotice","accountStatus","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","gearTier","gearSlots","gearMaterial","gearWallet","gearPrice","gearPriceLabel","gearStatBonus","gearStatBonusLabel","gearEquipNext","gearNotice","gearPromotionDialog","gearPromotionTitle","gearPromotionLevel","gearPromotionCost","gearPromotionStats","gearPromotionClose"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
@@ -72,6 +72,35 @@ function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click 
 function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
 const allyIds=()=>api.getBattle().fighters.filter(h=>h.side==="ally").map(h=>h.id).join(",");
 const count=()=>elements.squadCount.textContent;
+
+// DEV-RES-001: the prototype refill must be explicit, visible, stable and persisted.
+const devProgress=api.getProgress();
+devProgress.energy.value=0;
+devProgress.currency=0;
+devProgress.gearMaterials=0;
+const oldLevel=devProgress.levels.kael;
+const oldClaims=devProgress.claimedMissions.slice();
+click(elements.devResourcesGrant);
+assert.equal(devProgress.energy.value,240);
+assert.equal(devProgress.currency,5000);
+assert.equal(devProgress.gearMaterials,100);
+assert.match(elements.devResourcesNotice.textContent,/Тестовый запас готов/);
+assert.match(elements.accountStatus.textContent,/Валюта 5000/);
+assert.equal(devProgress.levels.kael,oldLevel);
+assert.deepEqual(Array.from(devProgress.claimedMissions),oldClaims);
+assert.equal(JSON.parse(savedData.get("ashes-throne.progress.v2")).currency,5000);
+click(elements.devResourcesGrant);
+assert.equal(devProgress.currency,5000,"repeated refill does not accumulate currency");
+assert.equal(devProgress.gearMaterials,100,"repeated refill does not accumulate materials");
+devProgress.currency=7000;
+devProgress.gearMaterials=120;
+click(elements.devResourcesGrant);
+assert.equal(devProgress.currency,7000,"refill never reduces a higher balance");
+assert.equal(devProgress.gearMaterials,120,"refill never takes materials away");
+// Restore original fixture for the existing hero-level and gear UI tests.
+devProgress.currency=500;
+devProgress.gearMaterials=12;
+devProgress.energy.value=240;
 
 // Collection is a navigation surface, not an upgrade UI.
 api.showScreen("collection");

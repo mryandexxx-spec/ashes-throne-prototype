@@ -50,6 +50,15 @@
           <div class="detail-value"><span>После улучшения</span><strong id="detailPreview">—</strong></div>
           <button type="button" class="primary detail-upgrade" id="detailUpgrade">Повысить уровень</button>
           <p class="muted" id="detailNotice" role="status"></p>
+          <div class="gear-panel" aria-label="Учебная экипировка G1–G3">
+            <div class="eyebrow">ЭКИПИРОВКА · ТЕСТ G1–G3</div>
+            <h3 id="gearTier">G1 · 0/6</h3>
+            <div id="gearSlots" class="gear-slots" aria-label="Шесть слотов экипировки"></div>
+            <div class="detail-value"><span>Материал C</span><strong id="gearMaterial">0</strong></div>
+            <div class="detail-value"><span>Следующий предмет</span><strong id="gearPrice">—</strong></div>
+            <button type="button" class="primary" id="gearEquipNext">Установить предмет</button>
+            <p class="muted" id="gearNotice" role="status"></p>
+          </div>
           <p class="muted detail-session-note" id="progressSaveNote" role="status">Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить.</p>
         </div>
       </div>
@@ -58,7 +67,7 @@
       <div class="section-heading"><div><div class="eyebrow">КАМПАНИЯ</div><h2>Путь к престолу</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
       <div id="campaignMissions" aria-label="Главы и миссии кампании"></div>
       <p class="muted" id="campaignSaveStatus" role="status">Статус прохождения хранится в этом браузере.</p>
-      <p class="muted">Награда за победу и симуляцию после 3★: +1 учебный материал.</p>
+      <p class="muted">За первое прохождение: Account XP, валюта и базовый материал C. Сюжетные повторы и учебная симуляция — без экономических наград.</p>
     </section>
     <dialog id="simulationDialog" class="simulation-dialog" aria-labelledby="simulationTitle"><h2 id="simulationTitle">Победа!</h2><p id="simulationText" role="status"></p><button type="button" class="primary" id="simulationClose">Закрыть</button></dialog>
     <section id="squad" class="screen squad-screen" aria-label="Подготовка отряда">
@@ -163,7 +172,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.33 · PVS001A</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.34 · PVS001B</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

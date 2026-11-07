@@ -79,7 +79,7 @@ devProgress.energy.value=0;
 devProgress.currency=0;
 devProgress.gearMaterials=0;
 const oldLevel=devProgress.levels.kael;
-const oldClaims=devProgress.claimedMissions.slice();
+const oldClaims=Array.from(devProgress.claimedMissions);
 click(elements.devResourcesGrant);
 assert.equal(devProgress.energy.value,240);
 assert.equal(devProgress.currency,5000);

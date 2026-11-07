@@ -118,7 +118,8 @@ const ProgressCore=(()=>{
  function levelOf(progress,id){return own(progress.levels,id)?progress.levels[id]:null;}
  function upgradeCost(progress,id){
   const level=levelOf(progress,id);
-  return level===null||level>=MAX_LEVEL||level>=accountLevel(progress)?null:Math.round(35+3*level+0.65*level*level);
+  // Vertical-slice test: account level is informational, not a hero upgrade gate.
+  return level===null||level>=MAX_LEVEL?null:Math.round(35+3*level+0.65*level*level);
  }
  function canUpgrade(progress,id){const cost=upgradeCost(progress,id);return cost!==null&&progress.currency>=cost;}
  function upgrade(progress,id){
@@ -143,7 +144,6 @@ const ProgressCore=(()=>{
   if(state.slots[slot])return "Предмет уже установлен.";
   const cost=gearCost(progress,id,slot);
   if(!cost)return "Все слоты G1–G3 заполнены.";
-  if(levelOf(progress,id)<cost.heroLevel)return "Требуется уровень героя "+cost.heroLevel+".";
   if(progress.gearMaterials<cost.material)return "Недостаточно базовых материалов C.";
   if(progress.currency<cost.currency)return "Недостаточно валюты.";
   return "";
@@ -168,7 +168,6 @@ const ProgressCore=(()=>{
  function gearPromotionBlockReason(progress,id){
   const cost=gearPromotionCost(progress,id);
   if(!cost)return "Сначала установи все шесть предметов текущей G-ступени.";
-  if(levelOf(progress,id)<cost.heroLevel)return "Для G"+cost.to+" нужен уровень героя "+cost.heroLevel+".";
   if(progress.currency<cost.currency)return "Недостаточно игровой валюты.";
   return "";
  }

@@ -128,8 +128,15 @@ let missionResultShown=false;
 let missionResultRecorded=false;
 let activeMissionId=null;
 let lastMissionStars=0;
+let lastMissionReward=null;
+function renderAccountHeader(){
+ const summary=$("#accountStatus");
+ if(summary)summary.textContent="Аккаунт "+ProgressCore.accountLevel(progress)+"/"+ProgressCore.MAX_ACCOUNT_LEVEL+
+  " (тест) · XP "+progress.accountXp+" · Валюта "+progress.currency;
+}
 function persistProgress(){
  if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>window.localStorage);
+ renderAccountHeader();
  const notice=$("#progressSaveNote");
  if(notice)notice.textContent=saveAvailable
   ?"Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить."
@@ -287,6 +294,7 @@ function showScreen(id){
  if(id==="campaign")renderCampaign();
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
+  lastMissionReward=null;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
   const label=$("#battleMissionLabel");
   if(label)label.textContent=battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
@@ -377,11 +385,11 @@ function renderHeroDetail(){
  $("#detailGlyph").textContent=hero.glyph;
  $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>Атака</span><strong>${hero.atk} ATK</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div>`;
  $("#detailLevel").textContent="Уровень "+hero.level+" / "+ProgressCore.MAX_LEVEL;
- $("#detailWallet").textContent=String(progress.materials);
- $("#detailCost").textContent=cost===null?"Максимальный уровень":cost+" мат.";
+ $("#detailWallet").textContent=String(progress.currency);
+ $("#detailCost").textContent=cost===null?"Недоступно":cost+" валюты";
  $("#detailPreview").textContent=next?next.hp+" HP · "+next.atk+" ATK":"Достигнут максимум";
  $("#detailUpgrade").disabled=!ProgressCore.canUpgrade(progress,base.id);
- $("#detailNotice").textContent=cost===null?"Герой достиг тестового максимума.":progress.materials<cost?"Недостаточно материалов.":"Улучшение доступно.";
+ $("#detailNotice").textContent=hero.level>=ProgressCore.MAX_LEVEL?"Герой достиг тестового максимума.":hero.level>=ProgressCore.accountLevel(progress)?"Нужен следующий уровень аккаунта.":progress.currency<cost?"Недостаточно валюты.":"Улучшение доступно.";
  const saveNote=$("#progressSaveNote");
  if(saveNote)saveNote.textContent=saveAvailable
   ?"Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить."
@@ -426,15 +434,12 @@ function renderCampaign(){
   ?"Статус прохождения хранится в этом браузере."
   :"Сохранение кампании недоступно. После перезагрузки отметка может исчезнуть.";
 }
-// Simulation is an independent successful reward claim, not a fabricated combat result.
+// Three-star simulation is a no-reward training replay until resource farming is implemented.
 function simulateMission(id){
  const entry=CampaignData.getMission(id);
  if(!entry||!CampaignData.available(entry,campaignProgress)||campaignProgress.bestStars[id]!==3)return false;
- const reward=ProgressCore.awardVictory(progress,{active:false,winner:"ally",rewardClaimed:false});
- if(reward<=0)return false;
- persistProgress();
- $("#simulationText").textContent="Поздравляем с победой! "+MissionData.get(id).title+
-  ". Награда: +"+reward+" учебный материал. Всего: "+progress.materials+".";
+ $("#simulationText").textContent=MissionData.get(id).title+
+  ". Учебная симуляция без наград. Ресурсный фарм появится в следующем этапе.";
  $("#simulationDialog").showModal();
  return true;
 }
@@ -448,8 +453,10 @@ function renderMissionResult(){
  if(chapterLabel)chapterLabel.textContent=chapter?chapter.title:"Кампания";
  $("#missionResultTitle").textContent=won?"Миссия пройдена":"Миссия не пройдена";
  $("#missionResultText").textContent=won
-  ?MissionData.get(activeMissionId).title+" завершена. +1 учебный материал. Всего: "+progress.materials
-  :"Отряд потерпел поражение. Учебные материалы не начислены.";
+  ?MissionData.get(activeMissionId).title+" завершена. "+(lastMissionReward?
+   "Первая победа: +"+lastMissionReward.xp+" XP, +"+lastMissionReward.currency+" валюты.":
+   "Повтор без экономических наград.")
+  :"Отряд потерпел поражение. Экономические награды не начислены.";
  const grade=$("#missionResultStars");
  if(grade){
   const best=campaignProgress.bestStars[activeMissionId]||0;
@@ -507,10 +514,13 @@ function syncBattleUI(){
  if(!state.active){cancelAutoTimer();autoBattle=false;}
  // Commit battle outcome immediately as before, even if the player leaves
  // the arena before the final animation ends. Only visual navigation waits.
- const awarded=ProgressCore.awardVictory(progress,state);
- if(awarded>0)persistProgress();
  if(battleIsCampaign&&!state.active&&!missionResultRecorded){
+  const firstClear=state.winner==="ally"&&!campaignProgress.completed[activeMissionId];
   const result=CampaignCore.recordResult(campaignProgress,activeMissionId,state);
+  if(firstClear){
+   lastMissionReward=ProgressCore.claimFirstClear(progress,activeMissionId,state);
+   if(lastMissionReward)persistProgress();
+  }
   lastMissionStars=result.earned;
   if(result.improved)
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
@@ -545,7 +555,9 @@ function syncBattleUI(){
  const reward=$("#battleReward");
  if(reward){
   reward.hidden=state.active;
-  if(!state.active)reward.textContent=state.winner==="ally"?"Победа! +1 учебный материал · Всего: "+progress.materials:"Поражение. Награда: 0 материалов";
+  if(!state.active)reward.textContent=state.winner==="ally"?
+   (battleIsCampaign&&lastMissionReward?"Первая победа: +"+lastMissionReward.xp+" XP · +"+lastMissionReward.currency+" валюты":"Победа · без экономических наград"):
+   "Поражение · без наград";
  }
  const fighters=state.fighters;
  const actor=state.active?fighters[state.currentActor]:null;
@@ -1086,4 +1098,4 @@ document.addEventListener("visibilitychange",()=>{
  if(document.hidden){closeFighterInspection();hideAbilityTooltip();cancelAutoTimer();stopBattleRendering();}
  else if(shouldRenderBattle()){engine.resize();startBattleRendering();queueAutoAction();}
 });
-renderHeroes();CombatCore.advanceToPlayerTurn(state);
+renderAccountHeader();renderHeroes();CombatCore.advanceToPlayerTurn(state);

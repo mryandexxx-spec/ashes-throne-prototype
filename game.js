@@ -122,7 +122,8 @@ const progress=loadedProgress?loadedProgress.progress:ProgressCore.createProgres
 const saveBlocked=Boolean(loadedProgress?.blocked);
 let saveAvailable=loadedProgress?loadedProgress.available:false;
 const campaignLoaded=CampaignCore.load(()=>window.localStorage);
-const campaignProgress=loadedProgress?.fresh?CampaignCore.fresh():campaignLoaded.campaign;
+const campaignProgress=progress.saveVersion===3?campaignLoaded.campaign:
+ (loadedProgress?.fresh?CampaignCore.fresh():campaignLoaded.campaign);
 let campaignSaveAvailable=campaignLoaded.available;
 let battleIsCampaign=false;
 let missionResultShown=false;

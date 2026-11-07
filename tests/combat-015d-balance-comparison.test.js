@@ -18,19 +18,17 @@ const allEnemies=roster.filter(f=>f.side==="enemy");
 const mission=MissionData.get("demo-mission-2");
 assert.equal(allAllies.length,5);
 assert.equal(allEnemies.length,5);
-assert.equal(mission.enemyAiProfiles.shade,"aggressive");
+assert.ok(!mission.enemyAiProfiles, "historic pilot has been removed from live mission data");
 assert.ok(!MissionData.get("black-pass-ambush").enemyAiProfiles);
 assert.ok(!MissionData.get("demo-mission-3").enemyAiProfiles);
-const profiles=mission.enemyAiProfiles;
+const profiles={shade:"aggressive"}; // Historical Combat-015D-A comparison only
 const enemyTemplateIds=allEnemies.map(f=>f.id);
 assert.equal(enemyTemplateIds.join(","),"ves,shade,ves-2,shade-2,ves-3");
 assert.equal(allEnemies.some(f=>f.aiProfile),false,
   "do not mutate global roster in mission pilot");
 function run(ids,mode,pilot){
   const party=ids.map(id=>({...allAllies.find(f=>f.id===id)}));
-  const enemies=allEnemies.map(f=>({
-    ...f,...(pilot&&profiles[f.id]?{aiProfile:profiles[f.id]}:{})
-  }));
+  const enemies=allEnemies.map(f=>({...f,aiProfile:pilot&&profiles[f.id]?"aggressive":"ordinary"}));
   const b=CombatCore.createBattle([...party,...enemies]);
   const startingHp=party.reduce((n,f)=>n+f.hp,0);
   CombatCore.advanceToPlayerTurn(b);

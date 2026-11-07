@@ -81,6 +81,9 @@ const BABYLON={Engine,Scene,PointerEventTypes:{POINTERPICK:1,POINTERDOWN:2,POINT
   CreateCylinder(){meshCreates++;return new Mesh();}}
 };
 const savedData=new Map();
+// Older demo mission completion is intentionally reset when no v2 economy exists.
+savedData.set("ashes-throne.campaign.v1",JSON.stringify({version:2,
+ completed:{"black-pass-ambush":true},bestStars:{"black-pass-ambush":3}}));
 const localStorage={getItem:k=>savedData.has(k)?savedData.get(k):null,setItem:(k,v)=>savedData.set(k,v)};
 liveWindow.localStorage=localStorage;
 const timers=new Map();

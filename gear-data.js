@@ -1,4 +1,4 @@
-/* Gear-003B1: deterministic test-only G1–G2 equipment catalog.
+/* Gear-003B1: deterministic test-only G1–G3 equipment catalog.
    Item names, recipes and currency prices are NOT production economy. */
 const GearData=(()=>{
  "use strict";
@@ -12,6 +12,7 @@ const GearData=(()=>{
  const FLOOR=Object.freeze({Fe:20,Le:30,Cl:30,Wo:10,Fa:15,Th:20,Gl:0});
  // Test refills follow highest unlocked G, never erase existing resources.
  const G2_FLOOR=Object.freeze({Fe:24,Le:32,Cl:67,Wo:10,Fa:24,Th:20,Gl:2});
+ const G3_FLOOR=Object.freeze({Fe:50,Le:32,Cl:66,Wo:10,Fa:32,Th:20,Gl:4});
  const MATERIAL_LABELS=Object.freeze({
   Fe:"Железо",Le:"Кожа",Cl:"Ткань",Wo:"Древесина",
   Fa:"Крепёж",Th:"Прочная нить",Gl:"Стекло"
@@ -53,7 +54,20 @@ const GearData=(()=>{
   ["g2-workglove","Уплотнённые перчатки","hands","mage,support",{P:1,Cl:1,Th:1}],
   ["g2-bootheavy","Сапоги с усиленной подошвой","feet","melee,support,tank",{U:1,P:1,Le:1}],
   ["g2-bootlight","Утеплённые походные сапоги","feet","melee,ranged,mage,support",{P:1,Cl:2,Th:1}],
-  ["g2-belt","Пояс с подсумками","utility","melee,ranged,mage,support,tank",{P:1,Fa:2}]
+  ["g2-belt","Пояс с подсумками","utility","melee,ranged,mage,support,tank",{P:1,Fa:2}],
+  // Gear-003G: optimized v0.5 test recipes, G3 only.
+  ["g3-blade","Усиленный клинок","weapon","melee,tank",{U:2,Fe:1}],
+  ["g3-bow","Усиленный составной лук","weapon","ranged",{P:1,Wo:2,Th:2,Fa:1}],
+  ["g3-wand","Точный фокусирующий жезл","weapon","mage,support",{P:1,Gl:2,Wo:1}],
+  ["g3-vest","Пластинчатый жилет","torso","melee,tank",{U:1,P:1,Fe:1,Le:1}],
+  ["g3-jacket","Защитная дорожная куртка","torso","ranged,mage,support",{U:1,P:1,Cl:1,Fa:1}],
+  ["g3-helm","Усиленный шлем","head","melee,tank",{U:2,Le:1}],
+  ["g3-hood","Защитный капюшон","head","ranged,mage,support",{P:1,Cl:2,Th:2}],
+  ["g3-gaunt","Усиленные боевые перчатки","hands","melee,ranged,tank",{U:1,P:1,Th:1}],
+  ["g3-workglove","Мастерские перчатки","hands","mage,support",{P:1,Cl:2,Th:2}],
+  ["g3-bootheavy","Сапоги с жёстким каркасом","feet","melee,support,tank",{U:1,P:1,Le:2}],
+  ["g3-bootlight","Усиленные походные сапоги","feet","melee,ranged,mage,support",{P:1,Cl:2,Le:1,Th:1}],
+  ["g3-belt","Усиленный походный пояс","utility","melee,ranged,mage,support,tank",{U:1,Cl:1,Fa:1}]
  ];
  function flatten(recipe){
   const out=Object.fromEntries(MATERIALS.map(id=>[id,0]));
@@ -71,8 +85,8 @@ const GearData=(()=>{
   const slot=SLOTS.find(x=>x.id===slotId);
   if(!slot||Object.hasOwn?.(byId,id)||byId[id])throw Error("Duplicate or invalid gear item");
   const slotIndex=SLOTS.findIndex(x=>x.id===slotId),tier=Number(id.slice(1,2));
-  if(![1,2].includes(tier))throw Error("Unsupported test tier");
-  const total=tier===1?1000:2000;
+  if(![1,2,3].includes(tier))throw Error("Unsupported test tier");
+  const total=tier*1000;
   const item=Object.freeze({
    id,name,slotId,tier,allowedClasses:Object.freeze(classes.split(",")),
    recipe:Object.freeze({...recipe}),ingredients:flatten(recipe),
@@ -84,7 +98,7 @@ const GearData=(()=>{
  const BASE_FEET=Object.freeze({melee:"g1-bootlight",support:"g1-bootheavy"});
  const get=id=>typeof id==="string"&&Object.prototype.hasOwnProperty.call(byId,id)?byId[id]:null;
  function offered(classId,slotId,tier=1){
-  if(!CLASS_IDS.includes(classId)||!SLOTS.some(x=>x.id===slotId)||![1,2].includes(tier))return [];
+  if(!CLASS_IDS.includes(classId)||!SLOTS.some(x=>x.id===slotId)||![1,2,3].includes(tier))return [];
   // Gear-003F: do not offer same-stat alternatives as a false choice.
   return ITEMS.filter(item=>item.tier===tier&&item.slotId===slotId&&item.allowedClasses.includes(classId)&&
    (slotId!=="feet"||item.id===(BASE_FEET[classId]||(classId==="tank"?"g1-bootheavy":"g1-bootlight")).replace("g1-","g"+tier+"-")));
@@ -94,6 +108,6 @@ const GearData=(()=>{
   return Object.fromEntries(Object.entries(item.ingredients).filter(([id,n])=>
    !Number.isSafeInteger(materials[id])||materials[id]<n).map(([id,n])=>[id,Math.max(0,n-(materials[id]||0))]));
  }
- return Object.freeze({SLOTS,CLASS_IDS,MATERIALS,MATERIAL_LABELS,FUTURE_STAT_KEYS,FLOOR,G2_FLOOR,COMPOSITES,ITEMS,get,offered,missing,flatten});
+ return Object.freeze({SLOTS,CLASS_IDS,MATERIALS,MATERIAL_LABELS,FUTURE_STAT_KEYS,FLOOR,G2_FLOOR,G3_FLOOR,COMPOSITES,ITEMS,get,offered,missing,flatten});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=GearData;

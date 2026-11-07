@@ -31,9 +31,9 @@ function buyTier(p,hero,tier){
 const sums=items=>items.reduce((total,itemId)=>{
  const i=G.get(itemId);total.hp+=i.bonuses.hp;total.atk+=i.bonuses.atk;return total;
 },{hp:0,atk:0});
-assert.equal(G.ITEMS.length,24);
+assert.equal(G.ITEMS.filter(item=>item.tier<=2).length,24);
 assert.equal(G.ITEMS.filter(i=>i.tier===2).length,12);
-assert.deepEqual(Array.from(G.offered("tank","head",3)),[],"G3 not implemented");
+assert.equal(G.offered("tank","head",3).length,1,"G3 exists, without changing G2 recipes");
 assert.equal(G.offered("support","feet",2)[0].id,"g2-bootheavy");
 assert.equal(G.offered("melee","feet",2)[0].id,"g2-bootlight");
 // Check all proposed G2 ingredients directly against the published 0.4 recipes.
@@ -96,8 +96,8 @@ assert.equal(Object.values(total).reduce((a,b)=>a+b,0),168);
  assert.equal(bonuses.hp.toFixed(2),"0.15");
  assert.equal(bonuses.atk.toFixed(2),"0.15");
  assert.equal(P.gearInstalled(restored,hero.id),12);
- assert.equal(P.gearPromotionCost(restored,hero.id),null,"G3 is out of scope");
- assert.equal(P.promoteGear(restored,hero.id),null);
+ assert.equal(P.gearPromotionCost(restored,hero.id).currency,500,"G2 full set unlocks paid G3");
+ assert.equal(restored.gear[hero.id].tier,2,"promotion remains explicit");
  assert.equal(S.save(restored,()=>api),true);
  const replay=S.load(heroes,()=>api).progress;
  assert.equal(replay.gear.kael.tier,2);

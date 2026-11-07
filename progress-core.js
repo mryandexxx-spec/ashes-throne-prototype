@@ -66,7 +66,7 @@ const ProgressCore=(()=>{
     progress.materials[id]+=materials[id];
    }
   }
-  return {currency,material,energy,materials};
+  return progress.saveVersion===3?{currency,material,energy,materials}:{currency,material,energy};
  }
  const freshEnergy=(now=Date.now())=>({value:ENERGY_MAX,updatedAt:now});
  function refreshEnergy(progress,now=Date.now()){

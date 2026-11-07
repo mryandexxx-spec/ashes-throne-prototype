@@ -758,4 +758,4 @@ body.battle-mode #app>footer{visibility:hidden}
 .simulation-dialog #simulationCount{display:block;width:100%;min-height:38px;accent-color:var(--gold);touch-action:pan-x}
 .simulation-slider-label{display:flex;justify-content:space-between;gap:12px;margin:12px 0 2px}
 .simulation-dialog #simulationConfirm,.simulation-dialog #simulationClose{min-height:44px;margin:6px 0;max-width:100%;white-space:normal}
-.simulation-rewards{color:var(--gold);line-height:1.5;font-weight:600}
+.simulation-rewards{color:var(--gold);line-height:1.6;font-weight:600;white-space:pre-line}

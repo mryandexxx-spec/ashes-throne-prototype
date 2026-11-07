@@ -424,6 +424,7 @@ function renderHeroDetail(){
    (installed?'◆':'◇')+'</button>';
  }).join("");
  $("#gearMaterial").textContent=String(progress.gearMaterials);
+ $("#gearWallet").textContent=String(progress.currency);
  const ready=completed===ProgressCore.SLOT_COUNT;
  const promotion=ProgressCore.gearPromotionCost(progress,base.id);
  const maxed=ready&&gear.tier===3;
@@ -440,9 +441,16 @@ function renderHeroDetail(){
   :!available||!ProgressCore.canEquip(progress,base.id,selectedGearSlot);
  $("#gearEquipNext").textContent=ready?(maxed?"Достигнут максимум":"Поднять уровень")
   :(gear.slots[selectedGearSlot]?"Уже установлено":"Установить выбранный предмет");
+ const shortage=ready?(promotion?Math.max(0,promotion.currency-progress.currency):0)
+  :(item?Math.max(0,item.currency-progress.currency):0);
+ const materialShortage=!ready&&item?Math.max(0,item.material-progress.gearMaterials):0;
  $("#gearNotice").textContent=ready
-  ?(maxed?"Доступные G1–G3 полностью пройдены.":ProgressCore.gearPromotionBlockReason(progress,base.id)||"Все шесть слотов заполнены. Можно повысить G-ступень.")
-  :(ProgressCore.gearBlockReason(progress,base.id,selectedGearSlot)||"Предмет доступен. Можно выбирать слоты в любом порядке.");
+  ?(maxed?"Доступные G1–G3 полностью пройдены.":
+    (ProgressCore.gearPromotionBlockReason(progress,base.id)+(shortage?" Не хватает "+shortage+" валюты.":"")||
+     "Все шесть слотов заполнены. Можно повысить G-ступень."))
+  :(materialShortage?"Недостаточно материала C: есть "+progress.gearMaterials+", нужно "+item.material+".":
+   shortage?"Недостаточно игровой валюты: есть "+progress.currency+", нужно "+item.currency+" (не хватает "+shortage+").":
+   ProgressCore.gearBlockReason(progress,base.id,selectedGearSlot)||"Предмет доступен. Можно выбирать слоты в любом порядке.");
  }
 
  const saveNote=$("#progressSaveNote");

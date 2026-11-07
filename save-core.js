@@ -37,8 +37,14 @@ const SaveCore=(()=>{
   // VS-001A profiles already claimed first clears before C existed.
   // Credit their one-time C drops exactly once when upgrading the saved v2 shape.
   const retroactiveC=claims.reduce((sum,id)=>sum+(ProgressCore.FIRST_CLEAR_REWARDS[id].material||0),0);
+  // Existing v2 players receive a full initial pool of energy when VS-001C loads.
+  if(data.energy!==undefined&&(!plain(data.energy)||
+     !Number.isSafeInteger(data.energy.value)||data.energy.value<0||
+     data.energy.value>ProgressCore.ENERGY_MAX||
+     !Number.isSafeInteger(data.energy.updatedAt)||data.energy.updatedAt<0))return null;
+  const energy=data.energy?{value:data.energy.value,updatedAt:data.energy.updatedAt}:ProgressCore.freshEnergy();
   const progress={accountXp:data.accountXp,currency:data.currency,
-   gearMaterials:data.gearMaterials??retroactiveC,
+   gearMaterials:data.gearMaterials??retroactiveC,energy,
    levels,gear,claimedMissions:claims.slice()};
   if(Object.values(levels).some(level=>level>ProgressCore.accountLevel(progress)))return null;
   return progress;
@@ -56,7 +62,7 @@ const SaveCore=(()=>{
   try{
    const storage=getStorage();if(!storage)return false;
    storage.setItem(KEY,JSON.stringify({version:VERSION,accountXp:progress.accountXp,
-    currency:progress.currency,gearMaterials:progress.gearMaterials,levels:progress.levels,
+    currency:progress.currency,gearMaterials:progress.gearMaterials,energy:progress.energy,levels:progress.levels,
     gear:progress.gear,claimedMissions:progress.claimedMissions}));
    return true;
   }catch(error){return false;}

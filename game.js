@@ -861,22 +861,30 @@ function syncBattleUI(){
  // the arena before the final animation ends. Only visual navigation waits.
  if(battleIsCampaign&&!state.active&&!missionResultRecorded){
   const firstClear=state.winner==="ally"&&!campaignProgress.completed[activeMissionId];
+  const beforeCampaign=JSON.parse(JSON.stringify(campaignProgress));
+  const beforeWallet=progress.saveVersion===3?JSON.parse(JSON.stringify(progress)):null;
   const result=CampaignCore.recordResult(campaignProgress,activeMissionId,state);
   if(state.winner==="ally"){
-   // First and subsequent victories share one deterministic v3 resource payout.
-   // The unique first-clear bonus is additional, not a replacement.
    if(progress.saveVersion===3)
     lastMissionFarmReward=ProgressCore.grantRepeatFarm(progress,activeMissionId);
    if(firstClear)
     lastMissionReward=ProgressCore.claimFirstClear(progress,activeMissionId,state);
-   if(lastMissionFarmReward||lastMissionReward)persistProgress();
   }else if(state.winner==="enemy"&&progress.saveVersion===3&&
-           campaignProgress.completed[activeMissionId]){
+           campaignProgress.completed[activeMissionId]&&missionEntryPaid){
    lastMissionEnergyRefunded=ProgressCore.refundEnergy(progress,activeMissionId);
-   if(lastMissionEnergyRefunded)persistProgress();
+  }
+  const walletChanged=!!(lastMissionFarmReward||lastMissionReward||lastMissionEnergyRefunded);
+  const walletSaved=!walletChanged||persistProgress();
+  if(!walletSaved&&beforeWallet){
+   // Never publish mission completion without a persisted v3 payout.
+   Object.keys(progress).forEach(key=>delete progress[key]);
+   Object.assign(progress,beforeWallet);
+   Object.assign(campaignProgress,beforeCampaign);
+   lastMissionFarmReward=null;lastMissionReward=null;lastMissionEnergyRefunded=false;
+   renderAccountHeader();
   }
   lastMissionStars=result.earned;
-  if(result.improved)
+  if(walletSaved&&result.improved)
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
   missionResultRecorded=true;
  }

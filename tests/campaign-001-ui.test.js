@@ -102,7 +102,7 @@ function tick(){
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=['kael','lyra','darin'];},getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderTargetFighterHud, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), setAutoSpeed})",
+ "\n({getBattle:()=>state,getMaterials:()=>progress.materials,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=['kael','lyra','darin'];},getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderTargetFighterHud, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), enemyTemplates:()=>ENEMIES, configuredLineup:()=>battleLineup(), setAutoSpeed})",
  {document,window:liveWindow,BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 // Campaign regression fixture: preserve historical three-hero combat expectations.
 api.resetLegacySquad();
@@ -396,6 +396,13 @@ assert.ok(largeRoster.filter(f=>f.id!=="shade").every(f=>!f.aiProfile));
 assert.equal(largeRoster.find(f=>f.id==="shade").hp,78);
 assert.equal(largeRoster.find(f=>f.id==="shade").atk,22);
 assert.equal(largeRoster.find(f=>f.id==="shade").speed,135);
+assert.ok(api.enemyTemplates().every(f=>!f.aiProfile),
+ "mission opt-in must not modify shared ENEMIES/HEROES");
+const nextLineup=api.configuredLineup().filter(f=>f.side==="enemy");
+assert.equal(nextLineup.filter(f=>f.aiProfile).length,1,
+ "new battle/retry builds exactly one tactical enemy");
+assert.ok(nextLineup.every(f=>f!==api.enemyTemplates().find(e=>e.id===f.id)),
+ "each encounter enemy must be a clone of its template");
 const renderedZ=largeRoster.map(f=>api.getMeshes()[f.id].body.position.z);
 assert.equal(renderedZ.join(","),"-1.9,0,1.9,-0.95,0.95","five enemies are arranged three forward and two behind");
 assert.equal(largeRoster.map(f=>api.getMeshes()[f.id].body.position.x).join(","),"2.45,2.45,2.45,4.05,4.05","enemy rows face the allied side");

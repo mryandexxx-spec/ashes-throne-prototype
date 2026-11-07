@@ -42,14 +42,14 @@ assert.equal(waves.wave,2);
 assert.equal(waves.active,true);
 assert.equal(waves.winner,null);
 assert.equal(waves.allyActions,1);
-assert.equal(ProgressCore.awardVictory(reward,waves),0);
+assert.equal(ProgressCore.claimFirstClear(reward,"black-pass-ambush",waves),null);
 let steps=0;
 while(waves.active&&steps++<30)assert.equal(CombatCore.performAutoAction(waves),true);
 assert.ok(steps<30);
 assert.equal(waves.winner,"ally");
 assert.equal(waves.allyActions,3);
-assert.equal(ProgressCore.awardVictory(reward,waves),1);
-assert.equal(ProgressCore.awardVictory(reward,waves),0);
+assert.equal(ProgressCore.claimFirstClear(reward,"black-pass-ambush",waves).currency,500);
+assert.equal(ProgressCore.claimFirstClear(reward,"black-pass-ambush",waves),null);
 assert.equal(CombatCore.performAutoAction(waves),false,"finished battle rejects AI turns");
 // Losing path remains standard; no hidden enemy behavior changes.
 const defeat=CombatCore.createBattle([
@@ -64,7 +64,7 @@ assert.ok(defeatSteps<12);
 assert.equal(defeat.active,false);
 assert.equal(defeat.winner,"enemy");
 assert.equal(CombatCore.performAutoAction(defeat),false);
-assert.equal(ProgressCore.awardVictory(reward,defeat),0);
+assert.equal(ProgressCore.claimFirstClear(reward,"black-pass-ambush",defeat),null);
 // No accidental action before any living actor is ready.
 const unstarted=CombatCore.createBattle([ally,enemy("a")]);
 assert.equal(CombatCore.performAutoAction(unstarted),false);

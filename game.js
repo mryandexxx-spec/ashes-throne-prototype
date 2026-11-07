@@ -150,12 +150,14 @@ function persistProgress(){
 
 // DEV-RES-001: temporary prototype tool, separate from campaign and rewards.
 $("#devResourcesGrant")?.addEventListener("click",()=>{
+ if(saveBlocked){$("#devResourcesNotice").textContent="Повреждённое сохранение. Выдача ресурсов заблокирована.";return;}
  const granted=ProgressCore.grantTestResources(progress);
  if(!granted)return;
  persistProgress();
  const status=$("#devResourcesNotice");
  if(status)status.textContent="Тестовый запас готов: энергия "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX+
   ", игровая валюта "+progress.currency+", материал C "+progress.gearMaterials+
+  (progress.saveVersion===3?" · G1: "+GearData.MATERIALS.map(id=>id+" "+progress.materials[id]).join(", "):"")+
   (saveAvailable?". Сохранено в этом браузере.":". Внимание: сохранение недоступно.");
 });
 
@@ -455,7 +457,7 @@ function renderHeroDetail(){
  $("#detailWallet").textContent=String(progress.currency);
  $("#detailCost").textContent=cost===null?"Недоступно":cost+" валюты";
  $("#detailPreview").textContent=next?next.hp+" HP · "+next.atk+" ATK":"Достигнут максимум";
- $("#detailUpgrade").disabled=!ProgressCore.canUpgrade(progress,base.id);
+ $("#detailUpgrade").disabled=saveBlocked||!ProgressCore.canUpgrade(progress,base.id);
  $("#detailNotice").textContent=hero.level>=ProgressCore.MAX_LEVEL?"Герой достиг тестового максимума.":progress.currency<cost?"Недостаточно игровой валюты.":"Улучшение доступно (временное правило тестового прототипа).";
  if($("#gearTier")){
  const gear=ProgressCore.gearState(progress,base.id);

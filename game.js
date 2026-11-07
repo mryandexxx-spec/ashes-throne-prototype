@@ -418,7 +418,7 @@ function renderHeroDetail(){
  $("#detailCost").textContent=cost===null?"Недоступно":cost+" валюты";
  $("#detailPreview").textContent=next?next.hp+" HP · "+next.atk+" ATK":"Достигнут максимум";
  $("#detailUpgrade").disabled=!ProgressCore.canUpgrade(progress,base.id);
- $("#detailNotice").textContent=hero.level>=ProgressCore.MAX_LEVEL?"Герой достиг тестового максимума.":hero.level>=ProgressCore.accountLevel(progress)?"Нужен следующий уровень аккаунта.":progress.currency<cost?"Недостаточно валюты.":"Улучшение доступно.";
+ $("#detailNotice").textContent=hero.level>=ProgressCore.MAX_LEVEL?"Герой достиг тестового максимума.":progress.currency<cost?"Недостаточно игровой валюты.":"Улучшение доступно (временное правило тестового прототипа).";
  if($("#gearTier")){
  const gear=ProgressCore.gearState(progress,base.id);
  const completed=gear.slots.filter(Boolean).length;

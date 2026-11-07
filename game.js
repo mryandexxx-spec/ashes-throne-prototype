@@ -537,6 +537,7 @@ $("#gearEquipNext")?.addEventListener("click",()=>{
    // Restore wallet, resources and gear when localStorage rejects the purchase.
    Object.keys(progress).forEach(k=>delete progress[k]);
    Object.assign(progress,JSON.parse(before));
+   renderAccountHeader();
    renderHeroDetail();
    $("#gearNotice").textContent="Покупка не сохранена. Материалы и валюта возвращены.";
    return;
@@ -579,6 +580,7 @@ $("#detailUpgrade").addEventListener("click",()=>{
   if(!persistProgress()&&before){
    Object.keys(progress).forEach(k=>delete progress[k]);
    Object.assign(progress,JSON.parse(before));
+   renderAccountHeader();
    renderHeroDetail();
    $("#detailNotice").textContent="Уровень не сохранён. Валюта возвращена.";
    return;

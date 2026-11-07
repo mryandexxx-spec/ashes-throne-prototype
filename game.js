@@ -146,6 +146,17 @@ function persistProgress(){
   :"Сохранение сейчас недоступно. Прогресс может сброситься после перезагрузки.";
 }
 
+// DEV-RES-001: temporary prototype tool, separate from campaign and rewards.
+$("#devResourcesGrant")?.addEventListener("click",()=>{
+ const granted=ProgressCore.grantTestResources(progress);
+ if(!granted)return;
+ persistProgress();
+ const status=$("#devResourcesNotice");
+ if(status)status.textContent="Тестовый запас готов: энергия "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX+
+  ", игровая валюта "+progress.currency+", материал C "+progress.gearMaterials+
+  (saveAvailable?". Сохранено в этом браузере.":". Внимание: сохранение недоступно.");
+});
+
 let selectedHeroId=ALLIES[0].id;
 let selectedGearSlot=0;
 // Formation persists independently of hero levels/campaign saves. On the first

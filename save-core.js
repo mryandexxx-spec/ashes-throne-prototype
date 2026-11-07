@@ -29,10 +29,11 @@ const SaveCore=(()=>{
  function load(heroes,getStorage){
   const fallback=ProgressCore.createProgress(heroes);
   try{
-   const storage=getStorage();if(!storage)return {progress:fallback,available:false};
+   const storage=getStorage();if(!storage)return {progress:fallback,available:false,fresh:true};
    const raw=storage.getItem(KEY);
-   return {progress:raw===null?fallback:validate(JSON.parse(raw),heroes)||fallback,available:true};
-  }catch(error){return {progress:fallback,available:false};}
+   const restored=raw===null?null:validate(JSON.parse(raw),heroes);
+   return {progress:restored||fallback,available:true,fresh:!restored};
+  }catch(error){return {progress:fallback,available:false,fresh:true};}
  }
  function save(progress,getStorage){
   try{

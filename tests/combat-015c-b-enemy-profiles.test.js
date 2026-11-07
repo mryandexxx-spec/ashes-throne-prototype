@@ -111,11 +111,12 @@ assert.equal(b.fighters[2].specialCooldown,2);
 
 b=battle([hero("front")],[foe("test-self-guard","invalid")]);
 ready(b,1);
-assert.equal(choose(b,1),null,"unknown profiles do not activate");
+assert.deepEqual(choose(b,1),{abilityId:"basic",targetIndex:0},
+ "unknown profiles inherit the aggressive policy");
 
 b=battle([hero("front",200,100,10),hero("weak",50,100,10)],[foe("ves",null,200,220,12)]);
 CombatCore.advanceToPlayerTurn(b);
-assert.equal(b.events[0].targetId,"front","default campaign enemy still attacks first live ally");
+assert.equal(b.events[0].targetId,"weak","every unconfigured enemy uses weakest-target policy");
 assert.equal(b.events[0].abilityId,"basic");
 
 b=battle([hero("front",200,100,10),hero("weak",50,100,10)],[foe("ves","aggressive",200,220,12)]);
@@ -131,10 +132,10 @@ assert.equal(b.events[0].abilityId,"special","turn loop executes guard via share
 assert.equal(b.fighters[1].guardHits,2);
 assert.equal(b.allyActions,0);
 
-b=battle([hero("front",200,100,10)],[foe("ves","bogus",100,220,12)]);
+b=battle([hero("front",200,100,10),hero("weak",45,100,10)],[foe("ves","bogus",100,220,12)]);
 CombatCore.advanceToPlayerTurn(b);
-assert.equal(b.events[0].abilityId,"basic","invalid profile safely falls back");
-assert.equal(b.events[0].targetId,"front");
+assert.equal(b.events[0].abilityId,"basic","unknown profile uses universal policy");
+assert.equal(b.events[0].targetId,"weak");
 
 b=battle([hero("front",8,100,10)],[foe("ves","aggressive",200,220,30)]);
 CombatCore.advanceToPlayerTurn(b);

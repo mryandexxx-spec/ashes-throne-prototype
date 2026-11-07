@@ -91,7 +91,7 @@ const ProgressV3Core=(()=>{
   try{raw3=storage.getItem(KEY);}catch(_){return {status:"blocked",reason:"read-v3-failed"};}
   if(raw3!==null){
    let parsed;try{parsed=JSON.parse(raw3);}catch(_){return {status:"blocked",reason:"invalid-v3"};}
-   const valid=validate(parsed,heroes);
+   const valid=validateActive(parsed,heroes);
    return valid?{status:"existing",profile:valid}:{status:"blocked",reason:"invalid-v3"};
   }
   try{raw2=storage.getItem(SOURCE_KEY);}catch(_){return {status:"blocked",reason:"read-v2-failed"};}
@@ -112,6 +112,99 @@ const ProgressV3Core=(()=>{
   }catch(_){return {status:"blocked",reason:"v3-write-failed"};}
   return {status:"staged",profile:candidate};
  }
- return Object.freeze({KEY,SOURCE_KEY,VERSION,SLOTS,MATERIALS,TEST_CLASSES,fromV2,fresh,validate,stage});
+ // A2 active profiles: G1 may contain concrete item entries while A1 validate()
+ // continues to validate only the clean reset contract for backwards tests.
+ function validateActive(data,heroes){
+  const ids=allyIds(heroes);
+  if(!ids||!object(data)||data.version!==VERSION||
+     !nonneg(data.accountXp)||!nonneg(data.currency)||!nonneg(data.legacyC)||
+     !object(data.energy)||!Number.isSafeInteger(data.energy.value)||
+     data.energy.value<0||data.energy.value>ProgressCore.ENERGY_MAX||
+     !nonneg(data.energy.updatedAt)||!Array.isArray(data.claimedMissions)||
+     !object(data.heroes)||!object(data.materials)||!object(data.migration)||
+     !nonneg(data.revision??0))return null;
+  if(data.migration.strategy!=="clean-heroes-v1"||
+     (data.migration.sourceVersion!==2&&data.migration.sourceVersion!==null))return null;
+  const known=Object.keys(ProgressCore.FIRST_CLEAR_REWARDS);
+  if(data.claimedMissions.some(x=>typeof x!=="string"||!known.includes(x))||
+     new Set(data.claimedMissions).size!==data.claimedMissions.length)return null;
+  if(Object.keys(data.heroes).length!==ids.length||ids.some(id=>!own(data.heroes,id)))return null;
+  for(const id of ids){
+   const hero=data.heroes[id],gear=hero?.gear,slots=gear?.installedByTier?.["1"];
+   if(!object(hero)||hero.classId!==TEST_CLASSES[id]||
+      !Number.isInteger(hero.level)||hero.level<1||hero.level>ProgressCore.MAX_LEVEL||
+      !object(gear)||gear.tier!==1||!object(gear.installedByTier)||
+      Object.keys(gear.installedByTier).length!==1||
+      !Array.isArray(slots)||slots.length!==SLOTS.length)return null;
+   for(let i=0;i<SLOTS.length;i++){
+    const entry=slots[i];
+    if(entry===null)continue;
+    if(!object(entry)||entry.kind!=="item"||typeof entry.itemId!=="string"||
+       typeof GearData==="undefined")return null;
+    const item=GearData.get(entry.itemId);
+    if(!item||item.tier!==1||item.slotId!==SLOTS[i]||
+       !item.allowedClasses.includes(hero.classId))return null;
+   }
+  }
+  if(Object.keys(data.materials).length!==MATERIALS.length||
+     MATERIALS.some(id=>!own(data.materials,id)||!nonneg(data.materials[id])))return null;
+  return JSON.parse(JSON.stringify(data));
+ }
+ function toRuntime(data,heroes){
+  const source=validateActive(data,heroes);
+  if(!source)return null;
+  const ids=allyIds(heroes);
+  return {
+   saveVersion:3,saveRevision:source.revision??0,
+   accountXp:source.accountXp,currency:source.currency,
+   gearMaterials:source.legacyC,
+   energy:source.energy,claimedMissions:source.claimedMissions,
+   materials:source.materials,
+   classes:Object.fromEntries(ids.map(id=>[id,source.heroes[id].classId])),
+   levels:Object.fromEntries(ids.map(id=>[id,source.heroes[id].level])),
+   gear:Object.fromEntries(ids.map(id=>[id,{
+    tier:1,mode:"itemized",
+    slots:source.heroes[id].gear.installedByTier["1"].map(x=>x?.itemId??null)
+   }])),
+   migration:source.migration
+  };
+ }
+ function fromRuntime(p){
+  if(!object(p)||p.saveVersion!==3||!object(p.levels)||!object(p.gear)||
+     !object(p.materials)||!object(p.classes)||!object(p.energy))return null;
+  const ids=Object.keys(TEST_CLASSES);
+  if(ids.some(id=>!own(p.levels,id)||!own(p.gear,id)||p.classes[id]!==TEST_CLASSES[id]))
+   return null;
+  const source={
+   version:3,revision:p.saveRevision??0,
+   accountXp:p.accountXp,currency:p.currency,legacyC:p.gearMaterials,
+   energy:p.energy,claimedMissions:p.claimedMissions,
+   materials:p.materials,
+   migration:p.migration??{strategy:"clean-heroes-v1",sourceVersion:null},
+   heroes:Object.fromEntries(ids.map(id=>[id,{
+    classId:p.classes[id],level:p.levels[id],
+    gear:{tier:1,installedByTier:{"1":p.gear[id].slots.map(x=>x===null?null:{kind:"item",itemId:x})}}
+   }]))
+  };
+  return validateActive(source,ids.map(id=>({id,side:"ally"})));
+ }
+ function persist(p,getStorage){
+  if(!p||p.saveVersion!==3)return false;
+  const candidate=fromRuntime(p);
+  if(!candidate)return false;
+  try{
+   const storage=getStorage();if(!storage)return false;
+   // Refuse overwrite of a stale or corrupted profile from another tab.
+   const raw=storage.getItem(KEY);if(raw===null)return false;
+   const old=JSON.parse(raw),known=validateActive(old,Object.keys(TEST_CLASSES).map(id=>({id,side:"ally"})));
+   if(!known||(known.revision??0)!==(p.saveRevision??0))return false;
+   candidate.revision=(p.saveRevision??0)+1;
+   const encoded=JSON.stringify(candidate);
+   storage.setItem(KEY,encoded);
+   if(storage.getItem(KEY)!==encoded)return false;
+   p.saveRevision=candidate.revision;return true;
+  }catch(_){return false;}
+ }
+ return Object.freeze({KEY,SOURCE_KEY,VERSION,SLOTS,MATERIALS,TEST_CLASSES,fromV2,fresh,validate,validateActive,toRuntime,fromRuntime,persist,stage});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=ProgressV3Core;

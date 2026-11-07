@@ -103,7 +103,9 @@ const badDefinitions=[
 ];
 // Dedicated deterministic stub: production definitions stay frozen.
 for(const followUpEffects of badDefinitions){
- const stub=`const AbilityData={get:(fighter,id)=> id==="basic"?
+ const stub=`const AbilityData={damageStat:ability=>ability&&ability.kind==="damage"?"atk":null,
+  damageType:ability=>ability&&ability.kind==="damage"?"legacy":null,
+  get:(fighter,id)=> id==="basic"?
   ({id:"basic",name:"Basic",target:"enemy",kind:"damage",multiplier:1,cooldown:0}):
   id==="special"?({id:"special",name:"Invalid test",target:"all-enemies",
    kind:"damage",multiplier:1,cooldown:2,followUpEffects:${JSON.stringify(followUpEffects)}}):null};`;

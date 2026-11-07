@@ -11,7 +11,7 @@ const ids=["home","collection","campaign","squad","battle","heroList","combatant
  "targetFighterHud","targetFighterSide","targetFighterLevel","targetFighterName","targetFighterHp","targetFighterStats","targetFighterHealthFill",
  "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","autoSpeedBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","squadBack","squadStart","squadRoster",
- "squadSlots","squadHint","squadWarning","squadDisband","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
+ "squadSlots","squadHint","squadWarning","squadDisband","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","simulationDialog","simulationTitle","simulationSetup","simulationResults","simulationCount","simulationQuantity","simulationCost","simulationAvailable","simulationConfirm","simulationText","simulationRewards","simulationClose","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},style:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
@@ -21,6 +21,9 @@ function element(id=""){
  };
 }
 const elements=Object.fromEntries(ids.map(id=>[id,element(id)]));
+elements.simulationDialog.showModal=function(){this.open=true;};
+elements.simulationDialog.close=function(){this.open=false;};
+elements.simulationCount.value="1";
 const chooseNodes=["kael","lyra","darin"].map(id=>{
  const e=element();e.dataset.heroId=id;return e;
 });
@@ -144,6 +147,7 @@ assert.match(elements.campaignMissions.innerHTML,/Заблокировано/,"s
 clickMission();
 assert.equal(elements.squad.classList.active,true);
 click(elements.squadStart);
+assert.equal(api.getEnergy(),230,"first manual mission entry spends 10 energy");
 assert.equal(elements.battle.classList.active,true);
 assert.equal(document.body.classList.contains("battle-mode"),true,"battle hides document scroll behind fullscreen arena");
 // iPhone Safari portrait -> landscape: defer resize until CSS layout is committed.
@@ -355,8 +359,10 @@ assert.match(elements.missionResultTitle.textContent,/не пройдена/);
 assert.equal(api.getCurrency(),0);
 assert.equal(api.getCampaignCompleted(),false);
 click(elements.missionResultRetry);
+assert.equal(api.getEnergy(),230,"defeat retains entry cost");
 assert.equal(elements.squad.classList.active,true,"retry returns to squad preparation");
 click(elements.squadStart);
+assert.equal(api.getEnergy(),220,"retry charges energy again");
 assert.equal(elements.battle.classList.active,true);
 const win=api.getBattle();
 win.active=false;win.winner="ally";
@@ -647,15 +653,38 @@ flushVisual();
 assert.equal(elements.missionResult.classList.active,true);
 assert.match(elements.missionResultTitle.textContent,/не пройдена/);
 assert.equal(api.getCurrency(),beforeDefeatReward);
-// Separate 3★ resource auto-farm is energy-gated; story repeat rewards stay unchanged.
+// Single simulation opens a batch slider only after 3★.
 api.getCampaignProgress().bestStars["black-pass-ambush"]=3;
 api.showScreen("campaign");
-assert.match(elements.campaignMissions.innerHTML,/data-resource-farm="materials"/);
-const currencyBeforeFarm=api.getCurrency(),energyBeforeFarm=api.getEnergy(),xpBeforeFarm=api.getAccountXp();
-const farmButton={dataset:{farmMission:"black-pass-ambush",resourceFarm:"currency"}};
-elements.campaignMissions.handlers.click[0]({target:{closest:selector=>selector==="[data-resource-farm]"?farmButton:null}});
-assert.equal(api.getCurrency(),currencyBeforeFarm+200);
-assert.equal(api.getEnergy(),energyBeforeFarm-10);
-assert.equal(api.getAccountXp(),xpBeforeFarm+5);
+assert.match(elements.campaignMissions.innerHTML,/Стоимость входа: 10/);
+assert.match(elements.campaignMissions.innerHTML,/data-simulate-mission="black-pass-ambush"/);
+assert.doesNotMatch(elements.campaignMissions.innerHTML,/data-resource-farm/);
+const energyBeforeFarm=api.getEnergy(),materialsBeforeFarm=api.getGearMaterials(),xpBeforeFarm=api.getAccountXp();
+const simulateButton={dataset:{simulateMission:"black-pass-ambush"}};
+elements.campaignMissions.handlers.click[0]({target:{closest:selector=>selector==="[data-simulate-mission]"?simulateButton:null}});
+assert.equal(elements.simulationDialog.open,true);
+assert.equal(elements.simulationSetup.hidden,false);
+assert.equal(elements.simulationResults.hidden,true);
+assert.equal(Number(elements.simulationCount.max),Math.floor(energyBeforeFarm/10));
+elements.simulationCount.value="3";
+elements.simulationCount.handlers.input[0]();
+assert.equal(elements.simulationCost.textContent,"30 ⚡");
+assert.equal(api.getEnergy(),energyBeforeFarm,"preview does not spend");
+click(elements.simulationClose);
+assert.equal(elements.simulationDialog.open,false,"cancel closes without a charge");
+assert.equal(api.getEnergy(),energyBeforeFarm,"cancel must not charge energy");
+elements.campaignMissions.handlers.click[0]({target:{closest:selector=>selector==="[data-simulate-mission]"?simulateButton:null}});
+elements.simulationCount.value="3";elements.simulationCount.handlers.input[0]();
+click(elements.simulationConfirm);
+assert.equal(api.getEnergy(),energyBeforeFarm-30);
+assert.equal(api.getGearMaterials(),materialsBeforeFarm+36);
+assert.equal(api.getAccountXp(),xpBeforeFarm+15);
+click(elements.simulationConfirm);
+assert.equal(api.getEnergy(),energyBeforeFarm-30,"repeat confirm cannot duplicate charge");
+assert.equal(api.getAccountXp(),xpBeforeFarm+15,"repeat confirm cannot duplicate reward");
+assert.equal(elements.simulationResults.hidden,false);
+assert.match(elements.simulationRewards.textContent,/36 материалов C/);
 assert.equal(JSON.parse(savedData.get("ashes-throne.progress.v2")).energy.value,api.getEnergy());
-console.log("Campaign-001 UI: battle, wave, repeat and 3-star resource farming passed");
+click(elements.simulationClose);
+assert.equal(elements.simulationDialog.open,false);
+console.log("Campaign-001 UI: battle, wave, repeat and batch simulation passed");

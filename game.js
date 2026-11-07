@@ -125,6 +125,19 @@ const campaignLoaded=CampaignCore.load(()=>window.localStorage);
 const campaignProgress=progress.saveVersion===3?campaignLoaded.campaign:
  (loadedProgress?.fresh?CampaignCore.fresh():campaignLoaded.campaign);
 let campaignSaveAvailable=campaignLoaded.available;
+// Restore mission unlocks if a crash occurred after persisting first-clear rewards
+// but before writing the separate campaign progress key.
+if(progress.saveVersion===3&&!saveBlocked){
+ let recovered=false;
+ for(const id of progress.claimedMissions){
+  if(MissionData.get(id)&&!campaignProgress.completed[id]){
+   campaignProgress.completed[id]=true;
+   campaignProgress.bestStars[id]=Math.max(1,campaignProgress.bestStars[id]||0);
+   recovered=true;
+  }
+ }
+ if(recovered)campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
+}
 let battleIsCampaign=false;
 let missionResultShown=false;
 let missionResultRecorded=false;
@@ -133,6 +146,7 @@ let lastMissionStars=0;
 let lastMissionReward=null;
 let lastMissionFarmReward=null;
 let lastMissionEnergyRefunded=false;
+let missionEntryPaid=false;
 let simulationMissionId=null;
 function renderAccountHeader(){
  ProgressCore.refreshEnergy(progress);
@@ -327,10 +341,13 @@ function showScreen(id){
   lastMissionReward=null;
   lastMissionFarmReward=null;
   lastMissionEnergyRefunded=false;
+  missionEntryPaid=false;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
   const label=$("#battleMissionLabel");
   if(label)label.textContent=battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
-  if(battleIsCampaign&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
+  const freeStoryEntry=battleIsCampaign&&progress.saveVersion===3&&
+   !campaignProgress.completed[activeMissionId];
+  if(battleIsCampaign&&!freeStoryEntry&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
    showScreen("squad");
    const warning=$("#squadWarning");
    if(warning){warning.textContent="Недостаточно энергии для входа в миссию.";warning.hidden=false;}
@@ -343,10 +360,12 @@ function showScreen(id){
    if(!engine)initBabylon();
    resetArenaCamera(); // Start every encounter from the approved perspective.
    engine.resize();
-   if(battleIsCampaign){
+   if(battleIsCampaign&&!freeStoryEntry){
     if(!ProgressCore.spendEnergy(progress,activeMissionId))throw new Error("Недостаточно энергии");
-    entryPaid=true;persistProgress();
+    entryPaid=true;
+    if(!persistProgress())throw new Error("Не удалось сохранить расход энергии");
    }
+   missionEntryPaid=entryPaid;
    resetBattle();
    updateMeshes();
    startBattleRendering();
@@ -354,6 +373,7 @@ function showScreen(id){
    if(notice)notice.hidden=true;
   } catch(error) {
    if(entryPaid){ProgressCore.refundEnergy(progress,activeMissionId);persistProgress();}
+   missionEntryPaid=false;
    cancelAutoTimer();autoBattle=false;
    console.error("Не удалось запустить 3D-арену:",error);
    stopBattleRendering();
@@ -667,11 +687,12 @@ function renderCampaign(){
    const completed=campaignProgress.completed[entry.missionId]===true;
    const best=campaignProgress.bestStars[entry.missionId]||0;
    const cost=ProgressCore.missionEnergyCost(mission.id);
-   const enough=ProgressCore.affordableRuns(progress,mission.id)>0;
+   const freeEntry=progress.saveVersion===3&&!completed;
+   const enough=freeEntry||ProgressCore.affordableRuns(progress,mission.id)>0;
    const status=completed?"Пройдено · Повторное прохождение доступно":available?"Не пройдено":"Заблокировано";
    const criteria=mission.stars.map((star,index)=>
     `<li><span class="mission-criteria-star">${index+1}★</span><span>${star.hint}</span></li>`).join("");
-   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="muted">Стоимость входа: ${cost} ⚡ за попытку (бой или симуляция)</p>${missionRewardLabel(mission.id)}<p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available&&enough?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}" ${enough?"":"disabled"}>Симуляция</button>`:""}</div></div></article>`;
+   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="muted">${freeEntry?"Сюжетные попытки до первой победы: бесплатно. Повторы и симуляция: "+cost+" ⚡.":"Повторный бой или симуляция: "+cost+" ⚡ за попытку."}</p>${missionRewardLabel(mission.id)}<p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available&&enough?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}" ${enough?"":"disabled"}>Симуляция</button>`:""}</div></div></article>`;
    }).join("");
    return `<div class="campaign-route"><h3>${route.title}</h3>${items}</div>`;
   }).join("");

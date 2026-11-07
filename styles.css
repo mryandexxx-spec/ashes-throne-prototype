@@ -759,3 +759,10 @@ body.battle-mode #app>footer{visibility:hidden}
 .simulation-slider-label{display:flex;justify-content:space-between;gap:12px;margin:12px 0 2px}
 .simulation-dialog #simulationConfirm,.simulation-dialog #simulationClose{min-height:44px;margin:6px 0;max-width:100%;white-space:normal}
 .simulation-rewards{color:var(--gold);line-height:1.6;font-weight:600;white-space:pre-line}
+
+/* Gear-002: six independent selectable equipment slots. */
+.gear-slot{cursor:pointer;touch-action:manipulation;min-height:44px;padding:0;border-width:1px;font-family:inherit}
+.gear-slot.selected{outline:2px solid var(--gold);outline-offset:2px;background:#d5ad6530}
+.gear-slot:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.gear-hint{font-size:12px;line-height:1.45;margin:4px 0 12px}
+@media(max-width:700px){.gear-slot{min-height:44px}}

@@ -132,7 +132,7 @@ let lastMissionReward=null;
 function renderAccountHeader(){
  const summary=$("#accountStatus");
  if(summary)summary.textContent="Аккаунт "+ProgressCore.accountLevel(progress)+"/"+ProgressCore.MAX_ACCOUNT_LEVEL+
-  " (тест) · XP "+progress.accountXp+" · Валюта "+progress.currency;
+  " (тест) · XP "+progress.accountXp+" · Валюта "+progress.currency+" · C "+progress.gearMaterials;
 }
 function persistProgress(){
  if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>window.localStorage);
@@ -390,11 +390,32 @@ function renderHeroDetail(){
  $("#detailPreview").textContent=next?next.hp+" HP · "+next.atk+" ATK":"Достигнут максимум";
  $("#detailUpgrade").disabled=!ProgressCore.canUpgrade(progress,base.id);
  $("#detailNotice").textContent=hero.level>=ProgressCore.MAX_LEVEL?"Герой достиг тестового максимума.":hero.level>=ProgressCore.accountLevel(progress)?"Нужен следующий уровень аккаунта.":progress.currency<cost?"Недостаточно валюты.":"Улучшение доступно.";
+ if($("#gearTier")){
+ const gear=ProgressCore.gearState(progress,base.id);
+ const recipe=ProgressCore.gearCost(progress,base.id);
+ const completed=gear?.slots??0;
+ $("#gearTier").textContent=recipe?"G"+gear.tier+" · "+completed+"/6":"G3 · 6/6 (тестовый максимум)";
+ $("#gearSlots").innerHTML=Array.from({length:6},(_,i)=>
+  '<span class="gear-slot '+(i<completed?'filled':'')+'" aria-label="Слот '+(i+1)+(i<completed?' установлен':' пустой')+'">'+
+  (i<completed?'◆':'◇')+'</span>').join("");
+ $("#gearMaterial").textContent=String(progress.gearMaterials);
+ $("#gearPrice").textContent=recipe?recipe.material+" C · "+recipe.currency+" валюты":"Все слоты заполнены";
+ $("#gearEquipNext").disabled=!ProgressCore.canEquip(progress,base.id);
+ $("#gearNotice").textContent=ProgressCore.gearBlockReason(progress,base.id)||"Можно установить следующий предмет.";
+ }
+
  const saveNote=$("#progressSaveNote");
  if(saveNote)saveNote.textContent=saveAvailable
   ?"Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить."
   :"Сохранение сейчас недоступно. Прогресс может сброситься после перезагрузки.";
 }
+$("#gearEquipNext")?.addEventListener("click",()=>{
+ if(ProgressCore.equip(progress,selectedHeroId)){
+  persistProgress();
+  renderHeroDetail();
+  renderHeroes();
+ }
+});
 $("#detailBack").addEventListener("click",()=>showScreen("collection"));
 $("#detailHome").addEventListener("click",()=>showScreen("home"));
 $("#detailUpgrade").addEventListener("click",()=>{
@@ -454,7 +475,7 @@ function renderMissionResult(){
  $("#missionResultTitle").textContent=won?"Миссия пройдена":"Миссия не пройдена";
  $("#missionResultText").textContent=won
   ?MissionData.get(activeMissionId).title+" завершена. "+(lastMissionReward?
-   "Первая победа: +"+lastMissionReward.xp+" XP, +"+lastMissionReward.currency+" валюты.":
+   "Первая победа: +"+lastMissionReward.xp+" XP, +"+lastMissionReward.currency+" валюты, +"+lastMissionReward.material+" C.":
    "Повтор без экономических наград.")
   :"Отряд потерпел поражение. Экономические награды не начислены.";
  const grade=$("#missionResultStars");
@@ -556,7 +577,7 @@ function syncBattleUI(){
  if(reward){
   reward.hidden=state.active;
   if(!state.active)reward.textContent=state.winner==="ally"?
-   (battleIsCampaign&&lastMissionReward?"Первая победа: +"+lastMissionReward.xp+" XP · +"+lastMissionReward.currency+" валюты":"Победа · без экономических наград"):
+   (battleIsCampaign&&lastMissionReward?"Первая победа: +"+lastMissionReward.xp+" XP · +"+lastMissionReward.currency+" валюты · +"+lastMissionReward.material+" C":"Победа · без экономических наград"):
    "Поражение · без наград";
  }
  const fighters=state.fighters;

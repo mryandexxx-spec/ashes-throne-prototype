@@ -133,10 +133,10 @@ const ProgressV3Core=(()=>{
    const hero=data.heroes[id],gear=hero?.gear;
    if(!object(hero)||hero.classId!==TEST_CLASSES[id]||
       !Number.isInteger(hero.level)||hero.level<1||hero.level>ProgressCore.MAX_LEVEL||
-      !object(gear)||![1,2].includes(gear.tier)||!object(gear.installedByTier))
+      !object(gear)||![1,2,3].includes(gear.tier)||!object(gear.installedByTier))
     return null;
    const keys=Object.keys(gear.installedByTier).sort();
-   const expected=gear.tier===1?["1"]:["1","2"];
+   const expected=Array.from({length:gear.tier},(_,i)=>String(i+1));
    if(JSON.stringify(keys)!==JSON.stringify(expected))return null;
    for(let tier=1;tier<=gear.tier;tier++){
     const slots=gear.installedByTier[String(tier)];
@@ -177,7 +177,9 @@ const ProgressV3Core=(()=>{
     return [id,{
      tier:gear.tier,mode:"itemized",
      slots:gear.installedByTier[String(gear.tier)].map(x=>x?.itemId??null),
-     history:gear.tier===2?{"1":gear.installedByTier["1"].map(x=>x?.itemId??null)}:{}
+     history:Object.fromEntries(Array.from({length:gear.tier-1},(_,i)=>{
+      const tier=String(i+1);return [tier,gear.installedByTier[tier].map(x=>x?.itemId??null)];
+     }))
     }];
    })),
    migration:source.migration
@@ -197,10 +199,13 @@ const ProgressV3Core=(()=>{
    migration:p.migration??{strategy:"clean-heroes-v1",sourceVersion:null},
    heroes:Object.fromEntries(ids.map(id=>[id,{
     classId:p.classes[id],level:p.levels[id],
-    gear:{tier:p.gear[id].tier,installedByTier:p.gear[id].tier===2?{
-     "1":(p.gear[id].history?.["1"]||[]).map(x=>x===null?null:{kind:"item",itemId:x}),
-     "2":p.gear[id].slots.map(x=>x===null?null:{kind:"item",itemId:x})
-    }:{"1":p.gear[id].slots.map(x=>x===null?null:{kind:"item",itemId:x})}}
+    gear:{tier:p.gear[id].tier,installedByTier:Object.fromEntries(
+     Array.from({length:p.gear[id].tier},(_,i)=>{
+      const tier=String(i+1);
+      const entries=i+1===p.gear[id].tier?p.gear[id].slots:(p.gear[id].history?.[tier]||[]);
+      return [tier,Array.isArray(entries)?entries.map(x=>x===null?null:{kind:"item",itemId:x}):[]];
+     })
+    )}
    }]))
   };
   return validateActive(source,ids.map(id=>({id,side:"ally"})));

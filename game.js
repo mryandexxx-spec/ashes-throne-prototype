@@ -482,17 +482,60 @@ $("#energyRefresh")?.addEventListener("click",()=>renderCampaign());
 document.addEventListener("visibilitychange",()=>{
  if(!document.hidden&&$("#campaign")?.classList.contains("active"))renderCampaign();
 });
-// Three-star simulation is a no-reward training replay until resource farming is implemented.
+// One batch-simulation entry point for every 3-starred campaign mission.
+function renderSimulationPreview(){
+ const mission=simulationMissionId,range=$("#simulationCount");
+ if(!mission||!range)return;
+ ProgressCore.refreshEnergy(progress);
+ const count=Number(range.value),cost=ProgressCore.missionEnergyCost(mission);
+ $("#simulationQuantity").textContent=String(count);
+ $("#simulationCost").textContent=String(count*cost)+" ⚡";
+ $("#simulationAvailable").textContent=String(progress.energy.value)+" ⚡";
+ $("#simulationConfirm").disabled=!Number.isSafeInteger(count)||count<1||
+  count>ProgressCore.affordableRuns(progress,mission);
+}
 function simulateMission(id){
  const entry=CampaignData.getMission(id);
  if(!entry||!CampaignData.available(entry,campaignProgress)||campaignProgress.bestStars[id]!==3)return false;
- $("#simulationText").textContent=MissionData.get(id).title+
-  ". Учебная симуляция без наград. Ресурсная автодобыча — отдельная кнопка в карточке первой миссии после 3★.";
+ const available=ProgressCore.affordableRuns(progress,id);
+ if(available<1){renderCampaign();return false;}
+ simulationMissionId=id;
+ const range=$("#simulationCount");
+ if(!range)return false;
+ range.min="1";range.max=String(available);range.value="1";
+ $("#simulationTitle").textContent="Симуляция · "+MissionData.get(id).title;
+ $("#simulationSetup").hidden=false;
+ $("#simulationResults").hidden=true;
+ $("#simulationClose").textContent="Отмена";
+ renderSimulationPreview();
  $("#simulationDialog").showModal();
  return true;
 }
+$("#simulationCount")?.addEventListener("input",renderSimulationPreview);
+$("#simulationCount")?.addEventListener("change",renderSimulationPreview);
+$("#simulationConfirm")?.addEventListener("click",()=>{
+ if(!simulationMissionId)return;
+ const count=Number($("#simulationCount").value);
+ // Revalidate immediately before charging: energy may have changed while modal was open.
+ const gain=ProgressCore.simulate(progress,simulationMissionId,campaignProgress.bestStars[simulationMissionId],count);
+ if(!gain){renderSimulationPreview();return;}
+ persistProgress();
+ $("#simulationSetup").hidden=true;
+ $("#simulationResults").hidden=false;
+ $("#simulationTitle").textContent="Поздравляем!";
+ $("#simulationText").textContent="Выполнено симуляций: "+gain.count+". Потрачено: "+gain.energy+" ⚡.";
+ $("#simulationRewards").textContent=[
+  gain.material?"+ "+gain.material+" материалов C":null,
+  gain.currency?"+ "+gain.currency+" валюты":null,
+  gain.xp?"+ "+gain.xp+" Account XP":null
+ ].filter(Boolean).join(" · ");
+ $("#simulationClose").textContent="Закрыть";
+ renderCampaign();
+});
 const simulationClose=$("#simulationClose");
-if(simulationClose)simulationClose.addEventListener("click",()=>$("#simulationDialog").close());
+if(simulationClose)simulationClose.addEventListener("click",()=>{
+ $("#simulationDialog").close();simulationMissionId=null;
+});
 function renderMissionResult(){
  const won=state.winner==="ally";
  const entry=CampaignData.getMission(activeMissionId);

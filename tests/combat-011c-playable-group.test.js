@@ -107,10 +107,12 @@ const old=[
  {id:"kael",side:"ally"},{id:"lyra",side:"ally"},{id:"darin",side:"ally"},
  {id:"medic-demo",side:"ally"},{id:"test-area-damage",side:"ally"}
 ];
-const prior={version:1,materials:11,levels:{kael:3,lyra:2,darin:1,"medic-demo":2}};
-const migrated=api.SaveCore.validate(prior,old);
-assert.equal(migrated.materials,11,"save retains materials");
-assert.equal(migrated.levels["medic-demo"],2);
-assert.equal(migrated.levels["test-area-damage"],1,"training hero starts at level one");
+const legacy={version:1,materials:11,levels:{kael:3,lyra:2,darin:1,"medic-demo":2}};
+assert.equal(api.SaveCore.validate(legacy,old),null,"old tutorial progress is intentionally reset");
+const prior={version:2,accountXp:180,currency:11,levels:{kael:3,lyra:2,darin:1,"medic-demo":2},claimedMissions:[]};
+const restored=api.SaveCore.validate(prior,old);
+assert.equal(restored.currency,11);
+assert.equal(restored.levels["medic-demo"],2);
+assert.equal(restored.levels["test-area-damage"],1,"training hero starts at level one");
 assert.equal(api.SaveCore.validate({...prior,levels:{...prior.levels,unknown:1}},old),null);
 console.log("Combat-011C playable group skill, targets, cooldown, log, animations and save migration passed");

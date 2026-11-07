@@ -8,7 +8,7 @@ const ids=["home","collection","campaign","squad","battle","heroList","combatant
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
- "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","gearTier","gearSlots","gearMaterial","gearPrice","gearEquipNext","gearNotice"];
+ "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","gearTier","gearSlots","gearMaterial","gearPrice","gearStatBonus","gearEquipNext","gearNotice"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
@@ -17,6 +17,7 @@ function element(id=""){
  };
 }
 const elements=Object.fromEntries(ids.map(id=>[id,element(id)]));
+elements.gearSlots.contains=()=>true;
 const chooseNodes=["kael","lyra","darin"].map(id=>{
  const e=element();e.dataset.heroId=id;return e;
 });
@@ -138,18 +139,39 @@ api.getBattle().winner="enemy";
 api.syncBattleUI();
 assert.equal(api.getCurrency(),461);
 assert.match(elements.battleReward.textContent,/без наград/);
-// Verify real gear purchase button and battle/hero stat refresh (not only core function).
+// Gear-002: select slot six before slot one through the REAL UI handler.
 api.getProgress().gearMaterials=12;
 api.getProgress().currency+=1000;
 api.openHeroDetail("kael");
 assert.equal(elements.gearTier.textContent,"G1 · 0/6");
 assert.equal(elements.gearMaterial.textContent,"12");
 assert.equal(elements.gearEquipNext.disabled,false);
+assert.match(elements.gearSlots.innerHTML,/data-gear-slot="5"/);
+function selectGear(slot){
+ elements.gearSlots.handlers.click[0]({target:{closest:selector=>
+  selector==="[data-gear-slot]"?{dataset:{gearSlot:String(slot)}}:null}});
+}
+selectGear(5);
+assert.match(elements.gearPrice.textContent,/Амулет/);
+assert.equal(elements.gearStatBonus.textContent,"ATK +2%");
 click(elements.gearEquipNext);
-assert.equal(api.getProgress().gear.kael.slots,1);
+assert.equal(api.getProgress().gear.kael.slots[5],true);
+assert.equal(api.getProgress().gear.kael.slots[0],false);
 assert.equal(api.getProgress().gearMaterials,10);
-assert.equal(api.getCurrency(),1294);
+assert.equal(api.getCurrency(),1295);
 assert.equal(elements.gearTier.textContent,"G1 · 1/6");
-assert.match(elements.detailStats.innerHTML,/126 HP/);
-assert.equal(JSON.parse(savedData.get("ashes-throne.progress.v2")).gear.kael.slots,1);
-console.log("Progress VS-001B hero details, gear button, reward and battle scaling passed");
+assert.equal(elements.gearEquipNext.disabled,true,"cannot install filled slot twice");
+click(elements.gearEquipNext);
+assert.equal(api.getProgress().gearMaterials,10,"no duplicate purchase");
+selectGear(0);
+assert.match(elements.gearPrice.textContent,/Щиток/);
+assert.equal(elements.gearStatBonus.textContent,"HP +2%");
+click(elements.gearEquipNext);
+assert.equal(api.getProgress().gear.kael.slots[0],true);
+assert.equal(api.getProgress().gear.kael.slots[5],true);
+assert.equal(api.getCurrency(),1128);
+assert.equal(elements.gearTier.textContent,"G1 · 2/6");
+assert.match(elements.detailStats.innerHTML,/127 HP/);
+assert.deepEqual(Array.from(JSON.parse(savedData.get("ashes-throne.progress.v2")).gear.kael.slots),
+ [true,false,false,false,false,true]);
+console.log("Gear-002 UI: independent selection, item previews, purchases, save and battle scaling passed");

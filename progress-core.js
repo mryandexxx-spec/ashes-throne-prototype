@@ -16,7 +16,22 @@ const ProgressCore=(()=>{
   2:Object.freeze({heroLevel:6,material:3,currency:2000}),
   3:Object.freeze({heroLevel:12,material:4,currency:3000})
  });
- const freshGear=()=>({tier:1,slots:0});
+ // Gear-002: six independent items within each sequential G tier. Recipes/buffs
+ // are temporary vertical-slice data, NOT final balance or canonical item names.
+ const SLOT_COUNT=6;
+ const SLOT_NAMES=Object.freeze(["Щиток","Клинок","Пластина","Перчатка","Пояс","Амулет"]);
+ const gearItem=(tier,slot)=>{
+  if(!GEAR[tier]||!Number.isInteger(slot)||slot<0||slot>=SLOT_COUNT)return null;
+  const recipe=GEAR[tier];
+  // Preserve total tier cost (G1 1000; G2 2000; G3 3000), but offer
+  // individual items; each gives a different prototype stat contribution.
+  const currency=Math.floor(recipe.currency/6)+(slot<recipe.currency%6?1:0);
+  const hpBonus=slot%2===0?0.02:0,atkBonus=slot%2!==0?0.02:0;
+  return {tier,slot,material:recipe.material,currency,heroLevel:recipe.heroLevel,
+   name:SLOT_NAMES[slot],hpBonus,atkBonus};
+ };
+ const freshGear=()=>({tier:1,slots:Array(SLOT_COUNT).fill(false)});
+ const installedInTier=state=>state.slots.filter(Boolean).length;
  // VS-001C UX revision: mission entry costs energy regardless of manual/simulation mode.
  // All numbers are provisional; simulation becomes available after 3★ only.
  const ENERGY_MAX=240,ENERGY_REGEN_MS=6*60*1000;
@@ -94,39 +109,58 @@ const ProgressCore=(()=>{
  function gearState(progress,id){return own(progress.gear||{},id)?progress.gear[id]:null;}
  function gearInstalled(progress,id){
   const state=gearState(progress,id);
-  return state?(state.tier-1)*6+state.slots:0;
+  return state?(state.tier-1)*SLOT_COUNT+installedInTier(state):0;
  }
- function gearCost(progress,id){
+ function gearCost(progress,id,slot){
   const state=gearState(progress,id),level=levelOf(progress,id);
-  if(!state||level===null||state.tier===3&&state.slots===6)return null;
-  const recipe=GEAR[state.tier];
-  // Split costs as integers across the six placements (no tier skip).
-  const currency=Math.floor(recipe.currency/6)+(state.slots<recipe.currency%6?1:0);
-  return {tier:state.tier,slot:state.slots+1,material:recipe.material,currency,heroLevel:recipe.heroLevel};
+  if(!state||level===null||!Number.isInteger(slot)||slot<0||slot>=SLOT_COUNT||state.slots[slot])return null;
+  return gearItem(state.tier,slot);
  }
- function gearBlockReason(progress,id){
-  const cost=gearCost(progress,id);
+ function gearBlockReason(progress,id,slot){
+  const state=gearState(progress,id);
+  if(!state)return "Герой не найден.";
+  if(!Number.isInteger(slot)||slot<0||slot>=SLOT_COUNT)return "Выбери слот экипировки.";
+  if(state.slots[slot])return "Предмет уже установлен.";
+  const cost=gearCost(progress,id,slot);
   if(!cost)return "Все слоты G1–G3 заполнены.";
   if(levelOf(progress,id)<cost.heroLevel)return "Требуется уровень героя "+cost.heroLevel+".";
   if(progress.gearMaterials<cost.material)return "Недостаточно базовых материалов C.";
   if(progress.currency<cost.currency)return "Недостаточно валюты.";
   return "";
  }
- function canEquip(progress,id){return gearCost(progress,id)!==null&&!gearBlockReason(progress,id);}
- function equip(progress,id){
-  if(!canEquip(progress,id))return false;
-  const cost=gearCost(progress,id),state=gearState(progress,id);
+ function canEquip(progress,id,slot){
+  return gearCost(progress,id,slot)!==null&&!gearBlockReason(progress,id,slot);
+ }
+ function equip(progress,id,slot){
+  if(!canEquip(progress,id,slot))return false;
+  const cost=gearCost(progress,id,slot),state=gearState(progress,id);
   progress.gearMaterials-=cost.material;progress.currency-=cost.currency;
-  if(state.slots===5&&state.tier<3){state.tier++;state.slots=0;}
-  else state.slots++;
+  state.slots[slot]=true;
+  if(installedInTier(state)===SLOT_COUNT&&state.tier<3){
+   state.tier++;state.slots=Array(SLOT_COUNT).fill(false);
+  }
   return true;
+ }
+ function gearBonuses(progress,id){
+  const state=gearState(progress,id);
+  if(!state)return {hp:0,atk:0};
+  let hp=0,atk=0;
+  for(let tier=1;tier<=state.tier;tier++){
+   for(let slot=0;slot<SLOT_COUNT;slot++){
+    if(tier===state.tier&&!state.slots[slot])continue;
+    const item=gearItem(tier,slot);
+    hp+=item.hpBonus;atk+=item.atkBonus;
+   }
+  }
+  return {hp,atk};
  }
  function heroStats(progress,hero,levelOverride){
   const level=levelOverride??levelOf(progress,hero.id);
   if(level===null||level<1||level>MAX_LEVEL)return null;
-  // Temporary 4% HP/ATK per level; speed stays unchanged.
-  const factor=1+(level-1)*0.04+gearInstalled(progress,hero.id)*0.01;
-  return {...hero,level,hp:Math.round(hero.hp*factor),atk:Math.round(hero.atk*factor)};
+  // Gear-002: individual bonuses by slot; neither levels nor gear modify speed.
+  const bonus=gearBonuses(progress,hero.id),baseFactor=1+(level-1)*0.04;
+  return {...hero,level,hp:Math.round(hero.hp*(baseFactor+bonus.hp)),
+   atk:Math.round(hero.atk*(baseFactor+bonus.atk))};
  }
  function claimFirstClear(progress,missionId,battle){
   const reward=FIRST_CLEAR_REWARDS[missionId];
@@ -140,7 +174,7 @@ const ProgressCore=(()=>{
  }
  return Object.freeze({MAX_LEVEL,MAX_ACCOUNT_LEVEL,FIRST_CLEAR_REWARDS,createProgress,xpCost,
   accountLevel,levelOf,upgradeCost,canUpgrade,upgrade,heroStats,claimFirstClear,
-  GEAR,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,
+  GEAR,SLOT_COUNT,SLOT_NAMES,gearItem,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,gearBonuses,
   ENERGY_MAX,ENERGY_REGEN_MS,MISSION_FARM,freshEnergy,refreshEnergy,
   missionEnergyCost,affordableRuns,spendEnergy,refundEnergy,simulate});
 })();

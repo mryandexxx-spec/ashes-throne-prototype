@@ -476,6 +476,11 @@ function renderCampaign(){
   ?"Статус прохождения хранится в этом браузере."
   :"Сохранение кампании недоступно. После перезагрузки отметка может исчезнуть.";
 }
+// A visible campaign can be left open while energy regenerates.
+$("#energyRefresh")?.addEventListener("click",()=>renderCampaign());
+document.addEventListener("visibilitychange",()=>{
+ if(!document.hidden&&$("#campaign")?.classList.contains("active"))renderCampaign();
+});
 // Three-star simulation is a no-reward training replay until resource farming is implemented.
 function simulateMission(id){
  const entry=CampaignData.getMission(id);

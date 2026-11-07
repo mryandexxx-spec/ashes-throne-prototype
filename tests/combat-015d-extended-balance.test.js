@@ -18,7 +18,7 @@ const ids=allies.map(h=>h.id);
 assert.deepEqual(Array.from(ids),["kael","lyra","darin","medic-demo","test-area-damage"]);
 assert.equal(enemies.length,5);
 const mission=MissionData.get("demo-mission-2");
-assert.equal(mission.enemyAiProfiles.shade,"aggressive");
+assert.ok(!mission.enemyAiProfiles, "historic pilot has been removed from live mission data");
 const orders=[
   ["kael"],
   ["lyra"],

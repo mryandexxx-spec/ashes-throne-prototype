@@ -145,7 +145,7 @@ assert.equal(elements.heroDetail.classList.active,true,"remains on hero detail a
 assert.equal(elements.detailWallet.textContent,"461");
 assert.match(elements.detailStats.innerHTML,/125 HP/);
 assert.match(elements.detailStats.innerHTML,/25 ATK/);
-assert.equal(elements.detailCost.textContent,"42 валюты");
+assert.equal(elements.detailCost.textContent,"44 валюты");
 assert.equal(elements.detailUpgrade.disabled,false,"hero upgrade available above account level");
 assert.match(elements.detailNotice.textContent,/Улучшение доступно/);
 

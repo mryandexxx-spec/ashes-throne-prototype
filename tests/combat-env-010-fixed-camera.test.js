@@ -27,7 +27,9 @@ test("ENV010 background is three sculpted canyon walls and one sky gradient; nev
  assert.equal(result.meshes,4);
  assert.ok(result.triangles>10000&&result.triangles<18000);
  assert.ok(scene.meshes.every(m=>m.isPickable===false&&m.checkCollisions===false));
- assert.ok(scene.materials.every(m=>m.disableLighting===false&&m.fogEnabled===false));
+ assert.ok(scene.materials.every(m=>m.fogEnabled===false));
+ assert.equal(scene.materials.find(m=>m.name==="env010_mat_atmosphere").disableLighting,false);
+ assert.ok(scene.materials.filter(m=>m.name!=="env010_mat_atmosphere").every(m=>m.disableLighting===true));
  assert.ok(scene.meshes.every(m=>m.useVertexColors===true));
  for(const mesh of scene.meshes){
   const g=mesh.data;

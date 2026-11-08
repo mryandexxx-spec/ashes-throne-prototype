@@ -147,6 +147,6 @@ const html=read("index.html");
 const scripts=[...html.matchAll(/<script src="([^"]+)"/g)].map(x=>x[1]);
 assert.ok(scripts.indexOf("combat-core.js")<scripts.indexOf("enemy-decision.js"));
 assert.ok(scripts.indexOf("enemy-decision.js")<scripts.indexOf("game.js"));
-assert.match(html,/v0[.]3[.]55 · STAT004A5/);
-assert.equal(JSON.parse(read("package.json")).version,"0.3.55");
+assert.match(html,/v0[.]3[.]56 · DAILY001/);
+assert.equal(JSON.parse(read("package.json")).version,"0.3.56");
 console.log("Combat-015C-B enemy tactical profiles, live turns, AOE/heal/guard/weaken, fallback and version passed");

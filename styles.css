@@ -833,3 +833,13 @@ body.battle-mode #app>footer{visibility:hidden}
  .player-profile-card{padding:12px}
  .player-profile-editor input,.player-profile-editor button{min-height:44px}
 }
+
+/* Daily-001: compact, touch-friendly daily tasks in both orientations. */
+.daily-task-list{display:grid;gap:10px;max-width:800px}
+.daily-task{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.daily-task>div{min-width:0;flex:1}
+.daily-task strong{display:block;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.daily-task small{display:block;margin-top:5px;color:var(--muted);line-height:1.5}
+.daily-task button{min-height:44px;min-width:108px;white-space:normal}
+.daily-task button:disabled{opacity:.6;cursor:default}
+@media(max-width:450px){.daily-task{align-items:stretch;flex-direction:column}.daily-task button{width:100%}}

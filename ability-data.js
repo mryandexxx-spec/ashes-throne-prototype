@@ -139,7 +139,8 @@ const AbilityData=(()=>{
    // REN-COMBAT-B: story-only temporary skill level; no v3 progression.
    if(actor?.id==="trial-ren"||actor?.id==="ren"){
     const level=actor.skillLevels?.basic;
-    return Object.freeze({...basic,name:actor.id==="ren"?"Точный удар":"Точный удар · проба",
+    return Object.freeze({...basic,...(actor.id==="ren"?{damageType:"physical"}:{}),
+     name:actor.id==="ren"?"Точный удар":"Точный удар · проба",
      ...(Number.isInteger(level)&&level>=4&&level<=6?
       {onHitStatus:Object.freeze({type:"slowed",amount:20,turns:2})}:{})});
    }
@@ -149,13 +150,13 @@ const AbilityData=(()=>{
   if(abilityId==="powerful"){
    const ability=powerful[actor.id]||null;
    return ability&&actor.combatProfile==="stats002c"&&
-     ["lyra","darin"].includes(actor.id)?{...ability,damageType:"physical"}:ability;
+     ["lyra","darin","ren"].includes(actor.id)?{...ability,damageType:"physical"}:ability;
   }
   if(abilityId==="passive")return Object.prototype.hasOwnProperty.call(passiveByHero,actor.id)?passiveByHero[actor.id]:null;
   if(abilityId==="leader")return Object.prototype.hasOwnProperty.call(leaderByHero,actor.id)?leaderByHero[actor.id]:null;
   if(abilityId!=="special")return null;
   const ability=Object.prototype.hasOwnProperty.call(special,actor.id)?special[actor.id]:fallback;
-  return actor.combatProfile==="stats002c"&&["lyra","darin"].includes(actor.id)?
+  return actor.combatProfile==="stats002c"&&["lyra","darin","ren"].includes(actor.id)?
     {...ability,damageType:"physical"}:ability;
  }
  // A leveled playable hero carries an immutable battle snapshot of skillLevels.

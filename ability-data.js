@@ -106,7 +106,7 @@ const AbilityData=(()=>{
    ])})
  });
  const fallback=Object.freeze({id:"special",name:"Особый удар",target:"enemy",kind:"damage",multiplier:1,weakening:0,cooldown:2});
- function get(actor,abilityId){
+ function rawGet(actor,abilityId){
   // Stats-002C pilot: only explicitly outfitted fighters use typed basic attacks.
   if(abilityId==="basic")return actor?.combatProfile==="stats002c"?typedBasic:basic;
   if(!actor)return null;
@@ -121,6 +121,12 @@ const AbilityData=(()=>{
   const ability=Object.prototype.hasOwnProperty.call(special,actor.id)?special[actor.id]:fallback;
   return actor.combatProfile==="stats002c"&&["lyra","darin"].includes(actor.id)?
     {...ability,damageType:"physical"}:ability;
+ }
+ // A leveled playable hero carries an immutable battle snapshot of skillLevels.
+ // Other fixtures and unupgraded actors continue to use the original data.
+ function get(actor,abilityId){
+  const ability=rawGet(actor,abilityId);
+  return typeof SkillCore!=="undefined"?SkillCore.apply(ability,actor,abilityId):ability;
  }
  // Missing damageType is explicitly legacy: its historical general atk
  // calculation is preserved, NOT silently labelled as physical or magical.

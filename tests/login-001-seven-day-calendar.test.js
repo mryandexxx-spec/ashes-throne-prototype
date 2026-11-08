@@ -55,6 +55,6 @@ assert.ok(html.includes('src="login-core.js"'));
 assert.ok(html.indexOf('src="login-core.js"')<html.indexOf('src="progress-v3-core.js"'));
 for(const marker of ["renderLoginCalendar","LoginCore.claim","persistProgress()",
  "loginCalendarGrid","loginCalendarStatus"])assert.ok(source.includes(marker)||html.includes(marker),marker);
-assert.match(source,/if\(id==="loginCalendar"\)renderLoginCalendar\(\)/);
+assert.ok(source.includes('if(id==="loginCalendar"){\\n  markLoginCalendarSeen();'.replace('\\n','\n')));
 assert.ok(html.includes('data-screen="loginCalendar"'));
 console.log("Login-001: seven-day claim, repeat, missed days, rollback, v3 save and UI contract passed");

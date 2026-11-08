@@ -111,6 +111,9 @@ const CombatCore = (() => {
       throw Error("critChecks must be a boolean");
     if(options.critChecks===true&&options.rngSeed===undefined)
       throw Error("critChecks requires rngSeed");
+    // Stats-001E1: penetration is deterministic, but test-only and opt-in.
+    if(options.penetrationChecks!==undefined&&typeof options.penetrationChecks!=="boolean")
+      throw Error("penetrationChecks must be a boolean");
     const seededRng=options.rngSeed===undefined?null:
       (typeof BattleRng!=="undefined"?BattleRng.create(options.rngSeed):
        (()=>{throw Error("BattleRng script is required for seeded battles");})());
@@ -132,6 +135,7 @@ const CombatCore = (() => {
       ...(seededRng===null?{}:{rng:seededRng}),
       ...(options.hitChecks===true?{hitChecks:true}:{}),
       ...(options.critChecks===true?{critChecks:true}:{}),
+      ...(options.penetrationChecks===true?{penetrationChecks:true}:{}),
       leaderId,
       wave: 1,
       totalWaves: 1 + futureWaves.length,
@@ -322,14 +326,29 @@ const CombatCore = (() => {
       multiplierPercent:actor.critDamage,draw:roll.draw});
     return adjusted;
   }
+  // Stats-001E1 [TEST ONLY]: temporary percent-based defense penetration.
+  // Missing attributes do not automatically become final character defaults.
+  function penetrationEnabled(battle,type){
+    return type!=="legacy"&&battle.penetrationChecks===true;
+  }
+  function validPenetrationProfile(battle,actor,type){
+    if(!penetrationEnabled(battle,type))return true;
+    return Number.isFinite(actor.defensePenetration)&&
+      actor.defensePenetration>=0&&actor.defensePenetration<=100;
+  }
   // Legacy: weakening -> guard -> HP (unchanged).
   // Typed: weakening -> matching defense -> guard -> Protection -> HP.
-  function dealDamage(attacker,target,rawDamage,consumeWeakening=true,type="legacy"){
+  function dealDamage(attacker,target,rawDamage,consumeWeakening=true,type="legacy",penetration=0){
     let damage=Math.max(0,rawDamage);
     if(attacker.weakenAttacks>0)damage=Math.round(damage*0.7);
     if(type!=="legacy"){
       const defense=target[type==="physical"?"physicalDefense":"magicDefense"];
-      if(defense!==undefined)damage=Math.round(damage*DEFENSE_SCALE/(DEFENSE_SCALE+defense));
+      // Penetration reduces matching DEF, never guard or Protection.
+      // Do not round effective DEF before the damage formula.
+      if(defense!==undefined){
+        const effectiveDefense=defense*(1-penetration/100);
+        damage=Math.round(damage*DEFENSE_SCALE/(DEFENSE_SCALE+effectiveDefense));
+      }
     }
     if(target.guardHits>0){
       damage=Math.round(damage*0.5);
@@ -519,6 +538,7 @@ const CombatCore = (() => {
     if(type&&type!=="legacy"&&recipients.some(target=>!validTypedTarget(target,type)))return false;
     if(ability.kind==="damage"&&!validHitProfile(battle,actor,recipients,type))return false;
     if(ability.kind==="damage"&&!validCriticalProfile(battle,actor,recipients,type))return false;
+    if(ability.kind==="damage"&&!validPenetrationProfile(battle,actor,type))return false;
     // A group attack has one player-selected primary target, even though
     // every living enemy receives the base effect. Future bonus effects can
     // refer to primaryTargetId without changing recipient selection.
@@ -538,7 +558,8 @@ const CombatCore = (() => {
         const baseDamage=Math.round(effectiveStat(battle,actor,
           AbilityData.damageStat(ability))*ability.multiplier);
         const damage=dealDamage(actor,target,
-          rollCriticalDamage(battle,actor,target,baseDamage,type),false,type);
+          rollCriticalDamage(battle,actor,target,baseDamage,type),false,type,
+          penetrationEnabled(battle,type)?actor.defensePenetration:0);
         emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
           ...typedDamageFields(target,type,oldHp,oldProtection)});
         if(target.hp===0)emit(battle,"death",{targetId:target.id});
@@ -607,6 +628,7 @@ const CombatCore = (() => {
     if(type&&type!=="legacy"&&!validTypedTarget(target,type))return false;
     if(ability.kind==="damage"&&!validHitProfile(battle,actor,[target],type))return false;
     if(ability.kind==="damage"&&!validCriticalProfile(battle,actor,[target],type))return false;
+    if(ability.kind==="damage"&&!validPenetrationProfile(battle,actor,type))return false;
     // Invalid commands leave the previous event batch untouched.
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
@@ -626,7 +648,8 @@ const CombatCore = (() => {
       const oldHp=target.hp,oldProtection=target.protection??null;
       const baseDamage=Math.round(effectiveStat(battle,actor,damageStat)*ability.multiplier);
       const damage=dealDamage(actor,target,
-        rollCriticalDamage(battle,actor,target,baseDamage,type),true,type);
+        rollCriticalDamage(battle,actor,target,baseDamage,type),true,type,
+        penetrationEnabled(battle,type)?actor.defensePenetration:0);
       emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
         ...typedDamageFields(target,type,oldHp,oldProtection)});
       if(target.hp===0)emit(battle,"death",{targetId:target.id});

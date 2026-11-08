@@ -78,9 +78,9 @@ const CombatEnvironment010=(()=>{
    return mass+foothills-.22*cleft;
   }
   const layers=[
-   {name:"horizon",d:92,base:19,amplitude:35,phase:.45,color:COLORS.far},
-   {name:"midground",d:65,base:10.5,amplitude:28,phase:1.8,color:COLORS.mid},
-   {name:"escarpment",d:42,base:4.0,amplitude:19,phase:3.2,color:COLORS.near}
+   {name:"horizon",d:92,base:-98,amplitude:54,phase:.45,color:COLORS.far},
+   {name:"midground",d:65,base:-70,amplitude:40,phase:1.8,color:COLORS.mid},
+   {name:"escarpment",d:42,base:-53,amplitude:34,phase:3.2,color:COLORS.near}
   ];
   for(const layer of layers){
    const m=mat(layer.name);

@@ -7,10 +7,10 @@
  */
 function createEnv010Glb(){
  const LAYERS=[
- {name:"front_buttress",d:43,span:116,columns:96,scale:1,palette:[.405,.389,.357],haze:0,
+ {name:"front_buttress",d:53,span:94,columns:96,scale:1,palette:[.405,.389,.357],haze:0,
   profile:[[-116,-56],[-103,-44],[-91,-30],[-83,-24],[-76,-23],[-71,-28],[-64,-29],[-58,-34],[-52,-39],[-46,-47],[-33,-52],[-22,-56],[-11,-64],[2,-66],[14,-60],[24,-54],[33,-46],[42,-34],[49,-31],[56,-32],[62,-35],[69,-41],[77,-43],[89,-49],[101,-57],[116,-64]],
   gullies:[[-94,4,4],[-67,3,5],[-47,5,4],[21,6,3],[72,5,5]]},
- {name:"middle_terraces",d:68,span:135,columns:80,scale:.92,palette:[.47,.478,.45],haze:.09,
+ {name:"middle_terraces",d:70,span:127,columns:80,scale:.92,palette:[.47,.478,.45],haze:.09,
   profile:[[-135,-67],[-119,-61],[-110,-44],[-97,-39],[-87,-39],[-79,-45],[-71,-46],[-61,-43],[-53,-42],[-46,-48],[-38,-52],[-27,-64],[-11,-70],[3,-70],[19,-60],[33,-48],[43,-47],[52,-53],[66,-49],[75,-42],[88,-45],[99,-51],[113,-56],[135,-65]],
   gullies:[[-115,5,4],[-73,5,5],[-32,5,3],[32,6,6],[92,5,4]]},
  {name:"pale_horizon",d:97,span:150,columns:64,scale:.82,palette:[.57,.592,.583],haze:.22,
@@ -43,7 +43,7 @@ function createEnv010Glb(){
    1.1*Math.max(0,1-Math.abs((x-57)/14));
   const weather=(Math.sin(x*.16+row*.58)+.37*Math.sin(x*.41-row*.91))*
       (.38+1.45*t)*L.scale;
-  const lift=L.name==="front_buttress"?(x<-10?23:17):L.name==="middle_terraces"?(x<-10?12:17):11;
+  const lift=L.name==="front_buttress"?(x<-10?2:4):L.name==="middle_terraces"?(x<-10?15:16):17;
   const y=ridgeHeight(L.profile,x)+lift-cut*(1-.65*t)+OFFSETS[row]*L.scale+
        .55*Math.sin(x*.28+row*.7)*(.2+.8*t);
   const d=L.d+beds+weather+elbow*(1-.6*t)+

@@ -28,6 +28,17 @@ const CombatEnvironment010=(()=>{
   if(!supported(B)||!scene||typeof own!=="function")throw Error("ENV010 requires Babylon VertexData");
   const meshes=[];
   let vertices=0,triangles=0;
+  let photoRock=null;
+  function applyPhotoRock(){
+   if(!photoRock)return;
+   // Share the two already-loaded CC0 maps. No extra texture, material
+   // fetch, or GPU duplication; leave the pale distant horizon untextured.
+   for(const name of ["front_buttress","middle_terraces"]){
+    const mat=Array.isArray(scene.materials)?
+     scene.materials.find(m=>m.name==="env010_glb_mat_"+name):null;
+    if(mat){mat.diffuseTexture=photoRock.albedo;mat.bumpTexture=photoRock.normal;}
+   }
+  }
   function mat(name){
    const m=own(new B.StandardMaterial("env010_mat_"+name,scene));
    m.diffuseColor=new B.Color3(1,1,1);
@@ -270,6 +281,7 @@ const CombatEnvironment010=(()=>{
      }
      if(isDisposed())throw Error("ENV010 scene disposed during import");
      for(const m of created)own(m);
+     applyPhotoRock();
      // Keep the original scenic fallback only until a COMPLETE mesh set
      // exists. Dispose replaced GPU buffers instead of accumulating hidden
      // geometry; ENV009 walkable ledge, ravine and photo skin are untouched.
@@ -345,6 +357,7 @@ const CombatEnvironment010=(()=>{
        if(wall)wall.bumpTexture=normal;
       }
       cap.material=material;
+      photoRock={albedo,normal};applyPhotoRock();
       cap.isPickable=false;cap.checkCollisions=false;
       cap.receiveShadows=false;
     };

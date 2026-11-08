@@ -48,9 +48,9 @@ test("ENV010 background is three sculpted canyon walls and one sky gradient; nev
  // a flat painted silhouette would fail this test.
  const escarpment=scene.meshes.find(m=>m.name==="env010_escarpment");
  const p=escarpment.data.positions;
- const cols=129;
  const depth=offset=>(p[offset]+p[offset+2])/Math.sqrt(2);
- assert.ok(Math.abs(depth(3*cols*2)-depth(3*cols*15))>.20);
+ const worldDepths=Array.from({length:p.length/3},(_,i)=>depth(i*3));
+ assert.ok(Math.max(...worldDepths)-Math.min(...worldDepths)>.50);
  assert.equal(scene.meshes[0].name,"env010_sky");
 });
 test("ENV010 integrates as an additive optional layer without changing ENV009/FX",()=>{

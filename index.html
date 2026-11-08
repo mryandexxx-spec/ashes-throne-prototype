@@ -161,24 +161,40 @@
     </section>
     <dialog id="skillUpgradeDialog" class="skill-upgrade-dialog" aria-labelledby="skillUpgradeTitle">
       <div class="skill-dialog-heading">
-        <div><div class="eyebrow">РАЗВИТИЕ УМЕНИЯ · ТЕСТ</div><h2 id="skillUpgradeTitle">Умение</h2><p class="muted" id="skillUpgradeSubhead"></p></div>
+        <div class="skill-dialog-title">
+          <div class="eyebrow">ДОСЬЕ ГЕРОЯ / РАЗВИТИЕ НАВЫКА</div>
+          <h2 id="skillUpgradeTitle">Умение</h2>
+          <p class="muted" id="skillUpgradeSubhead"></p>
+        </div>
         <button type="button" class="ghost" id="skillUpgradeClose" aria-label="Закрыть окно умения">✕</button>
       </div>
-      <div class="skill-dialog-grid">
-        <div class="skill-dialog-description">
-          <div class="eyebrow" id="skillPreviewLabel">ОПИСАНИЕ</div>
-          <p id="skillPreviewText"></p>
-          <p id="skillPreviewMeta" class="muted"></p>
-          <p id="skillNextEffect" class="muted"></p>
-        </div>
-        <div class="skill-dialog-levels">
+      <div class="skill-dialog-content">
+        <div class="skill-level-navigation">
+          <div class="eyebrow">УРОВНИ НАВЫКА</div>
           <div class="skill-level-buttons" id="skillLevelButtons" aria-label="Шесть уровней умения"></div>
-          <div id="skillLevelDetails" class="skill-level-details"></div>
+        </div>
+        <div class="skill-dialog-grid">
+          <section class="skill-dialog-description" aria-label="Описание выбранного уровня">
+            <div class="eyebrow" id="skillPreviewLabel">ОПИСАНИЕ</div>
+            <p id="skillPreviewText"></p>
+            <p id="skillPreviewMeta" class="muted"></p>
+            <div class="skill-dialog-next">
+              <div class="eyebrow">СЛЕДУЮЩЕЕ УЛУЧШЕНИЕ</div>
+              <p id="skillNextEffect" class="muted"></p>
+            </div>
+          </section>
+          <section class="skill-dialog-levels" aria-label="Изменения навыка по уровням">
+            <div class="eyebrow">ПРОГРЕССИЯ НАВЫКА</div>
+            <div id="skillLevelDetails" class="skill-level-details"></div>
+          </section>
         </div>
       </div>
       <div class="skill-dialog-footer">
-        <div><div id="skillCostLabel" class="eyebrow">СТОИМОСТЬ УЛУЧШЕНИЯ</div>
-          <p id="skillCostText"></p><p id="skillUpgradeStatus" class="muted" role="status" aria-live="polite"></p></div>
+        <div class="skill-dialog-cost">
+          <div id="skillCostLabel" class="eyebrow">СТОИМОСТЬ УЛУЧШЕНИЯ</div>
+          <p id="skillCostText"></p>
+          <p id="skillUpgradeStatus" class="muted" role="status" aria-live="polite"></p>
+        </div>
         <button type="button" class="primary" id="skillUpgradeButton">Улучшить умение</button>
       </div>
     </dialog>
@@ -307,7 +323,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.61 · SKILL001</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.62 · SKILLUI002</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

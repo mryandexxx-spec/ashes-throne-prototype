@@ -35,8 +35,54 @@ const CombatEnvironment009=(()=>{
    value.emissiveColor=new B.Color3(.095,.105,.105);
    return value;
   }
+  // Geologically banded local material: one 512px canvas allocated at scene creation,
+  // with continuous strata, erosion paths and mineral veins (not salt-and-pepper dots).
+  function lithologyTexture(){
+   if(typeof B.DynamicTexture!=="function")return null;
+   let tex=null;
+   try{
+    tex=new B.DynamicTexture("env009_sedimentary_albedo",512,scene,false);
+    const ctx=tex.getContext();
+    if(!ctx?.createImageData||!ctx?.putImageData)throw Error("Canvas image API missing");
+    const w=512,img=ctx.createImageData(w,w),px=img.data;
+    const grid=new Float32Array(65*65);
+    let seed=204881;
+    for(let j=0;j<65;j++)for(let i=0;i<65;i++){
+     seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+     grid[j*65+i]=seed/4294967296;
+    }
+    const noise=(x,y)=>{
+     const u=((x%64)+64)%64,v=((y%64)+64)%64;
+     const i=Math.floor(u),j=Math.floor(v);
+     const a=u-i,b=v-j,fa=a*a*(3-2*a),fb=b*b*(3-2*b);
+     const n0=grid[j*65+i]*(1-fa)+grid[j*65+i+1]*fa;
+     const n1=grid[(j+1)*65+i]*(1-fa)+grid[(j+1)*65+i+1]*fa;
+     return n0*(1-fb)+n1*fb;
+    };
+    for(let y=0;y<w;y++)for(let x=0;x<w;x++){
+     const u=x/w,v=y/w;
+     const drift=(noise(u*7,v*7)-.5)*.10+(noise(u*19,v*19)-.5)*.035;
+     const band=Math.sin((v*15+drift+u*.6)*TAU);
+     const split=Math.abs(Math.sin((v*7.0+u*.92+drift*2)*TAU));
+     const broad=noise(u*4.8,v*4.8),fine=noise(u*29,v*29);
+     const iron=.12*Math.max(0,Math.sin((v*4.5+u*.73+drift)*TAU));
+     const fissure=split<.065?-.17*(1-split/.065):0;
+     const tone=clamp(.81+.20*(broad-.5)+.10*band+.075*(fine-.5)-iron+fissure,.42,1.0);
+     const k=(y*w+x)*4;
+     px[k]=Math.round(228*tone);px[k+1]=Math.round(222*tone);
+     px[k+2]=Math.round(207*tone);px[k+3]=255;
+    }
+    ctx.putImageData(img,0,0);
+    tex.update(false);
+    if(B.Texture){tex.wrapU=B.Texture.WRAP_ADDRESSMODE;tex.wrapV=B.Texture.WRAP_ADDRESSMODE;}
+    own(tex);
+    return tex;
+   }catch(error){try{tex?.dispose();}catch(_){}return null;}
+  }
   const stone=mat("weathered_stone"),canyon=mat("canyon_shadow"),
    middle=mat("middle_ridge"),back=mat("back_ridge"),horizon=mat("horizon");
+  const lithology=lithologyTexture();
+  if(lithology)stone.diffuseTexture=lithology;
   const palette={
    top:[.56,.46,.355],rim:[.43,.36,.295],face:[.31,.33,.32],
    valley:[.22,.28,.30],middle:[.31,.365,.375],
@@ -56,13 +102,14 @@ const CombatEnvironment009=(()=>{
    return varying(base,factor);
   }
   function surface(name,rings,sample,shade,material){
-   const pos=[],rgba=[],indices=[],normals=[],count=SECTORS+1;
+   const pos=[],rgba=[],uv=[],indices=[],normals=[],count=SECTORS+1;
    for(let row=0;row<rings.length;row++){
     for(let i=0;i<=SECTORS;i++){
      const a=i*TAU/SECTORS;
      const [x,y,z]=sample(rings[row],a,row);
      const c=shade(x,y,z,rings[row],row,a);
      pos.push(x,y,z);rgba.push(c[0],c[1],c[2],1);
+     uv.push(x*.145, name==="living_ledge"&&row>9?y*.19:z*.145);
     }
    }
    for(let j=0;j<rings.length-1;j++)for(let i=0;i<SECTORS;i++){
@@ -72,7 +119,7 @@ const CombatEnvironment009=(()=>{
    B.VertexData.ComputeNormals(pos,indices,normals);
    const mesh=own(new B.Mesh("env009_"+name,scene));
    const data=new B.VertexData();
-   data.positions=pos;data.indices=indices;data.normals=normals;data.colors=rgba;
+   data.positions=pos;data.indices=indices;data.normals=normals;data.colors=rgba;data.uvs=uv;
    data.applyToMesh(mesh,false);
    mesh.material=material;
    mesh.isPickable=false;

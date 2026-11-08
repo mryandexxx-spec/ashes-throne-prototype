@@ -854,3 +854,10 @@ body.battle-mode #app>footer{visibility:hidden}
 #loginClaim{min-height:44px}
 @media(max-width:850px){.login-calendar-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:460px){.login-calendar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Login-002: unread daily-reward count on the existing home navigation card. */
+#dailyTasksNav{position:relative}
+.daily-nav-badge{position:absolute;right:10px;top:9px;display:grid;place-items:center;
+ min-width:25px;height:25px;padding:0 6px;border-radius:999px;background:var(--gold);
+ color:#17130c;font-weight:700;font-size:12px;line-height:1}
+.daily-nav-badge[hidden]{display:none}

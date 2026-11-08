@@ -26,6 +26,52 @@ const CombatCore = (() => {
   // Combat-013A: read-only passive modifier selection; applying stat changes
   // belongs to Combat-013B after the stacking and rounding rules are agreed.
   // Conditions are evaluated against current state, not cached at battle start.
+  // REN-COMBAT-C: all synergy rules come from passive definitions, not IDs.
+  function passiveCombatRules(owner){
+    if(!owner||owner.side!=="ally"||owner.hp<=0)return null;
+    const rules=AbilityData.get(owner,"passive")?.combatRules;
+    return rules&&typeof rules==="object"?rules:null;
+  }
+  function validPercent(n){return Number.isFinite(n)&&n>=0&&n<=100;}
+  function hasNegativeStatus(target){
+    return activeEffects(target).some(effect=>effect.type!=="guard"&&effect.remaining>0);
+  }
+  function passiveDamageBonusPercent(battle,actor,target){
+    if(!battle||!battle.active||!actor||!target)return 0;
+    let bonus=0;
+    const seen=new Set();
+    for(const owner of battle.fighters){
+      if(seen.has(owner.id))continue;
+      seen.add(owner.id);
+      const rules=passiveCombatRules(owner);
+      if(!rules)continue;
+      if(owner.id===actor.id&&validPercent(rules.bonusVsDebuffedPercent)&&
+         hasNegativeStatus(target))bonus+=rules.bonusVsDebuffedPercent;
+      if(owner.side===actor.side&&
+         typeof rules.tagId==="string"&&rules.tagId.length>0&&
+         Array.isArray(actor.tags)&&actor.tags.includes(rules.tagId)&&
+         validPercent(rules.tagDamagePercent))bonus+=rules.tagDamagePercent;
+    }
+    return bonus;
+  }
+  function passiveStatusPotencyBonus(actor,target){
+    const rules=passiveCombatRules(actor);
+    if(!rules||!validPercent(rules.statusPotencyWithoutResistanceDown))return 0;
+    if(typeof CombatStatusCore!=="undefined"&&
+       CombatStatusCore.read(target,"debuff-resistance-down"))return 0;
+    return rules.statusPotencyWithoutResistanceDown;
+  }
+  function statusChance(actor,target){
+    const effectiveResistance=typeof CombatStatusCore!=="undefined"
+      ?CombatStatusCore.effectiveDebuffResistance(target,target.debuffResistance)
+      :target.debuffResistance;
+    return Math.max(5,Math.min(100,
+      100+actor.debuffPotency+passiveStatusPotencyBonus(actor,target)-effectiveResistance));
+  }
+  function bonusDamage(battle,actor,target,raw){
+    const percent=passiveDamageBonusPercent(battle,actor,target);
+    return percent?Math.round(raw*(1+percent/100)):raw;
+  }
   function activePassiveModifiers(battle,ownerId) {
     if(!battle||!Array.isArray(battle.fighters))return [];
     const owner=battle.fighters.find(f=>f.id===ownerId);
@@ -522,11 +568,13 @@ const CombatCore = (() => {
     const hit=hitCheckEnabled(battle,type);
     const crit=critCheckEnabled(battle,type);
     const status=statusCheckEnabled(battle,type)&&abilityHasNegativeStatus(ability);
-    if(!hit&&!crit&&!status)return true;
+    const onHitStatus=battle.statusChecks===true&&ability.onHitStatus!==undefined;
+    if(!hit&&!crit&&!status&&!onHitStatus)return true;
     if(typeof BattleRng==="undefined")return false;
     let snapshot;
     try{snapshot=BattleRng.snapshot(battle);}catch(error){return false;}
     let draws=(hit?recipients.length:0)+(crit?recipients.length:0);
+    if(onHitStatus)draws+=recipients.length;
     if(status){
       if(ability.weakening>0)draws+=recipients.length;
       for(const e of ability.followUpEffects||[]){
@@ -539,6 +587,14 @@ const CombatCore = (() => {
       snapshot.draws<=Number.MAX_SAFE_INTEGER-draws;
   }
   function validStatusProfile(battle,actor,recipients,ability,type){
+    // Even legacy Ren attacks need valid stats for opt-in on-hit status rolls.
+    // Reject before action/RNG/event mutation, including multi-target commands.
+    if(ability.onHitStatus!==undefined&&battle.statusChecks===true){
+      if(typeof BattleRng==="undefined")return false;
+      const valid=value=>Number.isFinite(value)&&value>=0&&value<=100;
+      if(!valid(actor.debuffPotency)||
+         !recipients.every(t=>valid(t.debuffResistance)))return false;
+    }
     if(!statusCheckEnabled(battle,type)||!abilityHasNegativeStatus(ability))return true;
     // Test-only scope self weakening is not supported yet: do not partially
     // resolve a damaging command before discovering its missing recipient data.
@@ -564,8 +620,7 @@ const CombatCore = (() => {
         effect:"weaken",stacks});
       return;
     }
-    const chance=Math.max(5,Math.min(100,
-      100+actor.debuffPotency-target.debuffResistance));
+    const chance=statusChance(actor,target);
     const roll=BattleRng.roll(battle,chance);
     if(!roll.hit){
       emit(battle,"status-resisted",{actorId:actor.id,targetId:target.id,
@@ -587,12 +642,20 @@ const CombatCore = (() => {
       typeof CombatStatusCore!=="undefined"&&
       CombatStatusCore.KINDS.includes(x?.type)&&
       Number.isFinite(x.amount)&&x.amount>=0&&x.amount<=100&&
-      Number.isSafeInteger(x.turns)&&x.turns>0&&
-      battle.statusChecks!==true;
+      Number.isSafeInteger(x.turns)&&x.turns>0;
   }
   function applyOnHitStatus(battle,actor,target,ability){
     const x=ability.onHitStatus;
     if(!x||target.hp<=0)return;
+    if(battle.statusChecks===true){
+      const chance=statusChance(actor,target);
+      const roll=BattleRng.roll(battle,chance);
+      if(!roll.hit){
+        emit(battle,"status-resisted",{actorId:actor.id,targetId:target.id,
+          effect:x.type,chance,draw:roll.draw});
+        return;
+      }
+    }
     if(CombatStatusCore.apply(target,x.type,x.amount,x.turns))
       emit(battle,"effect",{actorId:actor.id,targetId:target.id,
         effect:x.type,amount:x.amount,remaining:x.turns});
@@ -669,8 +732,9 @@ const CombatCore = (() => {
       if(ability.kind==="damage"){
         if(!rollToHit(battle,actor,target,type))continue;
         const oldHp=target.hp,oldProtection=target.protection??null;
-        const baseDamage=Math.round(effectiveStat(battle,actor,
-          AbilityData.damageStat(ability))*ability.multiplier);
+        const baseDamage=bonusDamage(battle,actor,target,
+          Math.round(effectiveStat(battle,actor,
+            AbilityData.damageStat(ability))*ability.multiplier));
         const damage=dealDamage(actor,target,
           rollCriticalDamage(battle,actor,target,baseDamage,type),false,type,
           penetrationEnabled(battle,type)?actor.defensePenetration:0);
@@ -763,7 +827,8 @@ const CombatCore = (() => {
       battle.message=actor.name+" промахивается по "+target.name+".";
     }else{
       const oldHp=target.hp,oldProtection=target.protection??null;
-      const baseDamage=Math.round(effectiveStat(battle,actor,damageStat)*ability.multiplier);
+      const baseDamage=bonusDamage(battle,actor,target,
+        Math.round(effectiveStat(battle,actor,damageStat)*ability.multiplier));
       const damage=dealDamage(actor,target,
         rollCriticalDamage(battle,actor,target,baseDamage,type),true,type,
         penetrationEnabled(battle,type)?actor.defensePenetration:0);

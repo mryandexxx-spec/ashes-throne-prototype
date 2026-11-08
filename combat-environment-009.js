@@ -38,9 +38,9 @@ const CombatEnvironment009=(()=>{
   const stone=mat("weathered_stone"),canyon=mat("canyon_shadow"),
    middle=mat("middle_ridge"),back=mat("back_ridge"),horizon=mat("horizon");
   const palette={
-   top:[.46,.46,.425],rim:[.34,.37,.37],face:[.285,.32,.337],
-   valley:[.18,.24,.27],middle:[.29,.35,.37],
-   back:[.375,.435,.45],horizon:[.43,.49,.51]
+   top:[.56,.46,.355],rim:[.43,.36,.295],face:[.31,.33,.32],
+   valley:[.22,.28,.30],middle:[.31,.365,.375],
+   back:[.41,.46,.475],horizon:[.48,.53,.55]
   };
   const mix=(a,b,t)=>a.map((v,i)=>v*(1-t)+b[i]*t);
   const varying=(col,s)=>col.map(v=>clamp(v*s,0,1));
@@ -48,7 +48,11 @@ const CombatEnvironment009=(()=>{
   function color(base,x,z,y,depth){
    const seam=Math.sin(y*2.75+x*.17+z*.085);
    const cleavage=Math.sin(x*.43-z*.23+y*.58);
-   const factor=1+.065*seam+.038*cleavage-.035*depth;
+   // Broad sediment beds, pressure fractures and oxidised bands: no pepper noise.
+   const lamina=.12*Math.sin(x*.53+z*.37+.65*Math.sin(z*.32));
+   const erosion=.067*Math.sin(x*1.14-z*.91+.4*Math.cos(x*.33));
+   const fracture=Math.abs(Math.sin(x*.42-z*.56+.33*Math.sin(z*.65)))>.985?-.18:0;
+   const factor=1+.06*seam+.045*cleavage+lamina+erosion+fracture-.035*depth;
    return varying(base,factor);
   }
   function surface(name,rings,sample,shade,material){
@@ -110,9 +114,13 @@ const CombatEnvironment009=(()=>{
      .18*wave(a,15,phase+1.9)+.08*wave(a,29,phase*2);
     // Peaks have broad valleys, ledges and secondary carved faces.
     const peaks=Math.max(0,shape+.48);
-    const crest=height*(.34+.78*peaks);
-    const y=row===0?base:row===1?crest:
-     row===2?crest*.72-1.6:base-1.3;
+    // Only the opposite valley wall rises above the shelf; the camera-side
+    // ravine stays open. This is real 3D, never billboard orientation.
+    const facing=Math.cos(a+3*Math.PI/4);
+    const distantSide=clamp((.24-facing)/1.10,0,1);
+    const crest=base+distantSide*(12+height*(.40+.72*peaks));
+    const mid=base+distantSide*(7+height*(.25+.48*peaks));
+    const y=row===0?base:row===1?crest:row===2?mid:base-1.3;
     return [x,y,z];
    },(x,y,z,r,row,a)=>{
     const face=row===0?mix(palette.valley,tint,.26):
@@ -125,11 +133,11 @@ const CombatEnvironment009=(()=>{
   ridge("far_ridge",[3.10,3.24,3.42,3.60],-11.0,8.5,2.1,back,palette.back);
   ridge("horizon_ridge",[4.05,4.26,4.47,4.68],-13.0,10.5,3.5,horizon,palette.horizon);
   // Atmospheric perspective stays in the scene, not in a flat sky-card.
-  if(typeof B.Color4==="function")scene.clearColor=new B.Color4(.255,.322,.353,1);
+  if(typeof B.Color4==="function")scene.clearColor=new B.Color4(.37,.44,.475,1);
   if(B.Scene&&B.Scene.FOGMODE_EXP2!==undefined){
    scene.fogMode=B.Scene.FOGMODE_EXP2;
-   scene.fogDensity=.014;
-   scene.fogColor=new B.Color3(.31,.375,.398);
+   scene.fogDensity=.011;
+   scene.fogColor=new B.Color3(.405,.47,.49);
   }
   if(Array.isArray(scene.lights)){
    const hemi=scene.lights.find(l=>l.name==="hemi");

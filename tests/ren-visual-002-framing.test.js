@@ -27,7 +27,7 @@ test("REN-VISUAL-002: only Ren has collection portrait, build bumped and source 
  assert.match(game,/owned&&h\.id==="ren"\?'<img class="ren-collection-portrait"/);
  assert.match(game,/const showRenPortrait=hero\.id==="ren"/);
  assert.match(html,/id="detailRenPortrait"[^>]*hidden>/);
- assert.equal(pkg.version,"0.3.78");
- assert.match(html,/v0\.3\.78 · OPSHELP \+ RENPLAY \+ RENVIS002/);
+ assert.equal(pkg.version,"0.3.79");
+ assert.match(html,/v0\.3\.79 · OPSHELP \+ RENPLAY \+ REN3D003/);
  assert.ok(fs.existsSync(path.join(__dirname,"..","assets","ren-portrait-ui.webp")));
 });

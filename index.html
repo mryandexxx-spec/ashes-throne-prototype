@@ -25,12 +25,52 @@
         <button class="nav-card" data-screen="collection"><span>♙</span><b>Герои</b><small>Коллекция и развитие</small></button>
         <button class="nav-card" data-screen="campaign"><span>⚔</span><b>Кампания</b><small>Глава I · Пепельный тракт</small></button>
         <button class="nav-card" data-screen="battle"><span>✦</span><b>Арена</b><small>Пошаговое сражение</small></button>
+        <button class="nav-card" data-screen="playerProfile"><span>♟</span><b>Профиль игрока</b><small>Ник и уровень аккаунта</small></button>
       </div>
       <div class="dev-resources" aria-label="Тестовые инструменты прототипа">
         <div class="eyebrow">ТЕСТИРОВАНИЕ · НЕ ИГРОВАЯ НАГРАДА</div>
         <p class="muted">Для проверки механик без ожидания: восполняет энергию до 240, валюту минимум до 5000, прежний материал C до 100 и отдельные G1-компоненты до тестовых минимумов. Можно нажимать повторно.</p>
         <button type="button" class="ghost" id="devResourcesGrant">Тестовые ресурсы</button>
         <p id="devResourcesNotice" class="muted" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+    <section id="playerProfile" class="screen player-profile-screen" aria-label="Профиль игрока">
+      <div class="section-heading">
+        <div><div class="eyebrow">ТВОЙ ПУТЬ</div><h2>Профиль игрока</h2></div>
+        <button type="button" class="ghost" data-screen="home">← Назад</button>
+      </div>
+      <div class="player-profile-grid">
+        <div class="player-profile-card">
+          <div class="eyebrow">ИМЯ ИГРОКА</div>
+          <h3 id="playerNickname">Странник</h3>
+          <form id="playerNicknameForm" novalidate>
+            <label for="playerNicknameInput">Изменить ник</label>
+            <div class="player-profile-editor">
+              <input id="playerNicknameInput" type="text" minlength="2" maxlength="24"
+                autocomplete="off" enterkeyhint="done" aria-describedby="playerNicknameHint">
+              <button class="primary" type="submit">Сохранить</button>
+            </div>
+            <p id="playerNicknameHint" class="muted">От 2 до 24 символов. Ник хранится только в этом браузере.</p>
+            <p id="playerNicknameNotice" class="muted" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+        <div class="player-profile-card">
+          <div class="eyebrow">ПРОГРЕСС АККАУНТА · ТЕСТ</div>
+          <h3 id="playerAccountLevel">Уровень 1</h3>
+          <div class="player-profile-xp-track" role="progressbar" aria-label="Опыт до следующего уровня"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="playerAccountXpTrack"><span id="playerAccountXpFill"></span></div>
+          <p id="playerAccountXpText" class="muted">0 / 47 XP</p>
+          <p class="muted">Предел 15-го уровня действует только в прототипе. Ограничение уровня героев уровнем аккаунта пока не включено.</p>
+        </div>
+      </div>
+      <div class="player-profile-card player-profile-summary">
+        <div class="eyebrow">ТВОИ ДОСТИЖЕНИЯ В КАМПАНИИ</div>
+        <div class="player-profile-facts">
+          <div><strong id="playerCompletedMissions">0 / 3</strong><small>Пройдено миссий</small></div>
+          <div><strong id="playerCampaignStars">0 / 9</strong><small>Звёзд получено</small></div>
+          <div><strong id="playerHeroCount">5</strong><small>Героев в тестовом ростере</small></div>
+        </div>
+        <p class="muted">Сведения о победах и звёздах берутся из текущего сохранения кампании. Сетевые аккаунты и рейтинги пока не реализованы.</p>
       </div>
     </section>
     <section id="collection" class="screen">
@@ -205,7 +245,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.53 · UIFIX001</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.54 · PROFILE001</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -231,6 +271,7 @@
   <script src="battle-speed.js"></script>
   <script src="animation-profiles.js"></script>
   <script src="battle-animation.js"></script>
+  <script src="player-profile-core.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

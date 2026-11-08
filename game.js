@@ -221,6 +221,7 @@ let missionResultRecorded=false;
 let activeMissionId=null;
 let lastMissionStars=0;
 let lastMissionReward=null;
+let lastUnlockedHeroId=null;
 let lastMissionFarmReward=null;
 let lastMissionEnergyRefunded=false;
 let missionEntryPaid=false;
@@ -601,6 +602,7 @@ function showScreen(id){
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
   lastMissionReward=null;
+  lastUnlockedHeroId=null;
   lastMissionFarmReward=null;
   lastMissionEnergyRefunded=false;
   missionEntryPaid=false;
@@ -1079,7 +1081,11 @@ function missionRewardLabel(id){
   ?"<p class=\"muted\">Дополнительно за первую победу: "+first.currency+" валюты · "+first.xp+" XP.</p>":"";
  return "<p class=\"muted\"><b>Награды за победу:</b> "+reward.currency+
   " валюты · "+reward.xp+" XP · "+components+
-  ". Выдаются при первой победе и каждом повторе (от 1★). Симуляция после 3★.</p>"+bonus;
+  ". Выдаются при первой победе и каждом повторе (от 1★). Симуляция после 3★.</p>"+bonus+
+  (typeof HeroCollectionCore!=="undefined"&&HeroCollectionCore.reward(id)&&
+   !heroOwned(HeroCollectionCore.reward(id))?
+    "<p class=\\"muted\\">За первую победу: новый тестовый герой — "+
+    (ALLIES.find(h=>h.id===HeroCollectionCore.reward(id))?.name||"герой")+".</p>":"");
 }
 function renderCampaign(){
  ProgressCore.refreshEnergy(progress);
@@ -1219,7 +1225,8 @@ function renderMissionResult(){
     (lastMissionReward.material?", +"+lastMissionReward.material+" C":"")+".":"";
  $("#missionResultText").textContent=missionResultSaveFailed
   ?"Ошибка сохранения наград. Прогресс этой победы не записан. Проверь хранилище браузера и повтори миссию."
-  :won?MissionData.get(activeMissionId).title+" завершена. "+(base+first||"Повтор без экономических наград.")
+  :won?MissionData.get(activeMissionId).title+" завершена. "+(base+first||"Повтор без экономических наград.")+
+   (lastUnlockedHeroId?" Новый герой получен: "+(ALLIES.find(h=>h.id===lastUnlockedHeroId)?.name||"тестовый персонаж")+".":"")
   :"Отряд потерпел поражение. Наград нет."+(lastMissionEnergyRefunded?" Энергия за ресурсный повтор возвращена.":"");
  const grade=$("#missionResultStars");
  if(grade){
@@ -1291,7 +1298,7 @@ function syncBattleUI(){
    if(firstClear){
     lastMissionReward=ProgressCore.claimFirstClear(progress,activeMissionId,state);
     if(progress.saveVersion===3&&typeof HeroCollectionCore!=="undefined")
-     HeroCollectionCore.grant(progress,activeMissionId);
+     lastUnlockedHeroId=HeroCollectionCore.grant(progress,activeMissionId);
    }
   }else if(state.winner==="enemy"&&progress.saveVersion===3&&
            campaignProgress.completed[activeMissionId]&&missionEntryPaid){
@@ -1306,7 +1313,7 @@ function syncBattleUI(){
    Object.keys(progress).forEach(key=>delete progress[key]);
    Object.assign(progress,beforeWallet);
    Object.assign(campaignProgress,beforeCampaign);
-   lastMissionFarmReward=null;lastMissionReward=null;lastMissionEnergyRefunded=false;
+   lastMissionFarmReward=null;lastMissionReward=null;lastUnlockedHeroId=null;lastMissionEnergyRefunded=false;
    missionResultSaveFailed=true;
    renderAccountHeader();
   }

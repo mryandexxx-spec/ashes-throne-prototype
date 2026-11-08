@@ -1065,6 +1065,7 @@ body.battle-mode #app>footer{visibility:hidden}
 .story-demo-disclaimer{font-size:12px;line-height:1.5}
 .story-demo-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;align-items:stretch}
 .story-demo-choices{display:flex;flex-wrap:wrap;gap:10px;max-width:100%}
+.story-demo-choices[hidden]{display:none}
 .story-demo-actions button{min-height:44px;white-space:normal;text-align:center}
 .story-demo-choices button{flex:1 1 180px}
 @media (orientation:landscape) and (max-height:540px){

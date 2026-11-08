@@ -9,6 +9,7 @@ const AbilityData=(()=>{
   darin:Object.freeze({id:"special",name:"Сокрушительный удар",target:"enemy",kind:"damage",multiplier:1.5,weakening:0,cooldown:2}),
   "medic-demo":Object.freeze({id:"special",name:"Перевязка",target:"ally",kind:"heal",healAmount:30,cooldown:2}),
   // STORY-002: noncanonical test skills, NOT a claim of combat competence in stories.
+  ren:Object.freeze({id:"special",name:"Найти брешь",target:"enemy",kind:"damage",multiplier:1,weakening:2,cooldown:2}),
   "trial-ren":Object.freeze({id:"special",name:"Найти брешь · проба",target:"enemy",kind:"damage",multiplier:1,weakening:2,cooldown:2}),
   "trial-nada":Object.freeze({id:"special",name:"Выверенное действие · проба",target:"enemy",kind:"damage",multiplier:.8,weakening:2,cooldown:2}),
   "trial-liora":Object.freeze({id:"special",name:"Прикрыть товарища · проба",target:"ally",kind:"guard",guardHits:2,cooldown:2}),
@@ -49,6 +50,8 @@ const AbilityData=(()=>{
   "test-powerful-damage":Object.freeze({id:"powerful",name:"Тест мощного удара",target:"enemy",
    kind:"damage",multiplier:1.5,weakening:0,cooldown:2}),
   // STORY-002: experimental powerful actions, not canon.
+  ren:Object.freeze({id:"powerful",name:"Сорвать построение",target:"enemy",kind:"damage",multiplier:1.6,weakening:0,cooldown:2,
+   followUpStatusAll:Object.freeze({type:"debuff-resistance-down",amount:15,turns:2})}),
   "trial-ren":Object.freeze({id:"powerful",name:"Сорвать построение · проба",target:"enemy",kind:"damage",multiplier:1.6,weakening:0,cooldown:2,
    // Temporary REN-COMBAT-D pilot numbers, NOT approved balance or canon.
    followUpStatusAll:Object.freeze({type:"debuff-resistance-down",amount:15,turns:2})}),
@@ -65,6 +68,11 @@ const AbilityData=(()=>{
  const passiveByHero=Object.freeze({
   kael:passiveEmpty,lyra:passiveEmpty,darin:passiveEmpty,
   "medic-demo":passiveEmpty,"test-area-damage":passiveEmpty,
+  ren:Object.freeze({id:"passive",name:"Чувство тропы",
+   triggers:Object.freeze([]),modifiers:Object.freeze([]),
+   combatRules:Object.freeze({bonusVsDebuffedPercent:15,
+    tagId:"gardens-over-abyss",tagDamagePercent:5,
+    statusPotencyWithoutResistanceDown:10})}),
   "trial-ren":Object.freeze({id:"passive",name:"Чувство тропы · проба",
    triggers:Object.freeze([]),modifiers:Object.freeze([]),
    // REN-COMBAT-C: technical percentages from REN-001; NOT approved balance.
@@ -129,9 +137,9 @@ const AbilityData=(()=>{
   // Stats-002C pilot: only explicitly outfitted fighters use typed basic attacks.
   if(abilityId==="basic"){
    // REN-COMBAT-B: story-only temporary skill level; no v3 progression.
-   if(actor?.id==="trial-ren"){
+   if(actor?.id==="trial-ren"||actor?.id==="ren"){
     const level=actor.skillLevels?.basic;
-    return Object.freeze({...basic,name:"Точный удар · проба",
+    return Object.freeze({...basic,name:actor.id==="ren"?"Точный удар":"Точный удар · проба",
      ...(Number.isInteger(level)&&level>=4&&level<=6?
       {onHitStatus:Object.freeze({type:"slowed",amount:20,turns:2})}:{})});
    }

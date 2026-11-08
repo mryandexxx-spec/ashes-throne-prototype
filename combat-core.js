@@ -172,6 +172,11 @@ const CombatCore = (() => {
       throw Error("statusChecks must be a boolean");
     if(options.statusChecks===true&&options.rngSeed===undefined)
       throw Error("statusChecks requires rngSeed");
+    // Opt-in compatibility: legacy weakening is still guaranteed elsewhere.
+    if(options.legacyStatusChecks!==undefined&&typeof options.legacyStatusChecks!=="boolean")
+      throw Error("legacyStatusChecks must be a boolean");
+    if(options.legacyStatusChecks===true&&options.statusChecks!==true)
+      throw Error("legacyStatusChecks requires statusChecks");
     const seededRng=options.rngSeed===undefined?null:
       (typeof BattleRng!=="undefined"?BattleRng.create(options.rngSeed):
        (()=>{throw Error("BattleRng script is required for seeded battles");})());
@@ -195,6 +200,7 @@ const CombatCore = (() => {
       ...(options.critChecks===true?{critChecks:true}:{}),
       ...(options.penetrationChecks===true?{penetrationChecks:true}:{}),
       ...(options.statusChecks===true?{statusChecks:true}:{}),
+      ...(options.legacyStatusChecks===true?{legacyStatusChecks:true}:{}),
       leaderId,
       wave: 1,
       totalWaves: 1 + futureWaves.length,
@@ -555,7 +561,8 @@ const CombatCore = (() => {
   // Stats-001E2 [TEST ONLY]: negative weaken is resisted independently of damage.
   // No status roll is performed for legacy damage, heal or friendly guard.
   function statusCheckEnabled(battle,type){
-    return type!=="legacy"&&battle.statusChecks===true;
+    return battle.statusChecks===true&&
+      (type!=="legacy"||battle.legacyStatusChecks===true);
   }
   function abilityHasNegativeStatus(ability){
     return ability.kind==="damage"&&

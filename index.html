@@ -104,7 +104,7 @@
       <section class="hero-abilities-panel" aria-labelledby="heroAbilitiesTitle">
         <div class="eyebrow">БОЕВЫЕ УМЕНИЯ · ДЕМОНСТРАЦИЯ</div>
         <h3 id="heroAbilitiesTitle">Способности героя</h3>
-        <p class="muted">Показаны текущие тестовые определения способностей. Уровни навыков и их улучшение ещё не реализованы.</p>
+        <p class="muted">Выбери действующий навык, чтобы посмотреть его шесть уровней и улучшить. Пассивные и лидерские эффекты пока не назначены.</p>
         <div id="heroAbilityList" class="hero-abilities-list" aria-label="Пять типов способностей героя"></div>
       </section>
         <div class="hero-detail-panel hero-detail-identity">
@@ -159,6 +159,29 @@
       <p class="muted" id="campaignSaveStatus" role="status">Статус прохождения хранится в этом браузере.</p>
       <p class="muted">Стоимость энергии указана в каждой миссии для ручного боя и симуляции. После 3★ симуляция даёт повторные ресурсы и Account XP; награды первого прохождения повторно не выдаются.</p>
     </section>
+    <dialog id="skillUpgradeDialog" class="skill-upgrade-dialog" aria-labelledby="skillUpgradeTitle">
+      <div class="skill-dialog-heading">
+        <div><div class="eyebrow">РАЗВИТИЕ УМЕНИЯ · ТЕСТ</div><h2 id="skillUpgradeTitle">Умение</h2><p class="muted" id="skillUpgradeSubhead"></p></div>
+        <button type="button" class="ghost" id="skillUpgradeClose" aria-label="Закрыть окно умения">✕</button>
+      </div>
+      <div class="skill-dialog-grid">
+        <div class="skill-dialog-description">
+          <div class="eyebrow" id="skillPreviewLabel">ОПИСАНИЕ</div>
+          <p id="skillPreviewText"></p>
+          <p id="skillPreviewMeta" class="muted"></p>
+          <p id="skillNextEffect" class="muted"></p>
+        </div>
+        <div class="skill-dialog-levels">
+          <div class="skill-level-buttons" id="skillLevelButtons" aria-label="Шесть уровней умения"></div>
+          <div id="skillLevelDetails" class="skill-level-details"></div>
+        </div>
+      </div>
+      <div class="skill-dialog-footer">
+        <div><div id="skillCostLabel" class="eyebrow">СТОИМОСТЬ УЛУЧШЕНИЯ</div>
+          <p id="skillCostText"></p><p id="skillUpgradeStatus" class="muted" role="status" aria-live="polite"></p></div>
+        <button type="button" class="primary" id="skillUpgradeButton">Улучшить умение</button>
+      </div>
+    </dialog>
     <dialog id="gearPromotionDialog" class="simulation-dialog" aria-labelledby="gearPromotionTitle">
       <h2 id="gearPromotionTitle">Поздравляем!</h2>
       <p id="gearPromotionLevel"></p>
@@ -284,7 +307,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.60 · HEROUI002</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.61 · SKILL001</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -306,6 +329,7 @@
   <script src="save-core.js"></script>
   <script src="daily-core.js"></script>
   <script src="login-core.js"></script>
+  <script src="skill-core.js"></script>
   <script src="progress-v3-core.js"></script>
   <script src="mission-data.js"></script>
   <script src="campaign-core.js"></script>

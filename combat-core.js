@@ -16,7 +16,12 @@ const CombatCore = (() => {
     return fighter.effects[type]?.remaining ?? 0;
   }
   function activeEffects(fighter) {
-    return Object.keys(fighter.effects).map(type => ({type,remaining:effectCount(fighter,type)}));
+    const regular=Object.keys(fighter.effects).map(type=>({type,remaining:effectCount(fighter,type)}));
+    if(typeof CombatStatusCore==="undefined")return regular;
+    return regular.concat(CombatStatusCore.KINDS.flatMap(type=>{
+      const status=CombatStatusCore.read(fighter,type);
+      return status?[{type,...status}]:[];
+    }));
   }
   // Combat-013A: read-only passive modifier selection; applying stat changes
   // belongs to Combat-013B after the stacking and rounding rules are agreed.
@@ -69,7 +74,9 @@ const CombatCore = (() => {
       ...activeLeaderModifiers(battle,fighter.id)]
       .filter(mod=>mod.stat===stat&&mod.operation==="flat")
       .reduce((total,mod)=>total+mod.value,0);
-    return Math.max(stat==="speed"?1:0,base+addition);
+    const effective=Math.max(stat==="speed"?1:0,base+addition);
+    return stat==="speed"&&typeof CombatStatusCore!=="undefined"
+      ?CombatStatusCore.effectiveSpeed(fighter,effective):effective;
   }
 
   function makeFighter(hero,index,meter) {
@@ -569,6 +576,31 @@ const CombatCore = (() => {
     emit(battle,"effect",{actorId:actor.id,targetId:target.id,
       effect:"weaken",stacks});
   }
+  // REN-COMBAT-B: a single data-defined on-hit status, independent of hero ID.
+  // Temporary story pilot: no status RNG on legacy paths. Seeded status-check
+  // mode remains unsupported until a separate approved resist/RNG contract.
+  function validOnHitStatus(battle,ability){
+    if(ability.onHitStatus===undefined)return true;
+    const x=ability.onHitStatus;
+    return ability.kind==="damage"&&
+      ["enemy","all-enemies"].includes(ability.target)&&
+      typeof CombatStatusCore!=="undefined"&&
+      CombatStatusCore.KINDS.includes(x?.type)&&
+      Number.isFinite(x.amount)&&x.amount>=0&&x.amount<=100&&
+      Number.isSafeInteger(x.turns)&&x.turns>0&&
+      battle.statusChecks!==true;
+  }
+  function applyOnHitStatus(battle,actor,target,ability){
+    const x=ability.onHitStatus;
+    if(!x||target.hp<=0)return;
+    if(CombatStatusCore.apply(target,x.type,x.amount,x.turns))
+      emit(battle,"effect",{actorId:actor.id,targetId:target.id,
+        effect:x.type,amount:x.amount,remaining:x.turns});
+  }
+  function tickActorStatuses(actor){
+    if(typeof CombatStatusCore!=="undefined")CombatStatusCore.tickOwnTurn(actor);
+  }
+
   // Combat-012C: optional data-defined follow-up statuses, not hero-specific
   // branching. Existing statuses are intentionally reused; new status types
   // require separate rules and tests rather than implicit interpretation.
@@ -612,7 +644,7 @@ const CombatCore = (() => {
     if(ability.kind==="damage"&&(!Number.isFinite(ability.multiplier)||ability.multiplier<0))return false;
     if(ability.kind==="heal"&&(!Number.isFinite(ability.healAmount)||ability.healAmount<0))return false;
     if(ability.kind==="guard"&&(!Number.isInteger(ability.guardHits)||ability.guardHits<0))return false;
-    if(!targets.length)return false;
+    if(!targets.length||!validOnHitStatus(battle,ability))return false;
     const recipients=targets.map(i=>battle.fighters[i]);
     const type=ability.kind==="damage"?AbilityData.damageType(ability):null;
     if(type&&type!=="legacy"&&recipients.some(target=>!validTypedTarget(target,type)))return false;
@@ -647,6 +679,7 @@ const CombatCore = (() => {
         if(target.hp===0)emit(battle,"death",{targetId:target.id});
         if(ability.weakening>0&&target.hp>0)
           applyNegativeStatus(battle,actor,target,ability.weakening,type);
+        applyOnHitStatus(battle,actor,target,ability);
       }else if(ability.kind==="heal"){
         const restored=Math.min(ability.healAmount,Math.max(0,target.maxHp-target.hp));
         target.hp+=restored;
@@ -671,6 +704,7 @@ const CombatCore = (() => {
       ": целей "+recipients.length+".";
     finishAbilityCooldowns(actor,ability);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
+    tickActorStatuses(actor);
     battle.turn++;
     battle.currentActor=-1;
     if(finishIfOver(battle))return true;
@@ -692,7 +726,8 @@ const CombatCore = (() => {
     // Legacy abilities keep using the historical general atk without reclassification.
     const damageStat=ability.kind==="damage"?AbilityData.damageStat(ability):null;
     if(ability.kind==="damage"&&(!damageStat||!Number.isFinite(actor[damageStat])||actor[damageStat]<0))return false;
-    if(!Number.isSafeInteger(ability.cooldown)||ability.cooldown<0||!validFollowUpEffects(ability))return false;
+    if(!Number.isSafeInteger(ability.cooldown)||ability.cooldown<0||
+       !validFollowUpEffects(ability)||!validOnHitStatus(battle,ability))return false;
     if(!["damage","heal","guard"].includes(ability.kind))return false;
     if(ability.kind==="damage"&&(!Number.isFinite(ability.multiplier)||ability.multiplier<0))return false;
     if(ability.kind==="heal"&&(!Number.isFinite(ability.healAmount)||ability.healAmount<0))return false;
@@ -737,6 +772,7 @@ const CombatCore = (() => {
       if(target.hp===0)emit(battle,"death",{targetId:target.id});
       if(ability.weakening>0&&target.hp>0)
         applyNegativeStatus(battle,actor,target,ability.weakening,type);
+      applyOnHitStatus(battle,actor,target,ability);
       battle.message=actor.side==="enemy"&&ability.id==="basic"
         ? actor.name+" атакует "+target.name+": "+damage+" урона."
         : actor.name+(ability.id!=="basic"?" применяет "+ability.name+": ":" атакует: ")+
@@ -752,6 +788,7 @@ const CombatCore = (() => {
       applyFollowUpEffects(battle,actor,ability,[target],target,type);
     finishAbilityCooldowns(actor,ability);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
+    tickActorStatuses(actor);
     battle.turn++;
     battle.currentActor=-1;
     if(finishIfOver(battle))return true;

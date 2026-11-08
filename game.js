@@ -1787,7 +1787,9 @@ function renderArenaIndicators(){
   const protectionLine=Number.isFinite(h.maxProtection)&&h.maxProtection>0?
     `<div class="arena-protection" title="Protection ${h.protection} / ${h.maxProtection}"><span style="width:${protectionPercent}%"></span></div>`:"";
   const effects=[h.guardHits>0?`<span class="arena-effect" title="Защита: ${h.guardHits} ударов">◆${h.guardHits}</span>`:"",
-   h.weakenAttacks>0?`<span class="arena-effect debuff" title="Ослабление: ${h.weakenAttacks} атак">↓${h.weakenAttacks}</span>`:""].join("");
+   h.weakenAttacks>0?`<span class="arena-effect debuff" title="Ослабление: ${h.weakenAttacks} атак">↓${h.weakenAttacks}</span>`:"",
+   typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"slowed")?
+     `<span class="arena-effect debuff" title="Замедление">⇣${CombatStatusCore.read(h,"slowed").remaining}</span>`:""].join("");
   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
   const active=actor?.id===h.id;
   const support=!!actor&&!autoBattle&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
@@ -2003,6 +2005,12 @@ function renderFighterInspection(){
  const effects=[];
  if(fighter.guardHits>0)effects.push("Защита: "+fighter.guardHits+" удар.");
  if(fighter.weakenAttacks>0)effects.push("Ослабление: "+fighter.weakenAttacks+" атак.");
+ if(typeof CombatStatusCore!=="undefined"){
+  const slowed=CombatStatusCore.read(fighter,"slowed");
+  if(slowed)effects.push("Замедление: -"+slowed.amount+"% скорости, "+slowed.remaining+" ход(а)");
+  const resistance=CombatStatusCore.read(fighter,"debuff-resistance-down");
+  if(resistance)effects.push("Пониженное сопротивление: -"+resistance.amount+" п.п., "+resistance.remaining+" ход(а)");
+ }
  $("#inspectEffects").textContent=effects.length?effects.join(" · "):"Активных эффектов нет";
  dialog.hidden=false;
 }

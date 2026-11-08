@@ -29,6 +29,7 @@ for(let tier=1;tier<=13;tier++){
    assert.equal(row.bonuses,null);
    assert.equal(row.minHeroLevel,null);
    assert.equal(row.classId,"melee");
+   assert.ok(row.allowedClasses.includes("melee"),"future item is class-compatible");
    assert.equal(row.recipe.speed,undefined);
    assert.equal(Object.keys(row.recipe).every(k=>GearData.MATERIALS.includes(k)),true);
    assert.equal(Object.values(row.recipe).every(n=>Number.isSafeInteger(n)&&n>0),true);

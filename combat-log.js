@@ -12,7 +12,13 @@ const CombatLog=(()=>{
       AbilityData.get(actor,e.abilityId)?.name||"Неизвестная способность";
      return name(e.actorId)+": "+title+" → "+(Array.isArray(e.targetIds)&&e.targetIds.length>1?e.targetIds.map(name).join(", "):name(e.targetId));
     }
-    case "damage":return name(e.targetId)+": −"+e.amount+" HP (осталось "+e.remainingHp+")";
+    case "damage":
+     if(e.damageType&&Number.isFinite(e.hpDamage)&&Number.isFinite(e.protectionDamage))
+      return name(e.targetId)+": −"+e.hpDamage+" HP"+
+       (e.protectionDamage>0?", −"+e.protectionDamage+" Protection":"")+
+       " (осталось "+e.remainingHp+" HP"+
+       (e.remainingProtection!==null?", "+e.remainingProtection+" Protection":"")+")";
+     return name(e.targetId)+": −"+e.amount+" HP (осталось "+e.remainingHp+")";
     case "heal":return name(e.targetId)+": +"+e.amount+" HP (теперь "+e.remainingHp+")";
     case "effect":return name(e.targetId)+": "+(e.effect==="guard"?"Защита":e.effect==="weaken"?"Ослабление":e.effect)+" ×"+e.stacks;
     case "death":return name(e.targetId)+": повержен";

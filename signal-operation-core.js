@@ -136,7 +136,7 @@ const SignalOperationCore=(()=>{
   if(battle.winner==="enemy")return {...copyRun(run),phase:"done",
    battleResult:"enemy",outcome:"defeat"};
   if(battle.wave!==waves)return null;
-  if(run.assault==="quiet"&&tracker.seenDeaths.length!==GUARDS.length)return null;
+  if(tracker.seenDeaths.length!==GUARDS.length)return null;
   const firstLoss=run.assault==="quiet"?tracker.firstLoss:null;
   const result={...copyRun(run),phase:"final",battleResult:"ally",firstLoss};
   result.outcome=expectedOutcome(result);
@@ -208,6 +208,7 @@ const SignalOperationCore=(()=>{
    const allowed={prep:["assault","done"],assault:["battle","done"],
     battle:["final","done"],final:["done"]};
    if(!is(allowed[old.phase]||[],run.phase))return null;
+   if(is(["prep","assault"],old.phase)&&run.phase==="done"&&run.outcome!=="abandoned")return null;
    if(run.phase==="done"&&run.outcome==="abandoned"&&
     (old.phase==="final"||old.preparation!==run.preparation||
      old.assault!==run.assault))return null;

@@ -55,7 +55,8 @@ const LoginCore=(()=>{
   if(!isDay(day)||!progress||progress.saveVersion!==3||
    (progress.login!==undefined&&!valid(progress.login)))return null;
   const month=monthOf(day),days=daysInMonth(month);
-  if(days===null)return null;
+  if(days===null||(progress.login?.version===1&&
+     progress.login.lastClaimDay!==null&&day<progress.login.lastClaimDay))return null;
   const state=normalizedState(progress.login,month);
   if(!state)return null;
   const alreadyClaimed=state.lastClaimDay===day;

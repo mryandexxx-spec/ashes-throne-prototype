@@ -54,7 +54,7 @@ test("Only permanent ren uses custom geometry; all other fighters keep generic c
  const createStart=game.indexOf("function initBabylon()");
  const createEnd=game.indexOf("function updateMeshes()",createStart);
  const build=game.slice(createStart,createEnd);
- assert.ok(build.includes('if(h.id==="ren")'));
+ assert.ok(build.includes('if(h.id==="ren"&&typeof RenVisualModel!=="undefined")'));
  assert.ok(build.includes('RenVisualModel.create(BABYLON,scene,x,z,i)'));
  assert.ok(build.includes('BABYLON.MeshBuilder.CreateCapsule("body_"+i'));
  assert.match(build,/for\(const part of \[body,head,base\]\)part\.metadata=\{fighterId:h\.id\}/);

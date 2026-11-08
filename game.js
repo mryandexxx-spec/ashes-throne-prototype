@@ -72,11 +72,26 @@ function cancelVisualTransition(){
 // All battle presentation timing shares one speed source. Future visual
 // effects can call BattleSpeed.multiplier() / BattleSpeed.duration(baseMs).
 const AUTO_STEP_MS=350;
+// UI preference is independent of campaign/save v3 and survives battle restarts.
+const BATTLE_SPEED_SAVE_KEY="ashes-throne.battle-speed.v1";
+function restoreBattleSpeed(){
+ try{
+  const raw=window.localStorage?.getItem(BATTLE_SPEED_SAVE_KEY);
+  const stored=raw===null||raw===undefined?null:Number(raw);
+  if(BattleSpeed.levels.includes(stored))BattleSpeed.set(stored);
+ }catch(error){/* Private browsing or unavailable storage: use in-memory speed. */}
+}
+restoreBattleSpeed();
+function persistBattleSpeed(){
+ try{window.localStorage?.setItem(BATTLE_SPEED_SAVE_KEY,String(BattleSpeed.get()));}
+ catch(error){/* Speed selection must still work when storage is blocked. */}
+}
 function setAutoSpeed(speed){
  if(!BattleSpeed.levels.includes(speed))return false;
  if(!state.active||document.hidden||!$("#battle").classList.contains("active"))return false;
  if(BattleSpeed.get()===speed)return true;
  BattleSpeed.set(speed);
+ persistBattleSpeed();
  if(autoBattle)cancelAutoTimer(); // replace an auto timer only if autoplay is running
  syncBattleUI();
  return true;
@@ -1021,8 +1036,8 @@ function renderArenaIndicators(){
   return `<div class="arena-indicator ${h.side} ${active?"acting":""}" data-fighter-id="${h.id}" aria-label="${h.name}: здоровье ${Math.max(0,h.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
    ${focused?`<div class="arena-focus-cursor ${support?"available":"locked"}" aria-hidden="true">▼</div>`:""}
    <div class="arena-indicator-name">${h.name}</div>
-   <div class="arena-health" title="HP ${Math.max(0,h.hp)} / ${h.maxHp}"><span style="width:${health}%"></span></div>
    ${protectionLine}
+   <div class="arena-health" title="HP ${Math.max(0,h.hp)} / ${h.maxHp}"><span style="width:${health}%"></span></div>
    <div class="arena-initiative" title="Инициатива ${Math.round(h.meter||0)} / 1000"><span style="width:${initiative}%"></span></div>
    ${effects?`<div class="arena-effects">${effects}</div>`:""}
   </div>`;
@@ -1062,7 +1077,7 @@ function resetBattle(){
  cancelVisualTransition();
  BattleAnimation.clear();
  autoBattle=false;
- BattleSpeed.reset();
+ // Keep the chosen speed between battles; only autoplay resets.
  missionResultShown=false;
  missionResultRecorded=false;
  lastMissionStars=0;

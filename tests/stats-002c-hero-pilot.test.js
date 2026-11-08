@@ -63,7 +63,7 @@ assert.equal(upgraded.speed,155,"speed must not scale by level");
 // The physical enemy attacks Kael's Protection before HP.
 const kael=progressedHero(byId("kael"));
 const ves=progressedEnemy(byId("ves"));
-ves.speed=250;
+ves.speed=160;
 let b=CombatCore.createBattle([kael,ves]);
 CombatCore.advanceToPlayerTurn(b);
 assert.equal(b.fighters[0].protection,5);

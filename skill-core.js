@@ -87,7 +87,7 @@ const SkillCore=(()=>{
   if(base.kind==="heal"&&Number.isInteger(base.healAmount))
    return {...base,healAmount:base.healAmount+5*delta};
   if(base.kind==="guard"&&Number.isInteger(base.guardHits))
-   return {...base,guardHits:base.guardHits+Math.floor(delta/2)};
+   return {...base,guardHits:base.guardHits+delta};
   return base;
  }
  return Object.freeze({HERO_IDS,IDS,RESOURCE_IDS,LABELS,FLOORS,MAX,STEPS,

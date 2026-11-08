@@ -1,0 +1,56 @@
+"use strict";
+const assert=require("node:assert/strict");
+const S=require("../combat-status-core.js");
+const f={speed:150,debuffResistance:40};
+assert.equal(S.read(f,"slowed"),null);
+assert.equal(S.effectiveSpeed(f,f.speed),150);
+assert.equal(S.apply(f,"slowed",20,2),true);
+assert.equal(S.effectiveSpeed(f,f.speed),120);
+assert.equal(f.speed,150,"base speed must not mutate");
+assert.equal(S.read(f,"slowed").remaining,2);
+assert.equal(S.apply(f,"slowed",10,1),true);
+assert.equal(S.read(f,"slowed").amount,20,"weaker reapply does not overwrite");
+assert.equal(S.read(f,"slowed").remaining,2,"shorter duration does not reduce");
+assert.equal(S.apply(f,"slowed",30,3),true);
+assert.equal(S.read(f,"slowed").amount,30);
+assert.equal(S.read(f,"slowed").remaining,3);
+assert.equal(S.effectiveSpeed(f,f.speed),105);
+assert.equal(S.apply(f,"debuff-resistance-down",15,2),true);
+assert.equal(S.effectiveDebuffResistance(f,f.debuffResistance),25);
+assert.equal(f.debuffResistance,40,"base resistance must not mutate");
+assert.equal(S.tickOwnTurn(f),true);
+assert.equal(S.read(f,"slowed").remaining,2);
+assert.equal(S.read(f,"debuff-resistance-down").remaining,1);
+assert.equal(S.tickOwnTurn(f),true);
+assert.equal(S.read(f,"debuff-resistance-down"),null);
+assert.equal(S.effectiveDebuffResistance(f,f.debuffResistance),40);
+assert.equal(S.tickOwnTurn(f),true);
+assert.equal(S.read(f,"slowed"),null);
+assert.equal(S.effectiveSpeed(f,f.speed),150);
+assert.equal(S.tickOwnTurn(f),true,"empty own turn remains safe");
+for(const bad of [0,-1,1.5,NaN,Infinity,"2",null]){
+ assert.equal(S.apply(f,"slowed",20,bad),false,"invalid duration rejected");
+}
+for(const bad of [-1,101,NaN,Infinity,"20",null]){
+ assert.equal(S.apply(f,"slowed",bad,2),false,"invalid strength rejected");
+}
+assert.equal(S.apply(f,"not-a-status",20,2),false);
+assert.equal(S.apply(f,"slowed",0,1),true,"zero amount allowed for well-formed fixture");
+assert.equal(S.clear(f),true);
+assert.equal(S.read(f,"slowed"),null);
+const f2={};
+assert.equal(S.apply(f2,"debuff-resistance-down",100,1),true);
+assert.equal(S.effectiveDebuffResistance(f2,23),0,"resistance cannot become negative");
+assert.equal(S.apply(f2,"slowed",100,1),true);
+assert.equal(S.effectiveSpeed(f2,100),1,"effective speed minimum");
+const hostile={renStatuses:"invalid"};
+assert.equal(S.apply(hostile,"slowed",20,2),false);
+assert.equal(S.tickOwnTurn(hostile),false);
+assert.equal(S.clear(hostile),false);
+const fs=require("node:fs");
+const path=require("node:path");
+const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
+assert.ok(!read("index.html").includes('src="combat-status-core.js"'),"status pilot not live");
+assert.ok(!read("combat-core.js").includes("CombatStatusCore"),"battle semantics unchanged");
+assert.ok(!read("progress-v3-core.js").includes("CombatStatusCore"),"save migration unchanged");
+console.log("REN-COMBAT-A: generic isolated status contract tested; NOT live in combat");

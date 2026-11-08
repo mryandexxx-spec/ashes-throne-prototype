@@ -39,6 +39,13 @@ const DailyCore=(()=>{
   progress.daily.counts[id]=1;
   return true;
  }
+ // Read-only counter: never initialize or reset daily state merely to display a badge.
+ function unclaimedCount(progress,day){
+  if(!isDay(day)||!progress||progress.saveVersion!==3)return 0;
+  const state=progress.daily;
+  if(!state||!valid(state)||state.day!==day)return 0;
+  return IDS.filter(id=>state.counts[id]===1&&!state.claimed.includes(id)).length;
+ }
  function claim(progress,id,day){
   const task=TASKS.find(t=>t.id===id);
   if(!task||!today(progress,day)||progress.daily.counts[id]!==1||
@@ -54,5 +61,5 @@ const DailyCore=(()=>{
   progress.daily.claimed.push(id);
   return {currency:task.currency,xp:task.xp,materials:task.materials};
  }
- return Object.freeze({TASKS,IDS,empty,valid,localDay,today,record,claim});
+ return Object.freeze({TASKS,IDS,empty,valid,localDay,today,record,unclaimedCount,claim});
 })();

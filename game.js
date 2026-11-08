@@ -854,7 +854,7 @@ $("#skillUpgradeButton")?.addEventListener("click",()=>{
  if(!persistProgress()){
   Object.keys(progress).forEach(k=>delete progress[k]);
   Object.assign(progress,JSON.parse(before));
-  renderSkillUpgrade();
+  renderAccountHeader();renderHeroDetail();renderSkillUpgrade();
   $("#skillUpgradeStatus").textContent="Сохранение не удалось. Ресурсы не списаны.";
   return;
  }

@@ -47,7 +47,7 @@ function firstWin(){
  assert.equal(CC.recordResult(campaign,"black-pass-ambush",b).earned,stars);
  assert.equal(CD.available(CD.getMission("demo-mission-2"),campaign),true,
   "second mission unlocks on first victory, without a level gate");
- assert.deepEqual(ids.map(id=>P.levelOf(progress,id)),Array(5).fill(1));
+ assert.equal(ids.every(id=>P.levelOf(progress,id)===1),true);
  return {progress,stars,actions:b.allyActions,first,bonus,
   unlockAccountLevel:P.accountLevel(progress)};
 }

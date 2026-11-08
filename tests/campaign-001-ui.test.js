@@ -639,7 +639,7 @@ api.showScreen("campaign");
 clickMission("black-pass-ambush");
 click(elements.squadStart);
 const losing=api.getBattle();
-losing.fighters.filter(f=>f.side==="ally").forEach(f=>{f.hp=1;});
+losing.fighters.filter(f=>f.side==="ally").forEach(f=>{f.hp=1;if(Number.isFinite(f.protection))f.protection=0;});
 losing.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=10000;f.maxHp=10000;});
 const beforeDefeatReward=api.getCurrency();
 let defeatActions=0;

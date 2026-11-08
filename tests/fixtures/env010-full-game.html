@@ -11,7 +11,7 @@
  * combat fixtures or changes to production play flow. Same-origin local server.
  * This checks full game canvas plus HUD; it is not an iPhone Safari test. */
 const frame=document.querySelector("#game");
-let attempts=0;
+let attempts=0,entered=false,launched=false;
 const watchdog=setInterval(()=>{
  try {
   if(++attempts>80)throw Error("full game did not start");
@@ -19,7 +19,11 @@ const watchdog=setInterval(()=>{
   if(!doc||doc.readyState!=="complete")return;
   const btn=doc.querySelector("#startBattle");
   if(!btn)return;
-  if(!doc.querySelector("#battle.active"))btn.click();
+  if(doc.querySelector("#home.active")&&!entered){entered=true;btn.click();}
+  if(doc.querySelector("#squad.active")&&!launched){
+   launched=true;
+   doc.querySelector("#squadStart")?.click();
+  }
   const canvas=doc.querySelector("#renderCanvas");
   const controls=doc.querySelector("#arenaIndicators");
   const battle=doc.querySelector("#battle.active");

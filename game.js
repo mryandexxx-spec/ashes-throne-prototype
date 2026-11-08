@@ -302,7 +302,7 @@ const LOGIN_CALENDAR_SEEN_KEY="ashes-throne.login-calendar-seen.v1";
 let loginCalendarSeenDay=null;
 try{
  const raw=window.localStorage?.getItem(LOGIN_CALENDAR_SEEN_KEY);
- if(typeof raw==="string"&&/^\\d{4}-\\d{2}-\\d{2}$/.test(raw))loginCalendarSeenDay=raw;
+ if(typeof raw==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(raw))loginCalendarSeenDay=raw;
 }catch(_){/* Unavailable storage disables only cross-reload prompt suppression. */}
 function markLoginCalendarSeen(){
  const day=dailyDay();

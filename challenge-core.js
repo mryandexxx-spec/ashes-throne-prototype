@@ -7,14 +7,37 @@ const ChallengeCore=(()=>{
  const VERSION=1;
  const catalog=Object.freeze({
   "T-01":Object.freeze({id:"T-01",kind:"tactical",title:"Первая цель",
-   enemyIds:Object.freeze(["ves","shade"]),priorityId:"ves",
-   futureWaves:Object.freeze([])}),
+   enemyIds:Object.freeze(["ves","shade"]),priorityId:"ves",futureWaves:Object.freeze([])}),
+  "T-02":Object.freeze({id:"T-02",kind:"tactical",title:"Быстрая угроза",
+   enemyIds:Object.freeze(["ves","shade"]),priorityId:"shade",futureWaves:Object.freeze([])}),
+  "T-03":Object.freeze({id:"T-03",kind:"tactical",title:"Выделенная цель",
+   enemyIds:Object.freeze(["ves","shade","ves-2"]),priorityId:"ves-2",futureWaves:Object.freeze([])}),
+  "T-04":Object.freeze({id:"T-04",kind:"tactical",title:"Смена приоритета",
+   enemyIds:Object.freeze(["shade","ves","shade-2"]),priorityId:"shade-2",futureWaves:Object.freeze([])}),
   "N-01":Object.freeze({id:"N-01",kind:"onslaught",title:"Два рубежа",
    enemyIds:Object.freeze(["ves","shade","ves-2"]),
-   futureWaves:Object.freeze([Object.freeze(["ves-2"])]),
+   futureWaves:Object.freeze([Object.freeze(["ves-2"])]),thirdStarActionLimit:null}),
+  "N-02":Object.freeze({id:"N-02",kind:"onslaught",title:"Смена караула",
+   enemyIds:Object.freeze(["ves","shade","shade-2","ves-2"]),
+   futureWaves:Object.freeze([Object.freeze(["shade-2","ves-2"])]),thirdStarActionLimit:null}),
+  "N-03":Object.freeze({id:"N-03",kind:"onslaught",title:"Три рубежа",
+   enemyIds:Object.freeze(["ves","shade","ves-2","shade-2","ves-3"]),
+   futureWaves:Object.freeze([Object.freeze(["ves-2","shade-2"]),Object.freeze(["ves-3"])]),
+   thirdStarActionLimit:null}),
+  "N-04":Object.freeze({id:"N-04",kind:"onslaught",title:"Длинный натиск",
+   enemyIds:Object.freeze(["ves","shade","ves-2","shade-2","ves-3"]),
+   futureWaves:Object.freeze([Object.freeze(["shade-2"]),Object.freeze(["ves-2","ves-3"])]),
    thirdStarActionLimit:null})
  });
+ const kinds=Object.freeze(["tactical","onslaught"]);
  const ids=()=>Object.keys(catalog);
+ const byKind=kind=>kinds.includes(kind)?ids().map(id=>catalog[id]).filter(x=>x.kind===kind):[];
+ function available(id,progress){
+  const def=get(id);
+  if(!def||!progress||!progress.bestStars)return false;
+  const list=byKind(def.kind),position=list.findIndex(x=>x.id===id);
+  return position===0||progress.bestStars[list[position-1].id]>=1;
+ }
  function get(id){return catalog[id]||null;}
  function fresh(){return {bestStars:Object.fromEntries(ids().map(id=>[id,0]))};}
  function valid(data){
@@ -83,12 +106,12 @@ const ChallengeCore=(()=>{
   let stars=1;
   const allAlive=battle.fighters.filter(f=>f.side==="ally").length>0&&
    battle.fighters.filter(f=>f.side==="ally").every(f=>f.hp>0);
-  if(id==="T-01"){
+  if(def.kind==="tactical"){
    if(!strictFirst(tracker,def.priorityId))return 1;
    stars=2;
    if(allAlive)stars=3;
-  }else if(id==="N-01"){
-   if(battle.wave!==2||battle.totalWaves!==2)return 0;
+  }else if(def.kind==="onslaught"){
+   if(battle.wave!==def.futureWaves.length+1||battle.totalWaves!==def.futureWaves.length+1)return 0;
    if(allAlive)stars=2;
    if(allAlive&&Number.isSafeInteger(def.thirdStarActionLimit)&&
       Number.isSafeInteger(battle.allyActions)&&
@@ -106,6 +129,6 @@ const ChallengeCore=(()=>{
   const candidate={bestStars:{...progress.bestStars,[id]:best}};
   return {earned,best,improved:best>old,candidate};
  }
- return Object.freeze({KEY,VERSION,get,all:()=>ids().map(get),fresh,valid,load,save,start,capture,strictFirst,score,result});
+ return Object.freeze({KEY,VERSION,get,all:()=>ids().map(get),byKind,available,fresh,valid,load,save,start,capture,strictFirst,score,result});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=ChallengeCore;

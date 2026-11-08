@@ -21,7 +21,7 @@ function deathGroups(id,groups){
  return t;
 }
 test("catalog is isolated from campaign, rewards and scenario narrative",()=>{
- assert.deepEqual(Array.from(core.all().map(x=>x.id)),["T-01","N-01"]);
+ assert.deepEqual(Array.from(core.all().map(x=>x.id)),["T-01","T-02","T-03","T-04","N-01","N-02","N-03","N-04"]);
  assert.deepEqual(Array.from(core.get("T-01").enemyIds),["ves","shade"]);
  assert.deepEqual(Array.from(core.get("N-01").futureWaves[0]),["ves-2"]);
  assert.equal(core.get("N-01").thirdStarActionLimit,null);
@@ -82,7 +82,7 @@ test("independent local save, reload and no overwrite of corrupted data",()=>{
  const map=new Map();
  const store={getItem:key=>map.has(key)?map.get(key):null,setItem:(key,v)=>map.set(key,v)};
  assert.equal(core.load(()=>store).progress.bestStars["T-01"],0);
- const p={bestStars:{"T-01":3,"N-01":2}};
+ const p=core.fresh();p.bestStars["T-01"]=3;p.bestStars["N-01"]=2;
  assert.equal(core.save(p,()=>store),true);
  assert.equal(core.load(()=>store).progress.bestStars["N-01"],2);
  const original=map.get(core.KEY);
@@ -96,8 +96,8 @@ test("independent local save, reload and no overwrite of corrupted data",()=>{
 });
 test("save schema refuses unknown IDs and invalid grades",()=>{
  const map=new Map(),store={setItem:(k,v)=>map.set(k,v)};
- assert.equal(core.save({bestStars:{"T-01":3,"N-01":2,"unknown":1}},()=>store),false);
- assert.equal(core.save({bestStars:{"T-01":3,"N-01":-1}},()=>store),false);
+ assert.equal(core.save({bestStars:{...core.fresh().bestStars,unknown:1}},()=>store),false);
+ assert.equal(core.save({bestStars:{...core.fresh().bestStars,"N-01":-1}},()=>store),false);
  assert.equal(map.size,0);
 });
 test("does not touch existing campaign and progress keys",()=>{

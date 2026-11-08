@@ -228,6 +228,7 @@ let challengeProgress=challengeLoaded.progress;
 let challengeSaveBlocked=challengeLoaded.blocked;
 let challengeSaveAvailable=challengeLoaded.available;
 let activeChallengeId=null,challengeTracker=null;
+let selectedChallengeKind=null;
 let challengeResultRecorded=false,challengeLastStars=0,challengeSaveFailed=false;
 let storyTrialParty=false; // Only for the opt-in story sandbox, never saved.
 let storyDemoState=null;
@@ -272,10 +273,13 @@ function renderDailyTasks(){
  const day=dailyDay();
  if(progress.saveVersion!==3||saveBlocked||!day||!DailyCore.today(progress,day)){
   list.textContent="Ежедневные задания недоступны: проверь сохранение или дату на устройстве.";
+  const all=$("#dailyClaimAll");if(all)all.disabled=true;
   if(notice)notice.textContent="Награды не начисляются, пока состояние недоступно.";
   return;
  }
  $("#dailyDay").textContent="День: "+day;
+ const all=$("#dailyClaimAll");
+ if(all)all.disabled=DailyCore.unclaimedCount(progress,day)===0;
  list.replaceChildren();
  for(const task of DailyCore.TASKS){
   const row=document.createElement("div");row.className="daily-task";
@@ -311,7 +315,23 @@ $("#dailyTaskList")?.addEventListener("click",event=>{
   " валюты, +"+reward.xp+" Account XP, "+
   Object.entries(reward.materials).map(([key,qty])=>
    "+"+qty+" "+(GearData.MATERIAL_LABELS[key]||key)).join(", ")+".";
- renderDailyTasks();renderPlayerProfile();renderHeroes();
+ renderDailyTasks();renderDailyClaimBadge();renderAccountHeader();renderPlayerProfile();renderHeroes();
+});
+$("#dailyClaimAll")?.addEventListener("click",()=>{
+ if(saveBlocked||progress.saveVersion!==3)return;
+ const snapshot=JSON.stringify(progress),day=dailyDay();
+ if(!day)return;
+ const batch=DailyCore.claimAll(progress,day);
+ if(!batch)return;
+ if(!persistProgress()){
+  Object.keys(progress).forEach(key=>delete progress[key]);
+  Object.assign(progress,JSON.parse(snapshot));
+  $("#dailyTaskNotice").textContent="Не удалось сохранить все награды. Начисление отменено.";
+  renderDailyTasks();renderDailyClaimBadge();return;
+ }
+ $("#dailyTaskNotice").textContent="Получено наград: "+batch.ids.length+
+  " · +"+batch.currency+" валюты · +"+batch.xp+" Account XP.";
+ renderDailyTasks();renderDailyClaimBadge();renderAccountHeader();renderPlayerProfile();renderHeroes();
 });
 // UI-only visit marker: never grants rewards and never rewrites progress.v3.
 const LOGIN_CALENDAR_SEEN_KEY="ashes-throne.login-calendar-seen.v1";
@@ -648,6 +668,8 @@ function renderStoryDemo(){
  $("#storyDemoAgain").hidden=view.kind!=="defeat"&&view.kind!=="ending";
 }
 function showScreen(id){
+ // Re-entering from home opens the two-mode chooser, not a stale mission list.
+ if(id==="challenges"&&$("#home")?.classList.contains("active"))selectedChallengeKind=null;
  if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();}
  if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();stopBattleRendering();}
  // Combat-008A: release the document scroll while the arena owns the viewport.
@@ -683,9 +705,11 @@ function showScreen(id){
   const objective=$("#battleChallengeGoal");
   if(objective){
    objective.hidden=!battleIsChallenge;
-   objective.textContent=!battleIsChallenge?"":activeChallengeId==="T-01"
-    ?"Цель: Вестник Конклава должен погибнуть первым и отдельно от остальных."
-    :"Цель: одолеть две волны, сохранив отряд.";
+   const def=battleIsChallenge?ChallengeCore.get(activeChallengeId):null;
+   const priority=def?.kind==="tactical"?ENEMIES.find(e=>e.id===def.priorityId):null;
+   objective.textContent=!def?"":def.kind==="tactical"?
+    "Цель: "+(priority?.name||"отмеченный враг")+" должен погибнуть первым и отдельно от остальных.":
+    "Цель: пройти "+(def.futureWaves.length+1)+" волны, сохранив отряд.";
   }
   const freeStoryEntry=battleIsCampaign&&progress.saveVersion===3&&
    !campaignProgress.completed[activeMissionId];
@@ -773,33 +797,61 @@ $("#storyDemoTrialFight")?.addEventListener("click",()=>{
 });
 $("#storyDemoAgain")?.addEventListener("click",beginStoryDemo);
 function renderChallenges(){
- const container=$("#challengeList");
+ const container=$("#challengeList"),modeNav=$("#challengeModes"),modeBack=$("#challengeModeBack");
  if(!container)return;
- container.innerHTML=ChallengeCore.all().map(def=>{
-  const stars=challengeProgress.bestStars[def.id]||0;
-  const details=def.id==="T-01"?
-   ["1★ — победить","2★ — уничтожить Вестника Конклава первым и отдельно от других","3★ — дополнительно сохранить всех союзников"]:
-   ["1★ — победить в двух волнах","2★ — победить без потерь","3★ — лимит действий пока настраивается, звезда недоступна"];
-  return '<article class="campaign-panel campaign-mission"><div class="node">✦</div><div>'+
-   '<h3>'+def.id+' · '+def.title+'</h3>'+
-   '<p>'+(def.id==="T-01"?"Тактическая задача · два противника":"Натиск · две последовательные волны")+'</p>'+
-   '<p class="mission-stars">Лучшая оценка: '+("★".repeat(stars)+"☆".repeat(3-stars))+'</p>'+
-   '<ul class="mission-criteria">'+details.map(x=>'<li>'+x+'</li>').join("")+'</ul>'+
-   '<div class="campaign-mission-actions"><button class="primary" type="button" data-start-challenge="'+def.id+'">Вступить в бой</button></div>'+
-   '</div></article>';
- }).join("");
+ const kind=selectedChallengeKind;
+ if(modeNav)modeNav.hidden=!!kind;
+ if(modeBack)modeBack.hidden=!kind;
+ container.hidden=!kind;
+ const header=$("#challengeModeTitle");
+ if(header)header.textContent=kind==="tactical"?"Тактические задачи":kind==="onslaught"?"Натиск":"Выбери режим";
+ if(kind){
+  container.innerHTML=ChallengeCore.byKind(kind).map(def=>{
+   const stars=challengeProgress.bestStars[def.id]||0;
+   const unlocked=ChallengeCore.available(def.id,challengeProgress);
+   const priority=def.kind==="tactical"?ENEMIES.find(e=>e.id===def.priorityId):null;
+   const waves=1+def.futureWaves.length;
+   const details=def.kind==="tactical"?
+    ["1★ — победить","2★ — уничтожить "+(priority?.name||"отмеченного врага")+" первым и отдельно от остальных",
+     "3★ — дополнительно сохранить всех союзников"]:
+    ["1★ — пройти "+waves+" волны","2★ — победить без потерь",
+     "3★ — лимит действий пока не установлен"];
+   return '<article class="campaign-panel campaign-mission"><div class="node">✦</div><div>'+
+    '<h3>'+def.id+' · '+def.title+'</h3>'+
+    '<p>'+(def.kind==="tactical"?"Тактическая задача · "+def.enemyIds.length+" противника":
+     "Натиск · "+waves+" волны")+'</p>'+
+    '<p class="mission-stars">Лучшая оценка: '+("★".repeat(stars)+"☆".repeat(3-stars))+'</p>'+
+    '<ul class="mission-criteria">'+details.map(x=>'<li>'+x+'</li>').join("")+'</ul>'+
+    '<div class="campaign-mission-actions"><button class="primary" type="button" data-start-challenge="'+def.id+
+    '" '+(unlocked?"":"disabled")+'> '+(unlocked?"Вступить в бой":"Открой предыдущую миссию на 1★")+'</button></div>'+
+    '</div></article>';
+  }).join("");
+ }else container.innerHTML="";
  $("#challengeSaveStatus").textContent=challengeSaveBlocked?
-  "Прогресс испытаний недоступен: бои доступны, запись заблокирована. Старые данные не удаляются.":
+  "Прогресс испытаний недоступен: бои доступны, сохранение заблокировано.":
   challengeSaveAvailable?"Лучшая оценка сохраняется в этом браузере.":
   "Хранилище браузера недоступно: результаты не сохраняются.";
 }
 function openChallenge(id){
- if(!ChallengeCore.get(id))return false;
+ const def=ChallengeCore.get(id);
+ if(!def||!ChallengeCore.available(id,challengeProgress))return false;
  activeChallengeId=id;
+ selectedChallengeKind=def.kind;
  activeMissionId=null;
  openSquad("challenges");
  return true;
 }
+$("#challengeModes")?.addEventListener("click",event=>{
+ const button=event.target.closest?.("[data-challenge-kind]");
+ if(!button||!$("#challengeModes").contains(button))return;
+ const kind=button.dataset.challengeKind;
+ if(!["tactical","onslaught"].includes(kind))return;
+ selectedChallengeKind=kind;
+ renderChallenges();
+});
+$("#challengeModeBack")?.addEventListener("click",()=>{
+ selectedChallengeKind=null;renderChallenges();
+});
 $("#challengeList")?.addEventListener("click",event=>{
  const button=event.target.closest?.("[data-start-challenge]");
  if(button&&$("#challengeList").contains(button))openChallenge(button.dataset.startChallenge);
@@ -1576,6 +1628,15 @@ function syncBattleUI(){
   missionResultRecorded=true;
  }
  if(battleIsChallenge&&!state.active&&!challengeResultRecorded){
+  // A fully resolved challenge counts as participation even on defeat.
+  // Cancel the daily change if its v3 save is rejected.
+  const beforeDaily=JSON.stringify(progress);
+  const def=ChallengeCore.get(activeChallengeId);
+  const task=def?.kind==="tactical"?"tactical-participation":"onslaught-participation";
+  if(def&&recordDailyTask(task)&&!persistProgress()){
+   Object.keys(progress).forEach(key=>delete progress[key]);
+   Object.assign(progress,JSON.parse(beforeDaily));
+  }
   const outcome=ChallengeCore.result(challengeProgress,activeChallengeId,state,challengeTracker);
   challengeLastStars=outcome?.earned||0;
   if(challengeSaveBlocked||!challengeSaveAvailable||!outcome)challengeSaveFailed=true;

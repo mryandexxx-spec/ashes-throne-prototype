@@ -4,7 +4,7 @@ const fs=require("node:fs"),path=require("node:path");
 const read=n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8");
 const html=read("index.html"),css=read("styles.css"),game=read("game.js");
 const pkg=JSON.parse(read("package.json"));
-assert.equal(pkg.version,"0.3.63");
+assert.equal(pkg.version,"0.3.64");
 assert.match(html,/v0\.3\.63 · HERO001/);
 const dossier=html.split('<section id="heroDetail"')[1]?.split('<section id="campaign"')[0];
 assert.ok(dossier,"dossier section");

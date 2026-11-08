@@ -40,18 +40,18 @@ assert.equal(RenGearPlan.tierPlan(14),null);
 assert.equal(RenGearPlan.rawRecipe(3,"weapon"),null);
 assert.equal(RenGearPlan.proposal(4,"bad-slot"),null);
 for(const slot of slots){
- const prev=RenGearPlan.rawRecipe(4,slot);
+ let prev=RenGearPlan.rawRecipe(4,slot);
  for(let tier=5;tier<=13;tier++){
   const next=RenGearPlan.rawRecipe(tier,slot);
   for(const key of Object.keys(prev)) assert.ok((next[key]||0)>=prev[key],"proposal recipe monotonic for "+slot+" / "+key);
-  Object.assign(prev,next);
+  prev=next;
  }
 }
 const html=read("index.html"),css=read("styles.css"),game=read("game.js"),portrait=read("assets/ren-concept-sketch.svg");
 assert.match(portrait,/<svg[^>]*viewBox="0 0 320 420"/);
 assert.match(portrait,/<title[^>]*>Рен Терен/);
 assert.ok(portrait.includes("страховочной верёвки"));
-assert.doesNotMatch(portrait,/<script|https?:\/\//i,"self-contained SVG");
+assert.doesNotMatch(portrait,/<script|(?:href|src)="https?:\/\//i,"self-contained SVG");
 assert.equal((html.match(/src="assets\/ren-concept-sketch\.svg"/g)||[]).length,2,"preview and biography");
 assert.match(html,/class="ren-sketch-mini"/);
 assert.match(html,/id="heroBiographyPortrait"/);

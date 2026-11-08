@@ -37,6 +37,7 @@ test("ENV009 builds cohesive textured-by-vertices 3D landscape without legacy sl
   assert.ok(g.positions.length>0&&g.indices.length>0);
   assert.equal(g.positions.length,g.normals.length);
   assert.equal(g.colors.length,g.positions.length/3*4);
+  assert.equal(g.uvs.length,g.positions.length/3*2,"all geometry has stable UVs");
   assert.ok(g.indices.every(i=>i>=0&&i<g.positions.length/3));
   assert.ok(g.positions.every(Number.isFinite));
   assert.ok(g.colors.every(v=>v>=0&&v<=1));
@@ -76,6 +77,27 @@ test("ENV009 integrates with CV007 FX without intercepting hits or changing scen
  assert.equal(visual.pending(),1);visual.tick(100,2);assert.equal(visual.pending(),0);
  assert.equal(scene.textures?.length||0,0,"no procedural texture when new environment is active");
  assert.doesNotMatch(read("combat-environment-009.js"),/runRenderLoop|setInterval|setTimeout|fetch\(|XMLHttpRequest|Math\.random/);
+});
+test("ENV009 constructs one locally generated stratified texture and no network loads",()=>{
+ const {B,scene}=fixture();
+ let uploads=0;
+ B.Texture={WRAP_ADDRESSMODE:1};
+ B.DynamicTexture=class {
+  constructor(name,size,owner){this.name=name;this.size=size;this.owner=owner;this.updates=0;}
+  getContext(){return {
+   createImageData:(w,h)=>({data:new Uint8ClampedArray(w*h*4)}),
+   putImageData:(img)=>{uploads++;assert.equal(img.data.length,512*512*4);}
+  };}
+  update(){this.updates++;}
+  dispose(){this.disposed=true;}
+ };
+ Env.build(B,scene,v=>v);
+ assert.equal(uploads,1,"single material bake at arena initialization");
+ const stone=scene.materials.find(m=>m.name==="env009_mat_weathered_stone");
+ assert.equal(stone.diffuseTexture.size,512);
+ assert.equal(stone.diffuseTexture.updates,1);
+ assert.equal(stone.diffuseTexture.wrapU,1);
+ assert.equal(stone.diffuseTexture.wrapV,1);
 });
 test("ENV009 keeps no-VertexData/old-browser fallback and candidate version contract",()=>{
  const {B,scene}=fixture();

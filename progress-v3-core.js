@@ -160,6 +160,10 @@ const ProgressV3Core=(()=>{
      MATERIALS.some(id=>!own(data.materials,id)||!nonneg(data.materials[id])))return null;
   if(data.daily!==undefined&&(typeof DailyCore==="undefined"||!DailyCore.valid(data.daily)))return null;
   if(data.login!==undefined&&(typeof LoginCore==="undefined"||!LoginCore.valid(data.login)))return null;
+  if(data.skillLevels!==undefined&&
+    (typeof SkillCore==="undefined"||!SkillCore.validLevels(data.skillLevels)))return null;
+  if(data.skillMaterials!==undefined&&
+    (typeof SkillCore==="undefined"||!SkillCore.validMaterials(data.skillMaterials)))return null;
   return JSON.parse(JSON.stringify(data));
  }
  function toRuntime(data,heroes){
@@ -174,6 +178,8 @@ const ProgressV3Core=(()=>{
    materials:source.materials,
    daily:source.daily,
    login:source.login,
+   skillLevels:source.skillLevels,
+   skillMaterials:source.skillMaterials,
    classes:Object.fromEntries(ids.map(id=>[id,source.heroes[id].classId])),
    levels:Object.fromEntries(ids.map(id=>[id,source.heroes[id].level])),
    gear:Object.fromEntries(ids.map(id=>{
@@ -202,6 +208,8 @@ const ProgressV3Core=(()=>{
    materials:p.materials,
    ...(p.daily!==undefined?{daily:p.daily}:{}),
    ...(p.login!==undefined?{login:p.login}:{}),
+   ...(p.skillLevels!==undefined?{skillLevels:p.skillLevels}:{}),
+   ...(p.skillMaterials!==undefined?{skillMaterials:p.skillMaterials}:{}),
    migration:p.migration??{strategy:"clean-heroes-v1",sourceVersion:null},
    heroes:Object.fromEntries(ids.map(id=>[id,{
     classId:p.classes[id],level:p.levels[id],

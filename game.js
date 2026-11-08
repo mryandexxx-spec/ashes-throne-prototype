@@ -257,8 +257,10 @@ function renderDailyTasks(){
   const title=document.createElement("strong");title.textContent=task.label;
   const detail=document.createElement("small");
   const done=progress.daily.counts[task.id]===1,claimed=progress.daily.claimed.includes(task.id);
+  const materials=Object.entries(task.materials).map(([key,qty])=>
+   "+"+qty+" "+(GearData.MATERIAL_LABELS[key]||key)).join(" · ");
   detail.textContent=(done?"Выполнено":"Не выполнено")+" · +"+task.currency+
-   " валюты · +"+task.xp+" Account XP";
+   " валюты · +"+task.xp+" Account XP · "+materials;
   label.append(title,detail);
   const button=document.createElement("button");button.type="button";
   button.className=claimed?"ghost":"primary";
@@ -280,7 +282,9 @@ $("#dailyTaskList")?.addEventListener("click",event=>{
   renderDailyTasks();return;
  }
  $("#dailyTaskNotice").textContent="Награда получена: +"+reward.currency+
-  " валюты, +"+reward.xp+" Account XP.";
+  " валюты, +"+reward.xp+" Account XP, "+
+  Object.entries(reward.materials).map(([key,qty])=>
+   "+"+qty+" "+(GearData.MATERIAL_LABELS[key]||key)).join(", ")+".";
  renderDailyTasks();renderPlayerProfile();renderHeroes();
 });
 function persistProgress(){

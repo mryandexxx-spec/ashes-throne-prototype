@@ -506,6 +506,13 @@ body.battle-mode #app>footer{visibility:hidden}
 }
 .battle-screen .arena-health span{background:#67bb7a}
 .battle-screen .arena-indicator.enemy .arena-health span{background:#d6756c}
+.battle-screen .arena-protection{
+ height:4px;border-radius:6px;background:#0b101adb;border:1px solid #a9c4e664;
+ overflow:hidden;box-shadow:0 1px 3px #000b;
+}
+.battle-screen .arena-protection span{
+ display:block;height:100%;background:#7ca9ea;transition:width .15s linear;
+}
 .battle-screen .arena-initiative{height:4px}
 .battle-screen .arena-initiative span{background:var(--gold)}
 .battle-screen .arena-effects{display:flex;justify-content:center;gap:3px;min-height:13px}

@@ -159,7 +159,7 @@ const CombatEnvironment009=(()=>{
   },(x,y,z,r,row)=>color(mix(palette.face,palette.valley,row/5),x,z,y,.8),canyon);
   // The following are spatial 3D annular rock formations, NOT camera-facing
   // billboards: silhouettes, scale and parallax survive arbitrary orbit.
-  function ridge(name,rings,base,height,phase,material,tint){
+  function ridge(name,rings,base,height,phase,material,tint,lift){
    surface(name,rings,(r,a,row)=>{
     const [x,z]=rimPoint(r,a);
     const shape=.55*wave(a,3,phase)+.34*wave(a,7,phase*.7)+
@@ -170,7 +170,7 @@ const CombatEnvironment009=(()=>{
     // ravine stays open. This is real 3D, never billboard orientation.
     const facing=Math.cos(a+3*Math.PI/4);
     const distantSide=clamp((.24-facing)/1.10,0,1);
-    const crest=base+distantSide*(10.8+height*(.19+.30*peaks));
+    const crest=base+distantSide*(lift+height*(.19+.30*peaks));
     // A weathered stratified massif, not a single infinitely tall curtain:
     // broken benches, a rising shoulder, an uneven summit, then talus slopes.
     const profile=[0,.28,.70,1,.84,.54,.24,-.10][row];
@@ -186,14 +186,14 @@ const CombatEnvironment009=(()=>{
     return color(face,x,z,y,.35).map(v=>clamp(v+side,0,1));
    },material);
   }
-  ridge("near_escarpment",[2.42,2.57,2.76,2.96,3.14,3.28,3.42,3.55],-9.9,6.0,.9,middle,palette.middle);
-  ridge("far_ridge",[3.61,3.77,3.94,4.13,4.34,4.53,4.71,4.89],-11.0,8.5,2.1,back,palette.back);
-  ridge("horizon_ridge",[4.96,5.15,5.34,5.56,5.78,6.02,6.22,6.43],-13.0,10.5,3.5,horizon,palette.horizon);
+  ridge("near_escarpment",[2.42,2.57,2.76,2.96,3.14,3.28,3.42,3.55],-9.9,6.0,.9,middle,palette.middle,7.4);
+  ridge("far_ridge",[3.61,3.77,3.94,4.13,4.34,4.53,4.71,4.89],-11.0,8.5,2.1,back,palette.back,10.6);
+  ridge("horizon_ridge",[4.96,5.15,5.34,5.56,5.78,6.02,6.22,6.43],-13.0,10.5,3.5,horizon,palette.horizon,14.0);
   // Atmospheric perspective stays in the scene, not in a flat sky-card.
   if(typeof B.Color4==="function")scene.clearColor=new B.Color4(.49,.55,.57,1);
   if(B.Scene&&B.Scene.FOGMODE_EXP2!==undefined){
    scene.fogMode=B.Scene.FOGMODE_EXP2;
-   scene.fogDensity=.011;
+   scene.fogDensity=.015;
    scene.fogColor=new B.Color3(.52,.57,.585);
   }
   if(Array.isArray(scene.lights)){

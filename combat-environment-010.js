@@ -30,7 +30,7 @@ const CombatEnvironment010=(()=>{
    m.diffuseColor=new B.Color3(1,1,1);
    m.emissiveColor=new B.Color3(.15,.17,.18);
    m.specularColor=new B.Color3(0,0,0);
-   m.disableLighting=false;m.fogEnabled=false;
+   m.disableLighting=name!=="atmosphere";m.fogEnabled=false;
    m.backFaceCulling=false;m.useVertexColors=true;
    return m;
   }
@@ -93,9 +93,9 @@ const CombatEnvironment010=(()=>{
   const layers=[
     // These are scenic, non-canonical rock masses. Each has genuine depth
     // variation across the face, not merely an extruded flat silhouette.
-    {name:"horizon",d:99,base:-57,amplitude:67,phase:.55,color:COLORS.far,relief:1.8},
-    {name:"midground",d:72,base:-46,amplitude:57,phase:2.10,color:COLORS.mid,relief:2.9},
-    {name:"escarpment",d:47,base:-42,amplitude:48,phase:3.65,color:COLORS.near,relief:4.6}
+    {name:"horizon",d:99,base:-52,amplitude:34,phase:.55,color:COLORS.far,relief:1.2},
+    {name:"midground",d:72,base:-48,amplitude:38,phase:2.10,color:COLORS.mid,relief:1.9},
+    {name:"escarpment",d:47,base:-43,amplitude:33,phase:3.65,color:COLORS.near,relief:2.5}
   ];
   for(const layer of layers){
     const material=mat(layer.name);
@@ -111,7 +111,7 @@ const CombatEnvironment010=(()=>{
       const gully=fault(x,layer.phase);
       const lean=(1-t)*8.5+
         layer.relief*Math.sin(x*.11+t*7+layer.phase)*Math.sin(t*3.8)+
-        gully*(2.6+3.8*(1-t));
+        gully*(1.7+2.6*(1-t));
       const y=summit-drop+bench+layer.relief*.23*
         Math.sin(x*.34+layer.phase+t*11)*(1-t);
       const distance=layer.d+lean;

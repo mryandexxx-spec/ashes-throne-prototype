@@ -668,6 +668,8 @@ function renderStoryDemo(){
  $("#storyDemoAgain").hidden=view.kind!=="defeat"&&view.kind!=="ending";
 }
 function showScreen(id){
+ // Re-entering from home opens the two-mode chooser, not a stale mission list.
+ if(id==="challenges"&&$("#home")?.classList.contains("active"))selectedChallengeKind=null;
  if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();}
  if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();stopBattleRendering();}
  // Combat-008A: release the document scroll while the arena owns the viewport.

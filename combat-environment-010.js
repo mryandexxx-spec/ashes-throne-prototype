@@ -164,6 +164,39 @@ const CombatEnvironment010=(()=>{
       }
       ctx.putImageData(img,0,0);tex.update(false);
       if(B.Texture){tex.wrapU=B.Texture.WRAP_ADDRESSMODE;tex.wrapV=B.Texture.WRAP_ADDRESSMODE;}
+      // Repaint the already allocated ENV009 diffuse map instead of
+      // allocating another 512px GPU texture. Continuous warped sediment,
+      // intersecting fault lines and broad warm/cool lithology replace speckle.
+      const originalAlbedo=ledge.diffuseTexture;
+      if(originalAlbedo&&typeof originalAlbedo.getContext==="function"){
+        try{
+          const paint=originalAlbedo.getContext(),side=512;
+          if(paint&&typeof paint.createImageData==="function"&&typeof paint.putImageData==="function"){
+            const image=paint.createImageData(side,side),dst=image.data;
+            for(let y=0;y<side;y++)for(let x=0;x<side;x++){
+              const u=x/side,v=y/side;
+              const base=noise(u,v,5),broken=noise(u,v,14),grit=noise(u,v,32);
+              const warp=(base-.5)*.24+(broken-.5)*.06;
+              const bedding=Math.sin((u*1.2+v*3.4+warp)*TAU);
+              const fissureA=Math.abs(Math.sin((u*1.9-v*.71+warp*.64)*TAU));
+              const fissureB=Math.abs(Math.sin((u*.7+v*1.15-warp*.37)*TAU));
+              const fault=(fissureA<.045&&broken>.34)||(
+                fissureB<.026&&base>.55);
+              const edge=Math.max(0,1-fissureA/.15)*.035;
+              const litho=.79+.36*(base-.5)+.22*(broken-.5)+
+                .12*(grit-.5)+.034*bedding-.15*(fault?1:0)-edge;
+              const warm=(base-.5)*.15+.028*bedding;
+              const k=(y*side+x)*4;
+              dst[k]=Math.round(CLAMP(229*litho+15*warm,0,255));
+              dst[k+1]=Math.round(CLAMP(219*litho+4*warm,0,255));
+              dst[k+2]=Math.round(CLAMP(199*litho-7*warm,0,255));
+              dst[k+3]=255;
+            }
+            paint.putImageData(image,0,0);
+            originalAlbedo.update(false);
+          }
+        }catch(error){/* Keep the original ENV009 texture as a safe fallback. */}
+      }
       tex.level=.36;
       own(tex);ledge.bumpTexture=tex;
       return true;

@@ -51,6 +51,12 @@ test("ENV010 integrates as an additive optional layer without changing ENV009/FX
  const battle=visual.create(B,scene);
  assert.equal(scene.meshes.filter(m=>m.name.startsWith("env009_")).length,5);
  assert.equal(scene.meshes.filter(m=>m.name.startsWith("env010_")).length,4);
+ for(const name of ["env009_near_escarpment","env009_far_ridge","env009_horizon_ridge"]){
+  assert.equal(scene.meshes.find(m=>m.name===name).enabled,false,
+   "old all-around wall is hidden only when fixed-background composition succeeds");
+ }
+ assert.ok(scene.meshes.find(m=>m.name==="env009_living_ledge").enabled!==false);
+ assert.ok(scene.meshes.find(m=>m.name==="env009_ravine").enabled!==false);
  assert.equal(scene.meshes.filter(m=>m.name.includes("hit_")).length,6);
  assert.ok(scene.meshes.every(m=>!m.isPickable));
  battle.emit([{id:"enemy",slot:"hit"}],{enemy:{head:{position:new B.Vector3(2,1.8,0)}}});

@@ -7,7 +7,7 @@ const ProgressV3Core=(()=>{
  const MATERIALS=Object.freeze(["Fe","Le","Cl","Wo","Fa","Th","Gl"]);
  // TEST-ONLY roles, explicitly approved for the vertical slice; not lore.
  const TEST_CLASSES=Object.freeze({
-  kael:"tank",lyra:"ranged",darin:"melee","medic-demo":"support","test-area-damage":"mage"
+  kael:"tank",lyra:"ranged",darin:"melee","medic-demo":"support","test-area-damage":"mage",ren:"melee"
  });
  const own=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
  const object=x=>!!x&&typeof x==="object"&&!Array.isArray(x);

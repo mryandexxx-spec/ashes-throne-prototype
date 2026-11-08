@@ -69,7 +69,8 @@ const CombatVisual007=(()=>{
     return texture;
    }catch(error){try{texture?.dispose();}catch(_){}return null;}
   }
-  const grain=stoneGrain();
+  const useEnv009=typeof CombatEnvironment009!=="undefined" && CombatEnvironment009.supported(B);
+  const grain=useEnv009?null:stoneGrain();
   if(grain)sand.diffuseTexture=grain;
   function outcrop(name,x,y,z,w,h,d,mat,lean=0){
    const mesh=decorate(B.MeshBuilder.CreateSphere("cv008_"+name,
@@ -78,6 +79,9 @@ const CombatVisual007=(()=>{
    mesh.rotation.z=lean;return mesh;
   }
   try{
+   if(useEnv009){
+    CombatEnvironment009.build(B,scene,owned);
+   }else{
    // Continuous walkable plane preserves the established combat formation/camera.
    decorate(B.MeshBuilder.CreateGround("cv007_surface",{width:16,height:9},scene),sand,0,.007,0);
    box("shelf",15.6,.32,8.55,edge,0,-.23,0);
@@ -130,6 +134,7 @@ const CombatVisual007=(()=>{
     const hemi=scene.lights.find(l=>l.name==="hemi"),key=scene.lights.find(l=>l.name==="key");
     if(hemi){hemi.intensity=.74;hemi.diffuse=new B.Color3(.73,.82,.94);}
     if(key){key.intensity=1.13;key.diffuse=new B.Color3(1,.82,.64);}
+   }
    }
    // Three pooled, short-lived impact cues. They never participate in pointer hits.
    for(let i=0;i<MAX_FX;i++){

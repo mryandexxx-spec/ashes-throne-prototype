@@ -1105,6 +1105,36 @@ body.battle-mode #app>footer{visibility:hidden}
  .star-locked-dialog{max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 12px)}
 }
 
+
+/* REN-001: biography UI and independent origin tags; story-only Ren preview. */
+.hero-biography-button{min-height:44px;max-width:100%;white-space:normal}
+.hero-tag-strip{display:block;color:var(--gold);font-size:12px;line-height:1.5;
+ overflow-wrap:anywhere;margin:5px 0 9px}
+.story-hero-profile{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+ border:1px solid var(--line);border-radius:10px;background:var(--panel2);
+ padding:10px 12px;min-width:0;max-width:100%;margin-bottom:14px}
+.story-hero-profile-name{display:flex;flex-direction:column;gap:2px;min-width:0}
+.story-hero-profile-name strong{color:var(--gold)}
+.story-hero-profile-name .muted{font-size:11px}
+.story-hero-profile .hero-tag-strip{margin:0;flex:1 1 140px}
+.story-hero-profile .hero-biography-button{flex:0 0 auto}
+.hero-biography-dialog{width:min(580px,calc(100vw - 24px));box-sizing:border-box;
+ max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;
+ padding:clamp(14px,3vw,24px);border:1px solid var(--gold);
+ border-radius:12px;color:var(--text);background:var(--panel)}
+.hero-biography-dialog::backdrop{background:#000c}
+.hero-biography-dialog h2{font:600 clamp(17px,3vw,23px) Cinzel,serif;
+ margin:7px 0 10px;overflow-wrap:anywhere}
+.hero-biography-text{white-space:pre-line;overflow-wrap:anywhere;
+ font-size:14px;line-height:1.65;max-width:66ch;margin:14px 0}
+.hero-biography-dialog .muted{font-size:12px;line-height:1.5}
+.hero-biography-close{min-height:44px;margin-top:12px}
+@media(orientation:landscape) and (max-height:540px){
+ .story-hero-profile{padding:7px 10px;gap:7px;margin-bottom:8px}
+ .hero-biography-dialog{max-height:calc(100dvh - 12px);padding:12px 18px}
+ .hero-biography-text{line-height:1.45}
+}
+
 /* CHAL001B: small read-only goal in the arena header, without blocking taps. */
 .battle-screen #battleChallengeGoal{font-size:9px;line-height:1.15;color:var(--gold);
  overflow-wrap:anywhere;max-width:200px;margin:2px auto 0}

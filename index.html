@@ -155,6 +155,13 @@
     <section id="campaign" class="screen">
       <div class="section-heading"><div><div class="eyebrow">КАМПАНИЯ</div><h2>Путь к престолу</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
       <div class="energy-toolbar"><p class="muted" id="energyStatus">Энергия: 240/240 · 1 за 6 минут</p><button type="button" class="ghost" id="energyRefresh">Проверить восстановление</button></div><p id="energyRefreshStatus" class="muted" role="status" aria-live="polite"></p>
+      <aside class="story-demo-teaser" aria-label="Сюжетная проба — неканоническая">
+        <div class="eyebrow">[ПРЕДЛОЖЕНИЕ] · СЮЖЕТНЫЙ ПРОТОТИП</div>
+        <h3>Сады над пропастью · Дорога, которой нет</h3>
+        <p>Первая встреча с Реном, Надой и Лиорой. Диалоги, выбор, бой уже имеющимся отрядом и короткая развязка. Хронология не определена.</p>
+        <p class="muted">Отдельный пробный режим: без затрат энергии, выдачи героев, наград и записи сюжетных решений.</p>
+        <button type="button" class="primary" id="storyDemoOpen">Попробовать сюжет</button>
+      </aside>
       <div id="campaignMissions" aria-label="Главы и миссии кампании"></div>
       <p class="muted" id="campaignSaveStatus" role="status">Статус прохождения хранится в этом браузере.</p>
       <p class="muted">Стоимость энергии указана в каждой миссии для ручного боя и симуляции. После 3★ симуляция даёт повторные ресурсы и Account XP; награды первого прохождения повторно не выдаются.</p>
@@ -221,6 +228,26 @@
       </div>
       <button type="button" class="ghost" id="simulationClose">Отмена</button>
     </dialog>
+    <section id="storyDemo" class="screen story-demo-screen" aria-label="Сюжетная проба: Дорога, которой нет">
+      <div class="section-heading">
+        <div><div class="eyebrow">[ПРЕДЛОЖЕНИЕ] · ПРОБА ПЕРА</div><h2>Дорога, которой нет</h2></div>
+        <button type="button" class="ghost" id="storyDemoBack">← К кампании</button>
+      </div>
+      <div class="story-demo-scene">
+        <p class="muted story-demo-disclaimer">Неподтверждённая хронология. Сцены не изменяют канон, прогресс кампании или сохранение.</p>
+        <div class="eyebrow" id="storyDemoSpeaker">Сады над пропастью</div>
+        <p id="storyDemoText" role="status" aria-live="polite"></p>
+        <div class="story-demo-actions">
+          <button type="button" class="primary" id="storyDemoNext">Продолжить</button>
+          <div id="storyDemoChoices" class="story-demo-choices" hidden>
+            <button type="button" class="ghost" id="storyDemoChoiceA">Защитить людей</button>
+            <button type="button" class="ghost" id="storyDemoChoiceB">Проверить распоряжение</button>
+          </div>
+          <button type="button" class="primary" id="storyDemoFight" hidden>Выбрать отряд и вступить в бой</button>
+          <button type="button" class="ghost" id="storyDemoAgain" hidden>Пройти сцену заново</button>
+        </div>
+      </div>
+    </section>
     <section id="squad" class="screen squad-screen" aria-label="Подготовка отряда">
       <div class="section-heading squad-heading">
         <div><div class="eyebrow">ПЕРЕД СРАЖЕНИЕМ</div><h2>Выбор отряда</h2><p class="muted">Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.</p></div>
@@ -323,7 +350,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.63 · HERO001</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.64 · STORY001</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -355,6 +382,7 @@
   <script src="animation-profiles.js"></script>
   <script src="battle-animation.js"></script>
   <script src="player-profile-core.js"></script>
+  <script src="story-demo-core.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

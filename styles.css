@@ -1047,3 +1047,34 @@ body.battle-mode #app>footer{visibility:hidden}
  cursor:not-allowed;transform:none;filter:none
 }
 .hero-card.hero-locked p,.squad-choice.hero-locked small{overflow-wrap:anywhere}
+
+
+/* STORY-001: isolated narrative preview; no extra full-screen 3D or scroll locks. */
+.story-demo-teaser{margin:12px 0 18px;padding:clamp(12px,2.5vw,20px);border:1px solid var(--line);
+ border-radius:14px;background:var(--panel);max-width:100%;min-width:0}
+.story-demo-teaser h3{margin:7px 0;color:var(--gold);font-size:clamp(17px,2vw,22px)}
+.story-demo-teaser p{font-size:14px;line-height:1.5;overflow-wrap:anywhere;max-width:65ch}
+.story-demo-teaser .primary{min-height:44px;margin-top:5px}
+.story-demo-screen{min-width:0}
+.story-demo-scene{max-width:850px;margin:clamp(10px,3vh,28px) auto 24px;
+ padding:clamp(16px,3vw,32px);border:1px solid var(--line);border-radius:16px;
+ background:var(--panel);min-width:0}
+.story-demo-scene #storyDemoSpeaker{margin-top:18px;color:var(--gold)}
+.story-demo-scene #storyDemoText{font-size:clamp(16px,2vw,21px);line-height:1.6;
+ min-height:4em;white-space:pre-line;overflow-wrap:anywhere}
+.story-demo-disclaimer{font-size:12px;line-height:1.5}
+.story-demo-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;align-items:stretch}
+.story-demo-choices{display:flex;flex-wrap:wrap;gap:10px;max-width:100%}
+.story-demo-choices[hidden]{display:none}
+.story-demo-actions button{min-height:44px;white-space:normal;text-align:center}
+.story-demo-choices button{flex:1 1 180px}
+@media (orientation:landscape) and (max-height:540px){
+ .story-demo-scene{margin:6px auto 12px;padding:12px 18px}
+ .story-demo-scene #storyDemoSpeaker{margin-top:9px}
+ .story-demo-scene #storyDemoText{font-size:15px;min-height:0;line-height:1.45;margin:8px 0}
+ .story-demo-actions{margin-top:9px}
+}
+@media(max-width:580px){
+ .story-demo-choices{flex-direction:column;width:100%}
+ .story-demo-choices button{flex:auto}
+}

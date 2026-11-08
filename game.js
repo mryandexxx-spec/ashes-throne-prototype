@@ -216,6 +216,9 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
  renderPlayerProfile();
 });
 let battleIsCampaign=false;
+// STORY-001 is an opt-in sandbox, independent of campaign rewards and saves.
+let battleIsStoryDemo=false;
+let storyDemoState=null;
 let missionResultShown=false;
 let missionResultRecorded=false;
 let activeMissionId=null;
@@ -511,7 +514,9 @@ function selectedParty(){
 function battleLineup(){
  // Mission #2 tests five enemies; the shared enemy AI is mission-independent.
  const enemies=battleIsCampaign&&activeMissionId==="demo-mission-2"?ENEMIES:ENEMIES.slice(0,2);
- return [...selectedParty(),...enemies.map(progressedEnemy)];
+ // Reuse training templates, not the noncanonical "Conclave" story identities.
+ const roster=battleIsStoryDemo?enemies.map((e,i)=>({...e,name:i===0?"Старший охраны":"Наёмный охранник"})):enemies;
+ return [...selectedParty(),...roster.map(progressedEnemy)];
 }
 // Optional future wave rosters live in mission data. Existing missions have no
 // future waves, so their accepted encounters and balance remain unchanged.
@@ -583,6 +588,27 @@ function openSquad(returnTo="home"){
  renderSquad();
  showScreen("squad");
 }
+function beginStoryDemo(){
+ if(typeof StoryDemoCore==="undefined")return;
+ storyDemoState=StoryDemoCore.fresh();
+ showScreen("storyDemo");
+}
+function renderStoryDemo(){
+ if(!storyDemoState||typeof StoryDemoCore==="undefined")return;
+ const view=StoryDemoCore.view(storyDemoState);
+ if(!view)return;
+ $("#storyDemoSpeaker").textContent=view.speaker;
+ $("#storyDemoText").textContent=view.text;
+ $("#storyDemoNext").hidden=view.kind!=="next";
+ const choices=$("#storyDemoChoices");
+ choices.hidden=view.kind!=="tone"&&view.kind!=="evidence";
+ if(!choices.hidden){
+  $("#storyDemoChoiceA").textContent=view.kind==="tone"?"Сначала защитить людей":"Независимая сверка копий";
+  $("#storyDemoChoiceB").textContent=view.kind==="tone"?"Потребовать документ":"Срочно предупредить соседние пункты";
+ }
+ $("#storyDemoFight").hidden=view.kind!=="fight";
+ $("#storyDemoAgain").hidden=view.kind!=="defeat"&&view.kind!=="ending";
+}
 function showScreen(id){
  if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();}
  if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();stopBattleRendering();}
@@ -599,6 +625,7 @@ function showScreen(id){
   renderLoginCalendar();
  }
  if(id==="campaign")renderCampaign();
+ if(id==="storyDemo")renderStoryDemo();
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
   lastMissionReward=null;
@@ -608,8 +635,10 @@ function showScreen(id){
   missionEntryPaid=false;
   missionResultSaveFailed=false;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
+  battleIsStoryDemo=squadReturnScreen==="storyDemo"&&storyDemoState?.phase==="battle";
   const label=$("#battleMissionLabel");
-  if(label)label.textContent=battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
+  if(label)label.textContent=battleIsStoryDemo?"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ":
+   battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
   const freeStoryEntry=battleIsCampaign&&progress.saveVersion===3&&
    !campaignProgress.completed[activeMissionId];
   if(battleIsCampaign&&!freeStoryEntry&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
@@ -660,6 +689,24 @@ document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click"
  else showScreen(b.dataset.screen);
 }));
 $("#startBattle").addEventListener("click",()=>openSquad("home"));
+$("#storyDemoOpen")?.addEventListener("click",beginStoryDemo);
+$("#storyDemoBack")?.addEventListener("click",()=>showScreen("campaign"));
+$("#storyDemoNext")?.addEventListener("click",()=>{
+ if(StoryDemoCore.next(storyDemoState))renderStoryDemo();
+});
+function storyDemoChoose(option){
+ if(!storyDemoState)return;
+ const kind=StoryDemoCore.view(storyDemoState)?.kind;
+ const changed=kind==="tone"?StoryDemoCore.chooseTone(storyDemoState,option==="a"?"people":"order"):
+  kind==="evidence"?StoryDemoCore.chooseEvidence(storyDemoState,option==="a"?"verify":"warn"):false;
+ if(changed)renderStoryDemo();
+}
+$("#storyDemoChoiceA")?.addEventListener("click",()=>storyDemoChoose("a"));
+$("#storyDemoChoiceB")?.addEventListener("click",()=>storyDemoChoose("b"));
+$("#storyDemoFight")?.addEventListener("click",()=>{
+ if(storyDemoState&&StoryDemoCore.startBattle(storyDemoState))openSquad("storyDemo");
+});
+$("#storyDemoAgain")?.addEventListener("click",beginStoryDemo);
 function openCampaignMission(id){
  const entry=CampaignData.getMission(id);
  if(!entry||!CampaignData.available(entry,campaignProgress)||!MissionData.get(id))return false;
@@ -677,7 +724,11 @@ $("#campaignMissions").addEventListener("click",event=>{
  const button=event.target.closest("[data-campaign-mission]");
  if(button&&$("#campaignMissions").contains(button))openCampaignMission(button.dataset.campaignMission);
 });
-$("#squadBack").addEventListener("click",()=>showScreen(squadReturnScreen));
+$("#squadBack").addEventListener("click",()=>{
+ if(squadReturnScreen==="storyDemo"&&storyDemoState&&typeof StoryDemoCore!=="undefined")
+  StoryDemoCore.cancelBattle(storyDemoState);
+ showScreen(squadReturnScreen);
+});
 $("#squadDisband")?.addEventListener("click",disbandSquad);
 // If Babylon.js cannot load, show a recoverable message instead of an uncaught crash.
 const retryLoad=$("#retryBattleLoad");
@@ -1322,6 +1373,10 @@ function syncBattleUI(){
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
   missionResultRecorded=true;
  }
+ if(battleIsStoryDemo&&!state.active&&!missionResultRecorded){
+  StoryDemoCore.finishBattle(storyDemoState,state.winner==="ally");
+  missionResultRecorded=true;
+ }
  if(isVisualTransition()){
   $("#battleStatus").textContent=visualTransition==="wave"?"Завершение волны…":"Завершение боя…";
   $("#actionTitle").textContent="Анимация завершается";
@@ -1341,6 +1396,11 @@ function syncBattleUI(){
   renderTargetFighterHud();
   renderArenaIndicators();
   updateMeshes();
+  return;
+ }
+ if(battleIsStoryDemo&&!state.active&&!missionResultShown){
+  missionResultShown=true;
+  showScreen("storyDemo");
   return;
  }
  if(battleIsCampaign&&!state.active&&!missionResultShown){

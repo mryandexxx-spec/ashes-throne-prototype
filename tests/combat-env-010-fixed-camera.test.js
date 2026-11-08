@@ -27,7 +27,8 @@ test("ENV010 background is three spatial rock planes and one sky gradient; never
  assert.equal(result.meshes,4);
  assert.ok(result.triangles>1400&&result.triangles<4000);
  assert.ok(scene.meshes.every(m=>m.isPickable===false&&m.checkCollisions===false));
- assert.ok(scene.materials.every(m=>m.disableLighting&&m.fogEnabled===false));
+ assert.ok(scene.materials.every(m=>m.disableLighting===false&&m.fogEnabled===false));
+ assert.ok(scene.meshes.every(m=>m.useVertexColors===true));
  for(const mesh of scene.meshes){
   const g=mesh.data;
   assert.ok(g.positions.length>0&&g.indices.length>0);

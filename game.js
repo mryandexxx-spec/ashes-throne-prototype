@@ -2634,8 +2634,9 @@ function initBabylon(){
   const start=formationPosition(h.side,i%3,3);
   const x=start.x,z=start.z;
   let body,head;
-  if(h.id==="ren"){
-   // The permanent Ren uses an individual stylized guide model.
+  if(h.id==="ren"&&typeof RenVisualModel!=="undefined"){
+   // A progressive visual enhancement: keep the old capsule as fallback if
+   // the optional local model script is absent (e.g. headless test fixtures).
    // Preserve body/head anchors so targeting, overlays and animations still work.
    ({body,head}=RenVisualModel.create(BABYLON,scene,x,z,i));
   }else{

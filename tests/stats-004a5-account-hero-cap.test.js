@@ -29,7 +29,7 @@ assert.equal(P.upgrade(progress,"kael"),false);
 progress.accountXp=102;
 while(P.canUpgrade(progress,"kael"))assert.equal(P.upgrade(progress,"kael"),true);
 assert.equal(P.levelOf(progress,"kael"),12);
-progress.accountXp=237;
+progress.accountXp=165;
 assert.equal(P.heroLevelCap(progress),12);
 progress.accountXp=238;
 while(P.canUpgrade(progress,"kael"))assert.equal(P.upgrade(progress,"kael"),true);

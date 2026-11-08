@@ -770,6 +770,54 @@ $("#storyDemoTrialFight")?.addEventListener("click",()=>{
  }
 });
 $("#storyDemoAgain")?.addEventListener("click",beginStoryDemo);
+function renderChallenges(){
+ const container=$("#challengeList");
+ if(!container)return;
+ container.innerHTML=ChallengeCore.all().map(def=>{
+  const stars=challengeProgress.bestStars[def.id]||0;
+  const details=def.id==="T-01"?
+   ["1★ — победить","2★ — уничтожить Вестника Конклава первым и отдельно от других","3★ — дополнительно сохранить всех союзников"]:
+   ["1★ — победить в двух волнах","2★ — победить без потерь","3★ — лимит действий пока настраивается, звезда недоступна"];
+  return '<article class="campaign-panel campaign-mission"><div class="node">✦</div><div>'+
+   '<h3>'+def.id+' · '+def.title+'</h3>'+
+   '<p>'+(def.id==="T-01"?"Тактическая задача · два противника":"Натиск · две последовательные волны")+'</p>'+
+   '<p class="mission-stars">Лучшая оценка: '+("★".repeat(stars)+"☆".repeat(3-stars))+'</p>'+
+   '<ul class="mission-criteria">'+details.map(x=>'<li>'+x+'</li>').join("")+'</ul>'+
+   '<div class="campaign-mission-actions"><button class="primary" type="button" data-start-challenge="'+def.id+'">Вступить в бой</button></div>'+
+   '</div></article>';
+ }).join("");
+ $("#challengeSaveStatus").textContent=challengeSaveBlocked?
+  "Прогресс испытаний недоступен: бои доступны, запись заблокирована. Старые данные не удаляются.":
+  challengeSaveAvailable?"Лучшая оценка сохраняется в этом браузере.":
+  "Хранилище браузера недоступно: результаты не сохраняются.";
+}
+function openChallenge(id){
+ if(!ChallengeCore.get(id))return false;
+ activeChallengeId=id;
+ activeMissionId=null;
+ openSquad("challenges");
+ return true;
+}
+$("#challengeList")?.addEventListener("click",event=>{
+ const button=event.target.closest?.("[data-start-challenge]");
+ if(button&&$("#challengeList").contains(button))openChallenge(button.dataset.startChallenge);
+});
+function renderChallengeResult(){
+ const won=state.winner==="ally";
+ $("#challengeResultTitle").textContent=won?"Испытание пройдено":"Испытание не пройдено";
+ $("#challengeResultName").textContent=ChallengeCore.get(activeChallengeId)?.title||"Испытание";
+ const stars=challengeLastStars;
+ $("#challengeResultStars").textContent="Оценка: "+"★".repeat(stars)+"☆".repeat(3-stars)+
+  " · Лучший результат: "+(challengeProgress.bestStars[activeChallengeId]||0)+"/3";
+ $("#challengeResultText").textContent=challengeSaveFailed?
+  "Прогресс не сохранён: хранилище браузера недоступно или повреждено. Старые данные сохранены.":
+  won?"Победа. В учебном пилоте нет наград, энергии или сюжетных последствий.":
+  "Поражение. Можно повторить испытание без ограничений.";
+ $("#challengeResultRetry").textContent=won?"Повторить испытание":"Попробовать снова";
+}
+$("#challengeResultBack")?.addEventListener("click",()=>showScreen("challenges"));
+$("#challengeResultRetry")?.addEventListener("click",()=>openChallenge(activeChallengeId));
+$("#challengeResultHome")?.addEventListener("click",()=>showScreen("home"));
 function openCampaignMission(id){
  const entry=CampaignData.getMission(id);
  if(!entry||!CampaignData.available(entry,campaignProgress)||!MissionData.get(id))return false;
@@ -1525,6 +1573,17 @@ function syncBattleUI(){
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
   missionResultRecorded=true;
  }
+ if(battleIsChallenge&&!state.active&&!challengeResultRecorded){
+  const outcome=ChallengeCore.result(challengeProgress,activeChallengeId,state,challengeTracker);
+  challengeLastStars=outcome?.earned||0;
+  if(challengeSaveBlocked||!challengeSaveAvailable||!outcome)challengeSaveFailed=true;
+  else if(outcome.improved){
+   if(ChallengeCore.save(outcome.candidate,()=>window.localStorage,challengeSaveBlocked))
+    challengeProgress=outcome.candidate;
+   else challengeSaveFailed=true;
+  }
+  challengeResultRecorded=true;
+ }
  if(battleIsStoryDemo&&!state.active&&!missionResultRecorded){
   StoryDemoCore.finishBattle(storyDemoState,state.winner==="ally");
   missionResultRecorded=true;
@@ -1548,6 +1607,12 @@ function syncBattleUI(){
   renderTargetFighterHud();
   renderArenaIndicators();
   updateMeshes();
+  return;
+ }
+ if(battleIsChallenge&&!state.active&&!missionResultShown){
+  missionResultShown=true;
+  renderChallengeResult();
+  showScreen("challengeResult");
   return;
  }
  if(battleIsStoryDemo&&!state.active&&!missionResultShown){
@@ -1721,7 +1786,9 @@ function pressAbility(abilityId){
 $("#basicAbilityBtn").addEventListener("click",()=>pressAbility("basic"));
 $("#specialAbilityBtn").addEventListener("click",()=>pressAbility("special"));
 $("#powerfulAbilityBtn")?.addEventListener("click",()=>pressAbility("powerful"));
-$("#battleRetryBtn").addEventListener("click",()=>{if(!state.active&&!isVisualTransition())openSquad("home");});
+$("#battleRetryBtn").addEventListener("click",()=>{
+ if(!state.active&&!isVisualTransition())openSquad(battleIsChallenge?"challenges":"home");
+});
 const autoBattleControl=$("#autoBattleBtn");
 if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.active)setAutoBattle(!autoBattle);});
 const autoSpeedControl=$("#autoSpeedBtn");

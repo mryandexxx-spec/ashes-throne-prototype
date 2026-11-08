@@ -234,6 +234,55 @@ function renderAccountHeader(){
   (progress.saveVersion===3?"":" · C "+progress.gearMaterials)+
   " · ⚡ "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX;
 }
+// Daily-001: all daily claims and currency/XP are persisted in the SAME v3 save.
+function dailyDay(){return typeof DailyCore!=="undefined"?DailyCore.localDay():null;}
+function recordDailyTask(id){
+ const day=dailyDay();
+ return progress.saveVersion===3&&!saveBlocked&&!!day&&DailyCore.record(progress,id,day);
+}
+function renderDailyTasks(){
+ const list=$("#dailyTaskList"),notice=$("#dailyTaskNotice");
+ if(!list)return;
+ const day=dailyDay();
+ if(progress.saveVersion!==3||saveBlocked||!day||!DailyCore.today(progress,day)){
+  list.textContent="Ежедневные задания недоступны: проверь сохранение или дату на устройстве.";
+  if(notice)notice.textContent="Награды не начисляются, пока состояние недоступно.";
+  return;
+ }
+ $("#dailyDay").textContent="День: "+day;
+ list.replaceChildren();
+ for(const task of DailyCore.TASKS){
+  const row=document.createElement("div");row.className="daily-task";
+  const label=document.createElement("div");
+  const title=document.createElement("strong");title.textContent=task.label;
+  const detail=document.createElement("small");
+  const done=progress.daily.counts[task.id]===1,claimed=progress.daily.claimed.includes(task.id);
+  detail.textContent=(done?"Выполнено":"Не выполнено")+" · +"+task.currency+
+   " валюты · +"+task.xp+" Account XP";
+  label.append(title,detail);
+  const button=document.createElement("button");button.type="button";
+  button.className=claimed?"ghost":"primary";
+  button.textContent=claimed?"Получено":done?"Получить":"Выполни задание";
+  button.disabled=claimed||!done;button.dataset.dailyClaim=task.id;
+  row.append(label,button);list.append(row);
+ }
+}
+$("#dailyTaskList")?.addEventListener("click",event=>{
+ const button=event.target.closest?.("[data-daily-claim]");
+ if(!button||!$("#dailyTaskList").contains(button)||saveBlocked)return;
+ const snapshot=JSON.stringify(progress),day=dailyDay();
+ const reward=DailyCore.claim(progress,button.dataset.dailyClaim,day);
+ if(!reward)return;
+ if(!persistProgress()){
+  Object.keys(progress).forEach(key=>delete progress[key]);
+  Object.assign(progress,JSON.parse(snapshot));
+  $("#dailyTaskNotice").textContent="Не удалось сохранить награду. Валюта и XP не начислены.";
+  renderDailyTasks();return;
+ }
+ $("#dailyTaskNotice").textContent="Награда получена: +"+reward.currency+
+  " валюты, +"+reward.xp+" Account XP.";
+ renderDailyTasks();renderPlayerProfile();renderHeroes();
+});
 function persistProgress(){
  if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>window.localStorage);
  renderAccountHeader();
@@ -433,6 +482,7 @@ function showScreen(id){
  $("#"+id).classList.add("active");
  if(id==="collection")renderHeroes();
  if(id==="playerProfile")renderPlayerProfile();
+ if(id==="dailyTasks")renderDailyTasks();
  if(id==="campaign")renderCampaign();
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
@@ -719,6 +769,7 @@ $("#gearEquipNext")?.addEventListener("click",()=>{
   }
   const before=JSON.stringify(progress);
   if(!ProgressCore.equipItem(progress,selectedHeroId,item.id))return;
+  recordDailyTask("equip-item");
   if(!persistProgress()){
    Object.keys(progress).forEach(k=>delete progress[k]);
    Object.assign(progress,JSON.parse(before));
@@ -761,6 +812,7 @@ $("#detailUpgrade").addEventListener("click",()=>{
  if(saveBlocked)return;
  const before=progress.saveVersion===3?JSON.stringify(progress):null;
  if(ProgressCore.upgrade(progress,selectedHeroId)){
+  recordDailyTask("hero-level");
   if(!persistProgress()&&before){
    Object.keys(progress).forEach(k=>delete progress[k]);
    Object.assign(progress,JSON.parse(before));
@@ -995,7 +1047,9 @@ function syncBattleUI(){
            campaignProgress.completed[activeMissionId]&&missionEntryPaid){
    lastMissionEnergyRefunded=ProgressCore.refundEnergy(progress,activeMissionId);
   }
-  const walletChanged=!!(lastMissionFarmReward||lastMissionReward||lastMissionEnergyRefunded);
+  // Count a completed manual/auto campaign battle, not a simulation or arena.
+  const dailyChanged=recordDailyTask("campaign-battle");
+  const walletChanged=!!(lastMissionFarmReward||lastMissionReward||lastMissionEnergyRefunded||dailyChanged);
   const walletSaved=!walletChanged||persistProgress();
   if(!walletSaved&&beforeWallet){
    // Never publish mission completion without a persisted v3 payout.

@@ -169,6 +169,17 @@ function renderPlayerProfile(){
   :null;
  const level=xp?.level??ProgressCore.accountLevel(progress);
  $("#playerAccountLevel").textContent="Уровень "+level;
+ const heroCap=ProgressCore.heroLevelCap(progress);
+ const nextCap=ProgressCore.nextHeroCapUnlock(level);
+ const capInfo=$("#playerHeroLevelCap");
+ if(capInfo)capInfo.textContent="Сейчас можно повысить героя максимум до уровня "+heroCap+".";
+ const capNext=$("#playerHeroCapNext");
+ if(capNext)capNext.textContent=heroCap>=ProgressCore.MAX_LEVEL?
+  "В текущей версии максимальный уровень героя — "+ProgressCore.MAX_LEVEL+
+   ". После расширения игры с аккаунта 16-го уровня действует правило 1:1 (до уровня героя 85).":
+  (nextCap?"На уровне аккаунта "+nextCap.accountLevel+
+   " откроется максимальный уровень героя "+nextCap.heroCap+". Получай Account XP за миссии.":
+   "Для дальнейшего развития нужен новый уровень аккаунта.");
  const track=$("#playerAccountXpTrack"),fill=$("#playerAccountXpFill");
  if(track)track.setAttribute("aria-valuenow",String(Math.round(xp?.percent??0)));
  if(fill)fill.style.width=(xp?.percent??0)+"%";
@@ -589,12 +600,20 @@ function renderHeroDetail(){
    (stat.active?stat.value:'Не рассчитано')+'</strong></div>').join("");
  const activeStats=overview.filter(stat=>stat.active).length;
  $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>Атака (общая, тест)</span><strong>${hero.atk} ATK</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · ${14-activeStats} ожидают формулы</summary><p class="muted">Тестовый пилот: физическая атака наследует текущую общую ATK с бонусами уровня и G; оборона и Protection работают против типизированных ударов. Магическая атака и прочие параметры пока не назначены.</p>${statRows}</details>`;
- $("#detailLevel").textContent="Уровень "+hero.level+" / "+ProgressCore.MAX_LEVEL+
-  " · лимит аккаунта "+levelCap;
+ $("#detailLevel").textContent="Уровень героя "+hero.level+" / "+ProgressCore.MAX_LEVEL;
+ const nextCap=ProgressCore.nextHeroCapUnlock(ProgressCore.accountLevel(progress));
+ const limitNote=$("#detailHeroLevelCap");
+ if(limitNote)limitNote.textContent="Твой аккаунт: уровень "+ProgressCore.accountLevel(progress)+
+  ". Доступный максимум героя сейчас: "+levelCap+". "+
+  (levelCap>=ProgressCore.MAX_LEVEL?
+   "Дальнейшие уровни пока не доступны в тестовой версии.":
+   (nextCap?"Чтобы открыть максимум "+nextCap.heroCap+
+    ", получи уровень аккаунта "+nextCap.accountLevel+".":"Нужен новый уровень аккаунта."));
  $("#detailWallet").textContent=String(progress.currency);
  $("#detailCost").textContent=cost===null?"Недоступно":cost+" валюты";
  $("#detailPreview").textContent=next?next.hp+" HP · "+next.atk+" ATK":
-  hero.level>=levelCap?"Повышение ограничено уровнем аккаунта":"Достигнут максимум";
+  hero.level>=ProgressCore.MAX_LEVEL?"Тестовый максимум достигнут":
+  hero.level>=levelCap?"Нужен более высокий уровень аккаунта":"Недоступно";
  $("#detailUpgrade").disabled=saveBlocked||!ProgressCore.canUpgrade(progress,base.id);
  $("#detailNotice").textContent=saveBlocked?"Сохранение недоступно. Повышение заблокировано.":
   (ProgressCore.upgradeBlockReason(progress,base.id)||

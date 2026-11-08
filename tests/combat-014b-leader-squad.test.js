@@ -198,7 +198,7 @@ storageData.set("ashes-throne.squad.v1",
 const short=vm.runInNewContext(src+
  "\n({getBattle:()=>state,openSquad,ALLIES,selectedParty:()=>selectedParty().map(h=>h.id)})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
-short.ALLIES.pop();
+short.ALLIES.splice(4); // Keep original four-hero warning fixture, exclude the two additional entries.
 short.openSquad();
 assert.equal(short.selectedParty().length,4);
 elements.squadStart.handlers.click.at(-1)();

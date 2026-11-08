@@ -3,9 +3,9 @@ const DailyCore=(()=>{
  "use strict";
  const IDS=Object.freeze(["hero-level","equip-item","campaign-battle"]);
  const TASKS=Object.freeze([
-  Object.freeze({id:"hero-level",label:"Повысить уровень любого героя",currency:200,xp:15}),
-  Object.freeze({id:"equip-item",label:"Изготовить и установить предмет снаряжения",currency:200,xp:15}),
-  Object.freeze({id:"campaign-battle",label:"Завершить бой кампании",currency:250,xp:20})
+  Object.freeze({id:"hero-level",label:"Повысить уровень любого героя",currency:200,xp:15,materials:Object.freeze({Fe:2})}),
+  Object.freeze({id:"equip-item",label:"Изготовить и установить предмет снаряжения",currency:200,xp:15,materials:Object.freeze({Le:2})}),
+  Object.freeze({id:"campaign-battle",label:"Завершить бой кампании",currency:250,xp:20,materials:Object.freeze({Cl:3})})
  ]);
  const empty=day=>({day,counts:{"hero-level":0,"equip-item":0,"campaign-battle":0},claimed:[]});
  const isDay=x=>typeof x==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(Date.parse(x+"T12:00:00Z"));
@@ -44,11 +44,15 @@ const DailyCore=(()=>{
   if(!task||!today(progress,day)||progress.daily.counts[id]!==1||
     progress.daily.claimed.includes(id)||
     !Number.isSafeInteger(progress.currency+task.currency)||
-    !Number.isSafeInteger(progress.accountXp+task.xp))return null;
+    !Number.isSafeInteger(progress.accountXp+task.xp)||
+    !progress.materials||Object.entries(task.materials).some(([key,amount])=>
+     !Number.isSafeInteger(progress.materials[key])||
+     !Number.isSafeInteger(progress.materials[key]+amount)))return null;
   progress.currency+=task.currency;
   progress.accountXp+=task.xp;
+  for(const [key,amount] of Object.entries(task.materials))progress.materials[key]+=amount;
   progress.daily.claimed.push(id);
-  return {currency:task.currency,xp:task.xp};
+  return {currency:task.currency,xp:task.xp,materials:task.materials};
  }
  return Object.freeze({TASKS,IDS,empty,valid,localDay,today,record,claim});
 })();

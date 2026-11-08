@@ -8,6 +8,7 @@ on:
       - 'assets/env010/**'
       - 'tests/fixtures/env009-webgl-preview.html'
       - 'tests/fixtures/env010-full-game.html'
+      - 'tests/fixtures/env010-interactive-smoke.html'
       - '.github/workflows/env009-webgl-preview.yml'
   workflow_dispatch:
 jobs:
@@ -64,6 +65,22 @@ jobs:
             --virtual-time-budget=12000 --dump-dom "$url" 2>>/tmp/chrome-hud.log)"
           echo "$page" | grep -q 'data-visual-status="ready"'
           test -s artifacts/env010-full-hud-844x390.png
+
+      - name: Verify real battle pinch, 4x, autobattle, battle end and replay (synthetic Chromium)
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)"
+          url="http://127.0.0.1:8765/tests/fixtures/env010-interactive-smoke.html"
+          page="$(timeout --kill-after=5s 90s "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
+            --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
+            --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 \
+            --virtual-time-budget=80000 --dump-dom "$url" 2>/tmp/chrome-interactive.log)"
+          echo "$page" | grep -q 'data-visual-status="ready"'
+          echo "$page" | grep -q 'data-pinch-test="pass"'
+          echo "$page" | grep -q 'data-auto-test="battle-finished"'
+          echo "$page" | grep -q 'data-replay-test="pass"'
+
       - name: Upload actual battle HUD evidence
         if: always()
         uses: actions/upload-artifact@v4

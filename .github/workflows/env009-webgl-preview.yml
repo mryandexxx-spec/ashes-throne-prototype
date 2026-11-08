@@ -5,6 +5,7 @@ on:
       - 'combat-environment-009.js'
       - 'combat-visual-007.js'
       - 'combat-environment-010.js'
+      - 'assets/env010/**'
       - 'tests/fixtures/env009-webgl-preview.html'
       - 'tests/fixtures/env010-full-game.html'
       - '.github/workflows/env009-webgl-preview.yml'

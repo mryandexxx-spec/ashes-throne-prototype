@@ -287,6 +287,56 @@ $("#dailyTaskList")?.addEventListener("click",event=>{
    "+"+qty+" "+(GearData.MATERIAL_LABELS[key]||key)).join(", ")+".";
  renderDailyTasks();renderPlayerProfile();renderHeroes();
 });
+// Login-001: explicit claim, one local calendar day, no missed-day reset.
+function renderLoginCalendar(){
+ const grid=$("#loginCalendarGrid"),status=$("#loginCalendarStatus"),button=$("#loginClaim");
+ if(!grid||!status||!button)return;
+ const day=dailyDay();
+ const view=LoginCore.current(progress,day);
+ if(saveBlocked||!view){
+  grid.textContent="Календарь недоступен: проверь дату и сохранение.";
+  button.disabled=true;
+  status.textContent="Награды не начисляются, пока профиль недоступен.";
+  return;
+ }
+ grid.replaceChildren();
+ for(let i=0;i<LoginCore.REWARDS.length;i++){
+  const reward=LoginCore.REWARDS[i];
+  const cell=document.createElement("div");
+  cell.className="login-day"+(i<view.claimedThisCycle?" claimed":"")+
+   (view.available&&i===view.nextDay-1?" active":"");
+  const title=document.createElement("strong");title.textContent="День "+(i+1);
+  const detail=document.createElement("small");
+  detail.textContent="+"+reward.currency+" валюты · +"+reward.xp+" XP · "+
+   Object.entries(reward.materials).map(([key,n])=>"+"+n+" "+
+    (GearData.MATERIAL_LABELS[key]||key)).join(", ");
+  cell.append(title,detail);grid.append(cell);
+ }
+ button.disabled=!view.available;
+ button.textContent=view.available?"Забрать награду дня "+view.nextDay:
+  view.alreadyClaimed?"Сегодня получено":"Получение недоступно";
+ status.textContent=view.clockBack?"Дата на устройстве раньше последней полученной награды.":
+  view.alreadyClaimed?"Награда за сегодня получена. Возвращайся завтра.":
+  "Пропущенные дни не сбрасывают прогресс: следующая награда — день "+view.nextDay+".";
+}
+$("#loginClaim")?.addEventListener("click",()=>{
+ if(saveBlocked)return;
+ const snapshot=JSON.stringify(progress);
+ const reward=LoginCore.claim(progress,dailyDay());
+ if(!reward){renderLoginCalendar();return;}
+ if(!persistProgress()){
+  Object.keys(progress).forEach(key=>delete progress[key]);
+  Object.assign(progress,JSON.parse(snapshot));
+  renderLoginCalendar();
+  $("#loginCalendarStatus").textContent="Ошибка сохранения. Награда не выдана.";
+  return;
+ }
+ renderLoginCalendar();renderDailyTasks();renderPlayerProfile();renderHeroes();
+ $("#loginCalendarStatus").textContent="Награда дня "+reward.day+" получена: +"+
+  reward.currency+" валюты, +"+reward.xp+" XP, "+
+  Object.entries(reward.materials).map(([key,n])=>"+"+n+" "+
+   (GearData.MATERIAL_LABELS[key]||key)).join(", ")+".";
+});
 function persistProgress(){
  if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>window.localStorage);
  renderAccountHeader();
@@ -487,6 +537,7 @@ function showScreen(id){
  if(id==="collection")renderHeroes();
  if(id==="playerProfile")renderPlayerProfile();
  if(id==="dailyTasks")renderDailyTasks();
+ if(id==="loginCalendar")renderLoginCalendar();
  if(id==="campaign")renderCampaign();
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){

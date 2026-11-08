@@ -4,7 +4,7 @@ const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
 const src=["initiative-model.js","ability-data.js","combat-core.js","auto-decision.js","enemy-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","challenge-core.js","battle-speed.js","animation-profiles.js","battle-animation.js","story-trial-data.js","story-demo-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
-const ids=["home","collection","campaign","challenges","challengeResult","challengeList","challengeSaveStatus","challengeResultName","challengeResultTitle","challengeResultText","challengeResultStars","challengeResultRetry","challengeResultBack","challengeResultHome","battleChallengeGoal","storyDemo","storyDemoOpen","storyDemoBack","storyDemoSpeaker","storyDemoText","storyDemoNext","storyDemoChoices","storyDemoChoiceA","storyDemoChoiceB","storyDemoFight","storyDemoTrialFight","storyDemoNotice","storyDemoAgain","squad","battle","heroList","combatants",
+const ids=["home","collection","campaign","challenges","challengeResult","challengeList","challengeModes","challengeModeBack","challengeModeTitle","challengeSaveStatus","dailyClaimAll","challengeResultName","challengeResultTitle","challengeResultText","challengeResultStars","challengeResultRetry","challengeResultBack","challengeResultHome","battleChallengeGoal","storyDemo","storyDemoOpen","storyDemoBack","storyDemoSpeaker","storyDemoText","storyDemoNext","storyDemoChoices","storyDemoChoiceA","storyDemoChoiceB","storyDemoFight","storyDemoTrialFight","storyDemoNotice","storyDemoAgain","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn","arenaIndicators","orientationPrompt",
  "basicAbilitySlot","specialAbilitySlot","abilityTooltip","abilityTooltipTitle","abilityTooltipText",
  "fighterInspect","inspectClose","inspectSide","inspectName","inspectRole","inspectStats","inspectEffects",
@@ -774,8 +774,16 @@ const beforeChallengeCampaign=JSON.stringify(api.getCampaignProgress());
 const beforeChallengeCurrency=api.getCurrency(),beforeChallengeEnergy=api.getEnergy();
 api.resetLegacySquad();
 api.showScreen("challenges");
+assert.equal(elements.challengeList.hidden,true);
+function openKind(kind){
+ const button={dataset:{challengeKind:kind}};
+ elements.challengeModes.contains=()=>true;
+ elements.challengeModes.handlers.click[0]({target:{closest:()=>button}});
+}
+openKind("tactical");
 assert.match(elements.challengeList.innerHTML,/T-01/);
-assert.match(elements.challengeList.innerHTML,/N-01/);
+assert.match(elements.challengeList.innerHTML,/T-04/);
+assert.doesNotMatch(elements.challengeList.innerHTML,/N-01/);
 function selectChallenge(id){
  const button={dataset:{startChallenge:id}};
  elements.challengeList.handlers.click[0]({target:{closest:()=>button}});
@@ -801,6 +809,9 @@ assert.equal(api.getEnergy(),beforeChallengeEnergy);
 assert.equal(JSON.stringify(api.getCampaignProgress()),beforeChallengeCampaign);
 click(elements.challengeResultBack);
 assert.equal(elements.challenges.classList.active,true);
+openKind("onslaught");
+assert.match(elements.challengeList.innerHTML,/N-01/);
+assert.match(elements.challengeList.innerHTML,/N-04/);
 selectChallenge("N-01");
 challengeBattle=api.getBattle();
 assert.equal(challengeBattle.totalWaves,2);

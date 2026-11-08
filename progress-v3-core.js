@@ -298,7 +298,7 @@ const ProgressV3Core=(()=>{
    const storage=getStorage();if(!storage)return false;
    // Refuse overwrite of a stale or corrupted profile from another tab.
    const raw=storage.getItem(KEY);if(raw===null)return false;
-   const old=JSON.parse(raw),known=validateActive(old,Object.keys(TEST_CLASSES).map(id=>({id,side:"ally"})));
+   const old=JSON.parse(raw),known=validateActive(old,Object.keys(p.classes).map(id=>({id,side:"ally"})));
    if(!known||(known.revision??0)!==(p.saveRevision??0))return false;
    candidate.revision=(p.saveRevision??0)+1;
    const encoded=JSON.stringify(candidate);

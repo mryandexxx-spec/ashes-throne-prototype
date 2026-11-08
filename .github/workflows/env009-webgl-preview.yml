@@ -6,6 +6,7 @@ on:
       - 'combat-visual-007.js'
       - 'combat-environment-010.js'
       - 'tests/fixtures/env009-webgl-preview.html'
+      - 'tests/fixtures/env010-full-game.html'
       - '.github/workflows/env009-webgl-preview.yml'
   workflow_dispatch:
 jobs:
@@ -38,6 +39,21 @@ jobs:
             echo "$page" | grep -q 'data-visual-status="ready"'
             test -s "artifacts/$name.png"
             file "artifacts/$name.png"
+          done
+          # Full production HTML/CSS/JS, including live combat HUD, not capsule fixture.
+          # iPhone-size viewport is emulated in Chromium; this is NOT Safari.
+          for size in '844,390' '1808,832'; do
+            tag="${size/,/x}"
+            url="http://127.0.0.1:8765/tests/fixtures/env010-full-game.html"
+            "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \\
+              --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \\
+              --hide-scrollbars --force-device-scale-factor=1 --window-size="$size" \\
+              --virtual-time-budget=15000 --screenshot="$PWD/artifacts/env010-full-hud-$tag.png" "$url" 2>"/tmp/chrome-full-$tag.log"
+            page="$("$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \\
+              --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \\
+              --virtual-time-budget=15000 --dump-dom "$url" 2>>"/tmp/chrome-full-$tag.log")"
+            echo "$page" | grep -q 'data-visual-status="ready"'
+            test -s "artifacts/env010-full-hud-$tag.png"
           done
       - name: Upload real headless WebGL screenshots
         if: always()

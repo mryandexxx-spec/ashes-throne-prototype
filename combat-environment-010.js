@@ -70,22 +70,24 @@ const CombatEnvironment010=(()=>{
    [-55,COLORS.skyHaze],[45,COLORS.skyUpper],[160,COLORS.skyTop]];
   geom("sky",1,stops.length,(u,row)=>place(118,(u-.5)*310,stops[row][0]),
    (u,row)=>stops[row][1],sky);
-  // Broad mesa-shaped landforms: rounded mass remains the backbone, while
-  // a restrained flat-topped component gives a worn sedimentary shelf profile.
-  const gaussian=(u,c,w,h)=>{const q=(u-c)/w;return h*Math.exp(-q*q*1.15);};
-  const shelfPeak=(u,c,w,h)=>{
-    const q=Math.abs((u-c)/w);
-    const rounded=Math.exp(-q*q*1.15);
-    const plateau=Math.exp(-q*q*q*q*1.1);
-    return h*(.80*rounded+.20*plateau);
+  // Weathered sedimentary scarps: plateau tops, abrupt fractured shoulders
+  // and talus. Avoid Gaussian hill silhouettes in the fixed 3/4 composition.
+  const smooth=(a,b,x)=>{const t=CLAMP((x-a)/(b-a),0,1);return t*t*(3-2*t);};
+  const mesa=(u,c,w,h,phase)=>{
+   const offset=.065*Math.sin(u*24+phase)+.026*Math.sin(u*71-phase*.7);
+   const q=Math.abs((u-c)/w)*(1+offset);
+   const crown=1-.11*smooth(.25,.78,q);
+   const scarp=1-smooth(.71,1.07,q);
+   const talus=.13*Math.exp(-Math.pow((q-1.04)/.36,2));
+   return h*(crown*scarp+talus);
   };
   function sculpt(t,phase){
-    const u=t/115;
-    const mass=shelfPeak(u,-.76,.36,.78)+shelfPeak(u,-.22,.26,1.18)+
-     shelfPeak(u,.24,.24,.69)+shelfPeak(u,.73,.35,.95);
-    const foothills=.10*Math.sin(t*.105+phase)+.05*Math.sin(t*.29+phase*.7);
-    const erodedValley=.11*Math.pow(Math.max(0,Math.sin(t*.055+phase*1.5)),4);
-    return mass+foothills-erodedValley;
+   const u=t/115;
+   const mass=mesa(u,-.76,.36,.78,phase)+mesa(u,-.22,.26,1.18,phase+1.5)+
+    mesa(u,.24,.24,.69,phase+2.7)+mesa(u,.73,.35,.95,phase+4.1);
+   const weathering=.024*Math.sin(t*.22+phase)+.018*Math.sin(t*.47-phase*.7);
+   const watercut=.10*Math.pow(Math.max(0,Math.sin(t*.055+phase*1.5)),6);
+   return mass+weathering-watercut;
   }
   const layers=[
    {name:"horizon",d:92,base:-98,amplitude:54,phase:.45,color:COLORS.far,relief:1.1},
@@ -117,6 +119,29 @@ const CombatEnvironment010=(()=>{
     const haze=row===0?.25:row<3?.11:0;
     return mix(land,COLORS.skyHaze,haze).map(v=>v+sediment+fineStrata+facet+shaded);
    },material);
+  }
+  // Two camera-side sculpted banks frame the distant gorge. They sit beyond
+  // the battle footprint, and are genuine 3D walls with stepped strata.
+  for(const side of [-1,1]){
+   const bank=mat(side<0?"west_bank":"east_bank");
+   const steps=[-100,-73,-49,-34,-23,-15,-9,-4,0];
+   geom(side<0?"west_bank":"east_bank",48,steps.length,(u,row)=>{
+    const x=side*(11+22*u);
+    const top=-12+5.4*Math.cos(u*2.4)-5.2*u+
+     1.8*Math.sin(u*9.7+side*1.5);
+    const t=row/(steps.length-1);
+    const cut=1.6*Math.sin(u*13+side*2.2+row*.34)*(1-t);
+    const distance=25+6*u+(1-t)*(1.3*Math.sin(u*8+side)+
+     .65*Math.sin(u*21+row*.27));
+    return place(distance,x,top+steps[row]+cut);
+   },(u,row,x,y,z)=>{
+    const bed=.035*Math.sin(y*.44+u*5.7);
+    const joint=Math.abs(Math.sin(u*18+row*.09+side))>.965?-.052:0;
+    const ledge=row>5?.043:row>3?.006:-.035;
+    const edge=.016*Math.sin(u*31+row*.9);
+    const base=side<0?[.40,.405,.395]:[.365,.39,.405];
+    return base.map(v=>v+bed+joint+ledge+edge);
+   },bank);
   }
   // A single repeatable tangent-space stone normal map adds grazing-light
   // fracture relief to ENV009's walkable shelf without changing its y=0
@@ -220,7 +245,7 @@ const CombatEnvironment010=(()=>{
       const cap=own(new B.Mesh("env010_sedimentary_shelf_skin",scene));
       data.applyToMesh(cap,false);
       const material=own(new B.StandardMaterial("env010_sedimentary_skin",scene));
-      material.diffuseColor=new B.Color3(.98,.93,.86);
+      material.diffuseColor=new B.Color3(.79,.74,.66);
       material.useVertexColors=true;
       cap.hasVertexAlpha=true;cap.useVertexColors=true;
       material.specularColor=new B.Color3(.010,.012,.012);
@@ -236,8 +261,8 @@ const CombatEnvironment010=(()=>{
         false,false,options,()=>{albedoReady=true;makeCap();},()=>{}));
       normal=own(new B.Texture(ASSET_ROOT+"rock063-normal-512.jpg",scene,
         false,false,options,()=>{normalReady=true;makeCap();},()=>{}));
-      albedo.uScale=1;albedo.vScale=1;
-      normal.uScale=1;normal.vScale=1;normal.level=.23;
+      albedo.uScale=1.65;albedo.vScale=1.65;
+      normal.uScale=1.65;normal.vScale=1.65;normal.level=.23;
       if(B.Texture.WRAP_ADDRESSMODE!==undefined)for(const t of [albedo,normal]){
         t.wrapU=B.Texture.WRAP_ADDRESSMODE;t.wrapV=B.Texture.WRAP_ADDRESSMODE;
       }

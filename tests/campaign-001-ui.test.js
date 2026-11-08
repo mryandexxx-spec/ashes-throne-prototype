@@ -3,8 +3,8 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","auto-decision.js","enemy-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","story-trial-data.js","story-demo-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
-const ids=["home","collection","campaign","storyDemo","storyDemoOpen","storyDemoBack","storyDemoSpeaker","storyDemoText","storyDemoNext","storyDemoChoices","storyDemoChoiceA","storyDemoChoiceB","storyDemoFight","storyDemoTrialFight","storyDemoNotice","storyDemoAgain","squad","battle","heroList","combatants",
+const src=["initiative-model.js","ability-data.js","combat-core.js","auto-decision.js","enemy-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","challenge-core.js","battle-speed.js","animation-profiles.js","battle-animation.js","story-trial-data.js","story-demo-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const ids=["home","collection","campaign","challenges","challengeResult","challengeList","challengeSaveStatus","challengeResultName","challengeResultTitle","challengeResultText","challengeResultStars","challengeResultRetry","challengeResultBack","challengeResultHome","battleChallengeGoal","storyDemo","storyDemoOpen","storyDemoBack","storyDemoSpeaker","storyDemoText","storyDemoNext","storyDemoChoices","storyDemoChoiceA","storyDemoChoiceB","storyDemoFight","storyDemoTrialFight","storyDemoNotice","storyDemoAgain","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn","arenaIndicators","orientationPrompt",
  "basicAbilitySlot","specialAbilitySlot","abilityTooltip","abilityTooltipTitle","abilityTooltipText",
  "fighterInspect","inspectClose","inspectSide","inspectName","inspectRole","inspectStats","inspectEffects",
@@ -30,7 +30,7 @@ const chooseNodes=["kael","lyra","darin"].map(id=>{
 const heroNodes=["kael","lyra","darin"].map(id=>{const e=element();e.dataset.openHero=id;return e;});
 const arenaNav=element();arenaNav.dataset.screen="battle";
 const collectionNav=element();collectionNav.dataset.screen="collection";
-const allScreens=["home","collection","campaign","storyDemo","squad","battle","heroDetail","missionResult"].map(id=>elements[id]);
+const allScreens=["home","collection","campaign","challenges","challengeResult","storyDemo","squad","battle","heroDetail","missionResult"].map(id=>elements[id]);
 const visibilityListeners=[];const domEvents={};
 const document={
  body:element("body"),
@@ -108,7 +108,7 @@ function tick(){
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getEnergy:()=>progress.energy.value,getEnergyState:()=>progress.energy,getGearMaterials:()=>progress.gearMaterials,getAccountXp:()=>progress.accountXp,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=['kael','lyra','darin'];},getCampaignProgress:()=>campaignProgress,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderTargetFighterHud, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), enemyTemplates:()=>ENEMIES, configuredLineup:()=>battleLineup(), setAutoSpeed})",
+ "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getEnergy:()=>progress.energy.value,getEnergyState:()=>progress.energy,getGearMaterials:()=>progress.gearMaterials,getAccountXp:()=>progress.accountXp,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=['kael','lyra','darin'];},getCampaignProgress:()=>campaignProgress,getChallengeProgress:()=>challengeProgress,getChallengeState:()=>({id:activeChallengeId,tracker:challengeTracker}),openChallenge,renderChallenges,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderTargetFighterHud, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), enemyTemplates:()=>ENEMIES, configuredLineup:()=>battleLineup(), setAutoSpeed})",
  {document,window:liveWindow,BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 // Campaign regression fixture: preserve historical three-hero combat expectations.
 api.resetLegacySquad();
@@ -768,4 +768,61 @@ assert.match(elements.energyRefreshStatus.textContent,/Восстановлен�
 assert.equal(JSON.parse(savedData.get("ashes-throne.progress.v2")).energy.value,102,"refresh persists credited energy");
 click(elements.energyRefresh);
 assert.match(elements.energyRefreshStatus.textContent,/Пока без изменений/);
+// CHAL001B: real UI click path reuses this existing, battle-capable DOM harness.
+elements.challengeList.contains=()=>true;
+const beforeChallengeCampaign=JSON.stringify(api.getCampaignProgress());
+const beforeChallengeCurrency=api.getCurrency(),beforeChallengeEnergy=api.getEnergy();
+api.resetLegacySquad();
+api.showScreen("challenges");
+assert.match(elements.challengeList.innerHTML,/T-01/);
+assert.match(elements.challengeList.innerHTML,/N-01/);
+function selectChallenge(id){
+ const button={dataset:{startChallenge:id}};
+ elements.challengeList.handlers.click[0]({target:{closest:()=>button}});
+ assert.equal(elements.squad.classList.active,true);
+ click(elements.squadStart);
+ assert.equal(elements.battle.classList.active,true);
+ assert.equal(api.getChallengeState().id,id);
+}
+selectChallenge("T-01");
+let challengeBattle=api.getBattle();
+assert.equal(challengeBattle.totalWaves,1);
+challengeBattle.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
+let turns=0;
+while(challengeBattle.active&&turns++<25)click(elements.basicAbilityBtn);
+assert.ok(turns<25);
+assert.equal(challengeBattle.winner,"ally");
+flushVisual();
+assert.equal(elements.challengeResult.classList.active,true);
+assert.equal(api.getChallengeProgress().bestStars["T-01"],3);
+assert.equal(JSON.parse(savedData.get("ashes-throne.challenges.v1")).bestStars["T-01"],3);
+assert.equal(api.getCurrency(),beforeChallengeCurrency);
+assert.equal(api.getEnergy(),beforeChallengeEnergy);
+assert.equal(JSON.stringify(api.getCampaignProgress()),beforeChallengeCampaign);
+click(elements.challengeResultBack);
+assert.equal(elements.challenges.classList.active,true);
+selectChallenge("N-01");
+challengeBattle=api.getBattle();
+assert.equal(challengeBattle.totalWaves,2);
+challengeBattle.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
+turns=0;
+while(challengeBattle.active&&challengeBattle.wave===1&&turns++<25)click(elements.basicAbilityBtn);
+assert.equal(challengeBattle.wave,2);
+flushVisual();
+challengeBattle.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
+while(challengeBattle.active&&turns++<40)click(elements.basicAbilityBtn);
+assert.ok(turns<40);
+assert.equal(challengeBattle.winner,"ally");
+flushVisual();
+assert.equal(elements.challengeResult.classList.active,true);
+assert.equal(api.getChallengeProgress().bestStars["N-01"],2);
+assert.equal(JSON.parse(savedData.get("ashes-throne.challenges.v1")).bestStars["N-01"],2);
+assert.equal(api.getCurrency(),beforeChallengeCurrency);
+assert.equal(api.getEnergy(),beforeChallengeEnergy);
+assert.equal(JSON.stringify(api.getCampaignProgress()),beforeChallengeCampaign);
+click(elements.challengeResultRetry);
+assert.equal(elements.squad.classList.active,true,"retry must reopen squad, not campaign or arena");
+click(elements.squadBack);
+assert.equal(elements.challenges.classList.active,true);
+console.log("Challenges-001B UI: actual entry, squad, T-01, N-01 waves, scores, retry and economy isolation passed");
 console.log("Campaign-001 UI: battle, wave, repeat, batch simulation and energy feedback passed");

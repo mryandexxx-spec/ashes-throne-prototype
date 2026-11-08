@@ -48,6 +48,11 @@ function isVisualTransition(){return visualTransition!==null;}
 function captureResolvedVisuals(beforeFighters){
  // One resolved action batch, not an arbitrary UI render.
  if(battleIsChallenge&&challengeTracker)ChallengeCore.capture(challengeTracker,state.events||[]);
+ if(battleIsSignal&&signalBattleTracker&&!signalCaptureFailed){
+  const batch=SignalOperationCore.capture(signalBattleTracker,state.events||[],signalBattleTracker.lastSequence+1);
+  if(batch)signalBattleTracker=batch;
+  else signalCaptureFailed=true; // Refuse to invent a clean result from incomplete events.
+ }
  // Non-rendering contexts still finish immediately; never let graphics gate rules.
  if(!scene||!engine)return;
  BattleAnimation.enqueue(state.events);
@@ -240,6 +245,14 @@ let operationSaveBlocked=operationLoaded.blocked;
 let operationSaveAvailable=operationLoaded.available;
 let operationNotice="",operationRunCounter=0,operationBattleRunId=null;
 let battleIsOperation=false,operationResultRecorded=false;
+// OPS-002B: isolated signal-post pilot; no use of the OPS-001 record key.
+const signalLoaded=typeof SignalOperationCore!=="undefined"?
+ SignalOperationCore.load(()=>window.localStorage):
+ {progress:{active:null,history:[]},available:false,blocked:true};
+let signalProgress=signalLoaded.progress;
+let signalSaveBlocked=signalLoaded.blocked,signalSaveAvailable=signalLoaded.available;
+let signalNotice="",signalRunCounter=0,signalBattleRunId=null;
+let battleIsSignal=false,signalResultRecorded=false,signalBattleTracker=null,signalCaptureFailed=false;
 let storyTrialParty=false; // Only for the opt-in story sandbox, never saved.
 let storyDemoState=null;
 let missionResultShown=false;
@@ -557,6 +570,13 @@ function selectedParty(){
   .map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(progressedHero);
 }
 function battleLineup(){
+ if(battleIsSignal){
+  const plan=SignalOperationCore.battlePlan(signalProgress.active);
+  if(!plan)throw Error("Unknown signal operation plan");
+  const enemies=plan.guardIds.map(id=>ENEMIES.find(enemy=>enemy.id===id));
+  if(enemies.some(enemy=>!enemy))throw Error("Missing signal guard template");
+  return [...selectedParty(),...enemies.map(progressedEnemy)];
+ }
  if(battleIsOperation){
   if(!OperationCore.battlePlan(operationProgress.active))throw Error("Unknown operation plan");
   return [...selectedParty(),...ENEMIES.slice(0,2).map(progressedEnemy)];
@@ -584,6 +604,13 @@ function battleLineup(){
 // Optional future wave rosters live in mission data. Existing missions have no
 // future waves, so their accepted encounters and balance remain unchanged.
 function battleFutureWaves(){
+ if(battleIsSignal){
+  const plan=SignalOperationCore.battlePlan(signalProgress.active);
+  if(!plan)throw Error("Unknown signal battle plan");
+  const reserve=ENEMIES.find(enemy=>enemy.id==="ves-2");
+  if(plan.kind==="twoWaves"&&!reserve)throw Error("Missing signal reinforcement");
+  return plan.kind==="twoWaves"?[[progressedEnemy(reserve)]]:[];
+ }
  if(battleIsOperation){
   const plan=OperationCore.battlePlan(operationProgress.active);
   if(!plan)throw Error("Unknown operation plan");
@@ -735,6 +762,8 @@ function showScreen(id){
  if(id==="challenges")renderChallenges();
  if(id==="operations")renderOperations();
  if(id==="operationResult")renderOperationResult();
+ if(id==="signalOperations")renderSignalOperations();
+ if(id==="signalOperationResult")renderSignalOperationResult();
  if(id==="storyDemo")renderStoryDemo();
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
@@ -749,17 +778,23 @@ function showScreen(id){
   battleIsChallenge=squadReturnScreen==="challenges"&&!!ChallengeCore.get(activeChallengeId);
   battleIsOperation=squadReturnScreen==="operations"&&operationProgress.active?.phase==="battle";
   operationBattleRunId=battleIsOperation?operationProgress.active.runId:null;
+  battleIsSignal=squadReturnScreen==="signalOperations"&&signalProgress.active?.phase==="battle";
+  signalBattleRunId=battleIsSignal?signalProgress.active.runId:null;
   const label=$("#battleMissionLabel");
-  if(label)label.textContent=battleIsOperation?"РАЗВЕДОПЕРАЦИЯ · ДВА КУРЬЕРА":
+  if(label)label.textContent=battleIsSignal?"РАЗВЕДОПЕРАЦИЯ · ТРЕВОЖНЫЙ СИГНАЛ":
+   battleIsOperation?"РАЗВЕДОПЕРАЦИЯ · ДВА КУРЬЕРА":
    battleIsChallenge?"ИСПЫТАНИЕ · "+ChallengeCore.get(activeChallengeId).title:
    battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
    battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
   const objective=$("#battleChallengeGoal");
   if(objective){
-   objective.hidden=!battleIsChallenge&&!battleIsOperation;
+   objective.hidden=!battleIsChallenge&&!battleIsOperation&&!battleIsSignal;
    const def=battleIsChallenge?ChallengeCore.get(activeChallengeId):null;
    const priority=def?.kind==="tactical"?ENEMIES.find(e=>e.id===def.priorityId):null;
-   objective.textContent=battleIsOperation?"Перехватить подлинный пакет.":!def?"":def.kind==="tactical"?
+   objective.textContent=battleIsSignal?signalProgress.active?.assault==="quiet"?
+     "Тихий штурм: первым обезвредь связного. Два стража одним действием — сигнал подавлен.":
+     "Окружение: две волны, сигнал подавлен после победы, но скрытность потеряна.":
+    battleIsOperation?"Перехватить подлинный пакет.":!def?"":def.kind==="tactical"?
     "Цель: "+(priority?.name||"отмеченный враг")+" должен погибнуть первым и отдельно от остальных.":
     "Цель: пройти "+(def.futureWaves.length+1)+" волны, сохранив отряд.";
   }
@@ -1017,6 +1052,163 @@ $("#operationResultAgain")?.addEventListener("click",()=>{
  if(newOperation())showScreen("operations");
 });
 $("#operationResultHome")?.addEventListener("click",()=>showScreen("home"));
+
+// OPS-002B: separate UI and save; the accepted OPS-001 courier flow is untouched.
+const SIGNAL_PREPARATION_LABELS=Object.freeze({
+ survey:"Проследить караул",extraction:"Подготовить отход с документами"
+});
+const SIGNAL_ASSAULT_LABELS=Object.freeze({
+ quiet:"Тихое проникновение · 1 волна",cordon:"Окружить пост · 2 волны"
+});
+function commitSignalOperation(next){
+ const candidate=next&&SignalOperationCore.stage(signalProgress,next);
+ if(!candidate){
+  signalNotice="Нельзя изменить операцию: неверный этап или устаревшее действие.";
+  return false;
+ }
+ if(signalSaveBlocked||!signalSaveAvailable||
+  !SignalOperationCore.save(candidate,()=>window.localStorage,signalSaveBlocked)){
+  signalNotice="Сохранение не удалось. Изменение не применено, проверь данные Safari.";
+  return false;
+ }
+ signalProgress=candidate;
+ signalNotice="";
+ return true;
+}
+function signalOutcomeText(entry){
+ if(!entry)return "Завершённых операций пока нет.";
+ if(entry.outcome==="defeat")return "Отряд потерпел поражение. Пост не взят.";
+ if(entry.outcome==="abandoned")return "Операция прервана до окончания боя.";
+ const extra=entry.coverPreserved&&entry.ledgerSecured?" Следы скрыты, журнал взят.":
+  entry.coverPreserved?" Следы скрыты.":
+  entry.ledgerSecured?" Журнал взят.":" Дополнительных целей нет.";
+ if(entry.outcome==="clean")return "Пост взят незаметно, тревога не поднята."+extra;
+ if(entry.outcome==="alerted")return "Пост взят, но связной успел поднять тревогу."+extra;
+ return "Пост взят силой, сигнал подавлен. Присутствие отряда раскрыто."+extra;
+}
+function renderSignalOperationResult(){
+ const entry=signalProgress.history[signalProgress.history.length-1]||null;
+ const titles={clean:"Тихая победа",alerted:"Предупреждение отправлено",
+  loud:"Открытый штурм",defeat:"Операция провалена",abandoned:"Отступление"};
+ const heading=$("#sigResultTitle"),desc=$("#sigResultText"),status=$("#sigResultStatus");
+ if(heading)heading.textContent=entry?titles[entry.outcome]:"Итоги сигнального поста";
+ if(desc)desc.textContent=signalOutcomeText(entry);
+ if(status)status.textContent="OPS-002 · Учебная операция. Награды, энергия и кампания не изменяются. "+
+  (signalSaveBlocked?"Сохранение недоступно.":"Итог сохранён в этом браузере.");
+}
+function renderSignalOperations(){
+ const status=$("#sigSaveStatus"),phase=$("#sigPhase"),info=$("#sigReport");
+ const actions=$("#sigActions"),notice=$("#sigNotice"),history=$("#sigHistory");
+ const post=$("#sigPostStatus"),guardA=$("#sigGuardA"),guardB=$("#sigGuardB");
+ if(!status||!phase||!info||!actions||!notice||!history||!post||!guardA||!guardB)return;
+ const run=signalProgress.active;
+ const intel=run?SignalOperationCore.intel(run):null;
+ const last=signalProgress.history[signalProgress.history.length-1]||null;
+ status.textContent=signalSaveBlocked?"Запись операции повреждена — запуск блокирован, чтобы не потерять данные.":
+  !signalSaveAvailable?"Локальное хранилище недоступно — запуск блокирован.":
+  "План хранится отдельно. При закрытии Safari во время боя он начнётся заново, без восстановления ходов и HP.";
+ notice.textContent=signalNotice;
+ history.textContent=last?"Последний итог: "+signalOutcomeText(last):"Завершённых операций ещё нет.";
+ if($("#sigGuardAName"))$("#sigGuardAName").textContent=ENEMIES.find(e=>e.id==="ves")?.name||"Страж 1";
+ if($("#sigGuardBName"))$("#sigGuardBName").textContent=ENEMIES.find(e=>e.id==="shade")?.name||"Страж 2";
+ guardA.textContent=intel?.signalId==="ves"?"Связной установлен":
+  intel?.signalId==="shade"?"Постовой":"Роль не установлена";
+ guardB.textContent=intel?.signalId==="shade"?"Связной установлен":
+  intel?.signalId==="ves"?"Постовой":"Роль не установлена";
+ const button=(action,value,label,style="ghost")=>'<button type="button" class="'+style+
+  '" data-sig-'+action+'="'+value+'">'+label+'</button>';
+ const quit=button("quit","yes","Отказаться от операции");
+ if(!run){
+  phase.textContent="БРИФИНГ · СИГНАЛЬНЫЙ ПОСТ";
+  info.textContent="На посту два стража. Только один успеет подать сигнал, если его товарища обезвредят первым. Разведка покажет связного, либо можно подготовить отход. Учебный неканонический сценарий.";
+  post.textContent="Тревога не поднята · задача не начата";
+  actions.innerHTML=button("new","yes","Начать операцию","primary").replace(
+   "<button",'<button'+(signalSaveBlocked||!signalSaveAvailable?" disabled":""));
+  return;
+ }
+ if(run.phase==="prep"){
+  phase.textContent="ШАГ 1 ИЗ 2 · ПОДГОТОВКА";
+  info.textContent="Проследить караул — узнать имя связного. Подготовить отход — сохранить возможность скрыть следы и взять журнал одновременно после победы, но не узнать связного.";
+  post.textContent="Сигнал ещё можно предотвратить";
+  actions.innerHTML=button("prep","survey",SIGNAL_PREPARATION_LABELS.survey,"primary")+
+   button("prep","extraction",SIGNAL_PREPARATION_LABELS.extraction)+quit;
+ }else if(run.phase==="assault"){
+  phase.textContent="ШАГ 2 ИЗ 2 · СПОСОБ ШТУРМА";
+  info.textContent=(intel.signalId?
+   "Разведка: связной — "+(ENEMIES.find(e=>e.id===intel.signalId)?.name||"установленный страж")+". ":
+   "Связной неизвестен. ")+
+   "При тихом штурме нужно вывести связного из боя в первом действии с потерями врагов. Окружение остановит сигнал при победе, но раскрывает присутствие и требует двух волн.";
+  post.textContent="Решение ещё не принято";
+  actions.innerHTML=button("assault","quiet",SIGNAL_ASSAULT_LABELS.quiet,"primary")+
+   button("assault","cordon",SIGNAL_ASSAULT_LABELS.cordon)+quit;
+ }else if(run.phase==="battle"){
+  phase.textContent="БОЕВОЙ ЭТАП · ПОДГОТОВКА ОТРЯДА";
+  const plan=SignalOperationCore.battlePlan(run);
+  info.textContent="Подготовка: "+SIGNAL_PREPARATION_LABELS[run.preparation]+
+   ". Штурм: "+SIGNAL_ASSAULT_LABELS[run.assault]+". "+
+   (run.assault==="quiet"?
+    (intel.signalId?"Связной установлен: "+(ENEMIES.find(e=>e.id===intel.signalId)?.name||intel.signalId)+". ":
+     "Связной неизвестен. ")+
+    "Он должен погибнуть при первой потере противников. Одновременная гибель двух стражей предотвращает сигнал.":
+    "После победы сигнал будет подавлен, но скрытность потеряна.")+
+   " После выхода из Safari бой можно повторить с первого хода.";
+  post.textContent=plan.kind==="twoWaves"?"План: 2 волны":"План: 1 волна";
+  actions.innerHTML=button("fight","yes","Выбрать отряд и начать бой","primary")+quit;
+ }else if(run.phase==="final"){
+  phase.textContent="ПОСЛЕ БОЯ · ПОСЛЕДНЕЕ РЕШЕНИЕ";
+  const labels={cover:"Скрыть следы",ledger:"Забрать журнал",
+   leave:"Немедленно уйти",both:"Скрыть следы и забрать журнал"};
+  post.textContent=run.outcome==="clean"?"Тревога подавлена · скрытность сохранена":
+   run.outcome==="alerted"?"Сигнал отправлен · пост захвачен":
+   "Сигнал подавлен · операция раскрыта";
+  info.textContent="Столкновение завершено. "+
+   (intel.extractionPrepared?"Подготовка отхода позволяет забрать журнал и скрыть следы.":
+    "Можно выполнить только одну дополнительную цель.")+
+   " Это локальные итоги, не игровые награды.";
+  actions.innerHTML=SignalOperationCore.finalChoices(run).map(value=>
+   button("finish",value,labels[value],value==="both"?"primary":"ghost")).join("");
+ }
+}
+function createSignalOperation(){
+ if(signalProgress.active||signalSaveBlocked||!signalSaveAvailable)return false;
+ let random;
+ try{
+  const words=new Uint32Array(2);
+  if(window.crypto?.getRandomValues)window.crypto.getRandomValues(words);
+  else{words[0]=Math.floor(Math.random()*4294967296);words[1]=Math.floor(Math.random()*4294967296);}
+  random=words;
+ }catch(_){random=new Uint32Array([Math.floor(Math.random()*4294967296),Math.floor(Math.random()*4294967296)]);}
+ const signalId=random[0]%2===0?"ves":"shade";
+ const runId="sig-"+Date.now().toString(36)+"-"+random[1].toString(36)+"-"+(++signalRunCounter);
+ const run=SignalOperationCore.start(signalId,runId);
+ if(!commitSignalOperation(run)){renderSignalOperations();return false;}
+ renderSignalOperations();
+ return true;
+}
+function changeSignalOperation(next){
+ if(!commitSignalOperation(next)){renderSignalOperations();return false;}
+ if(next.phase==="done")showScreen("signalOperationResult");
+ else renderSignalOperations();
+ return true;
+}
+$("#signalOperations")?.addEventListener("click",event=>{
+ const node=event.target.closest?.("[data-sig-new],[data-sig-prep],[data-sig-assault],[data-sig-fight],[data-sig-finish],[data-sig-quit]");
+ if(!node||node.disabled||!$("#signalOperations").contains(node))return;
+ const run=signalProgress.active;
+ if(node.dataset.sigNew){createSignalOperation();return;}
+ if(!run)return;
+ if(node.dataset.sigPrep){changeSignalOperation(SignalOperationCore.prepare(run,node.dataset.sigPrep));return;}
+ if(node.dataset.sigAssault){changeSignalOperation(SignalOperationCore.chooseAssault(run,node.dataset.sigAssault));return;}
+ if(node.dataset.sigFight){if(run.phase==="battle")openSquad("signalOperations");return;}
+ if(node.dataset.sigFinish){changeSignalOperation(SignalOperationCore.finish(run,node.dataset.sigFinish));return;}
+ if(node.dataset.sigQuit)changeSignalOperation(SignalOperationCore.abandon(run));
+});
+$("#sigResultAgain")?.addEventListener("click",()=>{
+ if(signalProgress.active){showScreen("signalOperations");return;}
+ if(createSignalOperation())showScreen("signalOperations");
+});
+$("#sigResultBack")?.addEventListener("click",()=>showScreen("signalOperations"));
+$("#sigResultHome")?.addEventListener("click",()=>showScreen("home"));
 
 function renderChallenges(){
  const container=$("#challengeList"),modeNav=$("#challengeModes"),modeBack=$("#challengeModeBack");
@@ -1850,6 +2042,14 @@ function syncBattleUI(){
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
   missionResultRecorded=true;
  }
+ if(battleIsSignal&&!state.active&&!signalResultRecorded){
+  const pending=signalProgress.active;
+  const result=pending&&!signalCaptureFailed&&signalBattleTracker&&
+   SignalOperationCore.battleEnded(pending,signalBattleRunId,state,signalBattleTracker);
+  if(!result||!commitSignalOperation(result))
+   signalNotice="Результат не записан: проверь сохранение и повтори бой с контрольной точки.";
+  signalResultRecorded=true;
+ }
  if(battleIsOperation&&!state.active&&!operationResultRecorded){
   const pending=operationProgress.active;
   const ended=pending&&OperationCore.battleEnded(pending,operationBattleRunId,state);
@@ -1900,6 +2100,12 @@ function syncBattleUI(){
   renderTargetFighterHud();
   renderArenaIndicators();
   updateMeshes();
+  return;
+ }
+ if(battleIsSignal&&!state.active&&!missionResultShown){
+  missionResultShown=true;
+  showScreen(signalProgress.active?.phase==="final"?"signalOperations":
+   signalProgress.active?.phase==="battle"?"signalOperations":"signalOperationResult");
   return;
  }
  if(battleIsOperation&&!state.active&&!missionResultShown){
@@ -2049,6 +2255,9 @@ function resetBattle(){
  missionResultRecorded=false;
  challengeResultRecorded=false;
  operationResultRecorded=false;
+ signalResultRecorded=false;
+ signalCaptureFailed=false;
+ signalBattleTracker=battleIsSignal?SignalOperationCore.startTracker(signalProgress.active):null;
  challengeLastStars=0;
  challengeSaveFailed=false;
  challengeTracker=battleIsChallenge?ChallengeCore.start(activeChallengeId):null;
@@ -2094,7 +2303,7 @@ $("#basicAbilityBtn").addEventListener("click",()=>pressAbility("basic"));
 $("#specialAbilityBtn").addEventListener("click",()=>pressAbility("special"));
 $("#powerfulAbilityBtn")?.addEventListener("click",()=>pressAbility("powerful"));
 $("#battleRetryBtn").addEventListener("click",()=>{
- if(!state.active&&!isVisualTransition())openSquad(battleIsOperation?"operations":battleIsChallenge?"challenges":"home");
+ if(!state.active&&!isVisualTransition())openSquad(battleIsSignal?"signalOperations":battleIsOperation?"operations":battleIsChallenge?"challenges":"home");
 });
 const autoBattleControl=$("#autoBattleBtn");
 if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.active)setAutoBattle(!autoBattle);});

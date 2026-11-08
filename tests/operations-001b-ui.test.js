@@ -18,8 +18,8 @@ test("OPS-001B has its own map, controls, results and versioned script",()=>{
  assert.match(html,/data-screen="operations"/);
  assert.ok(html.indexOf('src="operation-core.js"')>html.indexOf('src="challenge-core.js"'));
  assert.ok(html.indexOf('src="operation-core.js"')<html.indexOf('src="game.js"'));
- assert.equal(pkg.version,"0.3.74");
- assert.match(html,/v0\.3\.74 · OPS001B/);
+ assert.equal(pkg.version,"0.3.75");
+ assert.match(html,/v0\.3\.75 · OPS002B/);
  assert.match(pkg.scripts.test,/node --check operation-core\.js/);
  assert.match(css,/\.ops-layout\{/);
  assert.match(css,/\.ops-nodes\{/);

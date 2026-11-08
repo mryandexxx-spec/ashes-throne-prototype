@@ -1223,3 +1223,42 @@ button.ops-node:not(:disabled){border-color:var(--gold);background:#d5ad6517}
  .ops-layout{grid-template-columns:minmax(0,1fr)}
  .ops-actions button{flex:1 1 145px}
 }
+
+
+/* OPS-002B: signal-post route. No 3D assets, full keyboard/touch targets. */
+.sig-operation-entry{display:flex;align-items:center;justify-content:space-between;
+ gap:12px;min-width:0;margin:8px 0 14px;padding:13px 16px;
+ background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.sig-operation-entry strong{font-size:clamp(13px,1.6vw,16px)}
+.sig-operation-entry p{font-size:clamp(11px,1.4vw,13px);margin:5px 0 0}
+.sig-operation-entry button{min-width:155px;min-height:44px;white-space:normal}
+.ops-legacy-label{margin:14px 0 6px}
+.sig-map{min-width:0}
+.sig-guards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ align-items:stretch;gap:7px;margin:12px 0 10px;min-width:0}
+.sig-guard,.sig-beacon{display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:5px;text-align:center;min-width:0;
+ border:1px solid var(--line);border-radius:10px;padding:9px 5px;
+ background:var(--panel2);overflow-wrap:anywhere;min-height:96px}
+.sig-guard strong,.sig-beacon strong{font-size:clamp(10px,1.35vw,13px)}
+.sig-guard small,.sig-beacon small{font-size:clamp(10px,1.15vw,12px);
+ line-height:1.25;color:var(--muted)}
+.sig-guard-icon,.sig-beacon>span{font-size:clamp(19px,3.5vw,31px);color:var(--gold)}
+.sig-beacon{border-color:var(--gold)}
+.sig-post-status{margin:9px 0;color:var(--gold);font-size:13px;font-weight:600}
+@media (orientation:landscape) and (max-height:540px){
+ .sig-operation-entry{padding:8px 11px;margin:5px 0 9px}
+ .sig-operation-entry strong{font-size:12px}
+ .sig-operation-entry p{font-size:11px;margin:3px 0 0}
+ .sig-operation-entry button{min-height:44px;padding:7px 9px;font-size:11px}
+ .sig-guards{margin:6px 0;gap:5px}
+ .sig-guard,.sig-beacon{min-height:65px;padding:5px 3px;gap:3px}
+ .sig-guard-icon,.sig-beacon>span{font-size:20px}
+ .sig-post-status{font-size:11px;margin:5px 0}
+}
+@media(max-width:590px){
+ .sig-operation-entry{flex-wrap:wrap}
+ .sig-operation-entry button{width:100%}
+ .sig-guards{gap:4px}
+ .sig-guard,.sig-beacon{padding:6px 3px}
+}

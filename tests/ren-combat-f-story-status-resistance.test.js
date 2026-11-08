@@ -117,5 +117,5 @@ function replay(){
 assert.equal(replay(),replay());
 assert.ok(!read("hero-collection-core.js").includes("trial-ren"));
 assert.ok(!read("progress-v3-core.js").includes("trial-ren"));
-assert.equal(JSON.parse(read("package.json")).version,"0.3.76");
+assert.equal(JSON.parse(read("package.json")).version,"0.3.77");
 console.log("REN-COMBAT-F: opt-in legacy weaken, story status rolls, determinism, backwards compatibility, atomicity");

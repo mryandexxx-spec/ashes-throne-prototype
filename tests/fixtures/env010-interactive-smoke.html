@@ -17,7 +17,22 @@
  function assert(test,message){if(!test)throw Error(message);}
  const poll=setInterval(()=>{
   try{
-   if(++tick>700)throw Error("interactive smoke timed out, phase="+phase);
+   if(++tick>700){
+     const w=frame.contentWindow,doc=frame.contentDocument;
+     let info="";
+     try{
+      const state=w.eval("state");
+      info=JSON.stringify({phase,active:state.active,winner:state.winner,
+       turn:state.turn,events:state.events?.slice(-3).map(e=>e.type),
+       hp:state.fighters.map(x=>[x.name,x.hp]),
+       pending:w.eval("BattleAnimation.pending()"),
+       visualTransition:w.eval("visualTransition"),
+       autoBattle:w.eval("autoBattle"),
+       autoTimer:w.eval("autoTimer!==null"),
+       retryHidden:doc.querySelector("#battleRetryBtn")?.hidden});
+     }catch(e){info=e.message;}
+     throw Error("interactive smoke timed out: "+info);
+    }
    const doc=frame.contentDocument,win=frame.contentWindow;
    if(!doc||doc.readyState!=="complete")return;
    if(doc.querySelector("#loginCalendar.active")){

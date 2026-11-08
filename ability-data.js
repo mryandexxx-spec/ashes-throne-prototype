@@ -108,18 +108,18 @@ const AbilityData=(()=>{
  const fallback=Object.freeze({id:"special",name:"Особый удар",target:"enemy",kind:"damage",multiplier:1,weakening:0,cooldown:2});
  function get(actor,abilityId){
   // Stats-002C pilot: only explicitly outfitted fighters use typed basic attacks.
-  if(abilityId==="basic")return Number.isFinite(actor?.physicalAttack)?typedBasic:basic;
+  if(abilityId==="basic")return actor?.combatProfile==="stats002c"?typedBasic:basic;
   if(!actor)return null;
   if(abilityId==="powerful"){
    const ability=powerful[actor.id]||null;
-   return ability&&Number.isFinite(actor.physicalAttack)&&
+   return ability&&actor.combatProfile==="stats002c"&&
      ["lyra","darin"].includes(actor.id)?{...ability,damageType:"physical"}:ability;
   }
   if(abilityId==="passive")return Object.prototype.hasOwnProperty.call(passiveByHero,actor.id)?passiveByHero[actor.id]:null;
   if(abilityId==="leader")return Object.prototype.hasOwnProperty.call(leaderByHero,actor.id)?leaderByHero[actor.id]:null;
   if(abilityId!=="special")return null;
   const ability=Object.prototype.hasOwnProperty.call(special,actor.id)?special[actor.id]:fallback;
-  return Number.isFinite(actor.physicalAttack)&&["lyra","darin"].includes(actor.id)?
+  return actor.combatProfile==="stats002c"&&["lyra","darin"].includes(actor.id)?
     {...ability,damageType:"physical"}:ability;
  }
  // Missing damageType is explicitly legacy: its historical general atk

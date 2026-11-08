@@ -92,14 +92,26 @@ test("ENV010 optional microrelief builds a single deterministic scene-owned norm
  Env010.build(B,scene,value=>(owned.push(value),value));
  assert.equal(Texture.creations-beforeCount,1,"ENV010 adds only one normal map");
  assert.equal(shelf.diffuseTexture,originalAlbedo,"reuses ENV009 albedo texture");
- assert.equal(originalAlbedo.pixels.length,512*512*4);
- assert.equal(originalAlbedo.updated,true);
+ assert.equal(originalAlbedo.pixels,undefined,"fallback albedo stays unchanged");
+ assert.equal(originalAlbedo.updated,undefined);
  assert.equal(shelf.bumpTexture.name,"env010_rock_microrelief");
  assert.equal(shelf.bumpTexture.size,256);
  assert.equal(shelf.bumpTexture.pixels.length,256*256*4);
  assert.equal(shelf.bumpTexture.level,.36);
  assert.equal(shelf.bumpTexture.updated,true);
  assert.ok(owned.includes(shelf.bumpTexture));
+});
+test("CC0 Rock063 material is bundled locally and keeps the procedural fallback",()=>{
+ const fs=require("node:fs"),path=require("node:path");
+ for(const file of ["rock063-color-512.jpg","rock063-normal-512.jpg"]){
+   const data=fs.readFileSync(path.join(__dirname,"..","assets","env010",file));
+   assert.ok(data.length>25000&&data.length<250000,"512px optimized asset budget");
+   assert.equal(data[0],255);assert.equal(data[1],216);
+ }
+ const source=read("combat-environment-010.js");
+ assert.match(source,/new URL\("assets\/env010\/",document.currentScript.src\)/);
+ assert.ok(source.includes('if(!albedoReady||!normalReady)return;'));
+ assert.doesNotMatch(source,/https?:\/\//);
 });
 test("fixed camera ignores single-finger rotation, retains 12..21 pinch and clears cancelled pointers",()=>{
  const source=read("game.js");

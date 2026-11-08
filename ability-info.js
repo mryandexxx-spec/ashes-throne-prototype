@@ -39,6 +39,7 @@ const AbilityInfo=(()=>{
    if(percent!==null)effects.push("Наносит "+percent+"% от действующей атаки.");
    else effects.push("Наносит урон.");
    if(a.weakening>0)effects.push("Ослабляет противника на "+a.weakening+" атаки.");
+    if(a.onHitStatus?.type==="slowed")effects.push("Замедление: -"+a.onHitStatus.amount+"% скорости на "+a.onHitStatus.turns+" собственных хода цели (тестовый баланс).");
   }else if(a.kind==="guard"){
    if(Number.isFinite(a.guardHits))effects.push("Даёт защиту от "+a.guardHits+" ударов.");
    else effects.push("Даёт защиту.");

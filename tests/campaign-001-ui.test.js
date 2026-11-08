@@ -137,7 +137,7 @@ const count=()=>elements.squadCount.textContent;
  assert.equal(elements.storyDemoNext.hidden,true);
  assert.equal(elements.storyDemoChoices.hidden,false);
  click(elements.storyDemoChoiceB);
- assert.match(elements.storyDemoText.textContent,/Нада/);
+ assert.equal(elements.storyDemoSpeaker.textContent,"Нада");
  assert.equal(elements.storyDemoFight.hidden,false);
  click(elements.storyDemoFight);
  assert.equal(elements.squad.classList.contains("active"),true);

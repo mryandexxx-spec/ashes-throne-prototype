@@ -22,10 +22,10 @@ function mock(){
  const scene={meshes:[],materials:[],lights:[{name:"hemi"},{name:"key"}]};
  return {B,scene};
 }
-test("ENV010 background is three spatial rock planes and one sky gradient; never pickable",()=>{
+test("ENV010 background is three sculpted canyon walls and one sky gradient; never pickable",()=>{
  const {B,scene}=mock(),result=Env010.build(B,scene,v=>v);
  assert.equal(result.meshes,4);
- assert.ok(result.triangles>1400&&result.triangles<4000);
+ assert.ok(result.triangles>10000&&result.triangles<18000);
  assert.ok(scene.meshes.every(m=>m.isPickable===false&&m.checkCollisions===false));
  assert.ok(scene.materials.every(m=>m.disableLighting===false&&m.fogEnabled===false));
  assert.ok(scene.meshes.every(m=>m.useVertexColors===true));
@@ -42,6 +42,13 @@ test("ENV010 background is three spatial rock planes and one sky gradient; never
  const horizon=scene.meshes.find(m=>m.name==="env010_horizon").data.positions;
  const foreground=scene.meshes.find(m=>m.name==="env010_escarpment").data.positions;
  assert.ok(horizon[0]>foreground[0]&&horizon[2]>foreground[2]);
+ // Every rock wall has a varying world-space depth across its vertical face;
+ // a flat painted silhouette would fail this test.
+ const escarpment=scene.meshes.find(m=>m.name==="env010_escarpment");
+ const p=escarpment.data.positions;
+ const cols=129;
+ const depth=offset=>(p[offset]+p[offset+2])/Math.sqrt(2);
+ assert.ok(Math.abs(depth(3*cols*2)-depth(3*cols*15))>3);
  assert.equal(scene.meshes[0].name,"env010_sky");
 });
 test("ENV010 integrates as an additive optional layer without changing ENV009/FX",()=>{

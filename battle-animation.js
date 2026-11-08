@@ -5,6 +5,8 @@ const BattleAnimation=(()=>{
  "use strict";
  const queue=[];
  const dying=new Set();
+ // Presentation-only cues: the first frame of each queued action, no combat side-effects.
+ const started=[];
  let current=null,elapsed=0,idleTime=0;
  function enqueue(events){
   if(!Array.isArray(events))return;
@@ -28,14 +30,17 @@ const BattleAnimation=(()=>{
   }
  }
  function clear(){
-  queue.length=0;current=null;elapsed=0;idleTime=0;dying.clear();
+  queue.length=0;current=null;elapsed=0;idleTime=0;dying.clear();started.length=0;
  }
  function tick(deltaMs,multiplier=1){
   if(!Number.isFinite(deltaMs)||deltaMs<0||!Number.isFinite(multiplier)||multiplier<=0)return;
   // Tab wake-ups cannot skip unbounded queued actions.
   let remaining=Math.min(deltaMs,100)*multiplier;
   idleTime+=remaining;
-  if(!current&&queue.length){current=queue.shift();elapsed=0;}
+  if(!current&&queue.length){
+   current=queue.shift();elapsed=0;
+   if(current.slot==="hit")started.push({id:current.id,slot:current.slot});
+  }
   while(current&&remaining>0){
    const profile=AnimationProfiles.resolve(current.id,current.slot);
    const step=Math.min(remaining,profile.durationMs-elapsed);
@@ -43,6 +48,7 @@ const BattleAnimation=(()=>{
    if(elapsed>=profile.durationMs){
     if(current.slot==="death")dying.delete(current.id);
     current=queue.shift()||null;
+    if(current?.slot==="hit")started.push({id:current.id,slot:current.slot});
     elapsed=0;
    }
   }
@@ -71,5 +77,6 @@ const BattleAnimation=(()=>{
  }
  function isDying(heroId){return dying.has(heroId);}
  function pending(){return queue.length+(current?1:0);}
- return Object.freeze({enqueue,clear,tick,pose,isDying,pending});
+ function drainStarted(){const cues=started.splice(0);return cues;}
+ return Object.freeze({enqueue,clear,tick,pose,isDying,pending,drainStarted});
 })();

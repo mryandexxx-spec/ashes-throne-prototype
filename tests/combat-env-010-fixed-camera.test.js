@@ -86,8 +86,14 @@ test("ENV010 optional microrelief builds a single deterministic scene-owned norm
  }
  Texture.creations=0;
  B.DynamicTexture=Texture;
+ const originalAlbedo=new Texture("existing_env009_texture",512);
+ shelf.diffuseTexture=originalAlbedo;
+ const beforeCount=Texture.creations;
  Env010.build(B,scene,value=>(owned.push(value),value));
- assert.equal(Texture.creations,1);
+ assert.equal(Texture.creations-beforeCount,1,"ENV010 adds only one normal map");
+ assert.equal(shelf.diffuseTexture,originalAlbedo,"reuses ENV009 albedo texture");
+ assert.equal(originalAlbedo.pixels.length,512*512*4);
+ assert.equal(originalAlbedo.updated,true);
  assert.equal(shelf.bumpTexture.name,"env010_rock_microrelief");
  assert.equal(shelf.bumpTexture.size,256);
  assert.equal(shelf.bumpTexture.pixels.length,256*256*4);

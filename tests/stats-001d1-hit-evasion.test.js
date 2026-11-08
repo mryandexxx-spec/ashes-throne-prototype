@@ -120,7 +120,7 @@ assert.equal(battle.fighters[1].hp,90);
 // Fixed seed, action plan and target order are repeatable; autoplay uses
 // the same shared combat executor and consumes one roll for a legal basic.
 function autoCase(seed){
- const b=setup(hero(),[foe("a",{evasion:60})],{rngSeed:seed,hitChecks:true});
+ const b=setup(hero("test-physical-strike",{combatProfile:"stats002c"}),[foe("a",{evasion:60})],{rngSeed:seed,hitChecks:true});
  assert.equal(core.performAutoAction(b,{abilityId:"basic",targetIndex:1}),true);
  return own({events:b.events,rng:b.rng,hp:b.fighters.map(x=>x.hp)});
 }

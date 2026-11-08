@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - 'combat-environment-009.js'
-      - 'combat-visual-007.js'
+      - 'combat-visual-007.js'\n      - 'combat-environment-010.js'
       - 'tests/fixtures/env009-webgl-preview.html'
       - '.github/workflows/env009-webgl-preview.yml'
   workflow_dispatch:
@@ -22,10 +22,10 @@ jobs:
           mkdir -p artifacts
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/env009-http.log 2>&1 &
           sleep 2
-          for case in 'cv008 default' 'env009 default' 'env009 left' 'env009 right'; do
+          for case in 'cv008 default' 'env009 default' 'env010 default' 'env010 far'; do
             read -r mode yaw <<<"$case"
             name="$mode-$yaw"
-            if [[ "$mode" == cv008 ]]; then query="mode=cv008&yaw=$yaw"; else query="mode=env009&yaw=$yaw"; fi
+            query="mode=$mode&yaw=$yaw"
             url="http://127.0.0.1:8765/tests/fixtures/env009-webgl-preview.html?$query"
             "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
               --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \

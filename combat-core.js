@@ -508,6 +508,29 @@ const CombatCore = (() => {
     return ability.kind==="damage"&&
       (ability.weakening>0||(ability.followUpEffects||[]).some(e=>e.status==="weaken"));
   }
+  // Stats-003: reserve the TOTAL RNG budget for a command before any damage,
+  // effect, event, action counter or cooldown can be changed. Individually
+  // checking hit/crit/status budgets misses cumulative counter exhaustion.
+  function validCombinedRngBudget(battle,ability,recipients,type){
+    const hit=hitCheckEnabled(battle,type);
+    const crit=critCheckEnabled(battle,type);
+    const status=statusCheckEnabled(battle,type)&&abilityHasNegativeStatus(ability);
+    if(!hit&&!crit&&!status)return true;
+    if(typeof BattleRng==="undefined")return false;
+    let snapshot;
+    try{snapshot=BattleRng.snapshot(battle);}catch(error){return false;}
+    let draws=(hit?recipients.length:0)+(crit?recipients.length:0);
+    if(status){
+      if(ability.weakening>0)draws+=recipients.length;
+      for(const e of ability.followUpEffects||[]){
+        if(e.status!=="weaken")continue;
+        // Self-targeted weaken is rejected by validStatusProfile.
+        draws+=e.scope==="all"?recipients.length:e.scope==="primary"?1:0;
+      }
+    }
+    return Number.isSafeInteger(draws)&&
+      snapshot.draws<=Number.MAX_SAFE_INTEGER-draws;
+  }
   function validStatusProfile(battle,actor,recipients,ability,type){
     if(!statusCheckEnabled(battle,type)||!abilityHasNegativeStatus(ability))return true;
     // Test-only scope self weakening is not supported yet: do not partially
@@ -597,6 +620,7 @@ const CombatCore = (() => {
     if(ability.kind==="damage"&&!validCriticalProfile(battle,actor,recipients,type))return false;
     if(ability.kind==="damage"&&!validPenetrationProfile(battle,actor,type))return false;
     if(!validStatusProfile(battle,actor,recipients,ability,type))return false;
+    if(!validCombinedRngBudget(battle,ability,recipients,type))return false;
     // A group attack has one player-selected primary target, even though
     // every living enemy receives the base effect. Future bonus effects can
     // refer to primaryTargetId without changing recipient selection.
@@ -686,6 +710,7 @@ const CombatCore = (() => {
     if(ability.kind==="damage"&&!validCriticalProfile(battle,actor,[target],type))return false;
     if(ability.kind==="damage"&&!validPenetrationProfile(battle,actor,type))return false;
     if(!validStatusProfile(battle,actor,[target],ability,type))return false;
+    if(!validCombinedRngBudget(battle,ability,[target],type))return false;
     // Invalid commands leave the previous event batch untouched.
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});

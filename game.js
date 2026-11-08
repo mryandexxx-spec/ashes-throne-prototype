@@ -397,6 +397,7 @@ $("#devResourcesGrant")?.addEventListener("click",()=>{
  const granted=ProgressCore.grantTestResources(progress);
  if(!granted)return;
  if(progress.saveVersion===3&&typeof SkillCore!=="undefined"&&!SkillCore.grantTest(progress))return;
+ if(progress.saveVersion===3&&typeof StarCore!=="undefined"&&!StarCore.refillTest(progress))return;
  if(!persistProgress()&&before){
   Object.keys(progress).forEach(k=>delete progress[k]);
   Object.assign(progress,JSON.parse(before));
@@ -411,6 +412,7 @@ $("#devResourcesGrant")?.addEventListener("click",()=>{
   (progress.saveVersion===3&&typeof SkillCore!=="undefined"&&progress.skillMaterials?" · Навыки: "+
    SkillCore.RESOURCE_IDS.map(id=>SkillCore.LABELS[id]+" "+
     progress.skillMaterials[id]).join(", "):"")+
+  (progress.saveVersion===3&&typeof StarCore!=="undefined"?" · Осколки: тестовый запас для достижения 7★.":"")+
   (saveAvailable?". Сохранено в этом браузере.":". Внимание: сохранение недоступно.");
 });
 
@@ -748,12 +750,100 @@ $("#squadStart").addEventListener("click",()=>{
  resetSquadWarning();
  showScreen("battle");
 });
+// Stars-001: a locked hero may inspect shards but not combat/gear dossier.
+let lockedStarHeroId=null;
+function starGlyphs(rank){
+ const safe=Number.isInteger(rank)?Math.max(0,Math.min(7,rank)):0;
+ return '<span class="star-filled">'+"★".repeat(safe)+'</span>'+
+  '<span class="star-empty">'+"☆".repeat(7-safe)+'</span>';
+}
+function renderStarPanel(id){
+ if(typeof StarCore==="undefined"||progress.saveVersion!==3)return;
+ const rank=StarCore.rankOf(progress,id),cost=StarCore.costOf(progress,id);
+ const amount=StarCore.shardsOf(progress,id);
+ if(rank===null)return;
+ $("#detailStarStrip").innerHTML=starGlyphs(rank);
+ $("#starRankVisual").innerHTML=starGlyphs(rank);
+ $("#starRankLabel").textContent=rank+" / 7★";
+ $("#starShardCount").textContent=cost===null?"7★ · максимум":amount+" / "+cost;
+ $("#starShardProgress").max=cost??1;
+ $("#starShardProgress").value=cost===null?1:Math.min(cost,amount);
+ $("#starNextLabel").textContent=cost===null?
+  "Полный звёздный ранг достигнут.":
+  "Следующий ранг: "+(rank+1)+"★ · требуется "+Math.max(0,cost-amount)+" осколков.";
+ $("#starPromoteButton").disabled=saveBlocked||cost===null||amount<cost;
+ $("#starPromoteButton").textContent=cost===null?"Достигнут максимум 7★":"Повысить до "+(rank+1)+"★";
+ $("#starNotice").textContent=saveBlocked?"Сохранение недоступно. Развитие заблокировано.":
+  "Боевые характеристики и скорость от звёзд пока не меняются. Источник в этом тесте: «Тестовые ресурсы».";
+}
+function showLockedHero(id){
+ if(typeof StarCore==="undefined"||heroOwned(id)||!ALLIES.some(h=>h.id===id))return false;
+ lockedStarHeroId=id;
+ const cost=StarCore.costOf(progress,id),amount=StarCore.shardsOf(progress,id);
+ if(cost===null||amount===null)return false;
+ $("#lockedHeroTitle").textContent="Неизвестный герой";
+ $("#lockedHeroSource").textContent="Прямое получение: "+heroUnlockLabel(id)+
+  ". Альтернатива — открыть за "+cost+" осколков. Боевые возможности закрыты до получения.";
+ $("#lockedHeroStars").innerHTML=starGlyphs(0);
+ $("#lockedHeroShards").textContent=amount+" / "+cost;
+ $("#lockedHeroProgress").max=cost;
+ $("#lockedHeroProgress").value=Math.min(cost,amount);
+ $("#lockedHeroUnlock").disabled=saveBlocked||amount<cost;
+ $("#lockedHeroUnlock").textContent="Открыть за "+cost+" осколков";
+ $("#lockedHeroNotice").textContent=saveBlocked?"Сохранение недоступно.":
+  "Тестовые осколки доступны через кнопку ресурсов в меню.";
+ const dialog=$("#lockedHeroDialog");
+ if(!dialog.open)dialog.showModal();
+ return true;
+}
+function promoteStar(id,locked){
+ if(saveBlocked||typeof StarCore==="undefined")return false;
+ const before=JSON.stringify(progress);
+ const upgraded=StarCore.promote(progress,id);
+ if(!upgraded)return false;
+ if(!persistProgress()){
+  Object.keys(progress).forEach(key=>delete progress[key]);
+  Object.assign(progress,JSON.parse(before));
+  renderAccountHeader();renderHeroes();
+  if(locked){
+   showLockedHero(id);
+   $("#lockedHeroNotice").textContent="Не удалось сохранить. Осколки восстановлены.";
+  }else{
+   renderHeroDetail();
+   $("#starNotice").textContent="Не удалось сохранить. Осколки и ранг восстановлены.";
+  }
+  return false;
+ }
+ renderHeroes();renderSquad();
+ if(locked){
+  $("#lockedHeroDialog").close();lockedStarHeroId=null;
+  openHeroDetail(id);
+ }else{
+  renderHeroDetail();
+  $("#starNotice").textContent="Герой достиг "+upgraded.rank+"★. Списано "+upgraded.spent+" осколков. Сохранено.";
+ }
+ return true;
+}
+$("#starPromoteButton")?.addEventListener("click",()=>promoteStar(selectedHeroId,false));
+$("#lockedHeroUnlock")?.addEventListener("click",()=>{
+ if(lockedStarHeroId)promoteStar(lockedStarHeroId,true);
+});
+$("#lockedHeroClose")?.addEventListener("click",()=>$("#lockedHeroDialog").close());
+$("#lockedHeroDialog")?.addEventListener("close",()=>{lockedStarHeroId=null;});
 function renderHeroes(){
  $("#heroList").innerHTML=ALLIES.map(progressedHero).map(h=>{
   const owned=heroOwned(h.id);
-  return `<button type="button" class="hero-card hero-open ${owned?"":"hero-locked"}" data-open-hero="${h.id}" ${owned?"":"disabled"}><div class="hero-avatar">${owned?h.glyph:"🔒"}</div><h3>${owned?h.name:"Неизвестный герой"}</h3><p>${owned?h.role+" · Уровень "+h.level:"Получение: "+heroUnlockLabel(h.id)}</p>${owned?`<div class="stats"><span>Здоровье ${h.hp}</span><span>Сила ${h.atk}</span></div>`:""}<span class="hero-open-hint">${owned?"Открыть карточку →":"Пока недоступен"}</span></button>`;
+  const rank=typeof StarCore!=="undefined"?StarCore.rankOf(progress,h.id):null;
+  const cost=typeof StarCore!=="undefined"?StarCore.costOf(progress,h.id):null;
+  const amount=typeof StarCore!=="undefined"?StarCore.shardsOf(progress,h.id):null;
+  const starInfo=rank===null?"":'<span class="hero-star-summary" aria-label="Ранг '+rank+' из 7">'+
+   starGlyphs(rank)+'</span>';
+  return `<button type="button" class="hero-card hero-open ${owned?"":"hero-locked"}" data-open-hero="${h.id}"><div class="hero-avatar">${owned?h.glyph:"🔒"}</div><h3>${owned?h.name:"Неизвестный герой"}</h3>${starInfo}<p>${owned?h.role+" · Уровень "+h.level:"Получение: "+heroUnlockLabel(h.id)}</p>${owned?`<div class="stats"><span>Здоровье ${h.hp}</span><span>Сила ${h.atk}</span></div>`:`<p class="muted">Осколки ${amount??0}/${cost??10}</p>`}<span class="hero-open-hint">${owned?"Открыть карточку →":"Условия получения и осколки →"}</span></button>`;
  }).join("");
- document.querySelectorAll("[data-open-hero]").forEach(node=>node.addEventListener("click",()=>openHeroDetail(node.dataset.openHero)));
+ document.querySelectorAll("[data-open-hero]").forEach(node=>node.addEventListener("click",()=>{
+  const id=node.dataset.openHero;
+  if(heroOwned(id))openHeroDetail(id);else showLockedHero(id);
+ }));
 }
 function openHeroDetail(id){
  if(!ALLIES.some(h=>h.id===id)||!heroOwned(id))return false;
@@ -938,6 +1028,7 @@ function renderHeroDetail(){
  $("#detailName").textContent=hero.name;
  $("#detailRole").textContent=hero.role+" · Демонстрационный персонаж";
  $("#detailGlyph").textContent=hero.glyph;
+ renderStarPanel(base.id);
  renderHeroAbilities(hero);
  // Keep the existing battle-tested HP/ATK/speed display unchanged.
  // Other approved stats are shown as TBD, never as misleading zero bonuses.

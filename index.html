@@ -97,7 +97,7 @@
     </section>
     <section id="heroDetail" class="screen hero-detail-screen" aria-label="Подробная карточка героя">
       <div class="section-heading hero-detail-heading">
-        <div><div class="eyebrow">ДОСЬЕ ПЕРСОНАЖА</div><h2 id="detailName">Герой</h2><p id="detailRole" class="muted"></p></div>
+        <div><div class="eyebrow">ДОСЬЕ ПЕРСОНАЖА</div><h2 id="detailName">Герой</h2><p id="detailRole" class="muted"></p><div id="detailStarStrip" class="star-strip" aria-label="Звёздный ранг героя"></div></div>
         <div class="hero-detail-nav"><button type="button" class="ghost" id="detailBack">← Назад</button><button type="button" class="ghost" id="detailHome">⌂ Домой</button></div>
       </div>
       <div class="hero-detail-layout hero-detail-reference">
@@ -139,6 +139,15 @@
           <div class="eyebrow">РАЗВИТИЕ ПЕРСОНАЖА · ТЕСТ</div>
           <p id="detailHeroLevelCap" class="muted" role="status">Твой аккаунт: уровень 1. Доступный максимум героя сейчас: 3.</p>
           <p class="muted">Повышение уровня героя требует игровую валюту и не может превысить предел аккаунта. Экипировка оплачивается отдельно.</p>
+          <section class="star-panel" aria-labelledby="starPanelTitle">
+            <div class="star-panel-head"><div><div class="eyebrow">ЗВЁЗДНЫЙ РАНГ</div><h3 id="starPanelTitle">Развитие героя</h3></div><strong id="starRankLabel">1 / 7★</strong></div>
+            <div id="starRankVisual" class="star-strip" aria-hidden="true"></div>
+            <div class="detail-value"><span>Осколки героя</span><strong id="starShardCount">0 / 15</strong></div>
+            <progress id="starShardProgress" class="star-progress" max="15" value="0"></progress>
+            <p id="starNextLabel" class="muted">Следующий ранг: 2★</p>
+            <button type="button" class="primary" id="starPromoteButton">Повысить звёздный ранг</button>
+            <p id="starNotice" class="muted" role="status"></p>
+          </section>
           <h3 id="detailLevel">Уровень 1</h3>
           <div class="detail-value"><span>Доступно основной валюты</span><strong id="detailWallet">0</strong></div>
           <div class="detail-value"><span>Стоимость улучшения</span><strong id="detailCost">1</strong></div>
@@ -350,7 +359,20 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.64 · STORY001</span><span>Пепельный престол</span></footer>
+    <dialog id="lockedHeroDialog" class="star-locked-dialog" aria-labelledby="lockedHeroTitle">
+      <div class="eyebrow">КОЛЛЕКЦИЯ / ПОЛУЧЕНИЕ ГЕРОЯ</div>
+      <h2 id="lockedHeroTitle">Закрытый герой</h2>
+      <p id="lockedHeroSource" class="muted"></p>
+      <div class="star-strip" id="lockedHeroStars" aria-label="Звёздный ранг"></div>
+      <div class="detail-value"><span>Собрано осколков</span><strong id="lockedHeroShards">0 / 10</strong></div>
+      <progress id="lockedHeroProgress" class="star-progress" max="10" value="0"></progress>
+      <p id="lockedHeroNotice" class="muted" role="status"></p>
+      <div class="star-dialog-actions">
+        <button type="button" class="ghost" id="lockedHeroClose">Закрыть</button>
+        <button type="button" class="primary" id="lockedHeroUnlock">Открыть за 10 осколков</button>
+      </div>
+    </dialog>
+    <footer><span id="buildVersion">Прототип · v0.3.65 · STARS001</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -373,7 +395,8 @@
   <script src="daily-core.js"></script>
   <script src="login-core.js"></script>
   <script src="skill-core.js"></script>
-  <script src="hero-collection-core.js"></script>
+  <script src="star-core.js"></script>
+   <script src="hero-collection-core.js"></script>
   <script src="progress-v3-core.js"></script>
   <script src="mission-data.js"></script>
   <script src="campaign-core.js"></script>

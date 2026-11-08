@@ -1078,3 +1078,29 @@ body.battle-mode #app>footer{visibility:hidden}
  .story-demo-choices{flex-direction:column;width:100%}
  .story-demo-choices button{flex:auto}
 }
+
+/* Stars-001: native dark/gold progression, no new graphics or dependencies. */
+.star-panel{min-width:0;border:1px solid var(--line);border-radius:12px;background:var(--panel2);padding:12px;margin:10px 0 14px}
+.star-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.star-panel-head h3{font-size:15px;margin:4px 0}
+.star-panel-head strong{color:var(--gold);white-space:nowrap;font-size:14px}
+.star-strip{display:flex;flex-wrap:nowrap;gap:3px;color:var(--gold);letter-spacing:0;line-height:1.2;font-size:clamp(14px,2.4vw,21px);white-space:nowrap}
+.star-strip .star-empty{color:#6a7080}
+.star-panel .star-strip{margin:8px 0}
+.star-progress{display:block;width:100%;height:9px;accent-color:var(--gold);margin:5px 0 7px}
+.star-panel .primary{min-height:44px;width:100%;white-space:normal}
+.star-panel .muted{font-size:11px;margin:6px 0}
+.hero-card .hero-star-summary{display:block;min-height:20px;color:var(--gold);font-size:16px;letter-spacing:1px;margin:5px 0}
+.hero-card.hero-locked{cursor:pointer}
+.star-locked-dialog{color:var(--text);background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:18px;max-width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 24px);overflow:auto;box-shadow:0 20px 70px #0009}
+.star-locked-dialog::backdrop{background:#06080cbb}
+.star-locked-dialog h2{font:600 20px Cinzel,serif;margin:8px 0}
+.star-locked-dialog .star-strip{margin:12px 0}
+.star-dialog-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
+.star-dialog-actions button{min-height:44px;min-width:100px}
+.star-panel button:disabled,.star-locked-dialog button:disabled{opacity:.55;cursor:default;transform:none}
+@media(orientation:landscape) and (max-height:540px){
+ .star-panel{padding:9px}
+ .star-strip{font-size:16px}
+ .star-locked-dialog{max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 12px)}
+}

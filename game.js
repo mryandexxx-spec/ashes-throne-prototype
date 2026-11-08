@@ -1789,7 +1789,9 @@ function renderArenaIndicators(){
   const effects=[h.guardHits>0?`<span class="arena-effect" title="Защита: ${h.guardHits} ударов">◆${h.guardHits}</span>`:"",
    h.weakenAttacks>0?`<span class="arena-effect debuff" title="Ослабление: ${h.weakenAttacks} атак">↓${h.weakenAttacks}</span>`:"",
    typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"slowed")?
-     `<span class="arena-effect debuff" title="Замедление">⇣${CombatStatusCore.read(h,"slowed").remaining}</span>`:""].join("");
+     `<span class="arena-effect debuff" title="Замедление">⇣${CombatStatusCore.read(h,"slowed").remaining}</span>`:"",
+   typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"debuff-resistance-down")?
+     `<span class="arena-effect debuff" title="Пониженное сопротивление: −${CombatStatusCore.read(h,"debuff-resistance-down").amount} п.п.">⊖${CombatStatusCore.read(h,"debuff-resistance-down").remaining}</span>`:""].join("");
   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
   const active=actor?.id===h.id;
   const support=!!actor&&!autoBattle&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";

@@ -570,7 +570,8 @@ function battleLineup(){
  // STORY-002 uses temporary hero IDs outside v3 save validation.
  if(battleIsStoryDemo&&storyTrialParty)
   return [...StoryTrialData.heroes(),...ENEMIES.slice(0,2).map((e,i)=>
-   progressedEnemy({...e,name:i===0?"Старший охраны":"Наёмный охранник"}))];
+   progressedEnemy({...e,name:i===0?"Старший охраны":"Наёмный охранник",
+    debuffPotency:0,debuffResistance:StoryTrialData.statusPilot.enemyResistance[i]}))];
  // Mission #2 tests five enemies; the shared enemy AI is mission-independent.
  const enemies=battleIsCampaign&&activeMissionId==="demo-mission-2"?ENEMIES:ENEMIES.slice(0,2);
  // Reuse training templates, not the noncanonical "Conclave" story identities.
@@ -748,7 +749,7 @@ function showScreen(id){
   const label=$("#battleMissionLabel");
   if(label)label.textContent=battleIsOperation?"РАЗВЕДОПЕРАЦИЯ · ДВА КУРЬЕРА":
    battleIsChallenge?"ИСПЫТАНИЕ · "+ChallengeCore.get(activeChallengeId).title:
-   battleIsStoryDemo?"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ":
+   battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
    battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
   const objective=$("#battleChallengeGoal");
   if(objective){
@@ -2050,7 +2051,10 @@ function resetBattle(){
  challengeTracker=battleIsChallenge?ChallengeCore.start(activeChallengeId):null;
  lastMissionStars=0;
  selectedAbility="basic";
- state=CombatCore.createBattle(battleLineup(),battleFutureWaves(),{leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId});
+ state=CombatCore.createBattle(battleLineup(),battleFutureWaves(),{
+  leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId,
+  ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{})
+ });
  CombatCore.advanceToPlayerTurn(state);
  syncBattleUI();
 }

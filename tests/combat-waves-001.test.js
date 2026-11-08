@@ -99,5 +99,5 @@ assert.equal(CampaignData.chapterProgress("chapter-1",progress).maxStars,9);
 
 const game=read("game.js");
 assert.match(game,/battleFutureWaves\(\)/);
-assert.ok(game.includes("CombatCore.createBattle(battleLineup(),battleFutureWaves(),{leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId})"),"normal squad leaders remain intact; literary trial has no saved leader");
+assert.ok(game.includes("CombatCore.createBattle(battleLineup(),battleFutureWaves(),{")&&game.includes("leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId"),"normal squad leaders remain intact; literary trial has no saved leader");
 console.log("Combat-Waves-001: 1/2/3 waves, varied counts, win/loss, reward, actions and legacy behavior passed");

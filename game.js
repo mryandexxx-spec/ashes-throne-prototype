@@ -227,6 +227,7 @@ let missionEntryPaid=false;
 let missionResultSaveFailed=false;
 let simulationMissionId=null;
 function renderAccountHeader(){
+ renderDailyClaimBadge();
  ProgressCore.refreshEnergy(progress);
  const summary=$("#accountStatus");
  if(summary)summary.textContent="Аккаунт "+ProgressCore.accountLevel(progress)+"/"+ProgressCore.MAX_ACCOUNT_LEVEL+
@@ -239,6 +240,15 @@ function dailyDay(){return typeof DailyCore!=="undefined"?DailyCore.localDay():n
 function recordDailyTask(id){
  const day=dailyDay();
  return progress.saveVersion===3&&!saveBlocked&&!!day&&DailyCore.record(progress,id,day);
+}
+function renderDailyClaimBadge(){
+ const badge=$("#dailyClaimBadge"),button=$("#dailyTasksNav");
+ if(!badge||!button)return;
+ const count=saveBlocked?0:DailyCore.unclaimedCount(progress,dailyDay());
+ badge.hidden=count===0;
+ badge.textContent=String(count);
+ button.setAttribute("aria-label","Задания дня"+
+  (count?" · наград к получению: "+count:" · нет незабранных наград"));
 }
 function renderDailyTasks(){
  const list=$("#dailyTaskList"),notice=$("#dailyTaskNotice");
@@ -287,6 +297,29 @@ $("#dailyTaskList")?.addEventListener("click",event=>{
    "+"+qty+" "+(GearData.MATERIAL_LABELS[key]||key)).join(", ")+".";
  renderDailyTasks();renderPlayerProfile();renderHeroes();
 });
+// UI-only visit marker: never grants rewards and never rewrites progress.v3.
+const LOGIN_CALENDAR_SEEN_KEY="ashes-throne.login-calendar-seen.v1";
+let loginCalendarSeenDay=null;
+try{
+ const raw=window.localStorage?.getItem(LOGIN_CALENDAR_SEEN_KEY);
+ if(typeof raw==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(raw))loginCalendarSeenDay=raw;
+}catch(_){/* Unavailable storage disables only cross-reload prompt suppression. */}
+function markLoginCalendarSeen(){
+ const day=dailyDay();
+ if(!day||(loginCalendarSeenDay&&day<=loginCalendarSeenDay))return;
+ loginCalendarSeenDay=day;
+ try{window.localStorage?.setItem(LOGIN_CALENDAR_SEEN_KEY,day);}
+ catch(_){/* Keep once-per-session guarantee without overwriting game data. */}
+}
+function maybeOpenLoginOnEntry(){
+ if(document.hidden||saveBlocked||progress.saveVersion!==3||
+    !$("#home")?.classList.contains("active"))return false;
+ const day=dailyDay();
+ if(!day||(loginCalendarSeenDay&&day<=loginCalendarSeenDay)||
+    !LoginCore.current(progress,day))return false;
+ showScreen("loginCalendar");
+ return true;
+}
 // Login-001: explicit claim, one local calendar day, no missed-day reset.
 function renderLoginCalendar(){
  const grid=$("#loginCalendarGrid"),status=$("#loginCalendarStatus"),button=$("#loginClaim");
@@ -300,10 +333,14 @@ function renderLoginCalendar(){
   return;
  }
  grid.replaceChildren();
- for(let i=0;i<LoginCore.REWARDS.length;i++){
-  const reward=LoginCore.REWARDS[i];
+ const monthLabel=$("#loginCalendarMonth");
+ if(monthLabel)monthLabel.textContent=new Intl.DateTimeFormat("ru-RU",{month:"long",year:"numeric"})
+  .format(new Date(Number(view.month.slice(0,4)),Number(view.month.slice(5,7))-1,1))+
+  " · "+view.days+" дней";
+ for(let i=0;i<view.days;i++){
+  const reward=LoginCore.rewardForDay(i+1);
   const cell=document.createElement("div");
-  cell.className="login-day"+(i<view.claimedThisCycle?" claimed":"")+
+  cell.className="login-day"+(i<view.claimedThisMonth?" claimed":"")+
    (view.available&&i===view.nextDay-1?" active":"");
   const title=document.createElement("strong");title.textContent="День "+(i+1);
   const detail=document.createElement("small");
@@ -317,7 +354,9 @@ function renderLoginCalendar(){
   view.alreadyClaimed?"Сегодня получено":"Получение недоступно";
  status.textContent=view.clockBack?"Дата на устройстве раньше последней полученной награды.":
   view.alreadyClaimed?"Награда за сегодня получена. Возвращайся завтра.":
-  "Пропущенные дни не сбрасывают прогресс: следующая награда — день "+view.nextDay+".";
+  view.available?"Пропущенные дни не сбрасывают прогресс. Следующая награда — день "+
+   view.nextDay+" из "+view.days+". Первого числа календарь обновится.":
+   "Все награды этого месяца собраны. Новый календарь появится первого числа.";
 }
 $("#loginClaim")?.addEventListener("click",()=>{
  if(saveBlocked)return;
@@ -537,7 +576,10 @@ function showScreen(id){
  if(id==="collection")renderHeroes();
  if(id==="playerProfile")renderPlayerProfile();
  if(id==="dailyTasks")renderDailyTasks();
- if(id==="loginCalendar")renderLoginCalendar();
+ if(id==="loginCalendar"){
+  markLoginCalendarSeen();
+  renderLoginCalendar();
+ }
  if(id==="campaign")renderCampaign();
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
@@ -588,6 +630,10 @@ function showScreen(id){
    const notice=$("#battleLoadError");
    if(notice)notice.hidden=false;
   }
+ }
+ if(id==="home"){
+  renderDailyClaimBadge();
+  maybeOpenLoginOnEntry();
  }
 }
 document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click",()=>{
@@ -951,7 +997,10 @@ function energyRefreshFeedback(now=Date.now()){
 }
 $("#energyRefresh")?.addEventListener("click",()=>energyRefreshFeedback());
 document.addEventListener("visibilitychange",()=>{
- if(!document.hidden&&$("#campaign")?.classList.contains("active"))renderCampaign();
+ if(document.hidden)return;
+ renderDailyClaimBadge();
+ if($("#campaign")?.classList.contains("active"))renderCampaign();
+ maybeOpenLoginOnEntry();
 });
 // One batch-simulation entry point for every 3-starred campaign mission.
 function renderSimulationPreview(){
@@ -1705,3 +1754,4 @@ document.addEventListener("visibilitychange",()=>{
  else if(shouldRenderBattle()){engine.resize();startBattleRendering();queueAutoAction();}
 });
 renderAccountHeader();renderHeroes();CombatCore.advanceToPlayerTurn(state);
+maybeOpenLoginOnEntry();

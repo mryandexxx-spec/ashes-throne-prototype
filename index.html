@@ -26,8 +26,8 @@
         <button class="nav-card" data-screen="campaign"><span>⚔</span><b>Кампания</b><small>Глава I · Пепельный тракт</small></button>
         <button class="nav-card" data-screen="battle"><span>✦</span><b>Арена</b><small>Пошаговое сражение</small></button>
         <button class="nav-card" data-screen="playerProfile"><span>♟</span><b>Профиль игрока</b><small>Ник и уровень аккаунта</small></button>
-        <button class="nav-card" data-screen="dailyTasks"><span>☼</span><b>Задания дня</b><small>Три действия и награды</small></button>
-        <button class="nav-card" data-screen="loginCalendar"><span>▦</span><b>Календарь входа</b><small>Награда за каждый день входа</small></button>
+        <button class="nav-card" id="dailyTasksNav" data-screen="dailyTasks"><span>☼</span><b>Задания дня</b><small>Три действия и награды</small><span id="dailyClaimBadge" class="daily-nav-badge" aria-hidden="true" hidden>0</span></button>
+        <button class="nav-card" data-screen="loginCalendar"><span>▦</span><b>Календарь входа</b><small>Ежемесячные награды</small></button>
       </div>
       <div class="dev-resources" aria-label="Тестовые инструменты прототипа">
         <div class="eyebrow">ТЕСТИРОВАНИЕ · НЕ ИГРОВАЯ НАГРАДА</div>
@@ -45,7 +45,8 @@
     </section>
     <section id="loginCalendar" class="screen" aria-label="Календарь ежедневных наград">
       <div class="section-heading"><div><div class="eyebrow">НАГРАДЫ ЗА ВХОД</div><h2>Календарь входа</h2></div><button type="button" class="ghost" data-screen="home">← Назад</button></div>
-      <p class="muted">Семь наград по очереди. Забирай одну награду в день. Пропуски не обнуляют прогресс, после седьмого дня цикл начинается заново.</p>
+      <p class="muted" id="loginCalendarMonth">Текущий месяц</p>
+      <p class="muted">Наград столько, сколько дней в этом месяце. Забирай одну в день по порядку. Пропущенные дни не сбрасывают прогресс. Первого числа начинается новый календарь.</p>
       <div id="loginCalendarGrid" class="login-calendar-grid"></div>
       <button type="button" class="primary" id="loginClaim">Забрать награду</button>
       <p id="loginCalendarStatus" class="muted" role="status" aria-live="polite"></p>
@@ -263,7 +264,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.57 · LOGIN001</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.58 · LOGIN002</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

@@ -62,7 +62,21 @@
   }
   engine.resize();scene.render();
   engine.runRenderLoop(()=>scene.render());
-  document.documentElement.dataset.visualStatus="ready";
+  if(p.get("mode")==="env010"){
+    document.documentElement.dataset.visualStatus="loading";
+    let polls=0;
+    const untilReady=setInterval(()=>{
+      const state=document.documentElement.dataset.env010Rock;
+      if(state==="ready"){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="ready";
+      }else if(state==="fallback"||state==="disposed"||++polls>100){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="error";
+        diag.textContent="GLB не загружен: "+state;
+      }
+    },75);
+  }else document.documentElement.dataset.visualStatus="ready";
   document.documentElement.dataset.environment=p.get("mode")==="env010"?"ENV010":legacy?"CV008":"ENV009";
   diag.textContent=(p.get("mode")==="env010"?"ENV010 — фиксированный ракурс":legacy?"CV008":"ENV009 — базовый рельеф")+" / "+yaw;
  }catch(e){

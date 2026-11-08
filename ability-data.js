@@ -49,7 +49,9 @@ const AbilityData=(()=>{
   "test-powerful-damage":Object.freeze({id:"powerful",name:"Тест мощного удара",target:"enemy",
    kind:"damage",multiplier:1.5,weakening:0,cooldown:2}),
   // STORY-002: experimental powerful actions, not canon.
-  "trial-ren":Object.freeze({id:"powerful",name:"Точный выпад · проба",target:"enemy",kind:"damage",multiplier:1.5,weakening:0,cooldown:2}),
+  "trial-ren":Object.freeze({id:"powerful",name:"Сорвать построение · проба",target:"enemy",kind:"damage",multiplier:1.6,weakening:0,cooldown:2,
+   // Temporary REN-COMBAT-D pilot numbers, NOT approved balance or canon.
+   followUpStatusAll:Object.freeze({type:"debuff-resistance-down",amount:15,turns:2})}),
   "trial-nada":Object.freeze({id:"powerful",name:"Слабое место · проба",target:"enemy",kind:"damage",multiplier:1.25,weakening:2,cooldown:2}),
   "trial-liora":Object.freeze({id:"powerful",name:"Удержать позицию · проба",target:"self",kind:"guard",guardHits:3,cooldown:2}),
   // Combat-012B: same temporary parameters for the existing optional demo fighter.

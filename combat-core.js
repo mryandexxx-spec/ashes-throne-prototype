@@ -101,6 +101,11 @@ const CombatCore = (() => {
     }
     // Stats-001D0: no seed = no RNG, preserving every existing battle.
     // Seeded battles may draw later, but current abilities never draw.
+    // Stats-001D1: accuracy/evasion is opt-in on deliberately seeded test battles.
+    if(options.hitChecks!==undefined&&typeof options.hitChecks!=="boolean")
+      throw Error("hitChecks must be a boolean");
+    if(options.hitChecks===true&&options.rngSeed===undefined)
+      throw Error("hitChecks requires rngSeed");
     const seededRng=options.rngSeed===undefined?null:
       (typeof BattleRng!=="undefined"?BattleRng.create(options.rngSeed):
        (()=>{throw Error("BattleRng script is required for seeded battles");})());
@@ -120,6 +125,7 @@ const CombatCore = (() => {
     return {
       fighters,
       ...(seededRng===null?{}:{rng:seededRng}),
+      ...(options.hitChecks===true?{hitChecks:true}:{}),
       leaderId,
       wave: 1,
       totalWaves: 1 + futureWaves.length,
@@ -258,6 +264,31 @@ const CombatCore = (() => {
       protectionDamage:oldProtection===null?0:oldProtection-target.protection,
       hpDamage:oldHp-target.hp,
       remainingProtection:oldProtection===null?null:target.protection};
+  }
+  // Stats-001D1 [TEST ONLY]: percentage-point accuracy bonus vs evasion.
+  // These values are NOT assigned to real characters.
+  function hitCheckEnabled(battle,type){
+    return type!=="legacy"&&battle.hitChecks===true;
+  }
+  function validHitProfile(battle,actor,recipients,type){
+    if(!hitCheckEnabled(battle,type))return true;
+    if(typeof BattleRng==="undefined")return false;
+    let snapshot;
+    try{snapshot=BattleRng.snapshot(battle);}catch(error){return false;}
+    if(snapshot.draws>Number.MAX_SAFE_INTEGER-recipients.length)return false;
+    const valid=value=>value===undefined||
+      (Number.isFinite(value)&&value>=0&&value<=100);
+    return valid(actor.accuracy)&&recipients.every(target=>valid(target.evasion));
+  }
+  function rollToHit(battle,actor,target,type){
+    if(!hitCheckEnabled(battle,type))return true;
+    const accuracy=actor.accuracy??0,evasion=target.evasion??0;
+    const chance=Math.max(5,Math.min(100,100+accuracy-evasion));
+    const roll=BattleRng.roll(battle,chance);
+    if(roll.hit)return true;
+    emit(battle,"miss",{actorId:actor.id,targetId:target.id,
+      hitChance:chance,draw:roll.draw});
+    return false;
   }
   // Legacy: weakening -> guard -> HP (unchanged).
   // Typed: weakening -> matching defense -> guard -> Protection -> HP.
@@ -454,6 +485,7 @@ const CombatCore = (() => {
     const recipients=targets.map(i=>battle.fighters[i]);
     const type=ability.kind==="damage"?AbilityData.damageType(ability):null;
     if(type&&type!=="legacy"&&recipients.some(target=>!validTypedTarget(target,type)))return false;
+    if(ability.kind==="damage"&&!validHitProfile(battle,actor,recipients,type))return false;
     // A group attack has one player-selected primary target, even though
     // every living enemy receives the base effect. Future bonus effects can
     // refer to primaryTargetId without changing recipient selection.
@@ -468,6 +500,7 @@ const CombatCore = (() => {
     const weakened=actor.weakenAttacks>0;
     for(const target of recipients){
       if(ability.kind==="damage"){
+        if(!rollToHit(battle,actor,target,type))continue;
         const oldHp=target.hp,oldProtection=target.protection??null;
         const damage=dealDamage(actor,target,
           Math.round(effectiveStat(battle,actor,AbilityData.damageStat(ability))*ability.multiplier),false,type);
@@ -487,7 +520,12 @@ const CombatCore = (() => {
         emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"guard",stacks:ability.guardHits});
       }
     }
-    applyFollowUpEffects(battle,actor,ability,recipients,battle.fighters[primaryIndex]);
+    // Follow-up negative effects must not apply to missed recipients.
+    applyFollowUpEffects(battle,actor,ability,
+      ability.kind==="damage"&&hitCheckEnabled(battle,type)?
+        recipients.filter(target=>!battle.events.some(event=>
+          event.type==="miss"&&event.actorId===actor.id&&event.targetId===target.id)):
+        recipients,battle.fighters[primaryIndex]);
     // Weakening counts attacks (commands), not recipients. All group targets
     // get the same weakened damage; one use is consumed at the end.
     if(ability.kind==="damage"&&weakened)actor.weakenAttacks--;
@@ -530,6 +568,7 @@ const CombatCore = (() => {
     const target=battle.fighters[targetIndex];
     const type=ability.kind==="damage"?AbilityData.damageType(ability):null;
     if(type&&type!=="legacy"&&!validTypedTarget(target,type))return false;
+    if(ability.kind==="damage"&&!validHitProfile(battle,actor,[target],type))return false;
     // Invalid commands leave the previous event batch untouched.
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
@@ -542,6 +581,9 @@ const CombatCore = (() => {
       target.hp+=restored;
       emit(battle,"heal",{actorId:actor.id,targetId:target.id,amount:restored,remainingHp:target.hp});
       battle.message=actor.name+" лечит "+target.name+": +"+restored+" HP.";
+    }else if(!rollToHit(battle,actor,target,type)){
+      if(actor.weakenAttacks>0)actor.weakenAttacks--;
+      battle.message=actor.name+" промахивается по "+target.name+".";
     }else{
       const oldHp=target.hp,oldProtection=target.protection??null;
       const damage=dealDamage(actor,target,
@@ -559,7 +601,9 @@ const CombatCore = (() => {
           target.name+" получает "+damage+" урона"+
           (target.hp===0?" — повержен!":ability.weakening>0?", ослабление ×"+ability.weakening+".":".");
     }
-    applyFollowUpEffects(battle,actor,ability,[target],target);
+    if(ability.kind!=="damage"||!hitCheckEnabled(battle,type)||
+      !battle.events.some(event=>event.type==="miss"&&event.actorId===actor.id&&event.targetId===target.id))
+      applyFollowUpEffects(battle,actor,ability,[target],target);
     finishAbilityCooldowns(actor,ability);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
     battle.turn++;

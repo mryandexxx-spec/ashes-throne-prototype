@@ -1,7 +1,7 @@
-/* COMBAT-ENV-010 — sculpted fixed-angle canyon strata and atmosphere.
+/* COMBAT-ENV-010 — composed fixed-angle sculpted canyon and light microrelief.
  * NOT a worldbuilding fact. 3D ENV009 stays intact and pick-free.
  * Camera-facing multi-plane geometry is acceptable only with fixed yaw/tilt.
- * Sculpted wall geometry is static and scene-owned: no fetch, timers or shaders.
+ * All geometry is static, scene-owned; no requests, textures, timers or shaders.
  */
 const CombatEnvironment010=(()=>{
  "use strict";
@@ -12,9 +12,9 @@ const CombatEnvironment010=(()=>{
  const CLAMP=(v,min,max)=>Math.max(min,Math.min(max,v));
  const mix=(a,b,t)=>a.map((n,i)=>n*(1-t)+b[i]*t);
  const COLORS=Object.freeze({
-  skyTop:[.31,.40,.49],skyUpper:[.43,.52,.565],
+  skyTop:[.32,.43,.52],skyUpper:[.43,.53,.60],
   skyHaze:[.62,.68,.69],skyHorizon:[.72,.74,.70],
-  far:[.56,.607,.60],mid:[.405,.46,.455],near:[.305,.372,.374]
+  far:[.57,.625,.64],mid:[.46,.52,.54],near:[.355,.43,.46]
  });
  function supported(B){
   return !!(B&&typeof B.Mesh==="function"&&typeof B.VertexData==="function"&&
@@ -50,15 +50,6 @@ const CombatEnvironment010=(()=>{
     indices.push(a,b,a+1,a+1,b,b+1);
    }
    B.VertexData.ComputeNormals(positions,indices,normals);
-   // Rock-face normals retain some relief without harsh metallic-looking
-   // alternating streaks: a common canyon-facing normal dominates.
-   if(name!=="sky")for(let k=0;k<normals.length;k+=3){
-    const nx=normals[k]*.22-AWAY.x*.78;
-    const ny=normals[k+1]*.22+.28;
-    const nz=normals[k+2]*.22-AWAY.z*.78;
-    const inv=1/Math.hypot(nx,ny,nz);
-    normals[k]=nx*inv;normals[k+1]=ny*inv;normals[k+2]=nz*inv;
-   }
    const mesh=own(new B.Mesh("env010_"+name,scene));
    const data=new B.VertexData();
    data.positions=positions;data.normals=normals;data.indices=indices;data.colors=colors;
@@ -76,78 +67,54 @@ const CombatEnvironment010=(()=>{
    [-55,COLORS.skyHaze],[45,COLORS.skyUpper],[160,COLORS.skyTop]];
   geom("sky",1,stops.length,(u,row)=>place(118,(u-.5)*310,stops[row][0]),
    (u,row)=>stops[row][1],sky);
-
-  // The silhouette must read as eroded tableland, not a sequence of rounded
-  // gaussian hills. Smoothly stepped shoulders alternate with long scarps.
-  const smooth=(a,b,t)=>{const q=CLAMP((t-a)/(b-a),0,1);return q*q*(3-2*q);};
-  const tableland=(x,c,w,h)=>h*(1-smooth(w*.58,w,Math.abs(x-c)));
-  function crest(x,phase){
-    const u=x+phase*11.5;
-    const plateau=Math.max(
-      tableland(u,-68,50,.94),
-      tableland(u,-4,37,1.13),
-      tableland(u,60,51,.80),
-      tableland(u,122,32,.61)
-    );
-    const branching=.047*Math.sin(u*.135+phase*2)+
-     .034*Math.sin(u*.31+phase)+.016*Math.sin(u*.76+phase*3);
-    // Incised gullies interrupt the summit; they never form regular spikes.
-    const gulley=Math.pow(Math.max(0,Math.sin(u*.107+phase*.8)),14)*.18;
-    return CLAMP(plateau+branching-gulley,.03,1.35);
-  }
-  function fault(x,phase){
-    const g=Math.sin(x*.177+phase*3.3)+.24*Math.sin(x*.39-phase);
-    return Math.pow(Math.max(0,g*.73),12);
+  // Broad mesa-shaped landforms: rounded mass remains the backbone, while
+  // a restrained flat-topped component gives a worn sedimentary shelf profile.
+  const gaussian=(u,c,w,h)=>{const q=(u-c)/w;return h*Math.exp(-q*q*1.15);};
+  const shelfPeak=(u,c,w,h)=>{
+    const q=Math.abs((u-c)/w);
+    const rounded=Math.exp(-q*q*1.15);
+    const plateau=Math.exp(-q*q*q*q*1.1);
+    return h*(.80*rounded+.20*plateau);
+  };
+  function sculpt(t,phase){
+    const u=t/115;
+    const mass=shelfPeak(u,-.76,.36,.78)+shelfPeak(u,-.22,.26,1.18)+
+     shelfPeak(u,.24,.24,.69)+shelfPeak(u,.73,.35,.95);
+    const foothills=.10*Math.sin(t*.105+phase)+.05*Math.sin(t*.29+phase*.7);
+    const erodedValley=.11*Math.pow(Math.max(0,Math.sin(t*.055+phase*1.5)),4);
+    return mass+foothills-erodedValley;
   }
   const layers=[
-    // These are scenic, non-canonical rock masses. Each has genuine depth
-    // variation across the face, not merely an extruded flat silhouette.
-    {name:"horizon",d:114,base:-50,amplitude:38,phase:.55,color:COLORS.far,relief:1.2},
-    {name:"midground",d:82,base:-47,amplitude:36,phase:2.10,color:COLORS.mid,relief:1.9},
-    {name:"escarpment",d:55,base:-47,amplitude:31,phase:3.65,color:COLORS.near,relief:2.5}
+   {name:"horizon",d:92,base:-98,amplitude:54,phase:.45,color:COLORS.far,relief:1.1},
+   {name:"midground",d:65,base:-70,amplitude:40,phase:1.8,color:COLORS.mid,relief:1.8},
+   {name:"escarpment",d:42,base:-53,amplitude:34,phase:3.2,color:COLORS.near,relief:2.4}
   ];
   for(const layer of layers){
-    const material=mat(layer.name);
-    const rows=19;
-    geom(layer.name,128,rows,(u,row)=>{
-      const x=(u-.5)*244;
-      const t=row/(rows-1);
-      const gorgeWidth=layer.name==="escarpment"?39:layer.name==="midground"?31:21;
-      const centralGorge=Math.exp(-Math.pow((x-5)/gorgeWidth,4));
-      const gorgeDepth=layer.name==="escarpment"?43:layer.name==="midground"?28:12;
-      const summit=layer.base+layer.amplitude*crest(x,layer.phase)-
-        gorgeDepth*centralGorge;
-      // Erosion and debris add depth and small terraces to the rock face.
-      // A sloping rock wall casts real facet lighting from the two game lights.
-      const drop=68*Math.pow(1-t,1.35);
-      const bench=Math.sin(t*29+layer.phase*.6)*(.38+.37*(1-t));
-      const gully=fault(x,layer.phase);
-      const lean=(1-t)*12.0+
-        layer.relief*Math.sin(x*.11+t*7+layer.phase)*Math.sin(t*3.8)+
-        gully*(1.7+2.6*(1-t));
-      const y=summit-drop+bench+layer.relief*.23*
-        Math.sin(x*.34+layer.phase+t*11)*(1-t);
-      const distance=layer.d+lean;
-      return place(distance,x,y);
-    },(u,row,x,y,z)=>{
-      const t=row/(rows-1);
-      const side=(u-.5)*244;
-      const broken=fault(side,layer.phase);
-      // A limited lithological palette: seam-darkened strata, fractured faces,
-      // warm sunlit ledges and cool recessed gullies.
-      const beds=.035*Math.sin(y*.44+side*.035)+
-        .021*Math.sin(y*1.14+side*.13+layer.phase);
-      const recess=-.16*broken*(.35+.65*(1-t));
-      const cliffShade=-.105*(1-t)+.062*Math.sin(side*.075+layer.phase)*t;
-      const facet=.050*Math.sin(side*.39+row*.81+layer.phase);
-      const sun=.055*Math.max(0,Math.sin(side*.093-layer.phase))*
-        Math.pow(t,1.3);
-      const haze=(1-t)*.10+(layer.name==="horizon"?.12:layer.name==="midground"?.045:0);
-      return mix(layer.color,COLORS.skyHaze,haze).map((v,k)=>
-        CLAMP(v+beds+recess+cliffShade+facet+sun+(k===0?.012*t:0),0,1));
-    },material);
+   const material=mat(layer.name);
+   // Additional strata have mild geometric depth, rather than making a
+   // hard, brightly lit cavern above the sky. Lower relief fades with range.
+   const steps=[-160,-112,-78,-50,-32,-20,-12,-5,0];
+   geom(layer.name,112,steps.length,(u,row)=>{
+    const x=(u-.5)*232;
+    const summit=layer.base+layer.amplitude*sculpt(x,layer.phase);
+    const t=row/(steps.length-1);
+    const erosion=.38*Math.sin(x*.18+row*.68+layer.phase)*(1-t);
+    const y=summit+steps[row]+erosion;
+    const offset=layer.relief*(1-t)*(.32+.48*Math.sin(x*.11+row*.4+layer.phase)+
+       .20*Math.sin(x*.24+layer.phase*2));
+    return place(layer.d+offset,x,y);
+   },(u,row,x,y,z)=>{
+    const t=(u-.5)*232;
+    const land=layer.color;
+    const slope=sculpt(t+1.5,layer.phase)-sculpt(t-1.5,layer.phase);
+    const sediment=.027*Math.sin(y*.23+t*.024+layer.phase);
+    const fineStrata=.014*Math.sin(y*.62+t*.073+layer.phase*1.6);
+    const facet=CLAMP(slope*1.4,-.10,.10);
+    const shaded=row<3?-.067:row<5?-.032:row===5?.008:.045;
+    const haze=row===0?.25:row<3?.11:0;
+    return mix(land,COLORS.skyHaze,haze).map(v=>v+sediment+fineStrata+facet+shaded);
+   },material);
   }
-
   // A single repeatable tangent-space stone normal map adds grazing-light
   // fracture relief to ENV009's walkable shelf without changing its y=0
   // collision/formation plane. Generated once per Scene: 256² RGBA ≈ 256 KiB.

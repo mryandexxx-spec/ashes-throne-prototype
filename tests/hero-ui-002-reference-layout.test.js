@@ -4,8 +4,8 @@ const fs=require("node:fs"),path=require("node:path");
 const read=n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8");
 const html=read("index.html"),css=read("styles.css"),game=read("game.js");
 const pkg=JSON.parse(read("package.json"));
-assert.equal(pkg.version,"0.3.60");
-assert.match(html,/v0\.3\.60 · HEROUI002/);
+assert.equal(pkg.version,"0.3.61");
+assert.match(html,/v0\.3\.61 · SKILL001/);
 const dossier=html.split('<section id="heroDetail"')[1]?.split('<section id="campaign"')[0];
 assert.ok(dossier,"dossier section");
 const left=dossier.indexOf('class="hero-abilities-panel"');
@@ -42,4 +42,4 @@ for(const handler of [
 assert.ok(game.includes('$("#gearEquipNext")?.addEventListener("click"'));
 assert.ok(game.includes('$("#detailUpgrade").addEventListener("click"'));
 assert.ok(game.includes('$("#gearSlots")?.addEventListener("click"'));
-console.log("HEROUI002: three-column dossier structure, unchanged IDs and live controls validated");
+console.log("SKILL001: three-column dossier structure, unchanged IDs and live controls validated");

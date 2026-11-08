@@ -392,6 +392,7 @@ $("#devResourcesGrant")?.addEventListener("click",()=>{
  const before=progress.saveVersion===3?JSON.stringify(progress):null;
  const granted=ProgressCore.grantTestResources(progress);
  if(!granted)return;
+ if(progress.saveVersion===3&&typeof SkillCore!=="undefined"&&!SkillCore.grantTest(progress))return;
  if(!persistProgress()&&before){
   Object.keys(progress).forEach(k=>delete progress[k]);
   Object.assign(progress,JSON.parse(before));
@@ -403,6 +404,9 @@ $("#devResourcesGrant")?.addEventListener("click",()=>{
  if(status)status.textContent="Тестовый запас готов: энергия "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX+
   ", игровая валюта "+progress.currency+", материал C "+progress.gearMaterials+
   (progress.saveVersion===3?" · G1: "+GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(", "):"")+
+  (progress.saveVersion===3&&typeof SkillCore!=="undefined"&&progress.skillMaterials?" · Навыки: "+
+   SkillCore.RESOURCE_IDS.map(id=>SkillCore.LABELS[id]+" "+
+    progress.skillMaterials[id]).join(", "):"")+
   (saveAvailable?". Сохранено в этом браузере.":". Внимание: сохранение недоступно.");
 });
 
@@ -473,7 +477,10 @@ function equippedPilotStats(hero,profile){
 }
 function progressedHero(hero){
  const calculated=ProgressCore.heroStats(progress,hero);
- return calculated?equippedPilotStats(calculated,PILOT_HERO_STATS[hero.id]):null;
+ if(!calculated)return null;
+ const h=equippedPilotStats(calculated,PILOT_HERO_STATS[hero.id]);
+ return typeof SkillCore==="undefined"?h:
+  {...h,skillLevels:Object.fromEntries(SkillCore.IDS.map(id=>[id,SkillCore.level(progress,hero.id,id)]))};
 }
 function progressedEnemy(enemy){
  return equippedPilotStats({...enemy},PILOT_ENEMY_STATS);
@@ -754,9 +761,107 @@ function renderHeroAbilities(hero){
    meta.textContent=info.meta.join(" · ");details.append(meta);
   }
   card.append(heading,details);
+  if(info.status==="available"&&typeof SkillCore!=="undefined"&&SkillCore.IDS.includes(info.id)){
+   const button=document.createElement("button");button.type="button";
+   button.className="ghost skill-open-button";
+   button.dataset.skillOpen=info.id;
+   button.textContent="Ур. "+SkillCore.level(progress,hero.id,info.id)+"/6 · Развить";
+   card.append(button);
+  }
   list.append(card);
  }
 }
+// Skills-001: skill levels are per-hero, persist with the same v3 wallet.
+let openedSkillId=null,skillPreviewLevel=1;
+function openSkillUpgrade(id){
+ if(!SkillCore.IDS.includes(id)||!ALLIES.some(h=>h.id===selectedHeroId))return;
+ openedSkillId=id;
+ skillPreviewLevel=Math.min(SkillCore.MAX,(SkillCore.level(progress,selectedHeroId,id)||1)+1);
+ renderSkillUpgrade();
+ const dialog=$("#skillUpgradeDialog");
+ if(dialog&&!dialog.open)dialog.showModal();
+}
+function renderSkillUpgrade(){
+ const dialog=$("#skillUpgradeDialog");
+ if(!dialog||!openedSkillId)return;
+ const hero=progressedHero(ALLIES.find(h=>h.id===selectedHeroId));
+ const current=SkillCore.level(progress,selectedHeroId,openedSkillId);
+ const ability=AbilityData.get(hero,openedSkillId);
+ const formatAt=level=>{
+  const actor={...hero,skillLevels:{...hero.skillLevels,[openedSkillId]:level}};
+  return AbilityInfo.format(actor,openedSkillId);
+ };
+ const selected=Math.max(1,Math.min(SkillCore.MAX,skillPreviewLevel));
+ const info=formatAt(selected);
+ $("#skillUpgradeTitle").textContent=ability?.name||"Умение";
+ $("#skillUpgradeSubhead").textContent="Уровень "+current+" / "+SkillCore.MAX+
+  " · "+(AbilityInfo.SLOTS.find(s=>s.id===openedSkillId)?.label||"");
+ $("#skillPreviewLabel").textContent="ОПИСАНИЕ НА УРОВНЕ "+selected;
+ $("#skillPreviewText").textContent=info.description;
+ $("#skillPreviewMeta").textContent=info.meta.join(" · ");
+ const next=current<SkillCore.MAX?formatAt(current+1):null;
+ $("#skillNextEffect").textContent=next?
+  "Следующий уровень "+(current+1)+": "+next.description:"Умение изучено полностью.";
+ const buttons=$("#skillLevelButtons");buttons.replaceChildren();
+ for(let level=1;level<=SkillCore.MAX;level++){
+  const b=document.createElement("button");b.type="button";
+  b.className="skill-level-choice"+(selected===level?" selected":"")+
+   (level<=current?" learned":"");
+  b.dataset.skillPreview=String(level);b.textContent=String(level);
+  b.setAttribute("aria-pressed",String(selected===level));
+  b.setAttribute("aria-label","Уровень "+level+(level<=current?" изучен":" доступен для просмотра"));
+  buttons.append(b);
+ }
+ const list=$("#skillLevelDetails");list.replaceChildren();
+ for(let level=1;level<=SkillCore.MAX;level++){
+  const row=document.createElement("div");row.className="skill-level-row"+
+   (selected===level?" selected":"");
+  const number=document.createElement("span");number.textContent=String(level);
+  const desc=document.createElement("span");desc.textContent=formatAt(level).description;
+  row.append(number,desc);list.append(row);
+ }
+ const c=SkillCore.cost(progress,selectedHeroId,openedSkillId);
+ const materials=c?Object.entries(c.materials).map(([id,amount])=>
+  SkillCore.LABELS[id]+" ×"+amount+
+  " (есть "+(progress.skillMaterials?.[id]??0)+")").join(" · "):"";
+ $("#skillCostLabel").textContent=c?"НУЖНО ДЛЯ УР. "+c.to:"МАКСИМАЛЬНЫЙ УРОВЕНЬ";
+ $("#skillCostText").textContent=c?
+  c.currency+" валюты"+(materials?" · "+materials:"")+" · герой от ур. "+c.heroLevel:
+  "Все шесть уровней изучены";
+ const reason=saveBlocked?"Сохранение недоступно.":SkillCore.blocked(progress,selectedHeroId,openedSkillId);
+ $("#skillUpgradeButton").disabled=!!reason;
+ $("#skillUpgradeButton").textContent=c?"Улучшить до "+c.to:"Умение изучено";
+ $("#skillUpgradeStatus").textContent=reason||"Ресурсов достаточно для улучшения.";
+}
+$("#heroAbilityList")?.addEventListener("click",event=>{
+ const button=event.target.closest?.("[data-skill-open]");
+ if(button&&$("#heroAbilityList").contains(button))openSkillUpgrade(button.dataset.skillOpen);
+});
+$("#skillLevelButtons")?.addEventListener("click",event=>{
+ const b=event.target.closest?.("[data-skill-preview]");
+ if(!b)return;
+ const number=Number(b.dataset.skillPreview);
+ if(!Number.isInteger(number)||number<1||number>SkillCore.MAX)return;
+ skillPreviewLevel=number;renderSkillUpgrade();
+});
+$("#skillUpgradeClose")?.addEventListener("click",()=>$("#skillUpgradeDialog").close());
+$("#skillUpgradeDialog")?.addEventListener("close",()=>{openedSkillId=null;});
+$("#skillUpgradeButton")?.addEventListener("click",()=>{
+ if(!openedSkillId||saveBlocked)return;
+ const before=JSON.stringify(progress);
+ const upgraded=SkillCore.upgrade(progress,selectedHeroId,openedSkillId);
+ if(!upgraded){renderSkillUpgrade();return;}
+ if(!persistProgress()){
+  Object.keys(progress).forEach(k=>delete progress[k]);
+  Object.assign(progress,JSON.parse(before));
+  renderAccountHeader();renderHeroDetail();renderSkillUpgrade();
+  $("#skillUpgradeStatus").textContent="Сохранение не удалось. Ресурсы не списаны.";
+  return;
+ }
+ skillPreviewLevel=Math.min(SkillCore.MAX,upgraded.level+1);
+ renderHeroDetail();renderHeroes();renderSkillUpgrade();
+ $("#skillUpgradeStatus").textContent="Навык улучшен до уровня "+upgraded.level+". Сохранено.";
+});
 function renderHeroDetail(){
  const base=ALLIES.find(h=>h.id===selectedHeroId);
  if(!base)return;

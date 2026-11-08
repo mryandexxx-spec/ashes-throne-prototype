@@ -959,3 +959,52 @@ body.battle-mode #app>footer{visibility:hidden}
  .hero-detail-reference .detail-value{align-items:baseline}
  .hero-detail-reference .detail-value strong{overflow-wrap:anywhere;min-width:0}
 }
+
+/* Skills-001: reference-inspired six-level modal. Pure DOM, no textures. */
+.hero-detail-reference .skill-open-button{margin-top:7px;min-height:38px;width:100%;
+ text-align:center;font-size:12px;border:1px solid #d5ad6550;color:var(--gold)}
+.skill-upgrade-dialog{box-sizing:border-box;width:min(920px,calc(100vw - 28px));
+ max-width:calc(100vw - 28px);max-height:calc(100dvh - 22px);overflow:auto;
+ background:#201810;color:var(--text);border:1px solid #b28a56;
+ border-radius:11px;padding:0;box-shadow:0 18px 54px #000b}
+.skill-upgrade-dialog::backdrop{background:#050403bc}
+.skill-dialog-heading{display:flex;justify-content:space-between;align-items:center;
+ gap:12px;padding:13px 16px;background:#39291c;border-bottom:1px solid #b28a5660}
+.skill-dialog-heading h2{margin:4px 0;font:600 clamp(18px,3vw,26px) Cinzel,serif;color:#ead7b9}
+.skill-dialog-heading .muted{margin:0;font-size:11px}
+#skillUpgradeClose{min-width:44px;min-height:44px;font-size:20px}
+.skill-dialog-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}
+.skill-dialog-description{padding:15px;border-right:1px solid #b28a5650;min-width:0}
+.skill-dialog-description p{line-height:1.5;font-size:13px;overflow-wrap:anywhere}
+.skill-dialog-description #skillPreviewText{font-size:15px;margin:10px 0}
+.skill-dialog-levels{padding:12px;min-width:0}
+.skill-level-buttons{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin-bottom:9px}
+.skill-level-choice{min-height:44px;min-width:0;padding:5px;border:1px solid #9a75495a;
+ border-radius:5px;background:#35281e;color:#bcab93;font-weight:700;font-size:16px}
+.skill-level-choice.learned{color:#87c377}
+.skill-level-choice.selected{color:#fce0b6;border-color:#e8a653;outline:1px solid #e8a653;background:#52331c}
+.skill-level-details{border:1px solid #9a75494a;border-radius:6px;overflow:auto;max-height:35dvh}
+.skill-level-row{display:grid;grid-template-columns:32px minmax(0,1fr);align-items:start;
+ border-bottom:1px solid #9a754932;padding:8px;gap:10px;font-size:12px;line-height:1.4}
+.skill-level-row>span:first-child{color:var(--gold);font-weight:700}
+.skill-level-row.selected{background:#b2763134}
+.skill-dialog-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;
+ padding:12px 16px;border-top:1px solid #b28a5650;min-width:0}
+.skill-dialog-footer>div{min-width:0}
+.skill-dialog-footer p{font-size:12px;line-height:1.45;margin:5px 0;overflow-wrap:anywhere}
+#skillUpgradeButton{min-height:48px;min-width:165px}
+#skillUpgradeButton:disabled{opacity:.52}
+@media(orientation:landscape) and (max-height:540px){
+ .skill-upgrade-dialog{max-height:calc(100dvh - 12px)}
+ .skill-dialog-heading{padding:8px 12px}
+ .skill-dialog-description,.skill-dialog-levels{padding:9px}
+ .skill-level-details{max-height:29dvh}
+ .skill-dialog-footer{padding:8px 12px}
+}
+@media(max-width:580px) and (orientation:portrait){
+ .skill-dialog-grid{grid-template-columns:1fr}
+ .skill-dialog-description{border-right:0;border-bottom:1px solid #b28a5650}
+ .skill-dialog-footer{flex-wrap:wrap}
+ #skillUpgradeButton{width:100%}
+ .skill-level-details{max-height:25dvh}
+}

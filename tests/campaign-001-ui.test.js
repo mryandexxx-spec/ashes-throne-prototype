@@ -4,7 +4,7 @@ const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
 const src=["initiative-model.js","ability-data.js","combat-core.js","auto-decision.js","enemy-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","challenge-core.js","battle-speed.js","animation-profiles.js","battle-animation.js","hero-profile-data.js","story-trial-data.js","story-demo-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
-const ids=["home","collection","campaign","challenges","challengeResult","challengeList","challengeModes","challengeModeBack","challengeModeTitle","challengeSaveStatus","dailyClaimAll","challengeResultName","challengeResultTitle","challengeResultText","challengeResultStars","challengeResultRetry","challengeResultBack","challengeResultHome","battleChallengeGoal","storyDemo","storyDemoOpen","storyDemoBack","storyDemoSpeaker","storyDemoText","storyDemoNext","storyDemoChoices","storyDemoChoiceA","storyDemoChoiceB","storyDemoFight","storyDemoTrialFight","storyDemoNotice","storyDemoAgain","storyRenTags","storyRenBiography","heroBiographyDialog","heroBiographyTitle","heroBiographyTags","heroBiographyText","heroBiographyNote","heroBiographyClose","squad","battle","heroList","combatants",
+const ids=["home","collection","campaign","challenges","challengeResult","challengeList","challengeModes","challengeModeBack","challengeModeTitle","challengeSaveStatus","dailyClaimAll","challengeResultName","challengeResultTitle","challengeResultText","challengeResultStars","challengeResultRetry","challengeResultBack","challengeResultHome","battleChallengeGoal","storyDemo","storyDemoOpen","storyDemoBack","storyDemoSpeaker","storyDemoText","storyDemoNext","storyDemoChoices","storyDemoChoiceA","storyDemoChoiceB","storyDemoFight","storyDemoTrialFight","storyDemoNotice","storyDemoAgain","storyRenTags","storyRenBiography","heroBiographyDialog","heroBiographyPortrait","heroBiographyTitle","heroBiographyTags","heroBiographyText","heroBiographyNote","heroBiographyClose","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn","arenaIndicators","orientationPrompt",
  "basicAbilitySlot","specialAbilitySlot","abilityTooltip","abilityTooltipTitle","abilityTooltipText",
  "fighterInspect","inspectClose","inspectSide","inspectName","inspectRole","inspectStats","inspectEffects",
@@ -135,6 +135,7 @@ const count=()=>elements.squadCount.textContent;
  assert.match(elements.storyRenTags.textContent,/Сады над пропастью/);
  click(elements.storyRenBiography);
  assert.equal(elements.heroBiographyDialog.open,true);
+ assert.equal(elements.heroBiographyPortrait.hidden,false,"Ren draft portrait shown only for Ren");
  assert.equal(elements.heroBiographyTitle.textContent,"Рен Терен");
  assert.match(elements.heroBiographyTags.textContent,/Сады над пропастью/);
  assert.match(elements.heroBiographyText.textContent,/Косой Полке/);

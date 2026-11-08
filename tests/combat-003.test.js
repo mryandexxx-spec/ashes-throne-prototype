@@ -32,7 +32,7 @@ const click=id=>elements[id].handlers.click[0]();
 const enemy=getBattle().fighters[getBattle().selectedEnemy];
 const enemyHp=enemy.hp;
 click("specialAbilityBtn");
-assert.equal(enemy.hp,enemyHp-31,"tapping damage skill casts at focused enemy immediately");
+assert.equal(enemy.hp,enemyHp-Math.round(31*100/(100+enemy.physicalDefense)),"tapping typed skill casts at focused enemy with physical defense");
 assert.equal(getBattle().fighters[1].specialCooldown,2);
 assert.equal(elements.specialAbilityBtn.classList.selected,false,"damaging skill does not stay armed");
 let steps=0;

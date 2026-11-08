@@ -49,7 +49,9 @@ test("core collects actual resolved combat events and assigns first target",()=>
   CombatCore.advanceToPlayerTurn(battle);
   let actions=0;
   while(battle.active&&actions++<30){
-   const i=battle.fighters.findIndex(f=>f.id===priorityId);
+   const next=battle.fighters.some(f=>f.id===priorityId&&f.hp>0)?
+    priorityId:(priorityId==="ves"?"shade":"ves");
+   const i=battle.fighters.findIndex(f=>f.id===next);
    assert.equal(CombatCore.chooseEnemy(battle,i),true);
    assert.equal(CombatCore.performPlayerAbility(battle,"basic"),true);
    assert.equal(ChallengeCore.capture(tracker,battle.events),true);

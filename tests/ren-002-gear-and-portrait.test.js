@@ -53,7 +53,7 @@ assert.match(portrait,/<svg[^>]*viewBox="0 0 320 420"/);
 assert.match(portrait,/<title[^>]*>Рен Терен/);
 assert.ok(portrait.includes("страховочной верёвки"));
 assert.doesNotMatch(portrait,/<script|(?:href|src)="https?:\/\//i,"self-contained SVG");
-assert.equal((html.match(/src="assets\/ren-concept-sketch\.svg"/g)||[]).length,2,"preview and biography");
+assert.equal((html.match(/src="assets\/ren-portrait-ui\.webp"/g)||[]).length,3,"preview, permanent detail and biography now use approved portrait");
 assert.match(html,/class="ren-sketch-mini"/);
 assert.match(html,/id="heroBiographyPortrait"/);
 assert.match(css,/ren-biography-sketch\[hidden\]\{display:none\}/);

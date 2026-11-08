@@ -99,6 +99,11 @@ const CombatCore = (() => {
       if (wave.some(enemy => allyIds.has(enemy.id)))
         throw Error("wave enemy id collides with ally id");
     }
+    // Stats-001D0: no seed = no RNG, preserving every existing battle.
+    // Seeded battles may draw later, but current abilities never draw.
+    const seededRng=options.rngSeed===undefined?null:
+      (typeof BattleRng!=="undefined"?BattleRng.create(options.rngSeed):
+       (()=>{throw Error("BattleRng script is required for seeded battles");})());
     const initiative = InitiativeModel.createInitiative(heroes);
     const fighters = heroes.map((hero,index) =>
       makeFighter(hero,index,initiative[index].meter));
@@ -114,6 +119,7 @@ const CombatCore = (() => {
     }
     return {
       fighters,
+      ...(seededRng===null?{}:{rng:seededRng}),
       leaderId,
       wave: 1,
       totalWaves: 1 + futureWaves.length,

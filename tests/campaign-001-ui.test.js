@@ -3,15 +3,15 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","auto-decision.js","enemy-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","story-trial-data.js","story-demo-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
-const ids=["home","collection","campaign","storyDemo","storyDemoOpen","storyDemoBack","storyDemoSpeaker","storyDemoText","storyDemoNext","storyDemoChoices","storyDemoChoiceA","storyDemoChoiceB","storyDemoFight","storyDemoTrialFight","storyDemoNotice","storyDemoAgain","squad","battle","heroList","combatants",
+const src=["initiative-model.js","ability-data.js","combat-core.js","auto-decision.js","enemy-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","hero-profile-data.js","story-trial-data.js","story-demo-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const ids=["home","collection","campaign","storyDemo","storyDemoOpen","storyDemoBack","storyDemoSpeaker","storyDemoText","storyDemoNext","storyDemoChoices","storyDemoChoiceA","storyDemoChoiceB","storyDemoFight","storyDemoTrialFight","storyDemoNotice","storyDemoAgain","storyRenTags","storyRenBiography","heroBiographyDialog","heroBiographyTitle","heroBiographyTags","heroBiographyText","heroBiographyNote","heroBiographyClose","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn","arenaIndicators","orientationPrompt",
  "basicAbilitySlot","specialAbilitySlot","abilityTooltip","abilityTooltipTitle","abilityTooltipText",
  "fighterInspect","inspectClose","inspectSide","inspectName","inspectRole","inspectStats","inspectEffects",
  "targetFighterHud","targetFighterSide","targetFighterLevel","targetFighterName","targetFighterHp","targetFighterStats","targetFighterHealthFill",
  "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","autoSpeedBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","squadBack","squadStart","squadRoster",
- "squadSlots","squadHint","squadWarning","squadDisband","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","energyRefresh","energyRefreshStatus","simulationDialog","simulationTitle","simulationSetup","simulationResults","simulationCount","simulationQuantity","simulationCost","simulationAvailable","simulationConfirm","simulationText","simulationRewards","simulationClose","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
+ "squadSlots","squadHint","squadWarning","squadDisband","squadCount","heroDetail","detailName","detailRole","detailTags","detailBiography","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","energyRefresh","energyRefreshStatus","simulationDialog","simulationTitle","simulationSetup","simulationResults","simulationCount","simulationQuantity","simulationCost","simulationAvailable","simulationConfirm","simulationText","simulationRewards","simulationClose","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
 function element(id=""){
  return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},style:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
@@ -23,6 +23,8 @@ function element(id=""){
 const elements=Object.fromEntries(ids.map(id=>[id,element(id)]));
 elements.simulationDialog.showModal=function(){this.open=true;};
 elements.simulationDialog.close=function(){this.open=false;};
+elements.heroBiographyDialog.showModal=function(){this.open=true;};
+elements.heroBiographyDialog.close=function(){this.open=false;};
 elements.simulationCount.value="1";
 const chooseNodes=["kael","lyra","darin"].map(id=>{
  const e=element();e.dataset.heroId=id;return e;
@@ -126,6 +128,23 @@ const allyIds=()=>api.getBattle().fighters.filter(h=>h.side==="ally").map(h=>h.i
 const count=()=>elements.squadCount.textContent;
 
 
+// REN-001: biography button is reachable for trial-only Ren without
+// pretending he has been recruited into the permanent collection.
+{
+ click(elements.storyDemoOpen);
+ assert.match(elements.storyRenTags.textContent,/Сады над пропастью/);
+ click(elements.storyRenBiography);
+ assert.equal(elements.heroBiographyDialog.open,true);
+ assert.equal(elements.heroBiographyTitle.textContent,"Рен Терен");
+ assert.match(elements.heroBiographyTags.textContent,/Сады над пропастью/);
+ assert.match(elements.heroBiographyText.textContent,/Косой Полке/);
+ assert.match(elements.heroBiographyText.textContent,/Эле Терен/);
+ assert.doesNotMatch(elements.heroBiographyText.textContent,/магический|военачальник/);
+ click(elements.heroBiographyClose);
+ assert.equal(elements.heroBiographyDialog.open,false);
+ assert.ok(elements.detailBiography.handlers.click?.length>0,"future permanent dossier uses shared biography button");
+ api.showScreen("home");
+}
 // STORY-001: integrated user path through actual buttons, squad, combat and epilogue.
 {
  const completedBefore=JSON.stringify(api.getCampaignProgress());

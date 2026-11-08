@@ -41,11 +41,13 @@ const CombatEnvironment010=(()=>{
    return [AWAY.x*distance+RIGHT.x*x,y,AWAY.z*distance+RIGHT.z*x];
   }
   function geom(name,columns,rows,sample,shade,material){
-   const positions=[],normals=[],colors=[],indices=[];
+   const positions=[],normals=[],colors=[],indices=[],uvs=[];
    for(let j=0;j<rows;j++)for(let i=0;i<=columns;i++){
     const [x,y,z]=sample(i/columns,j);
     const c=shade(i/columns,j,x,y,z);
     positions.push(x,y,z);
+    // Strata-aligned planar UVs for optional local stone normal detail.
+    uvs.push(i/columns*8.0+Math.sin(y*.08)*.07,y*.092);
     colors.push(CLAMP(c[0],0,1),CLAMP(c[1],0,1),CLAMP(c[2],0,1),1);
    }
    for(let j=0;j<rows-1;j++)for(let i=0;i<columns;i++){
@@ -55,7 +57,7 @@ const CombatEnvironment010=(()=>{
    B.VertexData.ComputeNormals(positions,indices,normals);
    const mesh=own(new B.Mesh("env010_"+name,scene));
    const data=new B.VertexData();
-   data.positions=positions;data.normals=normals;data.indices=indices;data.colors=colors;
+   data.positions=positions;data.normals=normals;data.indices=indices;data.colors=colors;data.uvs=uvs;
    data.applyToMesh(mesh,false);
    mesh.useVertexColors=true;
    mesh.isPickable=false;mesh.checkCollisions=false;mesh.receiveShadows=false;
@@ -88,7 +90,8 @@ const CombatEnvironment010=(()=>{
   }
   const layers=[
    {name:"horizon",d:92,base:-98,amplitude:54,phase:.45,color:COLORS.far,relief:1.45},
-   {name:"midground",d:65,base:-70,amplitude:40,phase:1.8,color:COLORS.mid,relief:2.35}
+   {name:"midground",d:65,base:-70,amplitude:40,phase:1.8,color:COLORS.mid,relief:2.35},
+   {name:"escarpment",d:42,base:-53,amplitude:34,phase:3.2,color:COLORS.near,relief:3.20}
   ];
   for(const layer of layers){
    const material=mat(layer.name);
@@ -118,42 +121,6 @@ const CombatEnvironment010=(()=>{
     return mix(land,COLORS.skyHaze,haze).map(v=>v+sediment+fineStrata+joint+facet+shaded);
    },material);
   }
-  // Actual canyon terrain, not a vertical panorama: a continuous landform
-  // receding behind the arena with an incised central valley and two scarps.
-  // One light-weight VertexData mesh, 96×48, 9,024 tris, non-interactive.
-  // The valley is below the combat ledge; no character footprint is altered.
-  const canyonMat=mat("gorge_landform");
-  const smooth=(a,b,x)=>{const t=CLAMP((x-a)/(b-a),0,1);return t*t*(3-2*t);};
-  function gorgeShape(x,d){
-    const midline=2.7*Math.sin(d*.09+.8)+1.2*Math.sin(d*.032+1.6);
-    const q=Math.abs(x-midline);
-    const first=.43*smooth(6.5,12,q);
-    const second=.57*smooth(13.5,23,q);
-    return {q,bank:first+second};
-  }
-  const canyonRows=48,canyonCols=96;
-  geom("escarpment",canyonCols,canyonRows,(u,row)=>{
-    const x=(u-.5)*102;
-    const d=19+row/(canyonRows-1)*70;
-    const {q,bank}=gorgeShape(x,d);
-    // Wear softens each shelf, while a narrow dark channel remains low.
-    const breakage=(1.15*Math.sin(x*.25+d*.083)+
-     .52*Math.sin(x*.72-d*.14))*bank;
-    const terrace=.8*Math.sin(q*.53+d*.046)*bank;
-    const base=-34+21*bank-(d-19)*.055;
-    const depth=d+1.1*Math.sin(x*.11+d*.04)*bank;
-    return place(depth,x,base+breakage+terrace);
-  },(u,row,x,y,z)=>{
-    const d=19+row/(canyonRows-1)*70;
-    const lateral=(u-.5)*102;
-    const {q,bank}=gorgeShape(lateral,d);
-    const rock=mix([.245,.30,.325],[.415,.405,.38],bank);
-    const bedding=.028*Math.sin(y*.44+lateral*.08)+
-     .018*Math.sin(y*.87-d*.066);
-    const crease=Math.abs(Math.sin(lateral*.41-d*.13))>.975?-.055:0;
-    const haze=.08+.60*smooth(33,90,d);
-    return mix(rock.map(v=>v+bedding+crease),COLORS.skyHaze,haze);
-  },canyonMat);
   // A single repeatable tangent-space stone normal map adds grazing-light
   // fracture relief to ENV009's walkable shelf without changing its y=0
   // collision/formation plane. Generated once per Scene: 256² RGBA ≈ 256 KiB.
@@ -262,6 +229,13 @@ const CombatEnvironment010=(()=>{
       material.specularColor=new B.Color3(.010,.012,.012);
       material.emissiveColor=new B.Color3(.025,.027,.022);
       material.diffuseTexture=albedo;material.bumpTexture=normal;
+      // Same scene-owned normal map on near cliff faces: no duplicate textures,
+      // no new requests and no sharp detail on the hazy horizon ridge.
+      for(const name of ["midground","escarpment"]){
+       const wall=Array.isArray(scene.materials)?
+        scene.materials.find(m=>m.name==="env010_mat_"+name):null;
+       if(wall)wall.bumpTexture=normal;
+      }
       cap.material=material;
       cap.isPickable=false;cap.checkCollisions=false;
       cap.receiveShadows=false;
@@ -273,7 +247,7 @@ const CombatEnvironment010=(()=>{
       normal=own(new B.Texture(ASSET_ROOT+"rock063-normal-512.jpg",scene,
         false,false,options,()=>{normalReady=true;makeCap();},()=>{}));
       albedo.uScale=1.65;albedo.vScale=1.65;
-      normal.uScale=1.65;normal.vScale=1.65;normal.level=.23;
+      normal.uScale=1.65;normal.vScale=1.65;normal.level=.32;
       if(B.Texture.WRAP_ADDRESSMODE!==undefined)for(const t of [albedo,normal]){
         t.wrapU=B.Texture.WRAP_ADDRESSMODE;t.wrapV=B.Texture.WRAP_ADDRESSMODE;
       }

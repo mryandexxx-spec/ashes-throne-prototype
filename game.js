@@ -867,8 +867,8 @@ function commitOperation(next){
   return false;
  }
  if(operationSaveBlocked||!operationSaveAvailable||
-    !OperationCore.save(candidate,()=>window.localStorage,operationSaveBlocked)){
-  operationNotice="Не удалось сохранить операцию. Изменение не применено; проверь доступность хранилища Safari.";
+    !OperationCore.save(candidate,()=>window.localStorage,operationSaveBlocked,operationProgress)){
+  operationNotice="Не удалось сохранить операцию. Данные могли измениться в другой вкладке либо хранилище Safari недоступно. Обнови страницу, чтобы восстановить актуальный этап.";
   return false;
  }
  operationProgress=candidate;

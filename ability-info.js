@@ -48,6 +48,7 @@ const AbilityInfo=(()=>{
    else effects.push("Наносит урон.");
    if(a.weakening>0)effects.push("Ослабляет противника на "+a.weakening+" атаки.");
     if(a.onHitStatus?.type==="slowed")effects.push("Замедление: -"+a.onHitStatus.amount+"% скорости на "+a.onHitStatus.turns+" собственных хода цели (тестовый баланс).");
+    if(a.followUpStatusAll?.type==="debuff-resistance-down")effects.push("После попадания по основной цели снижает сопротивление всех оставшихся противников на "+a.followUpStatusAll.amount+" п.п. на "+a.followUpStatusAll.turns+" их собственных хода. Тестовый баланс.");
   }else if(a.kind==="guard"){
    if(Number.isFinite(a.guardHits))effects.push("Даёт защиту от "+a.guardHits+" ударов.");
    else effects.push("Даёт защиту.");

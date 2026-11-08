@@ -104,7 +104,7 @@ assert.equal(elements.battle.classList.active,true);
 assert.equal(allyIds(),"lyra");
 assert.equal(api.getBattle().leaderId,"lyra","first selected hero after an empty squad occupies slot 1");
 assert.equal(engineCreates,1);
-assert.equal(meshCreates,30,"ten demo fighter templates get 3D shapes");
+assert.equal(meshCreates,33,"eleven fighter templates including Ren get 3D shapes");
 assert.equal(createdCameras.length,1,"one 3D camera allocated");
 const camera=createdCameras[0];
 assert.ok(Math.abs(camera.alpha+3*Math.PI/4)<1e-9);

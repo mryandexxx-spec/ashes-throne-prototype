@@ -179,24 +179,49 @@ const CombatEnvironment010=(()=>{
   // No remote runtime requests or additional scene/engine cycles.
   function loadLocalRock(){
     if(!ASSET_ROOT||typeof B.Texture!=="function")return false;
-    const ledge=Array.isArray(scene.materials)?
-      scene.materials.find(m=>m.name==="env009_mat_weathered_stone"):null;
-    if(!ledge)return false;
-    let albedoReady=false,normalReady=false,albedo=null,normal=null;
-    const activate=()=>{
-      if(!albedoReady||!normalReady)return;
-      ledge.diffuseTexture=albedo;
-      ledge.bumpTexture=normal;
-      ledge.specularColor=new B.Color3(.012,.014,.015);
+    const shelf=Array.isArray(scene.meshes)?
+      scene.meshes.find(m=>m.name==="env009_living_ledge"):null;
+    if(!shelf||typeof shelf.getVerticesData!=="function"||
+       typeof shelf.getIndices!=="function")return false;
+    let albedoReady=false,normalReady=false,capMade=false,albedo=null,normal=null;
+    const makeCap=()=>{
+      if(!albedoReady||!normalReady||capMade||scene.isDisposed)return;
+      const positions=shelf.getVerticesData("position");
+      const uvs=shelf.getVerticesData("uv");
+      const normals=shelf.getVerticesData("normal");
+      const indices=shelf.getIndices();
+      const count=97,rows=9,verts=rows*count,triangles=(rows-1)*96*6;
+      if(!positions||!uvs||!normals||!indices||
+         positions.length<verts*3||uvs.length<verts*2||
+         normals.length<verts*3||indices.length<triangles)return;
+      capMade=true;
+      // Follow ENV009's real sculpted top surface; no rectangular platform
+      // and no photo stretched down the near-vertical canyon face.
+      const data=new B.VertexData();
+      data.positions=Array.from(positions.slice(0,verts*3));
+      for(let i=1;i<data.positions.length;i+=3)data.positions[i]+=.018;
+      data.indices=Array.from(indices.slice(0,triangles));
+      data.normals=Array.from(normals.slice(0,verts*3));
+      data.uvs=Array.from(uvs.slice(0,verts*2));
+      const cap=own(new B.Mesh("env010_sedimentary_shelf_skin",scene));
+      data.applyToMesh(cap,false);
+      const material=own(new B.StandardMaterial("env010_sedimentary_skin",scene));
+      material.diffuseColor=new B.Color3(.86,.77,.66);
+      material.specularColor=new B.Color3(.010,.012,.012);
+      material.emissiveColor=new B.Color3(.025,.027,.022);
+      material.diffuseTexture=albedo;material.bumpTexture=normal;
+      cap.material=material;
+      cap.isPickable=false;cap.checkCollisions=false;
+      cap.receiveShadows=false;
     };
     const options=B.Texture.TRILINEAR_SAMPLINGMODE;
     try{
       albedo=own(new B.Texture(ASSET_ROOT+"rock063-color-512.jpg",scene,
-        false,false,options,()=>{albedoReady=true;activate();},()=>{}));
+        false,false,options,()=>{albedoReady=true;makeCap();},()=>{}));
       normal=own(new B.Texture(ASSET_ROOT+"rock063-normal-512.jpg",scene,
-        false,false,options,()=>{normalReady=true;activate();},()=>{}));
+        false,false,options,()=>{normalReady=true;makeCap();},()=>{}));
       albedo.uScale=1;albedo.vScale=1;
-      normal.uScale=1;normal.vScale=1;normal.level=.24;
+      normal.uScale=1;normal.vScale=1;normal.level=.23;
       if(B.Texture.WRAP_ADDRESSMODE!==undefined)for(const t of [albedo,normal]){
         t.wrapU=B.Texture.WRAP_ADDRESSMODE;t.wrapV=B.Texture.WRAP_ADDRESSMODE;
       }

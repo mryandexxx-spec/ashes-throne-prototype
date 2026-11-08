@@ -72,9 +72,9 @@ assert.deepEqual(
  JSON.parse(JSON.stringify(seeded.fighters)),
  JSON.parse(JSON.stringify(normal.fighters)),
  "seed opt-in must not change current combat state");
-assert.deepEqual(api.BattleRng.snapshot(seeded),{seed:123,state:123,draws:0});
-assert.throws(()=>api.CombatCore.createBattle(troops,[],{rngSeed:-1}),RangeError);
-assert.throws(()=>api.CombatCore.createBattle(troops,[],{rngSeed:null}),RangeError);
+assert.deepEqual(JSON.parse(JSON.stringify(api.BattleRng.snapshot(seeded))),{seed:123,state:123,draws:0});
+assert.throws(()=>api.CombatCore.createBattle(troops,[],{rngSeed:-1}),/uint32 seed/);
+assert.throws(()=>api.CombatCore.createBattle(troops,[],{rngSeed:null}),/uint32 seed/);
 assert.equal(run({rngSeed:0}).rng.draws,0);
 
 // The browser loads RNG BEFORE combat core and does not change existing build labels.

@@ -30,5 +30,5 @@ assert.doesNotMatch(battle,/id="combatants"/);
 assert.doesNotMatch(game,/function renderCombatants\(\)/,"unused roster renderer removed");
 assert.match(styles,/\.battle-screen \.battle-top>\.target-fighter-hud\s*\{[^}]*position:relative/);
 assert.match(styles,/\.battle-screen \.battle-top-controls\.arena-hud\s*\{[^}]*position:absolute/);
-assert.match(html,/v0[.]3[.]54 · STAT004A5/);
+assert.match(html,/v0[.]3[.]55 · STAT004A5/);
 console.log("Combat-008D selected-target panel structure and version passed");

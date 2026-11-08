@@ -117,7 +117,16 @@ const AbilityData=(()=>{
  const fallback=Object.freeze({id:"special",name:"Особый удар",target:"enemy",kind:"damage",multiplier:1,weakening:0,cooldown:2});
  function rawGet(actor,abilityId){
   // Stats-002C pilot: only explicitly outfitted fighters use typed basic attacks.
-  if(abilityId==="basic")return actor?.combatProfile==="stats002c"?typedBasic:basic;
+  if(abilityId==="basic"){
+   // REN-COMBAT-B: story-only temporary skill level; no v3 progression.
+   if(actor?.id==="trial-ren"){
+    const level=actor.skillLevels?.basic;
+    return Object.freeze({...basic,name:"Точный удар · проба",
+     ...(Number.isInteger(level)&&level>=4&&level<=6?
+      {onHitStatus:Object.freeze({type:"slowed",amount:20,turns:2})}:{})});
+   }
+   return actor?.combatProfile==="stats002c"?typedBasic:basic;
+  }
   if(!actor)return null;
   if(abilityId==="powerful"){
    const ability=powerful[actor.id]||null;

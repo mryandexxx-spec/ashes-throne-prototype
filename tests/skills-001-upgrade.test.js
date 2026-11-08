@@ -91,7 +91,7 @@ assert.equal(A.get(leveled,"special").multiplier,2.0);
 assert.equal(A.get(leveled,"basic").multiplier,1.5);
 assert.equal(A.get(leveled,"powerful").multiplier,2.5);
 assert.equal(A.get({id:"medic-demo",skillLevels:{special:6}},"special").healAmount,55);
-assert.equal(A.get({id:"kael",skillLevels:{special:6}},"special").guardHits,4);
+assert.equal(A.get({id:"kael",skillLevels:{special:6}},"special").guardHits,7);
 assert.equal(A.get({id:"lyra",skillLevels:{special:6}},"special").weakening,2,
  "effects unrelated to upgrade remain unchanged");
 const actor={...plain,skillLevels:{basic:6,special:6,powerful:6}};

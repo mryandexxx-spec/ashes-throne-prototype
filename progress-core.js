@@ -166,11 +166,29 @@ const ProgressCore=(()=>{
   while(level<MAX_ACCOUNT_LEVEL&&xp>=xpCost(level)){xp-=xpCost(level);level++;}
   return level;
  }
+ // Stats-004A5: TEMPORARY vertical-slice gate, not the final 1–85 progression curve.
+ // Existing over-cap heroes are preserved; only *new* upgrades are blocked.
+ const HERO_LEVEL_CAP_BY_ACCOUNT=Object.freeze([0,3,8,12,14,15]);
+ function heroLevelCap(progress){
+  const level=accountLevel(progress);
+  return Math.min(MAX_LEVEL,HERO_LEVEL_CAP_BY_ACCOUNT[Math.min(level,5)]);
+ }
  function levelOf(progress,id){return own(progress.levels,id)?progress.levels[id]:null;}
  function upgradeCost(progress,id){
   const level=levelOf(progress,id);
-  // Vertical-slice test: account level is informational, not a hero upgrade gate.
-  return level===null||level>=MAX_LEVEL?null:Math.round(35+3*level+0.65*level*level);
+  return level===null||level>=MAX_LEVEL||level>=heroLevelCap(progress)
+   ?null:Math.round(35+3*level+0.65*level*level);
+ }
+ function upgradeBlockReason(progress,id){
+  const level=levelOf(progress,id);
+  if(level===null)return "Герой не найден.";
+  if(level>=MAX_LEVEL)return "Герой достиг тестового максимума.";
+  const cap=heroLevelCap(progress);
+  if(level>=cap)return "Уровень аккаунта "+accountLevel(progress)+
+   " ограничивает развитие героя до "+cap+". Получай Account XP, чтобы открыть новые уровни.";
+  const cost=upgradeCost(progress,id);
+  if(cost===null)return "Повышение уровня недоступно.";
+  return progress.currency<cost?"Недостаточно игровой валюты.":"";
  }
  function canUpgrade(progress,id){const cost=upgradeCost(progress,id);return cost!==null&&progress.currency>=cost;}
  function upgrade(progress,id){
@@ -328,7 +346,7 @@ const ProgressCore=(()=>{
   return {...reward,material};
  }
  return Object.freeze({MAX_LEVEL,MAX_ACCOUNT_LEVEL,FIRST_CLEAR_REWARDS,createProgress,xpCost,
-  accountLevel,levelOf,upgradeCost,canUpgrade,upgrade,heroStats,claimFirstClear,
+  accountLevel,heroLevelCap,upgradeBlockReason,levelOf,upgradeCost,canUpgrade,upgrade,heroStats,claimFirstClear,
   GEAR,SLOT_COUNT,SLOT_NAMES,gearItem,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,
   itemOffer,itemCost,itemBlockReason,canEquipItem,equipItem,gearBonuses,
   GEAR_PROMOTION_CURRENCY,GEAR_PROMOTION_STAT_BONUS,gearPromotionCost,gearPromotionBlockReason,canPromoteGear,promoteGear,

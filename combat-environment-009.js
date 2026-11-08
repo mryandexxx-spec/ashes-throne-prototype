@@ -86,7 +86,7 @@ const CombatEnvironment009=(()=>{
   const stone=mat("weathered_stone"),canyon=mat("canyon_shadow"),
    middle=mat("middle_ridge"),back=mat("back_ridge"),horizon=mat("horizon");
   const lithology=lithologyTexture();
-  if(lithology)stone.diffuseTexture=lithology;
+  if(lithology){stone.diffuseTexture=lithology;canyon.diffuseTexture=lithology;middle.diffuseTexture=lithology;}
   const palette={
    top:[.56,.46,.355],rim:[.43,.36,.295],face:[.31,.33,.32],
    valley:[.22,.28,.30],middle:[.31,.365,.375],
@@ -114,7 +114,7 @@ const CombatEnvironment009=(()=>{
      const c=shade(x,y,z,rings[row],row,a);
      pos.push(x,y,z);rgba.push(c[0],c[1],c[2],1);
      const cliffBlend=name==="living_ledge"?clamp((row-8)/5,0,1):0;
-     uv.push(x*.12, z*.12*(1-cliffBlend)+y*.19*cliffBlend);
+     uv.push(x*.12, name==="living_ledge" ? z*.12*(1-cliffBlend)+y*.19*cliffBlend : y*.14+z*.025);
     }
    }
    for(let j=0;j<rings.length-1;j++)for(let i=0;i<SECTORS;i++){
@@ -171,8 +171,13 @@ const CombatEnvironment009=(()=>{
     const facing=Math.cos(a+3*Math.PI/4);
     const distantSide=clamp((.24-facing)/1.10,0,1);
     const crest=base+distantSide*(10.8+height*(.19+.30*peaks));
-    const mid=base+distantSide*(7.5+height*(.11+.18*peaks));
-    const y=row===0?base:row===1?crest:row===2?mid:base-1.3;
+    // A weathered stratified massif, not a single infinitely tall curtain:
+    // broken benches, a rising shoulder, an uneven summit, then talus slopes.
+    const profile=[0,.28,.70,1,.84,.54,.24,-.10][row];
+    const cleft=.5*Math.sin(a*19+phase*2+row*.42)+
+     .25*Math.sin(a*31+phase+row*.8);
+    const erosion=profile>0?cleft*(.20+.36*profile)*distantSide:0;
+    const y=base+(crest-base)*profile+erosion;
     return [x,y,z];
    },(x,y,z,r,row,a)=>{
     const face=row===0?mix(palette.valley,tint,.26):
@@ -181,9 +186,9 @@ const CombatEnvironment009=(()=>{
     return color(face,x,z,y,.35).map(v=>clamp(v+side,0,1));
    },material);
   }
-  ridge("near_escarpment",[2.42,2.60,2.91,3.28],-9.9,6.0,.9,middle,palette.middle);
-  ridge("far_ridge",[3.55,3.84,4.16,4.55],-11.0,8.5,2.1,back,palette.back);
-  ridge("horizon_ridge",[4.95,5.25,5.61,6.08],-13.0,10.5,3.5,horizon,palette.horizon);
+  ridge("near_escarpment",[2.42,2.57,2.76,2.96,3.14,3.28,3.42,3.55],-9.9,6.0,.9,middle,palette.middle);
+  ridge("far_ridge",[3.61,3.77,3.94,4.13,4.34,4.53,4.71,4.89],-11.0,8.5,2.1,back,palette.back);
+  ridge("horizon_ridge",[4.96,5.15,5.34,5.56,5.78,6.02,6.22,6.43],-13.0,10.5,3.5,horizon,palette.horizon);
   // Atmospheric perspective stays in the scene, not in a flat sky-card.
   if(typeof B.Color4==="function")scene.clearColor=new B.Color4(.49,.55,.57,1);
   if(B.Scene&&B.Scene.FOGMODE_EXP2!==undefined){

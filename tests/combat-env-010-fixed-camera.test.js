@@ -76,7 +76,8 @@ test("ENV010 integrates as an additive optional layer without changing ENV009/FX
  battle.emit([{id:"enemy",slot:"hit"}],{enemy:{head:{position:new B.Vector3(2,1.8,0)}}});
  assert.equal(battle.pending(),1);
  battle.clear();assert.equal(battle.pending(),0);
- assert.doesNotMatch(read("combat-environment-010.js"),/fetch\(|XMLHttpRequest|setInterval|setTimeout|runRenderLoop|Math\.random/);
+ assert.doesNotMatch(read("combat-environment-010.js"),/XMLHttpRequest|setInterval|setTimeout|runRenderLoop|Math\.random/);
+ assert.match(read("combat-environment-010.js"),/fetch\(ASSET_ROOT\+"gorge-strata-v1\.glb"/);
 });
 test("ENV010 optional microrelief builds a single deterministic scene-owned normal texture",()=>{
  const {B,scene}=mock(),owned=[];

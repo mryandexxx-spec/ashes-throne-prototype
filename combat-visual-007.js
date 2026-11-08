@@ -128,8 +128,8 @@ const CombatVisual007=(()=>{
    }
    if(Array.isArray(scene.lights)){
     const hemi=scene.lights.find(l=>l.name==="hemi"),key=scene.lights.find(l=>l.name==="key");
-    if(hemi){hemi.intensity=.74;hemi.diffuseColor=new B.Color3(.73,.82,.94);}
-    if(key){key.intensity=1.13;key.diffuseColor=new B.Color3(1,.82,.64);}
+    if(hemi){hemi.intensity=.74;hemi.diffuse=new B.Color3(.73,.82,.94);}
+    if(key){key.intensity=1.13;key.diffuse=new B.Color3(1,.82,.64);}
    }
    // Three pooled, short-lived impact cues. They never participate in pointer hits.
    for(let i=0;i<MAX_FX;i++){

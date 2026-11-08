@@ -27,6 +27,7 @@
         <button class="nav-card" data-screen="battle"><span>✦</span><b>Арена</b><small>Пошаговое сражение</small></button>
         <button class="nav-card" data-screen="playerProfile"><span>♟</span><b>Профиль игрока</b><small>Ник и уровень аккаунта</small></button>
         <button class="nav-card" data-screen="dailyTasks"><span>☼</span><b>Задания дня</b><small>Три действия и награды</small></button>
+        <button class="nav-card" data-screen="loginCalendar"><span>▦</span><b>Календарь входа</b><small>Награда за каждый день входа</small></button>
       </div>
       <div class="dev-resources" aria-label="Тестовые инструменты прототипа">
         <div class="eyebrow">ТЕСТИРОВАНИЕ · НЕ ИГРОВАЯ НАГРАДА</div>
@@ -41,6 +42,13 @@
       <p class="muted">Выполни действия в игре и забери награды. Задания обновляются по местной дате устройства. Симуляция не считается сыгранным боем.</p>
       <div id="dailyTaskList" class="daily-task-list"></div>
       <p id="dailyTaskNotice" class="muted" role="status" aria-live="polite"></p>
+    </section>
+    <section id="loginCalendar" class="screen" aria-label="Календарь ежедневных наград">
+      <div class="section-heading"><div><div class="eyebrow">НАГРАДЫ ЗА ВХОД</div><h2>Календарь входа</h2></div><button type="button" class="ghost" data-screen="home">← Назад</button></div>
+      <p class="muted">Семь наград по очереди. Забирай одну награду в день. Пропуски не обнуляют прогресс, после седьмого дня цикл начинается заново.</p>
+      <div id="loginCalendarGrid" class="login-calendar-grid"></div>
+      <button type="button" class="primary" id="loginClaim">Забрать награду</button>
+      <p id="loginCalendarStatus" class="muted" role="status" aria-live="polite"></p>
     </section>
     <section id="playerProfile" class="screen player-profile-screen" aria-label="Профиль игрока">
       <div class="section-heading">
@@ -255,7 +263,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.56 · DAILY001</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.57 · LOGIN001</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -275,6 +283,7 @@
   <script src="progress-core.js"></script>
   <script src="save-core.js"></script>
   <script src="daily-core.js"></script>
+  <script src="login-core.js"></script>
   <script src="progress-v3-core.js"></script>
   <script src="mission-data.js"></script>
   <script src="campaign-core.js"></script>

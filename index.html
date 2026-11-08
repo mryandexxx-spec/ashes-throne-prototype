@@ -60,7 +60,8 @@
           <div class="player-profile-xp-track" role="progressbar" aria-label="Опыт до следующего уровня"
              aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="playerAccountXpTrack"><span id="playerAccountXpFill"></span></div>
           <p id="playerAccountXpText" class="muted">0 / 47 XP</p>
-          <p class="muted">Предел 15-го уровня действует только в прототипе. Ограничение уровня героев уровнем аккаунта пока не включено.</p>
+          <p id="playerHeroLevelCap" class="muted" aria-live="polite">Сейчас можно повысить героя максимум до уровня 3.</p>
+          <p id="playerHeroCapNext" class="muted">На уровне аккаунта 2 откроется максимум героя 8.</p>
         </div>
       </div>
       <div class="player-profile-card player-profile-summary">
@@ -90,7 +91,8 @@
         </div>
         <div class="hero-detail-panel">
           <div class="eyebrow">РАЗВИТИЕ ПЕРСОНАЖА · ТЕСТ</div>
-          <p class="muted">В тестовом прототипе развитие героя и G-ступени не ограничено уровнем аккаунта. Для покупок по-прежнему нужны игровые ресурсы.</p>
+          <p id="detailHeroLevelCap" class="muted" role="status">Твой аккаунт: уровень 1. Доступный максимум героя сейчас: 3.</p>
+          <p class="muted">Повышение уровня героя требует игровую валюту и не может превысить предел аккаунта. Экипировка оплачивается отдельно.</p>
           <h3 id="detailLevel">Уровень 1</h3>
           <div class="detail-value"><span>Доступно основной валюты</span><strong id="detailWallet">0</strong></div>
           <div class="detail-value"><span>Стоимость улучшения</span><strong id="detailCost">1</strong></div>
@@ -245,7 +247,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.54 · PROFILE001</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.55 · STAT004A5</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

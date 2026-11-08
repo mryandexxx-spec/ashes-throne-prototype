@@ -1,0 +1,76 @@
+"use strict";
+// Stats-004A5: test-only account→hero cap, preserving previously bought levels.
+const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
+const read=n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8");
+const P=vm.runInNewContext(read("progress-core.js")+"\nProgressCore");
+const hero={id:"kael",side:"ally",hp:120,atk:24,speed:110};
+const progress=P.createProgress([hero]);
+progress.currency=100000;
+const thresholds=[0,47,102,238,1579];
+const caps=[3,8,12,15,15];
+for(let i=0;i<thresholds.length;i++){
+ progress.accountXp=thresholds[i];
+ assert.equal(P.heroLevelCap(progress),caps[i]);
+}
+// Approved after-account-15 correspondence: 1:1, bounded by canonical hero L85.
+for(const [account,cap] of [[1,3],[2,8],[3,12],[4,14],[5,15],[15,15],[16,16],[17,17],[40,40],[84,84],[85,85],[86,85]])
+ assert.equal(P.heroLevelCapForAccountLevel(account),cap);
+assert.equal(P.heroLevelCapForAccountLevel(0),null);
+for(const [account,nextAccount,nextCap] of [[1,2,8],[2,3,12],[3,4,14],[4,5,15],[5,16,16],[15,16,16],[16,17,17],[84,85,85]]){
+ const next=P.nextHeroCapUnlock(account);
+ assert.equal(next.accountLevel,nextAccount);
+ assert.equal(next.heroCap,nextCap);
+}
+assert.equal(P.nextHeroCapUnlock(85),null);
+assert.ok(P.heroLevelCap(progress)<=P.MAX_LEVEL,"current prototype remains capped at 15");
+progress.accountXp=0;
+assert.equal(P.heroLevelCap(progress),3);
+assert.equal(P.upgrade(progress,"kael"),true);
+assert.equal(P.upgrade(progress,"kael"),true);
+assert.equal(P.levelOf(progress,"kael"),3);
+const gold=progress.currency;
+assert.equal(P.upgradeCost(progress,"kael"),null);
+assert.equal(P.upgrade(progress,"kael"),false);
+assert.equal(progress.currency,gold,"failed upgrade cannot charge currency");
+assert.match(P.upgradeBlockReason(progress,"kael"),/уровень аккаунта: 1/);
+progress.accountXp=47;
+while(P.canUpgrade(progress,"kael"))assert.equal(P.upgrade(progress,"kael"),true);
+assert.equal(P.levelOf(progress,"kael"),8);
+assert.equal(P.upgrade(progress,"kael"),false);
+progress.accountXp=102;
+while(P.canUpgrade(progress,"kael"))assert.equal(P.upgrade(progress,"kael"),true);
+assert.equal(P.levelOf(progress,"kael"),12);
+progress.accountXp=165;
+assert.equal(P.heroLevelCap(progress),12);
+progress.accountXp=238;
+while(P.canUpgrade(progress,"kael"))assert.equal(P.upgrade(progress,"kael"),true);
+assert.equal(P.levelOf(progress,"kael"),15);
+assert.equal(P.upgrade(progress,"kael"),false);
+assert.match(P.upgradeBlockReason(progress,"kael"),/тестового максимума/);
+// Existing saves must not lose hero levels, HP, gear or currency when a new cap starts.
+progress.accountXp=0;
+const snap=JSON.stringify(progress);
+assert.equal(P.levelOf(progress,"kael"),15);
+assert.ok(P.heroStats(progress,hero).hp>hero.hp);
+assert.equal(P.canUpgrade(progress,"kael"),false);
+assert.equal(JSON.stringify(progress),snap,"checking the cap must not mutate or downgrade save");
+// A fresh v3 profile is subject to the same gate; no schema modification.
+const v3=P.createProgress([hero]);
+v3.saveVersion=3;v3.currency=100000;v3.accountXp=85;
+assert.equal(P.heroLevelCap(v3),8);
+assert.equal(P.upgrade(v3,"kael"),true);
+assert.equal(v3.levels.kael,2);
+assert.equal(P.upgradeCost(v3,"missing"),null);
+assert.match(P.upgradeBlockReason(v3,"missing"),/не найден/);
+const html=read("index.html");
+for(const id of ["playerHeroLevelCap","playerHeroCapNext","detailHeroLevelCap"])
+ assert.ok(html.includes('id="'+id+'"'),"missing explicit cap UI "+id);
+assert.match(html,/Повышение уровня героя требует игровую валюту/);
+assert.doesNotMatch(html,/Ограничение уровня героев уровнем аккаунта пока не включено/);
+const game=read("game.js");
+assert.match(game,/ProgressCore\.heroLevelCap\(progress\)/);
+assert.match(game,/ProgressCore\.upgradeBlockReason\(progress,base\.id\)/);
+assert.match(game,/const before=progress\.saveVersion===3\?JSON\.stringify\(progress\):null/);
+assert.match(game,/Доступный максимум героя сейчас/);
+assert.ok(game.includes("ProgressCore.nextHeroCapUnlock(level)"));
+console.log("Stats-004A5: account levels, hard cap, currency safety, existing hero levels and UI messaging passed");

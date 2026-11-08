@@ -166,11 +166,46 @@ const ProgressCore=(()=>{
   while(level<MAX_ACCOUNT_LEVEL&&xp>=xpCost(level)){xp-=xpCost(level);level++;}
   return level;
  }
+ // Stats-004A5: approved pilot mapping. Actual gameplay caps remain at test L15.
+ // After account level 15: 1:1 account-to-hero cap, up to canonical hero L85.
+ // Existing over-cap heroes are preserved; only new upgrades are blocked.
+ const HERO_LEVEL_CAP_BY_ACCOUNT=Object.freeze([0,3,8,12,14]);
+ const CANONICAL_HERO_MAX_LEVEL=85;
+ function heroLevelCapForAccountLevel(level){
+  if(!Number.isInteger(level)||level<1)return null;
+  return level<=4?HERO_LEVEL_CAP_BY_ACCOUNT[level]:
+   level<=15?15:Math.min(CANONICAL_HERO_MAX_LEVEL,level);
+ }
+ function heroLevelCap(progress){
+  return Math.min(MAX_LEVEL,heroLevelCapForAccountLevel(accountLevel(progress)));
+ }
+ function nextHeroCapUnlock(level){
+  if(!Number.isInteger(level)||level<1||level>=CANONICAL_HERO_MAX_LEVEL)return null;
+  if(level<5)return {accountLevel:level+1,heroCap:heroLevelCapForAccountLevel(level+1)};
+  if(level<16)return {accountLevel:16,heroCap:16};
+  return {accountLevel:level+1,heroCap:Math.min(CANONICAL_HERO_MAX_LEVEL,level+1)};
+ }
  function levelOf(progress,id){return own(progress.levels,id)?progress.levels[id]:null;}
  function upgradeCost(progress,id){
   const level=levelOf(progress,id);
-  // Vertical-slice test: account level is informational, not a hero upgrade gate.
-  return level===null||level>=MAX_LEVEL?null:Math.round(35+3*level+0.65*level*level);
+  return level===null||level>=MAX_LEVEL||level>=heroLevelCap(progress)
+   ?null:Math.round(35+3*level+0.65*level*level);
+ }
+ function upgradeBlockReason(progress,id){
+  const level=levelOf(progress,id);
+  if(level===null)return "Герой не найден.";
+  if(level>=MAX_LEVEL)return "Герой достиг тестового максимума.";
+  const cap=heroLevelCap(progress);
+  if(level>=cap){
+   const unlock=nextHeroCapUnlock(accountLevel(progress));
+   return "Твой уровень аккаунта: "+accountLevel(progress)+". Сейчас максимум героя: "+cap+"."+
+    (unlock&&unlock.accountLevel<=MAX_ACCOUNT_LEVEL?
+     " Следующий предел — "+unlock.heroCap+" на уровне аккаунта "+unlock.accountLevel+".":
+     " Лимит 15-го уровня действует в текущем прототипе.");
+  }
+  const cost=upgradeCost(progress,id);
+  if(cost===null)return "Повышение уровня недоступно.";
+  return progress.currency<cost?"Недостаточно игровой валюты.":"";
  }
  function canUpgrade(progress,id){const cost=upgradeCost(progress,id);return cost!==null&&progress.currency>=cost;}
  function upgrade(progress,id){
@@ -328,7 +363,7 @@ const ProgressCore=(()=>{
   return {...reward,material};
  }
  return Object.freeze({MAX_LEVEL,MAX_ACCOUNT_LEVEL,FIRST_CLEAR_REWARDS,createProgress,xpCost,
-  accountLevel,levelOf,upgradeCost,canUpgrade,upgrade,heroStats,claimFirstClear,
+  accountLevel,heroLevelCapForAccountLevel,nextHeroCapUnlock,heroLevelCap,upgradeBlockReason,levelOf,upgradeCost,canUpgrade,upgrade,heroStats,claimFirstClear,
   GEAR,SLOT_COUNT,SLOT_NAMES,gearItem,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,
   itemOffer,itemCost,itemBlockReason,canEquipItem,equipItem,gearBonuses,
   GEAR_PROMOTION_CURRENCY,GEAR_PROMOTION_STAT_BONUS,gearPromotionCost,gearPromotionBlockReason,canPromoteGear,promoteGear,

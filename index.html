@@ -99,7 +99,7 @@
     </section>
     <section id="heroDetail" class="screen hero-detail-screen" aria-label="Подробная карточка героя">
       <div class="section-heading hero-detail-heading">
-        <div><div class="eyebrow">ДОСЬЕ ПЕРСОНАЖА</div><h2 id="detailName">Герой</h2><p id="detailRole" class="muted"></p><div id="detailStarStrip" class="star-strip" aria-label="Звёздный ранг героя"></div></div>
+        <div><div class="eyebrow">ДОСЬЕ ПЕРСОНАЖА</div><h2 id="detailName">Герой</h2><p id="detailRole" class="muted"></p><p id="detailTags" class="hero-tag-strip muted" aria-label="Теги персонажа"></p><button type="button" class="ghost hero-biography-button" id="detailBiography">Биография</button><div id="detailStarStrip" class="star-strip" aria-label="Звёздный ранг героя"></div></div>
         <div class="hero-detail-nav"><button type="button" class="ghost" id="detailBack">← Назад</button><button type="button" class="ghost" id="detailHome">⌂ Домой</button></div>
       </div>
       <div class="hero-detail-layout hero-detail-reference">
@@ -258,6 +258,11 @@
       </div>
       <div class="story-demo-scene">
         <p class="muted story-demo-disclaimer">Неподтверждённая хронология. Сцены не изменяют канон, прогресс кампании или сохранение.</p>
+        <div class="story-hero-profile" aria-label="Профиль Рена Терена · пробная версия">
+          <div class="story-hero-profile-name"><strong>Рен Терен</strong><span class="muted">Боец ближнего боя · проба</span></div>
+          <span class="hero-tag-strip" id="storyRenTags">Сады над пропастью</span>
+          <button type="button" class="ghost hero-biography-button" id="storyRenBiography">Биография</button>
+        </div>
         <div class="eyebrow" id="storyDemoSpeaker">Сады над пропастью</div>
         <p id="storyDemoText" role="status" aria-live="polite"></p>
         <div class="story-demo-actions">
@@ -388,6 +393,14 @@
         </div>
       </div>
     </section>
+    <dialog id="heroBiographyDialog" class="hero-biography-dialog" aria-labelledby="heroBiographyTitle">
+      <div class="eyebrow">ДОСЬЕ ПЕРСОНАЖА</div>
+      <h2 id="heroBiographyTitle">Биография героя</h2>
+      <p id="heroBiographyTags" class="hero-tag-strip" aria-label="Теги героя"></p>
+      <div id="heroBiographyText" class="hero-biography-text"></div>
+      <p id="heroBiographyNote" class="muted"></p>
+      <button type="button" class="ghost hero-biography-close" id="heroBiographyClose">Закрыть</button>
+    </dialog>
     <dialog id="lockedHeroDialog" class="star-locked-dialog" aria-labelledby="lockedHeroTitle">
       <div class="eyebrow">КОЛЛЕКЦИЯ / ПОЛУЧЕНИЕ ГЕРОЯ</div>
       <h2 id="lockedHeroTitle">Закрытый герой</h2>
@@ -401,7 +414,7 @@
         <button type="button" class="primary" id="lockedHeroUnlock">Открыть за 10 осколков</button>
       </div>
     </dialog>
-    <footer><span id="buildVersion">Прототип · v0.3.68 · CHAL002</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.69 · RENINT001</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -435,6 +448,7 @@
   <script src="animation-profiles.js"></script>
   <script src="battle-animation.js"></script>
   <script src="player-profile-core.js"></script>
+  <script src="hero-profile-data.js"></script>
   <script src="story-trial-data.js"></script>
   <script src="story-demo-core.js"></script>
   <script src="game.js"></script>

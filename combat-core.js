@@ -114,6 +114,11 @@ const CombatCore = (() => {
     // Stats-001E1: penetration is deterministic, but test-only and opt-in.
     if(options.penetrationChecks!==undefined&&typeof options.penetrationChecks!=="boolean")
       throw Error("penetrationChecks must be a boolean");
+    // Stats-001E2: only explicitly seeded experimental battles check debuff resistance.
+    if(options.statusChecks!==undefined&&typeof options.statusChecks!=="boolean")
+      throw Error("statusChecks must be a boolean");
+    if(options.statusChecks===true&&options.rngSeed===undefined)
+      throw Error("statusChecks requires rngSeed");
     const seededRng=options.rngSeed===undefined?null:
       (typeof BattleRng!=="undefined"?BattleRng.create(options.rngSeed):
        (()=>{throw Error("BattleRng script is required for seeded battles");})());
@@ -136,6 +141,7 @@ const CombatCore = (() => {
       ...(options.hitChecks===true?{hitChecks:true}:{}),
       ...(options.critChecks===true?{critChecks:true}:{}),
       ...(options.penetrationChecks===true?{penetrationChecks:true}:{}),
+      ...(options.statusChecks===true?{statusChecks:true}:{}),
       leaderId,
       wave: 1,
       totalWaves: 1 + futureWaves.length,
@@ -493,6 +499,49 @@ const CombatCore = (() => {
     else actor.powerfulCooldown=Math.max(0,actor.powerfulCooldown-1);
   }
 
+  // Stats-001E2 [TEST ONLY]: negative weaken is resisted independently of damage.
+  // No status roll is performed for legacy damage, heal or friendly guard.
+  function statusCheckEnabled(battle,type){
+    return type!=="legacy"&&battle.statusChecks===true;
+  }
+  function abilityHasNegativeStatus(ability){
+    return ability.kind==="damage"&&
+      (ability.weakening>0||(ability.followUpEffects||[]).some(e=>e.status==="weaken"));
+  }
+  function validStatusProfile(battle,actor,recipients,ability,type){
+    if(!statusCheckEnabled(battle,type)||!abilityHasNegativeStatus(ability))return true;
+    if(typeof BattleRng==="undefined")return false;
+    let snapshot;
+    try{snapshot=BattleRng.snapshot(battle);}catch(error){return false;}
+    const valid=value=>Number.isFinite(value)&&value>=0&&value<=100;
+    if(!valid(actor.debuffPotency)||!recipients.every(t=>valid(t.debuffResistance)))return false;
+    const direct=ability.weakening>0?recipients.length:0;
+    const followUps=(ability.followUpEffects||[]).reduce((sum,e)=>{
+      if(e.status!=="weaken")return sum;
+      return sum+(e.scope==="all"?recipients.length:e.scope==="primary"?1:0);
+    },0);
+    const reserve=direct+followUps;
+    return snapshot.draws<=Number.MAX_SAFE_INTEGER-reserve;
+  }
+  function applyNegativeStatus(battle,actor,target,stacks,type){
+    if(!statusCheckEnabled(battle,type)){
+      target.weakenAttacks=stacks;
+      emit(battle,"effect",{actorId:actor.id,targetId:target.id,
+        effect:"weaken",stacks});
+      return;
+    }
+    const chance=Math.max(5,Math.min(100,
+      100+actor.debuffPotency-target.debuffResistance));
+    const roll=BattleRng.roll(battle,chance);
+    if(!roll.hit){
+      emit(battle,"status-resisted",{actorId:actor.id,targetId:target.id,
+        effect:"weaken",chance,draw:roll.draw});
+      return;
+    }
+    target.weakenAttacks=stacks;
+    emit(battle,"effect",{actorId:actor.id,targetId:target.id,
+      effect:"weaken",stacks});
+  }
   // Combat-012C: optional data-defined follow-up statuses, not hero-specific
   // branching. Existing statuses are intentionally reused; new status types
   // require separate rules and tests rather than implicit interpretation.
@@ -507,16 +556,20 @@ const CombatCore = (() => {
   }
   // Recipients were selected before the primary action. Bonus effects resolve
   // afterwards, but only on survivors; a fallen primary is never replaced.
-  function applyFollowUpEffects(battle,actor,ability,recipients,primary){
+  function applyFollowUpEffects(battle,actor,ability,recipients,primary,type="legacy"){
     for(const effect of ability.followUpEffects||[]){
       const affected=effect.scope==="self"?[actor]:
         effect.scope==="primary"?[primary]:recipients;
       for(const target of affected){
         if(!target||target.hp<=0)continue;
         const remaining=Math.max(effectCount(target,effect.status),effect.stacks);
-        setEffect(target,effect.status,remaining);
-        emit(battle,"effect",{actorId:actor.id,targetId:target.id,
-          effect:effect.status,stacks:remaining});
+        if(effect.status==="weaken"&&statusCheckEnabled(battle,type)){
+          applyNegativeStatus(battle,actor,target,remaining,type);
+        }else{
+          setEffect(target,effect.status,remaining);
+          emit(battle,"effect",{actorId:actor.id,targetId:target.id,
+            effect:effect.status,stacks:remaining});
+        }
       }
     }
   }
@@ -539,6 +592,8 @@ const CombatCore = (() => {
     if(ability.kind==="damage"&&!validHitProfile(battle,actor,recipients,type))return false;
     if(ability.kind==="damage"&&!validCriticalProfile(battle,actor,recipients,type))return false;
     if(ability.kind==="damage"&&!validPenetrationProfile(battle,actor,type))return false;
+    if(!validStatusProfile(battle,actor,[target],ability,type))return false;
+    if(!validStatusProfile(battle,actor,recipients,ability,type))return false;
     // A group attack has one player-selected primary target, even though
     // every living enemy receives the base effect. Future bonus effects can
     // refer to primaryTargetId without changing recipient selection.
@@ -563,10 +618,8 @@ const CombatCore = (() => {
         emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
           ...typedDamageFields(target,type,oldHp,oldProtection)});
         if(target.hp===0)emit(battle,"death",{targetId:target.id});
-        if(ability.weakening>0&&target.hp>0){
-          target.weakenAttacks=ability.weakening;
-          emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"weaken",stacks:ability.weakening});
-        }
+        if(ability.weakening>0&&target.hp>0)
+          applyNegativeStatus(battle,actor,target,ability.weakening,type);
       }else if(ability.kind==="heal"){
         const restored=Math.min(ability.healAmount,Math.max(0,target.maxHp-target.hp));
         target.hp+=restored;
@@ -583,7 +636,7 @@ const CombatCore = (() => {
       recipients;
     const primary=battle.fighters[primaryIndex];
     applyFollowUpEffects(battle,actor,ability,hitRecipients,
-      hitRecipients.includes(primary)?primary:null);
+      hitRecipients.includes(primary)?primary:null,type);
     // Weakening counts attacks (commands), not recipients. All group targets
     // get the same weakened damage; one use is consumed at the end.
     if(ability.kind==="damage"&&weakened)actor.weakenAttacks--;
@@ -653,10 +706,8 @@ const CombatCore = (() => {
       emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
         ...typedDamageFields(target,type,oldHp,oldProtection)});
       if(target.hp===0)emit(battle,"death",{targetId:target.id});
-      if(ability.weakening>0&&target.hp>0){
-        target.weakenAttacks=ability.weakening;
-        emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"weaken",stacks:ability.weakening});
-      }
+      if(ability.weakening>0&&target.hp>0)
+        applyNegativeStatus(battle,actor,target,ability.weakening,type);
       battle.message=actor.side==="enemy"&&ability.id==="basic"
         ? actor.name+" атакует "+target.name+": "+damage+" урона."
         : actor.name+(ability.id!=="basic"?" применяет "+ability.name+": ":" атакует: ")+
@@ -665,7 +716,7 @@ const CombatCore = (() => {
     }
     if(ability.kind!=="damage"||!hitCheckEnabled(battle,type)||
       !battle.events.some(event=>event.type==="miss"&&event.actorId===actor.id&&event.targetId===target.id))
-      applyFollowUpEffects(battle,actor,ability,[target],target);
+      applyFollowUpEffects(battle,actor,ability,[target],target,type);
     finishAbilityCooldowns(actor,ability);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
     battle.turn++;

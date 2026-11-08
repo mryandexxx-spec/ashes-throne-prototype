@@ -2,6 +2,7 @@
 const AbilityData=(()=>{
  "use strict";
  const basic=Object.freeze({id:"basic",name:"Базовая атака",target:"enemy",kind:"damage",multiplier:1,cooldown:0,weakening:0});
+ const typedBasic=Object.freeze({...basic,damageType:"physical"});
  const special={
   kael:Object.freeze({id:"special",name:"Прикрытие",target:"ally",kind:"guard",guardHits:2,cooldown:2}),
   lyra:Object.freeze({id:"special",name:"Ослабляющий удар",target:"enemy",kind:"damage",multiplier:1,weakening:2,cooldown:2}),
@@ -106,13 +107,20 @@ const AbilityData=(()=>{
  });
  const fallback=Object.freeze({id:"special",name:"Особый удар",target:"enemy",kind:"damage",multiplier:1,weakening:0,cooldown:2});
  function get(actor,abilityId){
-  if(abilityId==="basic")return basic;
+  // Stats-002C pilot: only explicitly outfitted fighters use typed basic attacks.
+  if(abilityId==="basic")return Number.isFinite(actor?.physicalAttack)?typedBasic:basic;
   if(!actor)return null;
-  if(abilityId==="powerful")return powerful[actor.id]||null;
+  if(abilityId==="powerful"){
+   const ability=powerful[actor.id]||null;
+   return ability&&Number.isFinite(actor.physicalAttack)&&
+     ["lyra","darin"].includes(actor.id)?{...ability,damageType:"physical"}:ability;
+  }
   if(abilityId==="passive")return Object.prototype.hasOwnProperty.call(passiveByHero,actor.id)?passiveByHero[actor.id]:null;
   if(abilityId==="leader")return Object.prototype.hasOwnProperty.call(leaderByHero,actor.id)?leaderByHero[actor.id]:null;
   if(abilityId!=="special")return null;
-  return Object.prototype.hasOwnProperty.call(special,actor.id)?special[actor.id]:fallback;
+  const ability=Object.prototype.hasOwnProperty.call(special,actor.id)?special[actor.id]:fallback;
+  return Number.isFinite(actor.physicalAttack)&&["lyra","darin"].includes(actor.id)?
+    {...ability,damageType:"physical"}:ability;
  }
  // Missing damageType is explicitly legacy: its historical general atk
  // calculation is preserved, NOT silently labelled as physical or magical.

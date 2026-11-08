@@ -49,6 +49,7 @@ const ProgressV3Core=(()=>{
    energy:{value:ProgressCore.ENERGY_MAX,updatedAt:now},
    claimedMissions:[],
    unlockedHeroes:typeof HeroCollectionCore!=="undefined"?HeroCollectionCore.START.slice():undefined,
+   ...(typeof StarCore!=="undefined"?{heroStars:StarCore.fromLegacy(StarCore.START)}:{}),
    heroes:Object.fromEntries(ids.map(id=>[id,cleanHero(id)])),
    materials:Object.fromEntries(MATERIALS.map(id=>[id,0])),
    migration:{strategy:"clean-heroes-v1",sourceVersion:null}
@@ -167,6 +168,15 @@ const ProgressV3Core=(()=>{
     (typeof SkillCore==="undefined"||!SkillCore.validLevels(data.skillLevels)))return null;
   if(data.skillMaterials!==undefined&&
     (typeof SkillCore==="undefined"||!SkillCore.validMaterials(data.skillMaterials)))return null;
+  if(data.heroStars!==undefined){
+   if(typeof StarCore==="undefined"||!StarCore.valid(data.heroStars))return null;
+   // The old unlock list is a compatible mirror while previous profiles/tests
+   // still use it. Reject contradictory ownership rather than drop heroes.
+   if(data.unlockedHeroes!==undefined&&StarCore.IDS.some(id=>
+     data.unlockedHeroes.includes(id)!==(data.heroStars[id].rank>0)))return null;
+   if(data.unlockedHeroes===undefined&&StarCore.IDS.some(id=>
+     data.heroStars[id].rank===0))return null; // legacy all-owned profile
+  }
   return JSON.parse(JSON.stringify(data));
  }
  function toRuntime(data,heroes){
@@ -182,6 +192,8 @@ const ProgressV3Core=(()=>{
    daily:source.daily,
    login:source.login,
    unlockedHeroes:source.unlockedHeroes,
+   heroStars:typeof StarCore!=="undefined"?
+    (source.heroStars??StarCore.fromLegacy(source.unlockedHeroes)):source.heroStars,
    skillLevels:source.skillLevels,
    skillMaterials:source.skillMaterials,
    classes:Object.fromEntries(ids.map(id=>[id,source.heroes[id].classId])),
@@ -213,6 +225,7 @@ const ProgressV3Core=(()=>{
    ...(p.daily!==undefined?{daily:p.daily}:{}),
    ...(p.login!==undefined?{login:p.login}:{}),
    ...(p.unlockedHeroes!==undefined?{unlockedHeroes:p.unlockedHeroes}:{}),
+   ...(p.heroStars!==undefined?{heroStars:p.heroStars}:{}),
    ...(p.skillLevels!==undefined?{skillLevels:p.skillLevels}:{}),
    ...(p.skillMaterials!==undefined?{skillMaterials:p.skillMaterials}:{}),
    migration:p.migration??{strategy:"clean-heroes-v1",sourceVersion:null},

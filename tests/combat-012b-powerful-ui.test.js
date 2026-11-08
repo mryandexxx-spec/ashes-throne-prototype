@@ -124,7 +124,7 @@ b=api.getBattle();
 const lyra=b.fighters[0],marked=b.fighters.find(f=>f.id==="ves");
 const hpMarked=marked.hp;
 click("powerfulAbilityBtn");
-assert.equal(marked.hp,hpMarked-Math.round(lyra.atk*1.5));
+assert.equal(marked.hp,hpMarked-Math.round(Math.round(lyra.physicalAttack*1.5)*100/(100+marked.physicalDefense)));
 assert.ok(b.events.some(e=>e.type==="effect"&&e.targetId===marked.id&&e.effect==="weaken"&&e.stacks===2),
  "scout powerful attack also applies weakening");
 assert.equal(lyra.powerfulCooldown,2);
@@ -134,7 +134,7 @@ b=api.getBattle();
 const darin=b.fighters[0],struck=b.fighters.find(f=>f.id==="ves");
 const beforeStrike=struck.hp;
 click("powerfulAbilityBtn");
-assert.equal(struck.hp,beforeStrike-darin.atk*2,"swordsman powerful attack doubles damage");
+assert.equal(struck.hp,beforeStrike-Math.round(darin.physicalAttack*2*100/(100+struck.physicalDefense)),"swordsman powerful attack mitigated by physical defense");
 assert.equal(darin.powerfulCooldown,2);
 
 api.chooseParty(["medic-demo"]);api.resetBattle();

@@ -159,6 +159,6 @@ for(const token of ["StarCore.refillTest(progress)","StarCore.promote(progress,i
  "showLockedHero(id)","Object.assign(progress,JSON.parse(before))"])
  assert.ok(game.includes(token),token);
 assert.ok(css.includes(".star-panel")&&css.includes(".star-locked-dialog"));
-assert.equal(JSON.parse(read("package.json")).version,"0.3.72");
-assert.ok(html.includes("v0.3.72 · RENCOMBATC"));
+assert.equal(JSON.parse(read("package.json")).version,"0.3.73");
+assert.ok(html.includes("v0.3.73 · RENCOMBATD"));
 console.log("Stars-001: seven ranks/330 shards, direct join, legacy saves, ownership, debug resources, rollback and UI contract passed");

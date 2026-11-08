@@ -44,7 +44,7 @@ assert.ok(doc.indexOf('src="ability-data.js"')<doc.indexOf('src="ability-info.js
 assert.ok(doc.indexOf('src="ability-info.js"')<doc.indexOf('src="game.js"'));
 assert.ok(doc.includes('id="heroAbilityList"'));
 assert.ok(doc.includes('id="heroAbilitiesTitle"'));
-assert.ok(doc.includes("v0.3.72 · RENCOMBATC"));
+assert.ok(doc.includes("v0.3.73 · RENCOMBATD"));
 assert.ok(game.includes("function renderHeroAbilities(hero)"));
 assert.ok(game.includes("renderHeroAbilities(hero);"));
 assert.ok(game.includes('document.createElement("article")'));

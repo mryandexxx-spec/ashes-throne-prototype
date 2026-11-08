@@ -63,7 +63,7 @@ assert.equal(api.AbilityData.get({id:"unknown"},"powerful"),null);
 api.chooseParty(["test-area-damage"]);api.resetBattle();
 let b=api.getBattle(),actor=b.fighters[0];
 // Keep this UI test about button/cooldown behavior, not enemy kill speed.
-for(const foe of b.fighters.filter(h=>h.side==="enemy"))foe.atk=1;
+for(const foe of b.fighters.filter(h=>h.side==="enemy")){foe.atk=1;foe.physicalAttack=1;}
 assert.equal(b.fighters[b.currentActor].id,actor.id);
 assert.equal(els.powerfulAbilitySlot.hidden,false);
 assert.equal(els.abilityOptions.classList["has-powerful"],true);

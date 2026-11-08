@@ -30,7 +30,7 @@ const CombatEnvironment010=(()=>{
    m.diffuseColor=new B.Color3(1,1,1);
    m.emissiveColor=new B.Color3(.15,.17,.18);
    m.specularColor=new B.Color3(0,0,0);
-   m.disableLighting=name!=="atmosphere";m.fogEnabled=false;
+   m.disableLighting=false;m.fogEnabled=false;
    m.backFaceCulling=false;m.useVertexColors=true;
    return m;
   }
@@ -106,10 +106,10 @@ const CombatEnvironment010=(()=>{
       const summit=layer.base+layer.amplitude*crest(x,layer.phase);
       // Erosion and debris add depth and small terraces to the rock face.
       // A sloping rock wall casts real facet lighting from the two game lights.
-      const drop=100*Math.pow(1-t,1.35);
-      const bench=Math.sin(t*33+layer.phase*.6)*(.6+.7*(1-t));
+      const drop=68*Math.pow(1-t,1.35);
+      const bench=Math.sin(t*29+layer.phase*.6)*(.38+.37*(1-t));
       const gully=fault(x,layer.phase);
-      const lean=(1-t)*8.5+
+      const lean=(1-t)*12.0+
         layer.relief*Math.sin(x*.11+t*7+layer.phase)*Math.sin(t*3.8)+
         gully*(1.7+2.6*(1-t));
       const y=summit-drop+bench+layer.relief*.23*

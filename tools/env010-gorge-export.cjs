@@ -7,18 +7,18 @@
  */
 function createEnv010Glb(){
  const LAYERS=[
- {name:"front_buttress",d:43,span:116,columns:96,scale:1,palette:[.345,.365,.354],haze:0,
+ {name:"front_buttress",d:43,span:116,columns:96,scale:1,palette:[.405,.389,.357],haze:0,
   profile:[[-116,-56],[-103,-44],[-91,-30],[-83,-24],[-76,-23],[-71,-28],[-64,-29],[-58,-34],[-52,-39],[-46,-47],[-33,-52],[-22,-56],[-11,-64],[2,-66],[14,-60],[24,-54],[33,-46],[42,-34],[49,-31],[56,-32],[62,-35],[69,-41],[77,-43],[89,-49],[101,-57],[116,-64]],
   gullies:[[-94,4,4],[-67,3,5],[-47,5,4],[21,6,3],[72,5,5]]},
- {name:"middle_terraces",d:68,span:135,columns:80,scale:.92,palette:[.45,.47,.455],haze:.09,
+ {name:"middle_terraces",d:68,span:135,columns:80,scale:.92,palette:[.47,.478,.45],haze:.09,
   profile:[[-135,-67],[-119,-61],[-110,-44],[-97,-39],[-87,-39],[-79,-45],[-71,-46],[-61,-43],[-53,-42],[-46,-48],[-38,-52],[-27,-64],[-11,-70],[3,-70],[19,-60],[33,-48],[43,-47],[52,-53],[66,-49],[75,-42],[88,-45],[99,-51],[113,-56],[135,-65]],
   gullies:[[-115,5,4],[-73,5,5],[-32,5,3],[32,6,6],[92,5,4]]},
- {name:"pale_horizon",d:97,span:150,columns:64,scale:.82,palette:[.56,.585,.573],haze:.22,
+ {name:"pale_horizon",d:97,span:150,columns:64,scale:.82,palette:[.57,.592,.583],haze:.22,
   profile:[[-150,-81],[-135,-74],[-122,-68],[-115,-58],[-102,-58],[-94,-62],[-80,-67],[-67,-56],[-56,-54],[-45,-60],[-30,-70],[-11,-77],[8,-79],[25,-73],[45,-66],[59,-58],[72,-56],[85,-61],[104,-65],[119,-70],[150,-77]],
   gullies:[[-97,5,3],[-59,5,2],[49,6,3],[111,7,3]]}
  ];
  const OFFSETS=[0,-1.4,-3.2,-6.4,-9.3,-13.7,-17.3,-21.0,-26.2,-32.7,-39.5,-47.5,-57.8,-71.0,-89.0,-112.0];
- const DEPTH=[-1.7,-1.5,-1.8,-.2,.65,-.65,-1.2,.9,1.8,.05,-1.5,.25,1.15,2.2,4.1,7.5];
+ const DEPTH=[-1.1,-1.20,-1.05,-.75,-.3,-.35,-.5,-.18,.26,.10,.42,.97,2.0,3.3,5.4,8.2];
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  function ridgeHeight(profile,x){
   for(let k=1;k<profile.length;k++)if(x<=profile[k][0]){
@@ -43,7 +43,8 @@ function createEnv010Glb(){
    1.1*Math.max(0,1-Math.abs((x-57)/14));
   const weather=(Math.sin(x*.16+row*.58)+.37*Math.sin(x*.41-row*.91))*
       (.38+1.45*t)*L.scale;
-  const y=ridgeHeight(L.profile,x)-cut*(1-.65*t)+OFFSETS[row]*L.scale+
+  const lift=L.name==="front_buttress"?(x<-10?23:17):L.name==="middle_terraces"?(x<-10?12:17):11;
+  const y=ridgeHeight(L.profile,x)+lift-cut*(1-.65*t)+OFFSETS[row]*L.scale+
        .55*Math.sin(x*.28+row*.7)*(.2+.8*t);
   const d=L.d+beds+weather+elbow*(1-.6*t)+
      cut*(1-.15*t)*.72;
@@ -53,10 +54,10 @@ function createEnv010Glb(){
   const p=L.palette;
   // Broad geological colour bands follow *horizontal* strata, not random
   // speckles. Dark undercuts are paired with real geometry ledges.
-  const strata=[1.12,1.1,.96,.89,1.10,.91,.80,1.04,.86,1.02,.91,1.08,.88,.85,.8][Math.min(row,14)];
-  const ribs=.045*Math.sin(x*.087+row*.41)+.023*Math.cos(x*.22-row*.51);
-  const tonal=strata+ribs-.21*fracture+ (lower?-.045:.025);
-  const warmth=row===3||row===8?.024:0;
+  const strata=[1.055,1.045,1.04,1.02,1.0,.98,.985,.97,.96,.95,.93,.92,.9,.88,.87][Math.min(row,14)];
+  const ribs=.048*Math.sin(x*.087+row*.22)+.017*Math.cos(x*.22-row*.33);
+  const tonal=strata+ribs-.13*fracture-(row===5||row===11?.040:0);
+  const warmth=row===3||row===10?.012:0;
   const haze=L.haze;
   return [
    clamp((p[0]*tonal+warmth)*(1-haze)+.60*haze,0,1),
@@ -66,41 +67,33 @@ function createEnv010Glb(){
  }
  function layerMesh(L){
   const positions=[],colors=[],uvs=[],indices=[],normals=[];
-  function vertex(x,row,isLower){
-   const [px,py,pz,fracture]=ridgeVertex(L,x,row);
+  const count=L.columns+1;
+  const xAt=i=>(i/L.columns*2-1)*L.span;
+  // A continuous cliff skin with irregular buttresses and gullies. No
+  // repeated separate normal strips: the first GLB art pass produced
+  // unnaturally regular "stadium steps" and was rejected from WebGL.
+  for(let j=0;j<OFFSETS.length;j++)for(let i=0;i<=L.columns;i++){
+   const x=xAt(i),[px,py,pz,fracture]=ridgeVertex(L,x,j);
    positions.push(px,py,pz);
-   const c=stoneColor(L,Math.min(row,14),x,fracture,isLower);
-   colors.push(...c);
+   colors.push(...stoneColor(L,Math.min(j,14),x,fracture,false));
    uvs.push(x*.075,(py+90)*.056);
   }
-  // Independent strips deliberately split the hard edges of each bed.
-  // Computing normals on separate strips makes ledges *look like stone*,
-  // rather than silently smoothing the whole cliff into an oval.
-  const xAt=i=>(i/L.columns*2-1)*L.span;
-  for(let j=0;j<OFFSETS.length-1;j++){
-   const start=positions.length/3;
-   for(let i=0;i<=L.columns;i++){
-    const x=xAt(i);vertex(x,j,false);vertex(x,j+1,true);
-   }
-   for(let i=0;i<L.columns;i++){
-    const a=start+2*i,b=a+2;
-    indices.push(a,b,a+1,b,b+1,a+1);
-   }
+  for(let j=0;j<OFFSETS.length-1;j++)for(let i=0;i<L.columns;i++){
+   const a=j*count+i,b=a+count;
+   indices.push(a,a+1,b,a+1,b+1,b);
   }
-  // Broad receding ridge cap: actual volume behind the skyline, not a
-  // screen-facing sheet. Only one cap strip, for low draw and vertex cost.
+  // The ridge cap recedes into real depth, preserving full 3D geometry
+  // without a two-sided dark wall against the open sky.
   const start=positions.length/3;
   for(let i=0;i<=L.columns;i++){
    const x=xAt(i),f=ridgeVertex(L,x,0);
-   vertex(x,0,false);
-   positions.push(f[0]+Math.SQRT1_2*9.5,f[1]-2.2,f[2]+Math.SQRT1_2*9.5);
-   colors.push(...stoneColor(L,0,x,0,true));
-   uvs.push(x*.075,1);
+   positions.push(f[0],f[1],f[2],f[0]+Math.SQRT1_2*9.5,f[1]-2.2,f[2]+Math.SQRT1_2*9.5);
+   colors.push(...stoneColor(L,0,x,0,false),...stoneColor(L,0,x,0,true));
+   uvs.push(x*.075,0,x*.075,1);
   }
   for(let i=0;i<L.columns;i++){
    const a=start+i*2,b=a+2;indices.push(a,a+1,b,b,a+1,b+1);
   }
-  // Normal accumulation stays within each purposefully hard-edged strip.
   for(let i=0;i<positions.length;i++)normals.push(0);
   for(let i=0;i<indices.length;i+=3){
    const ia=indices[i]*3,ib=indices[i+1]*3,ic=indices[i+2]*3;
@@ -110,8 +103,8 @@ function createEnv010Glb(){
    for(const k of [ia,ib,ic]){normals[k]+=nx;normals[k+1]+=ny;normals[k+2]+=nz;}
   }
   for(let i=0;i<normals.length;i+=3){
-   const length=Math.hypot(normals[i],normals[i+1],normals[i+2])||1;
-   normals[i]/=length;normals[i+1]/=length;normals[i+2]/=length;
+   const len=Math.hypot(normals[i],normals[i+1],normals[i+2])||1;
+   normals[i]/=len;normals[i+1]/=len;normals[i+2]/=len;
   }
   return {name:L.name,positions,normals,colors,uvs,indices};
  }

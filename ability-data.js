@@ -63,7 +63,15 @@ const AbilityData=(()=>{
  const passiveByHero=Object.freeze({
   kael:passiveEmpty,lyra:passiveEmpty,darin:passiveEmpty,
   "medic-demo":passiveEmpty,"test-area-damage":passiveEmpty,
-  "trial-ren":passiveEmpty,"trial-nada":passiveEmpty,"trial-liora":passiveEmpty,
+  "trial-ren":Object.freeze({id:"passive",name:"Чувство тропы · проба",
+   triggers:Object.freeze([]),modifiers:Object.freeze([]),
+   // REN-COMBAT-C: technical percentages from REN-001; NOT approved balance.
+   combatRules:Object.freeze({
+    bonusVsDebuffedPercent:15,
+    tagId:"gardens-over-abyss",tagDamagePercent:5,
+    statusPotencyWithoutResistanceDown:10
+   })}),
+  "trial-nada":passiveEmpty,"trial-liora":passiveEmpty,
   // Nonplayable fixtures verify automatic trigger registration and ownership.
   "test-passive-attacker":Object.freeze({id:"passive",name:"Тест реакции атакующего",
    triggers:Object.freeze([Object.freeze({event:"damage",role:"actor"})])}),

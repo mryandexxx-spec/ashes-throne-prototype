@@ -205,14 +205,47 @@ function beamSearch(party,level,gear,beamWidth=180,maxActions=12){
   representative:summarizeNode(resultNode),
   steps:stats};
 }
+// Stable, source-derived tactical witness: direct replay of seven legal actions.
+const sevenMoves=[
+ ["lyra","powerful","ves"],
+ ["darin","powerful","ves-2"],
+ ["test-area-damage","special","ves"],
+ ["medic-demo","basic","ves-3"],
+ ["kael","basic","ves-3"],
+ ["lyra","basic","shade"],
+ ["darin","special","shade-2"]
+];
+const verified=newBattle(["kael","lyra","darin","medic-demo","test-area-damage"],12,"G3");
+const trace=[];
+for(const [actor,ability,targetId] of sevenMoves){
+ assert.equal(verified.fighters[verified.currentActor].id,actor);
+ const index=verified.fighters.findIndex(f=>f.id===targetId);
+ assert.ok(index>=0);
+ const beforeEnemies=verified.fighters.filter(f=>f.side==="enemy")
+   .map(f=>({id:f.id,hp:f.hp}));
+ assert.equal(C.performActorAbility(verified,ability,index),true);
+ trace.push({actor,ability,targetId,beforeEnemies,
+  afterEnemies:verified.fighters.filter(f=>f.side==="enemy")
+   .map(f=>({id:f.id,hp:f.hp})),
+  allyActions:verified.allyActions});
+}
+assert.equal(verified.winner,"ally");
+assert.equal(M.score("demo-mission-2",verified),3);
+assert.equal(verified.allyActions,7);
+assert.equal(verified.fighters.filter(f=>f.side==="ally"&&f.hp===0).length,0);
+console.log("STATS004A2_SEVEN_ACTION_WITNESS_JSON="+JSON.stringify(trace));
 const scenarios=[
  {party:["kael","lyra","darin","medic-demo","test-area-damage"],level:12,gear:"G3"},
+ {party:["kael","lyra","darin","medic-demo","test-area-damage"],level:12,gear:"G1"},
+ {party:["kael","lyra","darin","medic-demo","test-area-damage"],level:12,gear:"none"},
  {party:["kael","lyra","darin"],level:12,gear:"G3"},
  {party:["kael","lyra","darin","medic-demo","test-area-damage"],level:3,gear:"G1"},
  {party:["kael","lyra","darin","medic-demo","test-area-damage"],level:1,gear:"none"}
 ];
 const report=scenarios.map(s=>beamSearch(s.party,s.level,s.gear));
 assert.equal(report.length,scenarios.length);
+assert.equal(report[0].firstZeroCasualtyWin?.actions,7);
+assert.equal(report[0].firstZeroCasualtyWin?.stars,3);
 for(const row of report)assert.ok(row.created>0);
 console.log("STATS004A2_TACTICAL_JSON="+JSON.stringify({version:JSON.parse(read("package.json")).version,
  mission:"demo-mission-2",limit:9,

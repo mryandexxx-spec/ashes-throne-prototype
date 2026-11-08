@@ -41,6 +41,7 @@
       <div class="section-heading"><div><div class="eyebrow">ЕЖЕДНЕВНЫЕ ДЕЛА</div><h2>Задания дня</h2></div><button type="button" class="ghost" data-screen="home">← Назад</button></div>
       <p id="dailyDay" class="muted">Сегодня</p>
       <p class="muted">Выполни действия в игре и забери награды. Задания обновляются по местной дате устройства. Симуляция не считается сыгранным боем.</p>
+      <div class="daily-claim-toolbar"><button type="button" class="primary" id="dailyClaimAll" disabled>Забрать всё</button></div>
       <div id="dailyTaskList" class="daily-task-list"></div>
       <p id="dailyTaskNotice" class="muted" role="status" aria-live="polite"></p>
     </section>
@@ -165,8 +166,13 @@
     <section id="challenges" class="screen" aria-label="Боевые испытания">
       <div class="section-heading"><div><div class="eyebrow">УЧЕБНЫЙ PvE-ПИЛОТ · БЕЗ СЮЖЕТА</div><h2>Испытания</h2></div>
         <button type="button" class="ghost" data-screen="home">← Назад</button></div>
-      <p class="muted">Тактическая задача и Натиск. Свободные повторы. Без затрат энергии, наград и получения героев.</p>
-      <div id="challengeList" aria-label="Доступные испытания"></div>
+      <p class="muted">Два отдельных режима. Свободные повторы, без затрат энергии и наград за сам бой.</p>
+      <div id="challengeModes" class="challenge-mode-grid" aria-label="Выбор режима испытаний">
+        <button type="button" class="nav-card challenge-mode-card" data-challenge-kind="tactical"><span>⌖</span><b>Тактические задачи</b><small>Выбор приоритетной цели · 4 учебные миссии</small></button>
+        <button type="button" class="nav-card challenge-mode-card" data-challenge-kind="onslaught"><span>⚔</span><b>Натиск</b><small>Последовательные волны · 4 учебные миссии</small></button>
+      </div>
+      <div class="challenge-mode-heading"><button type="button" class="ghost" id="challengeModeBack" hidden>← К режимам</button><h3 id="challengeModeTitle">Выбери режим</h3></div>
+      <div id="challengeList" aria-label="Миссии выбранного режима" hidden></div>
       <p id="challengeSaveStatus" class="muted" role="status">Результаты хранятся в этом браузере.</p>
     </section>
     <section id="campaign" class="screen">
@@ -395,7 +401,7 @@
         <button type="button" class="primary" id="lockedHeroUnlock">Открыть за 10 осколков</button>
       </div>
     </dialog>
-    <footer><span id="buildVersion">Прототип · v0.3.67 · CHAL001B</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.68 · CHAL002</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

@@ -1,7 +1,7 @@
-/* COMBAT-ENV-010 — original near-zero-cost fixed-angle distant composition.
+/* COMBAT-ENV-010 — sculpted fixed-angle canyon strata and atmosphere.
  * NOT a worldbuilding fact. 3D ENV009 stays intact and pick-free.
  * Camera-facing multi-plane geometry is acceptable only with fixed yaw/tilt.
- * All geometry is static, scene-owned; no requests, textures, timers or shaders.
+ * Sculpted wall geometry is static and scene-owned: no fetch, timers or shaders.
  */
 const CombatEnvironment010=(()=>{
  "use strict";
@@ -12,9 +12,9 @@ const CombatEnvironment010=(()=>{
  const CLAMP=(v,min,max)=>Math.max(min,Math.min(max,v));
  const mix=(a,b,t)=>a.map((n,i)=>n*(1-t)+b[i]*t);
  const COLORS=Object.freeze({
-  skyTop:[.32,.43,.52],skyUpper:[.43,.53,.60],
+  skyTop:[.31,.40,.49],skyUpper:[.43,.52,.565],
   skyHaze:[.62,.68,.69],skyHorizon:[.72,.74,.70],
-  far:[.57,.625,.64],mid:[.46,.52,.54],near:[.355,.43,.46]
+  far:[.56,.607,.60],mid:[.405,.46,.455],near:[.305,.372,.374]
  });
  function supported(B){
   return !!(B&&typeof B.Mesh==="function"&&typeof B.VertexData==="function"&&
@@ -67,41 +67,72 @@ const CombatEnvironment010=(()=>{
    [-55,COLORS.skyHaze],[45,COLORS.skyUpper],[160,COLORS.skyTop]];
   geom("sky",1,stops.length,(u,row)=>place(118,(u-.5)*310,stops[row][0]),
    (u,row)=>stops[row][1],sky);
-  function peak(s,c,w,h){const q=(s-c)/w;return h*Math.exp(-q*q*1.15);}
-  function sculpt(t,phase){
-   // Different scales: long sloping beds with sparse narrow fracture valleys.
-   const u=t/115;
-   const mass=peak(u,-.76,.36,.78)+peak(u,-.22,.26,1.18)+
-    peak(u,.24,.24,.69)+peak(u,.73,.35,.95);
-   const foothills=.12*Math.sin(t*.105+phase)+.065*Math.sin(t*.29+phase*.7);
-   const erodedValley=.13*Math.pow(Math.max(0,Math.sin(t*.055+phase*1.5)),4);
-   return mass+foothills-erodedValley;
+
+  // The silhouette must read as eroded tableland, not a sequence of rounded
+  // gaussian hills. Smoothly stepped shoulders alternate with long scarps.
+  const smooth=(a,b,t)=>{const q=CLAMP((t-a)/(b-a),0,1);return q*q*(3-2*q);};
+  const tableland=(x,c,w,h)=>h*(1-smooth(w*.58,w,Math.abs(x-c)));
+  function crest(x,phase){
+    const u=x+phase*11.5;
+    const plateau=Math.max(
+      tableland(u,-68,50,.94),
+      tableland(u,-4,37,1.13),
+      tableland(u,60,51,.80),
+      tableland(u,122,32,.61)
+    );
+    const branching=.047*Math.sin(u*.135+phase*2)+
+     .034*Math.sin(u*.31+phase)+.016*Math.sin(u*.76+phase*3);
+    // Incised gullies interrupt the summit; they never form regular spikes.
+    const gulley=Math.pow(Math.max(0,Math.sin(u*.107+phase*.8)),14)*.18;
+    return CLAMP(plateau+branching-gulley,.03,1.35);
+  }
+  function fault(x,phase){
+    const g=Math.sin(x*.177+phase*3.3)+.24*Math.sin(x*.39-phase);
+    return Math.pow(Math.max(0,g*.73),12);
   }
   const layers=[
-   {name:"horizon",d:92,base:-98,amplitude:54,phase:.45,color:COLORS.far},
-   {name:"midground",d:65,base:-70,amplitude:40,phase:1.8,color:COLORS.mid},
-   {name:"escarpment",d:42,base:-53,amplitude:34,phase:3.2,color:COLORS.near}
+    // These are scenic, non-canonical rock masses. Each has genuine depth
+    // variation across the face, not merely an extruded flat silhouette.
+    {name:"horizon",d:99,base:-57,amplitude:67,phase:.55,color:COLORS.far,relief:1.8},
+    {name:"midground",d:72,base:-46,amplitude:57,phase:2.10,color:COLORS.mid,relief:2.9},
+    {name:"escarpment",d:47,base:-42,amplitude:48,phase:3.65,color:COLORS.near,relief:4.6}
   ];
   for(const layer of layers){
-   const m=mat(layer.name);
-   // Vertical layers form an actual multi-level rock profile; no painted cutout
-   // placed on top of a flat panel. Different distances provide zoom parallax.
-   geom(layer.name,112,5,(u,row)=>{
-    const x=(u-.5)*232;
-    const summit=layer.base+layer.amplitude*sculpt(x,layer.phase);
-    const steps=[-160,-72,-27,-8,0];
-    const y=summit+steps[row]+(row<4?.5*Math.sin(x*.18+row*.68+layer.phase):0);
-    return place(layer.d,x,y);
-   },(u,row,x,y,z)=>{
-    const t=(u-.5)*232;
-    const land=layer.color;
-    const slope=sculpt(t+1.5,layer.phase)-sculpt(t-1.5,layer.phase);
-    const sediment=.036*Math.sin(y*.23+t*.024+layer.phase);
-    const facet=CLAMP(slope*2.0,-.14,.14);
-    const shaded=row<2?-.085:row===2?-.035:row===3?.02:.065;
-    const haze=row===0?.25:row===1?.10:0;
-    return mix(land,COLORS.skyHaze,haze).map(v=>v+sediment+facet+shaded);
-   },m);
+    const material=mat(layer.name);
+    const rows=19;
+    geom(layer.name,128,rows,(u,row)=>{
+      const x=(u-.5)*244;
+      const t=row/(rows-1);
+      const summit=layer.base+layer.amplitude*crest(x,layer.phase);
+      // Erosion and debris add depth and small terraces to the rock face.
+      // A sloping rock wall casts real facet lighting from the two game lights.
+      const drop=100*Math.pow(1-t,1.35);
+      const bench=Math.sin(t*33+layer.phase*.6)*(.6+.7*(1-t));
+      const gully=fault(x,layer.phase);
+      const lean=(1-t)*8.5+
+        layer.relief*Math.sin(x*.11+t*7+layer.phase)*Math.sin(t*3.8)+
+        gully*(2.6+3.8*(1-t));
+      const y=summit-drop+bench+layer.relief*.23*
+        Math.sin(x*.34+layer.phase+t*11)*(1-t);
+      const distance=layer.d+lean;
+      return place(distance,x,y);
+    },(u,row,x,y,z)=>{
+      const t=row/(rows-1);
+      const side=(u-.5)*244;
+      const broken=fault(side,layer.phase);
+      // A limited lithological palette: seam-darkened strata, fractured faces,
+      // warm sunlit ledges and cool recessed gullies.
+      const beds=.035*Math.sin(y*.44+side*.035)+
+        .021*Math.sin(y*1.14+side*.13+layer.phase);
+      const recess=-.16*broken*(.35+.65*(1-t));
+      const cliffShade=-.105*(1-t)+.062*Math.sin(side*.075+layer.phase)*t;
+      const facet=.050*Math.sin(side*.39+row*.81+layer.phase);
+      const sun=.055*Math.max(0,Math.sin(side*.093-layer.phase))*
+        Math.pow(t,1.3);
+      const haze=(1-t)*.10+(layer.name==="horizon"?.12:layer.name==="midground"?.045:0);
+      return mix(layer.color,COLORS.skyHaze,haze).map((v,k)=>
+        CLAMP(v+beds+recess+cliffShade+facet+sun+(k===0?.012*t:0),0,1));
+    },material);
   }
   // Only for a fixed camera: retire ENV009's 360-degree wall rings so the
   // new distant composition is actually visible. The nearby ledge and ravine

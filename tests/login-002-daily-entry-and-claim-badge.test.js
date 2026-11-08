@@ -27,7 +27,7 @@ assert.equal(D.unclaimedCount(invalid,day),0,"invalid state must not display bog
 const html=read("index.html"),game=read("game.js"),styles=read("styles.css");
 assert.match(html,/id="dailyClaimBadge"/);
 assert.match(html,/id="dailyTasksNav"/);
-assert.match(html,/v0\.3\.69 · RENINT001/);
+assert.match(html,/v0\.3\.70 · REN002/);
 assert.match(styles,/\.daily-nav-badge\[hidden\]\{display:none\}/);
 assert.ok(game.includes('DailyCore.unclaimedCount(progress,dailyDay())'));
 assert.ok(game.includes('const LOGIN_CALENDAR_SEEN_KEY="ashes-throne.login-calendar-seen.v1"'));

@@ -768,7 +768,7 @@ assert.match(elements.energyRefreshStatus.textContent,/Восстановлен�
 assert.equal(JSON.parse(savedData.get("ashes-throne.progress.v2")).energy.value,102,"refresh persists credited energy");
 click(elements.energyRefresh);
 assert.match(elements.energyRefreshStatus.textContent,/Пока без изменений/);
-// CHAL001B: real UI click path reuses this existing, battle-capable DOM harness.
+// CHAL002: real UI click path reuses this existing, battle-capable DOM harness.
 elements.challengeList.contains=()=>true;
 const beforeChallengeCampaign=JSON.stringify(api.getCampaignProgress());
 const beforeChallengeCurrency=api.getCurrency(),beforeChallengeEnergy=api.getEnergy();

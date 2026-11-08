@@ -8,7 +8,9 @@ const StoryTrialData=(()=>{
  "use strict";
  const profiles=Object.freeze([
   Object.freeze({id:"trial-ren",name:"Рен Терен",classId:"melee",role:"Боец ближнего боя · проба",tags:Object.freeze(["gardens-over-abyss"]),side:"ally",
-   glyph:"⌁",hp:91,atk:27,speed:150}),
+   glyph:"⌁",hp:91,atk:27,speed:150,
+   // Temporary story-only level 4; no upgrade costs or save-v3 changes.
+   skillLevels:Object.freeze({basic:4})}),
   Object.freeze({id:"trial-nada",name:"Нада",classId:"support",role:"Поддержка · проба",side:"ally",
    glyph:"✎",hp:85,atk:18,speed:120}),
   Object.freeze({id:"trial-liora",name:"Лиора Вель",classId:"tank",role:"Танк · проба",side:"ally",

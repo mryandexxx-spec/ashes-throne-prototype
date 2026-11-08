@@ -576,6 +576,7 @@ function renderHeroDetail(){
  if(!base)return;
  const hero=progressedHero(base);
  const cost=ProgressCore.upgradeCost(progress,base.id);
+ const levelCap=ProgressCore.heroLevelCap(progress);
  const next=cost===null?null:equippedPilotStats(ProgressCore.heroStats(progress,base,hero.level+1),PILOT_HERO_STATS[base.id]);
  $("#detailName").textContent=hero.name;
  $("#detailRole").textContent=hero.role+" · Демонстрационный персонаж";
@@ -588,12 +589,16 @@ function renderHeroDetail(){
    (stat.active?stat.value:'Не рассчитано')+'</strong></div>').join("");
  const activeStats=overview.filter(stat=>stat.active).length;
  $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>Атака (общая, тест)</span><strong>${hero.atk} ATK</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · ${14-activeStats} ожидают формулы</summary><p class="muted">Тестовый пилот: физическая атака наследует текущую общую ATK с бонусами уровня и G; оборона и Protection работают против типизированных ударов. Магическая атака и прочие параметры пока не назначены.</p>${statRows}</details>`;
- $("#detailLevel").textContent="Уровень "+hero.level+" / "+ProgressCore.MAX_LEVEL;
+ $("#detailLevel").textContent="Уровень "+hero.level+" / "+ProgressCore.MAX_LEVEL+
+  " · лимит аккаунта "+levelCap;
  $("#detailWallet").textContent=String(progress.currency);
  $("#detailCost").textContent=cost===null?"Недоступно":cost+" валюты";
- $("#detailPreview").textContent=next?next.hp+" HP · "+next.atk+" ATK":"Достигнут максимум";
+ $("#detailPreview").textContent=next?next.hp+" HP · "+next.atk+" ATK":
+  hero.level>=levelCap?"Повышение ограничено уровнем аккаунта":"Достигнут максимум";
  $("#detailUpgrade").disabled=saveBlocked||!ProgressCore.canUpgrade(progress,base.id);
- $("#detailNotice").textContent=hero.level>=ProgressCore.MAX_LEVEL?"Герой достиг тестового максимума.":progress.currency<cost?"Недостаточно игровой валюты.":"Улучшение доступно (временное правило тестового прототипа).";
+ $("#detailNotice").textContent=saveBlocked?"Сохранение недоступно. Повышение заблокировано.":
+  (ProgressCore.upgradeBlockReason(progress,base.id)||
+   "Улучшение доступно (тестовая прогрессия аккаунта).");
  if($("#gearTier")){
  const gear=ProgressCore.gearState(progress,base.id);
  if(gear.mode==="itemized")renderItemizedGear(base,gear);

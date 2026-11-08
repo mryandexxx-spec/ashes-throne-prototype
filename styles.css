@@ -860,4 +860,4 @@ body.battle-mode #app>footer{visibility:hidden}
 #dailyTasksNav .daily-nav-badge{position:absolute;right:10px;top:9px;display:grid;place-items:center;margin:0;
  min-width:25px;height:25px;padding:0 6px;border-radius:999px;background:var(--gold);
  color:#17130c;font-weight:700;font-size:12px;line-height:1}
-.daily-nav-badge[hidden]{display:none}
+#dailyTasksNav .daily-nav-badge[hidden]{display:none}

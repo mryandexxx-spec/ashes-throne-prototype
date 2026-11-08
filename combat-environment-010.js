@@ -191,8 +191,9 @@ const CombatEnvironment010=(()=>{
       const positions=shelf.getVerticesData("position");
       const uvs=shelf.getVerticesData("uv");
       const normals=shelf.getVerticesData("normal");
+      const rockColors=shelf.getVerticesData("color");
       const indices=shelf.getIndices();
-      const count=97,rows=9,verts=rows*count,triangles=(rows-1)*96*6;
+      const count=97,rows=11,verts=rows*count,triangles=(rows-1)*96*6;
       if(!positions||!uvs||!normals||!indices||
          positions.length<verts*3||uvs.length<verts*2||
          normals.length<verts*3||indices.length<triangles)return;
@@ -205,10 +206,23 @@ const CombatEnvironment010=(()=>{
       data.indices=Array.from(indices.slice(0,triangles));
       data.normals=Array.from(normals.slice(0,verts*3));
       data.uvs=Array.from(uvs.slice(0,verts*2));
+      // Gradual material transition: intact shelf → eroded lip → bare cliff.
+      // The edge is irregular because the inherited ENV009 rim is sculpted.
+      data.colors=[];
+      for(let i=0;i<verts;i++){
+        const row=Math.floor(i/count);
+        const a=row<=5?1:row===6?.94:row===7?.73:row===8?.45:row===9?.18:0;
+        const k=i*4;
+        if(rockColors?.length>=verts*4) data.colors.push(
+          rockColors[k],rockColors[k+1],rockColors[k+2],a);
+        else data.colors.push(.56,.46,.355,a);
+      }
       const cap=own(new B.Mesh("env010_sedimentary_shelf_skin",scene));
       data.applyToMesh(cap,false);
       const material=own(new B.StandardMaterial("env010_sedimentary_skin",scene));
-      material.diffuseColor=new B.Color3(.86,.77,.66);
+      material.diffuseColor=new B.Color3(.98,.93,.86);
+      material.useVertexColors=true;
+      cap.hasVertexAlpha=true;cap.useVertexColors=true;
       material.specularColor=new B.Color3(.010,.012,.012);
       material.emissiveColor=new B.Color3(.025,.027,.022);
       material.diffuseTexture=albedo;material.bumpTexture=normal;

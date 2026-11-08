@@ -221,7 +221,9 @@ let battleIsCampaign=false;
 // STORY-001 is an opt-in sandbox, independent of campaign rewards and saves.
 let battleIsStoryDemo=false;
 let battleIsChallenge=false;
-const challengeLoaded=ChallengeCore.load(()=>window.localStorage);
+const challengeLoaded=typeof ChallengeCore!=="undefined"?
+ ChallengeCore.load(()=>window.localStorage):
+ {progress:{bestStars:{"T-01":0,"N-01":0}},available:false,blocked:true};
 let challengeProgress=challengeLoaded.progress;
 let challengeSaveBlocked=challengeLoaded.blocked;
 let challengeSaveAvailable=challengeLoaded.available;

@@ -17,6 +17,12 @@ const watchdog=setInterval(()=>{
   if(++attempts>80)throw Error("full game did not start");
   const doc=frame.contentDocument;
   if(!doc||doc.readyState!=="complete")return;
+  // A fresh profile first opens the daily login calendar; dismiss it by the
+  // real Back button before following the normal home → squad → battle path.
+  if(doc.querySelector("#loginCalendar.active")){
+   doc.querySelector('#loginCalendar [data-screen="home"]')?.click();
+   entered=false;launched=false;return;
+  }
   const btn=doc.querySelector("#startBattle");
   if(!btn)return;
   if(doc.querySelector("#home.active")&&!entered){entered=true;btn.click();}

@@ -1,9 +1,10 @@
-name: ENV009 WebGL screenshot comparison
+name: ENV010 WebGL screenshot comparison
 on:
   pull_request:
     paths:
       - 'combat-environment-009.js'
-      - 'combat-visual-007.js'\n      - 'combat-environment-010.js'
+      - 'combat-visual-007.js'
+      - 'combat-environment-010.js'
       - 'tests/fixtures/env009-webgl-preview.html'
       - '.github/workflows/env009-webgl-preview.yml'
   workflow_dispatch:

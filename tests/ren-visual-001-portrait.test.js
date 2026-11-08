@@ -27,7 +27,7 @@ test("Collection, permanent hero card, biography and story preview use one Ren p
 });
 test("Version bump and scope: no Babylon mesh edits or combat configuration in portrait patch",()=>{
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.82");
- assert.ok(html.includes("v0.3.82 · OPSHELP + RENPLAY + REN3D003"));
+ assert.equal(pkg.version,"0.3.83");
+ assert.ok(html.includes("v0.3.83 · OPSHELP + RENPLAY + REN3D003"));
  assert.ok(read("game.js").includes('id:"ren",name:"Рен Терен",classId:"melee"'));
 });

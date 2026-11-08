@@ -1,7 +1,7 @@
 {
   "name": "ashes-throne-prototype",
   "private": true,
-  "version": "0.3.66",
+  "version": "0.3.67",
   "scripts": {
     "test": "node --check battle-speed.js && node --check animation-profiles.js && node --check battle-animation.js && node --check game.js && node --check story-demo-core.js && node --check story-trial-data.js && node --check player-profile-core.js && node --check ability-data.js && node --check ability-info.js && node --check skill-core.js && node --check star-core.js && node --check hero-collection-core.js && node --check auto-decision.js && node --check enemy-decision.js && node --check battle-rng.js && node --check combat-core.js && node --check combat-log.js && node --check initiative-model.js && node --check gear-data.js && node --check progress-core.js && node --check save-core.js && node --check progress-v3-core.js && node --check mission-data.js && node --check campaign-core.js && node --check campaign-data.js && node --test tests/*.test.js"
   }

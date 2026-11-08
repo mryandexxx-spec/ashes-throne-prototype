@@ -1,0 +1,47 @@
+name: ENV010 one-shot CC0 texture import (branch only)
+on:
+  push:
+    branches: [feat/combat-env-010-fixed-isometric-depth]
+    paths: ['.github/workflows/env010-one-shot-asset-import.yml']
+permissions:
+  contents: write
+jobs:
+  asset:
+    if: github.ref == 'refs/heads/feat/combat-env-010-fixed-isometric-depth'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Import and downsample ambientCG CC0 Rock063 (branch only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fLSs --retry 3 --connect-timeout 20 --max-time 120 \
+            'https://ambientcg.com/get?file=Rock063_1K-JPG.zip' -o /tmp/env010_rock063.zip
+          python3 -m pip install --user -q Pillow
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          from PIL import Image,ImageOps
+          from io import BytesIO
+          from pathlib import Path
+          out=Path('assets/env010');out.mkdir(parents=True,exist_ok=True)
+          with ZipFile('/tmp/env010_rock063.zip') as z:
+           names=z.namelist()
+           for kind,token in [('color','_Color.'),('normal','_NormalGL.')]:
+            matching=[name for name in names if token in name and name.endswith('.jpg')]
+            if not matching: raise RuntimeError('missing '+token+' in archive: '+str(names[:30]))
+            im=Image.open(BytesIO(z.read(matching[0]))).convert('RGB')
+            im=ImageOps.fit(im,(512,512),method=Image.Resampling.LANCZOS)
+            dest=out/('rock063-'+kind+'-512.jpg')
+            im.save(dest,'JPEG',quality=86,subsampling=0,optimize=True)
+            print(dest, dest.stat().st_size)
+          PY
+          test -s assets/env010/rock063-color-512.jpg
+          test -s assets/env010/rock063-normal-512.jpg
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/env010
+          git commit -m 'asset(env010): import compressed Rock063 CC0 geological color and normal maps'
+          git push origin HEAD:feat/combat-env-010-fixed-isometric-depth

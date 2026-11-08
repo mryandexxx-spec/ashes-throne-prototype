@@ -43,6 +43,11 @@ assert.equal(target.speed,1,"slow never mutates underlying speed");
 assert.equal(CombatStatusCore.read(target,"slowed").remaining,2);
 assert.equal(CombatStatusCore.effectiveSpeed(target,100),80);
 assert.equal(CombatCore.effectiveStat(battle,target,"speed"),1,"minimum effective speed is one");
+// The integrated initiative calculator must actually read the slow, not merely expose it.
+target.speed=100;
+assert.equal(CombatCore.effectiveStat(battle,target,"speed"),80);
+assert.equal(target.speed,100,"slow does not overwrite base speed");
+target.speed=1;
 assert.ok(CombatCore.activeEffects(target).some(e=>e.type==="slowed"&&e.remaining===2));
 assert.ok(battle.events.some(e=>e.type==="effect"&&e.effect==="slowed"));
 assert.equal(CombatCore.performPlayerAbility(battle,"basic"),true,"next player action can refresh");

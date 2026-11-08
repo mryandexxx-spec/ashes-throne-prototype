@@ -168,12 +168,41 @@ const OperationCore=(()=>{
    return {progress:{active:data.active,history:data.history},available:true,blocked:false};
   }catch(_){return {progress:fresh(),available:false,blocked:true};}
  }
- function save(progress,provider,blocked=false){
-  if(blocked||!validProgress(progress))return false;
+ // OPS-001C: when expectedProgress is supplied, reject stale writes from
+ // another tab or a stale callback. The v1 save format is unchanged.
+ // No expectedProgress keeps the legacy standalone save API compatible.
+ function save(progress,provider,blocked=false,expectedProgress=undefined){
+  if(blocked||!validProgress(progress)||
+   (expectedProgress!==undefined&&!validProgress(expectedProgress)))return false;
   try{
    const store=provider();if(!store)return false;
    const old=store.getItem(KEY);
-   if(old!==null&&!validStored(JSON.parse(old)))return false;
+   let stored=null;
+   if(old!==null){
+    stored=JSON.parse(old);
+    if(!validStored(stored))return false;
+   }
+   if(expectedProgress!==undefined){
+    const storedProgress=stored===null?fresh():
+     {active:stored.active,history:stored.history};
+    // Canonical progress objects have fixed key and field order, while the
+    // object from a valid JSON save is reconstructed here with canonical keys.
+    // Compare parsed data, never rely on storage string formatting.
+    const snapshot=p=>JSON.stringify({
+     active:p.active===null?null:{
+      operationId:p.active.operationId,runId:p.active.runId,
+      variantId:p.active.variantId,phase:p.active.phase,
+      orders:p.active.orders,target:p.active.target,
+      battleResult:p.active.battleResult,finalChoice:p.active.finalChoice,
+      outcome:p.active.outcome
+     },
+     history:p.history.map(h=>({
+      runId:h.runId,variantId:h.variantId,outcome:h.outcome,
+      coverPreserved:h.coverPreserved,ledgerSecured:h.ledgerSecured
+     }))
+    });
+    if(snapshot(storedProgress)!==snapshot(expectedProgress))return false;
+   }
    store.setItem(KEY,JSON.stringify({version:VERSION,...progress}));
    return true;
   }catch(_){return false;}

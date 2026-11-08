@@ -68,6 +68,38 @@ assert.equal(damage(b,2),20,"dead passive owner contributes nothing");
 assert.equal(trial.heroes()[1].tags,undefined);
 assert.equal(trial.heroes()[2].tags,undefined);
 
+// Group attacks share the same tag damage rule; no per-target side effects.
+b=start([ren(),ally("test-area-damage",["gardens-over-abyss"],
+ {speed:400}),foe("group-a"),foe("group-b")]);
+assert.equal(b.fighters[b.currentActor].id,"test-area-damage");
+b.fighters[2].weakenAttacks=1;
+assert.equal(core.performPlayerAbility(b,"special"),true);
+assert.equal(damage(b,2),21);
+assert.equal(damage(b,3),21,"second target receives same tag bonus");
+// Being the leader is NOT required for a passive.
+b=core.createBattle([ren(),ally("tagged",["gardens-over-abyss"]),foe("leader-foe")],
+ [],{leaderId:"trial-ren"});
+core.advanceToPlayerTurn(b);
+assert.equal(b.fighters[b.currentActor].id,"tagged");
+assert.equal(hit(b),true);
+assert.equal(damage(b,2),21);
+assert.equal(abilities.get(ren(),"leader"),null);
+// No Ren in the roster means no Garden synergy.
+b=start([ally("solo",["gardens-over-abyss"]),foe("solo-foe")]);
+assert.equal(hit(b),true);
+assert.equal(damage(b,1),20);
+// Guard is a positive effect and is not counted as debuff.
+b=start([ren(),foe("guarded")]);
+b.fighters[1].guardHits=1;
+assert.equal(hit(b),true);
+assert.equal(damage(b,1),14,"only the 5% tag bonus before guard halving");
+// Automated basic attack goes through the same passive calculation.
+b=start([ren(),foe("auto-foe")]);
+assert.equal(core.performAutoAction(b,{abilityId:"basic",targetIndex:1}),true);
+assert.equal(damage(b,1),28);
+// Duplicate active owners cannot form a second source by repeating actor IDs.
+assert.throws(()=>core.createBattle([ren(),ren(),foe("duplicate")]),/unique id/);
+
 // Opt-in seeded legacy on-hit slow now uses the same numeric status channel.
 // This is technical pilot formula, not approved balance.
 const seeded=down=>{

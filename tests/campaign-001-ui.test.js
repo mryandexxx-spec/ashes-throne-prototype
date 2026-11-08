@@ -3,8 +3,8 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","auto-decision.js","enemy-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
-const ids=["home","collection","campaign","squad","battle","heroList","combatants",
+const src=["initiative-model.js","ability-data.js","combat-core.js","auto-decision.js","enemy-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","story-demo-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const ids=["home","collection","campaign","storyDemo","storyDemoOpen","storyDemoBack","storyDemoSpeaker","storyDemoText","storyDemoNext","storyDemoChoices","storyDemoChoiceA","storyDemoChoiceB","storyDemoFight","storyDemoAgain","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn","arenaIndicators","orientationPrompt",
  "basicAbilitySlot","specialAbilitySlot","abilityTooltip","abilityTooltipTitle","abilityTooltipText",
  "fighterInspect","inspectClose","inspectSide","inspectName","inspectRole","inspectStats","inspectEffects",
@@ -30,7 +30,7 @@ const chooseNodes=["kael","lyra","darin"].map(id=>{
 const heroNodes=["kael","lyra","darin"].map(id=>{const e=element();e.dataset.openHero=id;return e;});
 const arenaNav=element();arenaNav.dataset.screen="battle";
 const collectionNav=element();collectionNav.dataset.screen="collection";
-const allScreens=["home","collection","campaign","squad","battle","heroDetail","missionResult"].map(id=>elements[id]);
+const allScreens=["home","collection","campaign","storyDemo","squad","battle","heroDetail","missionResult"].map(id=>elements[id]);
 const visibilityListeners=[];const domEvents={};
 const document={
  body:element("body"),
@@ -125,6 +125,46 @@ function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
 const allyIds=()=>api.getBattle().fighters.filter(h=>h.side==="ally").map(h=>h.id).join(",");
 const count=()=>elements.squadCount.textContent;
 
+
+// STORY-001: integrated user path through actual buttons, squad, combat and epilogue.
+{
+ const completedBefore=JSON.stringify(api.getCampaignProgress());
+ const currencyBefore=api.getCurrency(),energyBefore=api.getEnergy();
+ click(elements.storyDemoOpen);
+ assert.equal(elements.storyDemoSpeaker.textContent,"Сады над пропастью");
+ assert.match(elements.storyDemoText.textContent,/ущелья/);
+ for(let i=0;i<7;i++)click(elements.storyDemoNext);
+ assert.equal(elements.storyDemoNext.hidden,true);
+ assert.equal(elements.storyDemoChoices.hidden,false);
+ click(elements.storyDemoChoiceB);
+ assert.match(elements.storyDemoText.textContent,/Нада/);
+ assert.equal(elements.storyDemoFight.hidden,false);
+ click(elements.storyDemoFight);
+ assert.equal(elements.squad.classList.contains("active"),true);
+ click(elements.squadBack);
+ assert.equal(elements.storyDemo.classList.contains("active"),true);
+ assert.equal(elements.storyDemoFight.hidden,false,"back from squad should allow retry");
+ click(elements.storyDemoFight);
+ click(elements.squadStart);
+ assert.equal(elements.battle.classList.contains("active"),true);
+ assert.equal(api.getBattle().fighters.find(f=>f.id==="ves").name,"Старший охраны");
+ assert.equal(api.getBattle().fighters.find(f=>f.id==="shade").name,"Наёмный охранник");
+ // Headless terminal victory invokes exactly the same story exit as a resolved
+ // 3D battle, while leaving campaign stars, currency and energy untouched.
+ api.getBattle().active=false;
+ api.getBattle().winner="ally";
+ api.syncBattleUI();
+ assert.equal(elements.storyDemo.classList.contains("active"),true);
+ assert.match(elements.storyDemoText.textContent,/Оригиналы записей/);
+ click(elements.storyDemoChoiceA);
+ assert.match(elements.storyDemoText.textContent,/Нада сверяет/);
+ assert.equal(JSON.stringify(api.getCampaignProgress()),completedBefore);
+ assert.equal(api.getCurrency(),currencyBefore);
+ assert.equal(api.getEnergy(),energyBefore);
+ click(elements.storyDemoAgain);
+ assert.equal(elements.storyDemoSpeaker.textContent,"Сады над пропастью");
+ api.showScreen("home");
+}
 
 // Campaign entrance, not generic arena, activates the mission result screen.
 api.showScreen("campaign");

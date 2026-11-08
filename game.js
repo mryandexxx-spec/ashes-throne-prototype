@@ -44,6 +44,8 @@ let visualWaveFighters=null;
 function presentationFighters(){return visualWaveFighters||state.fighters;}
 function isVisualTransition(){return visualTransition!==null;}
 function captureResolvedVisuals(beforeFighters){
+ // One resolved action batch, not an arbitrary UI render.
+ if(battleIsChallenge&&challengeTracker)ChallengeCore.capture(challengeTracker,state.events||[]);
  // Non-rendering contexts still finish immediately; never let graphics gate rules.
  if(!scene||!engine)return;
  BattleAnimation.enqueue(state.events);
@@ -218,6 +220,13 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
 let battleIsCampaign=false;
 // STORY-001 is an opt-in sandbox, independent of campaign rewards and saves.
 let battleIsStoryDemo=false;
+let battleIsChallenge=false;
+const challengeLoaded=ChallengeCore.load(()=>window.localStorage);
+let challengeProgress=challengeLoaded.progress;
+let challengeSaveBlocked=challengeLoaded.blocked;
+let challengeSaveAvailable=challengeLoaded.available;
+let activeChallengeId=null,challengeTracker=null;
+let challengeResultRecorded=false,challengeLastStars=0,challengeSaveFailed=false;
 let storyTrialParty=false; // Only for the opt-in story sandbox, never saved.
 let storyDemoState=null;
 let missionResultShown=false;
@@ -515,6 +524,15 @@ function selectedParty(){
   .map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(progressedHero);
 }
 function battleLineup(){
+ if(battleIsChallenge){
+  const def=ChallengeCore.get(activeChallengeId);
+  if(!def)throw Error("Unknown challenge");
+  const later=new Set(def.futureWaves.flat());
+  const first=def.enemyIds.filter(id=>!later.has(id));
+  const enemies=first.map(id=>ENEMIES.find(h=>h.id===id));
+  if(enemies.some(x=>!x))throw Error("Unknown challenge enemy");
+  return [...selectedParty(),...enemies.map(progressedEnemy)];
+ }
  // STORY-002 uses temporary hero IDs outside v3 save validation.
  if(battleIsStoryDemo&&storyTrialParty)
   return [...StoryTrialData.heroes(),...ENEMIES.slice(0,2).map((e,i)=>
@@ -528,6 +546,15 @@ function battleLineup(){
 // Optional future wave rosters live in mission data. Existing missions have no
 // future waves, so their accepted encounters and balance remain unchanged.
 function battleFutureWaves(){
+ if(battleIsChallenge){
+  const def=ChallengeCore.get(activeChallengeId);
+  if(!def)throw Error("Unknown challenge");
+  return def.futureWaves.map(wave=>wave.map(id=>{
+   const enemy=ENEMIES.find(h=>h.id===id);
+   if(!enemy)throw Error("Unknown challenge wave enemy");
+   return progressedEnemy(enemy);
+  }));
+ }
  const mission=battleIsCampaign&&MissionData.get(activeMissionId);
  return (mission&&mission.futureEnemyWaves||[]).map(ids=>ids.map(id=>{
   const enemy=ENEMIES.find(h=>h.id===id);
@@ -634,6 +661,7 @@ function showScreen(id){
   renderLoginCalendar();
  }
  if(id==="campaign")renderCampaign();
+ if(id==="challenges")renderChallenges();
  if(id==="storyDemo")renderStoryDemo();
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
@@ -645,9 +673,18 @@ function showScreen(id){
   missionResultSaveFailed=false;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
   battleIsStoryDemo=squadReturnScreen==="storyDemo"&&storyDemoState?.phase==="battle";
+  battleIsChallenge=squadReturnScreen==="challenges"&&!!ChallengeCore.get(activeChallengeId);
   const label=$("#battleMissionLabel");
-  if(label)label.textContent=battleIsStoryDemo?"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ":
+  if(label)label.textContent=battleIsChallenge?"ИСПЫТАНИЕ · "+ChallengeCore.get(activeChallengeId).title:
+   battleIsStoryDemo?"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ":
    battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
+  const objective=$("#battleChallengeGoal");
+  if(objective){
+   objective.hidden=!battleIsChallenge;
+   objective.textContent=!battleIsChallenge?"":activeChallengeId==="T-01"
+    ?"Цель: Вестник Конклава должен погибнуть первым и отдельно от остальных."
+    :"Цель: одолеть две волны, сохранив отряд.";
+  }
   const freeStoryEntry=battleIsCampaign&&progress.saveVersion===3&&
    !campaignProgress.completed[activeMissionId];
   if(battleIsCampaign&&!freeStoryEntry&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
@@ -1642,6 +1679,10 @@ function resetBattle(){
  // Keep the chosen speed between battles; only autoplay resets.
  missionResultShown=false;
  missionResultRecorded=false;
+ challengeResultRecorded=false;
+ challengeLastStars=0;
+ challengeSaveFailed=false;
+ challengeTracker=battleIsChallenge?ChallengeCore.start(activeChallengeId):null;
  lastMissionStars=0;
  selectedAbility="basic";
  state=CombatCore.createBattle(battleLineup(),battleFutureWaves(),{leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId});

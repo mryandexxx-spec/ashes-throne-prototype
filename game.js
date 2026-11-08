@@ -17,6 +17,7 @@ const HEROES = [
 ];
 const $=s=>document.querySelector(s);
 let engine, scene, meshes={};
+let combatVisual007=null; // One optional visual layer per Babylon Scene.
 let arenaCamera=null;
 // Combat-008B: allies are near the viewer, enemies farther away.
 const ARENA_VIEW=Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
@@ -745,7 +746,7 @@ function showScreen(id){
  // Re-entering from home opens the two-mode chooser, not a stale mission list.
  if(id==="challenges"&&$("#home")?.classList.contains("active"))selectedChallengeKind=null;
  if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();}
- if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();stopBattleRendering();}
+ if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();stopBattleRendering();}
  // Combat-008A: release the document scroll while the arena owns the viewport.
  // Guard document.body for headless DOM tests and embedded integrations.
  if(document.body&&document.body.classList)document.body.classList.toggle("battle-mode",id==="battle");
@@ -832,7 +833,7 @@ function showScreen(id){
    stopBattleRendering();
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
-   scene=undefined;engine=undefined;arenaCamera=null;meshes={};indicatorNodes={};renderLoopRunning=false;
+   scene=undefined;engine=undefined;arenaCamera=null;meshes={};indicatorNodes={};combatVisual007=null;renderLoopRunning=false;
    if(battleIsStoryDemo&&storyTrialParty){
     StoryDemoCore.cancelBattle(storyDemoState);
     showScreen("storyDemo");
@@ -2258,6 +2259,7 @@ function resetBattle(){
  cancelAutoTimer();
  cancelVisualTransition();
  BattleAnimation.clear();
+ combatVisual007?.clear();
  autoBattle=false;
  // Keep the chosen speed between battles; only autoplay resets.
  missionResultShown=false;
@@ -2510,6 +2512,12 @@ function renderBattleFrame(){
  // Animation speed is shared with the auto scheduler, never alters combat state.
  const dt=engine&&typeof engine.getDeltaTime==="function"?engine.getDeltaTime():16;
  BattleAnimation.tick(dt,BattleSpeed.multiplier());
+ // Consume hit markers regardless of whether optional visuals are available.
+ const visualCues=BattleAnimation.drainStarted();
+ if(combatVisual007){
+  combatVisual007.emit(visualCues,meshes);
+  combatVisual007.tick(dt,BattleSpeed.multiplier());
+ }
  // Death animation may end without a new combat action. Retire stale
  // indicators immediately instead of waiting for the following turn.
  if(Object.keys(indicatorNodes).some(id=>{
@@ -2623,12 +2631,21 @@ function initBabylon(){
  installArenaPointerCamera(canvas,arenaCamera);
  const hemi=new BABYLON.HemisphericLight("hemi",new BABYLON.Vector3(0,1,0),scene);hemi.intensity=.8;
  const key=new BABYLON.DirectionalLight("key",new BABYLON.Vector3(-.5,-1,.5),scene);key.intensity=1.1;
- const ground=BABYLON.MeshBuilder.CreateGround("ground",{width:16,height:9},scene);const gm=new BABYLON.StandardMaterial("groundMat",scene);gm.diffuseColor=new BABYLON.Color3(.12,.15,.19);gm.specularColor=new BABYLON.Color3(.1,.1,.1);ground.material=gm;
- // Built-in material avoids relying on a separately loaded Babylon Materials Library.
- const grid=BABYLON.MeshBuilder.CreateGround("grid",{width:16,height:9,subdivisions:12},scene);grid.position.y=.012;
- const gridmat=new BABYLON.StandardMaterial("gridmat",scene);
- gridmat.diffuseColor=new BABYLON.Color3(.14,.17,.21);gridmat.emissiveColor=new BABYLON.Color3(.035,.045,.06);
- gridmat.alpha=.28;gridmat.wireframe=true;gridmat.backFaceCulling=false;grid.material=gridmat;
+ // CV007 creates a passive, non-pickable test arena and a small hit-FX pool.
+ // Legacy geometry remains a safe fallback for headless fixtures or GPU issues.
+ combatVisual007=null;
+ if(typeof CombatVisual007!=="undefined"&&CombatVisual007.supported(BABYLON)){
+  try{combatVisual007=CombatVisual007.create(BABYLON,scene);}
+  catch(visualError){console.warn("CV007 arena unavailable, using legacy ground",visualError);}
+ }
+ if(!combatVisual007){
+  const ground=BABYLON.MeshBuilder.CreateGround("ground",{width:16,height:9},scene);const gm=new BABYLON.StandardMaterial("groundMat",scene);gm.diffuseColor=new BABYLON.Color3(.12,.15,.19);gm.specularColor=new BABYLON.Color3(.1,.1,.1);ground.material=gm;
+  // Built-in material avoids relying on a separately loaded Babylon Materials Library.
+  const grid=BABYLON.MeshBuilder.CreateGround("grid",{width:16,height:9,subdivisions:12},scene);grid.position.y=.012;
+  const gridmat=new BABYLON.StandardMaterial("gridmat",scene);
+  gridmat.diffuseColor=new BABYLON.Color3(.14,.17,.21);gridmat.emissiveColor=new BABYLON.Color3(.035,.045,.06);
+  gridmat.alpha=.28;gridmat.wireframe=true;gridmat.backFaceCulling=false;grid.material=gridmat;
+ }
  // Low-poly stylized fighters: capsule body, sphere head, colored shield.
  HEROES.forEach((h,i)=>{
   const start=formationPosition(h.side,i%3,3);

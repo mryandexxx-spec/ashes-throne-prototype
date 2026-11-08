@@ -105,6 +105,33 @@ test("claim all is atomic on overflow, missing materials and backwards clock",()
  assert.equal(D.claimAll(p,"2026-11-07"),null);
  assert.equal(JSON.stringify(p),before);
 });
+test("new daily tasks survive v3 save/load and a failed write can be rolled back",()=>{
+ const {S}=vm.runInNewContext(["gear-data.js","progress-core.js","daily-core.js",
+  "progress-v3-core.js","save-core.js"].map(read).join("\n")+"\n({S:SaveCore})");
+ const heroes=["kael","lyra","darin","medic-demo","test-area-damage"].map(id=>({id,side:"ally"}));
+ const files=new Map();
+ const store={getItem:key=>files.get(key)??null,setItem:(key,value)=>files.set(key,value)};
+ let p=S.load(heroes,()=>store).progress;
+ assert.equal(D.record(p,"tactical-participation","2026-11-08"),true);
+ assert.equal(D.record(p,"onslaught-participation","2026-11-08"),true);
+ assert.equal(S.save(p,()=>store),true);
+ p=S.load(heroes,()=>store).progress;
+ assert.equal(p.daily.counts["tactical-participation"],1);
+ const snapshot=JSON.stringify(p),prior=files.get("ashes-throne.progress.v3");
+ assert.ok(D.claimAll(p,"2026-11-08"));
+ assert.equal(S.save(p,()=>({getItem:store.getItem,setItem(){throw Error("Safari write denied");}})),false);
+ Object.keys(p).forEach(key=>delete p[key]);
+ Object.assign(p,JSON.parse(snapshot));
+ assert.equal(files.get("ashes-throne.progress.v3"),prior);
+ assert.equal(p.daily.claimed.length,0);
+ assert.ok(D.claimAll(p,"2026-11-08"));
+ assert.equal(S.save(p,()=>store),true);
+ const saved=S.load(heroes,()=>store).progress;
+ assert.equal(saved.currency,400);
+ assert.equal(saved.accountXp,30);
+ assert.equal(saved.daily.claimed.length,2);
+ assert.equal(D.claimAll(saved,"2026-11-08"),null);
+});
 test("challenge participation is distinct from campaign, and claim-all UI is connected",()=>{
  const game=read("game.js"),html=read("index.html"),css=read("styles.css");
  for(const id of ["challengeModes","challengeModeBack","challengeModeTitle","challengeList","dailyClaimAll"])

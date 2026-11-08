@@ -32,7 +32,7 @@ const gold=progress.currency;
 assert.equal(P.upgradeCost(progress,"kael"),null);
 assert.equal(P.upgrade(progress,"kael"),false);
 assert.equal(progress.currency,gold,"failed upgrade cannot charge currency");
-assert.match(P.upgradeBlockReason(progress,"kael"),/Уровень аккаунта 1/);
+assert.match(P.upgradeBlockReason(progress,"kael"),/уровень аккаунта: 1/);
 progress.accountXp=47;
 while(P.canUpgrade(progress,"kael"))assert.equal(P.upgrade(progress,"kael"),true);
 assert.equal(P.levelOf(progress,"kael"),8);

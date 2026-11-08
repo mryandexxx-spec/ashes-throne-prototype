@@ -7,7 +7,7 @@
 const StoryTrialData=(()=>{
  "use strict";
  const profiles=Object.freeze([
-  Object.freeze({id:"trial-ren",name:"Рен Терен",classId:"melee",role:"Боец ближнего боя · проба",side:"ally",
+  Object.freeze({id:"trial-ren",name:"Рен Терен",classId:"melee",role:"Боец ближнего боя · проба",tags:Object.freeze(["gardens-over-abyss"]),side:"ally",
    glyph:"⌁",hp:91,atk:27,speed:150}),
   Object.freeze({id:"trial-nada",name:"Нада",classId:"support",role:"Поддержка · проба",side:"ally",
    glyph:"✎",hp:85,atk:18,speed:120}),

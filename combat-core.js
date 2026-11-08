@@ -520,12 +520,14 @@ const CombatCore = (() => {
         emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"guard",stacks:ability.guardHits});
       }
     }
-    // Follow-up negative effects must not apply to missed recipients.
-    applyFollowUpEffects(battle,actor,ability,
-      ability.kind==="damage"&&hitCheckEnabled(battle,type)?
-        recipients.filter(target=>!battle.events.some(event=>
-          event.type==="miss"&&event.actorId===actor.id&&event.targetId===target.id)):
-        recipients,battle.fighters[primaryIndex]);
+    // A primary-target follow-up cannot apply if that target was missed.
+    const hitRecipients=ability.kind==="damage"&&hitCheckEnabled(battle,type)?
+      recipients.filter(target=>!battle.events.some(event=>
+        event.type==="miss"&&event.actorId===actor.id&&event.targetId===target.id)):
+      recipients;
+    const primary=battle.fighters[primaryIndex];
+    applyFollowUpEffects(battle,actor,ability,hitRecipients,
+      hitRecipients.includes(primary)?primary:null);
     // Weakening counts attacks (commands), not recipients. All group targets
     // get the same weakened damage; one use is consumed at the end.
     if(ability.kind==="damage"&&weakened)actor.weakenAttacks--;

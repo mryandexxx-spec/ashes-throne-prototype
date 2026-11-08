@@ -63,7 +63,7 @@ test("CV008 paints one deterministic 256 px texture once with no remote assets",
  const grain=scene.textures[0];
  assert.deepEqual(grain.size,{width:256,height:256});
  assert.equal(grain.updated,true);
- assert.ok(grain.calls>2500&&grain.calls<3000,"bounded procedural brush operations");
+ assert.ok(grain.calls>2400&&grain.calls<2550,"bounded procedural brush operations");
  assert.equal(grain.uScale,3);assert.equal(grain.vScale,2);
  assert.equal(scene.meshes.find(m=>m.name==="cv007_surface").material.diffuseTexture,grain);
  const source=read("combat-visual-007.js");

@@ -13,7 +13,7 @@ function fixture(){
   setEnabled(value){this.enabled=value;}
   dispose(){this.disposed=true;}
  }
- class VertexData{applyToMesh(mesh){mesh.data={positions:this.positions,indices:this.indices,normals:this.normals,colors:this.colors};}}
+ class VertexData{applyToMesh(mesh){mesh.data={positions:this.positions,indices:this.indices,normals:this.normals,colors:this.colors,uvs:this.uvs};}}
  VertexData.ComputeNormals=(positions,indices,normals)=>{for(let i=0;i<positions.length;i++)normals.push(0);};
  const B={Mesh,VertexData,Vector3:Vec,Color3:Vec,Color4,StandardMaterial:Mat,
   Scene:{FOGMODE_EXP2:2},MeshBuilder:{}};

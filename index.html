@@ -25,6 +25,7 @@
         <button class="nav-card" data-screen="collection"><span>♙</span><b>Герои</b><small>Коллекция и развитие</small></button>
         <button class="nav-card" data-screen="campaign"><span>⚔</span><b>Кампания</b><small>Глава I · Пепельный тракт</small></button>
         <button class="nav-card" data-screen="battle"><span>✦</span><b>Арена</b><small>Пошаговое сражение</small></button>
+        <button class="nav-card" data-screen="challenges"><span>◆</span><b>Испытания</b><small>Тактика и Натиск · учебный пилот</small></button>
         <button class="nav-card" data-screen="playerProfile"><span>♟</span><b>Профиль игрока</b><small>Ник и уровень аккаунта</small></button>
         <button class="nav-card" id="dailyTasksNav" data-screen="dailyTasks"><span>☼</span><b>Задания дня</b><small>Три действия и награды</small><span id="dailyClaimBadge" class="daily-nav-badge" aria-hidden="true" hidden>0</span></button>
         <button class="nav-card" data-screen="loginCalendar"><span>▦</span><b>Календарь входа</b><small>Ежемесячные награды</small></button>
@@ -161,6 +162,13 @@
         </div>
       </div>
     </section>
+    <section id="challenges" class="screen" aria-label="Боевые испытания">
+      <div class="section-heading"><div><div class="eyebrow">УЧЕБНЫЙ PvE-ПИЛОТ · БЕЗ СЮЖЕТА</div><h2>Испытания</h2></div>
+        <button type="button" class="ghost" data-screen="home">← Назад</button></div>
+      <p class="muted">Тактическая задача и Натиск. Свободные повторы. Без затрат энергии, наград и получения героев.</p>
+      <div id="challengeList" aria-label="Доступные испытания"></div>
+      <p id="challengeSaveStatus" class="muted" role="status">Результаты хранятся в этом браузере.</p>
+    </section>
     <section id="campaign" class="screen">
       <div class="section-heading"><div><div class="eyebrow">КАМПАНИЯ</div><h2>Путь к престолу</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
       <div class="energy-toolbar"><p class="muted" id="energyStatus">Энергия: 240/240 · 1 за 6 минут</p><button type="button" class="ghost" id="energyRefresh">Проверить восстановление</button></div><p id="energyRefreshStatus" class="muted" role="status" aria-live="polite"></p>
@@ -296,6 +304,19 @@
         </div>
       </div>
     </section>
+    <section id="challengeResult" class="screen mission-result-screen" aria-label="Результат испытания">
+      <div class="mission-result-card">
+        <div class="eyebrow" id="challengeResultName">ИСПЫТАНИЕ</div>
+        <h2 id="challengeResultTitle">Результат испытания</h2>
+        <p id="challengeResultText" role="status"></p>
+        <p class="mission-stars" id="challengeResultStars" role="status">Оценка: ☆☆☆</p>
+        <div class="mission-result-actions">
+          <button type="button" class="primary" id="challengeResultBack">К испытаниям</button>
+          <button type="button" class="ghost" id="challengeResultRetry">Попробовать снова</button>
+          <button type="button" class="ghost" id="challengeResultHome">Домой</button>
+        </div>
+      </div>
+    </section>
     <section id="battle" class="screen battle-screen" aria-label="Полноэкранная боевая арена">
       <div class="arena-wrap">
         <canvas id="renderCanvas" aria-label="Трёхмерная арена: коснись бойца, чтобы выбрать цель"></canvas>
@@ -311,7 +332,7 @@
         </div>
         <div class="battle-top arena-hud" aria-label="Управление боем">
           <button class="ghost" data-screen="home">✕ В меню</button>
-          <div class="battle-heading"><div class="eyebrow" id="battleMissionLabel">СТОЛКНОВЕНИЕ</div><strong id="battleStatus">Выберите цель</strong></div>
+          <div class="battle-heading"><div class="eyebrow" id="battleMissionLabel">СТОЛКНОВЕНИЕ</div><strong id="battleStatus">Выберите цель</strong><small id="battleChallengeGoal" hidden></small></div>
           <aside id="targetFighterHud" class="target-fighter-hud arena-hud" aria-label="Информация о выбранной цели">
             <div class="target-fighter-heading"><span id="targetFighterSide">ВЫБРАННАЯ ЦЕЛЬ</span><span id="targetFighterLevel"></span></div>
             <strong id="targetFighterName">Выбери цель</strong>
@@ -374,7 +395,7 @@
         <button type="button" class="primary" id="lockedHeroUnlock">Открыть за 10 осколков</button>
       </div>
     </dialog>
-    <footer><span id="buildVersion">Прототип · v0.3.66 · STORY002</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.67 · CHAL001B</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -403,6 +424,7 @@
   <script src="mission-data.js"></script>
   <script src="campaign-core.js"></script>
   <script src="campaign-data.js"></script>
+   <script src="challenge-core.js"></script>
   <script src="battle-speed.js"></script>
   <script src="animation-profiles.js"></script>
   <script src="battle-animation.js"></script>

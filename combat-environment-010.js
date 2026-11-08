@@ -175,6 +175,114 @@ const CombatEnvironment010=(()=>{
       return true;
     }catch(error){try{tex?.dispose?.();}catch(_){ }return false;}
   }
+
+  // ENV010 authored art pipeline. Three original sculpted *solid cliff forms*
+  // are shipped as a local glTF 2.0 GLB (see tools/env010-gorge-export.cjs).
+  // Import only the simple unskinned geometry contract we export ourselves:
+  // POSITION/NORMAL/COLOR_0/UV + uint16 triangles. This deliberately avoids
+  // a second Babylon loader bundle on mobile. The procedural canyon remains
+  // visible unless the complete GLB validates and commits successfully.
+  function loadSculptedRock(){
+   if(!ASSET_ROOT||typeof fetch!=="function"||typeof TextDecoder!=="function")return false;
+   const mark=value=>{
+    if(typeof document!=="undefined"&&document.documentElement)
+     document.documentElement.dataset.env010Rock=value;
+   };
+   mark("loading");
+   const isDisposed=()=>typeof scene.isDisposed==="function"?
+    scene.isDisposed():Boolean(scene.isDisposed);
+   const read=(buffer)=>{
+    const dv=new DataView(buffer);
+    if(buffer.byteLength<40||buffer.byteLength>750000||
+       dv.getUint32(0,true)!==0x46546c67||dv.getUint32(4,true)!==2||
+       dv.getUint32(8,true)!==buffer.byteLength)throw Error("invalid ENV010 GLB header");
+    const jsonLength=dv.getUint32(12,true),binStart=20+jsonLength;
+    if(jsonLength<20||binStart+8>buffer.byteLength||
+       dv.getUint32(16,true)!==0x4e4f534a||
+       dv.getUint32(binStart+4,true)!==0x004e4942)throw Error("invalid ENV010 GLB chunks");
+    const gltf=JSON.parse(new TextDecoder().decode(new Uint8Array(buffer,20,jsonLength)));
+    const binLength=dv.getUint32(binStart,true),binOffset=binStart+8;
+    if(binOffset+binLength!==buffer.byteLength||gltf.asset?.version!=="2.0"||
+       gltf.meshes?.length!==3)throw Error("unexpected ENV010 asset layout");
+    const componentSizes={5121:1,5123:2,5126:4};
+    const tuple={SCALAR:1,VEC2:2,VEC3:3,VEC4:4};
+    function accessor(id,expectedType,expectedComponent){
+     const a=gltf.accessors?.[id],v=gltf.bufferViews?.[a?.bufferView];
+     if(!a||!v||a.type!==expectedType||a.componentType!==expectedComponent||
+        a.count<1||a.count>15000||v.byteStride||
+        !Number.isInteger(v.byteOffset)||!Number.isInteger(v.byteLength))throw Error("invalid ENV010 accessor");
+     const comps=tuple[a.type],size=componentSizes[a.componentType];
+     const begin=v.byteOffset+(a.byteOffset||0),end=begin+a.count*comps*size;
+     if(begin<0||end>v.byteOffset+v.byteLength||end>binLength)throw Error("ENV010 accessor out of bounds");
+     const out=new Array(a.count*comps);
+     for(let i=0;i<out.length;i++){
+      const off=binOffset+begin+i*size;
+      const n=size===4?dv.getFloat32(off,true):size===2?dv.getUint16(off,true):dv.getUint8(off);
+      out[i]=a.normalized?n/255:n;
+      if(!Number.isFinite(out[i]))throw Error("non-finite ENV010 vertex");
+     }
+     return out;
+    }
+    let triangles=0;
+    const geometry=[];
+    for(const asset of gltf.meshes){
+     const p=asset.primitives?.[0],attrs=p?.attributes;
+     if(!attrs||p.mode!==4||asset.primitives.length!==1)throw Error("unexpected ENV010 primitive");
+     const positions=accessor(attrs.POSITION,"VEC3",5126);
+     const normals=accessor(attrs.NORMAL,"VEC3",5126);
+     const colors=accessor(attrs.COLOR_0,"VEC4",5121);
+     const uvs=accessor(attrs.TEXCOORD_0,"VEC2",5126);
+     const indices=accessor(p.indices,"SCALAR",5123);
+     const count=positions.length/3;
+     if(normals.length!==positions.length||colors.length!==count*4||
+        uvs.length!==count*2||indices.length%3!==0||
+        indices.some(i=>i>=count))throw Error("ENV010 geometry mismatch");
+     triangles+=indices.length/3;
+     geometry.push({name:asset.name,positions,normals,colors,uvs,indices});
+    }
+    if(triangles>9500||triangles<5000)throw Error("ENV010 triangle budget");
+    return geometry;
+   };
+   fetch(ASSET_ROOT+"gorge-strata-v1.glb",{credentials:"same-origin"}).then(response=>{
+    if(!response.ok)throw Error("ENV010 asset HTTP "+response.status);
+    return response.arrayBuffer();
+   }).then(buffer=>{
+    const geometry=read(buffer);
+    if(isDisposed())return;
+    const created=[];
+    try{
+     for(const asset of geometry){
+      const mesh=new B.Mesh("env010_glb_"+asset.name,scene);
+      created.push(mesh);
+      const data=new B.VertexData();
+      data.positions=asset.positions;data.normals=asset.normals;
+      data.colors=asset.colors;data.uvs=asset.uvs;data.indices=asset.indices;
+      data.applyToMesh(mesh,false);
+      mesh.useVertexColors=true;mesh.isPickable=false;
+      mesh.checkCollisions=false;mesh.receiveShadows=false;
+      const m=new B.StandardMaterial("env010_glb_mat_"+asset.name,scene);
+      created.push(m);
+      m.diffuseColor=new B.Color3(1,1,1);
+      m.specularColor=new B.Color3(.012,.012,.012);
+      m.emissiveColor=new B.Color3(.095,.105,.11);
+      m.useVertexColors=true;m.backFaceCulling=false;m.fogEnabled=false;
+      mesh.material=m;
+     }
+     if(isDisposed())throw Error("ENV010 scene disposed during import");
+     for(const m of created)own(m);
+     // Keep the original scenic fallback only until a COMPLETE mesh set
+     // exists. Dispose replaced GPU buffers instead of accumulating hidden
+     // geometry; ENV009 walkable ledge, ravine and photo skin are untouched.
+     for(const m of meshes.filter(m=>m.name!=="env010_sky"))m.dispose();
+     mark("ready");
+    }catch(error){
+     for(const v of created)try{v.dispose();}catch(_){}
+     throw error;
+    }
+   }).catch(()=>mark(isDisposed()?"disposed":"fallback"));
+   return true;
+  }
+
   geologicalNormalMap();
   // Bundled CC0 photo-based material (ambientCG Rock063, downsampled to 512).
   // The original ENV009 diffuse + procedural microrelief remain visible until
@@ -255,6 +363,7 @@ const CombatEnvironment010=(()=>{
     }catch(error){return false;}
   }
   loadLocalRock();
+  loadSculptedRock();
   // Only for a fixed camera: retire ENV009's 360-degree wall rings so the
   // new distant composition is actually visible. The nearby ledge and ravine
   // remain fully three-dimensional; the old meshes stay owned by the Scene.

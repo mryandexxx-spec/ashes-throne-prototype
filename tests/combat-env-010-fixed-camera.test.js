@@ -22,10 +22,10 @@ function mock(){
  const scene={meshes:[],materials:[],lights:[{name:"hemi"},{name:"key"}]};
  return {B,scene};
 }
-test("ENV010 background uses erosion-softened spatial canyon walls and sky gradient; never pickable",()=>{
+test("ENV010 background contains a 3D incised gorge with atmospheric ridges and sky; never pickable",()=>{
  const {B,scene}=mock(),result=Env010.build(B,scene,v=>v);
  assert.equal(result.meshes,4);
- assert.ok(result.triangles>6500&&result.triangles<7000);
+ assert.ok(result.triangles>13200&&result.triangles<13900);
  assert.ok(scene.meshes.every(m=>m.isPickable===false&&m.checkCollisions===false));
  assert.ok(scene.materials.every(m=>m.fogEnabled===false));
  assert.equal(scene.materials.find(m=>m.name==="env010_mat_atmosphere").disableLighting,false);
@@ -44,13 +44,17 @@ test("ENV010 background uses erosion-softened spatial canyon walls and sky gradi
  const horizon=scene.meshes.find(m=>m.name==="env010_horizon").data.positions;
  const foreground=scene.meshes.find(m=>m.name==="env010_escarpment").data.positions;
  assert.ok(horizon[0]>foreground[0]&&horizon[2]>foreground[2]);
- // Every rock wall has a varying world-space depth across its vertical face;
- // a flat painted silhouette would fail this test.
+ // Gorge spans multiple actual world-space depths, not a painted billboard.
  const escarpment=scene.meshes.find(m=>m.name==="env010_escarpment");
  const p=escarpment.data.positions;
  const depth=offset=>(p[offset]+p[offset+2])/Math.sqrt(2);
  const worldDepths=Array.from({length:p.length/3},(_,i)=>depth(i*3));
  assert.ok(Math.max(...worldDepths)-Math.min(...worldDepths)>.50);
+ // The replacement of the near panorama contains 48 recession rows and a
+ // continuous valley profile; the far ridges remain separate from this mesh.
+ assert.equal(escarpment.data.positions.length/3,97*48);
+ assert.ok(scene.meshes.some(m=>m.name==="env010_midground"));
+
  assert.equal(scene.meshes[0].name,"env010_sky");
 });
 test("ENV010 integrates as an additive optional layer without changing ENV009/FX",()=>{

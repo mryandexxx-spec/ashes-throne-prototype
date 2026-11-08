@@ -98,6 +98,7 @@ const CombatVisual007=(()=>{
     if(!p)continue;
     const e=effects[cursor++%effects.length];
     e.age=0;
+    e.ring.material.alpha=.68;e.glow.material.alpha=.24;
     for(const mesh of [e.ring,e.glow]){
      mesh.position.x=p.x;mesh.position.y=1.13;mesh.position.z=p.z;
      mesh.setEnabled(true);

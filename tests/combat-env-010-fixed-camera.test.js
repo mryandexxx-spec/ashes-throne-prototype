@@ -22,10 +22,10 @@ function mock(){
  const scene={meshes:[],materials:[],lights:[{name:"hemi"},{name:"key"}]};
  return {B,scene};
 }
-test("ENV010 background frames a gorge with two flanking rock banks and three distant walls; never pickable",()=>{
+test("ENV010 background uses erosion-softened spatial canyon walls and sky gradient; never pickable",()=>{
  const {B,scene}=mock(),result=Env010.build(B,scene,v=>v);
- assert.equal(result.meshes,6);
- assert.ok(result.triangles>6800&&result.triangles<7300);
+ assert.equal(result.meshes,4);
+ assert.ok(result.triangles>6500&&result.triangles<7000);
  assert.ok(scene.meshes.every(m=>m.isPickable===false&&m.checkCollisions===false));
  assert.ok(scene.materials.every(m=>m.fogEnabled===false));
  assert.equal(scene.materials.find(m=>m.name==="env010_mat_atmosphere").disableLighting,false);
@@ -51,11 +51,6 @@ test("ENV010 background frames a gorge with two flanking rock banks and three di
  const depth=offset=>(p[offset]+p[offset+2])/Math.sqrt(2);
  const worldDepths=Array.from({length:p.length/3},(_,i)=>depth(i*3));
  assert.ok(Math.max(...worldDepths)-Math.min(...worldDepths)>.50);
- const leftBank=scene.meshes.find(m=>m.name==="env010_west_bank");
- const rightBank=scene.meshes.find(m=>m.name==="env010_east_bank");
- assert.ok(leftBank&&rightBank,"independent gorge framing rocks");
- assert.ok(leftBank.data.positions.length>1000&&rightBank.data.positions.length>1000);
- assert.ok(leftBank.isPickable===false&&rightBank.isPickable===false);
  assert.equal(scene.meshes[0].name,"env010_sky");
 });
 test("ENV010 integrates as an additive optional layer without changing ENV009/FX",()=>{
@@ -65,7 +60,7 @@ test("ENV010 integrates as an additive optional layer without changing ENV009/FX
  });
  const battle=visual.create(B,scene);
  assert.equal(scene.meshes.filter(m=>m.name.startsWith("env009_")).length,5);
- assert.equal(scene.meshes.filter(m=>m.name.startsWith("env010_")).length,6);
+ assert.equal(scene.meshes.filter(m=>m.name.startsWith("env010_")).length,4);
  for(const name of ["env009_near_escarpment","env009_far_ridge","env009_horizon_ridge"]){
   assert.equal(scene.meshes.find(m=>m.name===name).enabled,false,
    "old all-around wall is hidden only when fixed-background composition succeeds");

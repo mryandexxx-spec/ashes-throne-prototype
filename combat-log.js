@@ -14,6 +14,7 @@ const CombatLog=(()=>{
     }
     // Stats-001D1: miss is an explicit event, never fake zero HP damage.
     case "miss":return name(e.actorId)+": промах по "+name(e.targetId);
+    case "critical":return name(e.actorId)+": критический удар по "+name(e.targetId)+" (×"+(e.multiplierPercent/100)+")";
     case "damage":
      if(e.damageType&&Number.isFinite(e.hpDamage)&&Number.isFinite(e.protectionDamage))
       return name(e.targetId)+": −"+e.hpDamage+" HP"+

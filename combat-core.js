@@ -106,6 +106,11 @@ const CombatCore = (() => {
       throw Error("hitChecks must be a boolean");
     if(options.hitChecks===true&&options.rngSeed===undefined)
       throw Error("hitChecks requires rngSeed");
+    // Stats-001D2: crits are another explicit test-only feature gate.
+    if(options.critChecks!==undefined&&typeof options.critChecks!=="boolean")
+      throw Error("critChecks must be a boolean");
+    if(options.critChecks===true&&options.rngSeed===undefined)
+      throw Error("critChecks requires rngSeed");
     const seededRng=options.rngSeed===undefined?null:
       (typeof BattleRng!=="undefined"?BattleRng.create(options.rngSeed):
        (()=>{throw Error("BattleRng script is required for seeded battles");})());
@@ -126,6 +131,7 @@ const CombatCore = (() => {
       fighters,
       ...(seededRng===null?{}:{rng:seededRng}),
       ...(options.hitChecks===true?{hitChecks:true}:{}),
+      ...(options.critChecks===true?{critChecks:true}:{}),
       leaderId,
       wave: 1,
       totalWaves: 1 + futureWaves.length,
@@ -289,6 +295,32 @@ const CombatCore = (() => {
     emit(battle,"miss",{actorId:actor.id,targetId:target.id,
       hitChance:chance,draw:roll.draw});
     return false;
+  }
+  // Stats-001D2 [TEST ONLY]: a crit uses a separate RNG draw AFTER a hit.
+  // If hitChecks is disabled, an attack is a guaranteed hit and may crit.
+  function critCheckEnabled(battle,type){
+    return type!=="legacy"&&battle.critChecks===true;
+  }
+  function validCriticalProfile(battle,actor,recipients,type){
+    if(!critCheckEnabled(battle,type))return true;
+    if(typeof BattleRng==="undefined")return false;
+    let snapshot;
+    try{snapshot=BattleRng.snapshot(battle);}catch(error){return false;}
+    const maxDraws=recipients.length*(hitCheckEnabled(battle,type)?2:1);
+    if(snapshot.draws>Number.MAX_SAFE_INTEGER-maxDraws)return false;
+    // Both values are mandatory for an explicitly crit-enabled actor.
+    // The 100–1000% multiplier cap is a temporary technical safety bound.
+    return Number.isFinite(actor.critChance)&&actor.critChance>=0&&actor.critChance<=100&&
+      Number.isFinite(actor.critDamage)&&actor.critDamage>=100&&actor.critDamage<=1000;
+  }
+  function rollCriticalDamage(battle,actor,target,base,type){
+    if(!critCheckEnabled(battle,type))return base;
+    const roll=BattleRng.roll(battle,actor.critChance);
+    if(!roll.hit)return base;
+    const adjusted=Math.round(base*actor.critDamage/100);
+    emit(battle,"critical",{actorId:actor.id,targetId:target.id,
+      multiplierPercent:actor.critDamage,draw:roll.draw});
+    return adjusted;
   }
   // Legacy: weakening -> guard -> HP (unchanged).
   // Typed: weakening -> matching defense -> guard -> Protection -> HP.
@@ -486,6 +518,7 @@ const CombatCore = (() => {
     const type=ability.kind==="damage"?AbilityData.damageType(ability):null;
     if(type&&type!=="legacy"&&recipients.some(target=>!validTypedTarget(target,type)))return false;
     if(ability.kind==="damage"&&!validHitProfile(battle,actor,recipients,type))return false;
+    if(ability.kind==="damage"&&!validCriticalProfile(battle,actor,recipients,type))return false;
     // A group attack has one player-selected primary target, even though
     // every living enemy receives the base effect. Future bonus effects can
     // refer to primaryTargetId without changing recipient selection.
@@ -502,8 +535,10 @@ const CombatCore = (() => {
       if(ability.kind==="damage"){
         if(!rollToHit(battle,actor,target,type))continue;
         const oldHp=target.hp,oldProtection=target.protection??null;
+        const baseDamage=Math.round(effectiveStat(battle,actor,
+          AbilityData.damageStat(ability))*ability.multiplier);
         const damage=dealDamage(actor,target,
-          Math.round(effectiveStat(battle,actor,AbilityData.damageStat(ability))*ability.multiplier),false,type);
+          rollCriticalDamage(battle,actor,target,baseDamage,type),false,type);
         emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
           ...typedDamageFields(target,type,oldHp,oldProtection)});
         if(target.hp===0)emit(battle,"death",{targetId:target.id});
@@ -571,6 +606,7 @@ const CombatCore = (() => {
     const type=ability.kind==="damage"?AbilityData.damageType(ability):null;
     if(type&&type!=="legacy"&&!validTypedTarget(target,type))return false;
     if(ability.kind==="damage"&&!validHitProfile(battle,actor,[target],type))return false;
+    if(ability.kind==="damage"&&!validCriticalProfile(battle,actor,[target],type))return false;
     // Invalid commands leave the previous event batch untouched.
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
@@ -588,8 +624,9 @@ const CombatCore = (() => {
       battle.message=actor.name+" промахивается по "+target.name+".";
     }else{
       const oldHp=target.hp,oldProtection=target.protection??null;
+      const baseDamage=Math.round(effectiveStat(battle,actor,damageStat)*ability.multiplier);
       const damage=dealDamage(actor,target,
-        Math.round(effectiveStat(battle,actor,damageStat)*ability.multiplier),true,type);
+        rollCriticalDamage(battle,actor,target,baseDamage,type),true,type);
       emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
         ...typedDamageFields(target,type,oldHp,oldProtection)});
       if(target.hp===0)emit(battle,"death",{targetId:target.id});

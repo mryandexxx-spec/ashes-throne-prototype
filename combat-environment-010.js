@@ -50,6 +50,15 @@ const CombatEnvironment010=(()=>{
     indices.push(a,b,a+1,a+1,b,b+1);
    }
    B.VertexData.ComputeNormals(positions,indices,normals);
+   // Rock-face normals retain some relief without harsh metallic-looking
+   // alternating streaks: a common canyon-facing normal dominates.
+   if(name!=="sky")for(let k=0;k<normals.length;k+=3){
+    const nx=normals[k]*.22-AWAY.x*.78;
+    const ny=normals[k+1]*.22+.28;
+    const nz=normals[k+2]*.22-AWAY.z*.78;
+    const inv=1/Math.hypot(nx,ny,nz);
+    normals[k]=nx*inv;normals[k+1]=ny*inv;normals[k+2]=nz*inv;
+   }
    const mesh=own(new B.Mesh("env010_"+name,scene));
    const data=new B.VertexData();
    data.positions=positions;data.normals=normals;data.indices=indices;data.colors=colors;
@@ -93,9 +102,9 @@ const CombatEnvironment010=(()=>{
   const layers=[
     // These are scenic, non-canonical rock masses. Each has genuine depth
     // variation across the face, not merely an extruded flat silhouette.
-    {name:"horizon",d:99,base:-52,amplitude:34,phase:.55,color:COLORS.far,relief:1.2},
-    {name:"midground",d:72,base:-48,amplitude:38,phase:2.10,color:COLORS.mid,relief:1.9},
-    {name:"escarpment",d:47,base:-43,amplitude:33,phase:3.65,color:COLORS.near,relief:2.5}
+    {name:"horizon",d:114,base:-50,amplitude:38,phase:.55,color:COLORS.far,relief:1.2},
+    {name:"midground",d:82,base:-47,amplitude:36,phase:2.10,color:COLORS.mid,relief:1.9},
+    {name:"escarpment",d:55,base:-47,amplitude:31,phase:3.65,color:COLORS.near,relief:2.5}
   ];
   for(const layer of layers){
     const material=mat(layer.name);
@@ -103,7 +112,11 @@ const CombatEnvironment010=(()=>{
     geom(layer.name,128,rows,(u,row)=>{
       const x=(u-.5)*244;
       const t=row/(rows-1);
-      const summit=layer.base+layer.amplitude*crest(x,layer.phase);
+      const gorgeWidth=layer.name==="escarpment"?39:layer.name==="midground"?31:21;
+      const centralGorge=Math.exp(-Math.pow((x-5)/gorgeWidth,4));
+      const gorgeDepth=layer.name==="escarpment"?43:layer.name==="midground"?28:12;
+      const summit=layer.base+layer.amplitude*crest(x,layer.phase)-
+        gorgeDepth*centralGorge;
       // Erosion and debris add depth and small terraces to the rock face.
       // A sloping rock wall casts real facet lighting from the two game lights.
       const drop=68*Math.pow(1-t,1.35);

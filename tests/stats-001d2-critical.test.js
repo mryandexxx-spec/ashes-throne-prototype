@@ -75,7 +75,7 @@ b=setup(hero(),[foe("sure",{evasion:0})],{rngSeed:0,hitChecks:true,critChecks:tr
 assert.equal(cast(b),true);
 assert.equal(b.rng.draws,2);
 assert.equal(b.fighters[1].hp,90);
-assert.deepEqual(b.events.map(e=>e.type).filter(x=>["miss","critical","damage"].includes(x)),
+assert.deepEqual(Array.from(b.events,x=>x.type).filter(x=>["miss","critical","damage"].includes(x)),
  ["critical","damage"]);
 // Group attack: hit/miss per target and crit per successfully hit target.
 b=setup(hero("test-area-weaken",{physicalAttack:20,atk:20,critChance:100,critDamage:200}),[

@@ -592,7 +592,6 @@ const CombatCore = (() => {
     if(ability.kind==="damage"&&!validHitProfile(battle,actor,recipients,type))return false;
     if(ability.kind==="damage"&&!validCriticalProfile(battle,actor,recipients,type))return false;
     if(ability.kind==="damage"&&!validPenetrationProfile(battle,actor,type))return false;
-    if(!validStatusProfile(battle,actor,[target],ability,type))return false;
     if(!validStatusProfile(battle,actor,recipients,ability,type))return false;
     // A group attack has one player-selected primary target, even though
     // every living enemy receives the base effect. Future bonus effects can
@@ -682,6 +681,7 @@ const CombatCore = (() => {
     if(ability.kind==="damage"&&!validHitProfile(battle,actor,[target],type))return false;
     if(ability.kind==="damage"&&!validCriticalProfile(battle,actor,[target],type))return false;
     if(ability.kind==="damage"&&!validPenetrationProfile(battle,actor,type))return false;
+    if(!validStatusProfile(battle,actor,[target],ability,type))return false;
     // Invalid commands leave the previous event batch untouched.
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
@@ -712,7 +712,11 @@ const CombatCore = (() => {
         ? actor.name+" атакует "+target.name+": "+damage+" урона."
         : actor.name+(ability.id!=="basic"?" применяет "+ability.name+": ":" атакует: ")+
           target.name+" получает "+damage+" урона"+
-          (target.hp===0?" — повержен!":ability.weakening>0?", ослабление ×"+ability.weakening+".":".");
+          (target.hp===0?" — повержен!":
+            ability.weakening>0&&(!statusCheckEnabled(battle,type)||battle.events.some(event=>
+              event.type==="effect"&&event.effect==="weaken"&&
+              event.actorId===actor.id&&event.targetId===target.id))?
+              ", ослабление ×"+ability.weakening+".":".");
     }
     if(ability.kind!=="damage"||!hitCheckEnabled(battle,type)||
       !battle.events.some(event=>event.type==="miss"&&event.actorId===actor.id&&event.targetId===target.id))

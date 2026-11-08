@@ -1084,7 +1084,7 @@ function missionRewardLabel(id){
   ". Выдаются при первой победе и каждом повторе (от 1★). Симуляция после 3★.</p>"+bonus+
   (typeof HeroCollectionCore!=="undefined"&&HeroCollectionCore.reward(id)&&
    !heroOwned(HeroCollectionCore.reward(id))?
-    "<p class=\\"muted\\">За первую победу: новый тестовый герой — "+
+    '<p class="muted">За первую победу: новый тестовый герой — '+
     (ALLIES.find(h=>h.id===HeroCollectionCore.reward(id))?.name||"герой")+".</p>":"");
 }
 function renderCampaign(){

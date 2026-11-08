@@ -22,10 +22,18 @@ const AbilityInfo=(()=>{
     "Лидерская способность этому демонстрационному герою не назначена.":
     "Способность пока не определена.",meta:[]};
   if(slotId==="passive"){
-   const hasEffects=!!(a.triggers?.length||a.modifiers?.length);
+   const hasCombatRules=!!a.combatRules;
+   const hasEffects=!!(a.triggers?.length||a.modifiers?.length||hasCombatRules);
+   const rules=a.combatRules;
+   const detail=hasCombatRules?
+    "Проба: +"+rules.bonusVsDebuffedPercent+"% урона по цели с ослаблением, "+
+    "+"+rules.statusPotencyWithoutResistanceDown+" п.п. эффективности наложения "+
+    "без пониженного сопротивления у цели и +"+rules.tagDamagePercent+
+    "% урона союзникам с подходящим тегом. Числа тестовые.":
+    "Автоматическая способность. Подробное действие уточняется.";
    return {id:slot.id,label:slot.label,name:hasEffects?a.name:"Не определена",
     status:hasEffects?"available":"not-defined",
-    description:hasEffects?"Автоматическая способность. Подробное действие уточняется.":
+    description:hasEffects?detail:
      "Пассивная способность предусмотрена, но эффект этому герою пока не назначен.",
     meta:[]};
   }

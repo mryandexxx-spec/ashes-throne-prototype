@@ -733,6 +733,27 @@ function renderItemizedGear(base,gear){
    "Тестовый предмет доступен. Материалы — в кнопке «Тестовые ресурсы».")
   :"Для класса нет доступного предмета.";
 }
+function renderHeroAbilities(hero){
+ const list=$("#heroAbilityList");
+ if(!list||typeof AbilityInfo==="undefined")return;
+ list.replaceChildren();
+ for(const info of AbilityInfo.forHero(hero)){
+  const card=document.createElement("article");
+  card.className="hero-ability-card"+(info.status!=="available"?" unavailable":"");
+  const heading=document.createElement("div");
+  heading.className="hero-ability-heading";
+  const label=document.createElement("span");label.className="hero-ability-kind";label.textContent=info.label;
+  const name=document.createElement("strong");name.textContent=info.name;
+  heading.append(label,name);
+  const description=document.createElement("p");description.textContent=info.description;
+  card.append(heading,description);
+  if(info.meta.length){
+   const meta=document.createElement("small");meta.className="hero-ability-meta";
+   meta.textContent=info.meta.join(" · ");card.append(meta);
+  }
+  list.append(card);
+ }
+}
 function renderHeroDetail(){
  const base=ALLIES.find(h=>h.id===selectedHeroId);
  if(!base)return;
@@ -743,6 +764,7 @@ function renderHeroDetail(){
  $("#detailName").textContent=hero.name;
  $("#detailRole").textContent=hero.role+" · Демонстрационный персонаж";
  $("#detailGlyph").textContent=hero.glyph;
+ renderHeroAbilities(hero);
  // Keep the existing battle-tested HP/ATK/speed display unchanged.
  // Other approved stats are shown as TBD, never as misleading zero bonuses.
  const overview=typeof GearData!=="undefined"&&GearData.statOverview?GearData.statOverview(hero):[];

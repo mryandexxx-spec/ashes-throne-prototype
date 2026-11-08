@@ -134,6 +134,62 @@ const CombatEnvironment010=(()=>{
         CLAMP(v+beds+recess+cliffShade+facet+sun+(k===0?.012*t:0),0,1));
     },material);
   }
+
+  // A single repeatable tangent-space stone normal map adds grazing-light
+  // fracture relief to ENV009's walkable shelf without changing its y=0
+  // collision/formation plane. Generated once per Scene: 256² RGBA ≈ 256 KiB.
+  // No image download, shader, new renderer, or per-frame CPU work.
+  function geologicalNormalMap(){
+    if(typeof B.DynamicTexture!=="function")return false;
+    const ledge=Array.isArray(scene.materials)?
+      scene.materials.find(m=>m.name==="env009_mat_weathered_stone"):null;
+    if(!ledge)return false;
+    let tex=null;
+    try{
+      const n=256,field=new Float32Array(n*n);
+      const hash=(x,y,size)=>{
+        x=((x%size)+size)%size;y=((y%size)+size)%size;
+        let v=Math.imul(x+17,374761393)+Math.imul(y+53,668265263);
+        v=Math.imul(v^(v>>>13),1274126177);
+        return ((v^(v>>>16))>>>0)/4294967295;
+      };
+      const noise=(u,v,steps)=>{
+        const x=u*steps,y=v*steps,i=Math.floor(x),j=Math.floor(y);
+        const sx=x-i,sy=y-j,fx=sx*sx*(3-2*sx),fy=sy*sy*(3-2*sy);
+        const a=hash(i,j,steps)*(1-fx)+hash(i+1,j,steps)*fx;
+        const b=hash(i,j+1,steps)*(1-fx)+hash(i+1,j+1,steps)*fx;
+        return a*(1-fy)+b*fy;
+      };
+      for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+        const u=x/n,v=y/n;
+        const macro=noise(u,v,4),breakup=noise(u,v,12);
+        const warp=(macro-.5)*.11+(breakup-.5)*.04;
+        const bedding=Math.sin((u*2+v*4.0+warp)*TAU);
+        field[y*n+x]=.46*macro+.30*breakup+.15*noise(u,v,32)+
+          .09*bedding-.11*(Math.abs(bedding)<.055?1:0);
+      }
+      tex=new B.DynamicTexture("env010_rock_microrelief",n,scene,false);
+      const ctx=tex.getContext();
+      if(!ctx||typeof ctx.createImageData!=="function")throw Error("normal canvas unavailable");
+      const img=ctx.createImageData(n,n),out=img.data;
+      for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+        const l=field[y*n+(x+n-1)%n],r=field[y*n+(x+1)%n];
+        const up=field[((y+n-1)%n)*n+x],down=field[((y+1)%n)*n+x];
+        const dx=(r-l)*4.4,dy=(down-up)*4.4;
+        const norm=1/Math.hypot(dx,dy,1),k=(y*n+x)*4;
+        out[k]=Math.round(CLAMP(.5-.5*dx*norm,0,1)*255);
+        out[k+1]=Math.round(CLAMP(.5-.5*dy*norm,0,1)*255);
+        out[k+2]=Math.round((.5+.5*norm)*255);
+        out[k+3]=255;
+      }
+      ctx.putImageData(img,0,0);tex.update(false);
+      if(B.Texture){tex.wrapU=B.Texture.WRAP_ADDRESSMODE;tex.wrapV=B.Texture.WRAP_ADDRESSMODE;}
+      tex.level=.36;
+      own(tex);ledge.bumpTexture=tex;
+      return true;
+    }catch(error){try{tex?.dispose?.();}catch(_){ }return false;}
+  }
+  geologicalNormalMap();
   // Only for a fixed camera: retire ENV009's 360-degree wall rings so the
   // new distant composition is actually visible. The nearby ledge and ravine
   // remain fully three-dimensional; the old meshes stay owned by the Scene.

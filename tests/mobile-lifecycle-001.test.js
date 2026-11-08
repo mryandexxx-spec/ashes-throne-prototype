@@ -68,7 +68,7 @@ savedData.set("ashes-throne.progress.v2",JSON.stringify({version:2,accountXp:0,c
  levels:{kael:1,lyra:1,darin:1,"medic-demo":1,"test-area-damage":1},claimedMissions:[]}));
 const localStorage={getItem:k=>savedData.has(k)?savedData.get(k):null,setItem:(k,v)=>savedData.set(k,v)};
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getProgress:()=>progress,getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openCampaignMission,openHeroDetail,renderSquad,syncBattleUI,getCampaignProgress:()=>campaignProgress,CampaignData})",
+ "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getProgress:()=>progress,getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openCampaignMission,openHeroDetail,renderSquad,syncBattleUI,getCampaignProgress:()=>campaignProgress,CampaignData,BattleSpeed,setAutoSpeed})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
 function click(el){const h=el.handlers.click;assert.ok(h?.length,"missing click handler");h[0]();}
 function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
@@ -83,6 +83,10 @@ const visibility=()=>{for(const cb of document.handlers.visibilitychange||[])cb(
 assert.equal(api.openCampaignMission("black-pass-ambush"),true);
 api.showScreen("battle");
 assert.equal(elements.battle.classList.active,true);
+assert.equal(api.BattleSpeed.get(),1,"initial speed");
+assert.equal(api.setAutoSpeed(4),true,"active battle changes speed");
+assert.equal(savedData.get("ashes-throne.battle-speed.v1"),"4","speed saved independently");
+assert.equal(elements.autoSpeedBtn.textContent,"4×");
 assert.equal(rendersStarted,1,"first entry starts a single render loop");
 document.hidden=true;visibility();
 assert.equal(rendersStopped,1,"background stops GPU rendering");
@@ -101,6 +105,8 @@ assert.equal(p.energy.value,240,"unfinished free story battle should not spend e
 assert.equal(api.openCampaignMission("black-pass-ambush"),true);
 api.showScreen("battle");
 assert.equal(rendersStarted,3);
+assert.equal(api.BattleSpeed.get(),4,"restarted battle keeps speed");
+assert.equal(elements.autoSpeedBtn.textContent,"4×");
 const fight=api.getBattle();
 for(const f of fight.fighters)if(f.side==="enemy")f.hp=0;
 fight.active=false;fight.winner="ally";fight.allyActions=6;
@@ -114,8 +120,9 @@ assert.equal(rendersStarted,3,"result screen never restarts battle render loop")
 const save=JSON.parse(savedData.get("ashes-throne.progress.v3"));
 assert.equal(save.currency,1350);
 const again=vm.runInNewContext(src+
- "\n({getProgress:()=>progress,getCampaignProgress:()=>campaignProgress})",
+ "\n({getProgress:()=>progress,getCampaignProgress:()=>campaignProgress,BattleSpeed})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
 assert.equal(again.getProgress().currency,1350);
 assert.equal(again.getCampaignProgress().completed["black-pass-ambush"],true);
+assert.equal(again.BattleSpeed.get(),4,"reload restores chosen speed");
 console.log("MobileLifecycle-001: background/foreground/duplicate event, screen exit, battle restart, result and reload passed");

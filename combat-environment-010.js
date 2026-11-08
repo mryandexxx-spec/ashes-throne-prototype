@@ -100,6 +100,14 @@ const CombatEnvironment010=(()=>{
     return mix(land,COLORS.skyHaze,haze).map(v=>v+deposit+shaded);
    },m);
   }
+  // Only for a fixed camera: retire ENV009's 360-degree wall rings so the
+  // new distant composition is actually visible. The nearby ledge and ravine
+  // remain fully three-dimensional; the old meshes stay owned by the Scene.
+  for(const name of ["env009_near_escarpment","env009_far_ridge","env009_horizon_ridge"]){
+   const old=Array.isArray(scene.meshes)?scene.meshes.find(mesh=>mesh.name===name):null;
+   if(old&&typeof old.setEnabled==="function")old.setEnabled(false);
+   else if(old)old.isVisible=false;
+  }
   return Object.freeze({meshes:meshes.length,vertices,triangles});
  }
  return Object.freeze({supported,build,COLORS});

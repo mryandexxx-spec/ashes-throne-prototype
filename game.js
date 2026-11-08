@@ -221,6 +221,7 @@ let missionResultRecorded=false;
 let activeMissionId=null;
 let lastMissionStars=0;
 let lastMissionReward=null;
+let lastUnlockedHeroId=null;
 let lastMissionFarmReward=null;
 let lastMissionEnergyRefunded=false;
 let missionEntryPaid=false;
@@ -415,8 +416,15 @@ let selectedGearSlot=0;
 // Formation persists independently of hero levels/campaign saves. On the first
 // visit (or invalid/unavailable storage), use the first five roster heroes.
 const SQUAD_SAVE_KEY="ashes-throne.squad.v1";
+function heroOwned(id){
+ return typeof HeroCollectionCore==="undefined"||HeroCollectionCore.owned(progress,id);
+}
+function heroUnlockLabel(id){
+ const mission=typeof HeroCollectionCore!=="undefined"?HeroCollectionCore.unlockMission(id):null;
+ return mission?(MissionData.get(mission)?.title||"миссия"):"сюжетное прохождение";
+}
 function defaultSquad(){
- const ids=ALLIES.slice(0,MAX_SQUAD).map(h=>h.id);
+ const ids=ALLIES.filter(h=>heroOwned(h.id)).slice(0,MAX_SQUAD).map(h=>h.id);
  return {leaderId:ids[0]??null,regularIds:ids.slice(1)};
 }
 function loadSquad(){
@@ -435,8 +443,9 @@ function loadSquad(){
      parsed.regularIds.some(id=>id!==null&&typeof id!=="string"))return fallback;
   // Preserve every slot, including empty gaps. Previous saves with shorter
   // regular arrays retain positions 2..n; only trailing empties are added.
-  return {leaderId:parsed.leaderId,
-   regularIds:Array.from({length:MAX_SQUAD-1},(_,i)=>parsed.regularIds[i]??null)};
+  return {leaderId:heroOwned(parsed.leaderId)?parsed.leaderId:null,
+   regularIds:Array.from({length:MAX_SQUAD-1},(_,i)=>
+    heroOwned(parsed.regularIds[i])?parsed.regularIds[i]??null:null)};
  }catch(error){return fallback;}
 }
 function saveSquad(){
@@ -459,7 +468,7 @@ function resetSquadWarning(){
 }
 function eligibleSquadCount(){
  // ALLIES is the available/selectable roster, capped to five battle slots.
- return Math.min(MAX_SQUAD,ALLIES.length);
+ return Math.min(MAX_SQUAD,ALLIES.filter(h=>heroOwned(h.id)).length);
 }
 let state=CombatCore.createBattle([...ALLIES,...ENEMIES.slice(0,2)]);
 // Stats-002C [TEST PILOT]: provisional combat profiles, not canonical identities.
@@ -496,6 +505,7 @@ function selectedParty(){
  // Only occupied positions enter battle, ordered by their actual slot.
  // An empty leader position does NOT transfer leadership to slot 2.
  return squadSlots().filter(Boolean)
+  .filter(heroOwned)
   .map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(progressedHero);
 }
 function battleLineup(){
@@ -521,7 +531,8 @@ function renderSquad(){
   const isLeader=selectedLeaderId===h.id;
   const active=selectedPartyIds.includes(h.id)||isLeader;
   const skill=hasLeaderSkill(h.id);
-  return `<button type="button" class="squad-choice ${active?"chosen":""}" data-hero-id="${h.id}" aria-pressed="${active}"><span class="squad-glyph">${h.glyph}</span><span><b>${h.name}</b><small>${h.role} · HP ${h.hp} · ATK ${h.atk}${skill?" · Лидерская способность":""}</small></span><strong>${active?"✓":"+"}</strong></button>`;
+  const owned=heroOwned(h.id);
+  return `<button type="button" class="squad-choice ${active?"chosen":""} ${owned?"":"hero-locked"}" data-hero-id="${h.id}" aria-pressed="${active}" ${owned?"":"disabled"}><span class="squad-glyph">${owned?h.glyph:"♙"}</span><span><b>${owned?h.name:"Закрытый герой"}</b><small>${owned?h.role+" · HP "+h.hp+" · ATK "+h.atk+(skill?" · Лидерская способность":""):"Открывается: "+heroUnlockLabel(h.id)}</small></span><strong>${owned?(active?"✓":"+"):"🔒"}</strong></button>`;
  }).join("");
  $("#squadSlots").innerHTML=Array.from({length:MAX_SQUAD},(_,i)=>{
   const h=slots[i];
@@ -539,7 +550,7 @@ function renderSquad(){
  }));
 }
 function toggleSquadHero(id){
- if(!ALLIES.some(h=>h.id===id))return false;
+ if(!ALLIES.some(h=>h.id===id)||!heroOwned(id))return false;
  const slots=squadSlots();
  const occupied=slots.indexOf(id);
  if(occupied!==-1){
@@ -591,6 +602,7 @@ function showScreen(id){
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
   lastMissionReward=null;
+  lastUnlockedHeroId=null;
   lastMissionFarmReward=null;
   lastMissionEnergyRefunded=false;
   missionEntryPaid=false;
@@ -686,11 +698,14 @@ $("#squadStart").addEventListener("click",()=>{
  showScreen("battle");
 });
 function renderHeroes(){
- $("#heroList").innerHTML=ALLIES.map(progressedHero).map(h=>`<button type="button" class="hero-card hero-open" data-open-hero="${h.id}"><div class="hero-avatar">${h.glyph}</div><h3>${h.name}</h3><p>${h.role} · Уровень ${h.level}</p><div class="stats"><span>Здоровье ${h.hp}</span><span>Сила ${h.atk}</span></div><span class="hero-open-hint">Открыть карточку →</span></button>`).join("");
+ $("#heroList").innerHTML=ALLIES.map(progressedHero).map(h=>{
+  const owned=heroOwned(h.id);
+  return `<button type="button" class="hero-card hero-open ${owned?"":"hero-locked"}" data-open-hero="${h.id}" ${owned?"":"disabled"}><div class="hero-avatar">${owned?h.glyph:"🔒"}</div><h3>${owned?h.name:"Неизвестный герой"}</h3><p>${owned?h.role+" · Уровень "+h.level:"Получение: "+heroUnlockLabel(h.id)}</p>${owned?`<div class="stats"><span>Здоровье ${h.hp}</span><span>Сила ${h.atk}</span></div>`:""}<span class="hero-open-hint">${owned?"Открыть карточку →":"Пока недоступен"}</span></button>`;
+ }).join("");
  document.querySelectorAll("[data-open-hero]").forEach(node=>node.addEventListener("click",()=>openHeroDetail(node.dataset.openHero)));
 }
 function openHeroDetail(id){
- if(!ALLIES.some(h=>h.id===id))return false;
+ if(!ALLIES.some(h=>h.id===id)||!heroOwned(id))return false;
  selectedHeroId=id;
  const current=ProgressCore.gearState(progress,id);
  selectedGearSlot=current?Math.max(0,current.slots.findIndex(installed=>!installed)):0;
@@ -1066,7 +1081,11 @@ function missionRewardLabel(id){
   ?"<p class=\"muted\">Дополнительно за первую победу: "+first.currency+" валюты · "+first.xp+" XP.</p>":"";
  return "<p class=\"muted\"><b>Награды за победу:</b> "+reward.currency+
   " валюты · "+reward.xp+" XP · "+components+
-  ". Выдаются при первой победе и каждом повторе (от 1★). Симуляция после 3★.</p>"+bonus;
+  ". Выдаются при первой победе и каждом повторе (от 1★). Симуляция после 3★.</p>"+bonus+
+  (typeof HeroCollectionCore!=="undefined"&&HeroCollectionCore.reward(id)&&
+   !heroOwned(HeroCollectionCore.reward(id))?
+    '<p class="muted">За первую победу: новый тестовый герой — '+
+    (ALLIES.find(h=>h.id===HeroCollectionCore.reward(id))?.name||"герой")+".</p>":"");
 }
 function renderCampaign(){
  ProgressCore.refreshEnergy(progress);
@@ -1206,7 +1225,8 @@ function renderMissionResult(){
     (lastMissionReward.material?", +"+lastMissionReward.material+" C":"")+".":"";
  $("#missionResultText").textContent=missionResultSaveFailed
   ?"Ошибка сохранения наград. Прогресс этой победы не записан. Проверь хранилище браузера и повтори миссию."
-  :won?MissionData.get(activeMissionId).title+" завершена. "+(base+first||"Повтор без экономических наград.")
+  :won?MissionData.get(activeMissionId).title+" завершена. "+(base+first||"Повтор без экономических наград.")+
+   (lastUnlockedHeroId?" Новый герой получен: "+(ALLIES.find(h=>h.id===lastUnlockedHeroId)?.name||"тестовый персонаж")+".":"")
   :"Отряд потерпел поражение. Наград нет."+(lastMissionEnergyRefunded?" Энергия за ресурсный повтор возвращена.":"");
  const grade=$("#missionResultStars");
  if(grade){
@@ -1275,8 +1295,11 @@ function syncBattleUI(){
   if(state.winner==="ally"){
    if(progress.saveVersion===3)
     lastMissionFarmReward=ProgressCore.grantRepeatFarm(progress,activeMissionId);
-   if(firstClear)
+   if(firstClear){
     lastMissionReward=ProgressCore.claimFirstClear(progress,activeMissionId,state);
+    if(progress.saveVersion===3&&typeof HeroCollectionCore!=="undefined")
+     lastUnlockedHeroId=HeroCollectionCore.grant(progress,activeMissionId);
+   }
   }else if(state.winner==="enemy"&&progress.saveVersion===3&&
            campaignProgress.completed[activeMissionId]&&missionEntryPaid){
    lastMissionEnergyRefunded=ProgressCore.refundEnergy(progress,activeMissionId);
@@ -1290,7 +1313,7 @@ function syncBattleUI(){
    Object.keys(progress).forEach(key=>delete progress[key]);
    Object.assign(progress,beforeWallet);
    Object.assign(campaignProgress,beforeCampaign);
-   lastMissionFarmReward=null;lastMissionReward=null;lastMissionEnergyRefunded=false;
+   lastMissionFarmReward=null;lastMissionReward=null;lastUnlockedHeroId=null;lastMissionEnergyRefunded=false;
    missionResultSaveFailed=true;
    renderAccountHeader();
   }

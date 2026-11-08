@@ -48,6 +48,7 @@ const ProgressV3Core=(()=>{
    version:VERSION,accountXp:0,currency:0,legacyC:0,
    energy:{value:ProgressCore.ENERGY_MAX,updatedAt:now},
    claimedMissions:[],
+   unlockedHeroes:typeof HeroCollectionCore!=="undefined"?HeroCollectionCore.START.slice():undefined,
    heroes:Object.fromEntries(ids.map(id=>[id,cleanHero(id)])),
    materials:Object.fromEntries(MATERIALS.map(id=>[id,0])),
    migration:{strategy:"clean-heroes-v1",sourceVersion:null}
@@ -160,6 +161,8 @@ const ProgressV3Core=(()=>{
      MATERIALS.some(id=>!own(data.materials,id)||!nonneg(data.materials[id])))return null;
   if(data.daily!==undefined&&(typeof DailyCore==="undefined"||!DailyCore.valid(data.daily)))return null;
   if(data.login!==undefined&&(typeof LoginCore==="undefined"||!LoginCore.valid(data.login)))return null;
+  if(data.unlockedHeroes!==undefined&&
+    (typeof HeroCollectionCore==="undefined"||!HeroCollectionCore.valid(data.unlockedHeroes)))return null;
   if(data.skillLevels!==undefined&&
     (typeof SkillCore==="undefined"||!SkillCore.validLevels(data.skillLevels)))return null;
   if(data.skillMaterials!==undefined&&
@@ -178,6 +181,7 @@ const ProgressV3Core=(()=>{
    materials:source.materials,
    daily:source.daily,
    login:source.login,
+   unlockedHeroes:source.unlockedHeroes,
    skillLevels:source.skillLevels,
    skillMaterials:source.skillMaterials,
    classes:Object.fromEntries(ids.map(id=>[id,source.heroes[id].classId])),
@@ -208,6 +212,7 @@ const ProgressV3Core=(()=>{
    materials:p.materials,
    ...(p.daily!==undefined?{daily:p.daily}:{}),
    ...(p.login!==undefined?{login:p.login}:{}),
+   ...(p.unlockedHeroes!==undefined?{unlockedHeroes:p.unlockedHeroes}:{}),
    ...(p.skillLevels!==undefined?{skillLevels:p.skillLevels}:{}),
    ...(p.skillMaterials!==undefined?{skillMaterials:p.skillMaterials}:{}),
    migration:p.migration??{strategy:"clean-heroes-v1",sourceVersion:null},

@@ -111,8 +111,8 @@
         <div id="heroAbilityList" class="hero-abilities-list" aria-label="Пять типов способностей героя"></div>
       </section>
         <div class="hero-detail-panel hero-detail-identity">
-          <div class="eyebrow">ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД</div>
-          <div class="hero-detail-stage" aria-label="Схематичный силуэт героя, без 3D-модели">
+          <div class="eyebrow" id="detailArtworkLabel">ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД</div>
+          <div class="hero-detail-stage" id="detailHeroStage" aria-label="Схематичный силуэт героя, без 3D-модели">
             <div class="hero-detail-stage-halo" aria-hidden="true"></div>
             <div class="hero-detail-silhouette" aria-hidden="true">
               <span class="hero-detail-silhouette-head"></span>
@@ -122,6 +122,7 @@
               <span class="hero-detail-silhouette-leg hero-detail-silhouette-leg-left"></span>
               <span class="hero-detail-silhouette-leg hero-detail-silhouette-leg-right"></span>
             </div>
+            <img id="detailRenPortrait" class="ren-detail-portrait" src="assets/ren-portrait-ui.webp" width="220" height="275" decoding="async" alt="Рен Терен — портрет проводника Садов над пропастью" hidden>
             <div class="hero-detail-stage-emblem" id="detailGlyph" aria-hidden="true"></div>
             <div class="hero-detail-stage-platform" aria-hidden="true"></div>
           </div>
@@ -405,7 +406,7 @@
       <div class="story-demo-scene">
         <p class="muted story-demo-disclaimer">Неподтверждённая хронология. Сцены не изменяют канон, прогресс кампании или сохранение.</p>
         <div class="story-hero-profile" aria-label="Профиль Рена Терена · пробная версия">
-          <img class="ren-sketch-mini" src="assets/ren-concept-sketch.svg" width="68" height="90" loading="lazy" alt="Поисковый рисунок Рена: тёмные волосы, походная куртка и страховочная верёвка">
+          <img class="ren-sketch-mini" src="assets/ren-portrait-ui.webp" width="68" height="90" loading="lazy" decoding="async" alt="Рен Терен — портрет проводника Садов над пропастью">
           <div class="story-hero-profile-name"><strong>Рен Терен</strong><span class="muted">Боец ближнего боя · проба</span><span class="muted">Пассивная «Чувство тропы» · тестовая версия</span></div>
           <span class="hero-tag-strip" id="storyRenTags">Сады над пропастью</span>
           <button type="button" class="ghost hero-biography-button" id="storyRenBiography">Биография</button>
@@ -543,7 +544,7 @@
     <dialog id="heroBiographyDialog" class="hero-biography-dialog" aria-labelledby="heroBiographyTitle">
       <div class="eyebrow">ДОСЬЕ ПЕРСОНАЖА</div>
       <h2 id="heroBiographyTitle">Биография героя</h2>
-      <img id="heroBiographyPortrait" class="ren-biography-sketch" src="assets/ren-concept-sketch.svg" width="128" height="168" alt="Поисковый визуальный набросок Рена Терена, без финальной 3D-модели" hidden>
+      <img id="heroBiographyPortrait" class="ren-biography-sketch" src="assets/ren-portrait-ui.webp" width="128" height="160" decoding="async" alt="Рен Терен — портрет проводника Садов над пропастью" hidden>
       <p id="heroBiographyTags" class="hero-tag-strip" aria-label="Теги героя"></p>
       <div id="heroBiographyText" class="hero-biography-text"></div>
       <p id="heroBiographyNote" class="muted"></p>
@@ -562,7 +563,7 @@
         <button type="button" class="primary" id="lockedHeroUnlock">Открыть за 10 осколков</button>
       </div>
     </dialog>
-    <footer><span id="buildVersion">Прототип · v0.3.76 · OPSHELP + RENPLAY</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.77 · OPSHELP + RENPLAY + RENVIS001</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

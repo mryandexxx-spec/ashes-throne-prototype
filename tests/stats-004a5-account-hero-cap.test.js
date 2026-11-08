@@ -12,6 +12,17 @@ for(let i=0;i<thresholds.length;i++){
  progress.accountXp=thresholds[i];
  assert.equal(P.heroLevelCap(progress),caps[i]);
 }
+// Approved after-account-15 correspondence: 1:1, bounded by canonical hero L85.
+for(const [account,cap] of [[1,3],[2,8],[3,12],[4,14],[5,15],[15,15],[16,16],[17,17],[40,40],[84,84],[85,85],[86,85]])
+ assert.equal(P.heroLevelCapForAccountLevel(account),cap);
+assert.equal(P.heroLevelCapForAccountLevel(0),null);
+for(const [account,nextAccount,nextCap] of [[1,2,8],[2,3,12],[3,4,14],[4,5,15],[5,16,16],[15,16,16],[16,17,17],[84,85,85]]){
+ const next=P.nextHeroCapUnlock(account);
+ assert.equal(next.accountLevel,nextAccount);
+ assert.equal(next.heroCap,nextCap);
+}
+assert.equal(P.nextHeroCapUnlock(85),null);
+assert.ok(P.heroLevelCap(progress)<=P.MAX_LEVEL,"current prototype remains capped at 15");
 progress.accountXp=0;
 assert.equal(P.heroLevelCap(progress),3);
 assert.equal(P.upgrade(progress,"kael"),true);
@@ -51,8 +62,15 @@ assert.equal(P.upgrade(v3,"kael"),true);
 assert.equal(v3.levels.kael,2);
 assert.equal(P.upgradeCost(v3,"missing"),null);
 assert.match(P.upgradeBlockReason(v3,"missing"),/не найден/);
+const html=read("index.html");
+for(const id of ["playerHeroLevelCap","playerHeroCapNext","detailHeroLevelCap"])
+ assert.ok(html.includes('id="'+id+'"'),"missing explicit cap UI "+id);
+assert.match(html,/Повышение уровня героя требует игровую валюту/);
+assert.doesNotMatch(html,/Ограничение уровня героев уровнем аккаунта пока не включено/);
 const game=read("game.js");
 assert.match(game,/ProgressCore\.heroLevelCap\(progress\)/);
 assert.match(game,/ProgressCore\.upgradeBlockReason\(progress,base\.id\)/);
 assert.match(game,/const before=progress\.saveVersion===3\?JSON\.stringify\(progress\):null/);
+assert.match(game,/Доступный максимум героя сейчас/);
+assert.match(game,/ProgressCore\\.nextHeroCapUnlock\\(level\\)/);
 console.log("Stats-004A5: account levels, hard cap, currency safety, existing hero levels and UI messaging passed");

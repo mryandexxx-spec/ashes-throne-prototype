@@ -21,7 +21,7 @@ test("CV007 static arena is bounded, self-contained, unpickable and can fall bac
  assert.ok(scene.meshes.every(m=>m.isPickable===false),"no arena prop intercepts fighter selection");
  assert.ok(scene.meshes.some(m=>m.name==="cv007_surface"));
  assert.ok(scene.meshes.some(m=>m.name==="cv007_chasm"));
- assert.ok(scene.meshes.some(m=>m.name.startsWith("cv007_far_cliff")));
+ assert.ok(scene.meshes.some(m=>m.name.startsWith("cv008_distant_mass")),"new irregular distant rocks replace old cylinders");
  assert.ok(scene.meshes.every(m=>!m.material.diffuseTexture),"no texture downloads");
  assert.equal(arena.pending(),0);
  assert.equal(scene.meshes.filter(m=>m.name.includes("hit_")&&m.enabled).length,0);

@@ -123,7 +123,28 @@ assert.equal(replay.fighters[0].specialCooldown,0);
 assert.equal(replay.fighters[0].powerfulCooldown,0);
 assert.equal(core.activeEffects(replay.fighters[1]).length,0);
 
-// Scenario 6: no persistent Ren, trial numbers and origin do not leak.
+// Scenario 6: defeat must stop actions, and a fresh battle must not inherit
+// statuses, cooldowns, meters or the previous winner.
+const doomed=core.createBattle([
+ {...ren(),hp:1,speed:1},
+ {...enemy("killer",300,400),atk:30}
+]);
+core.advanceToPlayerTurn(doomed);
+assert.equal(doomed.active,false);
+assert.equal(doomed.winner,"enemy");
+assert.equal(doomed.currentActor,-1);
+assert.equal(core.performPlayerAbility(doomed,"basic"),false);
+assert.equal(core.performAutoAction(doomed,{abilityId:"powerful",targetIndex:1}),false);
+const afterDefeat=start([enemy("fresh",300)]);
+assert.equal(afterDefeat.active,true);
+assert.equal(afterDefeat.winner,null);
+assert.equal(afterDefeat.allyActions,0);
+assert.equal(afterDefeat.fighters[0].hp,91);
+assert.equal(afterDefeat.fighters[0].powerfulCooldown,0);
+assert.equal(afterDefeat.fighters[1].hp,300);
+assert.equal(core.activeEffects(afterDefeat.fighters[1]).length,0);
+
+// Scenario 7: no persistent Ren, trial numbers and origin do not leak.
 assert.deepEqual(Array.from(story.heroes()[0].tags),["gardens-over-abyss"]);
 assert.equal(ability.get(story.heroes()[0],"powerful").name,"Сорвать построение · проба");
 assert.equal(ability.get(story.heroes()[0],"basic").name,"Точный удар · проба");

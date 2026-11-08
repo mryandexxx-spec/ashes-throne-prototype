@@ -33,7 +33,8 @@ const watchdog=setInterval(()=>{
   const canvas=doc.querySelector("#renderCanvas");
   const controls=doc.querySelector("#arenaIndicators");
   const battle=doc.querySelector("#battle.active");
-  if(battle&&canvas&&canvas.width>0&&canvas.height>0&&controls){
+  if(battle&&canvas&&canvas.width>0&&canvas.height>0&&controls&&
+     doc.documentElement.dataset.env010Rock==="ready"){
    clearInterval(watchdog);
    setTimeout(()=>{
     document.documentElement.dataset.visualStatus="ready";

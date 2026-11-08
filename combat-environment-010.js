@@ -12,9 +12,9 @@ const CombatEnvironment010=(()=>{
  const CLAMP=(v,min,max)=>Math.max(min,Math.min(max,v));
  const mix=(a,b,t)=>a.map((n,i)=>n*(1-t)+b[i]*t);
  const COLORS=Object.freeze({
-  skyTop:[.235,.345,.430],skyUpper:[.37,.48,.54],
-  skyHaze:[.58,.66,.67],skyHorizon:[.72,.74,.69],
-  far:[.495,.56,.57],mid:[.39,.47,.49],near:[.30,.38,.40]
+  skyTop:[.32,.43,.52],skyUpper:[.43,.53,.60],
+  skyHaze:[.62,.68,.69],skyHorizon:[.72,.74,.70],
+  far:[.57,.625,.64],mid:[.46,.52,.54],near:[.355,.43,.46]
  });
  function supported(B){
   return !!(B&&typeof B.Mesh==="function"&&typeof B.VertexData==="function"&&
@@ -63,8 +63,8 @@ const CombatEnvironment010=(()=>{
   // One unlit quadrilateral with a continuous vertical haze gradient.
   // A sky colour plane is not the scene geometry and is too far to accept touches.
   const sky=mat("atmosphere");
-  const stops=[[-360,COLORS.skyHorizon],[-90,COLORS.skyHorizon],
-   [8,COLORS.skyHaze],[100,COLORS.skyUpper],[250,COLORS.skyTop]];
+  const stops=[[-360,COLORS.skyHorizon],[-145,COLORS.skyHorizon],
+   [-55,COLORS.skyHaze],[45,COLORS.skyUpper],[160,COLORS.skyTop]];
   geom("sky",1,stops.length,(u,row)=>place(118,(u-.5)*310,stops[row][0]),
    (u,row)=>stops[row][1],sky);
   function peak(s,c,w,h){const q=(s-c)/w;return h*Math.exp(-q*q*1.15);}
@@ -74,8 +74,8 @@ const CombatEnvironment010=(()=>{
    const mass=peak(u,-.76,.36,.78)+peak(u,-.22,.26,1.18)+
     peak(u,.24,.24,.69)+peak(u,.73,.35,.95);
    const foothills=.12*Math.sin(t*.105+phase)+.065*Math.sin(t*.29+phase*.7);
-   const cleft=Math.max(0,1-Math.abs(Math.sin(t*.06+phase*1.5))/.085);
-   return mass+foothills-.22*cleft;
+   const erodedValley=.13*Math.pow(Math.max(0,Math.sin(t*.055+phase*1.5)),4);
+   return mass+foothills-erodedValley;
   }
   const layers=[
    {name:"horizon",d:92,base:-98,amplitude:54,phase:.45,color:COLORS.far},
@@ -95,10 +95,12 @@ const CombatEnvironment010=(()=>{
    },(u,row,x,y,z)=>{
     const t=(u-.5)*232;
     const land=layer.color;
-    const deposit=.035*Math.sin(t*.12+layer.phase)+.017*Math.sin(t*.33+row*.8);
-    const shaded=row<3?-.075:row===3?-.035:.025;
-    const haze=row===0?.28:row===1?.13:0;
-    return mix(land,COLORS.skyHaze,haze).map(v=>v+deposit+shaded);
+    const slope=sculpt(t+1.5,layer.phase)-sculpt(t-1.5,layer.phase);
+    const sediment=.036*Math.sin(y*.23+t*.024+layer.phase);
+    const facet=CLAMP(slope*2.0,-.14,.14);
+    const shaded=row<2?-.085:row===2?-.035:row===3?.02:.065;
+    const haze=row===0?.25:row===1?.10:0;
+    return mix(land,COLORS.skyHaze,haze).map(v=>v+sediment+facet+shaded);
    },m);
   }
   // Only for a fixed camera: retire ENV009's 360-degree wall rings so the

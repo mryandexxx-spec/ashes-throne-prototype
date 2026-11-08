@@ -515,10 +515,12 @@ function renderHeroDetail(){
  $("#detailGlyph").textContent=hero.glyph;
  // Keep the existing battle-tested HP/ATK/speed display unchanged.
  // Other approved stats are shown as TBD, never as misleading zero bonuses.
- const statRows=(typeof GearData!=="undefined"&&GearData.statOverview?GearData.statOverview(hero):[]).map(stat=>
+ const overview=typeof GearData!=="undefined"&&GearData.statOverview?GearData.statOverview(hero):[];
+ const statRows=overview.map(stat=>
   '<div class="stat-catalog-row"><span>'+stat.label+'</span><strong>'+
    (stat.active?stat.value:'Не рассчитано')+'</strong></div>').join("");
- $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>Атака (общая, тест)</span><strong>${hero.atk} ATK</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · 12 ожидают формулы</summary><p class="muted">В бою сейчас работают HP, общая тестовая ATK и скорость. Общая ATK ещё не разделена на физическую и магическую. Protection — отдельный поглотитель урона до HP. Остальные значения и правила расчёта не утверждены.</p>${statRows}</details>`;
+ const activeStats=overview.filter(stat=>stat.active).length;
+ $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>Атака (общая, тест)</span><strong>${hero.atk} ATK</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · ${14-activeStats} ожидают формулы</summary><p class="muted">Тестовый пилот: физическая атака наследует текущую общую ATK с бонусами уровня и G; оборона и Protection работают против типизированных ударов. Магическая атака и прочие параметры пока не назначены.</p>${statRows}</details>`;
  $("#detailLevel").textContent="Уровень "+hero.level+" / "+ProgressCore.MAX_LEVEL;
  $("#detailWallet").textContent=String(progress.currency);
  $("#detailCost").textContent=cost===null?"Недоступно":cost+" валюты";
@@ -877,7 +879,9 @@ function renderTargetFighterHud(){
  level.textContent=Number.isInteger(target.level)&&target.level>0?"Ур. "+target.level:"";
  name.textContent=target.name;
  hp.textContent="HP "+Math.max(0,target.hp)+"/"+target.maxHp;
- stats.textContent="АТК "+target.atk+" · СКР "+target.speed;
+ stats.textContent="АТК "+target.atk+" · СКР "+target.speed+
+  (Number.isFinite(target.maxProtection)&&target.maxProtection>0?
+    " · PR "+target.protection+"/"+target.maxProtection:"");
  fill.style.width=Math.max(0,Math.min(100,target.hp/Math.max(1,target.maxHp)*100))+"%";
 }
 function syncBattleUI(){
@@ -1002,6 +1006,10 @@ function renderArenaIndicators(){
  overlay.innerHTML=roster.filter(h=>h.hp>0||BattleAnimation.isDying(h.id)).map(h=>{
   const health=Math.min(100,Math.max(0,h.hp/Math.max(1,h.maxHp)*100));
   const initiative=Math.min(100,Math.max(0,(h.meter||0)/10));
+  const protectionPercent=Math.min(100,Math.max(0,
+    (h.protection||0)/Math.max(1,h.maxProtection||0)*100));
+  const protectionLine=Number.isFinite(h.maxProtection)&&h.maxProtection>0?
+    `<div class="arena-protection" title="Protection ${h.protection} / ${h.maxProtection}"><span style="width:${protectionPercent}%"></span></div>`:"";
   const effects=[h.guardHits>0?`<span class="arena-effect" title="Защита: ${h.guardHits} ударов">◆${h.guardHits}</span>`:"",
    h.weakenAttacks>0?`<span class="arena-effect debuff" title="Ослабление: ${h.weakenAttacks} атак">↓${h.weakenAttacks}</span>`:""].join("");
   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
@@ -1014,6 +1022,7 @@ function renderArenaIndicators(){
    ${focused?`<div class="arena-focus-cursor ${support?"available":"locked"}" aria-hidden="true">▼</div>`:""}
    <div class="arena-indicator-name">${h.name}</div>
    <div class="arena-health" title="HP ${Math.max(0,h.hp)} / ${h.maxHp}"><span style="width:${health}%"></span></div>
+   ${protectionLine}
    <div class="arena-initiative" title="Инициатива ${Math.round(h.meter||0)} / 1000"><span style="width:${initiative}%"></span></div>
    ${effects?`<div class="arena-effects">${effects}</div>`:""}
   </div>`;
@@ -1201,7 +1210,12 @@ function renderFighterInspection(){
  $("#inspectName").textContent=fighter.name;
  $("#inspectRole").textContent=fighter.role+(Number.isInteger(fighter.level)?" · Уровень "+fighter.level:"");
  $("#inspectStats").textContent="Здоровье: "+fighter.hp+" / "+fighter.maxHp+
-  " · Атака: "+fighter.atk+" · Скорость: "+fighter.speed+
+  " · Атака: "+fighter.atk+
+  (Number.isFinite(fighter.physicalAttack)?" · Физ. атака: "+fighter.physicalAttack:"")+
+  (Number.isFinite(fighter.physicalDefense)?" · Физ. оборона: "+fighter.physicalDefense:"")+
+  (Number.isFinite(fighter.magicDefense)?" · Маг. оборона: "+fighter.magicDefense:"")+
+  (Number.isFinite(fighter.maxProtection)?" · Protection: "+fighter.protection+"/"+fighter.maxProtection:"")+
+  " · Скорость: "+fighter.speed+
   " · Инициатива: "+Math.round(fighter.meter)+" / 1000"+
   (fighter.side==="ally"?" · Перезарядка: "+fighter.specialCooldown:"");
  const effects=[];

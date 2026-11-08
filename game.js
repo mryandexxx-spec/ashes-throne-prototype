@@ -333,10 +333,14 @@ function renderLoginCalendar(){
   return;
  }
  grid.replaceChildren();
- for(let i=0;i<LoginCore.REWARDS.length;i++){
-  const reward=LoginCore.REWARDS[i];
+ const monthLabel=$("#loginCalendarMonth");
+ if(monthLabel)monthLabel.textContent=new Intl.DateTimeFormat("ru-RU",{month:"long",year:"numeric"})
+  .format(new Date(Number(view.month.slice(0,4)),Number(view.month.slice(5,7))-1,1))+
+  " · "+view.days+" дней";
+ for(let i=0;i<view.days;i++){
+  const reward=LoginCore.rewardForDay(i+1);
   const cell=document.createElement("div");
-  cell.className="login-day"+(i<view.claimedThisCycle?" claimed":"")+
+  cell.className="login-day"+(i<view.claimedThisMonth?" claimed":"")+
    (view.available&&i===view.nextDay-1?" active":"");
   const title=document.createElement("strong");title.textContent="День "+(i+1);
   const detail=document.createElement("small");
@@ -350,7 +354,9 @@ function renderLoginCalendar(){
   view.alreadyClaimed?"Сегодня получено":"Получение недоступно";
  status.textContent=view.clockBack?"Дата на устройстве раньше последней полученной награды.":
   view.alreadyClaimed?"Награда за сегодня получена. Возвращайся завтра.":
-  "Пропущенные дни не сбрасывают прогресс: следующая награда — день "+view.nextDay+".";
+  view.available?"Пропущенные дни не сбрасывают прогресс. Следующая награда — день "+
+   view.nextDay+" из "+view.days+". Первого числа календарь обновится.":
+   "Все награды этого месяца собраны. Новый календарь появится первого числа.";
 }
 $("#loginClaim")?.addEventListener("click",()=>{
  if(saveBlocked)return;

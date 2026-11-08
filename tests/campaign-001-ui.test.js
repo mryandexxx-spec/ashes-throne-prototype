@@ -3,8 +3,8 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","auto-decision.js","enemy-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","story-demo-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
-const ids=["home","collection","campaign","storyDemo","storyDemoOpen","storyDemoBack","storyDemoSpeaker","storyDemoText","storyDemoNext","storyDemoChoices","storyDemoChoiceA","storyDemoChoiceB","storyDemoFight","storyDemoAgain","squad","battle","heroList","combatants",
+const src=["initiative-model.js","ability-data.js","combat-core.js","auto-decision.js","enemy-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","story-trial-data.js","story-demo-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const ids=["home","collection","campaign","storyDemo","storyDemoOpen","storyDemoBack","storyDemoSpeaker","storyDemoText","storyDemoNext","storyDemoChoices","storyDemoChoiceA","storyDemoChoiceB","storyDemoFight","storyDemoTrialFight","storyDemoNotice","storyDemoAgain","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn","arenaIndicators","orientationPrompt",
  "basicAbilitySlot","specialAbilitySlot","abilityTooltip","abilityTooltipTitle","abilityTooltipText",
  "fighterInspect","inspectClose","inspectSide","inspectName","inspectRole","inspectStats","inspectEffects",
@@ -166,6 +166,32 @@ const count=()=>elements.squadCount.textContent;
  api.showScreen("home");
 }
 
+// STORY-002: the literary characters fight only in the ephemeral trial party.
+// The real saved roster and energy stay unchanged; repeat after defeat works.
+{
+ const savedBefore=JSON.stringify(api.getCampaignProgress());
+ const walletBefore=api.getCurrency(),energyBefore=api.getEnergy();
+ click(elements.storyDemoOpen);
+ for(let i=0;i<7;i++)click(elements.storyDemoNext);
+ click(elements.storyDemoChoiceA);
+ assert.equal(elements.storyDemoTrialFight.hidden,false);
+ click(elements.storyDemoTrialFight);
+ assert.equal(elements.battle.classList.contains("active"),true);
+ assert.equal(api.getBattle().fighters.filter(f=>f.side==="ally").map(f=>f.id).join(","),
+  "trial-ren,trial-nada,trial-liora");
+ assert.equal(api.getBattle().fighters.find(f=>f.id==="trial-nada").name,"Нада");
+ api.getBattle().active=false;
+ api.getBattle().winner="enemy";
+ api.syncBattleUI();
+ assert.equal(elements.storyDemo.classList.contains("active"),true);
+ assert.equal(elements.storyDemoSpeaker.textContent,"Попытка не удалась");
+ click(elements.storyDemoAgain);
+ assert.match(elements.storyDemoText.textContent,/ущелья/);
+ assert.equal(JSON.stringify(api.getCampaignProgress()),savedBefore);
+ assert.equal(api.getCurrency(),walletBefore);
+ assert.equal(api.getEnergy(),energyBefore);
+ api.showScreen("home");
+}
 // Campaign entrance, not generic arena, activates the mission result screen.
 api.showScreen("campaign");
 assert.match(elements.campaignMissions.innerHTML,/Не пройдено/);

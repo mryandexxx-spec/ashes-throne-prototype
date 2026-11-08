@@ -569,12 +569,15 @@ const CombatCore = (() => {
     const crit=critCheckEnabled(battle,type);
     const status=statusCheckEnabled(battle,type)&&abilityHasNegativeStatus(ability);
     const onHitStatus=battle.statusChecks===true&&ability.onHitStatus!==undefined;
-    if(!hit&&!crit&&!status&&!onHitStatus)return true;
+    const areaStatus=battle.statusChecks===true&&ability.followUpStatusAll!==undefined;
+    if(!hit&&!crit&&!status&&!onHitStatus&&!areaStatus)return true;
     if(typeof BattleRng==="undefined")return false;
     let snapshot;
     try{snapshot=BattleRng.snapshot(battle);}catch(error){return false;}
     let draws=(hit?recipients.length:0)+(crit?recipients.length:0);
     if(onHitStatus)draws+=recipients.length;
+    // Reserve for all living enemies even when the primary dies on impact.
+    if(areaStatus)draws+=battle.fighters.filter(f=>f.side!==battle.fighters[battle.currentActor].side&&f.hp>0).length;
     if(status){
       if(ability.weakening>0)draws+=recipients.length;
       for(const e of ability.followUpEffects||[]){
@@ -589,7 +592,7 @@ const CombatCore = (() => {
   function validStatusProfile(battle,actor,recipients,ability,type){
     // Even legacy Ren attacks need valid stats for opt-in on-hit status rolls.
     // Reject before action/RNG/event mutation, including multi-target commands.
-    if(ability.onHitStatus!==undefined&&battle.statusChecks===true){
+    if((ability.onHitStatus!==undefined||ability.followUpStatusAll!==undefined)&&battle.statusChecks===true){
       if(typeof BattleRng==="undefined")return false;
       const valid=value=>Number.isFinite(value)&&value>=0&&value<=100;
       if(!valid(actor.debuffPotency)||
@@ -659,6 +662,46 @@ const CombatCore = (() => {
     if(CombatStatusCore.apply(target,x.type,x.amount,x.turns))
       emit(battle,"effect",{actorId:actor.id,targetId:target.id,
         effect:x.type,amount:x.amount,remaining:x.turns});
+  }
+  // REN-COMBAT-D: powerful strike targets one foe, then independently tries
+  // a non-damaging status on all living opposing fighters. An actual hit
+  // triggers the group stage even when the struck primary dies. A miss does not.
+  function validAreaStatus(ability){
+    if(ability.followUpStatusAll===undefined)return true;
+    const x=ability.followUpStatusAll;
+    return ability.kind==="damage"&&ability.target==="enemy"&&
+      typeof CombatStatusCore!=="undefined"&&
+      CombatStatusCore.KINDS.includes(x?.type)&&
+      Number.isFinite(x.amount)&&x.amount>=0&&x.amount<=100&&
+      Number.isSafeInteger(x.turns)&&x.turns>0;
+  }
+  function areaStatusTargets(battle,actor){
+    return battle.fighters.filter(target=>target.side!==actor.side&&target.hp>0);
+  }
+  function validAreaStatusProfile(battle,actor,ability){
+    if(ability.followUpStatusAll===undefined||battle.statusChecks!==true)return true;
+    const valid=n=>Number.isFinite(n)&&n>=0&&n<=100;
+    return valid(actor.debuffPotency)&&
+      areaStatusTargets(battle,actor).every(t=>valid(t.debuffResistance));
+  }
+  function applyAreaStatusAfterHit(battle,actor,ability){
+    const x=ability.followUpStatusAll;
+    if(!x)return;
+    // Each surviving opponent gets its own optional RNG check.
+    for(const target of areaStatusTargets(battle,actor)){
+      if(battle.statusChecks===true){
+        const chance=statusChance(actor,target);
+        const roll=BattleRng.roll(battle,chance);
+        if(!roll.hit){
+          emit(battle,"status-resisted",{actorId:actor.id,targetId:target.id,
+            effect:x.type,chance,draw:roll.draw});
+          continue;
+        }
+      }
+      if(CombatStatusCore.apply(target,x.type,x.amount,x.turns))
+        emit(battle,"effect",{actorId:actor.id,targetId:target.id,
+          effect:x.type,amount:x.amount,remaining:x.turns});
+    }
   }
   function tickActorStatuses(actor){
     if(typeof CombatStatusCore!=="undefined")CombatStatusCore.tickOwnTurn(actor);
@@ -791,7 +834,8 @@ const CombatCore = (() => {
     const damageStat=ability.kind==="damage"?AbilityData.damageStat(ability):null;
     if(ability.kind==="damage"&&(!damageStat||!Number.isFinite(actor[damageStat])||actor[damageStat]<0))return false;
     if(!Number.isSafeInteger(ability.cooldown)||ability.cooldown<0||
-       !validFollowUpEffects(ability)||!validOnHitStatus(battle,ability))return false;
+       !validFollowUpEffects(ability)||!validOnHitStatus(battle,ability)||
+       !validAreaStatus(ability)||!validAreaStatusProfile(battle,actor,ability))return false;
     if(!["damage","heal","guard"].includes(ability.kind))return false;
     if(ability.kind==="damage"&&(!Number.isFinite(ability.multiplier)||ability.multiplier<0))return false;
     if(ability.kind==="heal"&&(!Number.isFinite(ability.healAmount)||ability.healAmount<0))return false;
@@ -838,6 +882,7 @@ const CombatCore = (() => {
       if(ability.weakening>0&&target.hp>0)
         applyNegativeStatus(battle,actor,target,ability.weakening,type);
       applyOnHitStatus(battle,actor,target,ability);
+      applyAreaStatusAfterHit(battle,actor,ability);
       battle.message=actor.side==="enemy"&&ability.id==="basic"
         ? actor.name+" атакует "+target.name+": "+damage+" урона."
         : actor.name+(ability.id!=="basic"?" применяет "+ability.name+": ":" атакует: ")+

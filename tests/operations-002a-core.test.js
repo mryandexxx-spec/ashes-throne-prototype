@@ -19,12 +19,12 @@ const store=()=>{
  return {items,getItem:key=>items.get(key)??null,
   setItem:(key,value)=>items.set(key,value)};
 };
-test("OPS-002A only exposes a new isolated contract and no global game entry",()=>{
+test("OPS-002A contract remains isolated in storage while OPS-002B integrates its UI",()=>{
  assert.equal(core.ID,"OPS-002");
  assert.equal(core.KEY,"ashes-throne.signal-operation.v1");
  assert.equal(core.VERSION,1);
- assert.equal(read("index.html").includes('src="signal-operation-core.js"'),false);
- assert.equal(read("game.js").includes("SignalOperationCore"),false);
+ assert.equal(read("index.html").includes('src="signal-operation-core.js"'),true);
+ assert.equal(read("game.js").includes("SignalOperationCore"),true);
  assert.equal(read("operation-core.js").includes("SignalOperationCore"),false);
  assert.equal(read("package.json").includes("node --check signal-operation-core.js"),true);
  for(const id of ["ves","shade"])assert.ok(core.GUARDS.includes(id));

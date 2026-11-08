@@ -181,6 +181,12 @@
         <div><div class="eyebrow">OPS-001B · НЕКАНОНИЧЕСКИЙ ПИЛОТ</div><h2>Разведывательные операции</h2></div>
         <button type="button" class="ghost" data-screen="home">← Назад</button>
       </div>
+      <div class="sig-operation-entry">
+        <div><strong>Вторая учебная операция · «Тревожный сигнал»</strong>
+          <p class="muted">Определи связного и останови предупреждение. Тихий штурм или две волны осады — с разными последствиями.</p></div>
+        <button type="button" class="primary" data-screen="signalOperations">К сигнальному посту</button>
+      </div>
+      <div class="eyebrow ops-legacy-label">OPS-001 · ДВА КУРЬЕРА</div>
       <div class="ops-layout">
         <div class="ops-map" aria-label="Карта перехвата">
           <div class="eyebrow">СХЕМА ПЕРЕХВАТА</div>
@@ -225,6 +231,57 @@
           <button type="button" class="primary" id="operationResultAgain">Новая операция</button>
           <button type="button" class="ghost" id="operationResultBack">К операциям</button>
           <button type="button" class="ghost" id="operationResultHome">Домой</button>
+        </div>
+      </div>
+    </section>
+    <section id="signalOperations" class="screen operations-screen" aria-label="Разведоперация Тревожный сигнал">
+      <div class="section-heading">
+        <div><div class="eyebrow">OPS-002B · НЕКАНОНИЧЕСКИЙ ПИЛОТ</div><h2>Тревожный сигнал</h2></div>
+        <button type="button" class="ghost" data-screen="operations">← К операциям</button>
+      </div>
+      <div class="ops-layout">
+        <div class="ops-map sig-map" aria-label="Учебная схема сигнального поста">
+          <div class="eyebrow">СИГНАЛЬНЫЙ ПОСТ</div>
+          <p class="muted">Связной может поднять тревогу, если первым погибнет другой страж.</p>
+          <div class="sig-guards" aria-label="Два противника и сигнальное устройство">
+            <div class="sig-guard">
+              <span class="sig-guard-icon" aria-hidden="true">♙</span>
+              <strong id="sigGuardAName">Страж 1</strong>
+              <small id="sigGuardA">Роль не установлена</small>
+            </div>
+            <div class="sig-beacon">
+              <span aria-hidden="true">⚑</span><strong>СИГНАЛ</strong>
+              <small>Не допустить предупреждения</small>
+            </div>
+            <div class="sig-guard">
+              <span class="sig-guard-icon" aria-hidden="true">♙</span>
+              <strong id="sigGuardBName">Страж 2</strong>
+              <small id="sigGuardB">Роль не установлена</small>
+            </div>
+          </div>
+          <p id="sigPostStatus" class="sig-post-status" role="status">Сигнал ещё можно предотвратить</p>
+          <p class="muted">Учебная схема, не карта канонической местности. Наград и расхода энергии нет.</p>
+        </div>
+        <div class="ops-panel">
+          <div class="eyebrow" id="sigPhase">БРИФИНГ</div>
+          <p class="ops-report" id="sigReport" role="status" aria-live="polite"></p>
+          <div id="sigActions" class="ops-actions" aria-label="Подготовка, атака и последствия"></div>
+          <p id="sigNotice" class="ops-notice" role="alert"></p>
+          <p id="sigHistory" class="muted"></p>
+        </div>
+      </div>
+      <p id="sigSaveStatus" class="muted ops-save-status" role="status">Итоги и контрольная точка сохраняются отдельно.</p>
+    </section>
+    <section id="signalOperationResult" class="screen mission-result-screen" aria-label="Итоги сигнального поста">
+      <div class="mission-result-card">
+        <div class="eyebrow">OPS-002 · УЧЕБНАЯ ОПЕРАЦИЯ</div>
+        <h2 id="sigResultTitle">Итог сигнального поста</h2>
+        <p id="sigResultText" role="status"></p>
+        <p id="sigResultStatus" class="muted"></p>
+        <div class="mission-result-actions">
+          <button type="button" class="primary" id="sigResultAgain">Новая операция</button>
+          <button type="button" class="ghost" id="sigResultBack">К сигнальному посту</button>
+          <button type="button" class="ghost" id="sigResultHome">Домой</button>
         </div>
       </div>
     </section>
@@ -469,7 +526,7 @@
         <button type="button" class="primary" id="lockedHeroUnlock">Открыть за 10 осколков</button>
       </div>
     </dialog>
-    <footer><span id="buildVersion">Прототип · v0.3.74 · OPS001B + RENPLAY</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.75 · OPS002B + RENPLAY</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -501,6 +558,7 @@
   <script src="campaign-data.js"></script>
    <script src="challenge-core.js"></script>
   <script src="operation-core.js"></script>
+  <script src="signal-operation-core.js"></script>
   <script src="battle-speed.js"></script>
   <script src="animation-profiles.js"></script>
   <script src="battle-animation.js"></script>

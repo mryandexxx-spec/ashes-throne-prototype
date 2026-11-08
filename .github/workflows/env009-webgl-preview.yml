@@ -1,0 +1,47 @@
+name: ENV009 WebGL screenshot comparison
+on:
+  pull_request:
+    paths:
+      - 'combat-environment-009.js'
+      - 'combat-visual-007.js'
+      - 'tests/fixtures/env009-webgl-preview.html'
+      - '.github/workflows/env009-webgl-preview.yml'
+  workflow_dispatch:
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Capture Babylon.js comparison at the approved camera
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          test -n "$chrome"
+          mkdir -p artifacts
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/env009-http.log 2>&1 &
+          sleep 2
+          for case in 'cv008 default' 'env009 default' 'env009 left' 'env009 right'; do
+            read -r mode yaw <<<"$case"
+            name="$mode-$yaw"
+            if [[ "$mode" == cv008 ]]; then query="mode=cv008&yaw=$yaw"; else query="mode=env009&yaw=$yaw"; fi
+            url="http://127.0.0.1:8765/tests/fixtures/env009-webgl-preview.html?$query"
+            "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
+              --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
+              --hide-scrollbars --force-device-scale-factor=1 --window-size=1808,832 \
+              --virtual-time-budget=10000 --screenshot="$PWD/artifacts/$name.png" "$url" 2>"/tmp/chrome-$name.log"
+            page="$("$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
+              --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
+              --virtual-time-budget=10000 --dump-dom "$url" 2>>"/tmp/chrome-$name.log")"
+            echo "$page" | grep -q 'data-visual-status="ready"'
+            test -s "artifacts/$name.png"
+            file "artifacts/$name.png"
+          done
+      - name: Upload real headless WebGL screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env009-babylon-webgl-comparison
+          path: artifacts/*.png
+          if-no-files-found: warn

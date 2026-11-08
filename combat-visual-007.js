@@ -32,12 +32,14 @@ const CombatVisual007=(()=>{
    return decorate(B.MeshBuilder.CreateCylinder("cv007_"+name,
     {diameterTop:top,diameterBottom:bottom,height,tessellation:7},scene),mat,x,y,z);
   }
-  // CV008: limited stone palette, neither grey concrete nor highly saturated terrain.
-  const sand=material("deck",.67,.64,.56),edge=material("edge",.23,.26,.28),
-   worn=material("wear",.47,.42,.35),joint=material("joint",.17,.19,.20),
-   canyon=material("canyon",.12,.17,.20),distant=material("distant",.23,.29,.32),
-   pale=material("pale",.57,.52,.43),darkStone=material("dark_stone",.29,.32,.31),
-   ochre=material("ochre",.46,.36,.27),farStone=material("far_stone",.18,.24,.29);
+  // The CV008 palette remains a safe fallback but is not allocated in ENV009.
+  const useEnv009=typeof CombatEnvironment009!=="undefined" && CombatEnvironment009.supported(B);
+  const legacyMaterial=(...args)=>useEnv009?null:material(...args);
+  const sand=legacyMaterial("deck",.67,.64,.56),edge=legacyMaterial("edge",.23,.26,.28),
+   worn=legacyMaterial("wear",.47,.42,.35),joint=legacyMaterial("joint",.17,.19,.20),
+   canyon=legacyMaterial("canyon",.12,.17,.20),distant=legacyMaterial("distant",.23,.29,.32),
+   pale=legacyMaterial("pale",.57,.52,.43),darkStone=legacyMaterial("dark_stone",.29,.32,.31),
+   ochre=legacyMaterial("ochre",.46,.36,.27),farStone=legacyMaterial("far_stone",.18,.24,.29);
   // Canvas-generated texture is optional; no download, persistent network asset or dependency.
   function stoneGrain(){
    if(typeof B.DynamicTexture!=="function")return null;
@@ -69,7 +71,7 @@ const CombatVisual007=(()=>{
     return texture;
    }catch(error){try{texture?.dispose();}catch(_){}return null;}
   }
-  const grain=stoneGrain();
+  const grain=useEnv009?null:stoneGrain();
   if(grain)sand.diffuseTexture=grain;
   function outcrop(name,x,y,z,w,h,d,mat,lean=0){
    const mesh=decorate(B.MeshBuilder.CreateSphere("cv008_"+name,
@@ -78,6 +80,9 @@ const CombatVisual007=(()=>{
    mesh.rotation.z=lean;return mesh;
   }
   try{
+   if(useEnv009){
+    CombatEnvironment009.build(B,scene,owned);
+   }else{
    // Continuous walkable plane preserves the established combat formation/camera.
    decorate(B.MeshBuilder.CreateGround("cv007_surface",{width:16,height:9},scene),sand,0,.007,0);
    box("shelf",15.6,.32,8.55,edge,0,-.23,0);
@@ -130,6 +135,7 @@ const CombatVisual007=(()=>{
     const hemi=scene.lights.find(l=>l.name==="hemi"),key=scene.lights.find(l=>l.name==="key");
     if(hemi){hemi.intensity=.74;hemi.diffuse=new B.Color3(.73,.82,.94);}
     if(key){key.intensity=1.13;key.diffuse=new B.Color3(1,.82,.64);}
+   }
    }
    // Three pooled, short-lived impact cues. They never participate in pointer hits.
    for(let i=0;i<MAX_FX;i++){

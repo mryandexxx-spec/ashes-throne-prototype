@@ -32,6 +32,7 @@ const CombatEnvironment009=(()=>{
    value.specularColor=new B.Color3(.018,.023,.025);
    value.backFaceCulling=false;
    value.useVertexColors=true;
+   value.emissiveColor=new B.Color3(.095,.105,.105);
    return value;
   }
   const stone=mat("weathered_stone"),canyon=mat("canyon_shadow"),
@@ -62,7 +63,7 @@ const CombatEnvironment009=(()=>{
    }
    for(let j=0;j<rings.length-1;j++)for(let i=0;i<SECTORS;i++){
     const a=j*count+i,b=a+count;
-    indices.push(a,a+1,b,a+1,b+1,b);
+    indices.push(a,b,a+1,a+1,b,b+1);
    }
    B.VertexData.ComputeNormals(pos,indices,normals);
    const mesh=own(new B.Mesh("env009_"+name,scene));
@@ -71,6 +72,7 @@ const CombatEnvironment009=(()=>{
    data.applyToMesh(mesh,false);
    mesh.material=material;
    mesh.isPickable=false;
+   mesh.useVertexColors=true;
    mesh.checkCollisions=false;
    mesh.receiveShadows=false;
    mesh.alwaysSelectAsActiveMesh=false;
@@ -119,9 +121,9 @@ const CombatEnvironment009=(()=>{
     return color(face,x,z,y,.35).map(v=>clamp(v+side,0,1));
    },material);
   }
-  ridge("near_escarpment",[2.42,2.59,2.74,2.86],-9.9,7.8,.9,middle,palette.middle);
-  ridge("far_ridge",[3.10,3.24,3.42,3.60],-11.0,13.5,2.1,back,palette.back);
-  ridge("horizon_ridge",[4.05,4.26,4.47,4.68],-13.0,17.5,3.5,horizon,palette.horizon);
+  ridge("near_escarpment",[2.42,2.59,2.74,2.86],-9.9,6.0,.9,middle,palette.middle);
+  ridge("far_ridge",[3.10,3.24,3.42,3.60],-11.0,8.5,2.1,back,palette.back);
+  ridge("horizon_ridge",[4.05,4.26,4.47,4.68],-13.0,10.5,3.5,horizon,palette.horizon);
   // Atmospheric perspective stays in the scene, not in a flat sky-card.
   if(typeof B.Color4==="function")scene.clearColor=new B.Color4(.255,.322,.353,1);
   if(B.Scene&&B.Scene.FOGMODE_EXP2!==undefined){

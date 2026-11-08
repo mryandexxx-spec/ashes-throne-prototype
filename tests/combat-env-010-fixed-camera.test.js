@@ -110,7 +110,7 @@ test("CC0 Rock063 material is bundled locally and keeps the procedural fallback"
  }
  const source=read("combat-environment-010.js");
  assert.match(source,/new URL\("assets\/env010\/",document.currentScript.src\)/);
- assert.ok(source.includes('if(!albedoReady||!normalReady||capMade||scene.isDisposed)return;'));
+ assert.ok(source.includes('if(!albedoReady||!normalReady||capMade||disposed)return;'));
  assert.doesNotMatch(source,/https?:\/\//);
 });
 test("fixed camera ignores single-finger rotation, retains 12..21 pinch and clears cancelled pointers",()=>{

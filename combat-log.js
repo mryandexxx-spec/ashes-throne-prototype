@@ -12,6 +12,8 @@ const CombatLog=(()=>{
       AbilityData.get(actor,e.abilityId)?.name||"Неизвестная способность";
      return name(e.actorId)+": "+title+" → "+(Array.isArray(e.targetIds)&&e.targetIds.length>1?e.targetIds.map(name).join(", "):name(e.targetId));
     }
+    // Stats-001D1: miss is an explicit event, never fake zero HP damage.
+    case "miss":return name(e.actorId)+": промах по "+name(e.targetId);
     case "damage":
      if(e.damageType&&Number.isFinite(e.hpDamage)&&Number.isFinite(e.protectionDamage))
       return name(e.targetId)+": −"+e.hpDamage+" HP"+

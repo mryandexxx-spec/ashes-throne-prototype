@@ -77,7 +77,7 @@ assert.equal(nodes.get("playerAccountLevel").textContent,"Уровень 2");
 assert.equal(nodes.get("playerCompletedMissions").textContent,"1 / 3");
 assert.equal(nodes.get("playerCampaignStars").textContent,"3 / 9");
 assert.equal(nodes.get("playerHeroCount").textContent,5);
-assert.equal(nodes.get("playerAccountXpFill").style.width,"57.446808510638306%");
+assert.equal(nodes.get("playerAccountXpFill").style.width,api.levelProgress(85,P.xpCost,15).percent+"%");
 fakeProgress.accountXp=0;
 stage.renderPlayerProfile();
 assert.equal(nodes.get("playerAccountXpFill").style.width,"0%");

@@ -63,24 +63,24 @@ const CombatEnvironment010=(()=>{
   // One unlit quadrilateral with a continuous vertical haze gradient.
   // A sky colour plane is not the scene geometry and is too far to accept touches.
   const sky=mat("atmosphere");
-  const stops=[[-90,COLORS.skyHorizon],[28,COLORS.skyHorizon],
-   [65,COLORS.skyHaze],[110,COLORS.skyUpper],[190,COLORS.skyTop]];
-  geom("sky",1,stops.length,(u,row)=>place(145,(u-.5)*410,stops[row][0]),
+  const stops=[[-360,COLORS.skyHorizon],[-90,COLORS.skyHorizon],
+   [8,COLORS.skyHaze],[100,COLORS.skyUpper],[250,COLORS.skyTop]];
+  geom("sky",1,stops.length,(u,row)=>place(118,(u-.5)*310,stops[row][0]),
    (u,row)=>stops[row][1],sky);
   function peak(s,c,w,h){const q=(s-c)/w;return h*Math.exp(-q*q*1.15);}
   function sculpt(t,phase){
    // Different scales: long sloping beds with sparse narrow fracture valleys.
    const u=t/115;
-   const mass=peak(u,-.76,.50,.65)+peak(u,-.21,.35,.95)+
-    peak(u,.24,.31,.64)+peak(u,.69,.45,.83);
+   const mass=peak(u,-.76,.36,.78)+peak(u,-.22,.26,1.18)+
+    peak(u,.24,.24,.69)+peak(u,.73,.35,.95);
    const foothills=.12*Math.sin(t*.105+phase)+.065*Math.sin(t*.29+phase*.7);
    const cleft=Math.max(0,1-Math.abs(Math.sin(t*.06+phase*1.5))/.085);
    return mass+foothills-.22*cleft;
   }
   const layers=[
-   {name:"horizon",d:92,base:27,amplitude:24,phase:.45,color:COLORS.far},
-   {name:"midground",d:65,base:20,amplitude:19,phase:1.8,color:COLORS.mid},
-   {name:"escarpment",d:42,base:10.5,amplitude:16,phase:3.2,color:COLORS.near}
+   {name:"horizon",d:92,base:19,amplitude:35,phase:.45,color:COLORS.far},
+   {name:"midground",d:65,base:10.5,amplitude:28,phase:1.8,color:COLORS.mid},
+   {name:"escarpment",d:42,base:4.0,amplitude:19,phase:3.2,color:COLORS.near}
   ];
   for(const layer of layers){
    const m=mat(layer.name);
@@ -89,7 +89,7 @@ const CombatEnvironment010=(()=>{
    geom(layer.name,112,5,(u,row)=>{
     const x=(u-.5)*232;
     const summit=layer.base+layer.amplitude*sculpt(x,layer.phase);
-    const steps=[-34,-17,-8,-2.8,0];
+    const steps=[-160,-72,-27,-8,0];
     const y=summit+steps[row]+(row<4?.5*Math.sin(x*.18+row*.68+layer.phase):0);
     return place(layer.d,x,y);
    },(u,row,x,y,z)=>{

@@ -1413,9 +1413,10 @@ function renderHeroes(){
   const rank=typeof StarCore!=="undefined"?StarCore.rankOf(progress,h.id):null;
   const cost=typeof StarCore!=="undefined"?StarCore.costOf(progress,h.id):null;
   const amount=typeof StarCore!=="undefined"?StarCore.shardsOf(progress,h.id):null;
+  const portraitAvatar=owned&&h.id==="ren"?'<img class="ren-collection-portrait" src="assets/ren-portrait-ui.webp" width="220" height="275" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
   const starInfo=rank===null?"":'<span class="hero-star-summary" aria-label="Ранг '+rank+' из 7">'+
    starGlyphs(rank)+'</span>';
-  return `<button type="button" class="hero-card hero-open ${owned?"":"hero-locked"}" data-open-hero="${h.id}"><div class="hero-avatar">${owned?h.glyph:"🔒"}</div><h3>${owned?h.name:"Неизвестный герой"}</h3>${starInfo}<p>${owned?h.role+" · Уровень "+h.level:"Получение: "+heroUnlockLabel(h.id)}</p>${owned?`<div class="stats"><span>Здоровье ${h.hp}</span><span>Сила ${h.atk}</span></div>`:`<p class="muted">Осколки ${amount??0}/${cost??10}</p>`}<span class="hero-open-hint">${owned?"Открыть карточку →":"Условия получения и осколки →"}</span></button>`;
+  return `<button type="button" class="hero-card hero-open ${owned?"":"hero-locked"}" data-open-hero="${h.id}"><div class="hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":""}">${portraitAvatar}</div><h3>${owned?h.name:"Неизвестный герой"}</h3>${starInfo}<p>${owned?h.role+" · Уровень "+h.level:"Получение: "+heroUnlockLabel(h.id)}</p>${owned?`<div class="stats"><span>Здоровье ${h.hp}</span><span>Сила ${h.atk}</span></div>`:`<p class="muted">Осколки ${amount??0}/${cost??10}</p>`}<span class="hero-open-hint">${owned?"Открыть карточку →":"Условия получения и осколки →"}</span></button>`;
  }).join("");
  document.querySelectorAll("[data-open-hero]").forEach(node=>node.addEventListener("click",()=>{
   const id=node.dataset.openHero;
@@ -1606,6 +1607,14 @@ function renderHeroDetail(){
  $("#detailRole").textContent=hero.role+(hero.id==="ren"?" · Играбельный герой (баланс тестовый)":" · Демонстрационный персонаж");
  if($("#detailTags"))$("#detailTags").textContent=heroTagText(hero);
  $("#detailGlyph").textContent=hero.glyph;
+ const showRenPortrait=hero.id==="ren";
+ const renPortrait=$("#detailRenPortrait"),heroStage=$("#detailHeroStage"),artworkLabel=$("#detailArtworkLabel");
+ if(renPortrait)renPortrait.hidden=!showRenPortrait;
+ if(heroStage){
+  heroStage.classList.toggle("has-ren-portrait",showRenPortrait);
+  heroStage.setAttribute("aria-label",showRenPortrait?"Портрет Рена Терена":"Схематичный силуэт героя, без 3D-модели");
+ }
+ if(artworkLabel)artworkLabel.textContent=showRenPortrait?"ГЕРОЙ · ПОРТРЕТ":"ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД";
  renderStarPanel(base.id);
  renderHeroAbilities(hero);
  // Keep the existing battle-tested HP/ATK/speed display unchanged.

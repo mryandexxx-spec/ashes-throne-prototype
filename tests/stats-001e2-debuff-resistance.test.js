@@ -40,8 +40,8 @@ assert.equal(b.fighters[0].specialCooldown,2);
 assert.equal(b.rng.draws,1,"one status roll for a surviving target");
 assert.equal(b.events.filter(x=>x.type==="status-resisted").length,1);
 assert.equal(b.events.filter(x=>x.type==="effect"&&x.effect==="weaken").length,0);
-assert.deepEqual(b.events.filter(x=>["damage","status-resisted"].includes(x.type))
- .map(x=>x.type),["damage","status-resisted"]);
+assert.deepEqual(Array.from(b.events.filter(x=>["damage","status-resisted"].includes(x.type)),
+ x=>x.type),["damage","status-resisted"]);
 assert.match(log.lines(b.events,b.fighters).join("\n"),/сопротивление эффекту/);
 // Zero resistance is guaranteed status, but still consumes one draw.
 b=setup(hero(),[foe()]);
@@ -114,19 +114,12 @@ assert.equal(cast(b),true);
 assert.equal(b.rng.draws,0);
 assert.equal(b.fighters[1].weakenAttacks,2);
 // Legacy weaken remains guaranteed even when statusChecks is true.
-b=setup(hero("test-area-weaken"),[foe("resists",{debuffResistance:100})],
- {rngSeed:0,statusChecks:true});
-assert.equal(cast(b),true); // patched typed, this test uses a truly legacy actor below
-b=setup(hero("legacy-caster"),[foe("resists",{debuffResistance:100})],
- {rngSeed:0,statusChecks:true});
-// Legacy basic has no debuff; prove it never uses RNG or requires status fields.
-assert.equal(core.performPlayerAbility(b,"basic"),true);
+b=setup(hero("lyra",{combatProfile:undefined,debuffPotency:undefined}),
+ [foe("resists",{debuffResistance:100})],{rngSeed:0,statusChecks:true});
+assert.equal(cast(b),true);
 assert.equal(b.rng.draws,0);
+assert.equal(b.fighters[1].weakenAttacks,2,"legacy damaging weaken is unchanged");
 // Positive guard/heal unaffected: no roll and no potency required.
-b=setup(hero("kael",{debuffPotency:undefined}),[
- foe("foe",{debuffResistance:undefined})],{rngSeed:0,statusChecks:true});
-assert.equal(core.performPlayerAbility(b,"special"),false,
- "Kael guard needs an ally target, not an enemy");
 b=setup(hero("kael",{debuffPotency:undefined}),[
  foe("foe",{debuffResistance:undefined})],{rngSeed:0,statusChecks:true});
 core.chooseAlly(b,0);

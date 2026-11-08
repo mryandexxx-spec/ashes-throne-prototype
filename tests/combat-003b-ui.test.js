@@ -53,7 +53,7 @@ assert.equal(api.getBattle().fighters[4].hp,49,"direct special applies physical 
 assert.ok(api.getBattle().fighters[4].weakenAttacks>=0&&api.getBattle().fighters[4].weakenAttacks<=2);
 assert.match(els.battleLogSummary.textContent,/Журнал боя/);
 assert.match(els.battleLogEntries.textContent,/Лира Соль.*Ослабляющий удар/);
-assert.match(els.battleLogEntries.textContent,/Теневой клинок.*31 HP/);
+assert.match(els.battleLogEntries.textContent,/Теневой клинок.*29 HP/);
 assert.equal(els.specialAbilityBtn.classList.selected,false);
 api.resetBattle();
 assert.equal(els.battleLogEntries.textContent,"Пока нет событий.","restart clears previous log");

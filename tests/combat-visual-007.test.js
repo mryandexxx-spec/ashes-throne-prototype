@@ -16,8 +16,8 @@ test("CV007 static arena is bounded, self-contained, unpickable and can fall bac
  assert.equal(Visual.supported(B),true);
  assert.equal(Visual.supported({MeshBuilder:{CreateGround(){}}}),false);
  const arena=Visual.create(B,scene);
- assert.equal(scene.meshes.length,37,"fixed number of arena + 3x2 impact pieces");
- assert.equal(scene.materials.length,12,"shared scene palette and per-FX fade materials");
+ assert.equal(scene.meshes.length,56,"bounded CV008 stone scenery + 3x2 impact pieces");
+ assert.equal(scene.materials.length,16,"CV008 palette + per-FX fade materials");
  assert.ok(scene.meshes.every(m=>m.isPickable===false),"no arena prop intercepts fighter selection");
  assert.ok(scene.meshes.some(m=>m.name==="cv007_surface"));
  assert.ok(scene.meshes.some(m=>m.name==="cv007_chasm"));
@@ -80,7 +80,7 @@ test("CV007 is only a presentation layer wired into the existing lifecycle",()=>
  assert.match(game,/if\(!combatVisual007\)\{[\s\S]*CreateGround\("ground"/,"legacy fallback retained");
  assert.match(game,/scene\.dispose\(\)/);
  assert.ok(html.indexOf('src="combat-visual-007.js"')<html.indexOf('src="game.js"'));
- assert.equal(pkg.version,"0.3.80");
- assert.ok(html.includes("v0.3.80 · OPSHELP + RENPLAY + REN3D003 + CV007"));
+ assert.equal(pkg.version,"0.3.81");
+ assert.ok(html.includes("v0.3.81 · OPSHELP + RENPLAY + REN3D003 + CV008"));
  assert.ok(pkg.scripts.test.includes("node --check combat-visual-007.js"));
 });

@@ -72,5 +72,5 @@ assert.match(game,/ProgressCore\.heroLevelCap\(progress\)/);
 assert.match(game,/ProgressCore\.upgradeBlockReason\(progress,base\.id\)/);
 assert.match(game,/const before=progress\.saveVersion===3\?JSON\.stringify\(progress\):null/);
 assert.match(game,/Доступный максимум героя сейчас/);
-assert.match(game,/ProgressCore\\.nextHeroCapUnlock\\(level\\)/);
+assert.ok(game.includes("ProgressCore.nextHeroCapUnlock(level)"));
 console.log("Stats-004A5: account levels, hard cap, currency safety, existing hero levels and UI messaging passed");

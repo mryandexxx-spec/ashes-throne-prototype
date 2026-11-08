@@ -601,10 +601,32 @@ function beginStoryDemo(){
  storyDemoState=StoryDemoCore.fresh();
  showScreen("storyDemo");
 }
+function heroTagText(hero){
+ if(typeof HeroProfileData==="undefined")return "Теги пока не назначены";
+ const profile=HeroProfileData.get(hero?.id);
+ const tags=HeroProfileData.tagLabels(Array.isArray(hero?.tags)?hero.tags:profile?.tags);
+ return tags.length?"Теги: "+tags.join(" · "):"Теги пока не назначены";
+}
+function showHeroBiography(hero){
+ if(!hero)return false;
+ const dialog=$("#heroBiographyDialog");
+ if(!dialog||typeof HeroProfileData==="undefined")return false;
+ const data=HeroProfileData.get(hero.id);
+ $("#heroBiographyTitle").textContent=data?.name||hero.name||"Герой";
+ $("#heroBiographyTags").textContent=heroTagText(hero);
+ $("#heroBiographyText").textContent=data?.biography||
+  "Биография персонажа пока не подготовлена. Демонстрационные герои не являются утверждёнными персонажами вселенной.";
+ $("#heroBiographyNote").textContent=data?.note||"История персонажа будет добавлена после согласования.";
+ if(typeof dialog.showModal==="function"&&!dialog.open)dialog.showModal();
+ return true;
+}
 function renderStoryDemo(){
  if(!storyDemoState||typeof StoryDemoCore==="undefined")return;
  const view=StoryDemoCore.view(storyDemoState);
  if(!view)return;
+ const renProfile=typeof StoryTrialData!=="undefined"?
+  StoryTrialData.profiles.find(hero=>hero.id==="trial-ren"):null;
+ if($("#storyRenTags"))$("#storyRenTags").textContent=heroTagText(renProfile);
  $("#storyDemoSpeaker").textContent=view.speaker;
  $("#storyDemoText").textContent=view.text;
  $("#storyDemoNext").hidden=view.kind!=="next";
@@ -733,6 +755,16 @@ $("#storyDemoTrialFight")?.addEventListener("click",()=>{
  }
 });
 $("#storyDemoAgain")?.addEventListener("click",beginStoryDemo);
+$("#storyRenBiography")?.addEventListener("click",()=>{
+ const ren=typeof StoryTrialData!=="undefined"?
+  StoryTrialData.profiles.find(hero=>hero.id==="trial-ren"):null;
+ showHeroBiography(ren);
+});
+$("#detailBiography")?.addEventListener("click",()=>showHeroBiography(ALLIES.find(h=>h.id===selectedHeroId)));
+$("#heroBiographyClose")?.addEventListener("click",()=>{
+ const dialog=$("#heroBiographyDialog");
+ if(dialog&&typeof dialog.close==="function")dialog.close();
+});
 function openCampaignMission(id){
  const entry=CampaignData.getMission(id);
  if(!entry||!CampaignData.available(entry,campaignProgress)||!MissionData.get(id))return false;
@@ -1051,6 +1083,7 @@ function renderHeroDetail(){
  const next=cost===null?null:equippedPilotStats(ProgressCore.heroStats(progress,base,hero.level+1),PILOT_HERO_STATS[base.id]);
  $("#detailName").textContent=hero.name;
  $("#detailRole").textContent=hero.role+" · Демонстрационный персонаж";
+ $("#detailTags").textContent=heroTagText(hero);
  $("#detailGlyph").textContent=hero.glyph;
  renderStarPanel(base.id);
  renderHeroAbilities(hero);

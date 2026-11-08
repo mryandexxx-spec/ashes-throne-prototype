@@ -78,6 +78,19 @@
     phase="auto";return;
    }
    if(phase==="auto"){
+    // Chromium virtual time is not a reliable requestAnimationFrame clock.
+    // Confirm the actual CombatCore win first; ONLY after battle-end, step the
+    // existing presentation queue so the fixture can exercise retry and
+    // Engine reuse. Production game timing and gameplay remain untouched.
+    const core=win.eval("state");
+    if(!core.active&&win.eval("visualTransition")==="result"){
+     assert(core.winner==="ally"||core.winner==="enemy","battle finished without a result");
+     assert(core.events?.some(e=>e.type==="battle-end"),"missing battle-end event");
+     status.coreBattleResult=core.winner;
+     win.eval("BattleAnimation.tick(100, BattleSpeed.multiplier())");
+     if(win.eval("BattleAnimation.pending()")===0)
+      win.eval("finishVisualTransition()");
+    }
     if(battle&&doc.querySelector("#autoBattleBtn")?.getAttribute("aria-pressed")==="true")
       autoSeen=true;
     const retry=doc.querySelector("#battleRetryBtn");

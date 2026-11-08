@@ -153,6 +153,57 @@ if(progress.saveVersion===3&&!saveBlocked){
  }
  if(recovered)campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
 }
+// PROFILE-001: nickname is independent from immutable-progress v3 save.
+const playerProfileLoaded=typeof PlayerProfileCore!=="undefined"
+  ?PlayerProfileCore.load(()=>window.localStorage)
+  :{profile:{nickname:"Странник"},available:false,blocked:false};
+let playerNickname=playerProfileLoaded.profile.nickname;
+function renderPlayerProfile(){
+ const title=$("#playerNickname");
+ if(!title)return;
+ title.textContent=playerNickname;
+ const input=$("#playerNicknameInput");
+ if(input&&document.activeElement!==input)input.value=playerNickname;
+ const xp=typeof PlayerProfileCore!=="undefined"
+  ?PlayerProfileCore.levelProgress(progress.accountXp,ProgressCore.xpCost,ProgressCore.MAX_ACCOUNT_LEVEL)
+  :null;
+ const level=xp?.level??ProgressCore.accountLevel(progress);
+ $("#playerAccountLevel").textContent="Уровень "+level;
+ const track=$("#playerAccountXpTrack"),fill=$("#playerAccountXpFill");
+ if(track)track.setAttribute("aria-valuenow",String(Math.round(xp?.percent??0)));
+ if(fill)fill.style.width=(xp?.percent??0)+"%";
+ $("#playerAccountXpText").textContent=xp?.required===null
+  ?"Максимальный тестовый уровень · Всего "+progress.accountXp+" XP"
+  :(xp?xp.current+" / "+xp.required+" XP до следующего уровня · Всего "+xp.totalXp+" XP"
+     :progress.accountXp+" XP");
+ const missions=MissionData.all();
+ const completed=missions.filter(m=>campaignProgress.completed[m.id]===true).length;
+ const stars=missions.reduce((sum,m)=>sum+Math.min(3,Math.max(0,campaignProgress.bestStars[m.id]||0)),0);
+ $("#playerCompletedMissions").textContent=completed+" / "+missions.length;
+ $("#playerCampaignStars").textContent=stars+" / "+(missions.length*3);
+ $("#playerHeroCount").textContent=ALLIES.length;
+ const hint=$("#playerNicknameNotice");
+ if(hint&&!hint.textContent)hint.textContent=playerProfileLoaded.blocked
+  ?"Сохранённый ник повреждён. Изменение заблокировано, чтобы не потерять данные."
+  :playerProfileLoaded.available?"":"Сохранение ника недоступно в этом браузере.";
+}
+$("#playerNicknameForm")?.addEventListener("submit",event=>{
+ event.preventDefault();
+ const notice=$("#playerNicknameNotice"),input=$("#playerNicknameInput");
+ if(!notice||!input||typeof PlayerProfileCore==="undefined")return;
+ if(playerProfileLoaded.blocked){
+  notice.textContent="Сохранение ника заблокировано: повреждённые данные не перезаписываются.";
+  return;
+ }
+ const nick=PlayerProfileCore.normalizeNick(input.value);
+ if(!nick){notice.textContent="Ник должен содержать 2–24 символа без управляющих знаков и скобок < >.";return;}
+ if(!PlayerProfileCore.save({nickname:nick},()=>window.localStorage)){
+  notice.textContent="Не удалось сохранить ник. Старое имя оставлено без изменений.";return;
+ }
+ playerNickname=nick;
+ notice.textContent="Ник сохранён на этом устройстве.";
+ renderPlayerProfile();
+});
 let battleIsCampaign=false;
 let missionResultShown=false;
 let missionResultRecorded=false;
@@ -370,6 +421,7 @@ function showScreen(id){
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  $("#"+id).classList.add("active");
  if(id==="collection")renderHeroes();
+ if(id==="playerProfile")renderPlayerProfile();
  if(id==="campaign")renderCampaign();
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){

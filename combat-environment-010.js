@@ -33,7 +33,7 @@ const CombatEnvironment010=(()=>{
    if(!photoRock)return;
    // Share the two already-loaded CC0 maps. No extra texture, material
    // fetch, or GPU duplication; leave the pale distant horizon untextured.
-   for(const name of ["front_buttress","middle_terraces"]){
+   for(const name of ["front_buttress"]){
     const mat=Array.isArray(scene.materials)?
      scene.materials.find(m=>m.name==="env010_glb_mat_"+name):null;
     if(mat){mat.diffuseTexture=photoRock.albedo;mat.bumpTexture=photoRock.normal;}
@@ -273,9 +273,13 @@ const CombatEnvironment010=(()=>{
       mesh.checkCollisions=false;mesh.receiveShadows=false;
       const m=new B.StandardMaterial("env010_glb_mat_"+asset.name,scene);
       created.push(m);
-      m.diffuseColor=new B.Color3(1,1,1);
+      const pale=asset.name==="pale_horizon";
+      m.diffuseColor=pale?new B.Color3(.76,.81,.85):new B.Color3(1,1,1);
       m.specularColor=new B.Color3(.012,.012,.012);
-      m.emissiveColor=new B.Color3(.095,.105,.11);
+      // Lift the shadow floor without washing out the real authored facets.
+      m.emissiveColor=pale?new B.Color3(.125,.14,.15):
+       asset.name==="front_buttress"?new B.Color3(.16,.168,.17):
+       new B.Color3(.145,.16,.17);
       m.useVertexColors=true;m.backFaceCulling=false;m.fogEnabled=false;
       mesh.material=m;
      }

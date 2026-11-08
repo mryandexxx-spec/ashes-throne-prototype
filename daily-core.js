@@ -36,12 +36,12 @@ const DailyCore=(()=>{
   if(!isDay(day)||!progress||progress.saveVersion!==3)return false;
   if(progress.daily===undefined){progress.daily=empty(day);return true;}
   if(!valid(progress.daily))return false;
+  if(day<progress.daily.day)return false; // Do not roll back clock to farm rewards.
   if(Object.keys(progress.daily.counts).length===LEGACY_IDS.length){
    // Same-day non-destructive migration of existing 3-task profiles.
    for(const id of IDS)if(!Object.prototype.hasOwnProperty.call(progress.daily.counts,id))
     progress.daily.counts[id]=0;
   }
-  if(day<progress.daily.day)return false; // Do not roll back clock to farm rewards.
   if(day>progress.daily.day)progress.daily=empty(day);
   return true;
  }
@@ -61,10 +61,11 @@ const DailyCore=(()=>{
  function claimAll(progress,day){
   // Fully atomic in memory: preflight each reward on a candidate, then apply
   // only when all claims are valid. Caller persists with a single save.
-  if(!today(progress,day))return null;
-  const pending=IDS.filter(id=>progress.daily.counts[id]===1&&!progress.daily.claimed.includes(id));
-  if(!pending.length)return null;
+  if(!progress||progress.saveVersion!==3)return null;
   const clone=JSON.parse(JSON.stringify(progress));
+  if(!today(clone,day))return null;
+  const pending=IDS.filter(id=>clone.daily.counts[id]===1&&!clone.daily.claimed.includes(id));
+  if(!pending.length)return null;
   let currency=0,xp=0;
   const materials={};
   for(const id of pending){

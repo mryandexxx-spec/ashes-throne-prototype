@@ -28,9 +28,9 @@ const CombatEnvironment010=(()=>{
   function mat(name){
    const m=own(new B.StandardMaterial("env010_mat_"+name,scene));
    m.diffuseColor=new B.Color3(1,1,1);
-   m.emissiveColor=new B.Color3(0,0,0);
+   m.emissiveColor=new B.Color3(.15,.17,.18);
    m.specularColor=new B.Color3(0,0,0);
-   m.disableLighting=true;m.fogEnabled=false;
+   m.disableLighting=false;m.fogEnabled=false;
    m.backFaceCulling=false;m.useVertexColors=true;
    return m;
   }
@@ -54,6 +54,7 @@ const CombatEnvironment010=(()=>{
    const data=new B.VertexData();
    data.positions=positions;data.normals=normals;data.indices=indices;data.colors=colors;
    data.applyToMesh(mesh,false);
+   mesh.useVertexColors=true;
    mesh.isPickable=false;mesh.checkCollisions=false;mesh.receiveShadows=false;
    mesh.material=material;
    meshes.push(mesh);

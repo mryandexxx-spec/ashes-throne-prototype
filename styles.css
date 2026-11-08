@@ -1134,3 +1134,16 @@ body.battle-mode #app>footer{visibility:hidden}
  .hero-biography-dialog{max-height:calc(100dvh - 12px);padding:12px 18px}
  .hero-biography-text{line-height:1.45}
 }
+
+
+/* REN-002: source-controlled SVG sketch, no Babylon character meshes. */
+.ren-sketch-mini{display:block;flex:0 0 68px;width:68px;height:90px;object-fit:cover;
+ border:1px solid var(--line);border-radius:7px;background:#3e4a43}
+.ren-biography-sketch{float:left;display:block;width:clamp(90px,22vw,128px);
+ height:auto;max-height:168px;object-fit:contain;margin:0 16px 10px 0;
+ border:1px solid var(--line);border-radius:7px;background:#3e4a43}
+.ren-biography-sketch[hidden]{display:none}
+@media(orientation:landscape) and (max-height:540px){
+ .ren-sketch-mini{flex-basis:50px;width:50px;height:66px}
+ .ren-biography-sketch{width:74px;max-height:99px;margin-right:12px}
+}

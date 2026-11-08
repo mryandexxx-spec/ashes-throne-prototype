@@ -510,6 +510,10 @@ const CombatCore = (() => {
   }
   function validStatusProfile(battle,actor,recipients,ability,type){
     if(!statusCheckEnabled(battle,type)||!abilityHasNegativeStatus(ability))return true;
+    // Test-only scope self weakening is not supported yet: do not partially
+    // resolve a damaging command before discovering its missing recipient data.
+    if((ability.followUpEffects||[]).some(e=>
+      e.status==="weaken"&&e.scope==="self"))return false;
     if(typeof BattleRng==="undefined")return false;
     let snapshot;
     try{snapshot=BattleRng.snapshot(battle);}catch(error){return false;}

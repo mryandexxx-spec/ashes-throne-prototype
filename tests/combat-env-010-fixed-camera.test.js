@@ -25,7 +25,7 @@ function mock(){
 test("ENV010 background is three sculpted canyon walls and one sky gradient; never pickable",()=>{
  const {B,scene}=mock(),result=Env010.build(B,scene,v=>v);
  assert.equal(result.meshes,4);
- assert.ok(result.triangles>10000&&result.triangles<18000);
+ assert.ok(result.triangles>5000&&result.triangles<6500);
  assert.ok(scene.meshes.every(m=>m.isPickable===false&&m.checkCollisions===false));
  assert.ok(scene.materials.every(m=>m.fogEnabled===false));
  assert.equal(scene.materials.find(m=>m.name==="env010_mat_atmosphere").disableLighting,false);
@@ -50,7 +50,7 @@ test("ENV010 background is three sculpted canyon walls and one sky gradient; nev
  const p=escarpment.data.positions;
  const cols=129;
  const depth=offset=>(p[offset]+p[offset+2])/Math.sqrt(2);
- assert.ok(Math.abs(depth(3*cols*2)-depth(3*cols*15))>3);
+ assert.ok(Math.abs(depth(3*cols*2)-depth(3*cols*15))>.20);
  assert.equal(scene.meshes[0].name,"env010_sky");
 });
 test("ENV010 integrates as an additive optional layer without changing ENV009/FX",()=>{

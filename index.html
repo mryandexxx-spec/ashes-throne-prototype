@@ -26,6 +26,7 @@
         <button class="nav-card" data-screen="campaign"><span>⚔</span><b>Кампания</b><small>Глава I · Пепельный тракт</small></button>
         <button class="nav-card" data-screen="battle"><span>✦</span><b>Арена</b><small>Пошаговое сражение</small></button>
         <button class="nav-card" data-screen="challenges"><span>◆</span><b>Испытания</b><small>Тактика и Натиск · учебный пилот</small></button>
+        <button class="nav-card" data-screen="operations"><span>⌖</span><b>Разведоперации</b><small>Разведка, перехват и бой · учебный пилот</small></button>
         <button class="nav-card" data-screen="playerProfile"><span>♟</span><b>Профиль игрока</b><small>Ник и уровень аккаунта</small></button>
         <button class="nav-card" id="dailyTasksNav" data-screen="dailyTasks"><span>☼</span><b>Задания дня</b><small>Три действия и награды</small><span id="dailyClaimBadge" class="daily-nav-badge" aria-hidden="true" hidden>0</span></button>
         <button class="nav-card" data-screen="loginCalendar"><span>▦</span><b>Календарь входа</b><small>Ежемесячные награды</small></button>
@@ -174,6 +175,58 @@
       <div class="challenge-mode-heading"><button type="button" class="ghost" id="challengeModeBack" hidden>← К режимам</button><h3 id="challengeModeTitle">Выбери режим</h3></div>
       <div id="challengeList" aria-label="Миссии выбранного режима" hidden></div>
       <p id="challengeSaveStatus" class="muted" role="status">Результаты хранятся в этом браузере.</p>
+    </section>
+    <section id="operations" class="screen operations-screen" aria-label="Разведывательные операции">
+      <div class="section-heading">
+        <div><div class="eyebrow">OPS-001B · НЕКАНОНИЧЕСКИЙ ПИЛОТ</div><h2>Разведывательные операции</h2></div>
+        <button type="button" class="ghost" data-screen="home">← Назад</button>
+      </div>
+      <div class="ops-layout">
+        <div class="ops-map" aria-label="Карта перехвата">
+          <div class="eyebrow">СХЕМА ПЕРЕХВАТА</div>
+          <p class="muted">Нажимай на точки маршрута на этапе перехвата.</p>
+          <div class="ops-nodes">
+            <div class="ops-node ops-node-register">
+              <strong>РЕЕСТР</strong><small>Подлинный знак: <b id="opsAuthentic">?</b></small>
+            </div>
+            <button type="button" class="ops-node ops-node-junction" id="opsJunction" data-ops-target="junction" disabled>
+              <strong>РАЗВИЛКА</strong><small>Блокада обоих путей</small>
+            </button>
+            <div class="ops-node ops-node-exit">
+              <strong>ОТХОД</strong><small>Безопасный маршрут</small>
+            </div>
+            <button type="button" class="ops-node ops-node-north" id="opsNorth" data-ops-target="north" disabled>
+              <strong>СЕВЕР</strong><small>Знак: <b id="opsNorthMark">?</b></small>
+            </button>
+            <div class="ops-crossroads" aria-hidden="true">╱ ╲</div>
+            <button type="button" class="ops-node ops-node-south" id="opsSouth" data-ops-target="south" disabled>
+              <strong>ЮГ</strong><small>Знак: <b id="opsSouthMark">?</b></small>
+            </button>
+          </div>
+          <p class="muted ops-map-help">◈ и ○ — учебные знаки. До разведки знак может быть неизвестен.</p>
+        </div>
+        <div class="ops-panel">
+          <div class="eyebrow" id="opsPhase">БРИФИНГ</div>
+          <p id="opsReport" class="ops-report" role="status" aria-live="polite"></p>
+          <div id="opsActions" class="ops-actions" aria-label="Приказы и решения"></div>
+          <p id="opsNotice" class="ops-notice" role="alert"></p>
+          <p id="opsHistory" class="muted"></p>
+        </div>
+      </div>
+      <p id="opsSaveStatus" class="muted ops-save-status" role="status">План операции сохраняется отдельно.</p>
+    </section>
+    <section id="operationResult" class="screen mission-result-screen" aria-label="Итоги разведывательной операции">
+      <div class="mission-result-card">
+        <div class="eyebrow">OPS-001 · УЧЕБНАЯ ОПЕРАЦИЯ</div>
+        <h2 id="operationResultTitle">Итоги операции</h2>
+        <p id="operationResultText" role="status"></p>
+        <p id="operationResultStatus" class="muted"></p>
+        <div class="mission-result-actions">
+          <button type="button" class="primary" id="operationResultAgain">Новая операция</button>
+          <button type="button" class="ghost" id="operationResultBack">К операциям</button>
+          <button type="button" class="ghost" id="operationResultHome">Домой</button>
+        </div>
+      </div>
     </section>
     <section id="campaign" class="screen">
       <div class="section-heading"><div><div class="eyebrow">КАМПАНИЯ</div><h2>Путь к престолу</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
@@ -416,7 +469,7 @@
         <button type="button" class="primary" id="lockedHeroUnlock">Открыть за 10 осколков</button>
       </div>
     </dialog>
-    <footer><span id="buildVersion">Прототип · v0.3.73 · RENCOMBATD</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.74 · OPS001B</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -447,6 +500,7 @@
   <script src="campaign-core.js"></script>
   <script src="campaign-data.js"></script>
    <script src="challenge-core.js"></script>
+  <script src="operation-core.js"></script>
   <script src="battle-speed.js"></script>
   <script src="animation-profiles.js"></script>
   <script src="battle-animation.js"></script>

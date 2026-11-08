@@ -1164,3 +1164,62 @@ body.battle-mode #app>footer{visibility:hidden}
  .ren-sketch-mini{flex-basis:50px;width:50px;height:66px}
  .ren-biography-sketch{width:74px;max-height:99px;margin-right:12px}
 }
+
+
+/* OPS-001B: compact, tappable mission map. All source text fits narrow iPhone landscape. */
+.operations-screen{min-width:0}
+.ops-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:12px;
+ align-items:start;margin:10px 0;min-width:0}
+.ops-map,.ops-panel{border:1px solid var(--line);background:var(--panel);
+ border-radius:12px;padding:clamp(12px,2vw,20px);min-width:0}
+.ops-map .muted{margin:5px 0 10px}
+.ops-nodes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:8px;min-width:0;align-items:stretch}
+.ops-node{display:flex;flex-direction:column;justify-content:center;align-items:center;
+ gap:4px;min-height:72px;min-width:0;width:100%;border:1px solid #677184;
+ border-radius:9px;background:var(--panel2);color:var(--text);text-align:center;
+ padding:10px 5px;overflow-wrap:anywhere}
+.ops-node strong{font-size:clamp(10px,1.5vw,13px);line-height:1.25}
+.ops-node small{font-size:clamp(10px,1.2vw,12px);font-weight:400;color:var(--muted);line-height:1.3}
+.ops-node b{font-size:17px;color:var(--gold)}
+.ops-node:disabled{opacity:.65;cursor:default}
+button.ops-node:not(:disabled){border-color:var(--gold);background:#d5ad6517}
+.ops-node.confirmed{outline:2px solid var(--gold);outline-offset:1px}
+.ops-node-register{grid-column:1}
+.ops-node-junction{grid-column:2}
+.ops-node-exit{grid-column:3}
+.ops-node-north{grid-column:1;grid-row:2}
+.ops-node-south{grid-column:3;grid-row:2}
+.ops-crossroads{grid-column:2;grid-row:2;display:grid;place-items:center;
+ color:var(--gold);font-size:21px;letter-spacing:6px}
+.ops-report{font-size:clamp(13px,1.5vw,16px);line-height:1.6;min-height:4.5em;
+ margin:12px 0;overflow-wrap:anywhere}
+.ops-actions{display:flex;flex-wrap:wrap;gap:8px}
+.ops-actions button{min-height:44px;min-width:0;white-space:normal;overflow-wrap:anywhere}
+.ops-notice{font-size:12px;line-height:1.45;color:#f3ae9d;overflow-wrap:anywhere}
+.ops-notice:empty{display:none}
+.ops-panel #opsHistory{border-top:1px solid var(--line);padding-top:9px;
+ margin-top:14px;overflow-wrap:anywhere}
+.ops-save-status{margin:8px 0 18px;overflow-wrap:anywhere}
+@media(orientation:landscape) and (max-height:540px){
+ .operations-screen .section-heading{margin-bottom:5px}
+ .ops-layout{gap:8px;margin:6px 0}
+ .ops-map,.ops-panel{padding:9px 11px}
+ .ops-node{min-height:49px;padding:6px 4px}
+ .ops-nodes{gap:5px}
+ .ops-map .muted{margin:3px 0 6px;font-size:11px}
+ .ops-map-help{font-size:10px!important}
+ .ops-report{font-size:12px;line-height:1.4;min-height:0;margin:7px 0}
+ .ops-actions{gap:6px}
+ .ops-actions button{min-height:44px;padding:7px 10px;font-size:11px}
+ .ops-panel #opsHistory{font-size:11px;margin-top:8px;padding-top:7px}
+ .ops-save-status{font-size:11px;margin:5px 0}
+}
+@media(max-width:650px) and (orientation:portrait){
+ .ops-layout{grid-template-columns:minmax(0,1fr)}
+ .ops-node{min-height:60px}
+}
+@media(max-width:560px){
+ .ops-layout{grid-template-columns:minmax(0,1fr)}
+ .ops-actions button{flex:1 1 145px}
+}

@@ -53,7 +53,7 @@ const OperationCore=(()=>{
   if(r.phase==="target")return n===2&&r.target===null&&r.battleResult===null&&r.finalChoice===null&&r.outcome===null;
   if(r.phase==="battle")return n===2&&hasTarget&&r.battleResult===null&&r.finalChoice===null&&r.outcome===null;
   if(r.phase==="final")return n===2&&hasTarget&&correctTarget(r)&&r.battleResult==="ally"&&r.finalChoice===null&&r.outcome===null;
-  if(r.outcome==="abandoned")return !hasTarget&&r.battleResult===null&&r.finalChoice===null;
+  if(r.outcome==="abandoned")return r.battleResult===null&&r.finalChoice===null;
   if(n!==2||!hasTarget)return false;
   if(r.outcome==="defeat")return r.battleResult==="enemy"&&r.finalChoice===null;
   if(r.outcome==="wrongTarget")return r.battleResult==="ally"&&!correctTarget(r)&&r.finalChoice===null;
@@ -109,7 +109,7 @@ const OperationCore=(()=>{
   return {...copy(run),phase:"done",finalChoice:choice,outcome:"success"};
  }
  function abandon(run){
-  if(!validRun(run)||!has(["order1","order2","target"],run.phase))return null;
+  if(!validRun(run)||!has(["order1","order2","target","battle"],run.phase))return null;
   return {...copy(run),phase:"done",outcome:"abandoned"};
  }
  function summary(run){

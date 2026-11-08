@@ -110,7 +110,9 @@ test("defeat, incomplete battles, wrong token, abandon and duplicate callbacks",
  const lost=lose(r);
  assert.equal(lost.outcome,"defeat");
  assert.equal(core.battleEnded(lost,lost.runId,{active:false,winner:"ally"}),null);
- assert.equal(core.abandon(r),null); // battle is already committed to the checkpoint
+ const abandonedBattle=core.abandon(r);
+ assert.equal(abandonedBattle.outcome,"abandoned");
+ assert.equal(abandonedBattle.phase,"done");
  const waiting=order(fresh(),"register");
  const abandoned=core.abandon(waiting);
  assert.equal(abandoned.outcome,"abandoned");

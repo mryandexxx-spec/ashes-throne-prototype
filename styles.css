@@ -861,3 +861,27 @@ body.battle-mode #app>footer{visibility:hidden}
  min-width:25px;height:25px;padding:0 6px;border-radius:999px;background:var(--gold);
  color:#17130c;font-weight:700;font-size:12px;line-height:1}
 #dailyTasksNav .daily-nav-badge[hidden]{display:none}
+
+/* Abilities-UI-001: separate full-width dossier section, read-only. */
+.hero-abilities-panel{min-width:0;margin-top:14px;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.hero-abilities-panel h3{font:600 21px Cinzel,serif;margin:9px 0}
+.hero-abilities-panel>.muted{margin:0 0 13px}
+.hero-abilities-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,215px),1fr));gap:10px}
+.hero-ability-card{min-width:0;padding:13px;background:var(--panel2);border:1px solid var(--line);border-radius:10px}
+.hero-ability-card.unavailable{opacity:.8}
+.hero-ability-heading{display:flex;flex-direction:column;gap:5px;min-width:0}
+.hero-ability-kind{font-weight:700;font-size:10px;letter-spacing:1px;color:var(--gold);text-transform:uppercase}
+.hero-ability-heading strong{font-size:14px;line-height:1.35;overflow-wrap:anywhere}
+.hero-ability-card p{margin:9px 0;font-size:12px;line-height:1.55;color:var(--text);overflow-wrap:anywhere}
+.hero-ability-meta{display:block;color:var(--muted);font-size:11px;line-height:1.55;overflow-wrap:anywhere}
+@media(max-width:700px){.hero-abilities-panel{padding:12px;margin-top:9px}.hero-abilities-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}}
+@media(orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ .hero-abilities-panel{padding:10px;margin-top:8px}
+ .hero-abilities-panel h3{font-size:16px;margin:5px 0}
+ .hero-abilities-panel>.muted{font-size:11px;margin:0 0 8px}
+ .hero-abilities-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .hero-ability-card{padding:9px}
+ .hero-ability-heading strong{font-size:12px}
+ .hero-ability-card p{font-size:11px;margin:5px 0}
+ .hero-ability-meta{font-size:10px}
+}

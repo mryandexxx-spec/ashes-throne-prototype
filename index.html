@@ -26,6 +26,7 @@
         <button class="nav-card" data-screen="campaign"><span>⚔</span><b>Кампания</b><small>Глава I · Пепельный тракт</small></button>
         <button class="nav-card" data-screen="battle"><span>✦</span><b>Арена</b><small>Пошаговое сражение</small></button>
         <button class="nav-card" data-screen="playerProfile"><span>♟</span><b>Профиль игрока</b><small>Ник и уровень аккаунта</small></button>
+        <button class="nav-card" data-screen="dailyTasks"><span>☼</span><b>Задания дня</b><small>Три действия и награды</small></button>
       </div>
       <div class="dev-resources" aria-label="Тестовые инструменты прототипа">
         <div class="eyebrow">ТЕСТИРОВАНИЕ · НЕ ИГРОВАЯ НАГРАДА</div>
@@ -33,6 +34,13 @@
         <button type="button" class="ghost" id="devResourcesGrant">Тестовые ресурсы</button>
         <p id="devResourcesNotice" class="muted" role="status" aria-live="polite"></p>
       </div>
+    </section>
+    <section id="dailyTasks" class="screen" aria-label="Ежедневные задания">
+      <div class="section-heading"><div><div class="eyebrow">ЕЖЕДНЕВНЫЕ ДЕЛА</div><h2>Задания дня</h2></div><button type="button" class="ghost" data-screen="home">← Назад</button></div>
+      <p id="dailyDay" class="muted">Сегодня</p>
+      <p class="muted">Выполни действия в игре и забери награды. Задания обновляются по местной дате устройства. Симуляция не считается сыгранным боем.</p>
+      <div id="dailyTaskList" class="daily-task-list"></div>
+      <p id="dailyTaskNotice" class="muted" role="status" aria-live="polite"></p>
     </section>
     <section id="playerProfile" class="screen player-profile-screen" aria-label="Профиль игрока">
       <div class="section-heading">
@@ -247,7 +255,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.55 · STAT004A5</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.56 · DAILY001</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -266,6 +274,7 @@
   <script src="gear-data.js"></script>
   <script src="progress-core.js"></script>
   <script src="save-core.js"></script>
+  <script src="daily-core.js"></script>
   <script src="progress-v3-core.js"></script>
   <script src="mission-data.js"></script>
   <script src="campaign-core.js"></script>

@@ -106,8 +106,8 @@ assert.equal(C.performPlayerAbility(baseline,"special"),true);
 assert.equal(baseline.fighters[1].hp,470,"old demo battle stays unchanged");
 
 const html=read("index.html"),game=read("game.js"),pkg=JSON.parse(read("package.json"));
-assert.equal(pkg.version,"0.3.80");
-assert.ok(html.includes("v0.3.80 · OPSHELP"));
+assert.equal(pkg.version,"0.3.81");
+assert.ok(html.includes("v0.3.81 · OPSHELP"));
 assert.ok(html.includes('id="skillUpgradeDialog"'));
 assert.ok(html.indexOf('src="ability-data.js"')<html.indexOf('src="skill-core.js"'));
 assert.ok(html.indexOf('src="skill-core.js"')<html.indexOf('src="progress-v3-core.js"'));

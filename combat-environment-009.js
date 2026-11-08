@@ -51,23 +51,27 @@ const CombatEnvironment009=(()=>{
      seed=(Math.imul(seed,1664525)+1013904223)>>>0;
      grid[j*65+i]=seed/4294967296;
     }
-    const noise=(x,y)=>{
-     const u=((x%64)+64)%64,v=((y%64)+64)%64;
-     const i=Math.floor(u),j=Math.floor(v);
-     const a=u-i,b=v-j,fa=a*a*(3-2*a),fb=b*b*(3-2*b);
-     const n0=grid[j*65+i]*(1-fa)+grid[j*65+i+1]*fa;
-     const n1=grid[(j+1)*65+i]*(1-fa)+grid[(j+1)*65+i+1]*fa;
+    const noise=(u,v,cells)=>{
+     // Wrap lattice indices so UV tiling cannot expose straight seams.
+     const x=((u%1)+1)%1*cells,y=((v%1)+1)%1*cells;
+     const i=Math.floor(x),j=Math.floor(y);
+     const a=x-i,b=y-j,fa=a*a*(3-2*a),fb=b*b*(3-2*b);
+     const sample=(ix,iy)=>grid[(iy%cells)*65+(ix%cells)];
+     const n0=sample(i,j)*(1-fa)+sample(i+1,j)*fa;
+     const n1=sample(i,j+1)*(1-fa)+sample(i+1,j+1)*fa;
      return n0*(1-fb)+n1*fb;
     };
     for(let y=0;y<w;y++)for(let x=0;x<w;x++){
      const u=x/w,v=y/w;
-     const drift=(noise(u*7,v*7)-.5)*.10+(noise(u*19,v*19)-.5)*.035;
-     const band=Math.sin((v*15+drift+u*.6)*TAU);
-     const split=Math.abs(Math.sin((v*7.0+u*.92+drift*2)*TAU));
-     const broad=noise(u*4.8,v*4.8),fine=noise(u*29,v*29);
-     const iron=.12*Math.max(0,Math.sin((v*4.5+u*.73+drift)*TAU));
-     const fissure=split<.065?-.17*(1-split/.065):0;
-     const tone=clamp(.81+.20*(broad-.5)+.10*band+.075*(fine-.5)-iron+fissure,.42,1.0);
+     // Cohesive erosion mosaics, disrupted seams and veins. No repeated
+     // parallel bands on the walkable surface or rectangular UV borders.
+     const broad=noise(u,v,5),mid=noise(u,v,14),fine=noise(u,v,35);
+     const warp=(noise(u+.19,v-.12,7)-.5)*.21+(mid-.5)*.075;
+     const mineral=Math.sin((v*3.4+u*2.1+warp)*TAU);
+     const vein=(noise(u+.16,v+.08,11)-.5);
+     const shale=Math.abs(Math.sin((v*2.7+u*1.33+warp)*TAU))<.08;
+     const tone=clamp(.835+.29*(broad-.5)+.20*(mid-.5)+.13*(fine-.5)+
+      .025*mineral+.032*vein-(shale?.045:0),.52,1.0);
      const k=(y*w+x)*4;
      px[k]=Math.round(228*tone);px[k+1]=Math.round(222*tone);
      px[k+2]=Math.round(207*tone);px[k+3]=255;
@@ -109,7 +113,8 @@ const CombatEnvironment009=(()=>{
      const [x,y,z]=sample(rings[row],a,row);
      const c=shade(x,y,z,rings[row],row,a);
      pos.push(x,y,z);rgba.push(c[0],c[1],c[2],1);
-     uv.push(x*.145, name==="living_ledge"&&row>9?y*.19:z*.145);
+     const cliffBlend=name==="living_ledge"?clamp((row-8)/5,0,1):0;
+     uv.push(x*.12, z*.12*(1-cliffBlend)+y*.19*cliffBlend);
     }
    }
    for(let j=0;j<rings.length-1;j++)for(let i=0;i<SECTORS;i++){

@@ -1262,3 +1262,30 @@ button.ops-node:not(:disabled){border-color:var(--gold);background:#d5ad6517}
  .sig-guards{gap:4px}
  .sig-guard,.sig-beacon{padding:6px 3px}
 }
+
+
+/* OPS-HELP-001: native accessible disclosure; closed by default so it does not
+   cover the operation map on narrow/landscape iPhone layouts. */
+.ops-guide{margin:8px 0 12px;border:1px solid var(--line);border-radius:11px;
+ background:var(--panel);min-width:0;overflow-wrap:anywhere}
+.ops-guide>summary{display:flex;align-items:center;min-height:44px;padding:10px 13px;
+ cursor:pointer;color:var(--gold);font-size:clamp(12px,1.5vw,15px);
+ font-weight:700;line-height:1.35;list-style-position:inside}
+.ops-guide>summary:focus-visible{outline:2px solid var(--gold);outline-offset:-3px;border-radius:10px}
+.ops-guide[open]>summary{border-bottom:1px solid var(--line)}
+.ops-guide-body{padding:10px 14px 12px;font-size:clamp(11px,1.35vw,13px);
+ line-height:1.55;min-width:0}
+.ops-guide-body p{margin:5px 0 9px}
+.ops-guide-body .muted{font-size:clamp(10px,1.2vw,12px)}
+.ops-guide-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.ops-guide-columns>div{min-width:0}
+.ops-guide h3{margin:7px 0;color:var(--gold);font-size:clamp(12px,1.5vw,15px)}
+.ops-guide ol{margin:6px 0 10px;padding-left:20px}
+.ops-guide li{margin:0 0 5px;overflow-wrap:anywhere}
+@media(max-width:620px){.ops-guide-columns{grid-template-columns:minmax(0,1fr);gap:5px}}
+@media(orientation:landscape) and (max-height:540px){
+ .ops-guide{margin:4px 0 8px}
+ .ops-guide>summary{padding:7px 11px;min-height:44px}
+ .ops-guide-body{padding:7px 11px 9px;font-size:11px}
+ .ops-guide h3{font-size:12px}
+}

@@ -666,6 +666,8 @@ function showHeroBiography(hero){
  $("#heroBiographyText").textContent=data?.biography||
   "Биография персонажа пока не подготовлена. Демонстрационные герои не являются утверждёнными персонажами вселенной.";
  $("#heroBiographyNote").textContent=data?.note||"История персонажа будет добавлена после согласования.";
+ const sketch=$("#heroBiographyPortrait");
+ if(sketch)sketch.hidden=hero.id!=="trial-ren";
  if(typeof dialog.showModal==="function"&&!dialog.open)dialog.showModal();
  return true;
 }

@@ -252,7 +252,9 @@
             <button type="button" class="ghost" id="storyDemoChoiceA">Защитить людей</button>
             <button type="button" class="ghost" id="storyDemoChoiceB">Проверить распоряжение</button>
           </div>
-          <button type="button" class="primary" id="storyDemoFight" hidden>Выбрать отряд и вступить в бой</button>
+          <button type="button" class="primary" id="storyDemoFight" hidden>Сыграть своим тестовым отрядом</button>
+          <button type="button" class="ghost" id="storyDemoTrialFight" hidden>Испытать Рена, Наду и Лиору в бою</button>
+          <p class="muted" id="storyDemoNotice" role="status" aria-live="polite"></p>
           <button type="button" class="ghost" id="storyDemoAgain" hidden>Пройти сцену заново</button>
         </div>
       </div>
@@ -372,7 +374,7 @@
         <button type="button" class="primary" id="lockedHeroUnlock">Открыть за 10 осколков</button>
       </div>
     </dialog>
-    <footer><span id="buildVersion">Прототип · v0.3.65 · STARS001</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.66 · STORY002</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -405,6 +407,7 @@
   <script src="animation-profiles.js"></script>
   <script src="battle-animation.js"></script>
   <script src="player-profile-core.js"></script>
+  <script src="story-trial-data.js"></script>
   <script src="story-demo-core.js"></script>
   <script src="game.js"></script>
 </body>

@@ -218,6 +218,7 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
 let battleIsCampaign=false;
 // STORY-001 is an opt-in sandbox, independent of campaign rewards and saves.
 let battleIsStoryDemo=false;
+let storyTrialParty=false; // Only for the opt-in story sandbox, never saved.
 let storyDemoState=null;
 let missionResultShown=false;
 let missionResultRecorded=false;
@@ -514,6 +515,10 @@ function selectedParty(){
   .map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(progressedHero);
 }
 function battleLineup(){
+ // STORY-002 uses temporary hero IDs outside v3 save validation.
+ if(battleIsStoryDemo&&storyTrialParty)
+  return [...StoryTrialData.heroes(),...ENEMIES.slice(0,2).map((e,i)=>
+   progressedEnemy({...e,name:i===0?"Старший охраны":"Наёмный охранник"}))];
  // Mission #2 tests five enemies; the shared enemy AI is mission-independent.
  const enemies=battleIsCampaign&&activeMissionId==="demo-mission-2"?ENEMIES:ENEMIES.slice(0,2);
  // Reuse training templates, not the noncanonical "Conclave" story identities.
@@ -592,6 +597,7 @@ function openSquad(returnTo="home"){
 }
 function beginStoryDemo(){
  if(typeof StoryDemoCore==="undefined")return;
+ storyTrialParty=false;
  storyDemoState=StoryDemoCore.fresh();
  showScreen("storyDemo");
 }
@@ -609,6 +615,7 @@ function renderStoryDemo(){
   $("#storyDemoChoiceB").textContent=view.kind==="tone"?"Потребовать документ":"Срочно предупредить соседние пункты";
  }
  $("#storyDemoFight").hidden=view.kind!=="fight";
+ $("#storyDemoTrialFight").hidden=view.kind!=="fight";
  $("#storyDemoAgain").hidden=view.kind!=="defeat"&&view.kind!=="ending";
 }
 function showScreen(id){
@@ -676,9 +683,16 @@ function showScreen(id){
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
    scene=undefined;engine=undefined;arenaCamera=null;meshes={};indicatorNodes={};renderLoopRunning=false;
-   showScreen("squad");
-   const notice=$("#battleLoadError");
-   if(notice)notice.hidden=false;
+   if(battleIsStoryDemo&&storyTrialParty){
+    StoryDemoCore.cancelBattle(storyDemoState);
+    showScreen("storyDemo");
+    const storyNotice=$("#storyDemoNotice");
+    if(storyNotice)storyNotice.textContent="Не удалось загрузить 3D-арену. Проверь соединение и повтори попытку.";
+   }else{
+    showScreen("squad");
+    const notice=$("#battleLoadError");
+    if(notice)notice.hidden=false;
+   }
   }
  }
  if(id==="home"){
@@ -706,7 +720,17 @@ function storyDemoChoose(option){
 $("#storyDemoChoiceA")?.addEventListener("click",()=>storyDemoChoose("a"));
 $("#storyDemoChoiceB")?.addEventListener("click",()=>storyDemoChoose("b"));
 $("#storyDemoFight")?.addEventListener("click",()=>{
- if(storyDemoState&&StoryDemoCore.startBattle(storyDemoState))openSquad("storyDemo");
+ if(storyDemoState&&StoryDemoCore.startBattle(storyDemoState)){
+  storyTrialParty=false;
+  openSquad("storyDemo");
+ }
+});
+$("#storyDemoTrialFight")?.addEventListener("click",()=>{
+ if(storyDemoState&&typeof StoryTrialData!=="undefined"&&StoryDemoCore.startBattle(storyDemoState)){
+  storyTrialParty=true;
+  squadReturnScreen="storyDemo";
+  showScreen("battle");
+ }
 });
 $("#storyDemoAgain")?.addEventListener("click",beginStoryDemo);
 function openCampaignMission(id){
@@ -1620,7 +1644,7 @@ function resetBattle(){
  missionResultRecorded=false;
  lastMissionStars=0;
  selectedAbility="basic";
- state=CombatCore.createBattle(battleLineup(),battleFutureWaves(),{leaderId:selectedLeaderId});
+ state=CombatCore.createBattle(battleLineup(),battleFutureWaves(),{leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId});
  CombatCore.advanceToPlayerTurn(state);
  syncBattleUI();
 }

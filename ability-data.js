@@ -8,6 +8,10 @@ const AbilityData=(()=>{
   lyra:Object.freeze({id:"special",name:"Ослабляющий удар",target:"enemy",kind:"damage",multiplier:1,weakening:2,cooldown:2}),
   darin:Object.freeze({id:"special",name:"Сокрушительный удар",target:"enemy",kind:"damage",multiplier:1.5,weakening:0,cooldown:2}),
   "medic-demo":Object.freeze({id:"special",name:"Перевязка",target:"ally",kind:"heal",healAmount:30,cooldown:2}),
+  // STORY-002: noncanonical test skills, NOT a claim of combat competence in stories.
+  "trial-ren":Object.freeze({id:"special",name:"Найти брешь · проба",target:"enemy",kind:"damage",multiplier:1,weakening:2,cooldown:2}),
+  "trial-nada":Object.freeze({id:"special",name:"Выверенное действие · проба",target:"enemy",kind:"damage",multiplier:.8,weakening:2,cooldown:2}),
+  "trial-liora":Object.freeze({id:"special",name:"Прикрыть товарища · проба",target:"ally",kind:"guard",guardHits:2,cooldown:2}),
   // Combat-011B regression fixtures: not in HEROES or campaign content.
   "test-self-guard":Object.freeze({id:"special",name:"Тест защиты себя",target:"self",kind:"guard",guardHits:2,cooldown:2}),
   "test-team-heal":Object.freeze({id:"special",name:"Тест группового лечения",target:"all-allies",kind:"heal",healAmount:30,cooldown:2}),
@@ -44,6 +48,10 @@ const AbilityData=(()=>{
   "medic-demo":Object.freeze({id:"powerful",name:"Учебное исцеление отряда",target:"all-allies",kind:"heal",healAmount:25,cooldown:2}),
   "test-powerful-damage":Object.freeze({id:"powerful",name:"Тест мощного удара",target:"enemy",
    kind:"damage",multiplier:1.5,weakening:0,cooldown:2}),
+  // STORY-002: experimental powerful actions, not canon.
+  "trial-ren":Object.freeze({id:"powerful",name:"Точный выпад · проба",target:"enemy",kind:"damage",multiplier:1.5,weakening:0,cooldown:2}),
+  "trial-nada":Object.freeze({id:"powerful",name:"Слабое место · проба",target:"enemy",kind:"damage",multiplier:1.25,weakening:2,cooldown:2}),
+  "trial-liora":Object.freeze({id:"powerful",name:"Удержать позицию · проба",target:"self",kind:"guard",guardHits:3,cooldown:2}),
   // Combat-012B: same temporary parameters for the existing optional demo fighter.
   "test-area-damage":Object.freeze({id:"powerful",name:"Учебный мощный удар",target:"enemy",
    kind:"damage",multiplier:1.5,weakening:0,cooldown:2})
@@ -55,6 +63,7 @@ const AbilityData=(()=>{
  const passiveByHero=Object.freeze({
   kael:passiveEmpty,lyra:passiveEmpty,darin:passiveEmpty,
   "medic-demo":passiveEmpty,"test-area-damage":passiveEmpty,
+  "trial-ren":passiveEmpty,"trial-nada":passiveEmpty,"trial-liora":passiveEmpty,
   // Nonplayable fixtures verify automatic trigger registration and ownership.
   "test-passive-attacker":Object.freeze({id:"passive",name:"Тест реакции атакующего",
    triggers:Object.freeze([Object.freeze({event:"damage",role:"actor"})])}),

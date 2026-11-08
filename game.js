@@ -1083,7 +1083,7 @@ function renderHeroDetail(){
  const next=cost===null?null:equippedPilotStats(ProgressCore.heroStats(progress,base,hero.level+1),PILOT_HERO_STATS[base.id]);
  $("#detailName").textContent=hero.name;
  $("#detailRole").textContent=hero.role+" · Демонстрационный персонаж";
- $("#detailTags").textContent=heroTagText(hero);
+ if($("#detailTags"))$("#detailTags").textContent=heroTagText(hero);
  $("#detailGlyph").textContent=hero.glyph;
  renderStarPanel(base.id);
  renderHeroAbilities(hero);

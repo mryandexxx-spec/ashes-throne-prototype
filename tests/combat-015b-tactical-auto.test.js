@@ -100,7 +100,7 @@ const index=read("index.html");
 const scripts=[...index.matchAll(/<script src="([^"]+)"/g)].map(match=>match[1]);
 assert.ok(scripts.indexOf("combat-core.js")<scripts.indexOf("auto-decision.js"));
 assert.ok(scripts.indexOf("auto-decision.js")<scripts.indexOf("game.js"));
-assert.match(index,/id="buildVersion"[^>]*>[^<]*v0[.]3[.]66 · CHAL001B/);
+assert.match(index,/id="buildVersion"[^>]*>[^<]*v0[.]3[.]67 · CHAL001B/);
 assert.equal(JSON.parse(read("package.json")).version,"0.3.67");
 const game=read("game.js");
 assert.match(game,/const plan=AutoDecision\.chooseAction\(state\)/);

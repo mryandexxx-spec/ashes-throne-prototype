@@ -76,11 +76,20 @@ jobs:
             --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
             --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 \
             --virtual-time-budget=80000 --dump-dom "$url" 2>/tmp/chrome-interactive.log)"
+          printf '%s\n' "$page" > artifacts/env010-interactive-dump.html
+          echo "$page" | grep -oE 'data-(visual-status|visual-error|pinch-test|auto-test|speed-test|replay-test)="[^"]*"' || true
           echo "$page" | grep -q 'data-visual-status="ready"'
           echo "$page" | grep -q 'data-pinch-test="pass"'
           echo "$page" | grep -q 'data-auto-test="battle-finished"'
           echo "$page" | grep -q 'data-replay-test="pass"'
 
+      - name: Upload interactive browser diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env010-interactive-dom
+          path: artifacts/env010-interactive-dump.html
+          if-no-files-found: ignore
       - name: Upload actual battle HUD evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -12,6 +12,14 @@ const RenGearPlan=(()=>{
   2:Object.freeze(["g2-blade","g2-vest","g2-helm","g2-gaunt","g2-bootlight","g2-belt"]),
   3:Object.freeze(["g3-blade","g3-vest","g3-helm","g3-gaunt","g3-bootlight","g3-belt"])
  });
+ const ALLOWED_BY_SLOT=Object.freeze({
+  weapon:Object.freeze(["melee","tank"]),
+  torso:Object.freeze(["melee","tank"]),
+  head:Object.freeze(["melee","tank"]),
+  hands:Object.freeze(["melee","ranged","tank"]),
+  feet:Object.freeze(["melee","ranged","mage","support"]),
+  utility:Object.freeze(["melee","ranged","mage","support","tank"])
+ });
  const FAMILY=Object.freeze({
   weapon:"Клинок (общий предмет ближнего боя)",
   torso:"Походный жилет",
@@ -39,7 +47,7 @@ const RenGearPlan=(()=>{
   const recipe=rawRecipe(tier,slotId);
   if(!recipe)return null;
   return Object.freeze({tier,slotId,name:FAMILY[slotId]+" G"+tier,
-   status:"proposal",classId:"melee",recipe,
+   status:"proposal",classId:"melee",allowedClasses:ALLOWED_BY_SLOT[slotId],recipe,
    currency:null,bonuses:null,minHeroLevel:null});
  }
  function tierPlan(tier){
@@ -50,6 +58,6 @@ const RenGearPlan=(()=>{
    SLOTS.map(slotId=>proposal(tier,slotId)));
  }
  function allTiers(){return Object.freeze(Array.from({length:13},(_,i)=>tierPlan(i+1)));}
- return Object.freeze({SLOTS,MATERIALS,PILOT,FAMILY,rawRecipe,proposal,tierPlan,allTiers});
+ return Object.freeze({SLOTS,MATERIALS,PILOT,FAMILY,ALLOWED_BY_SLOT,rawRecipe,proposal,tierPlan,allTiers});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=RenGearPlan;

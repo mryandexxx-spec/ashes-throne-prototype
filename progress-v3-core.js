@@ -7,7 +7,7 @@ const ProgressV3Core=(()=>{
  const MATERIALS=Object.freeze(["Fe","Le","Cl","Wo","Fa","Th","Gl"]);
  // TEST-ONLY roles, explicitly approved for the vertical slice; not lore.
  const TEST_CLASSES=Object.freeze({
-  kael:"tank",lyra:"ranged",darin:"melee","medic-demo":"support","test-area-damage":"mage"
+  kael:"tank",lyra:"ranged",darin:"melee","medic-demo":"support","test-area-damage":"mage",ren:"melee"
  });
  const own=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
  const object=x=>!!x&&typeof x==="object"&&!Array.isArray(x);
@@ -93,6 +93,48 @@ const ProgressV3Core=(()=>{
   try{raw3=storage.getItem(KEY);}catch(_){return {status:"blocked",reason:"read-v3-failed"};}
   if(raw3!==null){
    let parsed;try{parsed=JSON.parse(raw3);}catch(_){return {status:"blocked",reason:"invalid-v3"};}
+   // REN-PLAYABLE: preserve five-hero v3 saves. Only the precise previous
+   // roster shape can be expanded; damaged/newer records remain blocked.
+   const legacyIds=Object.keys(TEST_CLASSES).filter(id=>id!=="ren");
+   const actualIds=allyIds(heroes);
+   const needsRen=actualIds?.includes("ren")&&object(parsed?.heroes)&&
+    Object.keys(parsed.heroes).length===legacyIds.length&&
+    legacyIds.every(id=>own(parsed.heroes,id))&&!own(parsed.heroes,"ren");
+   if(needsRen){
+    const candidate=JSON.parse(JSON.stringify(parsed));
+    candidate.heroes.ren=cleanHero("ren");
+    if(candidate.unlockedHeroes!==undefined){
+     if(!Array.isArray(candidate.unlockedHeroes)||candidate.unlockedHeroes.includes("ren"))
+      return {status:"blocked",reason:"invalid-v3"};
+     candidate.unlockedHeroes.push("ren");
+    }
+    if(candidate.heroStars!==undefined){
+     if(!object(candidate.heroStars)||own(candidate.heroStars,"ren"))
+      return {status:"blocked",reason:"invalid-v3"};
+     candidate.heroStars.ren={rank:1,shards:0};
+    }
+    if(candidate.skillLevels!==undefined){
+     if(!object(candidate.skillLevels)||own(candidate.skillLevels,"ren"))
+      return {status:"blocked",reason:"invalid-v3"};
+     candidate.skillLevels.ren={basic:1,special:1,powerful:1};
+    }
+    const validUpgrade=validateActive(candidate,heroes);
+    if(!validUpgrade)return {status:"blocked",reason:"invalid-v3"};
+    try{
+     // A separate backup keeps the exact previous save on first migration.
+     const backupKey=KEY+".before-ren";
+     if(storage.getItem(backupKey)===null){
+      storage.setItem(backupKey,raw3);
+      if(storage.getItem(backupKey)!==raw3)throw Error("backup verification failed");
+     }
+     // Never silently overwrite a profile altered by another tab.
+     if(storage.getItem(KEY)!==raw3)throw Error("stale saved profile");
+     const encoded=JSON.stringify(validUpgrade);
+     storage.setItem(KEY,encoded);
+     if(storage.getItem(KEY)!==encoded)throw Error("upgrade verification failed");
+     return {status:"existing",profile:validUpgrade};
+    }catch(_){return {status:"blocked",reason:"v3-ren-migration-failed"};}
+   }
    const valid=validateActive(parsed,heroes);
    return valid?{status:"existing",profile:valid}:{status:"blocked",reason:"invalid-v3"};
   }
@@ -214,8 +256,14 @@ const ProgressV3Core=(()=>{
  function fromRuntime(p){
   if(!object(p)||p.saveVersion!==3||!object(p.levels)||!object(p.gear)||
      !object(p.materials)||!object(p.classes)||!object(p.energy))return null;
-  const ids=Object.keys(TEST_CLASSES);
-  if(ids.some(id=>!own(p.levels,id)||!own(p.gear,id)||p.classes[id]!==TEST_CLASSES[id]))
+  // Old five-hero fixtures are still valid for standalone migration tests.
+  // The live game passes all six IDs after stage() expands the saved roster.
+  const ids=Object.keys(p.classes);
+  const legacyIds=Object.keys(TEST_CLASSES).filter(id=>id!=="ren");
+  if(![legacyIds.length,legacyIds.length+1].includes(ids.length)||
+     !legacyIds.every(id=>ids.includes(id))||
+     ids.some(id=>!own(TEST_CLASSES,id))||
+     ids.some(id=>!own(p.levels,id)||!own(p.gear,id)||p.classes[id]!==TEST_CLASSES[id]))
    return null;
   const source={
    version:3,revision:p.saveRevision??0,
@@ -250,7 +298,7 @@ const ProgressV3Core=(()=>{
    const storage=getStorage();if(!storage)return false;
    // Refuse overwrite of a stale or corrupted profile from another tab.
    const raw=storage.getItem(KEY);if(raw===null)return false;
-   const old=JSON.parse(raw),known=validateActive(old,Object.keys(TEST_CLASSES).map(id=>({id,side:"ally"})));
+   const old=JSON.parse(raw),known=validateActive(old,Object.keys(p.classes).map(id=>({id,side:"ally"})));
    if(!known||(known.revision??0)!==(p.saveRevision??0))return false;
    candidate.revision=(p.saveRevision??0)+1;
    const encoded=JSON.stringify(candidate);

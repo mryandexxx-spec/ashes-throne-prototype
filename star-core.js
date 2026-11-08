@@ -2,8 +2,8 @@
  * Direct mission joins award 1 star; earlier shards are never consumed by joining. */
 const StarCore=(()=>{
  "use strict";
- const IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage"]);
- const START=Object.freeze(["kael","lyra","darin"]);
+ const IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren"]);
+ const START=Object.freeze(["kael","lyra","darin","ren"]);
  const COST=Object.freeze([10,15,25,30,65,85,100]);
  const MAX=7, TOTAL=COST.reduce((sum,n)=>sum+n,0);
  const own=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);

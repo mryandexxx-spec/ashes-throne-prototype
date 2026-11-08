@@ -2,7 +2,7 @@
    Temporary currency names, rewards and numbers are NOT canonical balance. */
 const SkillCore=(()=>{
  "use strict";
- const HERO_IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage"]);
+ const HERO_IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren"]);
  const IDS=Object.freeze(["basic","special","powerful"]);
  const RESOURCE_IDS=Object.freeze(["manual1","manual2","seal"]);
  const LABELS=Object.freeze({manual1:"Учебник I",manual2:"Учебник II",seal:"Печать мастерства"});

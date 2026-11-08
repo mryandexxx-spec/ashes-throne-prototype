@@ -6,6 +6,8 @@ const HEROES = [
   {id:"medic-demo",name:"Учебный лекарь",role:"Учебная поддержка",hp:90,atk:14,speed:115,side:"ally",glyph:"✚"},
   // Combat-011C: optional training-only group attacker, not canonical lore or final balance.
   {id:"test-area-damage",name:"Учебный боец группы",role:"Тренировка массовых атак",hp:90,atk:20,speed:120,side:"ally",glyph:"✧"},
+  // REN-PLAYABLE: permanent roster entry; combat numbers are still a test pilot.
+  {id:"ren",name:"Рен Терен",classId:"melee",tags:["gardens-over-abyss"],role:"Боец ближнего боя",hp:91,atk:27,speed:150,side:"ally",glyph:"⌁"},
   {id:"ves",name:"Вестник Конклава",role:"Противник",hp:90,atk:18,speed:105,side:"enemy",glyph:"☠"},
   {id:"shade",name:"Теневой клинок",role:"Противник",hp:78,atk:22,speed:135,side:"enemy",glyph:"♟"},
   // Demo-only copies: no new combat stats or lore. First mission still uses two enemies.
@@ -466,7 +468,7 @@ function heroOwned(id){
 }
 function heroUnlockLabel(id){
  const mission=typeof HeroCollectionCore!=="undefined"?HeroCollectionCore.unlockMission(id):null;
- return mission?(MissionData.get(mission)?.title||"миссия"):"сюжетное прохождение";
+ return id==="ren"?"Доступен с начала":mission?(MissionData.get(mission)?.title||"миссия"):"сюжетное прохождение";
 }
 function defaultSquad(){
  const ids=ALLIES.filter(h=>heroOwned(h.id)).slice(0,MAX_SQUAD).map(h=>h.id);
@@ -520,7 +522,8 @@ let state=CombatCore.createBattle([...ALLIES,...ENEMIES.slice(0,2)]);
 const PILOT_HERO_STATS=Object.freeze({
  kael:Object.freeze({physicalDefense:24,magicDefense:12,maxProtection:20}),
  lyra:Object.freeze({physicalDefense:6,magicDefense:15,maxProtection:0}),
- darin:Object.freeze({physicalDefense:14,magicDefense:9,maxProtection:0})
+ darin:Object.freeze({physicalDefense:14,magicDefense:9,maxProtection:0}),
+ ren:Object.freeze({physicalDefense:14,magicDefense:9,maxProtection:0})
 });
 const PILOT_ENEMY_STATS=Object.freeze({physicalDefense:8,magicDefense:8,maxProtection:0});
 function equippedPilotStats(hero,profile){
@@ -687,7 +690,7 @@ function showHeroBiography(hero){
   "Биография персонажа пока не подготовлена. Демонстрационные герои не являются утверждёнными персонажами вселенной.";
  $("#heroBiographyNote").textContent=data?.note||"История персонажа будет добавлена после согласования.";
  const sketch=$("#heroBiographyPortrait");
- if(sketch)sketch.hidden=hero.id!=="trial-ren";
+ if(sketch)sketch.hidden=hero.id!=="trial-ren"&&hero.id!=="ren";
  if(typeof dialog.showModal==="function"&&!dialog.open)dialog.showModal();
  return true;
 }
@@ -1408,7 +1411,7 @@ function renderHeroDetail(){
  const levelCap=ProgressCore.heroLevelCap(progress);
  const next=cost===null?null:equippedPilotStats(ProgressCore.heroStats(progress,base,hero.level+1),PILOT_HERO_STATS[base.id]);
  $("#detailName").textContent=hero.name;
- $("#detailRole").textContent=hero.role+" · Демонстрационный персонаж";
+ $("#detailRole").textContent=hero.role+(hero.id==="ren"?" · Играбельный герой (баланс тестовый)":" · Демонстрационный персонаж");
  if($("#detailTags"))$("#detailTags").textContent=heroTagText(hero);
  $("#detailGlyph").textContent=hero.glyph;
  renderStarPanel(base.id);

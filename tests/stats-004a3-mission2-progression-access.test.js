@@ -16,7 +16,7 @@ const src=["initiative-model.js","ability-data.js","combat-core.js",
 const api=vm.runInNewContext(src);
 const {HEROES,CombatCore:C,AutoDecision:A,MissionData:M,CampaignData:CD,
  CampaignCore:CC,ProgressCore:P,SaveCore:S,GearData:G,setProgress,progressedHero,progressedEnemy}=api;
-const allies=HEROES.filter(f=>f.side==="ally"),foes=HEROES.filter(f=>f.side==="enemy");
+const allies=HEROES.filter(f=>f.side==="ally"&&f.id!=="ren"),foes=HEROES.filter(f=>f.side==="enemy");
 const ids=allies.map(h=>h.id);
 assert.equal(ids.length,5);
 function store(){const m=new Map();return {getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,v)};}

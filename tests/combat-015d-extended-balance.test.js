@@ -12,7 +12,8 @@ const {CombatCore,AutoDecision,MissionData,ProgressCore}=vm.runInNewContext(
   script+"\n({CombatCore,AutoDecision,MissionData,ProgressCore})");
 const game=read("game.js");
 const roster=vm.runInNewContext(game.slice(0,game.indexOf("const $="))+"\nHEROES");
-const allies=roster.filter(h=>h.side==="ally");
+// Historical frozen five-hero fixture; the new Ren roster is tested separately.
+const allies=roster.filter(h=>h.side==="ally"&&h.id!=="ren");
 const enemies=roster.filter(h=>h.side==="enemy");
 const ids=allies.map(h=>h.id);
 assert.deepEqual(Array.from(ids),["kael","lyra","darin","medic-demo","test-area-damage"]);

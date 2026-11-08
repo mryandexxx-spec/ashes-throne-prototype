@@ -41,7 +41,7 @@ const api=vm.runInNewContext(src+
 const click=id=>{const handlers=elements[id].handlers.click;assert.ok(handlers?.length,id+" click");handlers[handlers.length-1]();};
 assert.equal(api.HEROES.filter(h=>h.id==="test-area-damage").length,1);
 assert.equal(api.AbilityData.get({id:"test-area-damage"},"special").target,"all-enemies");
-assert.equal(api.HEROES.filter(h=>h.side==="ally").length,5);
+assert.equal(api.HEROES.filter(h=>h.side==="ally").length,6);
 api.chooseParty(["test-area-damage"]);
 api.resetBattle();
 const b=api.getBattle();

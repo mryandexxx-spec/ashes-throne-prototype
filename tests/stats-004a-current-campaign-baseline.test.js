@@ -102,7 +102,10 @@ function battle(missionId,party,level,gear,policy){
   initialHP,initialProtection,wave:b.wave
  };
  assert.equal(result.winner==="ally",result.stars>0);
- assert.equal(result.wave,b.totalWaves,"all waves must resolve");
+ if(result.winner==="ally")assert.equal(result.wave,b.totalWaves,
+  "victory requires clearing every wave");
+ else assert.ok(result.wave<=b.totalWaves,
+  "defeat may end before later waves begin");
  assert.ok(result.allyActions>=0);
  assert.ok(result.remainingHP>=0&&result.remainingHP<=initialHP);
  assert.ok(result.remainingProtection>=0&&result.remainingProtection<=initialProtection);

@@ -21,5 +21,5 @@ assert.match(game,/renderArenaIndicators\(\)/);
 assert.match(game,/positionArenaIndicators\(\)/);
 assert.match(game,/Vector3\.Project\(/,"indicator positions follow 3D actors");
 assert.match(game,/screen\.x\*cssWidth\/width/,"retina CSS projection corrected");
-assert.match(html,/v0[.]3[.]68 · CHAL002/);
+assert.match(html,/v0[.]3[.]68 · RENINT001/);
 console.log("Combat-008C overhead HUD and unchanged zoom boundaries passed");

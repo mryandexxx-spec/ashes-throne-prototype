@@ -13,7 +13,7 @@ function mock(){
   setEnabled(value){this.enabled=value;}
   dispose(){this.disposed=true;}
  }
- class VertexData{applyToMesh(mesh){mesh.data={positions:this.positions,indices:this.indices,normals:this.normals,colors:this.colors};}}
+ class VertexData{applyToMesh(mesh){mesh.data={positions:this.positions,indices:this.indices,normals:this.normals,colors:this.colors,uvs:this.uvs};}}
  VertexData.ComputeNormals=(positions,indices,normals)=>{for(let i=0;i<positions.length;i++)normals.push(0);};
  const B={Mesh,VertexData,Vector3:Vec,Color3:Vec,Color4:Vec,StandardMaterial:Mat,Scene:{FOGMODE_EXP2:2},
   MeshBuilder:{}};
@@ -22,10 +22,10 @@ function mock(){
  const scene={meshes:[],materials:[],lights:[{name:"hemi"},{name:"key"}]};
  return {B,scene};
 }
-test("ENV010 background contains a 3D incised gorge with atmospheric ridges and sky; never pickable",()=>{
+test("ENV010 background retains three sculpted ridges with strata normal UVs and sky; never pickable",()=>{
  const {B,scene}=mock(),result=Env010.build(B,scene,v=>v);
  assert.equal(result.meshes,4);
- assert.ok(result.triangles>13200&&result.triangles<13900);
+ assert.ok(result.triangles>6500&&result.triangles<7000);
  assert.ok(scene.meshes.every(m=>m.isPickable===false&&m.checkCollisions===false));
  assert.ok(scene.materials.every(m=>m.fogEnabled===false));
  assert.equal(scene.materials.find(m=>m.name==="env010_mat_atmosphere").disableLighting,false);
@@ -35,6 +35,7 @@ test("ENV010 background contains a 3D incised gorge with atmospheric ridges and 
   const g=mesh.data;
   assert.ok(g.positions.length>0&&g.indices.length>0);
   assert.equal(g.colors.length,g.positions.length/3*4);
+  assert.equal(g.uvs.length,g.positions.length/3*2);
   assert.equal(g.normals.length,g.positions.length);
   assert.ok(g.positions.every(Number.isFinite));
   assert.ok(g.colors.every(x=>x>=0&&x<=1));
@@ -50,9 +51,8 @@ test("ENV010 background contains a 3D incised gorge with atmospheric ridges and 
  const depth=offset=>(p[offset]+p[offset+2])/Math.sqrt(2);
  const worldDepths=Array.from({length:p.length/3},(_,i)=>depth(i*3));
  assert.ok(Math.max(...worldDepths)-Math.min(...worldDepths)>.50);
- // The replacement of the near panorama contains 48 recession rows and a
- // continuous valley profile; the far ridges remain separate from this mesh.
- assert.equal(escarpment.data.positions.length/3,97*48);
+ // All three scenic ridges are spatial geometry with continuous UVs.
+ assert.equal(escarpment.data.positions.length/3,113*11);
  assert.ok(scene.meshes.some(m=>m.name==="env010_midground"));
 
  assert.equal(scene.meshes[0].name,"env010_sky");

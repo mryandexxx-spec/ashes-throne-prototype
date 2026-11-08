@@ -248,7 +248,7 @@ const PILOT_HERO_STATS=Object.freeze({
 const PILOT_ENEMY_STATS=Object.freeze({physicalDefense:8,magicDefense:8,maxProtection:0});
 function equippedPilotStats(hero,profile){
  if(!hero||!profile)return hero;
- return {...hero,physicalAttack:hero.atk,physicalDefense:profile.physicalDefense,
+ return {...hero,combatProfile:"stats002c",physicalAttack:hero.atk,physicalDefense:profile.physicalDefense,
   magicDefense:profile.magicDefense,protection:profile.maxProtection,
   maxProtection:profile.maxProtection};
 }

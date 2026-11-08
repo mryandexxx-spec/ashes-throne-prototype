@@ -17,7 +17,7 @@ const CombatEnvironment010=(()=>{
  const COLORS=Object.freeze({
   skyTop:[.32,.43,.52],skyUpper:[.43,.53,.60],
   skyHaze:[.62,.68,.69],skyHorizon:[.72,.74,.70],
-  far:[.57,.625,.64],mid:[.46,.52,.54],near:[.355,.43,.46]
+  far:[.58,.60,.60],mid:[.47,.48,.48],near:[.365,.395,.405]
  });
  function supported(B){
   return !!(B&&typeof B.Mesh==="function"&&typeof B.VertexData==="function"&&
@@ -70,40 +70,38 @@ const CombatEnvironment010=(()=>{
    [-55,COLORS.skyHaze],[45,COLORS.skyUpper],[160,COLORS.skyTop]];
   geom("sky",1,stops.length,(u,row)=>place(118,(u-.5)*310,stops[row][0]),
    (u,row)=>stops[row][1],sky);
-  // Weathered sedimentary scarps: plateau tops, abrupt fractured shoulders
-  // and talus. Avoid Gaussian hill silhouettes in the fixed 3/4 composition.
-  const smooth=(a,b,x)=>{const t=CLAMP((x-a)/(b-a),0,1);return t*t*(3-2*t);};
-  const mesa=(u,c,w,h,phase)=>{
-   const offset=.065*Math.sin(u*24+phase)+.026*Math.sin(u*71-phase*.7);
-   const q=Math.abs((u-c)/w)*(1+offset);
-   const crown=1-.11*smooth(.25,.78,q);
-   const scarp=1-smooth(.71,1.07,q);
-   const talus=.13*Math.exp(-Math.pow((q-1.04)/.36,2));
-   return h*(crown*scarp+talus);
+  // Broad, erosion-softened mesas with visible flat shoulders rather than
+  // sharp spikes. The sculpt is continuous so silhouettes never look cut out.
+  const shelfPeak=(u,c,w,h)=>{
+   const q=Math.abs((u-c)/w);
+   const rounded=Math.exp(-q*q*1.15);
+   const plateau=Math.exp(-q*q*q*q*1.1);
+   return h*(.57*rounded+.43*plateau);
   };
   function sculpt(t,phase){
    const u=t/115;
-   const mass=mesa(u,-.76,.36,.78,phase)+mesa(u,-.22,.26,1.18,phase+1.5)+
-    mesa(u,.24,.24,.69,phase+2.7)+mesa(u,.73,.35,.95,phase+4.1);
-   const weathering=.024*Math.sin(t*.22+phase)+.018*Math.sin(t*.47-phase*.7);
-   const watercut=.10*Math.pow(Math.max(0,Math.sin(t*.055+phase*1.5)),6);
-   return mass+weathering-watercut;
+   const mass=shelfPeak(u,-.76,.36,.78)+shelfPeak(u,-.22,.26,1.18)+
+    shelfPeak(u,.24,.24,.69)+shelfPeak(u,.73,.35,.95);
+   const hills=.078*Math.sin(t*.105+phase)+.035*Math.sin(t*.29+phase*.7);
+   const drainage=.085*Math.pow(Math.max(0,Math.sin(t*.055+phase*1.5)),4);
+   return mass+hills-drainage;
   }
   const layers=[
-   {name:"horizon",d:92,base:-98,amplitude:54,phase:.45,color:COLORS.far,relief:1.1},
-   {name:"midground",d:65,base:-70,amplitude:40,phase:1.8,color:COLORS.mid,relief:1.8},
-   {name:"escarpment",d:42,base:-53,amplitude:34,phase:3.2,color:COLORS.near,relief:2.4}
+   {name:"horizon",d:92,base:-98,amplitude:54,phase:.45,color:COLORS.far,relief:1.45},
+   {name:"midground",d:65,base:-70,amplitude:40,phase:1.8,color:COLORS.mid,relief:2.35},
+   {name:"escarpment",d:42,base:-53,amplitude:34,phase:3.2,color:COLORS.near,relief:3.20}
   ];
   for(const layer of layers){
    const material=mat(layer.name);
    // Additional strata have mild geometric depth, rather than making a
    // hard, brightly lit cavern above the sky. Lower relief fades with range.
-   const steps=[-160,-112,-78,-50,-32,-20,-12,-5,0];
+   const steps=[-160,-112,-78,-50,-36,-27,-20,-14,-9,-4,0];
    geom(layer.name,112,steps.length,(u,row)=>{
     const x=(u-.5)*232;
     const summit=layer.base+layer.amplitude*sculpt(x,layer.phase);
     const t=row/(steps.length-1);
-    const erosion=.38*Math.sin(x*.18+row*.68+layer.phase)*(1-t);
+    const erosion=(.66*Math.sin(x*.18+row*.68+layer.phase)+
+     .28*Math.sin(x*.43-row*.27+layer.phase*2))*(1-t);
     const y=summit+steps[row]+erosion;
     const offset=layer.relief*(1-t)*(.32+.48*Math.sin(x*.11+row*.4+layer.phase)+
        .20*Math.sin(x*.24+layer.phase*2));
@@ -112,36 +110,14 @@ const CombatEnvironment010=(()=>{
     const t=(u-.5)*232;
     const land=layer.color;
     const slope=sculpt(t+1.5,layer.phase)-sculpt(t-1.5,layer.phase);
-    const sediment=.027*Math.sin(y*.23+t*.024+layer.phase);
-    const fineStrata=.014*Math.sin(y*.62+t*.073+layer.phase*1.6);
+    const sediment=.038*Math.sin(y*.23+t*.024+layer.phase);
+    const fineStrata=.023*Math.sin(y*.62+t*.073+layer.phase*1.6);
+    const joint=Math.abs(Math.sin(t*.35+row*.18+layer.phase))>.975?-.055:0;
     const facet=CLAMP(slope*1.4,-.10,.10);
-    const shaded=row<3?-.067:row<5?-.032:row===5?.008:.045;
+    const shaded=row<3?-.062:row<6?-.030:row<9?.004:.048;
     const haze=row===0?.25:row<3?.11:0;
-    return mix(land,COLORS.skyHaze,haze).map(v=>v+sediment+fineStrata+facet+shaded);
+    return mix(land,COLORS.skyHaze,haze).map(v=>v+sediment+fineStrata+joint+facet+shaded);
    },material);
-  }
-  // Two camera-side sculpted banks frame the distant gorge. They sit beyond
-  // the battle footprint, and are genuine 3D walls with stepped strata.
-  for(const side of [-1,1]){
-   const bank=mat(side<0?"west_bank":"east_bank");
-   const steps=[-100,-73,-49,-34,-23,-15,-9,-4,0];
-   geom(side<0?"west_bank":"east_bank",48,steps.length,(u,row)=>{
-    const x=side*(11+22*u);
-    const top=-12+5.4*Math.cos(u*2.4)-5.2*u+
-     1.8*Math.sin(u*9.7+side*1.5);
-    const t=row/(steps.length-1);
-    const cut=1.6*Math.sin(u*13+side*2.2+row*.34)*(1-t);
-    const distance=25+6*u+(1-t)*(1.3*Math.sin(u*8+side)+
-     .65*Math.sin(u*21+row*.27));
-    return place(distance,x,top+steps[row]+cut);
-   },(u,row,x,y,z)=>{
-    const bed=.035*Math.sin(y*.44+u*5.7);
-    const joint=Math.abs(Math.sin(u*18+row*.09+side))>.965?-.052:0;
-    const ledge=row>5?.043:row>3?.006:-.035;
-    const edge=.016*Math.sin(u*31+row*.9);
-    const base=side<0?[.40,.405,.395]:[.365,.39,.405];
-    return base.map(v=>v+bed+joint+ledge+edge);
-   },bank);
   }
   // A single repeatable tangent-space stone normal map adds grazing-light
   // fracture relief to ENV009's walkable shelf without changing its y=0
@@ -245,7 +221,7 @@ const CombatEnvironment010=(()=>{
       const cap=own(new B.Mesh("env010_sedimentary_shelf_skin",scene));
       data.applyToMesh(cap,false);
       const material=own(new B.StandardMaterial("env010_sedimentary_skin",scene));
-      material.diffuseColor=new B.Color3(.79,.74,.66);
+      material.diffuseColor=new B.Color3(.86,.81,.73);
       material.useVertexColors=true;
       cap.hasVertexAlpha=true;cap.useVertexColors=true;
       material.specularColor=new B.Color3(.010,.012,.012);

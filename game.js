@@ -230,6 +230,14 @@ let challengeSaveAvailable=challengeLoaded.available;
 let activeChallengeId=null,challengeTracker=null;
 let selectedChallengeKind=null;
 let challengeResultRecorded=false,challengeLastStars=0,challengeSaveFailed=false;
+// OPS-001B: independent checkpoint; never part of campaign or the player wallet.
+const operationLoaded=typeof OperationCore!=="undefined"?OperationCore.load(()=>window.localStorage):
+ {progress:{active:null,history:[]},available:false,blocked:true};
+let operationProgress=operationLoaded.progress;
+let operationSaveBlocked=operationLoaded.blocked;
+let operationSaveAvailable=operationLoaded.available;
+let operationNotice="",operationRunCounter=0,operationBattleRunId=null;
+let battleIsOperation=false,operationResultRecorded=false;
 let storyTrialParty=false; // Only for the opt-in story sandbox, never saved.
 let storyDemoState=null;
 let missionResultShown=false;
@@ -546,6 +554,10 @@ function selectedParty(){
   .map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(progressedHero);
 }
 function battleLineup(){
+ if(battleIsOperation){
+  if(!OperationCore.battlePlan(operationProgress.active))throw Error("Unknown operation plan");
+  return [...selectedParty(),...ENEMIES.slice(0,2).map(progressedEnemy)];
+ }
  if(battleIsChallenge){
   const def=ChallengeCore.get(activeChallengeId);
   if(!def)throw Error("Unknown challenge");
@@ -568,6 +580,13 @@ function battleLineup(){
 // Optional future wave rosters live in mission data. Existing missions have no
 // future waves, so their accepted encounters and balance remain unchanged.
 function battleFutureWaves(){
+ if(battleIsOperation){
+  const plan=OperationCore.battlePlan(operationProgress.active);
+  if(!plan)throw Error("Unknown operation plan");
+  const reinforcement=ENEMIES.find(h=>h.id==="ves-2");
+  if(plan.kind==="twoWaves"&&!reinforcement)throw Error("Missing training reinforcement");
+  return plan.kind==="twoWaves"?[[progressedEnemy(reinforcement)]]:[];
+ }
  if(battleIsChallenge){
   const def=ChallengeCore.get(activeChallengeId);
   if(!def)throw Error("Unknown challenge");
@@ -710,6 +729,8 @@ function showScreen(id){
  }
  if(id==="campaign")renderCampaign();
  if(id==="challenges")renderChallenges();
+ if(id==="operations")renderOperations();
+ if(id==="operationResult")renderOperationResult();
  if(id==="storyDemo")renderStoryDemo();
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
@@ -722,16 +743,19 @@ function showScreen(id){
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
   battleIsStoryDemo=squadReturnScreen==="storyDemo"&&storyDemoState?.phase==="battle";
   battleIsChallenge=squadReturnScreen==="challenges"&&!!ChallengeCore.get(activeChallengeId);
+  battleIsOperation=squadReturnScreen==="operations"&&operationProgress.active?.phase==="battle";
+  operationBattleRunId=battleIsOperation?operationProgress.active.runId:null;
   const label=$("#battleMissionLabel");
-  if(label)label.textContent=battleIsChallenge?"ИСПЫТАНИЕ · "+ChallengeCore.get(activeChallengeId).title:
+  if(label)label.textContent=battleIsOperation?"РАЗВЕДОПЕРАЦИЯ · ДВА КУРЬЕРА":
+   battleIsChallenge?"ИСПЫТАНИЕ · "+ChallengeCore.get(activeChallengeId).title:
    battleIsStoryDemo?"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ":
    battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
   const objective=$("#battleChallengeGoal");
   if(objective){
-   objective.hidden=!battleIsChallenge;
+   objective.hidden=!battleIsChallenge&&!battleIsOperation;
    const def=battleIsChallenge?ChallengeCore.get(activeChallengeId):null;
    const priority=def?.kind==="tactical"?ENEMIES.find(e=>e.id===def.priorityId):null;
-   objective.textContent=!def?"":def.kind==="tactical"?
+   objective.textContent=battleIsOperation?"Перехватить подлинный пакет.":!def?"":def.kind==="tactical"?
     "Цель: "+(priority?.name||"отмеченный враг")+" должен погибнуть первым и отдельно от остальных.":
     "Цель: пройти "+(def.futureWaves.length+1)+" волны, сохранив отряд.";
   }
@@ -829,6 +853,167 @@ $("#heroBiographyClose")?.addEventListener("click",()=>{
  const dialog=$("#heroBiographyDialog");
  if(dialog&&typeof dialog.close==="function")dialog.close();
 });
+// OPS-001B: small landscape-first operation screen. All rules are decided by OperationCore.
+const OPS_ORDER_LABELS=Object.freeze({
+ register:"Сверить реестр",block:"Перекрыть развилку",
+ extract:"Подготовить отход",observe:"Проследить курьеров"
+});
+const OPS_MARK=Object.freeze({diamond:"◈",circle:"○"});
+function commitOperation(next){
+ const candidate=next&&OperationCore.stage(operationProgress,next);
+ if(!candidate){
+  operationNotice="Невозможно изменить операцию: этап или идентификатор не совпадает.";
+  return false;
+ }
+ if(operationSaveBlocked||!operationSaveAvailable||
+    !OperationCore.save(candidate,()=>window.localStorage,operationSaveBlocked)){
+  operationNotice="Не удалось сохранить операцию. Изменение не применено; проверь доступность хранилища Safari.";
+  return false;
+ }
+ operationProgress=candidate;
+ operationNotice="";
+ return true;
+}
+function operationResultText(entry){
+ if(!entry)return "Пока нет завершённых операций.";
+ if(entry.outcome==="defeat")return "Отряд потерпел поражение. Подлинный пакет не захвачен.";
+ if(entry.outcome==="wrongTarget")return "Охрана побеждена, но перехвачена пустышка. Главная цель не выполнена.";
+ if(entry.outcome==="abandoned")return "Отряд отступил. Операция завершена без выполнения задачи.";
+ const achieved=[];
+ if(entry.coverPreserved)achieved.push("скрыты следы");
+ if(entry.ledgerSecured)achieved.push("получен маршрутный журнал");
+ return "Подлинник захвачен. Дополнительные результаты: "+
+  (achieved.length?achieved.join(", "):"нет")+".";
+}
+function renderOperationResult(){
+ const history=operationProgress.history;
+ const last=history[history.length-1]||null;
+ const title=$("#operationResultTitle"),desc=$("#operationResultText"),meta=$("#operationResultStatus");
+ if(title)title.textContent=last?.outcome==="success"?"Операция выполнена":
+  last?.outcome==="wrongTarget"?"Ошибка перехвата":
+  last?.outcome==="defeat"?"Отряд разбит":
+  last?.outcome==="abandoned"?"Операция прервана":"Итоги операции";
+ if(desc)desc.textContent=operationResultText(last);
+ if(meta)meta.textContent="OPS-001 · Учебный сценарий, без энергии, наград и изменения кампании. "+
+  (operationSaveBlocked?"Прогресс недоступен.":"Итог хранится в этом браузере.");
+}
+function renderOperations(){
+ const run=operationProgress.active;
+ const status=$("#opsSaveStatus"),phase=$("#opsPhase"),report=$("#opsReport");
+ const actions=$("#opsActions"),warning=$("#opsNotice"),history=$("#opsHistory");
+ if(!status||!phase||!report||!actions||!warning||!history)return;
+ status.textContent=operationSaveBlocked?"Сохранение операций повреждено — начало новой операции заблокировано.":
+  !operationSaveAvailable?"Хранилище недоступно — новая операция недоступна.":
+  "Контрольные точки операции сохраняются в этом браузере. Если закрыть Safari во время боя, его можно начать заново.";
+ warning.textContent=operationNotice;
+ const last=operationProgress.history[operationProgress.history.length-1]||null;
+ history.textContent=last?"Последняя операция: "+operationResultText(last):"Завершённых операций пока нет.";
+ const north=$("#opsNorth"),south=$("#opsSouth"),junction=$("#opsJunction");
+ const northMark=$("#opsNorthMark"),southMark=$("#opsSouthMark"),auth=$("#opsAuthentic");
+ const intel=run?OperationCore.intel(run):null;
+ northMark.textContent=intel?.courierMarks?OPS_MARK[intel.courierMarks.north]:"?";
+ southMark.textContent=intel?.courierMarks?OPS_MARK[intel.courierMarks.south]:"?";
+ auth.textContent=intel?.authenticMark?OPS_MARK[intel.authenticMark]:"?";
+ for(const button of [north,south,junction]){
+  if(button)button.disabled=!run||run.phase!=="target"||
+   (button===junction?!intel.blocked:intel.blocked);
+ }
+ north.classList.toggle("confirmed",!!run&&
+  OperationCore.targetAssessment(run,"north")==="confirmed");
+ south.classList.toggle("confirmed",!!run&&
+  OperationCore.targetAssessment(run,"south")==="confirmed");
+ const button=(attr,value,label,kind="ghost")=>
+  '<button type="button" class="'+kind+'" '+attr+'="'+value+'">'+label+'</button>';
+ const quit=button("data-ops-abandon","yes","Прервать операцию");
+ if(!run){
+  phase.textContent="БРИФИНГ · ДВА КУРЬЕРА";
+  report.textContent="Курьеры несут подлинный пакет и пустышку. Отдай два приказа, выбери точку перехвата и выиграй пошаговый бой. Это неканоническая учебная операция.";
+  const disabled=operationSaveBlocked||!operationSaveAvailable;
+  actions.innerHTML=button("data-ops-new","yes","Начать операцию","primary").replace(
+   "<button",'<button'+(disabled?" disabled":""));
+  return;
+ }
+ const orderNames=run.orders.map(x=>OPS_ORDER_LABELS[x]);
+ const common="Приказы: "+(orderNames.length?orderNames.join(" → "):"ещё не отданы")+". ";
+ if(run.phase==="order1"||run.phase==="order2"){
+  const first=run.phase==="order1";
+  phase.textContent=first?"ПРИКАЗ 1 ИЗ 2 · КУРЬЕРЫ ВМЕСТЕ":
+   intel.blocked?"ПРИКАЗ 2 ИЗ 2 · РАЗВИЛКА ПЕРЕКРЫТА":"ПРИКАЗ 2 ИЗ 2 · КУРЬЕРЫ РАЗДЕЛЯЮТСЯ";
+  report.textContent=common+(first?
+   "Перекрыть развилку можно только сейчас. Блокада гарантирует обе посылки, но вызовет две волны охраны.":
+   "Оставшийся приказ: собери улику или подготовь безопасный отход.");
+  actions.innerHTML=OperationCore.availableOrders(run).map(x=>
+   button("data-ops-order",x,OPS_ORDER_LABELS[x],x==="block"?"primary":"ghost")).join("")+quit;
+ }else if(run.phase==="target"){
+  phase.textContent="ПЕРЕХВАТ · ВЫБЕРИ МАРШРУТ НА КАРТЕ";
+  report.textContent=common+(intel.blocked?
+   "Развилка перекрыта. Нажми на центральную точку: обе посылки будут захвачены при победе. Охрана выйдет в две волны.":
+   intel.authenticMark&&intel.courierMarks?
+   "Сопоставь знак подлинника со знаком курьера и нажми на нужный маршрут. Обычный бой: одна волна.":
+   "Не все сведения получены. Выбор маршрута будет рискованным: победа над охраной может принести пустышку.");
+  actions.innerHTML=quit;
+ }else if(run.phase==="battle"){
+  phase.textContent="БОЕВОЙ ЭТАП · ПОДГОТОВКА ОТРЯДА";
+  const plan=OperationCore.battlePlan(run);
+  report.textContent=common+"Перехват: "+(run.target==="junction"?"развилка":run.target==="north"?"север":"юг")+
+   ". "+(plan.kind==="twoWaves"?"Две последовательные волны.":"Одна волна.")+
+   " Выбери героев. После прерывания в Safari бой начнётся с первого хода.";
+  actions.innerHTML=button("data-ops-fight","yes","Выбрать отряд и начать бой","primary")+quit;
+ }else if(run.phase==="final"){
+  phase.textContent="ПОСЛЕ БОЯ · ЗАКЛЮЧИТЕЛЬНОЕ РЕШЕНИЕ";
+  report.textContent=common+"Подлинник захвачен. Выбери действия до прибытия подкрепления. "+
+   (intel.extractionPrepared?"Подготовленный отход позволяет выполнить обе дополнительные цели.":
+   "Без подготовки отхода можно выполнить только одну дополнительную цель.");
+  const labels={cover:"Скрыть следы",ledger:"Забрать маршрутный журнал",
+   leave:"Немедленно уйти",both:"Скрыть следы и забрать журнал"};
+  actions.innerHTML=OperationCore.finalChoices(run).map(x=>
+   button("data-ops-finish",x,labels[x],x==="both"?"primary":"ghost")).join("");
+ }
+}
+function newOperation(){
+ if(operationProgress.active||operationSaveBlocked||!operationSaveAvailable)return false;
+ const last=operationProgress.history[operationProgress.history.length-1];
+ const variant=last?.variantId==="A"?"B":"A";
+ const runId="ops-"+Date.now().toString(36)+"-"+(++operationRunCounter);
+ const run=OperationCore.start(variant,runId);
+ const saved=commitOperation(run);
+ if(saved)renderOperations();
+ return saved;
+}
+function changeOperation(run){
+ if(!commitOperation(run)){renderOperations();return false;}
+ if(run.phase==="done"){showScreen("operationResult");return true;}
+ renderOperations();
+ return true;
+}
+$("#operations")?.addEventListener("click",event=>{
+ const node=event.target.closest?.("[data-ops-new],[data-ops-order],[data-ops-target],[data-ops-fight],[data-ops-finish],[data-ops-abandon]");
+ if(!node||node.disabled||!$("#operations").contains(node))return;
+ const run=operationProgress.active;
+ if(node.dataset.opsNew){newOperation();return;}
+ if(!run)return;
+ if(node.dataset.opsOrder){changeOperation(OperationCore.order(run,node.dataset.opsOrder));return;}
+ if(node.dataset.opsTarget){
+  const rating=OperationCore.targetAssessment(run,node.dataset.opsTarget);
+  if(!rating)return;
+  if(changeOperation(OperationCore.intercept(run,node.dataset.opsTarget)))
+   openSquad("operations");
+  return;
+ }
+ if(node.dataset.opsFight){
+  if(run.phase==="battle")openSquad("operations");
+  return;
+ }
+ if(node.dataset.opsFinish){changeOperation(OperationCore.finish(run,node.dataset.opsFinish));return;}
+ if(node.dataset.opsAbandon)changeOperation(OperationCore.abandon(run));
+});
+$("#operationResultBack")?.addEventListener("click",()=>showScreen("operations"));
+$("#operationResultAgain")?.addEventListener("click",()=>{
+ if(operationProgress.active)return showScreen("operations");
+ if(newOperation())showScreen("operations");
+});
+$("#operationResultHome")?.addEventListener("click",()=>showScreen("home"));
+
 function renderChallenges(){
  const container=$("#challengeList"),modeNav=$("#challengeModes"),modeBack=$("#challengeModeBack");
  if(!container)return;
@@ -1661,6 +1846,13 @@ function syncBattleUI(){
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
   missionResultRecorded=true;
  }
+ if(battleIsOperation&&!state.active&&!operationResultRecorded){
+  const pending=operationProgress.active;
+  const ended=pending&&OperationCore.battleEnded(pending,operationBattleRunId,state);
+  if(!ended||!commitOperation(ended))
+   operationNotice="Результат боя не сохранён. План остался на контрольной точке: повтори бой после проверки хранилища.";
+  operationResultRecorded=true;
+ }
  if(battleIsChallenge&&!state.active&&!challengeResultRecorded){
   // A fully resolved challenge counts as participation even on defeat.
   // Cancel the daily change if its v3 save is rejected.
@@ -1704,6 +1896,12 @@ function syncBattleUI(){
   renderTargetFighterHud();
   renderArenaIndicators();
   updateMeshes();
+  return;
+ }
+ if(battleIsOperation&&!state.active&&!missionResultShown){
+  missionResultShown=true;
+  showScreen(operationProgress.active?.phase==="final"?"operations":
+   operationProgress.active?.phase==="battle"?"operations":"operationResult");
   return;
  }
  if(battleIsChallenge&&!state.active&&!missionResultShown){
@@ -1846,6 +2044,7 @@ function resetBattle(){
  missionResultShown=false;
  missionResultRecorded=false;
  challengeResultRecorded=false;
+ operationResultRecorded=false;
  challengeLastStars=0;
  challengeSaveFailed=false;
  challengeTracker=battleIsChallenge?ChallengeCore.start(activeChallengeId):null;
@@ -1888,7 +2087,7 @@ $("#basicAbilityBtn").addEventListener("click",()=>pressAbility("basic"));
 $("#specialAbilityBtn").addEventListener("click",()=>pressAbility("special"));
 $("#powerfulAbilityBtn")?.addEventListener("click",()=>pressAbility("powerful"));
 $("#battleRetryBtn").addEventListener("click",()=>{
- if(!state.active&&!isVisualTransition())openSquad(battleIsChallenge?"challenges":"home");
+ if(!state.active&&!isVisualTransition())openSquad(battleIsOperation?"operations":battleIsChallenge?"challenges":"home");
 });
 const autoBattleControl=$("#autoBattleBtn");
 if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.active)setAutoBattle(!autoBattle);});

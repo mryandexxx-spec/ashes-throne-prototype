@@ -57,6 +57,6 @@ assert.ok(game.includes(".filter(heroOwned)"));
 assert.ok(game.includes('data-open-hero='));
 assert.ok(game.includes('data-hero-id='));
 assert.ok(css.includes(".hero-card.hero-locked"));
-assert.equal(JSON.parse(read("package.json")).version,"0.3.73");
-assert.ok(html.includes("v0.3.73 · RENCOMBATD"));
+assert.equal(JSON.parse(read("package.json")).version,"0.3.74");
+assert.ok(html.includes("v0.3.74 · OPS001B"));
 console.log("Heroes-001: new/legacy collection, mission grants, duplicate protection, squad gate and v3 storage passed");

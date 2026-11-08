@@ -52,6 +52,24 @@ function firstWin(){
   unlockAccountLevel:P.accountLevel(progress)};
 }
 const initial=firstWin();
+// Repeat victories are performed by the production battle engine, not
+// assumed from a reward table. All five heroes remain at their initial level
+// during farming, since upgrades are deliberately bought at the end.
+function repeatVictory(p){
+ setProgress(p);
+ const b=C.createBattle([...allies.map(progressedHero),...foes.slice(0,2).map(progressedEnemy)],[],
+  {leaderId:ids[0]});
+ C.advanceToPlayerTurn(b);
+ let steps=0;
+ while(b.active&&steps++<300){
+  const plan=A.chooseAction(b);
+  assert.ok(plan);
+  assert.equal(C.performAutoAction(b,plan),true);
+ }
+ assert.ok(steps<300);
+ assert.equal(b.winner,"ally","repeat farm must be a genuine victory");
+ return b;
+}
 // Audited progression: no test-resource button, no currency injection.
 function upgradeAndEquip(p,level,gear){
  const used=JSON.parse(JSON.stringify(p));
@@ -77,7 +95,7 @@ function audit(level,gear,limit=300){
   const achieved=upgradeAndEquip(p,level,gear);
   if(achieved){
    return {level,gear,repeats,firstWins:1,totalMission1Wins:repeats+1,
-    totalNominalEnergy:repeats*cost,accountLevel:P.accountLevel(p),
+    totalEnergySpent:repeats*cost,remainingEnergy:p.energy.value,accountLevel:P.accountLevel(p),
     currencyBeforePurchases:p.currency,currencyAfterPurchases:achieved.currency,
     materialsBeforePurchases:{...p.materials},
     materialsAfterPurchases:{...achieved.materials},
@@ -86,6 +104,10 @@ function audit(level,gear,limit=300){
     expectedHeroLevelGateEnabled:false};
   }
   if(repeats<limit){
+   assert.equal(P.spendEnergy(p,"black-pass-ambush",1,p.energy.updatedAt),
+     true,"paid repeated campaign battle must have energy");
+   const repeatBattle=repeatVictory(p);
+   assert.equal(M.score("black-pass-ambush",repeatBattle),3);
    const farm=P.grantRepeatFarm(p,"black-pass-ambush");
    assert.ok(farm);
    assert.equal(farm.currency,850);
@@ -112,7 +134,7 @@ const snapshot={
   unlocked:true,accountLevel:initial.unlockAccountLevel},
  repeatFarm:P.MISSION_GEAR_FARM["black-pass-ambush"],
  results,
- note:"Bounds assume every repeated mission 1 run is won; no test resources; only mission 1 farm. Energy is nominal spend without time/regeneration. L12 is reachable because current vertical slice account level is informational, contrary to approved future account-level gate."
+ note:"All repeats executed as real AutoDecision victories at level 1, with actual energy spending and farm payouts, but only controlled five-person squad is tested. No regeneration, test resources or other missions. L12 is reachable because current vertical slice account level is informational, contrary to approved future account-level gate."
 };
 console.log("STATS004A3_PROGRESSION_JSON="+JSON.stringify(snapshot));
 console.log("Stats-004A3: exact current mission 1 payout, real v3 G1 crafting, hero upgrades and mission 2 unlock verified");

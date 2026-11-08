@@ -1037,3 +1037,13 @@ body.battle-mode #app>footer{visibility:hidden}
  #skillUpgradeButton{max-width:none;width:100%}
  .skill-level-buttons{gap:4px}
 }
+
+/* HEROES-001: locked demo characters read like collection placeholders. */
+.hero-card.hero-locked,.squad-choice.hero-locked{opacity:.76;border-style:dashed;background:var(--panel)}
+.hero-card.hero-locked .hero-avatar{color:var(--muted);background:var(--panel2);filter:saturate(.3)}
+.hero-card.hero-locked h3,.squad-choice.hero-locked b{color:var(--muted)}
+.hero-card.hero-locked .hero-open-hint{color:var(--muted)}
+.hero-card.hero-locked:disabled,.squad-choice.hero-locked:disabled{
+ cursor:not-allowed;transform:none;filter:none
+}
+.hero-card.hero-locked p,.squad-choice.hero-locked small{overflow-wrap:anywhere}

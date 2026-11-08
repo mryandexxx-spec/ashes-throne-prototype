@@ -158,6 +158,7 @@ const ProgressV3Core=(()=>{
   }
   if(Object.keys(data.materials).length!==MATERIALS.length||
      MATERIALS.some(id=>!own(data.materials,id)||!nonneg(data.materials[id])))return null;
+  if(data.daily!==undefined&&(typeof DailyCore==="undefined"||!DailyCore.valid(data.daily)))return null;
   return JSON.parse(JSON.stringify(data));
  }
  function toRuntime(data,heroes){
@@ -170,6 +171,7 @@ const ProgressV3Core=(()=>{
    gearMaterials:source.legacyC,
    energy:source.energy,claimedMissions:source.claimedMissions,
    materials:source.materials,
+   daily:source.daily,
    classes:Object.fromEntries(ids.map(id=>[id,source.heroes[id].classId])),
    levels:Object.fromEntries(ids.map(id=>[id,source.heroes[id].level])),
    gear:Object.fromEntries(ids.map(id=>{
@@ -196,6 +198,7 @@ const ProgressV3Core=(()=>{
    accountXp:p.accountXp,currency:p.currency,legacyC:p.gearMaterials,
    energy:p.energy,claimedMissions:p.claimedMissions,
    materials:p.materials,
+   ...(p.daily!==undefined?{daily:p.daily}:{}),
    migration:p.migration??{strategy:"clean-heroes-v1",sourceVersion:null},
    heroes:Object.fromEntries(ids.map(id=>[id,{
     classId:p.classes[id],level:p.levels[id],

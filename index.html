@@ -131,6 +131,12 @@
           <p class="muted detail-session-note" id="progressSaveNote" role="status">Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить.</p>
         </div>
       </div>
+      <section class="hero-abilities-panel" aria-labelledby="heroAbilitiesTitle">
+        <div class="eyebrow">БОЕВЫЕ УМЕНИЯ · ДЕМОНСТРАЦИЯ</div>
+        <h3 id="heroAbilitiesTitle">Способности героя</h3>
+        <p class="muted">Показаны текущие тестовые определения способностей. Уровни навыков и их улучшение ещё не реализованы.</p>
+        <div id="heroAbilityList" class="hero-abilities-list" aria-label="Пять типов способностей героя"></div>
+      </section>
     </section>
     <section id="campaign" class="screen">
       <div class="section-heading"><div><div class="eyebrow">КАМПАНИЯ</div><h2>Путь к престолу</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
@@ -264,7 +270,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.58 · LOGIN002</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.59 · ABUI001</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -275,6 +281,7 @@
   </aside>
   <script src="initiative-model.js"></script>
   <script src="ability-data.js"></script>
+  <script src="ability-info.js"></script>
   <script src="battle-rng.js"></script>
   <script src="combat-core.js"></script>
   <script src="auto-decision.js"></script>

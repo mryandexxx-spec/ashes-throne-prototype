@@ -233,21 +233,51 @@ const CombatCore = (() => {
     return false;
   }
 
-  // One deterministic damage path, shared by human and AI attacks.
-  // Weakening is applied before guarding; each step rounds once.
-  function dealDamage(attacker, target, rawDamage, consumeWeakening = true) {
-    let damage = Math.max(0, rawDamage);
-    if (attacker.weakenAttacks > 0) damage = Math.round(damage * 0.7);
-    if (target.guardHits > 0) {
-      damage = Math.round(damage * 0.5);
+  // Stats-001C: the typed path is opt-in. Absent defenses mean that this
+  // target has not activated the new defense model; no attributes are created.
+  // Explicit invalid defense/Protection values reject a command before a turn.
+  const DEFENSE_SCALE = 100; // prototype-only approved coefficient
+  function validTypedTarget(target,type){
+    const defense=type==="physical"?"physicalDefense":"magicDefense";
+    const value=target[defense];
+    if(value!==undefined&&(!Number.isFinite(value)||value<0))return false;
+    const hasPool=target.protection!==undefined||target.maxProtection!==undefined;
+    return !hasPool||(Number.isSafeInteger(target.protection)&&
+      Number.isSafeInteger(target.maxProtection)&&target.maxProtection>=0&&
+      target.protection>=0&&target.protection<=target.maxProtection);
+  }
+  function typedDamageFields(target,type,oldHp,oldProtection){
+    if(type==="legacy")return {};
+    return {damageType:type,
+      protectionDamage:oldProtection===null?0:oldProtection-target.protection,
+      hpDamage:oldHp-target.hp,
+      remainingProtection:oldProtection===null?null:target.protection};
+  }
+  // Legacy: weakening -> guard -> HP (unchanged).
+  // Typed: weakening -> matching defense -> guard -> Protection -> HP.
+  function dealDamage(attacker,target,rawDamage,consumeWeakening=true,type="legacy"){
+    let damage=Math.max(0,rawDamage);
+    if(attacker.weakenAttacks>0)damage=Math.round(damage*0.7);
+    if(type!=="legacy"){
+      const defense=target[type==="physical"?"physicalDefense":"magicDefense"];
+      if(defense!==undefined)damage=Math.round(damage*DEFENSE_SCALE/(DEFENSE_SCALE+defense));
+    }
+    if(target.guardHits>0){
+      damage=Math.round(damage*0.5);
       target.guardHits--;
     }
-    target.hp = Math.max(0, target.hp - damage);
-    if (target.hp === 0) {
-      target.guardHits = 0;
-      target.weakenAttacks = 0;
+    if(type!=="legacy"&&target.protection!==undefined){
+      const absorbed=Math.min(damage,target.protection);
+      target.protection-=absorbed;
+      target.hp=Math.max(0,target.hp-(damage-absorbed));
+    }else{
+      target.hp=Math.max(0,target.hp-damage);
     }
-    if (consumeWeakening && attacker.weakenAttacks > 0) attacker.weakenAttacks--;
+    if(target.hp===0){
+      target.guardHits=0;
+      target.weakenAttacks=0;
+    }
+    if(consumeWeakening&&attacker.weakenAttacks>0)attacker.weakenAttacks--;
     return damage;
   }
 
@@ -416,6 +446,8 @@ const CombatCore = (() => {
     if(ability.kind==="guard"&&(!Number.isInteger(ability.guardHits)||ability.guardHits<0))return false;
     if(!targets.length)return false;
     const recipients=targets.map(i=>battle.fighters[i]);
+    const type=ability.kind==="damage"?AbilityData.damageType(ability):null;
+    if(type&&type!=="legacy"&&recipients.some(target=>!validTypedTarget(target,type)))return false;
     // A group attack has one player-selected primary target, even though
     // every living enemy receives the base effect. Future bonus effects can
     // refer to primaryTargetId without changing recipient selection.
@@ -430,9 +462,11 @@ const CombatCore = (() => {
     const weakened=actor.weakenAttacks>0;
     for(const target of recipients){
       if(ability.kind==="damage"){
-        const damage=dealDamage(actor,target,Math.round(effectiveStat(battle,actor,AbilityData.damageStat(ability))*ability.multiplier),false);
+        const oldHp=target.hp,oldProtection=target.protection??null;
+        const damage=dealDamage(actor,target,
+          Math.round(effectiveStat(battle,actor,AbilityData.damageStat(ability))*ability.multiplier),false,type);
         emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
-          ...(AbilityData.damageType(ability)==="legacy"?{}:{damageType:AbilityData.damageType(ability)})});
+          ...typedDamageFields(target,type,oldHp,oldProtection)});
         if(target.hp===0)emit(battle,"death",{targetId:target.id});
         if(ability.weakening>0&&target.hp>0){
           target.weakenAttacks=ability.weakening;
@@ -488,6 +522,8 @@ const CombatCore = (() => {
     if(targets.length!==1)return false;
     const targetIndex=targets[0];
     const target=battle.fighters[targetIndex];
+    const type=ability.kind==="damage"?AbilityData.damageType(ability):null;
+    if(type&&type!=="legacy"&&!validTypedTarget(target,type))return false;
     // Invalid commands leave the previous event batch untouched.
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
@@ -501,9 +537,11 @@ const CombatCore = (() => {
       emit(battle,"heal",{actorId:actor.id,targetId:target.id,amount:restored,remainingHp:target.hp});
       battle.message=actor.name+" лечит "+target.name+": +"+restored+" HP.";
     }else{
-      const damage=dealDamage(actor,target,Math.round(effectiveStat(battle,actor,damageStat)*ability.multiplier));
+      const oldHp=target.hp,oldProtection=target.protection??null;
+      const damage=dealDamage(actor,target,
+        Math.round(effectiveStat(battle,actor,damageStat)*ability.multiplier),true,type);
       emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
-          ...(AbilityData.damageType(ability)==="legacy"?{}:{damageType:AbilityData.damageType(ability)})});
+        ...typedDamageFields(target,type,oldHp,oldProtection)});
       if(target.hp===0)emit(battle,"death",{targetId:target.id});
       if(ability.weakening>0&&target.hp>0){
         target.weakenAttacks=ability.weakening;

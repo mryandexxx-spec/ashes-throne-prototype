@@ -185,7 +185,9 @@ const CombatEnvironment010=(()=>{
        typeof shelf.getIndices!=="function")return false;
     let albedoReady=false,normalReady=false,capMade=false,albedo=null,normal=null;
     const makeCap=()=>{
-      if(!albedoReady||!normalReady||capMade||scene.isDisposed)return;
+      const disposed=typeof scene.isDisposed==="function"?
+        scene.isDisposed():Boolean(scene.isDisposed);
+      if(!albedoReady||!normalReady||capMade||disposed)return;
       const positions=shelf.getVerticesData("position");
       const uvs=shelf.getVerticesData("uv");
       const normals=shelf.getVerticesData("normal");

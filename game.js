@@ -239,7 +239,26 @@ function eligibleSquadCount(){
  return Math.min(MAX_SQUAD,ALLIES.length);
 }
 let state=CombatCore.createBattle([...ALLIES,...ENEMIES.slice(0,2)]);
-function progressedHero(hero){return ProgressCore.heroStats(progress,hero);}
+// Stats-002C [TEST PILOT]: provisional combat profiles, not canonical identities.
+const PILOT_HERO_STATS=Object.freeze({
+ kael:Object.freeze({physicalDefense:24,magicDefense:12,maxProtection:20}),
+ lyra:Object.freeze({physicalDefense:6,magicDefense:15,maxProtection:0}),
+ darin:Object.freeze({physicalDefense:14,magicDefense:9,maxProtection:0})
+});
+const PILOT_ENEMY_STATS=Object.freeze({physicalDefense:8,magicDefense:8,maxProtection:0});
+function equippedPilotStats(hero,profile){
+ if(!hero||!profile)return hero;
+ return {...hero,physicalAttack:hero.atk,physicalDefense:profile.physicalDefense,
+  magicDefense:profile.magicDefense,protection:profile.maxProtection,
+  maxProtection:profile.maxProtection};
+}
+function progressedHero(hero){
+ const calculated=ProgressCore.heroStats(progress,hero);
+ return calculated?equippedPilotStats(calculated,PILOT_HERO_STATS[hero.id]):null;
+}
+function progressedEnemy(enemy){
+ return equippedPilotStats({...enemy},PILOT_ENEMY_STATS);
+}
 function hasLeaderSkill(id){
  const hero=ALLIES.find(h=>h.id===id);
  return !!hero&&!!AbilityData.get(hero,"leader");
@@ -256,7 +275,7 @@ function selectedParty(){
 function battleLineup(){
  // Mission #2 tests five enemies; the shared enemy AI is mission-independent.
  const enemies=battleIsCampaign&&activeMissionId==="demo-mission-2"?ENEMIES:ENEMIES.slice(0,2);
- return [...selectedParty(),...enemies.map(enemy=>({...enemy}))];
+ return [...selectedParty(),...enemies.map(progressedEnemy)];
 }
 // Optional future wave rosters live in mission data. Existing missions have no
 // future waves, so their accepted encounters and balance remain unchanged.
@@ -265,7 +284,7 @@ function battleFutureWaves(){
  return (mission&&mission.futureEnemyWaves||[]).map(ids=>ids.map(id=>{
   const enemy=ENEMIES.find(h=>h.id===id);
   if(!enemy)throw Error("Unknown wave enemy template: "+id);
-  return {...enemy};
+  return progressedEnemy(enemy);
  }));
 }
 function renderSquad(){
@@ -490,7 +509,7 @@ function renderHeroDetail(){
  if(!base)return;
  const hero=progressedHero(base);
  const cost=ProgressCore.upgradeCost(progress,base.id);
- const next=cost===null?null:ProgressCore.heroStats(progress,base,hero.level+1);
+ const next=cost===null?null:equippedPilotStats(ProgressCore.heroStats(progress,base,hero.level+1),PILOT_HERO_STATS[base.id]);
  $("#detailName").textContent=hero.name;
  $("#detailRole").textContent=hero.role+" · Демонстрационный персонаж";
  $("#detailGlyph").textContent=hero.glyph;

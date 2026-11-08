@@ -745,12 +745,15 @@ function renderHeroAbilities(hero){
   const label=document.createElement("span");label.className="hero-ability-kind";label.textContent=info.label;
   const name=document.createElement("strong");name.textContent=info.name;
   heading.append(label,name);
+  const details=document.createElement("details");details.className="hero-ability-more";
+  const summary=document.createElement("summary");summary.textContent="Описание";
   const description=document.createElement("p");description.textContent=info.description;
-  card.append(heading,description);
+  details.append(summary,description);
   if(info.meta.length){
    const meta=document.createElement("small");meta.className="hero-ability-meta";
-   meta.textContent=info.meta.join(" · ");card.append(meta);
+   meta.textContent=info.meta.join(" · ");details.append(meta);
   }
+  card.append(heading,details);
   list.append(card);
  }
 }

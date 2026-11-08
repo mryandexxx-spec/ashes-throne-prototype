@@ -100,13 +100,42 @@
         <div><div class="eyebrow">ДОСЬЕ ПЕРСОНАЖА</div><h2 id="detailName">Герой</h2><p id="detailRole" class="muted"></p></div>
         <div class="hero-detail-nav"><button type="button" class="ghost" id="detailBack">← Назад</button><button type="button" class="ghost" id="detailHome">⌂ Домой</button></div>
       </div>
-      <div class="hero-detail-layout">
+      <div class="hero-detail-layout hero-detail-reference">
+      <section class="hero-abilities-panel" aria-labelledby="heroAbilitiesTitle">
+        <div class="eyebrow">БОЕВЫЕ УМЕНИЯ · ДЕМОНСТРАЦИЯ</div>
+        <h3 id="heroAbilitiesTitle">Способности героя</h3>
+        <p class="muted">Показаны текущие тестовые определения способностей. Уровни навыков и их улучшение ещё не реализованы.</p>
+        <div id="heroAbilityList" class="hero-abilities-list" aria-label="Пять типов способностей героя"></div>
+      </section>
         <div class="hero-detail-panel hero-detail-identity">
-          <div class="hero-detail-avatar" id="detailGlyph" aria-hidden="true"></div>
-          <div class="eyebrow">ХАРАКТЕРИСТИКИ</div>
-          <div id="detailStats" class="hero-detail-stats"></div>
+          <div class="eyebrow">ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД</div>
+          <div class="hero-detail-stage" aria-label="Схематичный силуэт героя, без 3D-модели">
+            <div class="hero-detail-stage-halo" aria-hidden="true"></div>
+            <div class="hero-detail-silhouette" aria-hidden="true">
+              <span class="hero-detail-silhouette-head"></span>
+              <span class="hero-detail-silhouette-torso"></span>
+              <span class="hero-detail-silhouette-arm hero-detail-silhouette-arm-left"></span>
+              <span class="hero-detail-silhouette-arm hero-detail-silhouette-arm-right"></span>
+              <span class="hero-detail-silhouette-leg hero-detail-silhouette-leg-left"></span>
+              <span class="hero-detail-silhouette-leg hero-detail-silhouette-leg-right"></span>
+            </div>
+            <div class="hero-detail-stage-emblem" id="detailGlyph" aria-hidden="true"></div>
+            <div class="hero-detail-stage-platform" aria-hidden="true"></div>
+          </div>
+          <div class="gear-panel" aria-label="Экипировка героев — тест G1–G3">
+                      <div class="eyebrow">ЭКИПИРОВКА · ТЕСТ G1</div>
+                      <h3 id="gearTier">G1 · 0/6</h3>
+                      <div id="gearSlots" class="gear-slots" aria-label="Шесть слотов экипировки"></div>
+                      <div class="detail-value"><span id="gearMaterialLabel">Материалы G1–G3</span><strong id="gearMaterial">0</strong></div>
+                      <div class="detail-value"><span>Игровая валюта</span><strong id="gearWallet">0</strong></div>
+                      <p class="muted gear-hint">Выбери слот, посмотри рецепт и изготовь совместимый с классом предмет. У каждого слота фиксированный бонус.</p>
+                      <div class="detail-value"><span id="gearPriceLabel">Выбранный предмет</span><strong id="gearPrice">—</strong></div>
+                      <div class="detail-value"><span id="gearStatBonusLabel">Бонус предмета</span><strong id="gearStatBonus">—</strong></div>
+                      <button type="button" class="primary" id="gearEquipNext">Установить выбранный предмет</button>
+                      <p class="muted" id="gearNotice" role="status"></p>
+                    </div>
         </div>
-        <div class="hero-detail-panel">
+        <div class="hero-detail-panel hero-detail-progression">
           <div class="eyebrow">РАЗВИТИЕ ПЕРСОНАЖА · ТЕСТ</div>
           <p id="detailHeroLevelCap" class="muted" role="status">Твой аккаунт: уровень 1. Доступный максимум героя сейчас: 3.</p>
           <p class="muted">Повышение уровня героя требует игровую валюту и не может превысить предел аккаунта. Экипировка оплачивается отдельно.</p>
@@ -116,27 +145,12 @@
           <div class="detail-value"><span>После улучшения</span><strong id="detailPreview">—</strong></div>
           <button type="button" class="primary detail-upgrade" id="detailUpgrade">Повысить уровень</button>
           <p class="muted" id="detailNotice" role="status"></p>
-          <div class="gear-panel" aria-label="Экипировка героев — тест G1–G3">
-            <div class="eyebrow">ЭКИПИРОВКА · ТЕСТ G1</div>
-            <h3 id="gearTier">G1 · 0/6</h3>
-            <div id="gearSlots" class="gear-slots" aria-label="Шесть слотов экипировки"></div>
-            <div class="detail-value"><span id="gearMaterialLabel">Материалы G1–G3</span><strong id="gearMaterial">0</strong></div>
-            <div class="detail-value"><span>Игровая валюта</span><strong id="gearWallet">0</strong></div>
-            <p class="muted gear-hint">Выбери слот, посмотри рецепт и изготовь совместимый с классом предмет. У каждого слота фиксированный бонус.</p>
-            <div class="detail-value"><span id="gearPriceLabel">Выбранный предмет</span><strong id="gearPrice">—</strong></div>
-            <div class="detail-value"><span id="gearStatBonusLabel">Бонус предмета</span><strong id="gearStatBonus">—</strong></div>
-            <button type="button" class="primary" id="gearEquipNext">Установить выбранный предмет</button>
-            <p class="muted" id="gearNotice" role="status"></p>
-          </div>
+
+          <div class="eyebrow hero-detail-stats-heading">ХАРАКТЕРИСТИКИ</div>
+          <div id="detailStats" class="hero-detail-stats"></div>
           <p class="muted detail-session-note" id="progressSaveNote" role="status">Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить.</p>
         </div>
       </div>
-      <section class="hero-abilities-panel" aria-labelledby="heroAbilitiesTitle">
-        <div class="eyebrow">БОЕВЫЕ УМЕНИЯ · ДЕМОНСТРАЦИЯ</div>
-        <h3 id="heroAbilitiesTitle">Способности героя</h3>
-        <p class="muted">Показаны текущие тестовые определения способностей. Уровни навыков и их улучшение ещё не реализованы.</p>
-        <div id="heroAbilityList" class="hero-abilities-list" aria-label="Пять типов способностей героя"></div>
-      </section>
     </section>
     <section id="campaign" class="screen">
       <div class="section-heading"><div><div class="eyebrow">КАМПАНИЯ</div><h2>Путь к престолу</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
@@ -270,7 +284,7 @@
         </div>
       </div>
     </section>
-    <footer><span id="buildVersion">Прототип · v0.3.59 · ABUI001</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.60 · HEROUI002</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

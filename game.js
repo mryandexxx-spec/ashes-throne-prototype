@@ -392,7 +392,7 @@ $("#devResourcesGrant")?.addEventListener("click",()=>{
  const before=progress.saveVersion===3?JSON.stringify(progress):null;
  const granted=ProgressCore.grantTestResources(progress);
  if(!granted)return;
- if(progress.saveVersion===3&&!SkillCore.grantTest(progress))return;
+ if(progress.saveVersion===3&&typeof SkillCore!=="undefined"&&!SkillCore.grantTest(progress))return;
  if(!persistProgress()&&before){
   Object.keys(progress).forEach(k=>delete progress[k]);
   Object.assign(progress,JSON.parse(before));
@@ -404,7 +404,7 @@ $("#devResourcesGrant")?.addEventListener("click",()=>{
  if(status)status.textContent="Тестовый запас готов: энергия "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX+
   ", игровая валюта "+progress.currency+", материал C "+progress.gearMaterials+
   (progress.saveVersion===3?" · G1: "+GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(", "):"")+
-  (progress.saveVersion===3?" · Навыки: "+
+  (progress.saveVersion===3&&typeof SkillCore!=="undefined"&&progress.skillMaterials?" · Навыки: "+
    SkillCore.RESOURCE_IDS.map(id=>SkillCore.LABELS[id]+" "+
     progress.skillMaterials[id]).join(", "):"")+
   (saveAvailable?". Сохранено в этом браузере.":". Внимание: сохранение недоступно.");
@@ -479,7 +479,8 @@ function progressedHero(hero){
  const calculated=ProgressCore.heroStats(progress,hero);
  if(!calculated)return null;
  const h=equippedPilotStats(calculated,PILOT_HERO_STATS[hero.id]);
- return {...h,skillLevels:Object.fromEntries(SkillCore.IDS.map(id=>[id,SkillCore.level(progress,hero.id,id)]))};
+ return typeof SkillCore==="undefined"?h:
+  {...h,skillLevels:Object.fromEntries(SkillCore.IDS.map(id=>[id,SkillCore.level(progress,hero.id,id)]))};
 }
 function progressedEnemy(enemy){
  return equippedPilotStats({...enemy},PILOT_ENEMY_STATS);
@@ -760,7 +761,7 @@ function renderHeroAbilities(hero){
    meta.textContent=info.meta.join(" · ");details.append(meta);
   }
   card.append(heading,details);
-  if(info.status==="available"&&SkillCore.IDS.includes(info.id)){
+  if(info.status==="available"&&typeof SkillCore!=="undefined"&&SkillCore.IDS.includes(info.id)){
    const button=document.createElement("button");button.type="button";
    button.className="ghost skill-open-button";
    button.dataset.skillOpen=info.id;

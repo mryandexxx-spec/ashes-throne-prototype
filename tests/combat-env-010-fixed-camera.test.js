@@ -74,6 +74,27 @@ test("ENV010 integrates as an additive optional layer without changing ENV009/FX
  battle.clear();assert.equal(battle.pending(),0);
  assert.doesNotMatch(read("combat-environment-010.js"),/fetch\(|XMLHttpRequest|setInterval|setTimeout|runRenderLoop|Math\.random/);
 });
+test("ENV010 optional microrelief builds a single deterministic scene-owned normal texture",()=>{
+ const {B,scene}=mock(),owned=[];
+ const shelf=new B.StandardMaterial("env009_mat_weathered_stone",scene);
+ class Texture{
+  constructor(name,size){this.name=name;this.size=size;Texture.creations++;}
+  getContext(){return {createImageData:(w,h)=>({data:new Uint8ClampedArray(w*h*4)}),
+   putImageData:image=>{this.pixels=image.data;}};}
+  update(){this.updated=true;}
+  dispose(){this.disposed=true;}
+ }
+ Texture.creations=0;
+ B.DynamicTexture=Texture;
+ Env010.build(B,scene,value=>(owned.push(value),value));
+ assert.equal(Texture.creations,1);
+ assert.equal(shelf.bumpTexture.name,"env010_rock_microrelief");
+ assert.equal(shelf.bumpTexture.size,256);
+ assert.equal(shelf.bumpTexture.pixels.length,256*256*4);
+ assert.equal(shelf.bumpTexture.level,.36);
+ assert.equal(shelf.bumpTexture.updated,true);
+ assert.ok(owned.includes(shelf.bumpTexture));
+});
 test("fixed camera ignores single-finger rotation, retains 12..21 pinch and clears cancelled pointers",()=>{
  const source=read("game.js");
  const begin=source.indexOf("function installArenaPointerCamera(canvas,camera){");

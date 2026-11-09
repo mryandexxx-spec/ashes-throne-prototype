@@ -1,4 +1,4 @@
-name: ENV013B / ENV010 real WebGL comparison
+name: ENV013C / ENV010 real WebGL comparison
 on:
   pull_request:
     paths:
@@ -105,3 +105,21 @@ jobs:
           name: env013-env010-real-game-hud
           path: artifacts/*-full-hud-*.png
           if-no-files-found: warn
+
+      - name: Save real ENV013C WebGL comparison once
+        if: success() && github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/evidence/env013c
+          cp artifacts/env010-default.png artifacts/env010-far.png \
+             artifacts/env013-default.png artifacts/env013-far.png \
+             artifacts/env010-full-hud-844x390.png \
+             artifacts/env013-full-hud-844x390.png docs/evidence/env013c/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/evidence/env013c/*.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'test(env013c): preserve actual WebGL screenshots'
+            git push origin "HEAD:refs/heads/${{ github.head_ref }}"
+          fi

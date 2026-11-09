@@ -309,7 +309,12 @@ const CombatEnvironment014=(()=>{
      for(const v of created)try{v.dispose();}catch(_){}
      throw error;
     }
-   }).catch(()=>mark(isDisposed()?"disposed":"fallback"));
+   }).catch(error=>{
+    if(typeof document!=="undefined"&&document.documentElement)
+     document.documentElement.dataset.env014Error=String(error?.message||error).slice(0,160);
+    console.warn("ENV014 authored GLB fallback",error);
+    mark(isDisposed()?"disposed":"fallback");
+   });
    return true;
   }
 

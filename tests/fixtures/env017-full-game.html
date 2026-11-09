@@ -39,7 +39,7 @@
     camera=win.eval("arenaCamera"),engine=win.eval("engine");
    if(!scene||!camera||!engine||!(engine.getCaps().maxTexturesImageUnits>0))
     throw Error("real Babylon WebGL not available");
-   if(scene.meshes.filter(m=>m.name.startsWith("env021_external_")).length!==5||
+   if(scene.meshes.filter(m=>m.name.startsWith("env021_external_")).length!==3||
       scene.meshes.find(m=>m.name==="env009_far_ridge")?.isEnabled()!==false||
       scene.meshes.some(m=>m.name.startsWith("env010_glb_")))
     throw Error("wrong geometry loaded");

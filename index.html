@@ -51,6 +51,15 @@
                 <stop offset=".55" stop-color="#fff8dc" stop-opacity=".96"/>
                 <stop offset="1" stop-color="#fff6d9" stop-opacity="0"/>
               </linearGradient>
+              <clipPath id="hq-fx-armor-clip">
+                <path d="M175 246 Q197 221 224 228 L252 252 Q254 273 235 288 L194 286 L176 267 Z"/>
+                <path d="M265 264 Q279 246 307 240 Q332 248 353 280 L335 303 L293 314 L269 290 Z"/>
+              </clipPath>
+              <clipPath id="hq-fx-blades-clip">
+                <path d="M1835 143 L1849 142 L1839 284 L1825 289 Z"/>
+                <path d="M1868 144 L1884 141 L1864 284 L1848 287 Z"/>
+                <path d="M1899 143 L1915 141 L1895 283 L1879 286 Z"/>
+              </clipPath>
               <clipPath id="hq-fx-paper-clip">
                 <path d="M593 265 Q650 226 711 250 Q756 242 825 249 Q904 235 981 255 L1024 287 L1001 328 Q961 345 906 343 Q867 362 810 360 Q745 370 689 365 L623 380 L594 346 Z"/>
               </clipPath>
@@ -62,8 +71,8 @@
             <g class="hq-fx-zone hq-fx-heroes">
               <!-- Metal catchlights placed on actual armour (image coordinates, 2048x688).
                    No curved painted-on shoulder outlines: their projection looked displaced. -->
-              <ellipse cx="310" cy="278" rx="59" ry="39" fill="url(#hq-fx-warm)"/>
-              <ellipse cx="213" cy="246" rx="43" ry="32" fill="url(#hq-fx-cool)"/>
+              <ellipse cx="310" cy="278" rx="49" ry="37" clip-path="url(#hq-fx-armor-clip)" fill="url(#hq-fx-warm)"/>
+              <ellipse cx="213" cy="246" rx="43" ry="32" clip-path="url(#hq-fx-armor-clip)" fill="url(#hq-fx-cool)"/>
               <path class="hq-fx-pinpoint" d="M288 286 Q302 294 319 284" fill="none" stroke="#ffe9b8" stroke-width="2.8" stroke-linecap="round"/>
               <path class="hq-fx-pinpoint" d="M203 235 Q215 228 228 239" fill="none" stroke="#e0e9df" stroke-width="2.5" stroke-linecap="round"/>
               <ellipse class="hq-fx-specular" cx="343" cy="259" rx="3" ry="2" fill="#fff1ca"/>
@@ -88,7 +97,7 @@
             <g class="hq-fx-zone hq-fx-challenges">
               <!-- Short broken highlights land on the three painted sword blades;
                    avoid full-height luminous bars that look like separate objects. -->
-              <ellipse cx="1864" cy="209" rx="89" ry="91" fill="url(#hq-fx-cool)"/>
+              <ellipse cx="1864" cy="209" rx="74" ry="74" clip-path="url(#hq-fx-blades-clip)" fill="url(#hq-fx-cool)"/>
               <path class="hq-fx-pinpoint" d="M1837 163 L1834 188" fill="none" stroke="#ebffff" stroke-width="3" stroke-linecap="round"/>
               <path class="hq-fx-pinpoint" d="M1873 189 L1869 218" fill="none" stroke="#f2ffff" stroke-width="3" stroke-linecap="round"/>
               <path class="hq-fx-pinpoint" d="M1905 163 L1901 187" fill="none" stroke="#e5f8f8" stroke-width="2.7" stroke-linecap="round"/>

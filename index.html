@@ -220,9 +220,13 @@
         <p class="muted">Сведения о победах и звёздах берутся из текущего сохранения кампании. Сетевые аккаунты и рейтинги пока не реализованы.</p>
       </div>
     </section>
-    <section id="collection" class="screen">
-      <div class="section-heading"><div><div class="eyebrow">ТВОИ СОЮЗНИКИ</div><h2>Коллекция героев</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
-      <div id="heroList" class="hero-list"></div>
+    <section id="collection" class="screen roster-screen" aria-label="Коллекция героев">
+      <div class="section-heading roster-heading">
+        <div><div class="eyebrow">СОЮЗНИКИ ОРГАНИЗАЦИИ</div><h2>Коллекция героев</h2><p id="rosterCount" class="roster-count" role="status" aria-live="polite">Герои организации</p></div>
+        <button type="button" class="ghost" data-screen="home">← Назад</button>
+      </div>
+      <p class="roster-intro">Выбери героя, чтобы открыть досье и развитие. Закрытые записи показывают условия получения.</p>
+      <div id="heroList" class="hero-list roster-grid" aria-label="Список полученных и ещё не открытых героев"></div>
     </section>
     <section id="heroDetail" class="screen hero-detail-screen" aria-label="Подробная карточка героя">
       <div class="section-heading hero-detail-heading">
@@ -689,7 +693,7 @@
         <button type="button" class="primary" id="lockedHeroUnlock">Открыть за 10 осколков</button>
       </div>
     </dialog>
-    <footer><span id="buildVersion">Прототип · v0.3.84 · OPSHELP + RENPLAY + REN3D003 + ENV010 + ENV017-MASSING</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.85 · ROSTER001</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

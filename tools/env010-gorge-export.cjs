@@ -55,7 +55,7 @@ function createEnv010Glb(){
     const d=f.d+nz*f.rd*lateral+shear*nz-fault*nz*.78;
     const rim=tiltX*(x-f.x)+tiltD*(d-f.d);
     const y=f.top-f.height*t+(rim+(radial-1)*8)*Math.pow(1-t,1.18)-fault*(1-t)*.65+
-       (i%7===0?-.5:0)*Math.pow(1-t,1.5);
+       ((i%SEG)%7===0?-.5:0)*Math.pow(1-t,1.5);
     positions.push((d+x)*SQ,y,(d-x)*SQ);
     const strata=Math.sin((y+.16*x+.07*d)*.25+Math.sin(a*3)*.4);
     const local=.045*strata-.065*crevice*(1-t)+.075*nx-.025*nz;

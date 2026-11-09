@@ -15,8 +15,8 @@ const CombatEnvironment017=(()=>{
  // only after *all* external meshes load and validate.
  const PLACEMENTS=Object.freeze([
   {source:"MesaTerrain",side:0,away:1.2,y:-6.8,scale:2.65,heightScale:.48,angle:0},
-  {source:"CliffFace",side:-15,away:7.5,y:-9.0,scale:2.65,heightScale:.68,angle:-.27},
-  {source:"CanyonWall",side:23,away:23,y:-15.6,scale:2.35,heightScale:1.12,angle:.20}
+  {source:"CliffFace",side:-12.6,away:5.0,y:-9.2,scale:2.65,heightScale:.68,angle:-.12},
+  {source:"CanyonWall",side:20.0,away:25.0,y:-17.5,scale:2.60,heightScale:1.00,angle:.20}
  ]);
  const ROOT=typeof document!=="undefined"&&document.currentScript?.src?
   new URL("assets/env022/",document.currentScript.src).href:null;

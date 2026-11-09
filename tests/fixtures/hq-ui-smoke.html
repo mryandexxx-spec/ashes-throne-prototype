@@ -33,10 +33,15 @@ frame.addEventListener("load",async()=>{
    pan.scrollLeft=Math.max(0,hotspot.offsetLeft-60);
    hotspot.click();
    if(!home.classList.contains("active"))throw Error("Landmark navigated before illumination: "+zone);
-   if(home.querySelector(".hq-scene").dataset.hqIlluminated!==zone)throw Error("Wrong contour activated: "+zone);
+   if(home.querySelector(".hq-scene").dataset.hqIlluminated!==zone)throw Error("Wrong object illuminated: "+zone);
+   const light=home.querySelector(".hq-light-reveal");
+   if(!light)throw Error("Painterly light layer missing");
+   const style=win.getComputedStyle(light);
+   if(style.backgroundSize!=="cover"||!style.backgroundImage.includes("hq-hall-painting"))throw Error("Light not aligned to artwork");
+   if((style.maskImage||style.webkitMaskImage)==="none")throw Error("Light not feather-masked");
    await new Promise(resolve=>setTimeout(resolve,680));
    if(!doc.getElementById(target).classList.contains("active"))throw Error("Landmark navigation after glow broken: "+zone);
-   if(home.querySelector(".hq-scene").dataset.hqIlluminated)throw Error("Contour state not reset: "+zone);
+   if(home.querySelector(".hq-scene").dataset.hqIlluminated)throw Error("Light state not reset: "+zone);
    doc.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s===home));
   }
   doc.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s===home));

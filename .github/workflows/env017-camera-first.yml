@@ -1,4 +1,4 @@
-name: ENV017 camera-first real WebGL massing
+name: ENV018 integrated ledge real WebGL comparison
 on:
   pull_request:
     paths:
@@ -44,7 +44,15 @@ jobs:
             if [ "$view" = far ]; then radius=19; fi
             url="http://127.0.0.1:8765/tests/fixtures/env017-full-game.html?radius=$radius"
             flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 --virtual-time-budget=13000)
-            timeout 65s "$chrome" "${flags[@]}" --screenshot="$PWD/artifacts/env017-$view-hud-844x390.png" "$url" 2>"/tmp/env017-$view.log"
+            # A DOM marker can pass in another process even if screenshot captured
+            # before the Babylon canvas drew. Reject tiny/blank PNGs and retry.
+            for attempt in 1 2 3; do
+              timeout 65s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --screenshot="$PWD/artifacts/env017-$view-hud-844x390.png" "$url" 2>"/tmp/env017-$view.log"
+              bytes="$(stat -c %s "artifacts/env017-$view-hud-844x390.png")"
+              echo "ENV017 $view screenshot attempt $attempt: $bytes bytes"
+              if [ "$bytes" -ge 65000 ]; then break; fi
+            done
+            test "$(stat -c %s "artifacts/env017-$view-hud-844x390.png")" -ge 65000
             page="$(timeout 65s "$chrome" "${flags[@]}" --dump-dom "$url" 2>>"/tmp/env017-$view.log")"
             printf '%s\n' "$page" > "artifacts/env017-$view-dom.html"
             echo "$page" | grep -q 'data-visual-status="ready"'
@@ -53,6 +61,19 @@ jobs:
             grep -o 'data-camera="[^"]*"' "artifacts/env017-$view-dom.html" || true
             test -s "artifacts/env017-$view-hud-844x390.png"
           done
+          # Genuine main baseline: current intermediate ENV017 before this PR.
+          for view in normal far; do
+            radius=12
+            if [ "$view" = far ]; then radius=19; fi
+            before="http://127.0.0.1:8765/baseline/tests/fixtures/env017-full-game.html?radius=$radius"
+            for attempt in 1 2 3; do
+              timeout 65s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --screenshot="$PWD/artifacts/env017-main-before-$view-hud-844x390.png" "$before" 2>"/tmp/env017-before-$view.log"
+              bytes="$(stat -c %s "artifacts/env017-main-before-$view-hud-844x390.png")"
+              echo "Main ENV017 $view screenshot attempt $attempt: $bytes bytes"
+              if [ "$bytes" -ge 65000 ]; then break; fi
+            done
+            test "$(stat -c %s "artifacts/env017-main-before-$view-hud-844x390.png")" -ge 65000
+          done
           # Baseline is built from the actual main worktree, no ENV017 code.
           baseline="http://127.0.0.1:8765/baseline/tests/fixtures/env010-full-game.html"
           timeout 65s "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 --virtual-time-budget=13000 --screenshot="$PWD/artifacts/env010-baseline-full-hud-844x390.png" "$baseline" 2>/tmp/env010-baseline.log
@@ -60,7 +81,7 @@ jobs:
       - name: Expose low-resolution evidence for independent art review
         shell: bash
         run: |
-          for name in env017-normal-hud-844x390 env017-far-hud-844x390 env010-baseline-full-hud-844x390; do
+          for name in env017-main-before-normal-hud-844x390 env017-main-before-far-hud-844x390 env017-normal-hud-844x390 env017-far-hud-844x390 env010-baseline-full-hud-844x390; do
             echo "ART_IMAGE_BEGIN:$name"
             base64 -w0 "artifacts/$name.png"
             echo

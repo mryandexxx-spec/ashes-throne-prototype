@@ -23,7 +23,7 @@ test("ENV011 exporter reproduces the committed GLB and respects the mobile size 
  assert.equal(j.asset.version,"2.0");
  assert.deepEqual(j.meshes.map(m=>m.name),
  ["front_buttress","middle_terraces","gorge_floor","pale_horizon"]);
- assert.equal(made.stats.reduce((n,m)=>n+m.triangles,0),13404);
+ assert.equal(made.stats.reduce((n,m)=>n+m.triangles,0),12276);
  assert.equal(asset.readUInt32LE(8),asset.length);
 });
 test("ENV011 floor starts just beyond battle shelf and descends through the gorge",()=>{

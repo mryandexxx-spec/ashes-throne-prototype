@@ -38,7 +38,7 @@ test("ENV018 retains real camera projection, HUD and ENV010 fallback",()=>{
  assert.match(visual,/CombatEnvironment017\.build\(B,scene,owned\)/);
  assert.match(visual,/else if\(typeof CombatEnvironment010/);
  assert.match(html,/combat-environment-017\.js/);
- assert.match(html,/v0\\.3\\.84 · OPSHELP.*ENV017-MASSING/);
+ assert.match(html,/v0\.3\.84 · OPSHELP.*ENV017-MASSING/);
  assert.match(src,/dataset\.env017IntegratedLedge="ready"/);
  assert.match(src,/scene\.getTransformMatrix\(\)/);
  assert.match(src,/B\.Vector3\.Project/);

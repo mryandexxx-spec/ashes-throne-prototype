@@ -99,7 +99,7 @@ test("ENV013B keeps the photo ledge from ENV010 without changing world or pickin
  assert.match(src,/env013_photo_ledge/);
  assert.match(src,/shelf\.getVerticesData\("position"\)/);
  assert.match(src,/mesh\.hasVertexAlpha=true/);
- assert.match(src,/loadedA&&/);
+ assert.match(src,/!loadedA\|\|!loadedN/);
  assert.match(src,/normal\.level=\.32/);
  assert.doesNotMatch(src,/Math\.random|requestAnimationFrame|runRenderLoop/);
 });

@@ -93,6 +93,30 @@ jobs:
           name: env010-interactive-dom
           path: artifacts/env010-interactive-dump.html
           if-no-files-found: ignore
+
+      - name: Archive offline WebGL inspection workspace (CI-only)
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/env011-local-preview
+          git archive HEAD | tar -x -C /tmp/env011-local-preview
+          curl --fail --location --silent --show-error --retry 2 \
+            https://cdn.babylonjs.com/v9.33.2/babylon.js \
+            --output /tmp/env011-local-preview/babylon.js
+          sed -i 's@https://cdn.babylonjs.com/v9.33.2/babylon.js@babylon.js@g' \
+            /tmp/env011-local-preview/index.html
+          sed -i 's@https://cdn.babylonjs.com/v9.33.2/babylon.js@../../babylon.js@g' \
+            /tmp/env011-local-preview/tests/fixtures/env009-webgl-preview.html
+          tar -czf artifacts/env011-offline-preview.tar.gz -C /tmp/env011-local-preview .
+
+      - name: Upload offline WebGL inspection workspace
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env011-offline-preview
+          path: artifacts/env011-offline-preview.tar.gz
+          if-no-files-found: ignore
       - name: Upload actual battle HUD evidence
         if: always()
         uses: actions/upload-artifact@v4

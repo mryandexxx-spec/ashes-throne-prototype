@@ -22,9 +22,12 @@ function createEnv010Glb(){
  const CENTER=[[26,-4],[43,-2],[68,6],[86,10],[105,4],[123,-9],[149,-14],[181,-2]];
  const RAVINE=[[26,-114],[43,-123],[68,-126],[86,-132],[108,-138],[131,-149],[153,-151],[181,-157]];
  const WIDE=[[26,8],[42,10],[70,13],[91,16],[117,19],[146,21],[181,24]];
- const SECTION=[[0,0,0],[.065,7,2],[.14,15,11],[.23,23,29],
-  [.32,27,43],[.39,29,60],[.45,33,77],[.52,38,91],
-  [.58,45,92],[.66,60,90],[.75,80,70],[.86,111,45],[1,154,3]];
+ // Authored broad rock shelves and alternating face inclinations.
+ // Each bench is part of the same closed bank; no floating rocks or decals.
+ const SECTION=[[0,0,0],[.065,7,3],[.14,15,12],[.23,23,29],
+  [.29,26,39],[.345,27,56],[.39,34,58],[.46,35,91],
+  [.515,44,102],[.575,51,101],[.66,60,93],[.75,80,70],
+  [.86,111,45],[1,154,3]];
  const BANKS=[
  {name:"front_buttress",side:-1,palette:[.49,.465,.420],heightScale:.82,
   crown:[[26,-9],[39,-7],[58,20],[78,-16],[93,6],[111,24],[131,-12],[151,19],[181,-18]],
@@ -57,12 +60,30 @@ function createEnv010Glb(){
   for(const [at,width,rise] of B.fans)
    fan+=rise*Math.max(0,1-Math.abs(d-at)/width)*
     Math.max(0,1-Math.abs(u-.19)/.19);
+  // Cross-bedded bedrock: individual hard spurs follow oblique joint planes.
+  // Displacement is strongest on the exposed wall and fades at the shared floor.
+  let ribs=0,scarp=0;
+  const joints=B.side===-1?
+    [[41,12,5.2],[81,15,-4.1],[115,12,6.3],[157,16,4.9]]:
+    [[52,12,-4.2],[91,13,5.8],[130,16,-5.1],[167,12,5.3]];
+  for(const [at,width,relief] of joints){
+   const signed=(d-at-(u-.48)*12)/width;
+   const weight=Math.max(0,1-Math.abs(signed));
+   const shoulder=smooth(.30,.44,u)*(1-smooth(.73,.87,u));
+   ribs+=relief*weight*weight*shoulder;
+   // A stepped fracture breaks one stratum without turning the whole wall into stripes.
+   scarp+=Math.sign(relief)*1.7*(1-smooth(-.15,.15,signed))*weight*shoulder;
+  }
   const rib=.65*Math.sin(d*.19+u*16+B.side*.9)*smooth(.06,.29,u);
   const bedding=1.35*Math.sin((floorY(d)+height)*.26+d*.065)*
     (smooth(.23,.4,u)-smooth(.69,.93,u));
   const shear=1.8*Math.sin(d*.115+B.side*1.6)*smooth(.28,.63,u);
-  const x=centerX(d)+B.side*(span(d)+out+shear+.8*fracture*smooth(.30,.55,u));
-  const y=floorY(d)+height*B.heightScale+tectonic-fracture+fan+rib+bedding;
+  const talus=smooth(.09,.19,u)*(1-smooth(.34,.47,u));
+  const x=centerX(d)+B.side*(span(d)+out+shear+ribs+
+    .8*fracture*smooth(.30,.55,u)-.35*fracture*talus);
+  const y=floorY(d)+height*B.heightScale+tectonic-fracture+fan+rib+bedding+
+    scarp+Math.abs(ribs)*.20;
+  // The floor joint is left exactly intact (u=0), as required by the GLB join test.
   return {x,y,d,fracture,fan,height};
  }
  function bankColor(B,s,u,d){

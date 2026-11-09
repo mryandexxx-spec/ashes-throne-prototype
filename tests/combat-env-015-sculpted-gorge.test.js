@@ -62,8 +62,8 @@ test("ENV015 keeps one engine, fixed 3/4 camera and safe optional WebGL baseline
  const cv=read("combat-visual-007.js"),game=read("game.js");
  const html=read("index.html"),env=read("combat-environment-015.js");
  const pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.85");
- assert.match(html,/v0\.3\.85 · OPSHELP \+ RENPLAY \+ REN3D003 \+ ENV015/);
+ assert.equal(pkg.version,"0.3.86");
+ assert.match(html,/v0\.3\.86 · OPSHELP \+ RENPLAY \+ REN3D003 \+ ENV016/);
  assert.ok(html.indexOf('src="combat-environment-015.js"')<
    html.indexOf('src="combat-visual-007.js"'));
  assert.match(cv,/CombatEnvironment015\.build\(B,scene,owned\)/);

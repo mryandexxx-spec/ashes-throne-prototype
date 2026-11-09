@@ -27,18 +27,20 @@ function createEnv014Glb(){
   // The first truly opposite cliff is WELL beyond the foreground lip,
   // and only its upper weathered shoulders appear in the top of the void.
   name:"middle_terraces",color:[.68,.67,.62],haze:.36,sign:1,
-  cols:120,rows:25,
-  outline:[[-26,139,-98,0],[-6,142,-89,1.0],[20,147,-83,-1.8],
-   [44,153,-76,2.1],[67,157,-83,-2.0],[93,164,-75,1.8],
-   [116,171,-82,-1.7],[151,181,-91,1.0],[197,200,-108,0]]
+  cols:116,rows:25,
+  outline:[[-125,142,-148,0],[-79,140,-115,1.0],[-26,139,-96,-1.8],
+   [0,143,-87,2.1],[26,149,-79,-2.0],[52,155,-71,1.8],
+   [82,161,-75,-1.7],[111,168,-70,1.0],[151,183,-91,-1.2],
+   [198,202,-114,1.0],[275,236,-171,0]]
  };
  const LEFT_BANK={
   // A low geological shoulder, almost entirely below the left frame rim:
   // no giant left wing or overhead canopy.
   name:"gorge_floor",color:[.54,.55,.53],haze:.29,sign:-1,
-  cols:76,rows:18,
-  outline:[[-146,119,-111,0],[-108,101,-87,1.5],[-79,87,-74,-2.0],
-   [-57,75,-62,1.8],[-37,65,-54,-1.6],[-21,59,-50,0]]
+  cols:82,rows:19,
+  outline:[[-160,130,-122,0],[-127,109,-89,1.1],[-93,76,-63,-1.8],
+   [-63,49,-38,1.6],[-43,35,-26,-1.5],[-26,27,-17,1.2],
+   [-12,20,-10,0]]
  };
  const FAR_HORIZON={
   // A pale far massif, visibly softened by distance rather than dark rock.

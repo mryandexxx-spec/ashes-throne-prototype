@@ -41,3 +41,18 @@ test("HQ-UI-004 painted landmarks are full clickable buttons with readable capti
   assert.ok(home.includes('id="'+id+'"'),id+" state hook");
  }
 });
+
+test("HQ-UI-005 SVG contours trace four painted objects and defer hotspot navigation",()=>{
+ const home=html.slice(html.indexOf('<section id="home"'),html.indexOf('<section id="dailyTasks"'));
+ assert.match(home,/class="hq-contour-overlay"/);
+ for(const name of ["heroes","campaign","operations","challenges"]){
+  assert.match(home,new RegExp('class="hq-contour hq-contour-'+name+'"'));
+ }
+ assert.match(css,/@keyframes hq-contour-trace/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.match(game,/function animateHQContour\(button\)/);
+ assert.match(game,/scene\.dataset\.hqIlluminated=zone/);
+ assert.match(game,/hqContourTimer=setTimeout/);
+ assert.match(game,/resetHQContour\(\)/);
+ assert.ok(game.includes('b.matches?.("#home .hq-station")'));
+});

@@ -8,7 +8,9 @@ test("ENV017 massing is authored in camera coordinates and has an open right gap
  assert.equal(env.MASS.length,3);
  assert.ok(env.MASS[1].lines[0][0][0]>0);
  assert.ok(env.MASS[1].lines[0][0][1]>40);
- assert.ok(env.MASS[0].lines[0].every(v=>v[2]<=0),"no overhead left wing");
+ assert.ok(env.MASS[0].lines[0].filter(v=>v[0]>=-16).every(v=>v[2]<=0),"no overhead left wing near fighters");
+ assert.ok(env.MASS[1].lines[0].every(v=>v[2]>0),"visible distant crest above the ledge plane");
+ assert.ok(env.MASS[2].lines[0].some(v=>v[2]>0),"separate far skyline");
  assert.ok(env.MASS[1].lines[0].every(v=>v[1]>=49));
 });
 test("ENV017 selection retains the old ENV010 fallback and game HUD",()=>{

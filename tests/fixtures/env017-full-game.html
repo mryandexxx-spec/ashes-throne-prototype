@@ -29,6 +29,9 @@
    if(!doc.querySelector("#battle.active"))return;
    const canvas=doc.querySelector("#renderCanvas");
    if(!canvas||!canvas.width||!canvas.height)return;
+   if(doc.documentElement.dataset.env021Assets==="loading")return;
+   if(doc.documentElement.dataset.env021Assets!=="ready")
+    throw Error("ENV021 external GLB not loaded: "+doc.documentElement.dataset.env021Assets);
    if(doc.documentElement.dataset.environment!=="ENV017"||
       doc.documentElement.dataset.env017Massing!=="ready")
     throw Error("ENV017 marker missing (old environment or fallback)");
@@ -36,7 +39,8 @@
     camera=win.eval("arenaCamera"),engine=win.eval("engine");
    if(!scene||!camera||!engine||!(engine.getCaps().maxTexturesImageUnits>0))
     throw Error("real Babylon WebGL not available");
-   if(!scene.meshes.some(m=>m.name==="env017_distant-bank")||
+   if(scene.meshes.filter(m=>m.name.startsWith("env021_external_")).length!==5||
+      scene.meshes.find(m=>m.name==="env009_far_ridge")?.isEnabled()!==false||
       scene.meshes.some(m=>m.name.startsWith("env010_glb_")))
     throw Error("wrong geometry loaded");
    if(far)camera.radius=19;
@@ -48,7 +52,7 @@
    if(values.some(v=>v.some(n=>!Number.isFinite(n))))
     throw Error("nonfinite projection");
    data.camera=JSON.stringify(view);
-   data.environment="ENV017";data.webgl="true";data.view=far?"far":"normal";
+   data.environment="ENV017";data.env021="external-glb";data.webgl="true";data.view=far?"far":"normal";
    clearInterval(poll);
    setTimeout(()=>{data.visualStatus="ready";},700);
   }catch(e){clearInterval(poll);data.visualStatus="error";data.error=e.message;console.error(e)}

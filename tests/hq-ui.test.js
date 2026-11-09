@@ -76,6 +76,10 @@ test("HQ-UI-008 shoulders and swords use short art-matched accents, not fake sil
  assert.match(weapons,/M1837 163 L1834 188/);
  assert.match(weapons,/M1873 189 L1869 218/);
  assert.match(weapons,/M1905 163 L1901 187/);
+ assert.match(home,/id="hq-fx-armor-clip"/);
+ assert.match(home,/id="hq-fx-blades-clip"/);
+ assert.match(heroes,/clip-path="url\(#hq-fx-armor-clip\)"/);
+ assert.match(weapons,/clip-path="url\(#hq-fx-blades-clip\)"/);
  assert.match(css,/@keyframes hq-pinpoint-bloom/);
  assert.match(css,/prefers-reduced-motion:reduce/);
 });

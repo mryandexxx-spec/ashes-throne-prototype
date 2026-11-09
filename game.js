@@ -20,7 +20,7 @@ let engine, scene, meshes={};
 let combatVisual007=null; // One optional visual layer per Babylon Scene.
 let arenaCamera=null;
 // Combat-008B: allies are near the viewer, enemies farther away.
-const ARENA_VIEW=Object.freeze({alpha:-3*Math.PI/4,beta:1.10,radius:12,targetY:.9});
+const ARENA_VIEW=Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
 // Staggered 3-front / 2-rear formation on each team.
 const FORMATION_SPACING=1.9;
 function formationPosition(side,slot,count){

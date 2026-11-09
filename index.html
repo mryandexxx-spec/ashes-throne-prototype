@@ -14,29 +14,74 @@
       <div class="brand"><span class="sigil">✦</span><div><strong>ПЕПЕЛЬНЫЙ ПРЕСТОЛ</strong><small>Браузерный RPG-прототип</small></div></div>
       <div class="resources"><span id="accountStatus">Аккаунт 1/15 (тест) · XP 0 · Валюта 0</span></div>
     </header>
-    <section id="home" class="screen active">
-      <div class="hero-banner">
-        <div class="eyebrow">САГА О РАСКОЛОТОЙ ИМПЕРИИ</div>
-        <h1>Собери отряд.<br><em>Измени судьбу.</em></h1>
-        <p>На пепельных рубежах пробуждается древняя сила. Найди союзников и вступи в бой за престол.</p>
-        <button class="primary" id="startBattle">Начать битву</button>
+    <section id="home" class="screen active hq-screen" aria-label="Штаб организации">
+      <header class="hq-top">
+        <button type="button" class="hq-profile" data-screen="playerProfile" data-hq-hint="Профиль игрока">
+          <span class="hq-profile-portrait" aria-hidden="true">♙</span>
+          <span class="hq-profile-name"><strong id="hqNickname">Командир</strong><small id="hqLevel">Ур. 1 · тест</small></span>
+          <span class="hq-profile-xp" aria-hidden="true"><span id="hqXpFill"></span></span>
+        </button>
+        <div class="hq-resources" aria-label="Ресурсы аккаунта">
+          <span aria-label="Энергия">⚡ <strong id="hqEnergy">—</strong></span>
+          <span aria-label="Игровая валюта">◈ <strong id="hqCurrency">—</strong></span>
+        </div>
+        <div class="hq-quick-actions" aria-label="Быстрый доступ">
+          <button type="button" id="dailyTasksNav" data-screen="dailyTasks" data-hq-hint="Задания дня" aria-label="Задания дня">☑<span id="dailyClaimBadge" class="daily-nav-badge" aria-hidden="true" hidden>0</span></button>
+          <button type="button" data-screen="loginCalendar" data-hq-hint="Календарь входа" aria-label="Календарь входа">▦</button>
+          <button type="button" data-screen="playerProfile" data-hq-hint="Профиль игрока" aria-label="Профиль игрока">♟</button>
+        </div>
+      </header>
+      <div class="hq-pan" id="hqPan" tabindex="0" role="region" aria-label="Панорама штаба. Проведите пальцем влево, чтобы увидеть другие зоны">
+        <div class="hq-scene">
+          <div class="hq-station hq-station-heroes">
+            <h2><span aria-hidden="true">♙</span> Герои и отряд</h2>
+            <div class="hq-squad-slots" aria-label="Пять мест отряда">
+              <span class="hq-squad-slot"></span><span class="hq-squad-slot"></span><span class="hq-squad-slot"></span><span class="hq-squad-slot"></span><span class="hq-squad-slot"></span>
+            </div>
+            <p id="hqSquadStatus">Отряд: — / 5</p>
+            <div class="hq-station-actions"><button data-screen="collection" data-hq-hint="Коллекция и развитие">Герои</button><button data-screen="battle" data-hq-hint="Подготовить отряд к тестовому бою">Отряд</button></div>
+          </div>
+          <div class="hq-station hq-station-campaign">
+            <h2><span aria-hidden="true">⌁</span> Кампания</h2>
+            <p id="hqCampaignStatus">Пройдено: —</p>
+            <div class="hq-meter"><span id="hqCampaignFill"></span></div>
+            <p id="hqCampaignStars">Звёзд: —</p>
+            <div class="hq-station-actions"><button data-screen="campaign" data-hq-hint="Открыть миссии кампании">Продолжить</button></div>
+          </div>
+          <div class="hq-station hq-station-operations">
+            <h2><span aria-hidden="true">⌖</span> Разведоперации</h2>
+            <p id="hqOperationStatus">Состояние: —</p>
+            <div class="hq-meter"><span id="hqOperationFill"></span></div>
+            <div class="hq-station-actions"><button data-screen="operations" data-hq-hint="Открыть разведоперации">Открыть</button></div>
+          </div>
+          <div class="hq-station hq-station-challenges">
+            <h2><span aria-hidden="true">⚔</span> Испытания</h2>
+            <p id="hqChallengeStatus">Пройдено: —</p>
+            <div class="hq-meter"><span id="hqChallengeFill"></span></div>
+            <div class="hq-station-actions"><button data-screen="challenges" data-hq-hint="Открыть испытания">Выбрать</button></div>
+          </div>
+        </div>
       </div>
-      <div class="home-cards">
-        <button class="nav-card" data-screen="collection"><span>♙</span><b>Герои</b><small>Коллекция и развитие</small></button>
-        <button class="nav-card" data-screen="campaign"><span>⚔</span><b>Кампания</b><small>Глава I · Пепельный тракт</small></button>
-        <button class="nav-card" data-screen="battle"><span>✦</span><b>Арена</b><small>Пошаговое сражение</small></button>
-        <button class="nav-card" data-screen="challenges"><span>◆</span><b>Испытания</b><small>Тактика и Натиск · учебный пилот</small></button>
-        <button class="nav-card" data-screen="operations"><span>⌖</span><b>Разведоперации</b><small>Разведка, перехват и бой · учебный пилот</small></button>
-        <button class="nav-card" data-screen="playerProfile"><span>♟</span><b>Профиль игрока</b><small>Ник и уровень аккаунта</small></button>
-        <button class="nav-card" id="dailyTasksNav" data-screen="dailyTasks"><span>☼</span><b>Задания дня</b><small>Три действия и награды</small><span id="dailyClaimBadge" class="daily-nav-badge" aria-hidden="true" hidden>0</span></button>
-        <button class="nav-card" data-screen="loginCalendar"><span>▦</span><b>Календарь входа</b><small>Ежемесячные награды</small></button>
+      <div class="hq-swipe-indicator" aria-hidden="true">‹　━ ━ ━　›</div>
+      <nav class="hq-bottom" aria-label="Навигация по игре">
+        <button data-screen="home" aria-current="page"><span aria-hidden="true">⌂</span>Штаб</button>
+        <button data-screen="collection"><span aria-hidden="true">♙</span>Герои</button>
+        <button data-screen="campaign"><span aria-hidden="true">⌁</span>Кампания</button>
+        <button data-screen="operations"><span aria-hidden="true">⌖</span>Операции</button>
+        <button id="hqMoreToggle" type="button" aria-expanded="false" aria-controls="hqMoreMenu"><span aria-hidden="true">☰</span>Ещё</button>
+      </nav>
+      <div class="hq-more" id="hqMoreMenu" hidden>
+        <button data-screen="challenges">⚔ Испытания</button>
+        <button data-screen="playerProfile">♟ Профиль игрока</button>
+        <button data-screen="loginCalendar">▦ Календарь наград</button>
+        <button type="button" id="startBattle">✦ Тестовый бой</button>
+        <details class="hq-test-menu"><summary>Тестовые инструменты</summary>
+          <p>Выдача тестовых ресурсов — не игровая награда.</p>
+          <button id="devResourcesGrant">Выдать тестовые ресурсы</button>
+          <p id="devResourcesNotice" role="status" aria-live="polite"></p>
+        </details>
       </div>
-      <div class="dev-resources" aria-label="Тестовые инструменты прототипа">
-        <div class="eyebrow">ТЕСТИРОВАНИЕ · НЕ ИГРОВАЯ НАГРАДА</div>
-        <p class="muted">Для проверки механик без ожидания: восполняет энергию до 240, валюту минимум до 5000, прежний материал C до 100 и отдельные G1-компоненты до тестовых минимумов. Можно нажимать повторно.</p>
-        <button type="button" class="ghost" id="devResourcesGrant">Тестовые ресурсы</button>
-        <p id="devResourcesNotice" class="muted" role="status" aria-live="polite"></p>
-      </div>
+      <div class="hq-tooltip" id="hqTooltip" role="tooltip" hidden></div>
     </section>
     <section id="dailyTasks" class="screen" aria-label="Ежедневные задания">
       <div class="section-heading"><div><div class="eyebrow">ЕЖЕДНЕВНЫЕ ДЕЛА</div><h2>Задания дня</h2></div><button type="button" class="ghost" data-screen="home">← Назад</button></div>

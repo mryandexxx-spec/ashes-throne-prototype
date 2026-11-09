@@ -223,7 +223,7 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
  }
  playerNickname=nick;
  notice.textContent="Ник сохранён на этом устройстве.";
- renderPlayerProfile();
+ renderPlayerProfile();renderHeadquarters();
 });
 let battleIsCampaign=false;
 // STORY-001 is an opt-in sandbox, independent of campaign rewards and saves.
@@ -267,6 +267,41 @@ let lastMissionEnergyRefunded=false;
 let missionEntryPaid=false;
 let missionResultSaveFailed=false;
 let simulationMissionId=null;
+
+// HQ-UI-001: use existing progress/state; this view does not own game rules.
+function renderHeadquarters(){
+ const root=$("#home");if(!root)return;
+ const set=(selector,value)=>{const node=$(selector);if(node)node.textContent=String(value);};
+ set("#hqNickname",playerNickname);
+ const level=ProgressCore.accountLevel(progress);
+ set("#hqLevel","Ур. "+level+" · тест");
+ const xp=PlayerProfileCore.levelProgress(progress.accountXp,ProgressCore.xpCost,ProgressCore.MAX_ACCOUNT_LEVEL);
+ const xpFill=$("#hqXpFill");if(xpFill)xpFill.style.width=Math.max(0,Math.min(100,xp?.percent||0))+"%";
+ set("#hqEnergy",progress.energy.value+"/"+ProgressCore.ENERGY_MAX);
+ set("#hqCurrency",progress.currency);
+ const chosen=[selectedLeaderId,...selectedPartyIds].filter(Boolean);
+ set("#hqSquadStatus","Отряд: "+chosen.length+"/"+MAX_SQUAD);
+ root.querySelectorAll(".hq-squad-slot").forEach((node,index)=>{
+  const hero=ALLIES.find(h=>h.id===chosen[index]);
+  node.classList.toggle("filled",!!hero);
+  node.title=hero?.name||"Свободное место";
+  node.setAttribute("aria-label",node.title);
+ });
+ const missions=[...new Set(CampaignData.allChapters().flatMap(ch=>CampaignData.missions(ch.id).map(m=>m.missionId)))];
+ const completed=missions.filter(id=>campaignProgress.completed[id]).length;
+ const stars=missions.reduce((count,id)=>count+(campaignProgress.bestStars[id]||0),0);
+ set("#hqCampaignStatus","Пройдено: "+completed+" / "+missions.length);
+ set("#hqCampaignStars","Звёзд: "+stars+" / "+missions.length*3);
+ const campBar=$("#hqCampaignFill");if(campBar)campBar.style.width=(missions.length?100*completed/missions.length:0)+"%";
+ const ops=operationProgress.active||signalProgress.active;
+ set("#hqOperationStatus",ops?"Операция в работе":"Нет активных операций");
+ const opsBar=$("#hqOperationFill");if(opsBar)opsBar.style.width=ops?"50%":"0%";
+ const challengeDone=Object.values(challengeProgress.bestStars||{}).filter(n=>n>0).length;
+ const challengeTotal=ChallengeCore.all().length;
+ set("#hqChallengeStatus","Пройдено: "+challengeDone+" / "+challengeTotal);
+ const chalBar=$("#hqChallengeFill");if(chalBar)chalBar.style.width=(challengeTotal?100*challengeDone/challengeTotal:0)+"%";
+}
+
 function renderAccountHeader(){
  renderDailyClaimBadge();
  ProgressCore.refreshEnergy(progress);
@@ -275,6 +310,7 @@ function renderAccountHeader(){
   " (тест) · XP "+progress.accountXp+" · Валюта "+progress.currency+
   (progress.saveVersion===3?"":" · C "+progress.gearMaterials)+
   " · ⚡ "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX;
+ renderHeadquarters();
 }
 // Daily-001: all daily claims and currency/XP are persisted in the SAME v3 save.
 function dailyDay(){return typeof DailyCore!=="undefined"?DailyCore.localDay():null;}
@@ -745,6 +781,7 @@ function renderStoryDemo(){
 function showScreen(id){
  // Re-entering from home opens the two-mode chooser, not a stale mission list.
  if(id==="challenges"&&$("#home")?.classList.contains("active"))selectedChallengeKind=null;
+ if(id!=="home"){closeHQMenu();cancelHQTooltip();}
  if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();}
  if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();stopBattleRendering();}
  // Combat-008A: release the document scroll while the arena owns the viewport.
@@ -848,6 +885,7 @@ function showScreen(id){
  }
  if(id==="home"){
   renderDailyClaimBadge();
+  renderHeadquarters();
   maybeOpenLoginOnEntry();
  }
 }
@@ -856,6 +894,39 @@ document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click"
  else showScreen(b.dataset.screen);
 }));
 $("#startBattle").addEventListener("click",()=>openSquad("home"));
+
+// HQ-UI-001: More menu and cancellable long-press tooltips.
+const hqMore=$("#hqMoreMenu"),hqMoreToggle=$("#hqMoreToggle"),hqTooltip=$("#hqTooltip"),hqHome=$("#home");
+function closeHQMenu(){if(hqMore)hqMore.hidden=true;if(hqMoreToggle)hqMoreToggle.setAttribute("aria-expanded","false");}
+hqMoreToggle?.addEventListener("click",()=>{
+ if(!hqMore)return;
+ hqMore.hidden=!hqMore.hidden;
+ hqMoreToggle.setAttribute("aria-expanded",String(!hqMore.hidden));
+});
+document.addEventListener("click",event=>{
+ if(!event.target.closest?.("#hqMoreMenu, #hqMoreToggle"))closeHQMenu();
+});
+document.addEventListener("keydown",event=>{if(event.key==="Escape")closeHQMenu();});
+let hqPress=null,hqPressTimer=null;
+function cancelHQTooltip(){
+ if(hqPressTimer!==null)clearTimeout(hqPressTimer);
+ hqPressTimer=null;hqPress=null;if(hqTooltip)hqTooltip.hidden=true;
+}
+hqHome?.addEventListener("pointerdown",event=>{
+ const button=event.target.closest?.("[data-hq-hint]");
+ if(!button||event.pointerType==="mouse")return;
+ cancelHQTooltip();
+ hqPress={id:event.pointerId,x:event.clientX,y:event.clientY};
+ hqPressTimer=setTimeout(()=>{
+  if(!hqPress||!hqTooltip)return;
+  hqTooltip.textContent=button.dataset.hqHint;hqTooltip.hidden=false;hqPressTimer=null;
+ },520);
+});
+hqHome?.addEventListener("pointermove",event=>{
+ if(hqPress&&hqPress.id===event.pointerId&&Math.hypot(event.clientX-hqPress.x,event.clientY-hqPress.y)>12)cancelHQTooltip();
+});
+for(const type of ["pointerup","pointercancel","pointerleave"])hqHome?.addEventListener(type,cancelHQTooltip);
+
 $("#storyDemoOpen")?.addEventListener("click",beginStoryDemo);
 $("#storyDemoBack")?.addEventListener("click",()=>showScreen("campaign"));
 $("#storyDemoNext")?.addEventListener("click",()=>{

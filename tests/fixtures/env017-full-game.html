@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ENV017 actual combat / projection diagnostic</title>
+<style>html,body,iframe{margin:0;width:100%;height:100%;overflow:hidden;border:0;background:#19242a}iframe{display:block}</style>
+</head><body><iframe id="game" src="../../index.html" title="Live combat UI"></iframe>
+<script>
+/* Must pass only after ENV017 is loaded in the REAL index.html Babylon Scene.
+ * Screenshot covers actual 844x390 HUD, not a detached art-only fixture.
+ * ?radius=19 covers the far view. No synthetic image replaces the canvas.
+ */
+(()=>{
+ const frame=document.querySelector("#game"),data=document.documentElement.dataset;
+ let tick=0,entered=false,launched=false;
+ const far=new URLSearchParams(location.search).get("radius")==="19";
+ const poll=setInterval(()=>{
+  try{
+   if(++tick>120)throw Error("ENV017 diagnostic timeout");
+   const doc=frame.contentDocument,win=frame.contentWindow;
+   if(!doc||doc.readyState!=="complete")return;
+   if(doc.querySelector("#loginCalendar.active")){
+    doc.querySelector('#loginCalendar [data-screen="home"]')?.click();return;
+   }
+   if(doc.querySelector("#home.active")&&!entered){
+    entered=true;doc.querySelector("#startBattle")?.click();return;
+   }
+   if(doc.querySelector("#squad.active")&&!launched){
+    launched=true;doc.querySelector("#squadStart")?.click();return;
+   }
+   if(!doc.querySelector("#battle.active"))return;
+   const canvas=doc.querySelector("#renderCanvas");
+   if(!canvas||!canvas.width||!canvas.height)return;
+   if(doc.documentElement.dataset.environment!=="ENV017"||
+      doc.documentElement.dataset.env017Massing!=="ready")
+    throw Error("ENV017 marker missing (old environment or fallback)");
+   const B=win.BABYLON,scene=win.eval("scene"),
+    camera=win.eval("arenaCamera"),engine=win.eval("engine");
+   if(!scene||!camera||!engine||!(engine.getCaps().maxTexturesImageUnits>0))
+    throw Error("real Babylon WebGL not available");
+   if(!scene.meshes.some(m=>m.name==="env017_distant-bank")||
+      scene.meshes.some(m=>m.name.startsWith("env010_glb_")))
+    throw Error("wrong geometry loaded");
+   if(far)camera.radius=19;
+   const view=win.eval("CombatEnvironment017").inspect(B,scene,camera,
+    engine.getRenderWidth(),engine.getRenderHeight());
+   if(!view||Math.abs(view.radius-(far?19:12))>.01)
+    throw Error("camera projection unavailable");
+   const values=[view.ledgeRightEdge,view.gapSample,view.bankNear,view.bankFar,view.leftRoot];
+   if(values.some(v=>v.some(n=>!Number.isFinite(n))))
+    throw Error("nonfinite projection");
+   data.camera=JSON.stringify(view);
+   data.environment="ENV017";data.webgl="true";data.view=far?"far":"normal";
+   clearInterval(poll);
+   setTimeout(()=>{data.visualStatus="ready";},700);
+  }catch(e){clearInterval(poll);data.visualStatus="error";data.error=e.message;console.error(e)}
+ },125);
+})();
+</script></body></html>

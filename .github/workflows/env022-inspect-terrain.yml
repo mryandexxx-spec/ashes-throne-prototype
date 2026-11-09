@@ -1,0 +1,40 @@
+name: ENV022 inspect actual terrain plateau and materials
+on:
+  pull_request:
+    paths: ['.github/workflows/env022-inspect-terrain.yml','assets/env022/**']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install --disable-pip-version-check trimesh numpy Pillow
+      - name: Analyze original CC0 geometry of walkable top
+        run: |
+          python3 - <<'PY'
+          import trimesh,numpy as np
+          from pathlib import Path
+          for src in Path('assets/env022/source').glob('*.glb'):
+              scene=trimesh.load(src,force='scene',process=False)
+              print('FILE',src,'geometry',len(scene.geometry),'transforms',len(scene.graph.nodes_geometry))
+              allp=[]
+              for name,mesh in scene.dump(concatenate=False)[0:]:
+                  print('  mesh',name,'verts',len(mesh.vertices),'faces',len(mesh.faces),'bounds',mesh.bounds.tolist(),'material',type(getattr(mesh.visual,'material',None)).__name__)
+                  v=np.asarray(mesh.vertices)
+                  allp.append(v)
+                  f=np.asarray(mesh.faces)
+                  n=np.asarray(mesh.face_normals)
+                  center=np.asarray(mesh.triangles_center)
+                  if len(n):
+                      for axis in range(3):
+                          good=n[:,axis]>.70
+                          up=center[good]
+                          if len(up):
+                              hi=np.quantile(up[:,axis],.90)
+                              flat=up[up[:,axis]>hi-.45]
+                              if len(flat):
+                                  print('   upward axis',axis,'hi',round(float(hi),3),'top-face-centroid XY ranges',np.round(flat.min(0),2).tolist(),np.round(flat.max(0),2).tolist(),'faces',len(flat))
+              points=np.concatenate(allp)
+              print(' TOTAL',np.round(points.min(0),3).tolist(),np.round(points.max(0),3).tolist())
+          PY

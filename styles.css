@@ -1906,3 +1906,6 @@ body:has(#home.active){height:100dvh;overflow:hidden}
  #collection .roster-card{padding:5px 5px 7px}
 }
 @media(prefers-reduced-motion:reduce){#collection .roster-card{transition:none}}
+
+/* ROSTER001: suppress obsolete wide Ren overlays only in roster. */
+#collection .roster-card-art.hero-avatar-ren::before,#collection .roster-card-art.hero-avatar-ren::after{display:none}

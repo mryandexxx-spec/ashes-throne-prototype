@@ -70,3 +70,17 @@ test("ENV014 preserves CV007 and real game lifecycle with direct ENV010 baseline
  assert.match(env,/env009_living_ledge/);
  assert.doesNotMatch(env,/runRenderLoop\(|setInterval\(/);
 });
+
+test("ENV014B hand-set contours recede rather than putting high rock behind fighters",()=>{
+ const src=read("tools/env014-gorge-export.cjs");
+ assert.match(src,/\[-26,139,-98,0\]/);
+ assert.match(src,/\[44,153,-76,2\.1\]/);
+ assert.match(src,/\[-146,119,-111,0\]/);
+ assert.match(src,/\[-110,235,-164,0\]/);
+ const render=read("combat-environment-014.js");
+ assert.match(render,/m\.fogEnabled=true/);
+ assert.match(render,/scene\.fogDensity=\.006/);
+ assert.match(render,/\["front_buttress"\]/);
+ const {stats}=exportGlb();
+ assert.ok(stats.reduce((n,m)=>n+m.triangles,0)<16000);
+});

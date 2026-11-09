@@ -9,17 +9,16 @@ const CombatEnvironment017=(()=>{
  const AWAY={x:-Math.cos(ALPHA),z:-Math.sin(ALPHA)};
  const RIGHT={x:-Math.sin(ALPHA),z:Math.cos(ALPHA)};
  const p=(side,away,y)=>[RIGHT.x*side+AWAY.x*away,y,RIGHT.z*side+AWAY.z*away];
- const SOURCES=Object.freeze(["PolyCliff01","Cliff002","Rock001"]);
+ const SOURCES=Object.freeze(["PolyCliff01"]);
  // Hand-composed positions in fixed-camera side/away/y, not a procedurally
  // invented wall; no large ground plane is constructed here.
  const PLACEMENTS=Object.freeze([
-  // The photogrammetric forms carry the primary composition; low-poly Gobkit
-  // pieces are only secondary rocky transitions, deliberately desaturated.
-  {source:"PolyCliff01",side:-15,away:9,y:-5.2,scale:1.00,angle:.25},
-  {source:"PolyCliff01",side:17,away:22,y:-8.5,scale:1.18,angle:-.48},
-  {source:"PolyCliff01",side:29,away:30,y:-9.5,scale:1.22,angle:.65},
-  {source:"Cliff002",side:-13,away:0,y:-4.8,scale:.011,angle:-.28},
-  {source:"Rock001",side:-11,away:-6,y:-1.8,scale:.012,angle:.22}
+  // A deliberately restricted composition: all visible shapes are actual
+  // Poly Haven photogrammetry. Scale transforms are scene dressing, not
+  // newly generated cliffs. The right-hand void remains unfilled.
+  {source:"PolyCliff01",side:-14,away:6,y:-5.5,scale:1.00,heightScale:2.6,depthScale:1.5,angle:.05},
+  {source:"PolyCliff01",side:19,away:23,y:-5.7,scale:1.15,heightScale:4.0,depthScale:1.8,angle:-.28},
+  {source:"PolyCliff01",side:33,away:32,y:-6.7,scale:1.20,heightScale:4.0,depthScale:1.8,angle:.24}
  ]);
  const ROOT=typeof document!=="undefined"&&document.currentScript?.src?
   new URL("assets/env021/",document.currentScript.src).href:null;
@@ -129,8 +128,8 @@ const CombatEnvironment017=(()=>{
      const co=Math.cos(def.angle),si=Math.sin(def.angle);
      for(let j=0;j<n;j++){
       const x=(source[j*3]-cX)*def.scale;
-      const y=(source[j*3+1]-minY)*def.scale;
-      const z=(source[j*3+2]-cZ)*def.scale;
+      const y=(source[j*3+1]-minY)*def.scale*(def.heightScale||1);
+      const z=(source[j*3+2]-cZ)*def.scale*(def.depthScale||1);
       pos.push(center[0]+co*x-si*z,center[1]+y,center[2]+si*x+co*z);
       // Preserve real external mesh facets rather than paint broad fake walls.
       if(model.vertexColors)colors.push(...model.vertexColors.slice(j*4,j*4+4));
@@ -147,7 +146,7 @@ const CombatEnvironment017=(()=>{
      mesh.useVertexColors=true;
      const mat=new B.StandardMaterial("env021_external_mat_"+def.source+"_"+i,scene);
      created.push(mat);
-     mat.diffuseColor=new B.Color3(.94,.95,.94);
+     mat.diffuseColor=new B.Color3(1,1,1);
      mat.emissiveColor=new B.Color3(.20,.21,.21);
      mat.specularColor=new B.Color3(0,0,0);
      mat.backFaceCulling=false;mat.useVertexColors=true;mat.fogEnabled=false;

@@ -1,0 +1,46 @@
+name: HQ UI landscape browser smoke
+on:
+  pull_request:
+    paths:
+      - index.html
+      - styles.css
+      - game.js
+      - assets/hq-hall.svg
+      - tests/fixtures/hq-ui-smoke.html
+      - .github/workflows/hq-ui-browser.yml
+  workflow_dispatch:
+jobs:
+  landscape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check real home in headless Chromium landscape
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)"
+          test -n "$chrome"
+          mkdir -p artifacts
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/hq-http.log 2>&1 &
+          sleep 2
+          for screen in 844x390 932x430; do
+            width="${screen%x*}"
+            height="${screen#*x}"
+            url="http://127.0.0.1:8765/tests/fixtures/hq-ui-smoke.html"
+            args=(--headless --no-sandbox --disable-dev-shm-usage --hide-scrollbars --force-device-scale-factor=1 --window-size="$width,$height" --virtual-time-budget=22000)
+            timeout 65s "$chrome" "${args[@]}" --dump-dom "$url" >"artifacts/hq-$screen.html" 2>"/tmp/hq-$screen.log"
+            grep -q 'data-hq-status="pass"' "artifacts/hq-$screen.html" || {
+              grep -oE 'data-hq-(status|error|visible-stations)="[^"]*"' "artifacts/hq-$screen.html" || true
+              exit 1
+            }
+            timeout 65s "$chrome" "${args[@]}" --screenshot="$PWD/artifacts/hq-$screen.png" "$url" >/dev/null 2>>"/tmp/hq-$screen.log"
+            test -s "artifacts/hq-$screen.png"
+          done
+      - name: Upload screenshots and browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hq-ui-landscape-screenshots
+          path: artifacts/
+          if-no-files-found: warn

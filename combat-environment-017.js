@@ -13,14 +13,14 @@ const CombatEnvironment017=(()=>{
  // Top contour is a CREST, lower contours descend into the abyss.
  // Keep the near-right view unobstructed; no foreground right-hand wall.
  const MASS=Object.freeze([
-  {id:"landward-root",shade:[.43,.45,.43],lines:[
+  {id:"landward-root",shade:[.48,.50,.48],lines:[
    // The inner shoulder meets the outer ENV009 ledge BELOW its walkable top;
-   // the larger rock mass grows out left/back, not above the combatants.
-   [[-8,-3,-.7],[-11,-2,-.9],[-16,1,-.8],[-24,5,1.8],[-36,10,4.2],[-52,17,2.5]],
+   // the larger rock mass descends left/back, not above the combatants.
+   [[-8,-3,-1],[-11,-2,-1.5],[-16,1,-2],[-24,5,-2.6],[-36,10,-3.4],[-52,17,-4.2]],
    [[-8,-3,-4],[-11,-2,-5],[-16,1,-6],[-24,5,-6.5],[-36,10,-6.2],[-52,17,-8]],
    [[-8,-3,-13],[-11,-2,-15],[-16,1,-18],[-24,5,-20],[-36,10,-23],[-52,17,-27]]
   ]},
-  {id:"distant-bank",shade:[.51,.55,.55],lines:[
+  {id:"distant-bank",shade:[.65,.69,.70],lines:[
    // A visible broken crest, well behind the gap. It rises unevenly
    // instead of forming the horizontal lip of a manufactured platform.
    [[18,49,1.8],[30,52,4.7],[43,57,3.0],[57,61,9.0],[75,70,5.1],[98,79,11.0]],

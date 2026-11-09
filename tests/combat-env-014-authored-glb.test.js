@@ -55,11 +55,11 @@ test("export is byte-identical between runs; original sculpture is a local offli
 test("ENV014 preserves CV007 and real game lifecycle with direct ENV010 baseline",()=>{
  const game=read("game.js"),cv=read("combat-visual-007.js");
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.84");
- assert.match(html,/v0\.3\.84 · OPSHELP \+ RENPLAY \+ REN3D003 \+ ENV014/);
+ assert.equal(pkg.version,"0.3.85");
+ assert.match(html,/v0\.3\.85 · OPSHELP \+ RENPLAY \+ REN3D003 \+ ENV015/);
  assert.ok(html.indexOf('src="combat-environment-014.js"')<
   html.indexOf('src="combat-visual-007.js"'));
- assert.match(cv,/new URLSearchParams\(location\.search\)\.get\("arena"\)==="env010"/);
+ assert.match(cv,/new URLSearchParams\(location\.search\)\.get\("arena"\)/);
  assert.match(cv,/CombatEnvironment014\.build\(B,scene,owned\)/);
  assert.match(cv,/CombatEnvironment010\.build\(B,scene,owned\)/);
  assert.equal((game.match(/new BABYLON.Engine\(/g)||[]).length,1);

@@ -68,8 +68,10 @@ frame.addEventListener("load",async()=>{
    const group=scene.querySelector(".hq-fx-campaign");
    scene.dataset.hqIlluminated="campaign";
    group.style.animation="none";group.style.opacity=".94";
-   group.querySelectorAll(".hq-fx-sheen,.hq-fx-specular").forEach(el=>{
-    el.style.animation="none";el.style.opacity=".8";
+   group.querySelectorAll(".hq-fx-sheen,.hq-fx-specular,.hq-fx-glint,.hq-fx-engraving").forEach(el=>{
+    el.style.animation="none";
+    el.style.opacity=el.classList.contains("hq-fx-glint")?".94":".8";
+    if(el.classList.contains("hq-fx-glint")){el.style.strokeDasharray="none";el.style.strokeDashoffset="0";}
    });
    const hotspot=home.querySelector(".hq-station-campaign");
    hotspot.classList.add("is-activating");

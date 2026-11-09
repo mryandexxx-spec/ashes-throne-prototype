@@ -57,6 +57,15 @@ jobs:
           baseline="http://127.0.0.1:8765/baseline/tests/fixtures/env010-full-game.html"
           timeout 65s "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 --virtual-time-budget=13000 --screenshot="$PWD/artifacts/env010-baseline-full-hud-844x390.png" "$baseline" 2>/tmp/env010-baseline.log
           test -s artifacts/env010-baseline-full-hud-844x390.png
+      - name: Expose low-resolution evidence for independent art review
+        shell: bash
+        run: |
+          for name in env017-normal-hud-844x390 env017-far-hud-844x390 env010-baseline-full-hud-844x390; do
+            echo "ART_IMAGE_BEGIN:$name"
+            base64 -w0 "artifacts/$name.png"
+            echo
+            echo "ART_IMAGE_END:$name"
+          done
       - name: Preserve actual browser evidence
         if: always()
         uses: actions/upload-artifact@v4

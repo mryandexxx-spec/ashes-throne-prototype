@@ -1,0 +1,64 @@
+name: ENV023 meshoptimizer border-locked real WebGL diagnostic
+on:
+  pull_request:
+    paths: ['.github/workflows/env023-meshopt-diagnostic.yml','tools/env023-merge-meshopt-no-decimation.py']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  meshopt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Simplify source geometry with meshoptimizer locked topological borders
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/env023
+          npm exec --yes --package=@gltf-transform/cli -- gltf-transform dequantize assets/env023/ContinuousGorgeSource.glb /tmp/env023/dequantized.glb
+          npm exec --yes --package=@gltf-transform/cli -- gltf-transform weld /tmp/env023/dequantized.glb /tmp/env023/welded.glb
+          npm exec --yes --package=@gltf-transform/cli -- gltf-transform simplify /tmp/env023/welded.glb /tmp/env023/locked.glb --ratio 0.45 --error 0.002 --lock-border true
+          python3 -m pip install --disable-pip-version-check numpy trimesh Pillow
+          python3 tools/env023-merge-meshopt-no-decimation.py /tmp/env023/locked.glb assets/env023/ContinuousGorgeMobile.glb
+          sed -i 's/buffer.byteLength>2000000/buffer.byteLength>10000000/' combat-environment-017.js
+          sed -i 's/type==="SCALAR"?140000:100000/type==="SCALAR"?350000:350000/' combat-environment-017.js
+          sed -i 's/count>100000)/count>350000)/' combat-environment-017.js
+          node - <<'JS'
+          const fs=require('fs');
+          const e=require('./combat-environment-017.js');
+          const b=fs.readFileSync('assets/env023/ContinuousGorgeMobile.glb');
+          const g=e.parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.length));
+          console.log('MESHOPT_PARSE_READY triangles',g.triangles,'vertices',g.vertices);
+          JS
+      - name: Compare real full-HUD fixed-camera views in Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)"
+          mkdir -p artifacts
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/env023-meshopt-server.log 2>&1 &
+          sleep 2
+          flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390)
+          for view in normal far; do
+            radius=12
+            if [ "$view" = far ]; then radius=19; fi
+            url="http://127.0.0.1:8765/tests/fixtures/env017-full-game.html?radius=$radius"
+            timeout 85s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --screenshot="$PWD/artifacts/$view.png" "$url" 2>"artifacts/$view.log" || true
+            page="$(timeout 85s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --dump-dom "$url" 2>>"artifacts/$view.log")"
+            echo "$page" > "artifacts/$view.html"
+            echo "$page" | grep -o 'data-visual-status="[^"]*"' || true
+            echo "$page" | grep -o 'data-error="[^"]*"' || true
+            echo "ART_IMAGE_BEGIN:$view"
+            if test -f "artifacts/$view.png"; then base64 -w0 "artifacts/$view.png"; fi
+            echo
+            echo "ART_IMAGE_END:$view"
+          done
+      - name: Save diagnostic images and DOM even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env023-meshopt-borderlocked-comparison
+          path: artifacts/
+          retention-days: 14

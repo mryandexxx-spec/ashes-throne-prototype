@@ -39,6 +39,13 @@ jobs:
             # Also capture the peak of the local campaign light for visual review.
             timeout 65s "$chrome" "${args[@]}" --screenshot="$PWD/artifacts/hq-$screen-campaign-fx.png" "$url?fx-preview=campaign" >/dev/null 2>>"/tmp/hq-$screen.log"
             test -s "artifacts/hq-$screen-campaign-fx.png"
+            # HQ-UI-008: visually compare both corrected objects with the unlit scene.
+            if [[ "$screen" == "844x390" ]]; then
+              for mode in heroes baseline-challenges challenges; do
+                timeout 65s "$chrome" "${args[@]}" --screenshot="$PWD/artifacts/hq-$screen-$mode.png" "$url?fx-preview=$mode" >/dev/null 2>>"/tmp/hq-$screen.log"
+                test -s "artifacts/hq-$screen-$mode.png"
+              done
+            fi
           done
       - name: Upload screenshots and browser diagnostics
         if: always()

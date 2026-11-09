@@ -255,7 +255,18 @@ const CombatEnvironment010=(()=>{
     if(triangles>16000||triangles<5000)throw Error("ENV010 triangle budget");
     return geometry;
    };
-   fetch(ASSET_ROOT+"gorge-strata-v1.glb",{credentials:"same-origin"}).then(response=>{
+   // ENV011 proposes a new unified GLB; missing/corrupt candidate falls back
+   // to the proven ENV010 v15 file without adding a runtime dependency.
+   const candidates=typeof CombatEnvironment011!=="undefined"?
+    [new URL("../env011/open-gorge-v1.glb",ASSET_ROOT).href,ASSET_ROOT+"gorge-strata-v1.glb"]:
+    [ASSET_ROOT+"gorge-strata-v1.glb"];
+   const request=(index)=>fetch(candidates[index],{credentials:"same-origin"})
+    .then(response=>{
+     if(!response.ok)throw Error("ENV010/011 asset HTTP "+response.status);
+     return response.arrayBuffer();
+    }).then(buffer=>{read(buffer);return buffer;})
+    .catch(error=>index+1<candidates.length?request(index+1):Promise.reject(error));
+   request(0).then(buffer=>({ok:true,arrayBuffer:()=>Promise.resolve(buffer)})).then(response=>{
     if(!response.ok)throw Error("ENV010 asset HTTP "+response.status);
     return response.arrayBuffer();
    }).then(buffer=>{

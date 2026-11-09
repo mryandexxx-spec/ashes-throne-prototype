@@ -290,7 +290,14 @@ const CombatEnvironment010=(()=>{
      // Keep the original scenic fallback only until a COMPLETE mesh set
      // exists. Dispose replaced GPU buffers instead of accumulating hidden
      // geometry; ENV009 walkable ledge, ravine and photo skin are untouched.
-     for(const m of meshes.filter(m=>m.name!=="env010_sky"))m.dispose();
+     // With the real GLB loaded, discard the fallback gradient sky as well:
+     // its finite polygon projected as a conspicuous trapezoid against
+     // ENV009's full-viewport clearColor, regardless of vertex colours.
+     // The imported 3D canyon stays in front of the inherited sky colour.
+     for(const m of meshes)m.dispose();
+     const skyMat=Array.isArray(scene.materials)?
+       scene.materials.find(m=>m.name==="env010_mat_atmosphere"):null;
+     skyMat?.dispose?.();
      mark("ready");
     }catch(error){
      for(const v of created)try{v.dispose();}catch(_){}

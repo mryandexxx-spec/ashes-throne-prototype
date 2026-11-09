@@ -87,6 +87,7 @@ test("authored GLB can replace old scenic geometry without affecting ENV009 or p
  assert.ok(imported.every(m=>m.data.positions.length&&m.data.indices.length&&m.data.colors.length));
  for(const name of ["env010_horizon","env010_midground","env010_escarpment"])
   assert.equal(scene.meshes.find(m=>m.name===name).disposed,true);
- assert.ok(scene.meshes.find(m=>m.name==="env010_sky")&&!scene.meshes.find(m=>m.name==="env010_sky").disposed);
+ assert.equal(scene.meshes.find(m=>m.name==="env010_sky").disposed,true,"GLB removes the finite sky polygon; ENV009 clearColor is seamless");
+ assert.equal(scene.materials.find(m=>m.name==="env010_mat_atmosphere").disposed,true,"unused sky GPU material released");
  assert.equal(legacy.disposed,undefined);assert.equal(ravine.disposed,undefined);
 });

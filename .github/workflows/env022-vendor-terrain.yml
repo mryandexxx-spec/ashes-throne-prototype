@@ -1,0 +1,52 @@
+name: ENV022 source true CC0 connected terrain modules
+on:
+  push:
+    branches: [feat/combat-env-022-cc0-integrated-terrain]
+    paths: ['.github/workflows/env022-vendor-terrain.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download public original terrain GLBs, inspect geometry
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/env022-source
+          for spec in 'mesa/mesa-light' 'cliff-face/cliff-face' 'canyon-wall/canyon-wall-light'; do
+            slug="${spec%%/*}"
+            base="${spec##*/}"
+            echo "SOURCE: $slug / $base"
+            if ! curl -fLS --retry 2 --connect-timeout 15 --max-time 85 "https://grab3d.com/dl/$slug/$base.glb" -o "/tmp/env022-source/$slug.glb"; then
+              echo "::warning::Source not accessible: $slug"; continue
+            fi
+            stat -c "%n %s bytes" "/tmp/env022-source/$slug.glb"
+          done
+          python3 - <<'PY'
+          import json,struct,pathlib
+          files=list(pathlib.Path('/tmp/env022-source').glob('*.glb'))
+          assert files, 'No genuine asset downloads succeeded'
+          for f in files:
+            b=f.read_bytes()
+            if b[:4]!=b'glTF' or struct.unpack_from('<I',b,4)[0]!=2: raise Exception('Bad GLB '+str(f))
+            length=struct.unpack_from('<I',b,12)[0]
+            jsondata=json.loads(b[20:20+length])
+            triangles=sum(jsondata['accessors'][pr['indices']]['count']//3 for m in jsondata['meshes'] for pr in m['primitives'] if 'indices' in pr)
+            print('ASSET', f.name, 'bytes',len(b),'meshes',len(jsondata['meshes']),'nodes',len(jsondata.get('nodes',[])),'tris',triangles,'mats',len(jsondata.get('materials',[])),'images',len(jsondata.get('images',[])),flush=True)
+          PY
+      - name: Stage original downloadable GLBs for review (not runtime yet)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets/env022/source
+          cp /tmp/env022-source/*.glb assets/env022/source/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/env022/source
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'ENV022: vendor original CC0 connected terrain candidate GLBs for inspection'
+          git push origin HEAD:feat/combat-env-022-cc0-integrated-terrain

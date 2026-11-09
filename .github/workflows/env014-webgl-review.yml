@@ -129,13 +129,13 @@ jobs:
             echo "Existing authoritative ENV014 WebGL evidence retained."
             exit 0
           fi
-          mkdir -p docs/evidence/env014
+          mkdir -p docs/evidence/env014b
           cp artifacts/env010-default.png artifacts/env010-far.png \
              artifacts/env014-default.png artifacts/env014-far.png \
              artifacts/env010-full-hud-844x390.png \
-             artifacts/env014-full-hud-844x390.png docs/evidence/env014/
+             artifacts/env014-full-hud-844x390.png docs/evidence/env014b/
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/env014/gorge-sculpt-v1.glb docs/evidence/env014/*.png
-          git commit -m 'test(env014): actual Babylon WebGL baseline and authored GLB evidence'
+          git add assets/env014/gorge-sculpt-v1.glb docs/evidence/env014b/*.png
+          git commit -m 'test(env014b): actual Babylon WebGL baseline and authored GLB evidence'
           git push origin "HEAD:refs/heads/${{ github.head_ref }}"

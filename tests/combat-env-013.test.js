@@ -70,7 +70,7 @@ test("ENV013 leaves exact combat ledge and ravine, disables only ENV009 back rin
  assert.equal(ledge.enabled,undefined);assert.equal(ravine.enabled,undefined);
  for(const n of ["near_escarpment","far_ridge","horizon_ridge"])
   assert.equal(scene.meshes.find(m=>m.name==="env009_"+n).enabled,false);
- assert.equal(scene.fogDensity,.0065);
+ assert.equal(scene.fogDensity,.009);
  assert.ok(scene.meshes.filter(m=>m.name.startsWith("env013_")).length===4);
 });
 test("CV007 prefers ENV013 but explicit comparison flag and build failure retain ENV010",()=>{
@@ -93,6 +93,15 @@ test("CV007 prefers ENV013 but explicit comparison flag and build failure retain
  const recovered=run({fail:true});
  assert.ok(recovered.meshes.filter(m=>m.name.startsWith("env010_")).length>=4);
  assert.equal(recovered.meshes.filter(m=>m.name.startsWith("env013_")).length,0);
+});
+test("ENV013B keeps the photo ledge from ENV010 without changing world or picking",()=>{
+ const src=read("combat-environment-013.js");
+ assert.match(src,/env013_photo_ledge/);
+ assert.match(src,/shelf\.getVerticesData\("position"\)/);
+ assert.match(src,/mesh\.hasVertexAlpha=true/);
+ assert.match(src,/loadedA&&/);
+ assert.match(src,/normal\.level=\.32/);
+ assert.doesNotMatch(src,/Math\.random|requestAnimationFrame|runRenderLoop/);
 });
 test("full game loads ENV013 before CV007 and retains Babylon engine/camera",()=>{
  const html=read("index.html"),game=read("game.js");

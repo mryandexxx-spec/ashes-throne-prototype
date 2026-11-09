@@ -1,0 +1,60 @@
+name: ENV024 vendor compatible authentic CC0 coastal cliff modules
+on:
+  pull_request:
+    paths: ['.github/workflows/env024-vendor.yml','tools/env024-vendor-matched-coast.py']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: true}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Fetch exact original ready-made matched coastal rock pieces
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/env024-source /tmp/env024-float assets/env024
+          declare -A files=([RockShelf]=36605 [CliffTop]=36608 [CliffFace]=36609)
+          for name in "${!files[@]}"; do
+            id="${files[$name]}"
+            curl -fLS --retry 3 --connect-timeout 15 --max-time 75 "https://cdn.3dassets.dev/assets/$id/v1/model.glb" -o "/tmp/env024-source/$name.glb"
+            stat -c '%n %s bytes' "/tmp/env024-source/$name.glb"
+            npm exec --yes --package=@gltf-transform/cli -- gltf-transform dequantize "/tmp/env024-source/$name.glb" "/tmp/env024-float/$name.glb"
+          done
+      - name: Preserve exact source triangles and transfer publisher materials
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check numpy pillow trimesh
+          for name in RockShelf CliffTop CliffFace; do
+            python3 tools/env024-vendor-matched-coast.py "/tmp/env024-float/$name.glb" "assets/env024/$name.glb"
+          done
+          python3 - <<'PY'
+          import struct,json,pathlib
+          total=0
+          for f in pathlib.Path('assets/env024').glob('*.glb'):
+            b=f.read_bytes()
+            assert b[:4]==b'glTF' and struct.unpack_from('<I',b,8)[0]==len(b)
+            n=struct.unpack_from('<I',b,12)[0];g=json.loads(b[20:20+n])
+            tri=sum(g['accessors'][p['indices']]['count']//3 for mesh in g['meshes'] for p in mesh['primitives'])
+            assert tri>30 and tri<5000 and len(g.get('meshes',[]))>=1
+            total+=tri
+            print('SOURCE_GLB',f.name,'TRIANGLES',tri,'bytes',len(b),flush=True)
+          assert 300<total<6000
+          PY
+      - name: Save ready-made CC0 files only to isolated experimental branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/env024/RockShelf.glb assets/env024/CliffTop.glb assets/env024/CliffFace.glb
+          git diff --cached --quiet && exit 0
+          git commit -m 'ENV024: vendor matched authentic coastal shelf/top/face CC0 GLBs'
+          git fetch origin feat/combat-env-024-matched-coastal-rock-terrain
+          git rebase origin/feat/combat-env-024-matched-coastal-rock-terrain
+          git push origin HEAD:feat/combat-env-024-matched-coastal-rock-terrain

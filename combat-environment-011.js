@@ -11,8 +11,8 @@ const CombatEnvironment011=(()=>{
  function openRearExit(B,scene){
   if(!B?.VertexData?.ComputeNormals||!scene?.meshes)return false;
   const profiles=[
-   ["env009_living_ledge",[0,0,0,0,0,0,0,0,.08,.35,.75,1.2,1.9,2.8]],
-   ["env009_ravine",[2.8,3.2,4.0,4.8,5.2,5.8]]
+   ["env009_living_ledge",[0,0,0,0,0,0,.7,1.8,3.3,4.8,6.2,7.5,8.8,10.1]],
+   ["env009_ravine",[10.1,10.7,11.2,11.8,12.4,12.9]]
   ];
   const ready=profiles.map(([name,drop])=>({
    mesh:scene.meshes.find(m=>m.name===name),drop
@@ -29,7 +29,7 @@ const CombatEnvironment011=(()=>{
    for(let row=0;row<drop.length;row++)for(let sector=0;sector<=96;sector++){
     const k=3*(row*97+sector),x=positions[k],z=positions[k+2];
     const along=(x+z)*SQ,across=(x-z)*SQ;
-    const opening=smooth(4.1,7.9,along)*
+    const opening=smooth(3.6,6.5,along)*
       (1-smooth(5.3,9.5,Math.abs(across)));
     const lowered=drop[row]*opening;
     if(lowered>.0001){positions[k+1]-=lowered;changed++;}

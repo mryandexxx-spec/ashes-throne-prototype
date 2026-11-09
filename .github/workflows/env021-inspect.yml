@@ -1,0 +1,29 @@
+name: ENV021 inspect external GLB
+on:
+  pull_request:
+    paths: ['assets/env021/**', '.github/workflows/env021-inspect.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect native GLB topology and material schema
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,struct,pathlib
+          for f in sorted(pathlib.Path('assets/env021').glob('*.glb')):
+              b=f.read_bytes();n=struct.unpack_from('<I',b,12)[0]
+              g=json.loads(b[20:20+n].decode())
+              print('FILE',f,'bytes',len(b),'meshes',len(g.get('meshes',[])),'nodes',len(g.get('nodes',[])),'materials',len(g.get('materials',[])),'textures',len(g.get('textures',[])),'images',len(g.get('images',[])))
+              for i,m in enumerate(g.get('meshes',[])):
+                  for p in m['primitives']:
+                      print(' MESH',i,'name',m.get('name'),'mode',p.get('mode',4),'mat',p.get('material'),'attributes',{k:{key:g['accessors'][a].get(key) for key in ['type','componentType','count','min','max']} for k,a in p['attributes'].items()},'indices',{key:g['accessors'][p['indices']].get(key) for key in ['type','componentType','count']})
+              for i,node in enumerate(g.get('nodes',[])):
+                  print(' NODE',i,{k:node.get(k) for k in ['name','mesh','translation','rotation','scale','matrix'] if k in node})
+              for i,mat in enumerate(g.get('materials',[])):
+                  print(' MATERIAL',i,mat)
+          PY

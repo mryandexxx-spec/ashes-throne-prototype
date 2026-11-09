@@ -84,7 +84,7 @@ function createEnv015Glb(){
   return ridge[ridge.length-1].slice(1);
  }
  function makeOppositeMass(){
-  const name="far_opposite_mass",cols=112,rows=17;
+  const name="far_opposite_mass",cols=108,rows=17;
   const a=geo(name,cols,rows,(u,v)=>{
    const l=mix(-200,290,u),[top,d]=crest(l);
    const pocket=Math.sin(l*.10-v*11)*.9+

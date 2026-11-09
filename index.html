@@ -32,9 +32,9 @@
         </div>
       </header>
       <div class="hq-pan" id="hqPan" tabindex="0" role="region" aria-label="Панорама штаба. Проведите пальцем влево, чтобы увидеть другие зоны">
-        <div class="hq-scene">
+        <div class="hq-scene" aria-label="Рабочий зал штаба с картами, записями, экипировкой и местами сбора отряда">
           <div class="hq-station hq-station-heroes">
-            <h2><span aria-hidden="true">♙</span> Герои и отряд</h2>
+            <h2><span aria-hidden="true">♜</span> Герои и отряд <span class="hq-station-arrow" aria-hidden="true">›</span></h2>
             <div class="hq-squad-slots" aria-label="Пять мест отряда">
               <span class="hq-squad-slot"></span><span class="hq-squad-slot"></span><span class="hq-squad-slot"></span><span class="hq-squad-slot"></span><span class="hq-squad-slot"></span>
             </div>
@@ -42,20 +42,20 @@
             <div class="hq-station-actions"><button data-screen="collection" data-hq-hint="Коллекция и развитие">Герои</button><button data-screen="battle" data-hq-hint="Подготовить отряд к тестовому бою">Отряд</button></div>
           </div>
           <div class="hq-station hq-station-campaign">
-            <h2><span aria-hidden="true">⌁</span> Кампания</h2>
+            <h2><span aria-hidden="true">⚔</span> Кампания <span class="hq-station-arrow" aria-hidden="true">›</span></h2>
             <p id="hqCampaignStatus">Пройдено: —</p>
             <div class="hq-meter"><span id="hqCampaignFill"></span></div>
             <p id="hqCampaignStars">Звёзд: —</p>
             <div class="hq-station-actions"><button data-screen="campaign" data-hq-hint="Открыть миссии кампании">Продолжить</button></div>
           </div>
           <div class="hq-station hq-station-operations">
-            <h2><span aria-hidden="true">⌖</span> Разведоперации</h2>
+            <h2><span aria-hidden="true">⌖</span> Разведоперации <span class="hq-station-arrow" aria-hidden="true">›</span></h2>
             <p id="hqOperationStatus">Состояние: —</p>
             <div class="hq-ops-state" id="hqOperationFlag" aria-label="Состояние разведопераций"><span class="hq-ops-led" aria-hidden="true"></span><small id="hqOperationText">Ожидание</small></div>
             <div class="hq-station-actions"><button data-screen="operations" data-hq-hint="Открыть разведоперации">Открыть</button></div>
           </div>
           <div class="hq-station hq-station-challenges">
-            <h2><span aria-hidden="true">⚔</span> Испытания</h2>
+            <h2><span aria-hidden="true">♛</span> Испытания <span class="hq-station-arrow" aria-hidden="true">›</span></h2>
             <p id="hqChallengeStatus">Пройдено: —</p>
             <div class="hq-meter"><span id="hqChallengeFill"></span></div>
             <div class="hq-station-actions"><button data-screen="challenges" data-hq-hint="Открыть испытания">Выбрать</button></div>
@@ -64,7 +64,7 @@
       </div>
       <div class="hq-swipe-indicator" aria-hidden="true">‹　━ ━ ━　›</div>
       <nav class="hq-bottom" aria-label="Навигация по игре">
-        <button data-screen="home" aria-current="page"><span aria-hidden="true">⌂</span>Штаб</button>
+        <button data-screen="home" aria-current="page"><span aria-hidden="true">♜</span>Штаб</button>
         <button data-screen="collection"><span aria-hidden="true">♙</span>Герои</button>
         <button data-screen="campaign"><span aria-hidden="true">⌁</span>Кампания</button>
         <button data-screen="operations"><span aria-hidden="true">⌖</span>Операции</button>

@@ -105,21 +105,3 @@ jobs:
           name: env013-env010-real-game-hud
           path: artifacts/*-full-hud-*.png
           if-no-files-found: warn
-
-      - name: Archive single ENV013B comparison as PNG in feature branch
-        if: success() && github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p docs/evidence/env013b
-          cp artifacts/env010-default.png artifacts/env010-far.png \
-             artifacts/env013-default.png artifacts/env013-far.png \
-             artifacts/env010-full-hud-844x390.png \
-             artifacts/env013-full-hud-844x390.png docs/evidence/env013b/
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add docs/evidence/env013b/*.png
-          if ! git diff --cached --quiet; then
-            git commit -m 'test(env013b): preserve WebGL comparison screenshots'
-            git push origin "HEAD:refs/heads/${{ github.head_ref }}"
-          fi

@@ -1,145 +1,137 @@
-/* COMBAT-ENV-013 — one authored, non-canonical gorge composition.
- * The ENV009 contact ledge and ravine are retained. This background is NOT
- * a map of the Gardens over the Abyss. No gameplay, picking, camera or loops.
- * Four asymmetric, closed 3D rock masses, not screen-facing billboards.
+/* COMBAT-ENV-013C — one experimental continuous chasm, NOT world canon.
+ * ENV009 combat plane untouched. Geometry deliberately follows its real rim.
+ * Replaces isolated box-cliffs with connected terrain and ONE remote escarpment.
  */
 const CombatEnvironment013=(()=>{
  "use strict";
+ const TAU=Math.PI*2,CLAMP=(x,a,b)=>Math.max(a,Math.min(b,x));
  const ALPHA=-3*Math.PI/4;
  const AWAY={x:-Math.cos(ALPHA),z:-Math.sin(ALPHA)};
  const RIGHT={x:-Math.sin(ALPHA),z:Math.cos(ALPHA)};
- const CLAMP=(n,a,b)=>Math.max(a,Math.min(b,n));
- const ASSET_ROOT=typeof document!=="undefined"&&document.currentScript?.src?
+ const ROOT=typeof document!=="undefined"&&document.currentScript?.src?
   new URL("assets/env010/",document.currentScript.src).href:null;
+ const ASSET_ROOT=ROOT;
  function supported(B){
-  return !!(B&&B.Mesh&&B.VertexData&&B.VertexData.ComputeNormals&&
-    B.StandardMaterial&&B.Color3);
+  return !!(B?.Mesh&&B?.VertexData&&B.VertexData.ComputeNormals&&
+   B.StandardMaterial&&B.Color3);
  }
  function build(B,scene,own){
-  if(!supported(B)||!scene||typeof own!=="function")throw Error("ENV013 needs Babylon VertexData");
+  if(!supported(B)||!scene||typeof own!=="function")throw Error("ENV013C requires Babylon geometry");
   const resources=[],stats={meshes:0,vertices:0,triangles:0};
-  // Ownership is local until a complete geometry set has been constructed.
-  // On failure, dispose only our resources and let CV007 fall back to ENV010.
-  function track(resource){resources.push(resource);return resource;}
-  const point=(l,d,y)=>[AWAY.x*d+RIGHT.x*l,y,AWAY.z*d+RIGHT.z*l];
+  const track=v=>(resources.push(v),v);
   const mix=(a,b,t)=>a+(b-a)*t;
-  function between(knots,t){
-   const k=CLAMP(t,0,1)*(knots.length-1),i=Math.min(knots.length-2,Math.floor(k)),f=k-i;
-   return knots[i].map((v,j)=>mix(v,knots[i+1][j],f));
-  }
-  function rockMaterial(name,shade){
+  const ease=t=>t*t*(3-2*t);
+  const point=(l,d,y)=>[AWAY.x*d+RIGHT.x*l,y,AWAY.z*d+RIGHT.z*l];
+  const rim=(r,a)=>{
+   if(typeof CombatEnvironment009!=="undefined"&&typeof CombatEnvironment009.rimPoint==="function")
+    return CombatEnvironment009.rimPoint(r,a);
+   const rough=1+.045*Math.sin(5*a+.4)+.023*Math.sin(11*a+1.3)+.012*Math.sin(23*a+2.1);
+   const fan=1+.065*Math.sin(3*a-.3);
+   return [Math.cos(a)*9.15*r*rough*fan,Math.sin(a)*5.85*r*rough];
+  };
+  const mat=(name,rgb,emission)=>{
    const m=track(new B.StandardMaterial("env013_mat_"+name,scene));
    m.diffuseColor=new B.Color3(1,1,1);
-   m.specularColor=new B.Color3(.012,.013,.014);
-   m.emissiveColor=new B.Color3(shade,shade*1.06,shade*1.1);
-   m.backFaceCulling=false;
-   m.useVertexColors=true;
-   m.fogEnabled=true;
+   m.emissiveColor=new B.Color3(emission,emission*1.06,emission*1.12);
+   m.specularColor=new B.Color3(.01,.012,.012);
+   m.useVertexColors=true;m.backFaceCulling=false;m.fogEnabled=true;
    return m;
-  }
-  // Each authored knot is [screen-right offset, distance away, upper crest,
-  // vertical base]. The upper boundary sits below the fighters on the right.
-  // Geometry has a real 3D front, back, upper bench, underside and end caps.
-  const formations=[
-   // Compose from the ACTUAL 3/4 HUD camera: silhouettes stay below the
-   // upper screen, rather than producing the v1 rock canopy.
-   {name:"attached_left_shoulder",base:[.48,.43,.37],glow:.065,width:20,steps:48,
-    knots:[[-78,89,-51,-112],[-59,82,-43,-104],[-43,76,-42,-102],
-     [-29,72,-48,-110],[-18,68,-53,-116],[-9,64,-60,-120]]},
-   // The near-right bank descends sharply; its low crest exposes the chasm.
-   {name:"falling_right_rim",base:[.48,.43,.36],glow:.052,width:14,steps:40,
-    knots:[[12,37,-31,-91],[22,45,-36,-107],[33,53,-43,-122],
-     [44,65,-46,-137],[59,78,-52,-151],[74,93,-60,-163]]},
-   // Distant wall: wide natural shoulder, not a ceiling or a mountain wing.
-   {name:"opposing_wall",base:[.52,.54,.53],glow:.083,width:26,steps:56,
-    knots:[[-17,107,-58,-160],[4,112,-56,-170],[23,119,-48,-177],
-     [44,123,-57,-188],[64,131,-53,-201],[84,142,-63,-214],[110,155,-66,-229]]},
-   // A desaturated low-contrast silhouette behind a generous empty span.
-   {name:"distant_strata",base:[.62,.66,.68],glow:.11,width:28,steps:48,
-    knots:[[-65,173,-78,-230],[-43,177,-72,-235],[-16,181,-81,-247],
-     [15,187,-68,-253],[42,194,-76,-265],[76,205,-73,-278],[119,217,-84,-294]]}
-  ];
-  // Draw the cliff as a single indexed solid. Deliberately split rock
-  // benches, irregular talus, and erosion seams; never random rock placement.
-  function createFormation(cfg){
-   const material=rockMaterial(cfg.name,cfg.glow);
-   const positions=[],uvs=[],colors=[],indices=[],bands=16,columns=cfg.steps;
-   function vertex(l,d,y,row,t,roof=false){
-    const p=point(l,d,y);positions.push(...p);
-    uvs.push(roof?l*.085:l*.085+.08*Math.sin(y*.061),roof?d*.085:y*.083);
-    const seam=Math.sin(y*.19+l*.064+d*.023);
-    const joints=Math.abs(Math.sin(l*.11+y*.075+d*.018));
-    const bed=.035*Math.sin(y*.38+l*.045);
-    const rough=1+.052*seam+bed-(joints>.965?.065:0);
-    const shade=(1-row*.20)*(roof?1.05:1)*rough;
-    const c=cfg.base.map(x=>CLAMP(x*shade,0,1));
-    colors.push(c[0],c[1],c[2],1);
-    return positions.length/3-1;
+  };
+  function surface(name,cols,rows,sample,shade,material){
+   const pos=[],uv=[],rgba=[],indices=[],normals=[];
+   for(let j=0;j<=rows;j++)for(let i=0;i<=cols;i++){
+    const [x,y,z]=sample(i/cols,j/rows,i,j);
+    const c=shade(x,y,z,i,j);
+    pos.push(x,y,z);
+    uv.push(x*.075+y*.003,z*.075+y*.045);
+    rgba.push(...c.map(v=>CLAMP(v,0,1)),1);
    }
-   const front=[],back=[];
-   for(let side=0;side<2;side++){
-    const collection=side?back:front;
-    for(let row=0;row<=bands;row++){
-     const u=row/bands;
-     for(let i=0;i<=columns;i++){
-      const t=i/columns;
-      const [l,d,crest,bottom]=between(cfg.knots,t);
-      // A shallow angular warp adds uneven rock strata without moving
-      // the contact plane or erecting towers over the 3/4 view.
-      const cleavage=.35*Math.sin(l*.33+row*.41)+.20*Math.sin(l*.79-row*.51);
-      const dip=side?2.4:0;
-      const y=mix(crest-dip,bottom,u)+cleavage*(1-u)*.68;
-      const sideDepth=side?cfg.width:0;
-      const strata=.85*Math.sin(u*11.3+l*.047)+
-       .36*Math.sin(u*21.7+l*.14)+.26*Math.cos(l*.25+row*.61);
-      const cut=(u>.12&&u<.85)?strata:0;
-      const d2=d+sideDepth+cut*(side?.45:1.0)*(1-u*.30);
-      collection.push(vertex(l,d2,y,u,t));
-     }
-    }
+   const stride=cols+1;
+   for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){
+    const a=j*stride+i,b=a+stride;
+    indices.push(a,b,a+1,a+1,b,b+1);
    }
-   const stride=columns+1,count=(bands+1)*stride;
-   for(let row=0;row<bands;row++)for(let i=0;i<columns;i++){
-    const a=row*stride+i,b=a+stride;
-    indices.push(front[a],front[b],front[a+1],front[a+1],front[b],front[b+1]);
-    indices.push(back[a+1],back[b],back[a],back[b+1],back[b],back[a+1]);
-   }
-   for(let i=0;i<columns;i++){
-    const a=i,b=i+1,last=bands*stride;
-    indices.push(front[a],front[b],back[a],front[b],back[b],back[a]);
-    indices.push(front[last+a],back[last+a],front[last+b],
-     front[last+b],back[last+a],back[last+b]);
-   }
-   for(let row=0;row<bands;row++){
-    const a=row*stride,b=(row+1)*stride,last=columns;
-    indices.push(front[a],back[a],front[b],front[b],back[a],back[b]);
-    indices.push(front[b+last],back[a+last],front[a+last],
-     front[b+last],back[b+last],back[a+last]);
-   }
-   // Separate horizontal UVs on the upper rock bench; no radial stretch.
-   const roofFront=[],roofBack=[];
-   for(let i=0;i<=columns;i++){
-    const t=i/columns,[l,d,y]=between(cfg.knots,t);
-    roofFront.push(vertex(l,d,y,0,t,true));
-    roofBack.push(vertex(l,d+cfg.width,y-2.4,0,t,true));
-   }
-   for(let i=0;i<columns;i++)
-    indices.push(roofFront[i],roofBack[i],roofFront[i+1],
-      roofFront[i+1],roofBack[i],roofBack[i+1]);
-   const normals=[];
-   B.VertexData.ComputeNormals(positions,indices,normals);
-   const mesh=track(new B.Mesh("env013_"+cfg.name,scene)),data=new B.VertexData();
-   data.positions=positions;data.indices=indices;data.normals=normals;
-   data.colors=colors;data.uvs=uvs;data.applyToMesh(mesh,false);
+   B.VertexData.ComputeNormals(pos,indices,normals);
+   const mesh=track(new B.Mesh("env013_"+name,scene));
+   const data=new B.VertexData();
+   data.positions=pos;data.indices=indices;data.normals=normals;
+   data.uvs=uv;data.colors=rgba;data.applyToMesh(mesh,false);
    mesh.material=material;mesh.useVertexColors=true;
    mesh.isPickable=false;mesh.checkCollisions=false;mesh.receiveShadows=false;
-   stats.meshes++;stats.vertices+=positions.length/3;stats.triangles+=indices.length/3;
+   stats.meshes++;stats.vertices+=pos.length/3;stats.triangles+=indices.length/3;
+  }
+  // A real seam with ENV009: its outer ledge falls at r=.945,1.05,1.25.
+  // Left bank re-ascends gently after the first erosion lip and continues
+  // far beyond the screen; no top cap, visible ends, or disconnected boulder.
+  const radial=[.945,.99,1.05,1.13,1.25,1.43,1.66,1.91,2.17,2.42,2.9,3.7,4.8,6.2,8.0];
+  const original=[.04,-.42,-1.3,-2.85,-5.1,-7.05,-8.3,-9.15,-9.7,-9.9];
+  const profile=r=>{
+   if(r<=radial[9]){
+    let i=radial.findIndex(v=>v>=r);
+    if(i<1)return original[0];
+    return mix(original[i-1],original[i],(r-radial[i-1])/(radial[i]-radial[i-1]));
+   }
+   return -9.9;
+  };
+  function bank(left){
+   const name=left?"connected_left_bank":"descending_right_wall";
+   const material=mat(name,left?[.44,.415,.375]:[.35,.385,.395],left?.09:.06);
+   const start=left?Math.PI*.27:Math.PI*1.26;
+   const end=left?Math.PI*1.21:Math.PI*2.25;
+   surface(name,80,radial.length-1,(u,v)=>{
+    const a=mix(start,end,u),index=v*(radial.length-1),
+     n=Math.floor(index),p=index-n;
+    const r=mix(radial[n],radial[Math.min(n+1,radial.length-1)],p);
+    const [x,z]=rim(r,a);
+    const l=RIGHT.x*x+RIGHT.z*z,d=AWAY.x*x+AWAY.z*z;
+    const transition=CLAMP((r-1.25)/1.55,0,1);
+    const outer=left?-5.0-1.5*(r-2.42): -12.0-10.0*(r-2.42);
+    const seam=Math.sin(2.1*a+6*r)*.65+Math.sin(7*a-2.2*r)*.26;
+    const y=mix(profile(r),outer,ease(transition))+
+     seam*Math.min(1,transition)*.7;
+    return point(l,d,y);
+   },(x,y,z,i,j)=>{
+    const bedding=.035*Math.sin(y*.32+x*.08);
+    const grain=.032*Math.sin(x*.25-z*.36+y*.14);
+    const shade=1+bedding+grain-.15*(j/(radial.length-1));
+    const base=left?[.49,.45,.39]:[.39,.42,.425];
+    return base.map(v=>v*shade);
+   },material);
   }
   try{
-   formations.forEach(createFormation);
-   // Texture is the existing local CC0 Rock063 pair used by ENV010, not a
-   // new download, library, shader, GLB importer or per-frame operation.
-   // The vertex colours and baked relief remain a usable texture fallback.
+  // One continuous far escarpment instead of four separately capped
+  // long wedges. An irregular cliff crest is visible through the gap.
+  const farMaterial=mat("opposite_escarpment",[.54,.58,.58],.105);
+  function crest(l){
+   const upland=.52*Math.sin(l*.039+.8)+.22*Math.sin(l*.098-1.2)+
+    .09*Math.sin(l*.21+1.3);
+   const gouge=Math.pow(Math.max(0,Math.sin(l*.081+.6)),9)*3.4;
+   return -44+8*upland-gouge;
+  }
+  surface("opposite_escarpment",112,36,(u,v)=>{
+   const l=-175+350*u,depth=105+6*Math.sin(l*.025+.4);
+   // First rows describe the weathered upper shoulder; remaining rows descend
+   // into unseen depth, never an upright planar silhouette cut by an endcap.
+   const top=crest(l),terrace=Math.min(v/.22,1);
+   const fall=v<.22?2.5*terrace:2.5+(v-.22)/.78*155;
+   const joint=1.2*Math.sin(l*.18+v*18)*v+
+    .55*Math.cos(l*.39-v*34)*v;
+   return point(l,depth+v*23+joint,top-fall);
+  },(x,y,z,i,j)=>{
+   const t=j/36, strata=.025*Math.sin(y*.29+x*.07);
+   const tone=1-.26*t+strata;
+   return [.55*tone,.58*tone,.60*tone];
+  },farMaterial);
+  // Faint second escarpment lives much farther away and below the sky.
+  // Its slope is fully continuous; no polygon end caps in the viewport.
+  const distant=mat("distant_escarpment",[.61,.66,.69],.14);
+  surface("distant_escarpment",80,16,(u,v)=>{
+   const l=-200+400*u,top=-73+7*Math.sin(l*.022)+3*Math.sin(l*.071);
+   return point(l,186+11*v,top-82*v);
+  },(x,y,z)=>[.62,.67,.70].map(v=>v*(.98+.015*Math.sin(x*.035+y*.025))),distant);
+  // Material skin from ENV010, retained only over the original unchanged
+  // walkable top; a missing JPG must never prevent combat or touch selection.
+   bank(true);bank(false);
    if(ASSET_ROOT&&typeof B.Texture==="function"){
     const shelf=scene.meshes?.find(m=>m.name==="env009_living_ledge");
     let albedo=null,normal=null,loadedA=false,loadedN=false,capMade=false;
@@ -203,26 +195,25 @@ const CombatEnvironment013=(()=>{
      }
     }catch(_){/* vertex-colour fallback */ }
    }
-   // Never remove or move the actual ENV009 fighter contact ledge or ravine.
-   // Only the three redundant circular horizon walls are retired.
+
    for(const name of ["env009_near_escarpment","env009_far_ridge","env009_horizon_ridge"]){
     const old=scene.meshes?.find(x=>x.name===name);
     old?.setEnabled?.(false);
    }
-   if(typeof B.Color4==="function")scene.clearColor=new B.Color4(.56,.65,.70,1);
+   if(typeof B.Color4==="function")scene.clearColor=new B.Color4(.56,.645,.685,1);
    if(B.Scene?.FOGMODE_EXP2!==undefined){
-    scene.fogMode=B.Scene.FOGMODE_EXP2;scene.fogDensity=.009;
-    scene.fogColor=new B.Color3(.61,.68,.72);
+    scene.fogMode=B.Scene.FOGMODE_EXP2;scene.fogDensity=.0072;
+    scene.fogColor=new B.Color3(.61,.68,.715);
    }
    if(Array.isArray(scene.lights)){
     const hemi=scene.lights.find(x=>x.name==="hemi");
     const key=scene.lights.find(x=>x.name==="key");
-    if(hemi){hemi.intensity=.93;hemi.diffuse=new B.Color3(.87,.89,.92);}
-    if(key){key.intensity=1.12;key.diffuse=new B.Color3(1,.88,.75);}
+    if(hemi){hemi.intensity=.91;hemi.diffuse=new B.Color3(.85,.90,.94);}
+    if(key){key.intensity=1.12;key.diffuse=new B.Color3(1,.90,.79);}
    }
    if(typeof document!=="undefined"&&document.documentElement)
     document.documentElement.dataset.env013Status="ready";
-   for(const r of resources)own(r);
+   for(const resource of resources)own(resource);
    return Object.freeze({...stats});
   }catch(error){
    for(let i=resources.length-1;i>=0;i--)try{resources[i].dispose?.();}catch(_){}

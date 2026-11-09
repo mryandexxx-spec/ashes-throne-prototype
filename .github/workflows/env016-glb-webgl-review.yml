@@ -122,10 +122,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if test -f docs/evidence/env016/env016-full-hud-844x390.png; then
-            echo "First visual evidence already retained."
-            exit 0
-          fi
           mkdir -p docs/evidence/env016
           cp artifacts/env010-default.png artifacts/env010-far.png \
              artifacts/env016-default.png artifacts/env016-far.png \
@@ -134,5 +130,9 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add assets/env016/fractured-gorge-v1.glb docs/evidence/env016/*.png
-          git commit -m 'test(env016): preserve original fractured GLB and actual WebGL comparisons'
+          if git diff --cached --quiet; then
+            echo "Visual evidence unchanged."
+            exit 0
+          fi
+          git commit -m 'test(env016): save correctly labelled WebGL comparison screenshots'
           git push origin "HEAD:refs/heads/${{ github.head_ref }}"

@@ -9,15 +9,17 @@ const CombatEnvironment017=(()=>{
  const AWAY={x:-Math.cos(ALPHA),z:-Math.sin(ALPHA)};
  const RIGHT={x:-Math.sin(ALPHA),z:Math.cos(ALPHA)};
  const p=(side,away,y)=>[RIGHT.x*side+AWAY.x*away,y,RIGHT.z*side+AWAY.z*away];
- const SOURCES=Object.freeze(["Cliff001","Cliff002","Cliff003","Rock001"]);
+ const SOURCES=Object.freeze(["PolyCliff01","Cliff002","Rock001"]);
  // Hand-composed positions in fixed-camera side/away/y, not a procedurally
  // invented wall; no large ground plane is constructed here.
  const PLACEMENTS=Object.freeze([
-  {source:"Cliff001",side:-12,away:2,y:-5.2,scale:.012,angle:.25},
-  {source:"Cliff002",side:-12,away:9,y:-6.3,scale:.016,angle:-.38},
-  {source:"Cliff003",side:21,away:25,y:-12.5,scale:.021,angle:.45},
-  {source:"Cliff001",side:35,away:33,y:-13.8,scale:.020,angle:-.35},
-  {source:"Rock001",side:-10,away:-5,y:-1.8,scale:.014,angle:.2}
+  // The photogrammetric forms carry the primary composition; low-poly Gobkit
+  // pieces are only secondary rocky transitions, deliberately desaturated.
+  {source:"PolyCliff01",side:-15,away:9,y:-5.2,scale:1.00,angle:.25},
+  {source:"PolyCliff01",side:17,away:22,y:-8.5,scale:1.18,angle:-.48},
+  {source:"PolyCliff01",side:29,away:30,y:-9.5,scale:1.22,angle:.65},
+  {source:"Cliff002",side:-13,away:0,y:-4.8,scale:.011,angle:-.28},
+  {source:"Rock001",side:-11,away:-6,y:-1.8,scale:.012,angle:.22}
  ]);
  const ROOT=typeof document!=="undefined"&&document.currentScript?.src?
   new URL("assets/env021/",document.currentScript.src).href:null;
@@ -27,7 +29,7 @@ const CombatEnvironment017=(()=>{
  function parse(buffer){
   if(!(buffer instanceof ArrayBuffer))throw Error("ENV021 GLB buffer required");
   const dv=new DataView(buffer);
-  if(buffer.byteLength<60||buffer.byteLength>250000||
+  if(buffer.byteLength<60||buffer.byteLength>1600000||
    dv.getUint32(0,true)!==0x46546c67||dv.getUint32(4,true)!==2||
    dv.getUint32(8,true)!==buffer.byteLength)throw Error("ENV021 GLB header invalid");
   const jLength=dv.getUint32(12,true),jType=dv.getUint32(16,true);
@@ -41,12 +43,12 @@ const CombatEnvironment017=(()=>{
    throw Error("ENV021 unexpected glTF topology");
   const prim=json.meshes[0].primitives[0];
   if((prim.mode??4)!==4)throw Error("ENV021 non triangle mesh");
-  function read(accessorId,type,allowed){
+  function read(accessorId,type,allowed,allowNormalized=false){
    const a=json.accessors?.[accessorId],v=json.bufferViews?.[a?.bufferView];
    if(!a||!v||a.type!==type||!allowed.includes(a.componentType)||a.count<3||
-      a.count>20000||a.sparse||a.normalized)throw Error("ENV021 accessor schema");
+      a.count>25000||a.sparse||(a.normalized&&!allowNormalized))throw Error("ENV021 accessor schema");
    const components=type==="SCALAR"?1:type==="VEC2"?2:3;
-   const bytes=a.componentType===5126||a.componentType===5125?4:2;
+   const bytes=a.componentType===5126||a.componentType===5125?4:a.componentType===5123?2:1;
    const step=v.byteStride||components*bytes;
    const offset=(v.byteOffset||0)+(a.byteOffset||0);
    if(step<components*bytes||offset<0||offset+(a.count-1)*step+components*bytes>
@@ -56,9 +58,10 @@ const CombatEnvironment017=(()=>{
    for(let i=0;i<a.count;i++)for(let j=0;j<components;j++){
     const address=binStart+offset+i*step+j*bytes;
     const n=a.componentType===5126?dv.getFloat32(address,true):
-     a.componentType===5125?dv.getUint32(address,true):dv.getUint16(address,true);
+     a.componentType===5125?dv.getUint32(address,true):
+     a.componentType===5123?dv.getUint16(address,true):dv.getUint8(address);
     if(!Number.isFinite(n))throw Error("ENV021 nonfinite mesh");
-    out.push(n);
+    out.push(a.normalized&&allowNormalized?n/(a.componentType===5121?255:65535):n);
    }
    return out;
   }
@@ -68,6 +71,8 @@ const CombatEnvironment017=(()=>{
   const uv=prim.attributes.TEXCOORD_0===undefined?null:
     read(prim.attributes.TEXCOORD_0,"VEC2",[5126]);
   const indices=read(prim.indices,"SCALAR",[5123,5125]);
+  const vertexColors=prim.attributes.COLOR_0===undefined?null:
+   read(prim.attributes.COLOR_0,"VEC4",[5121,5123,5126],true);
   const count=pos.length/3;
   if(indices.length%3||indices.some(i=>i>=count)||count>5000)
    throw Error("ENV021 invalid indices");
@@ -80,7 +85,7 @@ const CombatEnvironment017=(()=>{
    imageBytes=new Uint8Array(buffer,start,view.byteLength);
    imageMime=image.mimeType;
   }
-  return {positions:pos,normals,uvs:uv,indices,imageBytes,imageMime,vertices:count,
+  return {positions:pos,normals,uvs:uv,indices,vertexColors,imageBytes,imageMime,vertices:count,
    triangles:indices.length/3};
  }
  function build(B,scene,own){
@@ -128,7 +133,8 @@ const CombatEnvironment017=(()=>{
       const z=(source[j*3+2]-cZ)*def.scale;
       pos.push(center[0]+co*x-si*z,center[1]+y,center[2]+si*x+co*z);
       // Preserve real external mesh facets rather than paint broad fake walls.
-      colors.push(1,1,1,1);
+      if(model.vertexColors)colors.push(...model.vertexColors.slice(j*4,j*4+4));
+      else colors.push(1,1,1,1);
      }
      const mesh=new B.Mesh("env021_external_"+def.source+"_"+i,scene);
      created.push(mesh);
@@ -141,11 +147,11 @@ const CombatEnvironment017=(()=>{
      mesh.useVertexColors=true;
      const mat=new B.StandardMaterial("env021_external_mat_"+def.source+"_"+i,scene);
      created.push(mat);
-     mat.diffuseColor=new B.Color3(.79,.81,.81);
-     mat.emissiveColor=new B.Color3(.12,.13,.14);
+     mat.diffuseColor=new B.Color3(.94,.95,.94);
+     mat.emissiveColor=new B.Color3(.20,.21,.21);
      mat.specularColor=new B.Color3(0,0,0);
      mat.backFaceCulling=false;mat.useVertexColors=true;mat.fogEnabled=false;
-     if(model.imageBytes&&B.Texture?.CreateFromBase64String){
+     if(def.source==="PolyCliff01"&&model.imageBytes&&B.Texture?.CreateFromBase64String){
       let binary="";
       for(let k=0;k<model.imageBytes.length;k+=8192)
        binary+=String.fromCharCode(...model.imageBytes.subarray(k,k+8192));

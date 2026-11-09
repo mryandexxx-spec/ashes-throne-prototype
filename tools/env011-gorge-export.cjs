@@ -20,12 +20,13 @@ function createEnv011Glb(){
  };
  // Hand-positioned river bends, depths and structural lines: no periodic ridge rings.
  const CENTER=[[14,0],[25,1],[40,4],[60,-2],[82,-7],[108,1],[142,8]];
- const RAVINE=[[14,-18],[24,-22.5],[38,-31.5],[60,-45],[84,-60],[108,-78],[142,-102]];
+ const RAVINE=[[14,-11],[24,-17.2],[38,-25.5],[60,-39],[84,-54],[108,-72],[142,-95]];
  const WIDE=[[14,5.4],[24,6.8],[40,8.6],[60,11.5],[84,15.2],[108,19],[142,23]];
  // Hand-carved cross-section: an alluvial chute, talus fans, benches and irregular bedrock shoulder.
- const SECTION=[[0,0,0],[.065,2.2,.15],[.14,4.8,1.0],[.23,7.2,3.1],
-  [.32,10.4,6.6],[.39,13.3,10],[.45,16.8,14],[.52,22.5,18],
-  [.58,28,22],[.66,35,26],[.75,45,31],[.86,57,34],[1,68,32]];
+ // Wide scene-scale walls are excluded: near cross-sections frame, never roof over, the platform.
+ const SECTION=[[0,0,0],[.065,1.6,.12],[.14,3.5,.65],[.23,5.7,2],
+  [.32,7.9,4.6],[.39,9.8,7],[.45,11.3,9],[.52,13,10.5],
+  [.58,14.7,12],[.66,16.5,14],[.75,19,15],[.86,21,15.5],[1,23,14]];
  const BANKS=[
  {name:"front_buttress",side:-1,palette:[.50,.454,.392],heightScale:.93,
   crown:[[14,-1],[27,5],[43,-4],[65,7],[88,-2],[110,6],[142,-4]],

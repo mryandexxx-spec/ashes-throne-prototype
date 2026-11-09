@@ -45,4 +45,6 @@ jobs:
           git add docs/art/env024/normal.png docs/art/env024/far.png
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'ENV024: preserve real Chromium 844x390 full-HUD art review images'
+          git fetch origin feat/combat-env-024-matched-coastal-rock-terrain
+          git rebase origin/feat/combat-env-024-matched-coastal-rock-terrain
           git push origin HEAD:feat/combat-env-024-matched-coastal-rock-terrain

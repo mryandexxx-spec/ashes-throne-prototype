@@ -33,6 +33,18 @@ jobs:
           sed -i 's/buffer.byteLength>2000000/buffer.byteLength>18000000/' combat-environment-017.js
           sed -i 's/type==="SCALAR"?140000:100000/type==="SCALAR"?350000:350000/' combat-environment-017.js
           sed -i 's/count>100000)/count>350000)/' combat-environment-017.js
+          node - <<'JS'
+          const fs=require('fs');
+          const env=require('./combat-environment-017.js');
+          const b=fs.readFileSync('assets/env023/ContinuousGorgeMobile.glb');
+          try{
+           const parsed=env.parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength));
+           console.log('CONTROL_PARSE_OK',parsed.vertices,parsed.triangles);
+          }catch(error){
+           console.error('CONTROL_PARSE_FAILURE',error.stack);
+           process.exitCode=1;
+          }
+          JS
       - name: Full original geometry in real Chromium Babylon 844x390
         shell: bash
         run: |

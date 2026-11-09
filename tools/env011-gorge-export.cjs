@@ -99,7 +99,7 @@ function createEnv011Glb(){
   for(let j=0;j<=STEPS;j++){
    const d=dAt(j),inner=bankSample(B,0,d),outer=bankSample(B,1,d);
    for(const [u,s] of [[0,inner],[1,outer]]){
-    positions.push(...world(s.x,d,-183));
+    positions.push(...world(s.x,d,floorY(d)-5));
     colors.push(...bankColor(B,s,u,d));
     uvs.push(s.x*.061,d*.063-2);
    }

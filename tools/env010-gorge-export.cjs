@@ -23,14 +23,14 @@ function createEnv010Glb(){
  const RAVINE=[[26,-114],[43,-123],[68,-126],[86,-132],[108,-138],[131,-149],[153,-151],[181,-157]];
  const WIDE=[[26,8],[42,10],[70,13],[91,16],[117,19],[146,21],[181,24]];
  const SECTION=[[0,0,0],[.065,7,2],[.14,15,11],[.23,23,29],
-  [.32,27,43],[.39,29,62],[.45,33,80],[.52,38,98],
-  [.58,45,83],[.66,60,72],[.75,80,62],[.86,111,45],[1,154,3]];
+  [.32,27,43],[.39,29,60],[.45,33,77],[.52,38,91],
+  [.58,45,92],[.66,60,90],[.75,80,70],[.86,111,45],[1,154,3]];
  const BANKS=[
- {name:"front_buttress",side:-1,palette:[.49,.465,.420],heightScale:.79,
+ {name:"front_buttress",side:-1,palette:[.49,.465,.420],heightScale:.72,
   crown:[[26,-9],[39,-7],[58,20],[78,-16],[93,6],[111,24],[131,-12],[151,19],[181,-18]],
   breaks:[[42,2.3,6],[82,2.6,9],[119,3.4,8],[157,3,10]],
   fans:[[50,10,7],[104,12,9],[155,10,6]]},
- {name:"middle_terraces",side:1,palette:[.52,.49,.44],heightScale:.87,
+ {name:"middle_terraces",side:1,palette:[.52,.49,.44],heightScale:.81,
   crown:[[26,5],[45,-12],[62,22],[80,9],[103,-20],[122,23],[145,4],[161,-16],[181,10]],
   breaks:[[54,2.7,7],[97,3.3,11],[137,2.6,7],[171,3.5,9]],
   fans:[[67,9,7],[117,12,8],[171,8,7]]}
@@ -49,7 +49,7 @@ function createEnv010Glb(){
  }
  function bankSample(B,u,d){
   const [out,height]=section(u);
-  const tectonic=interp(B.crown,d)*(smooth(.21,.53,u)-smooth(.78,1,u)*.46);
+  const tectonic=interp(B.crown,d)*.58*(smooth(.21,.53,u)-smooth(.78,1,u)*.46);
   let fracture=0,fan=0;
   for(const [at,width,depth] of B.breaks)
    fracture+=depth*Math.exp(-Math.pow((d-at)/width,2))*
@@ -82,8 +82,8 @@ function createEnv010Glb(){
     const u=i/CROSS,s=bankSample(B,u,d);
     positions.push(...world(s.x,d,s.y));
     // Rocky wall faces receive altitude-based UV; terraces retain ground UV.
-    const steep=smooth(.23,.44,u)-smooth(.57,.82,u);
-    uvs.push(s.x*.047+d*.012,(s.y+150)*.059*steep+d*.052*(1-steep));
+    // Continuous cross-sectional UV; no mixed projection axes or barcode streaks.
+    uvs.push(d*.050+u*.10,u*4.5+s.y*.008);
     colors.push(...bankColor(B,s,u,d));
    }
   }
@@ -144,7 +144,7 @@ function createEnv010Glb(){
    for(let i=0;i<=FAR_COLS;i++){
     const x=-115+230*i/FAR_COLS,crest=interp(FAR,x);
     const fracture=(2.7*Math.sin(x*.19+j*.47)+1.8*Math.sin(x*.37-j*.31))*(1-j/FAR_ROWS);
-    const y=crest-2.25*j+fracture;
+    const y=crest+39-2.25*j+fracture;
     positions.push(...world(x,depth,y));
     uvs.push(x*.025,depth*.028+y*.004);
     const haze=.30+j/FAR_ROWS*.08,grey=[.64,.675,.69],sky=[.73,.765,.77];

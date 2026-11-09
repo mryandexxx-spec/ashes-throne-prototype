@@ -11,7 +11,8 @@
  * combat fixtures or changes to production play flow. Same-origin local server.
  * This checks full game canvas plus HUD; it is not an iPhone Safari test. */
 const frame=document.querySelector("#game");
-const mode=new URLSearchParams(location.search).get("mode")==="env010"?"env010":"env014";
+const candidate=new URLSearchParams(location.search).get("mode");
+const mode=["env010","env014","env015"].includes(candidate)?candidate:"env015";
 frame.src="../../index.html?arena="+mode;
 let attempts=0,entered=false,launched=false;
 const watchdog=setInterval(()=>{
@@ -37,7 +38,7 @@ const watchdog=setInterval(()=>{
   const battle=doc.querySelector("#battle.active");
   if(battle&&canvas&&canvas.width>0&&canvas.height>0&&controls&&
      (mode==="env010"?doc.documentElement.dataset.env010Rock==="ready":
-     doc.documentElement.dataset.env014Rock==="ready")){
+     doc.documentElement.dataset[mode==="env014"?"env014Rock":"env015Rock"]==="ready")){
    clearInterval(watchdog);
    setTimeout(()=>{
     document.documentElement.dataset.visualStatus="ready";

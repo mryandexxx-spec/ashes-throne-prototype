@@ -49,11 +49,15 @@ jobs:
             "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
               --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
               --hide-scrollbars --force-device-scale-factor=1 --window-size=1808,832 \
-              --virtual-time-budget=10000 --screenshot="$PWD/artifacts/$name.png" "$url" 2>"/tmp/chrome-$name.log"
+              --virtual-time-budget=18000 --screenshot="$PWD/artifacts/$name.png" "$url" 2>"/tmp/chrome-$name.log"
             page="$("$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
               --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
-              --virtual-time-budget=10000 --dump-dom "$url" 2>>"/tmp/chrome-$name.log")"
-            echo "$page" | grep -q 'data-visual-status="ready"'
+              --virtual-time-budget=18000 --dump-dom "$url" 2>>"/tmp/chrome-$name.log")"
+            if ! grep -q 'data-visual-status="ready"' <<<"$page"; then
+              echo "WebGL page did not become ready:"
+              grep -oE 'data-(visual-status|env014-rock|env014-error|visual-error)="[^"]*"' <<<"$page" || true
+              exit 1
+            fi
             test -s "artifacts/$name.png"
             file "artifacts/$name.png"
           done

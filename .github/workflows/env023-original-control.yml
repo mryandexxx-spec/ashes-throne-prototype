@@ -26,6 +26,7 @@ jobs:
             m.visual.vertex_colors=np.tile(np.array([[160,166,169,255]],dtype=np.uint8),(len(m.vertices),1))
             parts.append(m)
           rock=trimesh.util.concatenate(parts)
+          rock.visual=trimesh.visual.ColorVisuals(mesh=rock,vertex_colors=np.tile(np.array([[160,166,169,255]],dtype=np.uint8),(len(rock.vertices),1)))
           print('UNSIMPLIFIED CONTROL',len(rock.faces),len(rock.vertices),flush=True)
           rock.export('assets/env023/ContinuousGorgeMobile.glb',file_type='glb')
           print('BYTES',__import__('os').stat('assets/env023/ContinuousGorgeMobile.glb').st_size,flush=True)

@@ -34,12 +34,20 @@ frame.addEventListener("load",async()=>{
    hotspot.click();
    if(!home.classList.contains("active"))throw Error("Landmark navigated before illumination: "+zone);
    if(home.querySelector(".hq-scene").dataset.hqIlluminated!==zone)throw Error("Wrong object illuminated: "+zone);
-   const light=home.querySelector(".hq-light-reveal");
-   if(!light)throw Error("Painterly light layer missing");
-   const style=win.getComputedStyle(light);
-   if(style.backgroundSize!=="cover"||!style.backgroundImage.includes("hq-hall-painting"))throw Error("Light not aligned to artwork");
-   if((style.maskImage||style.webkitMaskImage)==="none")throw Error("Light not feather-masked");
-   await new Promise(resolve=>setTimeout(resolve,680));
+   const scene=home.querySelector(".hq-scene");
+   const fx=scene.querySelector("svg.hq-selection-fx");
+   const group=fx?.querySelector(".hq-fx-"+zone);
+   if(!fx||!group)throw Error("Missing object-specific light geometry: "+zone);
+   if(fx.getAttribute("viewBox")!=="0 0 2048 688"||fx.getAttribute("preserveAspectRatio")!=="xMidYMid slice")
+    throw Error("Light geometry is not image-aligned");
+   const sceneStyle=win.getComputedStyle(scene);
+   if(!sceneStyle.backgroundPosition.split(",").every(v=>v.trim()==="50% 50%"))
+    throw Error("Artwork background is not aligned with SVG crop");
+   if(win.getComputedStyle(group).animationName!=="hq-material-light")
+    throw Error("Object-specific lighting animation is missing: "+zone);
+   if(win.getComputedStyle(fx).pointerEvents!=="none")
+    throw Error("Light blocks touch and swipe");
+   await new Promise(resolve=>setTimeout(resolve,600));
    if(!doc.getElementById(target).classList.contains("active"))throw Error("Landmark navigation after glow broken: "+zone);
    if(home.querySelector(".hq-scene").dataset.hqIlluminated)throw Error("Light state not reset: "+zone);
    doc.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s===home));
@@ -52,6 +60,24 @@ frame.addEventListener("load",async()=>{
   const bar=home.querySelector(".hq-bottom").getBoundingClientRect();
   if(bar.bottom>doc.documentElement.clientHeight+3)throw Error("Bottom navigation clipped");
   document.body.dataset.hqVisibleStations=String(visible.length);
+  // Screenshot-only art review mode. Not part of the functional assertion.
+  // Freeze the peak of the actual CSS effect so screenshots can be compared
+  // with a clean view, without relying on a frame-timing lottery.
+  if(new URLSearchParams(location.search).get("fx-preview")==="campaign"){
+   const scene=home.querySelector(".hq-scene");
+   const group=scene.querySelector(".hq-fx-campaign");
+   scene.dataset.hqIlluminated="campaign";
+   group.style.animation="none";group.style.opacity=".94";
+   group.querySelectorAll(".hq-fx-sheen,.hq-fx-specular,.hq-fx-glint,.hq-fx-engraving").forEach(el=>{
+    el.style.animation="none";
+    el.style.opacity=el.classList.contains("hq-fx-glint")?".94":".8";
+    if(el.classList.contains("hq-fx-glint")){el.style.strokeDasharray="none";el.style.strokeDashoffset="0";}
+   });
+   const hotspot=home.querySelector(".hq-station-campaign");
+   hotspot.classList.add("is-activating");
+   pan.style.scrollSnapType="none";
+   pan.scrollLeft=0; // compare exactly the same crop in plain and FX screenshots
+  }
   document.body.dataset.hqStatus="pass";
  }catch(e){error(e&&e.message||e)}
 });

@@ -36,6 +36,9 @@ jobs:
             }
             timeout 65s "$chrome" "${args[@]}" --screenshot="$PWD/artifacts/hq-$screen.png" "$url" >/dev/null 2>>"/tmp/hq-$screen.log"
             test -s "artifacts/hq-$screen.png"
+            # Also capture the peak of the local campaign light for visual review.
+            timeout 65s "$chrome" "${args[@]}" --screenshot="$PWD/artifacts/hq-$screen-campaign-fx.png" "$url?fx-preview=campaign" >/dev/null 2>>"/tmp/hq-$screen.log"
+            test -s "artifacts/hq-$screen-campaign-fx.png"
           done
       - name: Upload screenshots and browser diagnostics
         if: always()

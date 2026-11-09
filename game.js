@@ -895,38 +895,38 @@ function showScreen(id){
   renderHeadquarters();
  }
 }
-// HQ-UI-005: trace the artwork silhouette BEFORE leaving the home scene.
+// HQ-UI-007: activate a short, object-attached lighting cue BEFORE navigation.
 // Taps on painted hotspots animate; other navigation stays immediate.
-let hqContourTimer=null;
-let hqContourTarget=null;
-function resetHQContour(){
- if(hqContourTimer!==null)clearTimeout(hqContourTimer);
- hqContourTimer=null;
- if(hqContourTarget)hqContourTarget.classList.remove("is-activating");
- hqContourTarget=null;
+let hqFxTimer=null;
+let hqFxTarget=null;
+function resetHQSelectionFx(){
+ if(hqFxTimer!==null)clearTimeout(hqFxTimer);
+ hqFxTimer=null;
+ if(hqFxTarget)hqFxTarget.classList.remove("is-activating");
+ hqFxTarget=null;
  const scene=document.querySelector?.(".hq-scene");
  if(scene)delete scene.dataset.hqIlluminated;
 }
-function animateHQContour(button){
- if(hqContourTimer!==null)return; // ignore double taps during the transition
+function animateHQSelectionFx(button){
+ if(hqFxTimer!==null)return; // ignore double taps during the transition
  const zone=["heroes","campaign","operations","challenges"].find(name=>button.classList.contains("hq-station-"+name));
  const scene=document.querySelector("#home .hq-scene");
  if(!zone||!scene){showScreen(button.dataset.screen);return;}
  const reduced=typeof window.matchMedia==="function"&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
  if(reduced){showScreen(button.dataset.screen);return;}
- hqContourTarget=button;
+ hqFxTarget=button;
  scene.dataset.hqIlluminated=zone;
  button.classList.add("is-activating");
- hqContourTimer=setTimeout(()=>{
+ hqFxTimer=setTimeout(()=>{
   const target=button.dataset.screen;
-  resetHQContour();
+  resetHQSelectionFx();
   // Another navigation may have taken place during the animation.
   if(document.querySelector("#home")?.classList.contains("active"))showScreen(target);
- },590);
+ },500);
 }
 document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click",()=>{
- if(b.matches?.("#home .hq-station")){animateHQContour(b);return;}
- resetHQContour();
+ if(b.matches?.("#home .hq-station")){animateHQSelectionFx(b);return;}
+ resetHQSelectionFx();
  if(b.dataset.screen==="battle")openSquad("home");
  else showScreen(b.dataset.screen);
 }));

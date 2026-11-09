@@ -1,0 +1,67 @@
+name: ENV023 original full geometry control WebGL
+on:
+  pull_request:
+    paths: ['.github/workflows/env023-original-control.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  source-control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Decode unchanged original published geometry (no simplification)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm exec --yes --package=@gltf-transform/cli -- gltf-transform dequantize assets/env023/ContinuousGorgeSource.glb /tmp/env023-original-float.glb
+          python3 -m pip install --disable-pip-version-check numpy trimesh Pillow
+          python3 - <<'PY'
+          import trimesh,numpy as np
+          s=trimesh.load('/tmp/env023-original-float.glb',force='scene',process=False)
+          parts=[]
+          for m in s.dump(concatenate=False):
+            m.visual.vertex_colors=np.tile(np.array([[160,166,169,255]],dtype=np.uint8),(len(m.vertices),1))
+            parts.append(m)
+          rock=trimesh.util.concatenate(parts)
+          print('UNSIMPLIFIED CONTROL',len(rock.faces),len(rock.vertices),flush=True)
+          rock.export('assets/env023/ContinuousGorgeMobile.glb',file_type='glb')
+          print('BYTES',__import__('os').stat('assets/env023/ContinuousGorgeMobile.glb').st_size,flush=True)
+          PY
+          sed -i 's/buffer.byteLength>2000000/buffer.byteLength>18000000/' combat-environment-017.js
+          sed -i 's/type==="SCALAR"?140000:100000/type==="SCALAR"?350000:350000/' combat-environment-017.js
+          sed -i 's/count>100000)/count>350000)/' combat-environment-017.js
+      - name: Full original geometry in real Chromium Babylon 844x390
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)"
+          mkdir -p artifacts
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/env023-server.log 2>&1 &
+          trap 'kill $(jobs -p) || true' EXIT
+          sleep 2
+          flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390)
+          for view in normal far; do
+            radius=12
+            if [ "$view" = far ]; then radius=19; fi
+            url="http://127.0.0.1:8765/tests/fixtures/env017-full-game.html?radius=$radius"
+            timeout 85s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --screenshot="$PWD/artifacts/$view.png" "$url" 2>"artifacts/$view.log" || true
+            page="$(timeout 85s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --dump-dom "$url" 2>>"artifacts/$view.log")"
+            echo "$page" >"artifacts/$view.html"
+            echo "$page" | grep -o 'data-visual-status="[^"]*"' || true
+            echo "$page" | grep -o 'data-error="[^"]*"' || true
+            test "$(stat -c %s artifacts/$view.png)" -gt 65000
+            echo "ART_IMAGE_BEGIN:$view"
+            base64 -w0 "artifacts/$view.png"
+            echo
+            echo "ART_IMAGE_END:$view"
+          done
+      - name: Preserve original geometry control screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env023-original-unsimplified-control
+          path: artifacts/
+          retention-days: 14

@@ -64,7 +64,8 @@ function createEnv011Glb(){
     (smooth(.23,.4,u)-smooth(.69,.93,u));
   const shear=1.15*Math.sin(d*.115+B.side*1.6)*smooth(.28,.63,u);
   const x=centerX(d)+B.side*(span(d)+out+shear+.8*fracture*smooth(.30,.55,u));
-  const y=floorY(d)+height*B.heightScale+tectonic-fracture+fan+rib+bedding;
+  const lead=smooth(21,58,d);
+  const y=floorY(d)+height*B.heightScale*(.08+.92*lead)+tectonic*lead-fracture*.6+fan*.4+rib*.4+bedding*.5;
   return {x,y,d,fracture,fan,height};
  }
  function bankColor(B,s,u,d){

@@ -101,7 +101,7 @@ const scripts=[...index.matchAll(/<script src="([^"]+)"/g)].map(match=>match[1])
 assert.ok(scripts.indexOf("combat-core.js")<scripts.indexOf("auto-decision.js"));
 assert.ok(scripts.indexOf("auto-decision.js")<scripts.indexOf("game.js"));
 assert.match(index,/id="buildVersion"[^>]*>[^<]*v0[.]3[.]83 · OPSHELP/);
-assert.equal(JSON.parse(read("package.json")).version,"0.3.83");
+assert.equal(JSON.parse(read("package.json")).version,"0.3.84");
 const game=read("game.js");
 assert.match(game,/const plan=AutoDecision\.chooseAction\(state\)/);
 assert.match(game,/CombatCore\.performAutoAction\(state,plan\)/);

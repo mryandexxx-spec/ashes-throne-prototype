@@ -1,4 +1,4 @@
-name: ENV014B open gorge GLB WebGL review
+name: ENV014C attached gorge GLB WebGL review
 on:
   pull_request:
     paths:
@@ -65,7 +65,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: env014b-env010-babylon-webgl-comparison
+          name: env014c-env010-babylon-webgl-comparison
           path: artifacts/*.png
           if-no-files-found: warn
 
@@ -115,7 +115,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: env014b-env010-real-game-hud
+          name: env014c-env010-real-game-hud
           path: artifacts/*-full-hud-*.png
           if-no-files-found: warn
 
@@ -125,17 +125,17 @@ jobs:
         run: |
           set -euo pipefail
           # Never overwrite a preserved baseline/evidence on later CI re-runs.
-          if test -f docs/evidence/env014b/env014-full-hud-844x390.png; then
+          if test -f docs/evidence/env014c/env014-full-hud-844x390.png; then
             echo "Existing authoritative ENV014 WebGL evidence retained."
             exit 0
           fi
-          mkdir -p docs/evidence/env014b
+          mkdir -p docs/evidence/env014c
           cp artifacts/env010-default.png artifacts/env010-far.png \
              artifacts/env014-default.png artifacts/env014-far.png \
              artifacts/env010-full-hud-844x390.png \
-             artifacts/env014-full-hud-844x390.png docs/evidence/env014b/
+             artifacts/env014-full-hud-844x390.png docs/evidence/env014c/
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/env014/gorge-sculpt-v1.glb docs/evidence/env014b/*.png
-          git commit -m 'test(env014b): actual Babylon WebGL baseline and authored GLB evidence'
+          git add assets/env014/gorge-sculpt-v1.glb docs/evidence/env014c/*.png
+          git commit -m 'test(env014c): actual Babylon WebGL baseline and authored GLB evidence'
           git push origin "HEAD:refs/heads/${{ github.head_ref }}"

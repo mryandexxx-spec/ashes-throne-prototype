@@ -4,24 +4,39 @@ const fs=require("node:fs");
 const env=require("../combat-environment-017.js");
 const visual=fs.readFileSync("combat-visual-007.js","utf8");
 const html=fs.readFileSync("index.html","utf8");
-test("ENV017 massing is authored in camera coordinates and has an open right gap",()=>{
- assert.equal(env.MASS.length,3);
- assert.ok(env.MASS[1].lines[0][0][0]>0);
- assert.ok(env.MASS[1].lines[0][0][1]>40);
- assert.ok(env.MASS[0].lines[0].every(v=>v[2]<=0),"no overhead left wing");
- assert.ok(env.MASS[1].lines[0].every(v=>v[1]>=49));
+const fixture=fs.readFileSync("tests/fixtures/env017-full-game.html","utf8");
+test("ENV023 really contains one original two-bank complete CC0 gorge",()=>{
+ assert.deepEqual([...env.SOURCES],["ContinuousGorgeMobile"]);
+ assert.equal(env.PLACEMENTS.length,1);
+ const raw=fs.readFileSync("assets/env023/ContinuousGorgeMobile.glb");
+ assert.ok(raw.byteLength>=1200000&&raw.byteLength<2000000);
+ const bytes=raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength);
+ const geo=env.parse(bytes);
+ assert.ok(geo.triangles>=20000&&geo.triangles<=35000);
+ assert.ok(geo.vertices>=30000&&geo.vertices<100000);
+ assert.equal(geo.vertexColors?.length,geo.vertices*4);
+ assert.ok(geo.indices.every(i=>i>=0&&i<geo.vertices));
+ assert.ok(geo.positions.every(Number.isFinite));
 });
-test("ENV017 selection retains the old ENV010 fallback and game HUD",()=>{
+test("ENV023 rejects wrong GLB and preserves original scene on failure",()=>{
+ assert.throws(()=>env.parse(new ArrayBuffer(0)),/GLB header invalid/);
+ assert.throws(()=>env.parse(new ArrayBuffer(80)),/GLB header invalid/);
+ const src=fs.readFileSync("combat-environment-017.js","utf8");
+ assert.match(src,/Promise\.all\(SOURCES\.map/);
+ assert.match(src,/mark\(disposed\(\)\?"disposed":"fallback"\)/);
+ assert.match(src,/for\(const name of \["living_ledge","ravine"/);
+ assert.match(src,/dataset\.env023CompleteGorge="ready"/);
+ assert.match(src,/placeSource\(source\[j\*3\]/);
+ assert.doesNotMatch(src,/requestAnimationFrame|runRenderLoop|new B\.Engine/);
+});
+test("ENV023 retains full HUD, fixed perspective and legacy ENV010 fallback",()=>{
  assert.match(visual,/CombatEnvironment017\.build\(B,scene,owned\)/);
  assert.match(visual,/else if\(typeof CombatEnvironment010/);
  assert.match(html,/combat-environment-017\.js/);
  assert.match(html,/v0\.3\.84 · OPSHELP.*ENV017-MASSING/);
-});
-test("ENV017 remains non-pickable and inspectable through real Babylon matrix",()=>{
  const src=fs.readFileSync("combat-environment-017.js","utf8");
- assert.match(src,/mesh\.isPickable=false/);
  assert.match(src,/scene\.getTransformMatrix\(\)/);
  assert.match(src,/B\.Vector3\.Project/);
- assert.match(src,/dataset\.env017Massing="ready"/);
- assert.doesNotMatch(src,/requestAnimationFrame|runRenderLoop|new B\.Engine/);
+ assert.match(fixture,/env023Assets!=="ready"/);
+ assert.match(fixture,/env023_external_/);
 });

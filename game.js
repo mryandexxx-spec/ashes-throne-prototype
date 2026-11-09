@@ -904,7 +904,7 @@ function resetHQContour(){
  hqContourTimer=null;
  if(hqContourTarget)hqContourTarget.classList.remove("is-activating");
  hqContourTarget=null;
- const scene=document.querySelector(".hq-scene");
+ const scene=document.querySelector?.(".hq-scene");
  if(scene)delete scene.dataset.hqIlluminated;
 }
 function animateHQContour(button){
@@ -925,7 +925,7 @@ function animateHQContour(button){
  },590);
 }
 document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click",()=>{
- if(b.matches("#home .hq-station")){animateHQContour(b);return;}
+ if(b.matches?.("#home .hq-station")){animateHQContour(b);return;}
  resetHQContour();
  if(b.dataset.screen==="battle")openSquad("home");
  else showScreen(b.dataset.screen);

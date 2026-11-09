@@ -19,7 +19,8 @@ jobs:
               scene=trimesh.load(src,force='scene',process=False)
               print('FILE',src,'geometry',len(scene.geometry),'transforms',len(scene.graph.nodes_geometry))
               allp=[]
-              for name,mesh in scene.dump(concatenate=False)[0:]:
+              for mesh in scene.dump(concatenate=False):
+                  name=mesh.metadata.get('name','unnamed')
                   print('  mesh',name,'verts',len(mesh.vertices),'faces',len(mesh.faces),'bounds',mesh.bounds.tolist(),'material',type(getattr(mesh.visual,'material',None)).__name__)
                   v=np.asarray(mesh.vertices)
                   allp.append(v)

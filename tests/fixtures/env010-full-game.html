@@ -5,12 +5,14 @@
 <style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden;background:#101b24}</style>
 </head>
 <body>
-<iframe id="game" src="../../index.html" title="Full battle HUD"></iframe>
+<iframe id="game" title="Full battle HUD"></iframe>
 <script>
 /* Visual QA only: click the REAL game's battle entry. No game.js hooks,
  * combat fixtures or changes to production play flow. Same-origin local server.
  * This checks full game canvas plus HUD; it is not an iPhone Safari test. */
 const frame=document.querySelector("#game");
+const mode=new URLSearchParams(location.search).get("mode")==="env010"?"env010":"env014";
+frame.src="../../index.html?arena="+mode;
 let attempts=0,entered=false,launched=false;
 const watchdog=setInterval(()=>{
  try {
@@ -34,7 +36,8 @@ const watchdog=setInterval(()=>{
   const controls=doc.querySelector("#arenaIndicators");
   const battle=doc.querySelector("#battle.active");
   if(battle&&canvas&&canvas.width>0&&canvas.height>0&&controls&&
-     doc.documentElement.dataset.env010Rock==="ready"){
+     (mode==="env010"?doc.documentElement.dataset.env010Rock==="ready":
+     doc.documentElement.dataset.env014Rock==="ready")){
    clearInterval(watchdog);
    setTimeout(()=>{
     document.documentElement.dataset.visualStatus="ready";

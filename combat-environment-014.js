@@ -35,7 +35,7 @@ const CombatEnvironment014=(()=>{
    // Reuse the two already-loaded CC0 maps on near + middle sculpted rock.
    // No extra texture, material
    // fetch, or GPU duplication; leave the pale distant horizon untextured.
-   for(const name of ["front_buttress","middle_terraces","pale_horizon"]){
+   for(const name of ["front_buttress"]){
     const mat=Array.isArray(scene.materials)?
      scene.materials.find(m=>m.name==="env014_glb_mat_"+name):null;
     if(mat){mat.diffuseTexture=photoRock.albedo;mat.bumpTexture=photoRock.normal;}
@@ -276,13 +276,13 @@ const CombatEnvironment014=(()=>{
       const m=new B.StandardMaterial("env014_glb_mat_"+asset.name,scene);
       created.push(m);
       const pale=asset.name==="pale_horizon";
-      m.diffuseColor=pale?new B.Color3(.66,.70,.75):new B.Color3(1,1,1);
+      m.diffuseColor=pale?new B.Color3(.88,.93,.98):new B.Color3(1,1,1);
       m.specularColor=new B.Color3(.012,.012,.012);
       // Lift the shadow floor without washing out the real authored facets.
-      m.emissiveColor=pale?new B.Color3(.065,.077,.089):
-       asset.name==="front_buttress"?new B.Color3(.16,.168,.17):
-       new B.Color3(.145,.16,.17);
-      m.useVertexColors=true;m.backFaceCulling=false;m.fogEnabled=false;
+      m.emissiveColor=pale?new B.Color3(.13,.15,.16):
+       asset.name==="front_buttress"?new B.Color3(.18,.19,.20):
+       new B.Color3(.21,.23,.24);
+      m.useVertexColors=true;m.backFaceCulling=false;m.fogEnabled=true;
       mesh.material=m;
      }
      if(isDisposed())throw Error("ENV014 scene disposed during import");
@@ -296,7 +296,11 @@ const CombatEnvironment014=(()=>{
      // ENV009's full-viewport clearColor, regardless of vertex colours.
      // The imported 3D canyon stays in front of the inherited sky colour.
      for(const m of meshes)m.dispose();
-     if(typeof B.Color4==="function")scene.clearColor=new B.Color4(.535,.615,.655,1);
+     if(typeof B.Color4==="function")scene.clearColor=new B.Color4(.585,.665,.705,1);
+     if(B.Scene?.FOGMODE_EXP2!==undefined){
+      scene.fogMode=B.Scene.FOGMODE_EXP2;scene.fogDensity=.006;
+      scene.fogColor=new B.Color3(.605,.68,.715);
+     }
      const skyMat=Array.isArray(scene.materials)?
        scene.materials.find(m=>m.name==="env014_mat_atmosphere"):null;
      skyMat?.dispose?.();

@@ -5,6 +5,9 @@ on:
       - 'combat-environment-009.js'
       - 'combat-visual-007.js'
       - 'combat-environment-010.js'
+      - 'combat-environment-011.js'
+      - 'assets/env011/**'
+      - 'tools/env011-gorge-export.cjs'
       - 'assets/env010/**'
       - 'tests/fixtures/env009-webgl-preview.html'
       - 'tests/fixtures/env010-full-game.html'
@@ -26,7 +29,7 @@ jobs:
           mkdir -p artifacts
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/env009-http.log 2>&1 &
           sleep 2
-          for case in 'cv008 default' 'env009 default' 'env010 default' 'env010 far'; do
+          for case in 'cv008 default' 'env009 default' 'env010 default' 'env010 far' 'env011 default' 'env011 far'; do
             read -r mode yaw <<<"$case"
             name="$mode-$yaw"
             query="mode=$mode&yaw=$yaw"

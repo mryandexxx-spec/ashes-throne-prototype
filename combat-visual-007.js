@@ -82,6 +82,11 @@ const CombatVisual007=(()=>{
   try{
    if(useEnv009){
     CombatEnvironment009.build(B,scene,owned);
+    // ENV011 opens only the rear sightline before ENV010 photo skin sampling.
+    if(typeof CombatEnvironment011!=="undefined"){
+     try{CombatEnvironment011.openRearExit(B,scene);}
+     catch(error){console.warn("ENV011 rear lip unavailable",error);}
+    }
     // ENV010: fixed-view atmosphere, visually additive to the stable 3D ledge.
     if(typeof CombatEnvironment010!=="undefined"&&CombatEnvironment010.supported(B)){
      CombatEnvironment010.build(B,scene,owned);

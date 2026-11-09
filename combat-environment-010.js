@@ -255,10 +255,18 @@ const CombatEnvironment010=(()=>{
     if(triangles>16000||triangles<5000)throw Error("ENV010 triangle budget");
     return geometry;
    };
-   fetch(ASSET_ROOT+"gorge-strata-v1.glb",{credentials:"same-origin"}).then(response=>{
+   // Prefer ENV011 with data validation; an invalid asset falls back to approved v15.
+   const fallback=()=>fetch(ASSET_ROOT+"gorge-strata-v1.glb",{credentials:"same-origin"}).then(response=>{
     if(!response.ok)throw Error("ENV010 asset HTTP "+response.status);
     return response.arrayBuffer();
-   }).then(buffer=>{
+   });
+   const preferred=typeof CombatEnvironment011!=="undefined"?
+    new URL("../env011/open-gorge-v1.glb",ASSET_ROOT).href:null;
+   const request=preferred?fetch(preferred,{credentials:"same-origin"}).then(response=>{
+    if(!response.ok)throw Error("ENV011 asset HTTP "+response.status);
+    return response.arrayBuffer();
+   }).then(buffer=>{read(buffer);return buffer;}).catch(fallback):fallback();
+   request.then(buffer=>{
     const geometry=read(buffer);
     if(isDisposed())return;
     const created=[];

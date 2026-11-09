@@ -44,7 +44,15 @@ jobs:
             if [ "$view" = far ]; then radius=19; fi
             url="http://127.0.0.1:8765/tests/fixtures/env017-full-game.html?radius=$radius"
             flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 --virtual-time-budget=13000)
-            timeout 65s "$chrome" "${flags[@]}" --screenshot="$PWD/artifacts/env017-$view-hud-844x390.png" "$url" 2>"/tmp/env017-$view.log"
+            # A DOM marker can pass in another process even if screenshot captured
+            # before the Babylon canvas drew. Reject tiny/blank PNGs and retry.
+            for attempt in 1 2 3; do
+              timeout 65s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --screenshot="$PWD/artifacts/env017-$view-hud-844x390.png" "$url" 2>"/tmp/env017-$view.log"
+              bytes="$(stat -c %s "artifacts/env017-$view-hud-844x390.png")"
+              echo "ENV017 $view screenshot attempt $attempt: $bytes bytes"
+              if [ "$bytes" -ge 65000 ]; then break; fi
+            done
+            test "$(stat -c %s "artifacts/env017-$view-hud-844x390.png")" -ge 65000
             page="$(timeout 65s "$chrome" "${flags[@]}" --dump-dom "$url" 2>>"/tmp/env017-$view.log")"
             printf '%s\n' "$page" > "artifacts/env017-$view-dom.html"
             echo "$page" | grep -q 'data-visual-status="ready"'

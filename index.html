@@ -60,12 +60,14 @@
             </defs>
             <!-- Local highlights follow real painted surfaces; no outline or full-screen brightening. -->
             <g class="hq-fx-zone hq-fx-heroes">
-              <ellipse cx="327" cy="289" rx="114" ry="151" fill="url(#hq-fx-warm)"/>
-              <ellipse cx="169" cy="290" rx="89" ry="122" fill="url(#hq-fx-cool)"/>
-              <path class="hq-fx-sheen" d="M274 265 Q305 240 338 252 Q357 267 387 273 L382 281 Q348 276 322 263 Q298 255 278 279 Z" fill="url(#hq-fx-sheen)"/>
-              <path class="hq-fx-sheen" d="M118 243 Q155 224 191 246 L196 254 Q158 239 127 258 Z" fill="url(#hq-fx-sheen)"/>
-              <path class="hq-fx-glint" d="M291 263 Q328 241 375 288 M138 243 Q168 227 190 248" fill="none" stroke="#fff0cb" stroke-width="8" stroke-linecap="round"/>
-              <circle class="hq-fx-specular" cx="384" cy="337" r="4" fill="#ffe3ac" opacity=".75"/>
+              <!-- Metal catchlights placed on actual armour (image coordinates, 2048x688).
+                   No curved painted-on shoulder outlines: their projection looked displaced. -->
+              <ellipse cx="310" cy="278" rx="59" ry="39" fill="url(#hq-fx-warm)"/>
+              <ellipse cx="213" cy="246" rx="43" ry="32" fill="url(#hq-fx-cool)"/>
+              <path class="hq-fx-pinpoint" d="M288 286 Q302 294 319 284" fill="none" stroke="#ffe9b8" stroke-width="2.8" stroke-linecap="round"/>
+              <path class="hq-fx-pinpoint" d="M203 235 Q215 228 228 239" fill="none" stroke="#e0e9df" stroke-width="2.5" stroke-linecap="round"/>
+              <ellipse class="hq-fx-specular" cx="343" cy="259" rx="3" ry="2" fill="#fff1ca"/>
+              <ellipse class="hq-fx-specular" cx="227" cy="252" rx="2.5" ry="2" fill="#fff5db"/>
             </g>
             <g class="hq-fx-zone hq-fx-campaign" clip-path="url(#hq-fx-paper-clip)">
               <ellipse cx="812" cy="305" rx="224" ry="119" fill="url(#hq-fx-warm)"/>
@@ -84,12 +86,15 @@
               <circle class="hq-fx-specular" cx="1345" cy="227" r="4" fill="#f7d39b" opacity=".75"/>
             </g>
             <g class="hq-fx-zone hq-fx-challenges">
-              <ellipse cx="1903" cy="234" rx="131" ry="173" fill="url(#hq-fx-cool)"/>
-              <path class="hq-fx-sheen" d="M1830 122 L1836 121 L1839 290 L1835 297 Z" fill="url(#hq-fx-sheen)"/>
-              <path class="hq-fx-sheen" d="M1874 107 L1881 109 L1880 302 L1876 297 Z" fill="url(#hq-fx-sheen)"/>
-              <path class="hq-fx-sheen" d="M1911 120 L1919 122 L1914 286 L1910 292 Z" fill="url(#hq-fx-sheen)"/>
-              <path class="hq-fx-glint" d="M1835 159 L1836 284 M1878 146 L1879 277 M1913 149 L1914 280" fill="none" stroke="#e5ffff" stroke-width="7" stroke-linecap="round"/>
-              <circle class="hq-fx-specular" cx="1938" cy="205" r="4" fill="#fff3d1" opacity=".68"/>
+              <!-- Short broken highlights land on the three painted sword blades;
+                   avoid full-height luminous bars that look like separate objects. -->
+              <ellipse cx="1864" cy="209" rx="89" ry="91" fill="url(#hq-fx-cool)"/>
+              <path class="hq-fx-pinpoint" d="M1837 163 L1834 188" fill="none" stroke="#ebffff" stroke-width="3" stroke-linecap="round"/>
+              <path class="hq-fx-pinpoint" d="M1873 189 L1869 218" fill="none" stroke="#f2ffff" stroke-width="3" stroke-linecap="round"/>
+              <path class="hq-fx-pinpoint" d="M1905 163 L1901 187" fill="none" stroke="#e5f8f8" stroke-width="2.7" stroke-linecap="round"/>
+              <ellipse class="hq-fx-specular" cx="1838" cy="163" rx="2.5" ry="3.5" fill="#f3ffff"/>
+              <ellipse class="hq-fx-specular" cx="1873" cy="190" rx="2.5" ry="3.5" fill="#f3ffff"/>
+              <ellipse class="hq-fx-specular" cx="1904" cy="164" rx="2.5" ry="3.5" fill="#f3ffff"/>
             </g>
           </svg>
           <button type="button" class="hq-station hq-station-heroes" data-screen="collection"

@@ -34,11 +34,11 @@ function mock(){
  const scene={meshes:[],materials:[],lights:[{name:"hemi"},{name:"key"}]};
  return {B,scene};
 }
-test("ENV013 is a bounded solid 3D composition with unique asymmetrical lateral masses",()=>{
+test("ENV013C builds connected asymmetric terrain and continuous distant escarpment",()=>{
  const {B,scene}=mock(),owned=[];
  const r=Env013.build(B,scene,v=>(owned.push(v),v));
- assert.equal(r.meshes,4);assert.ok(r.vertices<8000,"ENV013B vertex budget");
- assert.ok(r.triangles<15000&&r.triangles>4500);
+ assert.equal(r.meshes,4);assert.ok(r.vertices<8500,"ENV013C vertex budget");
+ assert.ok(r.triangles<17500&&r.triangles>12000);
  assert.equal(scene.meshes.length,4);
  assert.ok(scene.meshes.every(m=>m.isPickable===false&&m.checkCollisions===false));
  assert.ok(scene.meshes.every(m=>m.data.positions.length===m.data.normals.length));
@@ -48,13 +48,17 @@ test("ENV013 is a bounded solid 3D composition with unique asymmetrical lateral 
   const p=mesh.data.positions,i=mesh.data.indices;
   assert.ok(p.every(Number.isFinite)&&i.every(n=>n>=0&&n<p.length/3));
   const ys=p.filter((_,j)=>j%3===1);
-  assert.ok(Math.max(...ys)-Math.min(...ys)>35,"cliff should have real vertical relief");
+  assert.ok(Math.max(...ys)-Math.min(...ys)>8,"landscape needs vertical relief");
   const xs=p.filter((_,j)=>j%3===0),zs=p.filter((_,j)=>j%3===2);
   assert.ok(Math.max(...xs)-Math.min(...xs)>3);
   assert.ok(Math.max(...zs)-Math.min(...zs)>3,
    "cliff must have depth (not a flat painting)");
  }
  assert.ok(owned.length>=8,"materials and meshes belong to the same scene");
+ assert.ok(scene.meshes.some(m=>m.name==="env013_connected_left_bank"));
+ assert.ok(scene.meshes.some(m=>m.name==="env013_descending_right_wall"));
+ assert.ok(scene.meshes.some(m=>m.name==="env013_opposite_escarpment"));
+ assert.ok(scene.meshes.some(m=>m.name==="env013_distant_escarpment"));
  assert.ok(!read("combat-environment-013.js").match(/setInterval|setTimeout|runRenderLoop|Math\.random/));
  assert.match(read("combat-environment-013.js"),/rock063-color-512\.jpg/);
 });
@@ -70,7 +74,7 @@ test("ENV013 leaves exact combat ledge and ravine, disables only ENV009 back rin
  assert.equal(ledge.enabled,undefined);assert.equal(ravine.enabled,undefined);
  for(const n of ["near_escarpment","far_ridge","horizon_ridge"])
   assert.equal(scene.meshes.find(m=>m.name==="env009_"+n).enabled,false);
- assert.equal(scene.fogDensity,.009);
+ assert.equal(scene.fogDensity,.0072);
  assert.ok(scene.meshes.filter(m=>m.name.startsWith("env013_")).length===4);
 });
 test("CV007 prefers ENV013 but explicit comparison flag and build failure retain ENV010",()=>{
@@ -94,7 +98,7 @@ test("CV007 prefers ENV013 but explicit comparison flag and build failure retain
  assert.ok(recovered.meshes.filter(m=>m.name.startsWith("env010_")).length>=4);
  assert.equal(recovered.meshes.filter(m=>m.name.startsWith("env013_")).length,0);
 });
-test("ENV013B keeps the photo ledge from ENV010 without changing world or picking",()=>{
+test("ENV013C keeps the photo ledge from ENV010 without changing world or picking",()=>{
  const src=read("combat-environment-013.js");
  assert.match(src,/env013_photo_ledge/);
  assert.match(src,/shelf\.getVerticesData\("position"\)/);

@@ -3,8 +3,6 @@ on:
   push:
     branches: [feat/combat-env-022-cc0-integrated-terrain]
     paths: ['.github/workflows/env022-vendor-terrain.yml']
-  pull_request:
-    paths: ['.github/workflows/env022-vendor-terrain.yml']
   workflow_dispatch:
 permissions:
   contents: write

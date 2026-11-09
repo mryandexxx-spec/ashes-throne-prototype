@@ -9,25 +9,28 @@ const CombatEnvironment017=(()=>{
  const AWAY={x:-Math.cos(ALPHA),z:-Math.sin(ALPHA)};
  const RIGHT={x:-Math.sin(ALPHA),z:Math.cos(ALPHA)};
  const p=(side,away,y)=>[RIGHT.x*side+AWAY.x*away,y,RIGHT.z*side+AWAY.z*away];
+ // [ПРЕДЛОЖЕНИЕ] Three deliberately broad shapes, evaluated in the real fixed camera.
+ // Top contour is a CREST, lower contours descend into the abyss.
+ // Keep the near-right view unobstructed; no foreground right-hand wall.
  const MASS=Object.freeze([
-  // Rock behind and to the left grows outwards from the existing ledge;
-  // the close edge stays BELOW the fighter plane. No overhead left wing.
-  {id:"landward-root",shade:[.40,.42,.41],lines:[
-   [[-9,0,-.6],[-14,1,-1.1],[-22,4,-2.0],[-33,7,-3.1],[-49,10,-4]],
-   [[-9,0,-5.4],[-14,3,-6.5],[-22,7,-8],[-33,12,-10],[-49,17,-12]],
-   [[-9,0,-14],[-14,6,-16],[-22,10,-19],[-33,17,-22],[-49,24,-25]]
+  {id:"landward-root",shade:[.43,.45,.43],lines:[
+   // The inner shoulder meets the outer ENV009 ledge BELOW its walkable top;
+   // the larger rock mass grows out left/back, not above the combatants.
+   [[-8,-3,-.7],[-11,-2,-.9],[-16,1,-.8],[-24,5,1.8],[-36,10,4.2],[-52,17,2.5]],
+   [[-8,-3,-4],[-11,-2,-5],[-16,1,-6],[-24,5,-6.5],[-36,10,-6.2],[-52,17,-8]],
+   [[-8,-3,-13],[-11,-2,-15],[-16,1,-18],[-24,5,-20],[-36,10,-23],[-52,17,-27]]
   ]},
-  // A separated, asymmetric opposite wall. Its nearer boundary is
-  // genuinely distant; no near/right ring encloses the open void.
-  {id:"distant-bank",shade:[.50,.54,.55],lines:[
-   [[18,49,-8],[30,52,-6],[43,57,-2],[57,61,1],[75,70,-3],[98,79,-1]],
-   [[18,49,-28],[30,52,-24],[43,57,-25],[57,61,-19],[75,70,-23],[98,79,-27]],
-   [[18,49,-53],[30,52,-49],[43,57,-50],[57,61,-46],[75,70,-49],[98,79,-52]]
+  {id:"distant-bank",shade:[.51,.55,.55],lines:[
+   // A visible broken crest, well behind the gap. It rises unevenly
+   // instead of forming the horizontal lip of a manufactured platform.
+   [[18,49,1.8],[30,52,4.7],[43,57,3.0],[57,61,9.0],[75,70,5.1],[98,79,11.0]],
+   [[18,49,-22],[30,52,-25],[43,57,-21],[57,61,-19],[75,70,-26],[98,79,-23]],
+   [[18,49,-57],[30,52,-54],[43,57,-58],[57,61,-51],[75,70,-55],[98,79,-62]]
   ]},
-  // Only a distant shadowed return: never a symmetric facing wall.
-  {id:"far-return",shade:[.60,.63,.63],lines:[
-   [[-64,91,-13],[-33,96,-9],[-5,108,-17],[19,119,-11],[48,134,-20]],
-   [[-64,91,-39],[-33,96,-38],[-5,108,-45],[19,119,-40],[48,134,-47]]
+  {id:"far-return",shade:[.60,.63,.64],lines:[
+   // A much farther, discontinuous-looking skyline. No symmetric framing.
+   [[-64,91,3],[-33,96,7],[-5,108,1],[19,119,9],[48,134,2]],
+   [[-64,91,-34],[-33,96,-40],[-5,108,-43],[19,119,-38],[48,134,-48]]
   ]}
  ]);
  function supported(B){return !!(B?.Mesh&&B.VertexData?.ComputeNormals&&B.StandardMaterial&&B.Color3);}

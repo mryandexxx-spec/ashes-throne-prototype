@@ -31,9 +31,10 @@ const CombatEnvironment010=(()=>{
   let photoRock=null;
   function applyPhotoRock(){
    if(!photoRock)return;
-   // Share the two already-loaded CC0 maps. No extra texture, material
+   // Reuse the two already-loaded CC0 maps on near + middle sculpted rock.
+   // No extra texture, material
    // fetch, or GPU duplication; leave the pale distant horizon untextured.
-   for(const name of ["front_buttress"]){
+   for(const name of ["front_buttress","middle_terraces"]){
     const mat=Array.isArray(scene.materials)?
      scene.materials.find(m=>m.name==="env010_glb_mat_"+name):null;
     if(mat){mat.diffuseTexture=photoRock.albedo;mat.bumpTexture=photoRock.normal;}

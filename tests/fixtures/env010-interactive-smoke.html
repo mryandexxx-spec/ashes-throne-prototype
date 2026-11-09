@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ENV010 real-game interactive browser smoke</title>
 <style>html,body,iframe{width:100%;height:100%;margin:0;border:0;overflow:hidden;background:#12202b}</style>
-</head><body><iframe id="game" src="../../index.html?arena=env015" title="Actual combat UI"></iframe>
+</head><body><iframe id="game" src="../../index.html?arena=env014" title="Actual combat UI"></iframe>
 <script>
 /* Strict smoke of the actual index.html controls in headless Chromium.
  * Synthetic PointerEvents are NOT a physical iPhone pinch test.
@@ -42,7 +42,7 @@
    if(phase==="entry"){
     if(doc.querySelector("#home.active")){doc.querySelector("#startBattle").click();return;}
     if(squad){doc.querySelector("#squadStart").click();return;}
-    if(!battle||doc.documentElement.dataset.env015Rock!=="ready")return;
+    if(!battle||doc.documentElement.dataset.env014Rock!=="ready")return;
     const canvas=doc.querySelector("#renderCanvas");
     const engine=win.eval("engine"),camera=win.eval("arenaCamera");
     assert(engine&&camera&&canvas.width>0&&canvas.height>0,"actual Babylon scene unavailable");
@@ -107,7 +107,7 @@
     phase="replay";return;
    }
    if(phase==="replay"){
-    if(!battle||doc.documentElement.dataset.env015Rock!=="ready")return;
+    if(!battle||doc.documentElement.dataset.env014Rock!=="ready")return;
     const engine=win.eval("engine");
     assert(engine===firstEngine,"repeat battle allocated a second Babylon engine");
     const auto=doc.querySelector("#autoBattleBtn");

@@ -30,13 +30,16 @@
    const canvas=doc.querySelector("#renderCanvas");
    if(!canvas||!canvas.width||!canvas.height)return;
    if(doc.documentElement.dataset.environment!=="ENV017"||
-      doc.documentElement.dataset.env017Massing!=="ready")
-    throw Error("ENV017 marker missing (old environment or fallback)");
+      doc.documentElement.dataset.env017Massing!=="ready"||
+      doc.documentElement.dataset.env017IntegratedLedge!=="ready")
+    throw Error("ENV018 integrated ledge marker missing (old environment or fallback)");
    const B=win.BABYLON,scene=win.eval("scene"),
     camera=win.eval("arenaCamera"),engine=win.eval("engine");
    if(!scene||!camera||!engine||!(engine.getCaps().maxTexturesImageUnits>0))
     throw Error("real Babylon WebGL not available");
-   if(!scene.meshes.some(m=>m.name==="env017_distant-bank")||
+   if(!scene.meshes.some(m=>m.name==="env017_living_ledge")||
+      scene.meshes.find(m=>m.name==="env009_living_ledge")?.isEnabled()!==false||
+      !scene.meshes.some(m=>m.name==="env017_distant-bank")||
       scene.meshes.some(m=>m.name.startsWith("env010_glb_")))
     throw Error("wrong geometry loaded");
    if(far)camera.radius=19;

@@ -132,13 +132,14 @@ const CombatEnvironment017=(()=>{
      if(model.uvs)vd.uvs=model.uvs;
      vd.applyToMesh(mesh,false);
      mesh.isPickable=false;mesh.checkCollisions=false;mesh.receiveShadows=false;
-     mesh.useVertexColors=true;
+     mesh.useVertexColors=false;
      const mat=new B.StandardMaterial("env023_external_mat_"+def.source+"_"+i,scene);
      created.push(mat);
-     mat.diffuseColor=new B.Color3(1,1,1);
-     mat.emissiveColor=new B.Color3(.20,.21,.21);
+     mat.diffuseColor=new B.Color3(.52,.56,.57);
+     mat.emissiveColor=new B.Color3(.085,.09,.095);
      mat.specularColor=new B.Color3(0,0,0);
-     mat.backFaceCulling=false;mat.useVertexColors=true;mat.fogEnabled=false;
+     mat.backFaceCulling=false;mat.disableLighting=true;
+     mat.useVertexColors=false;mat.fogEnabled=false;
      if(model.imageBytes&&B.Texture?.CreateFromBase64String){
       let binary="";
       for(let k=0;k<model.imageBytes.length;k+=8192)

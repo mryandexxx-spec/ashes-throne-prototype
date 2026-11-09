@@ -3,6 +3,8 @@ on:
   push:
     branches: [feat/combat-env-024-matched-coastal-rock-terrain]
     paths: ['.github/workflows/env021-publish-preview.yml']
+  pull_request:
+    paths: ['.github/workflows/env024-publish-preview.yml']
   workflow_dispatch:
 permissions:
   contents: write

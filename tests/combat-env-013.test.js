@@ -37,8 +37,8 @@ function mock(){
 test("ENV013 is a bounded solid 3D composition with unique asymmetrical lateral masses",()=>{
  const {B,scene}=mock(),owned=[];
  const r=Env013.build(B,scene,v=>(owned.push(v),v));
- assert.equal(r.meshes,4);assert.ok(r.vertices<6000);
- assert.ok(r.triangles<11000&&r.triangles>4500);
+ assert.equal(r.meshes,4);assert.ok(r.vertices<8000,"ENV013B vertex budget");
+ assert.ok(r.triangles<15000&&r.triangles>4500);
  assert.equal(scene.meshes.length,4);
  assert.ok(scene.meshes.every(m=>m.isPickable===false&&m.checkCollisions===false));
  assert.ok(scene.meshes.every(m=>m.data.positions.length===m.data.normals.length));

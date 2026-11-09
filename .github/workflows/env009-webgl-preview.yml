@@ -13,8 +13,6 @@ on:
       - 'tests/combat-env-013.test.js'
       - '.github/workflows/env009-webgl-preview.yml'
   workflow_dispatch:
-permissions:
-  contents: write
 jobs:
   capture:
     runs-on: ubuntu-latest
@@ -105,21 +103,3 @@ jobs:
           name: env013-env010-real-game-hud
           path: artifacts/*-full-hud-*.png
           if-no-files-found: warn
-
-      - name: Keep actual WebGL comparisons in this PR branch (not main)
-        if: success() && github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p docs/evidence/env013
-          cp artifacts/env010-default.png artifacts/env010-far.png \
-             artifacts/env013-default.png artifacts/env013-far.png \
-             artifacts/env010-full-hud-844x390.png \
-             artifacts/env013-full-hud-844x390.png docs/evidence/env013/
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add docs/evidence/env013/*.png
-          if ! git diff --cached --quiet; then
-            git commit -m 'test(env013): actual Babylon WebGL baseline and candidate captures'
-            git push origin "HEAD:refs/heads/${{ github.head_ref }}"
-          fi

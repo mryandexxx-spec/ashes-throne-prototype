@@ -111,10 +111,12 @@ assert.ok(Math.abs(camera.alpha+3*Math.PI/4)<1e-9);
 assert.equal(camera.beta,.96);
 assert.equal(camera.radius,12);
 assert.equal(camera.target.y,.9);
-assert.equal(camera.lowerBetaLimit,.55);
+assert.equal(camera.lowerBetaLimit,.96);
 assert.equal(camera.lowerRadiusLimit,12);
 assert.equal(camera.upperRadiusLimit,21);
-assert.equal(camera.upperBetaLimit,1.30);
+assert.equal(camera.lowerAlphaLimit,-3*Math.PI/4);
+assert.equal(camera.upperAlphaLimit,-3*Math.PI/4);
+assert.equal(camera.upperBetaLimit,.96);
 assert.equal(api.getBattle().fighters[api.getBattle().currentActor].side,"ally");
 
 // Replay returns to the same saved composition, without 3D reallocation.

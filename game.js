@@ -2571,8 +2571,9 @@ function resetArenaCamera(){
  if(typeof arenaCamera.setTarget==="function")arenaCamera.setTarget(center);
  else arenaCamera.target=center; // Minimal test stub.
 }
-// Combat-008F-CAMERA: explicit orbit/pinch pointer controls.
-// Avoid competing Babylon pointer drags; retain the ArcRotateCamera and wheel zoom.
+// ENV010: fixed three-quarter battle view; retain pinch and wheel zoom only.
+// One-finger movement remains available to the inspection/target gestures;
+// it no longer rotates the scene or fights the curated background composition.
 function installArenaPointerCamera(canvas,camera){
  const pointers=new Map();
  let pinchDistance=0;
@@ -2587,23 +2588,14 @@ function installArenaPointerCamera(canvas,camera){
   pinchDistance=distance();
  };
  const move=event=>{
-  const id=event.pointerId??1,previous=pointers.get(id);
+  const previous=pointers.get(event.pointerId??1);
   if(!previous)return;
-  const x=event.clientX,y=event.clientY;
-  if(pointers.size===1){
-   const dx=x-previous.x,dy=y-previous.y;
-   camera.alpha-=dx/350;
-   camera.beta=bounds(camera.beta-dy/350,camera.lowerBetaLimit,camera.upperBetaLimit);
-  }else if(pointers.size===2){
-   const oldDistance=pinchDistance;
-   previous.x=x;previous.y=y;
-   const current=distance();
-   if(oldDistance>0&&current>0)
-    camera.radius=bounds(camera.radius*oldDistance/current,camera.lowerRadiusLimit,camera.upperRadiusLimit);
-   pinchDistance=current;
-   return;
-  }
-  previous.x=x;previous.y=y;
+  previous.x=event.clientX;previous.y=event.clientY;
+  if(pointers.size!==2)return; // Single finger must not change yaw or tilt.
+  const current=distance();
+  if(pinchDistance>0&&current>0)
+   camera.radius=bounds(camera.radius*pinchDistance/current,camera.lowerRadiusLimit,camera.upperRadiusLimit);
+  pinchDistance=current;
  };
  const up=event=>{
   pointers.delete(event.pointerId??1);
@@ -2623,7 +2615,10 @@ function initBabylon(){
  scene=new BABYLON.Scene(engine);scene.clearColor=new BABYLON.Color4(.035,.045,.065,1);
  arenaCamera=new BABYLON.ArcRotateCamera("camera",ARENA_VIEW.alpha,ARENA_VIEW.beta,ARENA_VIEW.radius,new BABYLON.Vector3(0,ARENA_VIEW.targetY,0),scene);
  arenaCamera.lowerRadiusLimit=12;arenaCamera.upperRadiusLimit=21;
- arenaCamera.lowerBetaLimit=.55;arenaCamera.upperBetaLimit=1.30;
+ // Lock orientation to the established three-quarter view; preserve radius zoom 12–21.
+ arenaCamera.lowerAlphaLimit=ARENA_VIEW.alpha;arenaCamera.upperAlphaLimit=ARENA_VIEW.alpha;
+ arenaCamera.lowerBetaLimit=ARENA_VIEW.beta;arenaCamera.upperBetaLimit=ARENA_VIEW.beta;
+ arenaCamera.panningSensibility=0;
  arenaCamera.attachControl(canvas,true);
  // Disable duplicate Babylon pointer drags, retain wheel zoom.
  if(arenaCamera.inputs?.removeByType)

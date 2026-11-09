@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ENV010 full combat HUD smoke</title>
+<style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden;background:#101b24}</style>
+</head>
+<body>
+<iframe id="game" src="../../index.html" title="Full battle HUD"></iframe>
+<script>
+/* Visual QA only: click the REAL game's battle entry. No game.js hooks,
+ * combat fixtures or changes to production play flow. Same-origin local server.
+ * This checks full game canvas plus HUD; it is not an iPhone Safari test. */
+const frame=document.querySelector("#game");
+let attempts=0,entered=false,launched=false;
+const watchdog=setInterval(()=>{
+ try {
+  if(++attempts>80)throw Error("full game did not start");
+  const doc=frame.contentDocument;
+  if(!doc||doc.readyState!=="complete")return;
+  // A fresh profile first opens the daily login calendar; dismiss it by the
+  // real Back button before following the normal home → squad → battle path.
+  if(doc.querySelector("#loginCalendar.active")){
+   doc.querySelector('#loginCalendar [data-screen="home"]')?.click();
+   entered=false;launched=false;return;
+  }
+  const btn=doc.querySelector("#startBattle");
+  if(!btn)return;
+  if(doc.querySelector("#home.active")&&!entered){entered=true;btn.click();}
+  if(doc.querySelector("#squad.active")&&!launched){
+   launched=true;
+   doc.querySelector("#squadStart")?.click();
+  }
+  const canvas=doc.querySelector("#renderCanvas");
+  const controls=doc.querySelector("#arenaIndicators");
+  const battle=doc.querySelector("#battle.active");
+  if(battle&&canvas&&canvas.width>0&&canvas.height>0&&controls&&
+     doc.documentElement.dataset.env010Rock==="ready"){
+   clearInterval(watchdog);
+   setTimeout(()=>{
+    document.documentElement.dataset.visualStatus="ready";
+    document.documentElement.dataset.canvasWidth=String(canvas.width);
+    document.documentElement.dataset.fighterIndicators=String(controls.childElementCount);
+   },700);
+  }
+ }catch(e){clearInterval(watchdog);document.documentElement.dataset.visualStatus="error";
+  document.documentElement.dataset.visualError=e.message;console.error(e);}
+},125);
+</script></body></html>

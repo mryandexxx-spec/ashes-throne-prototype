@@ -82,6 +82,10 @@ const CombatVisual007=(()=>{
   try{
    if(useEnv009){
     CombatEnvironment009.build(B,scene,owned);
+    // ENV010: fixed-view atmosphere, visually additive to the stable 3D ledge.
+    if(typeof CombatEnvironment010!=="undefined"&&CombatEnvironment010.supported(B)){
+     CombatEnvironment010.build(B,scene,owned);
+    }
    }else{
    // Continuous walkable plane preserves the established combat formation/camera.
    decorate(B.MeshBuilder.CreateGround("cv007_surface",{width:16,height:9},scene),sand,0,.007,0);

@@ -26,12 +26,13 @@
  try{
   if(typeof BABYLON==="undefined")throw Error("Babylon CDN unavailable");
   if(!legacy)await load("../../combat-environment-009.js");
+  if(p.get("mode")==="env010")await load("../../combat-environment-010.js");
   await load("../../combat-visual-007.js");
   const canvas=document.getElementById("arena");
   const engine=new BABYLON.Engine(canvas,true,{stencil:true,preserveDrawingBuffer:true});
   const scene=new BABYLON.Scene(engine);
   scene.clearColor=new BABYLON.Color4(.035,.045,.065,1);
-  const camera=new BABYLON.ArcRotateCamera("camera",alpha,.96,12,
+  const camera=new BABYLON.ArcRotateCamera("camera",alpha,.96,yaw==="far"?19:12,
    new BABYLON.Vector3(0,.9,0),scene);
   camera.fov=.8;camera.minZ=.1;camera.maxZ=200;
   new BABYLON.HemisphericLight("hemi",new BABYLON.Vector3(0,1,0),scene).intensity=.8;
@@ -61,9 +62,23 @@
   }
   engine.resize();scene.render();
   engine.runRenderLoop(()=>scene.render());
-  document.documentElement.dataset.visualStatus="ready";
-  document.documentElement.dataset.environment=legacy?"CV008":"ENV009";
-  diag.textContent=(legacy?"CV008 — исходная арена":"ENV009 — новая геология")+" / угол: "+yaw;
+  if(p.get("mode")==="env010"){
+    document.documentElement.dataset.visualStatus="loading";
+    let polls=0;
+    const untilReady=setInterval(()=>{
+      const state=document.documentElement.dataset.env010Rock;
+      if(state==="ready"){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="ready";
+      }else if(state==="fallback"||state==="disposed"||++polls>100){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="error";
+        diag.textContent="GLB не загружен: "+state;
+      }
+    },75);
+  }else document.documentElement.dataset.visualStatus="ready";
+  document.documentElement.dataset.environment=p.get("mode")==="env010"?"ENV010":legacy?"CV008":"ENV009";
+  diag.textContent=(p.get("mode")==="env010"?"ENV010 — фиксированный ракурс":legacy?"CV008":"ENV009 — базовый рельеф")+" / "+yaw;
  }catch(e){
   document.documentElement.dataset.visualStatus="error";
   diag.textContent="Ошибка WebGL: "+e.message;

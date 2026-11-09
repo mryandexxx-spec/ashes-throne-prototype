@@ -26,7 +26,9 @@
  try{
   if(typeof BABYLON==="undefined")throw Error("Babylon CDN unavailable");
   if(!legacy)await load("../../combat-environment-009.js");
-  if(p.get("mode")==="env010")await load("../../combat-environment-010.js");
+  if(p.get("mode")==="env011")await load("../../combat-environment-011.js");
+  if(p.get("mode")==="env010"||p.get("mode")==="env011")
+   await load("../../combat-environment-010.js");
   await load("../../combat-visual-007.js");
   const canvas=document.getElementById("arena");
   const engine=new BABYLON.Engine(canvas,true,{stencil:true,preserveDrawingBuffer:true});
@@ -62,7 +64,7 @@
   }
   engine.resize();scene.render();
   engine.runRenderLoop(()=>scene.render());
-  if(p.get("mode")==="env010"){
+  if(p.get("mode")==="env010"||p.get("mode")==="env011"){
     document.documentElement.dataset.visualStatus="loading";
     let polls=0;
     const untilReady=setInterval(()=>{
@@ -77,8 +79,8 @@
       }
     },75);
   }else document.documentElement.dataset.visualStatus="ready";
-  document.documentElement.dataset.environment=p.get("mode")==="env010"?"ENV010":legacy?"CV008":"ENV009";
-  diag.textContent=(p.get("mode")==="env010"?"ENV010 — фиксированный ракурс":legacy?"CV008":"ENV009 — базовый рельеф")+" / "+yaw;
+  document.documentElement.dataset.environment=p.get("mode")==="env011"?"ENV011":p.get("mode")==="env010"?"ENV010":legacy?"CV008":"ENV009";
+  diag.textContent=(p.get("mode")==="env011"?"ENV011 — открытое ущелье":p.get("mode")==="env010"?"ENV010 — фиксированный ракурс":legacy?"CV008":"ENV009 — базовый рельеф")+" / "+yaw;
  }catch(e){
   document.documentElement.dataset.visualStatus="error";
   diag.textContent="Ошибка WebGL: "+e.message;

@@ -40,7 +40,7 @@
       scene.meshes.some(m=>m.name.startsWith("env010_glb_")))
     throw Error("wrong geometry loaded");
    if(far)camera.radius=19;
-   const view=win.CombatEnvironment017.inspect(B,scene,camera,
+   const view=win.eval("CombatEnvironment017").inspect(B,scene,camera,
     engine.getRenderWidth(),engine.getRenderHeight());
    if(!view||Math.abs(view.radius-(far?19:12))>.01)
     throw Error("camera projection unavailable");

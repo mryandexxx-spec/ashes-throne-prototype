@@ -42,19 +42,25 @@ test("HQ-UI-004 painted landmarks are full clickable buttons with readable capti
  }
 });
 
-test("HQ-UI-006 light reveal matches original painting rather than drawing a line",()=>{
+test("HQ-UI-007 local material lighting is anchored to the painted scene",()=>{
  const home=html.slice(html.indexOf('<section id="home"'),html.indexOf('<section id="dailyTasks"'));
- assert.match(home,/class="hq-light-reveal"/);
- assert.doesNotMatch(home,/hq-contour-overlay|hq-contour-campaign|hq-contour-heroes/);
- assert.doesNotMatch(css,/@keyframes hq-contour-trace|stroke-dasharray:100/);
- assert.match(css,/#home \.hq-light-reveal\{/);
- assert.match(css,/background-position:center 42%/);
- assert.match(css,/background-size:cover/);
- assert.match(css,/@keyframes hq-light-reveal/);
+ assert.match(home,/class="hq-selection-fx"/);
+ assert.match(home,/viewBox="0 0 2048 688" preserveAspectRatio="xMidYMid slice"/);
+ assert.doesNotMatch(home,/hq-light-reveal|hq-contour-overlay/);
+ assert.doesNotMatch(css,/@keyframes hq-light-reveal|@keyframes hq-contour-trace|stroke-dasharray:100/);
+ for(const zone of ["heroes","campaign","operations","challenges"]){
+  assert.match(home,new RegExp('class="hq-fx-zone hq-fx-'+zone+'"'));
+  assert.ok(css.includes('data-hq-illuminated="'+zone+'"'),"active zone: "+zone);
+ }
+ assert.match(home,/id="hq-fx-paper-clip"/);
+ assert.match(home,/id="hq-fx-board-clip"/);
+ assert.match(css,/background-position:center center,center center,center center/);
+ assert.match(css,/@keyframes hq-material-light/);
+ assert.match(css,/@keyframes hq-specular-flicker/);
+ assert.match(css,/pointer-events:none/);
  assert.match(css,/prefers-reduced-motion:reduce/);
- for(const zone of ["heroes","campaign","operations","challenges"])
-  assert.ok(css.includes('data-hq-illuminated="'+zone+'"'),"mask "+zone);
- assert.match(game,/function animateHQContour\(button\)/);
+ assert.match(game,/function animateHQSelectionFx\(button\)/);
  assert.match(game,/scene\.dataset\.hqIlluminated=zone/);
- assert.match(game,/hqContourTimer=setTimeout/);
+ assert.match(game,/hqFxTimer=setTimeout/);
+ assert.match(game,/\},500\);/);
 });

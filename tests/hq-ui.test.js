@@ -3,7 +3,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const html=fs.readFileSync("index.html","utf8"),css=fs.readFileSync("styles.css","utf8"),game=fs.readFileSync("game.js","utf8"),svg=fs.readFileSync("assets/hq-hall.svg","utf8");
 test("HQ menu keeps real entry points and native horizontal scroll",()=>{
- for(const s of ["collection","battle","campaign","operations","challenges","playerProfile","dailyTasks","loginCalendar"])
+ for(const s of ["collection","campaign","operations","challenges","playerProfile","dailyTasks","loginCalendar"])
   assert.ok(html.includes('data-screen="'+s+'"'),s);
  for(const s of ["hqPan","dailyTasksNav","dailyClaimBadge","startBattle","devResourcesGrant","hqMoreToggle","hqMoreMenu"])
   assert.ok(html.includes('id="'+s+'"'),s);

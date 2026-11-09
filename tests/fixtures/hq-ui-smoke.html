@@ -24,8 +24,17 @@ frame.addEventListener("load",()=>{
   if(!more||!menu||!menu.hidden)throw Error("More menu starts open");
   more.click();if(menu.hidden)throw Error("More menu cannot open");
   more.click();if(!menu.hidden)throw Error("More menu cannot close");
-  home.querySelector(".hq-station-campaign button").click();
-  if(!doc.getElementById("campaign").classList.contains("active"))throw Error("Campaign navigation broken");
+  // HQ-UI-004: the illustrated landmarks are the buttons, with no nested cards.
+  for(const [zone,target] of [["heroes","collection"],["campaign","campaign"],["operations","operations"],["challenges","challenges"]]){
+   const hotspot=home.querySelector(".hq-station-"+zone);
+   if(!hotspot||hotspot.tagName!=="BUTTON"||hotspot.dataset.screen!==target)throw Error("Non-interactive landmark: "+zone);
+   const box=hotspot.getBoundingClientRect();
+   if(box.width<90||box.height<90)throw Error("Landmark too small: "+zone);
+   pan.scrollLeft=Math.max(0,hotspot.offsetLeft-60);
+   hotspot.click();
+   if(!doc.getElementById(target).classList.contains("active"))throw Error("Landmark navigation broken: "+zone);
+   doc.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s===home));
+  }
   doc.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s===home));
   pan.style.scrollBehavior="auto";pan.scrollLeft=400;
   if(pan.scrollLeft<100)throw Error("Panorama did not scroll");

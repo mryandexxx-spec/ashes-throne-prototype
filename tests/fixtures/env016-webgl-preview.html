@@ -122,9 +122,10 @@
       }
     },75);
   }else document.documentElement.dataset.visualStatus="ready";
-  document.documentElement.dataset.environment=p.get("mode")==="env015"?"ENV015":p.get("mode")==="env014"?"ENV014":
+  document.documentElement.dataset.environment=p.get("mode")==="env016"?"ENV016":p.get("mode")==="env015"?"ENV015":p.get("mode")==="env014"?"ENV014":
     p.get("mode")==="env010"?"ENV010":legacy?"CV008":"ENV009";
-  diag.textContent=(p.get("mode")==="env015"?"ENV015 — связанный скальный уступ":
+  diag.textContent=(p.get("mode")==="env016"?"ENV016 — эродированные объёмные скалы":
+    p.get("mode")==="env015"?"ENV015 — связанный скальный уступ":
     p.get("mode")==="env014"?"ENV014 — глубокая пропасть":
     p.get("mode")==="env010"?"ENV010 — фиксированный ракурс":legacy?"CV008":"ENV009 — базовый рельеф")+" / "+yaw;
  }catch(e){

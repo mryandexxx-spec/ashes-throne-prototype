@@ -15,8 +15,8 @@ const CombatEnvironment010=(()=>{
  const CLAMP=(v,min,max)=>Math.max(min,Math.min(max,v));
  const mix=(a,b,t)=>a.map((n,i)=>n*(1-t)+b[i]*t);
  const COLORS=Object.freeze({
-  skyTop:[.32,.43,.52],skyUpper:[.43,.53,.60],
-  skyHaze:[.62,.68,.69],skyHorizon:[.72,.74,.70],
+  skyTop:[.42,.50,.56],skyUpper:[.48,.56,.61],
+  skyHaze:[.58,.63,.66],skyHorizon:[.64,.67,.67],
   far:[.58,.60,.60],mid:[.47,.48,.48],near:[.365,.395,.405]
  });
  function supported(B){
@@ -34,7 +34,7 @@ const CombatEnvironment010=(()=>{
    // Reuse the two already-loaded CC0 maps on near + middle sculpted rock.
    // No extra texture, material
    // fetch, or GPU duplication; leave the pale distant horizon untextured.
-   for(const name of ["front_buttress","middle_terraces"]){
+   for(const name of ["front_buttress","middle_terraces","pale_horizon"]){
     const mat=Array.isArray(scene.materials)?
      scene.materials.find(m=>m.name==="env010_glb_mat_"+name):null;
     if(mat){mat.diffuseTexture=photoRock.albedo;mat.bumpTexture=photoRock.normal;}
@@ -215,7 +215,7 @@ const CombatEnvironment010=(()=>{
     const gltf=JSON.parse(new TextDecoder().decode(new Uint8Array(buffer,20,jsonLength)));
     const binLength=dv.getUint32(binStart,true),binOffset=binStart+8;
     if(binOffset+binLength!==buffer.byteLength||gltf.asset?.version!=="2.0"||
-       gltf.meshes?.length!==3)throw Error("unexpected ENV010 asset layout");
+       gltf.meshes?.length!==4)throw Error("unexpected ENV010 asset layout");
     const componentSizes={5121:1,5123:2,5126:4};
     const tuple={SCALAR:1,VEC2:2,VEC3:3,VEC4:4};
     function accessor(id,expectedType,expectedComponent){
@@ -275,10 +275,10 @@ const CombatEnvironment010=(()=>{
       const m=new B.StandardMaterial("env010_glb_mat_"+asset.name,scene);
       created.push(m);
       const pale=asset.name==="pale_horizon";
-      m.diffuseColor=pale?new B.Color3(.76,.81,.85):new B.Color3(1,1,1);
+      m.diffuseColor=pale?new B.Color3(.66,.70,.75):new B.Color3(1,1,1);
       m.specularColor=new B.Color3(.012,.012,.012);
       // Lift the shadow floor without washing out the real authored facets.
-      m.emissiveColor=pale?new B.Color3(.125,.14,.15):
+      m.emissiveColor=pale?new B.Color3(.065,.077,.089):
        asset.name==="front_buttress"?new B.Color3(.16,.168,.17):
        new B.Color3(.145,.16,.17);
       m.useVertexColors=true;m.backFaceCulling=false;m.fogEnabled=false;

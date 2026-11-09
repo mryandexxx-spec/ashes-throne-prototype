@@ -20,8 +20,8 @@ test("authored canyon GLB is deterministic valid glTF 2 with material, bounded 3
  assert.equal(asset.readUInt32LE(offset+4),0x004e4942);
  assert.equal(asset.readUInt32LE(offset)+offset+8,asset.length);
  assert.equal(json.asset.version,"2.0");
- assert.equal(json.meshes.length,3);
- assert.equal(json.scenes[0].nodes.length,3);
+ assert.equal(json.meshes.length,4);
+ assert.equal(json.scenes[0].nodes.length,4);
  assert.ok(asset.length<450000,"GLB must remain lightweight on mobile");
  for(const mesh of json.meshes){
   const primitive=mesh.primitives[0];
@@ -37,9 +37,9 @@ test("authored canyon GLB is deterministic valid glTF 2 with material, bounded 3
   assert.equal(indices.count%3,0);assert.ok(indices.count>1000);
  }
  const tri=generated.stats.reduce((sum,a)=>sum+a.triangles,0);
- assert.equal(tri,12764);
- assert.deepEqual(generated.stats.map(m=>m.vertices),[2262,2262,2037]);
- assert.deepEqual(generated.stats.map(m=>m.triangles),[4520,4520,3724]);
+ assert.equal(tri,13404);
+ assert.deepEqual(generated.stats.map(m=>m.vertices),[2262,2262,1218,1155]);
+ assert.deepEqual(generated.stats.map(m=>m.triangles),[4520,4520,2236,2128]);
  // Three closed forms per draw-call group: every volume has a cap,
  // full-depth perimeter, and real thickness in both camera axes.
  assert.ok(generated.stats.every(m=>m.vertices>1200));
@@ -82,7 +82,7 @@ test("authored GLB can replace old scenic geometry without affecting ENV009 or p
  assert.equal(status.env010Rock,"ready");
  assert.deepEqual(requests,["http://localhost:8765/assets/env010/gorge-strata-v1.glb"]);
  const imported=scene.meshes.filter(m=>m.name.startsWith("env010_glb_"));
- assert.equal(imported.length,3);
+ assert.equal(imported.length,4);
  assert.ok(imported.every(m=>m.isPickable===false&&m.checkCollisions===false));
  assert.ok(imported.every(m=>m.data.positions.length&&m.data.indices.length&&m.data.colors.length));
  for(const name of ["env010_horizon","env010_midground","env010_escarpment"])

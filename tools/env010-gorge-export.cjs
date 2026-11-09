@@ -133,21 +133,26 @@ function createEnv010Glb(){
    const a=j*row,b=a+1,c=a+row,e=c+1;
    indices.push(a,c,b,b,c,e);
   }
+  for(let i=0;i<positions.length;i++)normals.push(0);
+  return {name:"gorge_floor",positions,normals,colors,uvs,indices};
+ }
+ function distantMesh(){
+  const positions=[],normals=[],uvs=[],colors=[],indices=[];
   // Real far-spanning ridge with a low, asymmetric central saddle.
   // This distant mesh has depth, not a billboard or a separate draw call.
   const FAR=[[-115,-121],[-94,-106],[-80,-89],[-65,-83],
    [-49,-100],[-34,-117],[-18,-132],[0,-142],[15,-127],
    [31,-111],[48,-90],[63,-82],[83,-103],[115,-130]];
-  const farStart=positions.length/3,FAR_COLS=62,FAR_ROWS=12;
+  const farStart=0,FAR_COLS=76,FAR_ROWS=14;
   for(let j=0;j<=FAR_ROWS;j++){
-   const depth=136+j*3.4;
+   const depth=136+j*2.8;
    for(let i=0;i<=FAR_COLS;i++){
     const x=-115+230*i/FAR_COLS,crest=interp(FAR,x);
     const fracture=(2.7*Math.sin(x*.19+j*.47)+1.8*Math.sin(x*.37-j*.31))*(1-j/FAR_ROWS);
     const y=crest+39-2.25*j+fracture;
     positions.push(...world(x,depth,y));
     uvs.push(x*.025,depth*.028+y*.004);
-    const haze=.30+j/FAR_ROWS*.08,grey=[.64,.675,.69],sky=[.73,.765,.77];
+    const haze=.36+j/FAR_ROWS*.10,grey=[.55,.58,.58],sky=[.65,.68,.70];
     colors.push(...palette(grey.map((v,k)=>v*(1-haze)+sky[k]*haze+
      .018*Math.sin(x*.11+j*.7))),255);
    }
@@ -174,7 +179,7 @@ function createEnv010Glb(){
   }
   return asset;
  }
- const assets=[...BANKS.map(bankMesh),valleyMesh()].map(computeNormals);
+ const assets=[...BANKS.map(bankMesh),valleyMesh(),distantMesh()].map(computeNormals);
 
  const bin=[],bufferViews=[],accessors=[],meshes=[],nodes=[];
  const pad=()=>{while(bin.length%4)bin.push(0);};

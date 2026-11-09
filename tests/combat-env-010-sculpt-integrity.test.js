@@ -9,7 +9,7 @@ function get(mesh,name,i){
 }
 test("two solid banks have a continuous winding common valley floor",()=>{
  const S=86,C=23,W=13,top=(S+1)*(C+1),per=top+(S+1)*2;
- assert.equal(g.meshes.length,3);
+ assert.equal(g.meshes.length,4);
  for(const side of [0,1]){
   assert.equal(g.accessors[g.meshes[side].primitives[0].attributes.POSITION].count,per);
   let normalsUp=0;
@@ -19,7 +19,8 @@ test("two solid banks have a continuous winding common valley floor",()=>{
   }
   assert.ok(normalsUp>=8,"surface crest normals should face sky");
  }
- assert.ok(g.accessors[g.meshes[2].primitives[0].attributes.POSITION].count>(S+1)*(W+1),"distant ridge is real geometry");
+ assert.equal(g.accessors[g.meshes[2].primitives[0].attributes.POSITION].count,(S+1)*(W+1));
+ assert.ok(g.accessors[g.meshes[3].primitives[0].attributes.POSITION].count>1000,"distant ridge is a separate 3D material group");
  for(let j=0;j<=S;j+=6){
   const left=get(0,"POSITION",j*(C+1)),right=get(1,"POSITION",j*(C+1));
   const f0=get(2,"POSITION",j*(W+1)),f1=get(2,"POSITION",j*(W+1)+W);
@@ -35,7 +36,7 @@ test("two solid banks have a continuous winding common valley floor",()=>{
  assert.ok(Math.max(...centers)-Math.min(...centers)>9,"gorge centerline bends");
  // All geometry must lie in FRONT of the fixed sky plane; otherwise Babylon
  // depth-testing hides the distant landforms behind the opaque sky material.
- for(let m=0;m<3;m++){
+ for(let m=0;m<4;m++){
   const accessor=g.accessors[g.meshes[m].primitives[0].attributes.POSITION];
   let maxDepth=-Infinity;
   for(let i=0;i<accessor.count;i++){

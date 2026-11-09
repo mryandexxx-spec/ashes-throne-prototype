@@ -86,7 +86,8 @@ const CombatVisual007=(()=>{
     // ENV015 uses the same camera, engine and collision-free visual scene.
     // Explicit QA switch preserves exact ENV010 and first authored ENV014.
     const mode=typeof location!=="undefined"?
-      new URLSearchParams(location.search).get("arena"):null;
+      (new URLSearchParams(location.search).get("arena")||
+       new URLSearchParams(location.search).get("mode")):null;
     let environmentLoaded=false;
     if(mode!=="env010"&&mode!=="env014"&&
        typeof CombatEnvironment015!=="undefined"&&CombatEnvironment015.supported(B)){

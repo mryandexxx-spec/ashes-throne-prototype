@@ -83,13 +83,18 @@ const CombatVisual007=(()=>{
    if(useEnv009){
     CombatEnvironment009.build(B,scene,owned);
     // ENV010: fixed-view atmosphere, visually additive to the stable 3D ledge.
-    // ENV015 uses the same camera, engine and collision-free visual scene.
+    // ENV016 fracture sculpture uses existing camera, engine and collision-free visual scene.
     // Explicit QA switch preserves exact ENV010 and first authored ENV014.
     const mode=typeof location!=="undefined"?
       (new URLSearchParams(location.search).get("arena")||
        new URLSearchParams(location.search).get("mode")):null;
     let environmentLoaded=false;
-    if(mode!=="env010"&&mode!=="env014"&&
+    if(mode!=="env010"&&mode!=="env014"&&mode!=="env015"&&
+       typeof CombatEnvironment016!=="undefined"&&CombatEnvironment016.supported(B)){
+      try{CombatEnvironment016.build(B,scene,owned);environmentLoaded=true;}
+      catch(error){console.warn("ENV016 -> ENV010 fallback",error);}
+    }
+    if(!environmentLoaded&&mode==="env015"&&
        typeof CombatEnvironment015!=="undefined"&&CombatEnvironment015.supported(B)){
       try{CombatEnvironment015.build(B,scene,owned);environmentLoaded=true;}
       catch(error){console.warn("ENV015 -> ENV010 fallback",error);}

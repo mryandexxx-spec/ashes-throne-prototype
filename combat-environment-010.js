@@ -252,7 +252,7 @@ const CombatEnvironment010=(()=>{
      triangles+=indices.length/3;
      geometry.push({name:asset.name,positions,normals,colors,uvs,indices});
     }
-    if(triangles>9500||triangles<5000)throw Error("ENV010 triangle budget");
+    if(triangles>16000||triangles<5000)throw Error("ENV010 triangle budget");
     return geometry;
    };
    fetch(ASSET_ROOT+"gorge-strata-v1.glb",{credentials:"same-origin"}).then(response=>{

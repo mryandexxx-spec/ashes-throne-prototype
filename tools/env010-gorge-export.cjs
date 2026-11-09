@@ -7,107 +7,134 @@
  */
 function createEnv010Glb(){
 
- const RAD=Math.PI/180,SEG=26,SIDE=27,BANDS=18,SQ=Math.SQRT1_2;
- const rock=(name,x,d,rx,rd,top,height,shape,tilt,faults)=>({name,x,d,rx,rd,top,height,shape,tilt,faults});
- // Nine deliberately placed CLOSED 3D cliff volumes; three draw-call groups.
- // x is horizontal in fixed camera view, d recedes into the ravine.
- const LAYERS=[
- {name:"front_buttress",palette:[.52,.47,.395],haze:0,forms:[
- rock("left_gate",-47,52,17,17,-25,102,[.91,1.12,1.04,.74,.86,1.16,.91,.79,1.11,.91,.88,1.20,.99],[-.105,.024],[[205,2.9],[310,2.4]]),
- rock("right_gate",58,55,19,20,-27,100,[.89,1.13,.80,.95,1.20,.88,.71,1.16,.86,1.08,.83,1.19,.93],[.075,-.035],[[130,3.4],[244,2.7]]),
- rock("left_spur",-76,66,23,22,-38,112,[.83,1.15,1.02,.83,1.18,.82,1.00,.78,1.25,.87,1.08,.82,1.01],[-.07,.018],[[95,2.5],[272,3.2]])]},
- {name:"middle_terraces",palette:[.56,.56,.52],haze:.12,forms:[
- rock("west_fork",-43,76,26,22,-42,110,[1.14,.89,1.08,.82,1.15,.85,1.18,.76,.98,1.11,.80,.95,1.23],[.045,.016],[[158,3.0],[296,3.6]]),
- rock("east_shelf",52,75,28,22,-46,114,[.82,.94,1.25,.81,1.17,.94,.75,1.13,.93,1.16,.86,1.06,.82],[-.065,-.014],[[40,2.6],[227,4.1]]),
- rock("gorge_turn",2,94,19,18,-57,92,[1.03,.83,1.24,.88,.92,1.12,.77,1.15,.92,1.03,.86,1.08,1.13],[.022,.032],[[70,2.2],[246,2.7]])]},
- {name:"pale_horizon",palette:[.67,.69,.66],haze:.29,forms:[
- rock("west_crown",-68,111,31,30,-56,115,[.82,1.18,.84,1.03,1.23,.81,1.08,.94,.79,1.21,.90,1.06,1.10],[.035,-.018],[[199,2.6],[320,2.4]]),
- rock("eastern_rampart",64,111,35,29,-59,122,[1.13,.82,.96,1.22,.87,1.09,.80,1.18,.97,.82,1.17,.95,1.04],[-.035,.019],[[98,2.4],[273,2.8]]),
- rock("distant_saddle",-8,130,26,28,-72,103,[.84,1.04,1.20,.79,1.13,.85,1.08,.95,1.17,.85,1.07,.92,1.04],[.012,-.021],[[40,2.4],[206,3.1]])]}
- ];
+
+ const SQ=Math.SQRT1_2,STEPS=86,CROSS=23,WIDTH=13,MIN_D=26,MAX_D=181;
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
- const smooth=(a,b,t)=>{t=clamp((t-a)/(b-a),0,1);return t*t*(3-2*t);};
- const angles=Array.from({length:SEG},(_,i)=>i*Math.PI*2/SEG);
- function shapeAt(f,i){
-  const u=i/SEG*f.shape.length,k=Math.floor(u),t=u-k;
-  return f.shape[k%f.shape.length]+(f.shape[(k+1)%f.shape.length]-f.shape[k%f.shape.length])*(t*t*(3-2*t));
+ const smooth=(a,b,t)=>{t=clamp((t-a)/(b-a),0,1);return t*t*(3-2*t)};
+ const interp=(nodes,x)=>{
+  if(x<=nodes[0][0])return nodes[0][1];
+  for(let i=1;i<nodes.length;i++)if(x<=nodes[i][0]){
+   const a=nodes[i-1],b=nodes[i],t=(x-a[0])/(b[0]-a[0]);
+   return a[1]+(b[1]-a[1])*t;
+  }return nodes[nodes.length-1][1];
+ };
+ // Hand-positioned river bends, depths and structural lines: no periodic ridge rings.
+ const CENTER=[[26,-4],[43,-2],[68,6],[86,10],[105,4],[123,-9],[149,-14],[181,-2]];
+ const RAVINE=[[26,-114],[43,-123],[68,-126],[86,-132],[108,-138],[131,-149],[153,-151],[181,-157]];
+ const WIDE=[[26,8],[42,10],[70,13],[91,16],[117,19],[146,21],[181,24]];
+ const SECTION=[[0,0,0],[.065,7,2],[.14,15,11],[.23,23,29],
+  [.32,27,43],[.39,29,61],[.45,33,82],[.52,38,96],
+  [.58,45,98],[.66,60,96],[.75,80,80],[.86,111,57],[1,154,3]];
+ const BANKS=[
+ {name:"front_buttress",side:-1,palette:[.49,.465,.420],
+  crown:[[26,1],[39,11],[58,14],[78,-5],[93,6],[111,15],[131,-1],[151,11],[181,-6]],
+  breaks:[[42,2.3,6],[82,2.6,9],[119,3.4,8],[157,3,10]],
+  fans:[[50,10,7],[104,12,9],[155,10,6]]},
+ {name:"middle_terraces",side:1,palette:[.52,.49,.44],
+  crown:[[26,6],[45,-4],[62,16],[80,11],[103,-9],[122,16],[145,9],[161,-6],[181,8]],
+  breaks:[[54,2.7,7],[97,3.3,11],[137,2.6,7],[171,3.5,9]],
+  fans:[[67,9,7],[117,12,8],[171,8,7]]}
+ ];
+ const palette=a=>a.map(v=>Math.round(255*clamp(v,0,1)));
+ const world=(x,d,y)=>[(d+x)*SQ,y,(d-x)*SQ];
+ const dAt=j=>MIN_D+(MAX_D-MIN_D)*j/STEPS;
+ const floorY=d=>interp(RAVINE,d);
+ const centerX=d=>interp(CENTER,d);
+ const span=d=>interp(WIDE,d);
+ function section(u){
+  let p=SECTION[0],q=SECTION[SECTION.length-1];
+  for(let k=1;k<SECTION.length;k++)if(u<=SECTION[k][0]){p=SECTION[k-1];q=SECTION[k];break;}
+  const t=clamp((u-p[0])/(q[0]-p[0]),0,1);
+  return [p[1]+(q[1]-p[1])*t,p[2]+(q[2]-p[2])*t];
  }
- function sculptRock(f,layer,positions,colors,uvs,indices){
-  const first=positions.length/3,[tiltX,tiltD]=f.tilt;
-  for(let j=0;j<=BANDS;j++){
-   const t=j/BANDS;
-   for(let i=0;i<=SEG;i++){
-    const a=angles[i%SEG],nx=Math.cos(a),nz=Math.sin(a),radial=shapeAt(f,i%SEG);
-    const dip=nx*.055+nz*.032;
-    // Inclined geometric benches; their edges are disrupted by cross-cutting joints.
-    const bench=.042*Math.exp(-Math.pow((t-.24-dip)/.050,2))+
-       .053*Math.exp(-Math.pow((t-.53+dip*.7)/.054,2))+
-       .062*Math.exp(-Math.pow((t-.76-dip*.6)/.055,2));
-    let fault=0,crevice=0;
-    for(const [degrees,reach] of f.faults){
-     const da=Math.atan2(Math.sin(a-degrees*RAD-t*.12),Math.cos(a-degrees*RAD-t*.12));
-     const notch=Math.exp(-Math.pow(da/.16,2));
-     fault+=reach*notch*(1-.63*t);crevice+=notch;
-    }
-    const lateral=radial*(.74+.48*Math.pow(t,1.4)+bench);
-    const shear=(.7*Math.cos(a*5+f.rx*.2)+.5*Math.sin(a*9-f.rd*.11))*(.25+.75*t);
-    const x=f.x+nx*f.rx*lateral+shear*nx-fault*nx*.78;
-    const d=f.d+nz*f.rd*lateral+shear*nz-fault*nz*.78;
-    const rim=tiltX*(x-f.x)+tiltD*(d-f.d);
-    const y=f.top-f.height*t+(rim+(radial-1)*8)*Math.pow(1-t,1.18)-fault*(1-t)*.65+
-       ((i%SEG)%7===0?-.5:0)*Math.pow(1-t,1.5);
-    positions.push((d+x)*SQ,y,(d-x)*SQ);
-    const strata=Math.sin((y+.16*x+.07*d)*.25+Math.sin(a*3)*.4);
-    const local=.045*strata-.065*crevice*(1-t)+.075*nx-.025*nz;
-    const warm=.035*Math.cos((y+.06*x)*.12)+.021*Math.cos(a*5+f.d*.02);
-    const low=.08*smooth(.72,1,t),p=layer.palette,h=layer.haze;
-    const rgb=[p[0]+warm+local-low,p[1]+warm*.75+local*.65-low,p[2]+warm*.54+local*.48-low];
-    colors.push(...rgb.map((v,k)=>Math.round(255*clamp(v*(1-h)+[.69,.73,.73][k]*h,0,1))),255);
-    uvs.push(i/SEG*2.2,(y+190)*.052);
+ function bankSample(B,u,d){
+  const [out,height]=section(u);
+  const tectonic=interp(B.crown,d)*(smooth(.21,.53,u)-smooth(.78,1,u)*.46);
+  let fracture=0,fan=0;
+  for(const [at,width,depth] of B.breaks)
+   fracture+=depth*Math.exp(-Math.pow((d-at)/width,2))*
+    (smooth(.23,.50,u)-.17*smooth(.65,.9,u));
+  for(const [at,width,rise] of B.fans)
+   fan+=rise*Math.max(0,1-Math.abs(d-at)/width)*
+    Math.max(0,1-Math.abs(u-.19)/.19);
+  const rib=.65*Math.sin(d*.19+u*16+B.side*.9)*smooth(.06,.29,u);
+  const bedding=1.35*Math.sin((floorY(d)+height)*.26+d*.065)*
+    (smooth(.23,.4,u)-smooth(.69,.93,u));
+  const shear=1.8*Math.sin(d*.115+B.side*1.6)*smooth(.28,.63,u);
+  const x=centerX(d)+B.side*(span(d)+out+shear+.8*fracture*smooth(.30,.55,u));
+  const y=floorY(d)+height+tectonic-fracture+fan+rib+bedding;
+  return {x,y,d,fracture,fan,height};
+ }
+ function bankColor(B,s,u,d){
+  const zone=smooth(.14,.30,u)-smooth(.36,.62,u);
+  const talus=smooth(.06,.18,u)-smooth(.31,.47,u);
+  const strata=.045*Math.sin((s.y+.14*d)*.25)+.025*Math.sin(s.y*.43+d*.072);
+  const angle=.055*Math.sin(d*.092+u*9+B.side*2);
+  const shade=-s.fracture*.018-.025*zone+.033*talus,warm=.015*zone+.065*talus;
+  return [...palette(B.palette.map((v,i)=>v+strata*(i===2?.6:1)+angle+shade+warm*(i===2?.52:1))),255];
+ }
+ function bankMesh(B){
+  const positions=[],uvs=[],colors=[],indices=[],normals=[],ROW=CROSS+1;
+  for(let j=0;j<=STEPS;j++){
+   const d=dAt(j);
+   for(let i=0;i<=CROSS;i++){
+    const u=i/CROSS,s=bankSample(B,u,d);
+    positions.push(...world(s.x,d,s.y));
+    uvs.push(s.x*.061,d*.063+s.y*.012);
+    colors.push(...bankColor(B,s,u,d));
    }
   }
-  for(let j=0;j<BANDS;j++)for(let i=0;i<SEG;i++){
-   const q=first+j*SIDE+i,n=q+1,b=q+SIDE,bn=n+SIDE;
-   indices.push(q,n,b,n,bn,b);
+  for(let j=0;j<STEPS;j++)for(let i=0;i<CROSS;i++){
+   const a=j*ROW+i,b=a+1,c=a+ROW,e=c+1;
+   if(B.side===-1)indices.push(a,b,c,b,e,c);
+   else indices.push(a,c,b,b,c,e);
   }
-  // Discontinuous UV island: the roof MUST NOT inherit the side's angular UV.
-  // UVs are planar in world-space; a second uneven inner rim prevents the
-  // large flat fan and radial Rock063 streaks seen in the rejected v5 WebGL.
-  const outer=positions.length/3;
-  const topRing=Array.from({length:SEG},(_,i)=>positions.slice((first+i)*3,(first+i)*3+3));
-  const tint=layer.palette.map(n=>Math.round(n*236));
-  const uv=(x,z)=>[(x-z)*SQ*.062,(x+z)*SQ*.062];
-  for(let i=0;i<SEG;i++){
-   const [x,y,z]=topRing[i];
-   positions.push(x,y,z); colors.push(...tint,255); uvs.push(...uv(x,z));
+  // Solid underside: vertical boundary walls and capped bottom strip.
+  const lowerStart=positions.length/3;
+  for(let j=0;j<=STEPS;j++){
+   const d=dAt(j),inner=bankSample(B,0,d),outer=bankSample(B,1,d);
+   for(const [u,s] of [[0,inner],[1,outer]]){
+    positions.push(...world(s.x,d,-183));
+    colors.push(...bankColor(B,s,u,d));
+    uvs.push(s.x*.061,d*.063-2);
+   }
   }
-  const inner=positions.length/3;
-  for(let i=0;i<SEG;i++){
-   const [x,y,z]=topRing[i],radius=shapeAt(f,i);
-   const centerX=(f.d+f.x)*SQ,centerZ=(f.d-f.x)*SQ;
-   const px=centerX+(x-centerX)*.42,pz=centerZ+(z-centerZ)*.42;
-   // The crown dips between irregular shoulders; it is not a level roof.
-   const py=f.top+6.0+(radius-1)*6+.3*(y-f.top)+Math.cos(angles[i]-.9)*1.7;
-   positions.push(px,py,pz);colors.push(...tint,255);uvs.push(...uv(px,pz));
+  for(let j=0;j<STEPS;j++){
+   const a=j*ROW,c=a+ROW,A=lowerStart+j*2,C=A+2,last=a+CROSS,clast=c+CROSS;
+   indices.push(a,c,A,c,C,A,last,A+1,clast,clast,A+1,C+1,A,C,A+1,A+1,C,C+1);
   }
-  const center=positions.length/3,xx=(f.d+f.x)*SQ,zz=(f.d-f.x)*SQ;
-  positions.push(xx,f.top+7,zz);colors.push(...tint,255);uvs.push(...uv(xx,zz));
-  for(let i=0;i<SEG;i++){
-   const j=(i+1)%SEG,a=outer+i,b=outer+j,c=inner+i,dd=inner+j;
-   indices.push(a,c,b,b,c,dd,center,c,dd);
+  for(const j of [0,STEPS]){
+   const base=j*ROW,low=lowerStart+j*2;
+   for(let i=0;i<CROSS;i++)indices.push(low,base+i,base+i+1);
+   indices.push(low,base+CROSS,low+1);
   }
-  // Closed undersurface, below the gorge floor. No visible floating skirts.
-  const bottom=positions.length/3,xxBase=(f.d+f.x)*SQ,zzBase=(f.d-f.x)*SQ;
-  positions.push(xxBase,f.top-f.height-3,zzBase);
-  colors.push(...tint,255);uvs.push(...uv(xxBase,zzBase));
-  for(let i=0;i<SEG;i++){
-   indices.push(bottom,first+BANDS*SIDE+i,first+BANDS*SIDE+(i+1)%SEG);
-  }
- }
- function layerMesh(layer){
-  const positions=[],colors=[],uvs=[],indices=[],normals=[];
-  for(const form of layer.forms)sculptRock(form,layer,positions,colors,uvs,indices);
   for(let i=0;i<positions.length;i++)normals.push(0);
+  return {name:B.name,positions,normals,colors,uvs,indices};
+ }
+ function valleyMesh(){
+  const positions=[],normals=[],uvs=[],colors=[],indices=[];
+  for(let j=0;j<=STEPS;j++){
+   const d=dAt(j),center=centerX(d),w=span(d);
+   for(let k=0;k<=WIDTH;k++){
+    const u=k/WIDTH*2-1,x=center+u*w;
+    const y=floorY(d)+(1-u*u)*
+      (.5+.8*Math.sin(d*.17+u*4));
+    positions.push(...world(x,d,y));
+    uvs.push(d*.045,u*.95);
+    const sand=.025*Math.sin(d*.14+u*11),mid=Math.max(0,1-Math.abs(u));
+    colors.push(...palette([.62+sand+.05*mid,.605+sand+.04*mid,.57+sand+.025*mid]),255);
+   }
+  }
+  const row=WIDTH+1;
+  for(let j=0;j<STEPS;j++)for(let i=0;i<WIDTH;i++){
+   const a=j*row,b=a+1,c=a+row,e=c+1;
+   indices.push(a,c,b,b,c,e);
+  }
+  for(let i=0;i<positions.length;i++)normals.push(0);
+  return {name:"pale_horizon",positions,normals,colors,uvs,indices};
+ }
+ function computeNormals(asset){
+  const {positions,indices,normals}=asset;
   for(let i=0;i<indices.length;i+=3){
    const a=indices[i]*3,b=indices[i+1]*3,c=indices[i+2]*3;
    const ax=positions[b]-positions[a],ay=positions[b+1]-positions[a+1],az=positions[b+2]-positions[a+2];
@@ -119,9 +146,10 @@ function createEnv010Glb(){
    const len=Math.hypot(normals[i],normals[i+1],normals[i+2])||1;
    normals[i]/=len;normals[i+1]/=len;normals[i+2]/=len;
   }
-  return {name:layer.name,positions,normals,colors,uvs,indices};
+  return asset;
  }
- const assets=LAYERS.map(layerMesh);
+ const assets=[...BANKS.map(bankMesh),valleyMesh()].map(computeNormals);
+
  const bin=[],bufferViews=[],accessors=[],meshes=[],nodes=[];
  const pad=()=>{while(bin.length%4)bin.push(0);};
  const bufferView=(bytes,target)=>{

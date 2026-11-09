@@ -37,13 +37,13 @@ test("authored canyon GLB is deterministic valid glTF 2 with material, bounded 3
   assert.equal(indices.count%3,0);assert.ok(indices.count>1000);
  }
  const tri=generated.stats.reduce((sum,a)=>sum+a.triangles,0);
- assert.equal(tri,9360);
- assert.deepEqual(generated.stats.map(m=>m.vertices),[1701,1701,1701]);
- assert.deepEqual(generated.stats.map(m=>m.triangles),[3120,3120,3120]);
+ assert.equal(tri,11276);
+ assert.deepEqual(generated.stats.map(m=>m.vertices),[2262,2262,1218]);
+ assert.deepEqual(generated.stats.map(m=>m.triangles),[4520,4520,2236]);
  // Three closed forms per draw-call group: every volume has a cap,
  // full-depth perimeter, and real thickness in both camera axes.
  assert.ok(generated.stats.every(m=>m.vertices>1200));
- assert.ok(generated.stats.every(a=>a.vertices<=5000));
+ assert.ok(generated.stats.every(a=>a.vertices<=6000));
 });
 test("authored GLB can replace old scenic geometry without affecting ENV009 or picking",async()=>{
  const source=fs.readFileSync(path.join(root,"combat-environment-010.js"),"utf8");

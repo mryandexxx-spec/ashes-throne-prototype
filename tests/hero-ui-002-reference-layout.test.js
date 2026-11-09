@@ -5,7 +5,7 @@ const read=n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8");
 const html=read("index.html"),css=read("styles.css"),game=read("game.js");
 const pkg=JSON.parse(read("package.json"));
 assert.equal(pkg.version,"0.3.85");
-assert.match(html,/v0\.3\.84 · OPSHELP/);
+assert.match(html,/v0\.3\.85 · OPSHELP/);
 const dossier=html.split('<section id="heroDetail"')[1]?.split('<section id="campaign"')[0];
 assert.ok(dossier,"dossier section");
 const left=dossier.indexOf('class="hero-abilities-panel"');

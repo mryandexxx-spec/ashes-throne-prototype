@@ -42,6 +42,8 @@ const watchdog=setInterval(()=>{
    clearInterval(watchdog);
    setTimeout(()=>{
     document.documentElement.dataset.visualStatus="ready";
+    if(mode==="env016")
+      document.documentElement.dataset.env016Rock=doc.documentElement.dataset.env016Rock;
     document.documentElement.dataset.canvasWidth=String(canvas.width);
     document.documentElement.dataset.fighterIndicators=String(controls.childElementCount);
    },700);

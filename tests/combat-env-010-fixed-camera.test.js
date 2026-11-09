@@ -127,12 +127,12 @@ test("fixed camera ignores single-finger rotation, retains 12..21 pinch and clea
  const canvas={addEventListener:(event,fn)=>events.set(event,fn)};
  const window={addEventListener:(event,fn)=>globals.set(event,fn)};
  const bind=vm.runInNewContext(source.slice(begin,end)+"\ninstallArenaPointerCamera",{window});
- const camera={alpha:-3*Math.PI/4,beta:.96,radius:15,lowerRadiusLimit:12,upperRadiusLimit:21};
+ const camera={alpha:-3*Math.PI/4,beta:1.10,radius:15,lowerRadiusLimit:12,upperRadiusLimit:21};
  bind(canvas,camera);
  const down=events.get("pointerdown"),move=events.get("pointermove"),up=events.get("pointerup");
  down({pointerId:1,clientX:10,clientY:10,pointerType:"touch"});
  move({pointerId:1,clientX:140,clientY:60,pointerType:"touch"});
- assert.equal(camera.alpha,-3*Math.PI/4);assert.equal(camera.beta,.96);
+ assert.equal(camera.alpha,-3*Math.PI/4);assert.equal(camera.beta,1.10);
  assert.equal(camera.radius,15,"single-finger drag never zooms");
  down({pointerId:2,clientX:190,clientY:60,pointerType:"touch"});
  move({pointerId:2,clientX:300,clientY:60,pointerType:"touch"});

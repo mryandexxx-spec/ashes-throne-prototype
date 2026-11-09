@@ -32,7 +32,7 @@
   const engine=new BABYLON.Engine(canvas,true,{stencil:true,preserveDrawingBuffer:true});
   const scene=new BABYLON.Scene(engine);
   scene.clearColor=new BABYLON.Color4(.035,.045,.065,1);
-  const camera=new BABYLON.ArcRotateCamera("camera",alpha,.96,yaw==="far"?19:12,
+  const camera=new BABYLON.ArcRotateCamera("camera",alpha,1.10,yaw==="far"?19:12,
    new BABYLON.Vector3(0,.9,0),scene);
   camera.fov=.8;camera.minZ=.1;camera.maxZ=200;
   new BABYLON.HemisphericLight("hemi",new BABYLON.Vector3(0,1,0),scene).intensity=.8;

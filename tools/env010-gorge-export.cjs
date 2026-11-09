@@ -145,11 +145,11 @@ function createEnv010Glb(){
    [31,-123],[48,-108],[63,-101],[83,-115],[115,-136]];
   const farStart=0,FAR_COLS=76,FAR_ROWS=14;
   for(let j=0;j<=FAR_ROWS;j++){
-   const depth=101+j*3.15;
+   const depth=136+j*2.8;
    for(let i=0;i<=FAR_COLS;i++){
     const x=-115+230*i/FAR_COLS,crest=interp(FAR,x);
     const fracture=(2.7*Math.sin(x*.19+j*.47)+1.8*Math.sin(x*.37-j*.31))*(1-j/FAR_ROWS);
-    const y=crest+146-2.55*j+fracture;
+    const y=crest+39-2.25*j+fracture;
     positions.push(...world(x,depth,y));
     uvs.push(x*.025,depth*.028+y*.004);
     const haze=.36+j/FAR_ROWS*.10,grey=[.55,.58,.58],sky=[.65,.68,.70];

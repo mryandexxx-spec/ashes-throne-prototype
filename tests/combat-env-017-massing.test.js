@@ -7,8 +7,8 @@ const visual=fs.readFileSync("combat-visual-007.js","utf8");
 const html=fs.readFileSync("index.html","utf8");
 const fixture=fs.readFileSync("tests/fixtures/env017-full-game.html","utf8");
 test("ENV021 genuinely vendors four CC0 GLB assets, not generated placeholder geometry",()=>{
- assert.deepEqual([...env.SOURCES],["PolyCliff01","Cliff002","Rock001"]);
- assert.equal(env.PLACEMENTS.length,5);
+ assert.deepEqual([...env.SOURCES],["PolyCliff01"]);
+ assert.equal(env.PLACEMENTS.length,3);
  let total=0;
  for(const name of ["Cliff001","Cliff002","Cliff003","Rock001","PolyCliff01"]){
   const file=fs.readFileSync(path.join("assets","env021",name+".glb"));

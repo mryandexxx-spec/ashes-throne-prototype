@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ENV010 real-game interactive browser smoke</title>
+<style>html,body,iframe{width:100%;height:100%;margin:0;border:0;overflow:hidden;background:#12202b}</style>
+</head><body><iframe id="game" src="../../index.html?arena=env010" title="Actual combat UI"></iframe>
+<script>
+/* Strict smoke of the actual index.html controls in headless Chromium.
+ * Synthetic PointerEvents are NOT a physical iPhone pinch test.
+ * We do not alter CombatCore, global game variables, or save state.
+ */
+(()=>{
+ const frame=document.querySelector("#game");
+ let tick=0,phase="entry",started=false,replayed=false,autoSeen=false,firstEngine=null;
+ const status=document.documentElement.dataset;
+ function fail(message){clearInterval(poll);status.visualStatus="error";status.visualError=message;console.error(message);}
+ function assert(test,message){if(!test)throw Error(message);}
+ const poll=setInterval(()=>{
+  try{
+   if(++tick>700){
+     const w=frame.contentWindow,doc=frame.contentDocument;
+     let info="";
+     try{
+      const state=w.eval("state");
+      info=JSON.stringify({phase,active:state.active,winner:state.winner,
+       turn:state.turn,events:state.events?.slice(-3).map(e=>e.type),
+       hp:state.fighters.map(x=>[x.name,x.hp]),
+       pending:w.eval("BattleAnimation.pending()"),
+       visualTransition:w.eval("visualTransition"),
+       autoBattle:w.eval("autoBattle"),
+       autoTimer:w.eval("autoTimer!==null"),
+       retryHidden:doc.querySelector("#battleRetryBtn")?.hidden});
+     }catch(e){info=e.message;}
+     throw Error("interactive smoke timed out: "+info);
+    }
+   const doc=frame.contentDocument,win=frame.contentWindow;
+   if(!doc||doc.readyState!=="complete")return;
+   if(doc.querySelector("#loginCalendar.active")){
+    doc.querySelector('#loginCalendar [data-screen="home"]')?.click();return;
+   }
+   const battle=doc.querySelector("#battle.active"),squad=doc.querySelector("#squad.active");
+   if(phase==="entry"){
+    if(doc.querySelector("#home.active")){doc.querySelector("#startBattle").click();return;}
+    if(squad){doc.querySelector("#squadStart").click();return;}
+    if(!battle||doc.documentElement.dataset.env010Rock!=="ready")return;
+    const canvas=doc.querySelector("#renderCanvas");
+    const engine=win.eval("engine"),camera=win.eval("arenaCamera");
+    assert(engine&&camera&&canvas.width>0&&canvas.height>0,"actual Babylon scene unavailable");
+    firstEngine=engine;
+    const alpha=camera.alpha,beta=camera.beta,radius=camera.radius;
+    const pointer=(type,id,x,y)=>canvas.dispatchEvent(new win.PointerEvent(type,{
+     bubbles:true,pointerType:"touch",pointerId:id,clientX:x,clientY:y,isPrimary:id===1
+    }));
+    pointer("pointerdown",1,80,100);
+    pointer("pointermove",1,220,140);
+    pointer("pointerup",1,220,140);
+    assert(camera.alpha===alpha&&camera.beta===beta&&camera.radius===radius,
+     "single finger changed locked view");
+    pointer("pointerdown",1,100,100);
+    pointer("pointerdown",2,250,100);
+    pointer("pointermove",2,200,100);
+    assert(camera.radius>radius&&camera.radius<=21,"pinch-in did not zoom out");
+    const zoomOut=camera.radius;
+    pointer("pointermove",2,270,100);
+    assert(camera.radius<zoomOut&&camera.radius>=12,"pinch-out did not zoom in");
+    pointer("pointercancel",2,270,100);
+    pointer("pointerup",1,100,100);
+    assert(camera.alpha===alpha&&camera.beta===beta,"pinch altered locked angles");
+    const speed=doc.querySelector("#autoSpeedBtn"),auto=doc.querySelector("#autoBattleBtn");
+    assert(speed&&!speed.disabled&&auto&&!auto.disabled,"combat controls not available");
+    for(let i=0;i<3&&speed.textContent.trim()!=="4×";i++)speed.click();
+    assert(speed.textContent.trim()==="4×","4x speed not activated");
+    auto.click();
+    assert(auto.getAttribute("aria-pressed")==="true","autobattle not enabled");
+    status.pinchTest="pass";
+    status.autoTest="active";
+    status.speedTest="4x";
+    phase="auto";return;
+   }
+   if(phase==="auto"){
+    // Chromium virtual time is not a reliable requestAnimationFrame clock.
+    // Confirm the actual CombatCore win first; ONLY after battle-end, step the
+    // existing presentation queue so the fixture can exercise retry and
+    // Engine reuse. Production game timing and gameplay remain untouched.
+    const core=win.eval("state");
+    if(!core.active&&win.eval("visualTransition")==="result"){
+     assert(core.winner==="ally"||core.winner==="enemy","battle finished without a result");
+     assert(core.events?.some(e=>e.type==="battle-end"),"missing battle-end event");
+     status.coreBattleResult=core.winner;
+     win.eval("BattleAnimation.tick(100, BattleSpeed.multiplier())");
+     if(win.eval("BattleAnimation.pending()")===0)
+      win.eval("finishVisualTransition()");
+    }
+    if(battle&&doc.querySelector("#autoBattleBtn")?.getAttribute("aria-pressed")==="true")
+      autoSeen=true;
+    const retry=doc.querySelector("#battleRetryBtn");
+    if(battle&&retry&&!retry.hidden){
+     assert(autoSeen,"autobattle never entered active state");
+     status.autoTest="battle-finished";
+     retry.click();phase="squad-replay";return;
+    }
+    if(!battle&&squad)throw Error("unexpected squad before battle completion");
+   }
+   if(phase==="squad-replay"){
+    if(!squad)return;
+    doc.querySelector("#squadStart").click();
+    phase="replay";return;
+   }
+   if(phase==="replay"){
+    if(!battle||doc.documentElement.dataset.env010Rock!=="ready")return;
+    const engine=win.eval("engine");
+    assert(engine===firstEngine,"repeat battle allocated a second Babylon engine");
+    const auto=doc.querySelector("#autoBattleBtn");
+    assert(auto?.getAttribute("aria-pressed")==="false","replay kept autobattle on");
+    replayed=true;
+    clearInterval(poll);
+    status.replayTest="pass";
+    status.visualStatus="ready";
+   }
+  }catch(error){fail(error.message);}
+ },100);
+})();
+</script></body></html>

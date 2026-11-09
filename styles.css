@@ -1791,6 +1791,21 @@ body:has(#home.active){height:100dvh;overflow:hidden}
 #home .hq-scene[data-hq-illuminated] .hq-fx-engraving{
  animation:hq-engraving-pulse .47s ease-out both;
 }
+/* HQ-UI-008: seams and blade glints are small highlights, not full-length
+   contours. Animating opacity instead of dash travel avoids drawn-on bars. */
+#home .hq-fx-pinpoint{
+ opacity:0;
+ filter:drop-shadow(0 0 2px #ffebbc);
+}
+#home .hq-scene[data-hq-illuminated] .hq-fx-pinpoint{
+ animation:hq-pinpoint-bloom .47s ease-out both;
+}
+@keyframes hq-pinpoint-bloom{
+ 0%,14%{opacity:0}
+ 43%{opacity:.82}
+ 62%{opacity:1}
+ 100%{opacity:0}
+}
 #home .hq-station.is-activating .hq-station-caption{
  color:#fff0d2;
  border-color:#dab883;
@@ -1824,6 +1839,7 @@ body:has(#home.active){height:100dvh;overflow:hidden}
  100%{opacity:.04}
 }
 @media(prefers-reduced-motion:reduce){
+ #home .hq-scene[data-hq-illuminated] .hq-fx-pinpoint,
  #home .hq-scene[data-hq-illuminated] .hq-fx-glint,
  #home .hq-scene[data-hq-illuminated] .hq-fx-engraving,
  #home .hq-scene[data-hq-illuminated] .hq-fx-zone,

@@ -63,20 +63,22 @@ frame.addEventListener("load",async()=>{
   // Screenshot-only art review mode. Not part of the functional assertion.
   // Freeze the peak of the actual CSS effect so screenshots can be compared
   // with a clean view, without relying on a frame-timing lottery.
-  if(new URLSearchParams(location.search).get("fx-preview")==="campaign"){
+  const preview=new URLSearchParams(location.search).get("fx-preview");
+  if(["campaign","heroes","challenges","baseline-challenges"].includes(preview)){
    const scene=home.querySelector(".hq-scene");
-   const group=scene.querySelector(".hq-fx-campaign");
-   scene.dataset.hqIlluminated="campaign";
-   group.style.animation="none";group.style.opacity=".94";
-   group.querySelectorAll(".hq-fx-sheen,.hq-fx-specular,.hq-fx-glint,.hq-fx-engraving").forEach(el=>{
-    el.style.animation="none";
-    el.style.opacity=el.classList.contains("hq-fx-glint")?".94":".8";
-    if(el.classList.contains("hq-fx-glint")){el.style.strokeDasharray="none";el.style.strokeDashoffset="0";}
-   });
-   const hotspot=home.querySelector(".hq-station-campaign");
-   hotspot.classList.add("is-activating");
    pan.style.scrollSnapType="none";
-   pan.scrollLeft=0; // compare exactly the same crop in plain and FX screenshots
+   pan.scrollLeft=preview.includes("challenges")?pan.scrollWidth-pan.clientWidth:0;
+   if(preview!=="baseline-challenges"){
+    const group=scene.querySelector(".hq-fx-"+preview);
+    scene.dataset.hqIlluminated=preview;
+    group.style.animation="none";group.style.opacity=".94";
+    group.querySelectorAll(".hq-fx-sheen,.hq-fx-specular,.hq-fx-glint,.hq-fx-engraving,.hq-fx-pinpoint").forEach(el=>{
+     el.style.animation="none";
+     el.style.opacity=el.classList.contains("hq-fx-glint")?".94":".8";
+     if(el.classList.contains("hq-fx-glint")){el.style.strokeDasharray="none";el.style.strokeDashoffset="0";}
+    });
+    home.querySelector(".hq-station-"+preview).classList.add("is-activating");
+   }
   }
   document.body.dataset.hqStatus="pass";
  }catch(e){error(e&&e.message||e)}

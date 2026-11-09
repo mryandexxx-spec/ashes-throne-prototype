@@ -64,3 +64,22 @@ test("HQ-UI-007 local material lighting is anchored to the painted scene",()=>{
  assert.match(game,/hqFxTimer=setTimeout/);
  assert.match(game,/\},500\);/);
 });
+
+test("HQ-UI-008 shoulders and swords use short art-matched accents, not fake silhouette bars",()=>{
+ const home=html.slice(html.indexOf('<section id="home"'),html.indexOf('<section id="dailyTasks"'));
+ const heroes=home.slice(home.indexOf('class="hq-fx-zone hq-fx-heroes"'),home.indexOf('class="hq-fx-zone hq-fx-campaign"'));
+ const weapons=home.slice(home.indexOf('class="hq-fx-zone hq-fx-challenges"'),home.indexOf('</g>',home.indexOf('class="hq-fx-zone hq-fx-challenges"')));
+ assert.equal((heroes.match(/class="hq-fx-pinpoint"/g)||[]).length,2);
+ assert.equal((weapons.match(/class="hq-fx-pinpoint"/g)||[]).length,3);
+ assert.doesNotMatch(heroes,/M291 263 Q328 241 375 288|M138 243 Q168 227 190 248/);
+ assert.doesNotMatch(weapons,/M1835 159 L1836 284|M1878 146 L1879 277/);
+ assert.match(weapons,/M1837 163 L1834 188/);
+ assert.match(weapons,/M1873 189 L1869 218/);
+ assert.match(weapons,/M1905 163 L1901 187/);
+ assert.match(home,/id="hq-fx-armor-clip"/);
+ assert.match(home,/id="hq-fx-blades-clip"/);
+ assert.match(heroes,/clip-path="url\(#hq-fx-armor-clip\)"/);
+ assert.match(weapons,/clip-path="url\(#hq-fx-blades-clip\)"/);
+ assert.match(css,/@keyframes hq-pinpoint-bloom/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+});

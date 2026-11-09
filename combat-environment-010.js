@@ -39,6 +39,10 @@ const CombatEnvironment010=(()=>{
      scene.materials.find(m=>m.name==="env010_glb_mat_"+name):null;
     if(mat){mat.diffuseTexture=photoRock.albedo;mat.bumpTexture=photoRock.normal;}
    }
+   for(const name of ["west_terraces","east_terraces"]){
+    const mat=scene.materials?.find(m=>m.name==="env012_mat_"+name);
+    if(mat){mat.diffuseTexture=photoRock.albedo;mat.bumpTexture=photoRock.normal;}
+   }
   }
   function mat(name){
    const m=own(new B.StandardMaterial("env010_mat_"+name,scene));
@@ -388,7 +392,21 @@ const CombatEnvironment010=(()=>{
     }catch(error){return false;}
   }
   loadLocalRock();
-  loadSculptedRock();
+  // ENV012B is a reversible scenic swap; retain the ENV010 fallback.
+  let env012Ready=false;
+  if(typeof CombatEnvironment012!=="undefined"&&CombatEnvironment012.supported(B)){
+   try{
+    CombatEnvironment012.build(B,scene,own);
+    for(const mesh of meshes)mesh.dispose();
+    scene.materials?.find(m=>m.name==="env010_mat_atmosphere")?.dispose?.();
+    env012Ready=true;
+    if(typeof document!=="undefined"&&document.documentElement){
+     document.documentElement.dataset.env012Terrain="ready";
+     document.documentElement.dataset.env010Rock="ready";
+    }
+   }catch(err){console.warn("ENV012 composition unavailable; retaining ENV010",err);}
+  }
+  if(!env012Ready)loadSculptedRock();
   // Only for a fixed camera: retire ENV009's 360-degree wall rings so the
   // new distant composition is actually visible. The nearby ledge and ravine
   // remain fully three-dimensional; the old meshes stay owned by the Scene.

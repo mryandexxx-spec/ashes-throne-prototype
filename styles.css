@@ -1629,3 +1629,113 @@ body:has(#home.active){height:100dvh;overflow:hidden}
 @media(orientation:landscape) and (max-height:440px){
  #home .hq-scene{width:max(1250px,330dvh)}
 }
+
+
+/* HQ-UI-004: hotspots belong to painted objects, not floating dashboard cards.
+   Full-object transparent hit boxes + small captions beneath each landmark.
+   DOM state nodes remain for existing renderHeadquarters() without fake values. */
+#home .hq-scene .hq-station{
+ position:absolute;
+ z-index:2;
+ display:block;
+ top:12%;
+ bottom:10%;
+ min-height:0;
+ min-width:0;
+ width:auto;
+ margin:0;
+ padding:0;
+ border:0;
+ border-radius:12px;
+ background:transparent;
+ box-shadow:none;
+ color:#fff4e4;
+ cursor:pointer;
+ text-align:center;
+ -webkit-tap-highlight-color:transparent;
+ touch-action:pan-x;
+ backdrop-filter:none;
+ -webkit-backdrop-filter:none;
+ scroll-snap-align:center;
+}
+#home .hq-scene .hq-station:before{display:none}
+#home .hq-scene .hq-station-heroes{left:1%;width:25%;top:9%;bottom:8%}
+#home .hq-scene .hq-station-campaign{left:27%;width:27%;top:24%;bottom:8%}
+#home .hq-scene .hq-station-operations{left:55%;width:21%;top:15%;bottom:8%}
+#home .hq-scene .hq-station-challenges{left:82%;width:18%;top:11%;bottom:8%}
+#home .hq-scene .hq-station:focus-visible{
+ outline:3px solid #ffe3a1;
+ outline-offset:0;
+ background:#b58b2818;
+}
+@media(hover:hover) and (pointer:fine){
+ #home .hq-scene .hq-station:hover{
+  background:linear-gradient(180deg,#ffffff08,#ffd27b19);
+  box-shadow:inset 0 0 0 1px #eac07866;
+ }
+ #home .hq-scene .hq-station:hover .hq-station-caption{
+  background:linear-gradient(#49301eea,#231b1beb);
+  border-color:#ffe1aa;
+  transform:translateX(-50%) translateY(-3px);
+ }
+}
+#home .hq-scene .hq-station-caption{
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ gap:6px;
+ position:absolute;
+ left:50%;
+ bottom:0;
+ transform:translateX(-50%);
+ min-width:max-content;
+ max-width:95%;
+ min-height:39px;
+ padding:6px 12px;
+ border:1px solid #b38a51c9;
+ border-radius:5px;
+ background:linear-gradient(180deg,#30221ddd,#17181ee9);
+ box-shadow:0 3px 13px #0b080abb,inset 0 1px #f0c57b48;
+ color:#fff0db;
+ font:500 clamp(13px,1.7vw,19px)/1.1 Georgia,"Times New Roman",serif;
+ text-shadow:0 2px 4px #0b080a;
+ white-space:nowrap;
+ pointer-events:none;
+}
+#home .hq-scene .hq-station-icon{
+ display:inline;
+ width:auto;height:auto;
+ border:0;
+ background:none;
+ font:500 18px/1 Georgia,serif;
+ color:#e4b56c;
+}
+#home .hq-scene .hq-station-arrow{
+ color:#efca85;
+ font:700 20px/1 Georgia,serif;
+}
+#home .hq-scene .hq-station-data{
+ position:absolute!important;
+ width:1px!important;height:1px!important;
+ padding:0!important;margin:-1px!important;
+ border:0!important;
+ overflow:hidden!important;
+ clip:rect(0,0,0,0)!important;
+ white-space:nowrap!important;
+ clip-path:inset(50%)!important;
+}
+/* Preserve the state hooks and existing progress bar dimensions in an
+   accessible visually-hidden summary; only the caption is visual. */
+#home .hq-scene .hq-station .hq-meter{display:block}
+@media(orientation:landscape) and (max-height:440px){
+ #home .hq-scene .hq-station-caption{
+  min-height:34px;
+  padding:5px 10px;
+  font-size:14px;
+ }
+ #home .hq-scene .hq-station-icon{font-size:16px}
+ #home .hq-scene .hq-station-arrow{font-size:17px}
+}
+@media(max-width:680px){
+ #home .hq-scene .hq-station-caption{font-size:13px;padding:5px 8px}
+}

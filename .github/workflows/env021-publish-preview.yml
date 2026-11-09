@@ -1,0 +1,46 @@
+name: ENV021 save directly viewable browser screenshots to Draft branch
+on:
+  push:
+    branches: [feat/combat-env-021-cc0-cliff-assets]
+    paths: ['.github/workflows/env021-publish-preview.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Capture authenticated evidence, no image generation
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)"
+          mkdir -p docs/art/env021
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/env021-preview-server.log 2>&1 &
+          sleep 2
+          for view in normal far; do
+            radius=12
+            if [ "$view" = far ]; then radius=19; fi
+            url="http://127.0.0.1:8765/tests/fixtures/env017-full-game.html?radius=$radius"
+            flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390)
+            timeout 65s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --screenshot="$PWD/docs/art/env021/$view.png" "$url" 2>"/tmp/env021-$view.log"
+            dom="$(timeout 65s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --dump-dom "$url" 2>>"/tmp/env021-$view.log")"
+            echo "$dom" | grep -q 'data-visual-status="ready"'
+            echo "$dom" | grep -q 'data-env021="external-glb"'
+            test "$(stat -c %s "docs/art/env021/$view.png")" -gt 65000
+            echo "$view: $(stat -c %s "docs/art/env021/$view.png") bytes"
+          done
+      - name: Commit only verified real Chromium PNG to isolated Draft branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/art/env021/normal.png docs/art/env021/far.png
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'ENV021: preserve real Chromium 844x390 full-HUD art review images'
+          git push origin HEAD:feat/combat-env-021-cc0-cliff-assets

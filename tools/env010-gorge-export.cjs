@@ -23,15 +23,15 @@ function createEnv010Glb(){
  const RAVINE=[[26,-114],[43,-123],[68,-126],[86,-132],[108,-138],[131,-149],[153,-151],[181,-157]];
  const WIDE=[[26,8],[42,10],[70,13],[91,16],[117,19],[146,21],[181,24]];
  const SECTION=[[0,0,0],[.065,7,2],[.14,15,11],[.23,23,29],
-  [.32,27,43],[.39,29,61],[.45,33,82],[.52,38,96],
-  [.58,45,98],[.66,60,96],[.75,80,80],[.86,111,57],[1,154,3]];
+  [.32,27,43],[.39,29,62],[.45,33,80],[.52,38,98],
+  [.58,45,83],[.66,60,72],[.75,80,62],[.86,111,45],[1,154,3]];
  const BANKS=[
- {name:"front_buttress",side:-1,palette:[.49,.465,.420],
-  crown:[[26,1],[39,11],[58,14],[78,-5],[93,6],[111,15],[131,-1],[151,11],[181,-6]],
+ {name:"front_buttress",side:-1,palette:[.49,.465,.420],heightScale:.79,
+  crown:[[26,-9],[39,-7],[58,20],[78,-16],[93,6],[111,24],[131,-12],[151,19],[181,-18]],
   breaks:[[42,2.3,6],[82,2.6,9],[119,3.4,8],[157,3,10]],
   fans:[[50,10,7],[104,12,9],[155,10,6]]},
- {name:"middle_terraces",side:1,palette:[.52,.49,.44],
-  crown:[[26,6],[45,-4],[62,16],[80,11],[103,-9],[122,16],[145,9],[161,-6],[181,8]],
+ {name:"middle_terraces",side:1,palette:[.52,.49,.44],heightScale:.87,
+  crown:[[26,5],[45,-12],[62,22],[80,9],[103,-20],[122,23],[145,4],[161,-16],[181,10]],
   breaks:[[54,2.7,7],[97,3.3,11],[137,2.6,7],[171,3.5,9]],
   fans:[[67,9,7],[117,12,8],[171,8,7]]}
  ];
@@ -62,7 +62,7 @@ function createEnv010Glb(){
     (smooth(.23,.4,u)-smooth(.69,.93,u));
   const shear=1.8*Math.sin(d*.115+B.side*1.6)*smooth(.28,.63,u);
   const x=centerX(d)+B.side*(span(d)+out+shear+.8*fracture*smooth(.30,.55,u));
-  const y=floorY(d)+height+tectonic-fracture+fan+rib+bedding;
+  const y=floorY(d)+height*B.heightScale+tectonic-fracture+fan+rib+bedding;
   return {x,y,d,fracture,fan,height};
  }
  function bankColor(B,s,u,d){
@@ -71,7 +71,8 @@ function createEnv010Glb(){
   const strata=.045*Math.sin((s.y+.14*d)*.25)+.025*Math.sin(s.y*.43+d*.072);
   const angle=.055*Math.sin(d*.092+u*9+B.side*2);
   const shade=-s.fracture*.018-.025*zone+.033*talus,warm=.015*zone+.065*talus;
-  return [...palette(B.palette.map((v,i)=>v+strata*(i===2?.6:1)+angle+shade+warm*(i===2?.52:1))),255];
+  const haze=.28*smooth(85,178,d)+(B.side===1?.06:0);
+  return [...palette(B.palette.map((v,i)=>(v+strata*(i===2?.6:1)+angle+shade+warm*(i===2?.52:1))*(1-haze)+[.65,.69,.71][i]*haze)),255];
  }
  function bankMesh(B){
   const positions=[],uvs=[],colors=[],indices=[],normals=[],ROW=CROSS+1;
@@ -80,7 +81,9 @@ function createEnv010Glb(){
    for(let i=0;i<=CROSS;i++){
     const u=i/CROSS,s=bankSample(B,u,d);
     positions.push(...world(s.x,d,s.y));
-    uvs.push(s.x*.061,d*.063+s.y*.012);
+    // Rocky wall faces receive altitude-based UV; terraces retain ground UV.
+    const steep=smooth(.23,.44,u)-smooth(.57,.82,u);
+    uvs.push(s.x*.047+d*.012,(s.y+150)*.059*steep+d*.052*(1-steep));
     colors.push(...bankColor(B,s,u,d));
    }
   }
@@ -128,6 +131,29 @@ function createEnv010Glb(){
   const row=WIDTH+1;
   for(let j=0;j<STEPS;j++)for(let i=0;i<WIDTH;i++){
    const a=j*row,b=a+1,c=a+row,e=c+1;
+   indices.push(a,c,b,b,c,e);
+  }
+  // Real far-spanning ridge with a low, asymmetric central saddle.
+  // This distant mesh has depth, not a billboard or a separate draw call.
+  const FAR=[[-115,-121],[-94,-106],[-80,-89],[-65,-83],
+   [-49,-100],[-34,-117],[-18,-132],[0,-142],[15,-127],
+   [31,-111],[48,-90],[63,-82],[83,-103],[115,-130]];
+  const farStart=positions.length/3,FAR_COLS=62,FAR_ROWS=12;
+  for(let j=0;j<=FAR_ROWS;j++){
+   const depth=202+j*3.3;
+   for(let i=0;i<=FAR_COLS;i++){
+    const x=-115+230*i/FAR_COLS,crest=interp(FAR,x);
+    const fracture=(2.7*Math.sin(x*.19+j*.47)+1.8*Math.sin(x*.37-j*.31))*(1-j/FAR_ROWS);
+    const y=crest-2.25*j+fracture;
+    positions.push(...world(x,depth,y));
+    uvs.push(x*.025,depth*.028+y*.004);
+    const haze=.30+j/FAR_ROWS*.08,grey=[.64,.675,.69],sky=[.73,.765,.77];
+    colors.push(...palette(grey.map((v,k)=>v*(1-haze)+sky[k]*haze+
+     .018*Math.sin(x*.11+j*.7))),255);
+   }
+  }
+  for(let j=0;j<FAR_ROWS;j++)for(let i=0;i<FAR_COLS;i++){
+   const a=farStart+j*(FAR_COLS+1)+i,b=a+1,c=a+FAR_COLS+1,e=c+1;
    indices.push(a,c,b,b,c,e);
   }
   for(let i=0;i<positions.length;i++)normals.push(0);

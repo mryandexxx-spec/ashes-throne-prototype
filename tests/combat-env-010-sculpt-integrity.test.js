@@ -19,7 +19,7 @@ test("two solid banks have a continuous winding common valley floor",()=>{
   }
   assert.ok(normalsUp>=8,"surface crest normals should face sky");
  }
- assert.equal(g.accessors[g.meshes[2].primitives[0].attributes.POSITION].count,(S+1)*(W+1));
+ assert.ok(g.accessors[g.meshes[2].primitives[0].attributes.POSITION].count>(S+1)*(W+1),"distant ridge is real geometry");
  for(let j=0;j<=S;j+=6){
   const left=get(0,"POSITION",j*(C+1)),right=get(1,"POSITION",j*(C+1));
   const f0=get(2,"POSITION",j*(W+1)),f1=get(2,"POSITION",j*(W+1)+W);

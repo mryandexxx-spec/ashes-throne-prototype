@@ -297,7 +297,8 @@ function renderHeadquarters(){
  const campBar=$("#hqCampaignFill");if(campBar)campBar.style.width=(missions.length?100*completed/missions.length:0)+"%";
  const ops=operationProgress.active||signalProgress.active;
  set("#hqOperationStatus",ops?"Операция в работе":"Нет активных операций");
- const opsBar=$("#hqOperationFill");if(opsBar)opsBar.style.width=ops?"50%":"0%";
+ const opsFlag=$("#hqOperationFlag");if(opsFlag)opsFlag.classList.toggle("is-active",!!ops);
+ set("#hqOperationText",ops?"Активна":"Готово к запуску");
  const challengeDone=Object.values(challengeProgress.bestStars||{}).filter(n=>n>0).length;
  const challengeTotal=ChallengeCore.all().length;
  set("#hqChallengeStatus","Пройдено: "+challengeDone+" / "+challengeTotal);

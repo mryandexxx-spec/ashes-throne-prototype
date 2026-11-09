@@ -9,10 +9,12 @@ test("HQ menu keeps real entry points and native horizontal scroll",()=>{
   assert.ok(html.includes('id="'+s+'"'),s);
  assert.match(css,/\.hq-pan\{[^}]*scroll-snap-type:x proximity/);
  assert.match(css,/touch-action:pan-x/);
+ assert.match(css,/scroll-snap-align:center/);
  assert.match(css,/safe-area-inset-left/);
 });
 test("HQ uses game state and does not duplicate IDs",()=>{
  assert.match(game,/function renderHeadquarters\(\)/);
+ assert.doesNotMatch(game,/ops\?"50%"/,"operation must not invent 50% progress");
  for(const s of ["selectedPartyIds","campaignProgress","challengeProgress","operationProgress","signalProgress","progress.energy.value","playerNickname"])
   assert.ok(game.includes(s),s);
  const ids=[...html.matchAll(/\sid="([^"]+)"/g)].map(x=>x[1]);

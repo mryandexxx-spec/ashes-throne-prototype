@@ -1391,3 +1391,10 @@ body:has(#home.active){height:100dvh;overflow:hidden}
 }
 @media(max-width:640px){.hq-profile-name strong{max-width:80px}.hq-quick-actions{gap:0}.hq-resources{gap:6px}}
 @media(prefers-reduced-motion:reduce){.hq-pan{scroll-behavior:auto}.hq-meter span{transition:none}}
+
+/* HQ-UI-001 refinement: snap to actual stations; operation is a state, not fictitious percentage. */
+.hq-station{scroll-snap-align:center}
+.hq-ops-state{display:inline-flex;align-items:center;gap:7px;min-height:20px;color:#c7cdbb;font-size:11px}
+.hq-ops-led{display:block;width:8px;height:8px;border-radius:50%;background:#748379;border:1px solid #e2d2a577}
+.hq-ops-state.is-active .hq-ops-led{background:#a9d79e;box-shadow:0 0 8px #a5d99766}
+.hq-ops-state.is-active small{color:#d3edc8}

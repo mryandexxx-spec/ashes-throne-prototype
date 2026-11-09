@@ -27,3 +27,17 @@ test("HQ image is small, self-contained, and not a new 3D scene",()=>{
  const home=html.split('id="home"')[1].split('id="dailyTasks"')[0];
  assert.doesNotMatch(home,/hero-banner|home-cards|САГА О РАСКОЛОТОЙ ИМПЕРИИ|canvas|babylon/i);
 });
+
+test("HQ-UI-004 painted landmarks are full clickable buttons with readable captions",()=>{
+ const home=html.slice(html.indexOf('<section id="home"'),html.indexOf('<section id="dailyTasks"'));
+ for(const [zone,target] of [["heroes","collection"],["campaign","campaign"],["operations","operations"],["challenges","challenges"]]){
+  const match=home.match(new RegExp('<button[^>]*class="hq-station hq-station-'+zone+'"[^>]*data-screen="'+target+'"'));
+  assert.ok(match,zone+" direct navigation");
+ }
+ assert.equal((home.match(/class="hq-station-caption"/g)||[]).length,4);
+ assert.match(css,/HQ-UI-004: hotspots belong to painted objects/);
+ assert.match(css,/#home \.hq-scene \.hq-station\{[^}]*touch-action:pan-x/);
+ for(const id of ["hqSquadStatus","hqCampaignStatus","hqCampaignFill","hqCampaignStars","hqOperationStatus","hqOperationFlag","hqOperationText","hqChallengeStatus","hqChallengeFill"]){
+  assert.ok(home.includes('id="'+id+'"'),id+" state hook");
+ }
+});

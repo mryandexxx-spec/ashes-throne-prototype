@@ -46,8 +46,8 @@ const CombatEnvironment017=(()=>{
   function read(accessorId,type,allowed,allowNormalized=false){
    const a=json.accessors?.[accessorId],v=json.bufferViews?.[a?.bufferView];
    if(!a||!v||a.type!==type||!allowed.includes(a.componentType)||a.count<3||
-      a.count>25000||a.sparse||(a.normalized&&!allowNormalized))throw Error("ENV021 accessor schema");
-   const components=type==="SCALAR"?1:type==="VEC2"?2:3;
+      a.count>(type==="SCALAR"?120000:25000)||a.sparse||(a.normalized&&!allowNormalized))throw Error("ENV021 accessor schema");
+   const components=type==="SCALAR"?1:type==="VEC2"?2:type==="VEC4"?4:3;
    const bytes=a.componentType===5126||a.componentType===5125?4:a.componentType===5123?2:1;
    const step=v.byteStride||components*bytes;
    const offset=(v.byteOffset||0)+(a.byteOffset||0);
@@ -74,7 +74,7 @@ const CombatEnvironment017=(()=>{
   const vertexColors=prim.attributes.COLOR_0===undefined?null:
    read(prim.attributes.COLOR_0,"VEC4",[5121,5123,5126],true);
   const count=pos.length/3;
-  if(indices.length%3||indices.some(i=>i>=count)||count>5000)
+  if(indices.length%3||indices.some(i=>i>=count)||count>25000)
    throw Error("ENV021 invalid indices");
   const image=json.images?.[0],view=json.bufferViews?.[image?.bufferView];
   let imageBytes=null,imageMime=null;

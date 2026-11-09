@@ -17,8 +17,6 @@ on:
       - 'tests/combat-env-016-erosion.test.js'
       - '.github/workflows/env009-webgl-preview.yml'
   workflow_dispatch:
-permissions:
-  contents: write
 jobs:
   capture:
     runs-on: ubuntu-latest
@@ -123,23 +121,3 @@ jobs:
           name: env016-env010-real-game-hud
           path: artifacts/*-full-hud-*.png
           if-no-files-found: warn
-
-      - name: Archive one ENV016 actual WebGL comparison and local GLB in draft branch
-        if: success() && github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p docs/evidence/env016
-          cp artifacts/env010-default.png artifacts/env010-far.png \
-             artifacts/env016-default.png artifacts/env016-far.png \
-             artifacts/env010-full-hud-844x390.png \
-             artifacts/env016-full-hud-844x390.png docs/evidence/env016/
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/env016/fractured-gorge-v1.glb docs/evidence/env016/*.png
-          if git diff --cached --quiet; then
-            echo "Visual evidence unchanged."
-            exit 0
-          fi
-          git commit -m 'test(env016): save correctly labelled WebGL comparison screenshots'
-          git push origin "HEAD:refs/heads/${{ github.head_ref }}"

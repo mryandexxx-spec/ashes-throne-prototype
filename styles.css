@@ -1398,3 +1398,234 @@ body:has(#home.active){height:100dvh;overflow:hidden}
 .hq-ops-led{display:block;width:8px;height:8px;border-radius:50%;background:#748379;border:1px solid #e2d2a577}
 .hq-ops-state.is-active .hq-ops-led{background:#a9d79e;box-shadow:0 0 8px #a5d99766}
 .hq-ops-state.is-active small{color:#d3edc8}
+
+
+/* HQ-UI-002: art-directed gold/charcoal presentation; all styles scoped to HQ. */
+#home.hq-screen.active{
+ background:#201c1a;
+ color:#f4ebd8;
+}
+#home .hq-top{
+ background:linear-gradient(180deg,rgba(17,17,21,.98),rgba(25,22,24,.97));
+ border-bottom:1px solid #a78348a8;
+ box-shadow:0 3px 14px #080809a8;
+}
+#home .hq-profile-portrait{
+ background:radial-gradient(circle at 35% 24%,#927b59,#48352d 65%,#211f20);
+ border:2px solid #c99a4a;
+ box-shadow:0 0 0 2px #16161a,0 0 9px #d4a35166;
+ color:#f9d99c;
+}
+#home .hq-profile-name strong{color:#fff5e7;font-family:Georgia,serif;letter-spacing:.01em}
+#home .hq-profile-name small{color:#d8c9b0}
+#home .hq-profile-xp{background:#302c28;border:1px solid #8c7654;height:6px;border-radius:6px}
+#home .hq-profile-xp span{background:linear-gradient(90deg,#6acdd2,#b1ecdc)}
+#home .hq-resources{gap:clamp(5px,1.3vw,16px)}
+#home .hq-resources>span{
+ background:linear-gradient(#1e1d20ee,#282125df);
+ border:1px solid #765a3c88;
+ border-radius:18px;
+ padding:4px 9px;
+ box-shadow:inset 0 1px #d9ad6740;
+ color:#e2b96e;
+}
+#home .hq-resources strong{color:#fff1db}
+#home .hq-quick-actions button{color:#ecd4aa;text-shadow:0 1px #000}
+#home .hq-quick-actions button:hover{background:#c7a05c24}
+#home .hq-pan{
+ background:#55493f;
+ scroll-padding-inline:clamp(16px,4vw,50px);
+}
+#home .hq-scene{
+ /* The illustrative SVG stays as a lightweight fallback until a clean,
+    text-free panoramic painting is approved as a game asset. */
+ background-color:#584f42;
+ background-image:linear-gradient(90deg,#16191a44,transparent 15%,transparent 85%,#16191a33),url("assets/hq-hall.svg");
+ filter:none;
+}
+#home .hq-scene:before{
+ background:linear-gradient(0deg,#130f13bf 0%,#211b1a57 31%,transparent 69%,#2b1d1633 100%);
+}
+#home .hq-station{
+ top:auto;
+ bottom:clamp(13px,5.5dvh,36px);
+ width:clamp(220px,22vw,320px);
+ min-height:149px;
+ padding:0 11px 11px;
+ border:1px solid #be965b;
+ border-radius:9px;
+ color:#f1e7d8;
+ background:linear-gradient(180deg,#241c1cd9,#201b1ef2 72%);
+ box-shadow:0 8px 24px #0b080ba8,inset 0 1px #fae3b144;
+ backdrop-filter:blur(5px);
+ -webkit-backdrop-filter:blur(5px);
+}
+#home .hq-station:before{
+ top:-2px;
+ left:16px;
+ right:16px;
+ height:2px;
+ background:linear-gradient(90deg,transparent,#f7cf86,transparent);
+}
+#home .hq-station h2{
+ display:flex;
+ align-items:center;
+ gap:7px;
+ min-height:38px;
+ margin:0 -11px 9px;
+ padding:4px 10px;
+ border-bottom:1px solid #9c744b9c;
+ background:linear-gradient(90deg,#382725ee,#201b1ce8);
+ border-radius:8px 8px 0 0;
+ color:#fff3e4;
+ font:500 clamp(15px,1.9vw,20px)/1.15 Georgia,"Times New Roman",serif;
+ text-transform:none;
+ letter-spacing:0;
+}
+#home .hq-station h2 span:first-child{
+ display:grid;
+ place-items:center;
+ flex:none;
+ width:30px;height:30px;
+ border:1px solid #b88b51;
+ border-radius:50%;
+ background:linear-gradient(140deg,#76522d,#211c1a);
+ color:#ffd58a;
+ font:500 20px/1 Georgia,serif;
+}
+#home .hq-station h2 .hq-station-arrow{margin-left:auto;color:#e7b76c;font:28px/1 Georgia,serif}
+#home .hq-station p{
+ color:#ddd0b9;
+ font-size:clamp(11px,1.35vw,13px);
+ line-height:1.35;
+ margin:5px 0;
+}
+#home .hq-squad-slots{gap:5px;margin:7px 0}
+#home .hq-squad-slot{
+ width:27px;height:27px;
+ border:1px solid #a98857;
+ border-radius:5px;
+ background:linear-gradient(145deg,#55545a,#242126);
+ box-shadow:inset 0 0 6px #05040691;
+}
+#home .hq-squad-slot.filled{
+ background:radial-gradient(circle at 45% 34%,#d1b583 0 23%,#75583d 28% 50%,#383139 56%);
+ border-color:#d9b776;
+}
+#home .hq-meter{
+ height:7px;
+ width:100%;
+ border:1px solid #8f744f;
+ background:#181b21;
+ margin:7px 0;
+}
+#home .hq-meter span{
+ background:linear-gradient(90deg,#61b2b9,#9ad5c4);
+ box-shadow:0 0 6px #83d1d488;
+}
+#home .hq-ops-led.is-active{background:#8ad1a0}
+#home .hq-station-actions{margin-top:8px}
+#home .hq-station-actions button{
+ min-height:40px;
+ flex:1;
+ color:#2d201a;
+ border:1px solid #e2b875;
+ background:linear-gradient(180deg,#ffe3a3,#d19a4d 80%,#b78039);
+ border-radius:6px;
+ box-shadow:inset 0 1px #fff3ce9c,0 2px 4px #050405aa;
+ font:700 12px/1.2 Georgia,serif;
+ text-shadow:0 1px #ffefc055;
+}
+#home .hq-station-actions button+button{
+ background:linear-gradient(#4a3830,#241f20);
+ color:#f9dcac;
+ text-shadow:none;
+}
+#home .hq-station-actions button:active{transform:translateY(1px)}
+#home .hq-swipe-indicator{bottom:calc(clamp(49px,7dvh,58px) + 2px);opacity:.7}
+#home .hq-bottom{
+ border-top:1px solid #c69353c7;
+ background:linear-gradient(#211d1feF,#121418);
+ box-shadow:0 -3px 13px #0c0b0bb8;
+}
+#home .hq-bottom button{
+ color:#f6e9d8;
+ font:500 clamp(11px,1.55vw,15px)/1.1 Georgia,serif;
+ gap:1px;
+}
+#home .hq-bottom button span{color:#e3c99d;font-size:clamp(16px,2.4vw,24px)}
+#home .hq-bottom button[aria-current]{
+ background:radial-gradient(ellipse at 50% 100%,#9b612a7a,transparent 72%);
+ color:#ffe5b1;
+ border:none;
+ border-bottom:2px solid #f1b959;
+ box-shadow:inset 0 -3px 12px #d79b4866;
+}
+#home .hq-more{
+ border:1px solid #b88d55;
+ background:linear-gradient(#2c2322f8,#15171af8);
+ box-shadow:0 8px 22px #080709de;
+}
+#home .hq-more>button{color:#f3dfbd;border-bottom-color:#7b62466b}
+#home .hq-more>button:hover{background:#ae87552e}
+#home .hq-tooltip{background:#1e1b1eF5;border-color:#d1a267;color:#ffe5c6}
+@media(orientation:landscape) and (max-height:440px){
+ #home .hq-top{height:44px}
+ #home .hq-station{
+  bottom:12px;
+  min-height:0;
+  width:clamp(215px,22vw,264px);
+  padding:0 8px 7px;
+ }
+ #home .hq-station h2{
+  margin:0 -8px 6px;
+  padding:1px 7px;
+  min-height:31px;
+  font-size:14px;
+ }
+ #home .hq-station h2 span:first-child{width:24px;height:24px;font-size:16px}
+ #home .hq-station p{font-size:10px;margin:3px 0}
+ #home .hq-squad-slot{width:20px;height:20px}
+ #home .hq-station-actions{margin-top:4px}
+ #home .hq-station-actions button{min-height:36px;font-size:11px}
+ #home .hq-bottom{height:49px}
+ #home .hq-bottom button{font-size:11px}
+ #home .hq-swipe-indicator{bottom:49px}
+}
+@media(max-width:680px){
+ #home .hq-resources>span{padding:3px 6px}
+ #home .hq-station{width:215px}
+}
+@media(prefers-reduced-motion:reduce){
+ #home .hq-station-actions button:active{transform:none}
+}
+
+
+/* HQ-UI-003: painterly panoramic HQ artwork, graceful fallback to original SVG.
+   The WebP files must be added as assets/hq-hall-painting[-mobile].webp.
+   If either resource is absent, its layer is transparent and the original
+   vector HQ remains visible; keep the DOM stations and all navigation live. */
+#home .hq-scene{
+ width:max(1250px,330dvh);
+ background-color:#55493f;
+ background-image:
+  linear-gradient(90deg,#16121566,transparent 18%,transparent 82%,#16121555),
+  image-set(
+   url("assets/hq-hall-painting-mobile.webp") 1x,
+   url("assets/hq-hall-painting.webp") 2x
+  ),
+  url("assets/hq-hall.svg");
+ background-position:center center,center 42%,center center;
+ background-repeat:no-repeat,no-repeat,no-repeat;
+ background-size:100% 100%,cover,100% 100%;
+}
+#home .hq-scene:before{
+ background:linear-gradient(180deg,#1c191a3d,transparent 34%,#0e0e10a3 100%);
+}
+#home .hq-station-heroes{left:4%}
+#home .hq-station-campaign{left:28%}
+#home .hq-station-operations{left:53%}
+#home .hq-station-challenges{left:76%}
+@media(orientation:landscape) and (max-height:440px){
+ #home .hq-scene{width:max(1250px,330dvh)}
+}

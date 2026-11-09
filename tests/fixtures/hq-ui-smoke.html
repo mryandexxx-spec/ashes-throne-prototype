@@ -12,7 +12,11 @@ frame.addEventListener("load",()=>{
   // A first-day login calendar may open automatically: the fixture only changes the visible section.
   doc.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s===home));
   const stations=[...home.querySelectorAll(".hq-station")];
-  if(stations.length!==4||pan.scrollWidth<=pan.clientWidth*2)throw Error("Not a four-station panorama");
+  if(stations.length!==4||pan.scrollWidth<=pan.clientWidth+250)throw Error("Not a four-station panorama");
+  // HQ-UI-003 uses a proportional painting instead of an oversized decorative SVG.
+  // Every station must remain within the pan area, reachable by horizontal swipe.
+  const end=stations[3].getBoundingClientRect().right-pan.getBoundingClientRect().left;
+  if(end>pan.scrollWidth+2)throw Error("Last station beyond panorama");
   const vr=pan.getBoundingClientRect();
   const visible=stations.filter(s=>{const r=s.getBoundingClientRect();return Math.min(r.right,vr.right)-Math.max(r.left,vr.left)>60});
   if(visible.length<2)throw Error("Fewer than two visible stations");

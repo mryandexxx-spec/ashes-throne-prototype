@@ -140,9 +140,9 @@ function createEnv010Glb(){
   const positions=[],normals=[],uvs=[],colors=[],indices=[];
   // Real far-spanning ridge with a low, asymmetric central saddle.
   // This distant mesh has depth, not a billboard or a separate draw call.
-  const FAR=[[-115,-121],[-94,-106],[-80,-89],[-65,-83],
-   [-49,-100],[-34,-117],[-18,-132],[0,-142],[15,-127],
-   [31,-111],[48,-90],[63,-82],[83,-103],[115,-130]];
+  const FAR=[[-115,-126],[-94,-116],[-80,-107],[-65,-102],
+   [-49,-111],[-34,-124],[-18,-138],[0,-148],[15,-136],
+   [31,-123],[48,-108],[63,-101],[83,-115],[115,-136]];
   const farStart=0,FAR_COLS=76,FAR_ROWS=14;
   for(let j=0;j<=FAR_ROWS;j++){
    const depth=136+j*2.8;

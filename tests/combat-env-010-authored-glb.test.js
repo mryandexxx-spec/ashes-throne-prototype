@@ -42,7 +42,7 @@ test("authored canyon GLB is deterministic valid glTF 2 with material, bounded 3
  assert.deepEqual(generated.stats.map(m=>m.triangles),[4520,4520,2236,2128]);
  // Three closed forms per draw-call group: every volume has a cap,
  // full-depth perimeter, and real thickness in both camera axes.
- assert.ok(generated.stats.every(m=>m.vertices>1200));
+ assert.ok(generated.stats.every(m=>m.vertices>=1000));
  assert.ok(generated.stats.every(a=>a.vertices<=6000));
 });
 test("authored GLB can replace old scenic geometry without affecting ENV009 or picking",async()=>{

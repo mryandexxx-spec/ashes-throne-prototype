@@ -15,8 +15,8 @@ const CombatEnvironment010=(()=>{
  const CLAMP=(v,min,max)=>Math.max(min,Math.min(max,v));
  const mix=(a,b,t)=>a.map((n,i)=>n*(1-t)+b[i]*t);
  const COLORS=Object.freeze({
-  skyTop:[.42,.50,.56],skyUpper:[.48,.56,.61],
-  skyHaze:[.58,.63,.66],skyHorizon:[.64,.67,.67],
+  skyTop:[.50,.58,.62],skyUpper:[.51,.59,.63],
+  skyHaze:[.53,.60,.63],skyHorizon:[.54,.60,.62],
   far:[.58,.60,.60],mid:[.47,.48,.48],near:[.365,.395,.405]
  });
  function supported(B){

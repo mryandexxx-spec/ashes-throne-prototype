@@ -42,17 +42,19 @@ test("HQ-UI-004 painted landmarks are full clickable buttons with readable capti
  }
 });
 
-test("HQ-UI-005 SVG contours trace four painted objects and defer hotspot navigation",()=>{
+test("HQ-UI-006 light reveal matches original painting rather than drawing a line",()=>{
  const home=html.slice(html.indexOf('<section id="home"'),html.indexOf('<section id="dailyTasks"'));
- assert.match(home,/class="hq-contour-overlay"/);
- for(const name of ["heroes","campaign","operations","challenges"]){
-  assert.match(home,new RegExp('class="hq-contour hq-contour-'+name+'"'));
- }
- assert.match(css,/@keyframes hq-contour-trace/);
+ assert.match(home,/class="hq-light-reveal"/);
+ assert.doesNotMatch(home,/hq-contour-overlay|hq-contour-campaign|hq-contour-heroes/);
+ assert.doesNotMatch(css,/@keyframes hq-contour-trace|stroke-dasharray:100/);
+ assert.match(css,/#home \.hq-light-reveal\{/);
+ assert.match(css,/background-position:center 42%/);
+ assert.match(css,/background-size:cover/);
+ assert.match(css,/@keyframes hq-light-reveal/);
  assert.match(css,/prefers-reduced-motion:reduce/);
+ for(const zone of ["heroes","campaign","operations","challenges"])
+  assert.ok(css.includes('data-hq-illuminated="'+zone+'"'),"mask "+zone);
  assert.match(game,/function animateHQContour\(button\)/);
  assert.match(game,/scene\.dataset\.hqIlluminated=zone/);
  assert.match(game,/hqContourTimer=setTimeout/);
- assert.match(game,/resetHQContour\(\)/);
- assert.ok(game.includes('b.matches?.("#home .hq-station")'));
 });

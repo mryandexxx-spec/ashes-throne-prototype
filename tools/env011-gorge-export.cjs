@@ -26,7 +26,7 @@ function createEnv011Glb(){
  // Wide scene-scale walls are excluded: near cross-sections frame, never roof over, the platform.
  const SECTION=[[0,0,0],[.065,1.6,.12],[.14,3.5,.65],[.23,5.7,2],
   [.32,7.9,4.6],[.39,9.8,7],[.45,11.3,9],[.52,13,10.5],
-  [.58,14.7,12],[.66,16.5,14],[.75,19,15],[.86,21,15.5],[1,23,14]];
+  [.58,14.7,12],[.66,16.5,14],[.75,19,15],[.86,21,15.5],[1,24,0]];
  const BANKS=[
  {name:"front_buttress",side:-1,palette:[.50,.454,.392],heightScale:.93,
   crown:[[14,-1],[27,5],[43,-4],[65,7],[88,-2],[110,6],[142,-4]],
@@ -95,25 +95,7 @@ function createEnv011Glb(){
    if(B.side===-1)indices.push(a,b,c,b,e,c);
    else indices.push(a,c,b,b,c,e);
   }
-  // Solid underside: vertical boundary walls and capped bottom strip.
-  const lowerStart=positions.length/3;
-  for(let j=0;j<=STEPS;j++){
-   const d=dAt(j),inner=bankSample(B,0,d),outer=bankSample(B,1,d);
-   for(const [u,s] of [[0,inner],[1,outer]]){
-    positions.push(...world(s.x,d,floorY(d)-5));
-    colors.push(...bankColor(B,s,u,d));
-    uvs.push(s.x*.061,d*.063-2);
-   }
-  }
-  for(let j=0;j<STEPS;j++){
-   const a=j*ROW,c=a+ROW,A=lowerStart+j*2,C=A+2,last=a+CROSS,clast=c+CROSS;
-   indices.push(a,c,A,c,C,A,last,A+1,clast,clast,A+1,C+1,A,C,A+1,A+1,C,C+1);
-  }
-  for(const j of [0,STEPS]){
-   const base=j*ROW,low=lowerStart+j*2;
-   for(let i=0;i<CROSS;i++)indices.push(low,base+i,base+i+1);
-   indices.push(low,base+CROSS,low+1);
-  }
+  // ENV011 v5: sculpted open terrain sheet: avoid vertical curtains, broad rectangular caps.
   for(let i=0;i<positions.length;i++)normals.push(0);
   return {name:B.name,positions,normals,colors,uvs,indices};
  }

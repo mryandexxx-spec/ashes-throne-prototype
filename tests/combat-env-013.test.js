@@ -110,8 +110,8 @@ test("ENV013C keeps the photo ledge from ENV010 without changing world or pickin
 test("full game loads ENV013 before CV007 and retains Babylon engine/camera",()=>{
  const html=read("index.html"),game=read("game.js");
  const packageJson=JSON.parse(read("package.json"));
- assert.equal(packageJson.version,"0.3.84");
- assert.ok(html.includes("v0.3.84 · OPSHELP + RENPLAY + REN3D003 + ENV013"));
+ assert.equal(packageJson.version,"0.3.85");
+ assert.ok(html.includes("v0.3.85 · OPSHELP + RENPLAY + REN3D003 + ENV013C"));
  assert.ok(html.indexOf('src="combat-environment-013.js"')<
   html.indexOf('src="combat-visual-007.js"'));
  assert.equal((game.match(/new BABYLON.Engine\(/g)||[]).length,1);

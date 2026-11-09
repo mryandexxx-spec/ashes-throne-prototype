@@ -222,7 +222,7 @@ const CombatEnvironment014=(()=>{
     function accessor(id,expectedType,expectedComponent){
      const a=gltf.accessors?.[id],v=gltf.bufferViews?.[a?.bufferView];
      if(!a||!v||a.type!==expectedType||a.componentType!==expectedComponent||
-        a.count<1||a.count>15000||v.byteStride||
+        a.count<1||a.count>(expectedType==="SCALAR"?48000:15000)||v.byteStride||
         !Number.isInteger(v.byteOffset)||!Number.isInteger(v.byteLength))throw Error("invalid ENV014 accessor");
      const comps=tuple[a.type],size=componentSizes[a.componentType];
      const begin=v.byteOffset+(a.byteOffset||0),end=begin+a.count*comps*size;

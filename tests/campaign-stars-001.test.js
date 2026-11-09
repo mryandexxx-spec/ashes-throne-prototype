@@ -50,7 +50,7 @@ for(const bad of [
 assert.equal(CampaignCore.load(()=>{throw Error("Safari unavailable");}).available,false);
 const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
 const pkg=JSON.parse(fs.readFileSync(path.join(root,"package.json"),"utf8"));
-assert.equal(pkg.version,"0.3.83");
+assert.equal(pkg.version,"0.3.84");
 assert.match(html,/id="buildVersion"[^>]*>Прототип · v0[.]3[.]83 · OPSHELP/);
 assert.match(html,/src="mission-data.js"/);
 // Count only accepted player actions in the actual combat engine.

@@ -56,11 +56,12 @@ function createEnv015Glb(){
   const erosion=(.75*Math.sin(a*9.2+r*.47)+.46*Math.sin(a*19.1-r*.81))*
     t*(1-.5*t);
   const bench=3.0*Math.sin(t*6.28+1.0)*t*(1-t);
-  return -9.9-25*t+19.5*leftRear*smooth(t)+
+  const contactChannel=(.75*Math.sin(a*6+.4)+.42*Math.sin(a*13-1.1))*(1-smooth(t));
+  return -9.9+contactChannel-25*t+19.5*leftRear*smooth(t)+
     -30*rightDrop*t-10*foreground*t+erosion+bench;
  }
  function makeAttachedMass(){
-  return geo("attached_living_rock",112,20,(u,v)=>{
+  return geo("attached_living_rock",96,20,(u,v)=>{
    const a=u*TAU,r=2.42+8.38*v;
    const [x,z]=rimPoint(r,a);
    return [x,mantleHeight(r,a),z];

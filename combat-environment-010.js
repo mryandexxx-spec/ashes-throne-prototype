@@ -82,7 +82,7 @@ const CombatEnvironment010=(()=>{
   const sky=mat("atmosphere");
   const stops=[[-360,COLORS.skyHorizon],[-145,COLORS.skyHorizon],
    [-55,COLORS.skyHaze],[45,COLORS.skyUpper],[160,COLORS.skyTop]];
-  geom("sky",1,stops.length,(u,row)=>place(118,(u-.5)*310,stops[row][0]),
+  geom("sky",1,stops.length,(u,row)=>place(187,(u-.5)*310,stops[row][0]),
    (u,row)=>stops[row][1],sky);
   // Broad, erosion-softened mesas with visible flat shoulders rather than
   // sharp spikes. The sculpt is continuous so silhouettes never look cut out.

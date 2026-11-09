@@ -33,4 +33,16 @@ test("two solid banks have a continuous winding common valley floor",()=>{
   centers.push((p[0]-p[2])*Math.SQRT1_2);
  }
  assert.ok(Math.max(...centers)-Math.min(...centers)>9,"gorge centerline bends");
+ // All geometry must lie in FRONT of the fixed sky plane; otherwise Babylon
+ // depth-testing hides the distant landforms behind the opaque sky material.
+ for(let m=0;m<3;m++){
+  const accessor=g.accessors[g.meshes[m].primitives[0].attributes.POSITION];
+  let maxDepth=-Infinity;
+  for(let i=0;i<accessor.count;i++){
+   const p=get(m,"POSITION",i);
+   maxDepth=Math.max(maxDepth,(p[0]+p[2])*Math.SQRT1_2);
+  }
+  assert.ok(maxDepth<187,"scenic landform must not be occluded by sky plane");
+ }
+
 });

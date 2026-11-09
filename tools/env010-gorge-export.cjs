@@ -26,11 +26,11 @@ function createEnv010Glb(){
   [.32,27,43],[.39,29,60],[.45,33,77],[.52,38,91],
   [.58,45,92],[.66,60,90],[.75,80,70],[.86,111,45],[1,154,3]];
  const BANKS=[
- {name:"front_buttress",side:-1,palette:[.49,.465,.420],heightScale:.72,
+ {name:"front_buttress",side:-1,palette:[.49,.465,.420],heightScale:.82,
   crown:[[26,-9],[39,-7],[58,20],[78,-16],[93,6],[111,24],[131,-12],[151,19],[181,-18]],
   breaks:[[42,2.3,6],[82,2.6,9],[119,3.4,8],[157,3,10]],
   fans:[[50,10,7],[104,12,9],[155,10,6]]},
- {name:"middle_terraces",side:1,palette:[.52,.49,.44],heightScale:.81,
+ {name:"middle_terraces",side:1,palette:[.52,.49,.44],heightScale:.88,
   crown:[[26,5],[45,-12],[62,22],[80,9],[103,-20],[122,23],[145,4],[161,-16],[181,10]],
   breaks:[[54,2.7,7],[97,3.3,11],[137,2.6,7],[171,3.5,9]],
   fans:[[67,9,7],[117,12,8],[171,8,7]]}
@@ -140,7 +140,7 @@ function createEnv010Glb(){
    [31,-111],[48,-90],[63,-82],[83,-103],[115,-130]];
   const farStart=positions.length/3,FAR_COLS=62,FAR_ROWS=12;
   for(let j=0;j<=FAR_ROWS;j++){
-   const depth=202+j*3.3;
+   const depth=136+j*3.4;
    for(let i=0;i<=FAR_COLS;i++){
     const x=-115+230*i/FAR_COLS,crest=interp(FAR,x);
     const fracture=(2.7*Math.sin(x*.19+j*.47)+1.8*Math.sin(x*.37-j*.31))*(1-j/FAR_ROWS);

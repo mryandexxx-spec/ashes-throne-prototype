@@ -298,7 +298,7 @@ const CombatEnvironment014=(()=>{
      for(const m of meshes)m.dispose();
      if(typeof B.Color4==="function")scene.clearColor=new B.Color4(.585,.665,.705,1);
      if(B.Scene?.FOGMODE_EXP2!==undefined){
-      scene.fogMode=B.Scene.FOGMODE_EXP2;scene.fogDensity=.006;
+      scene.fogMode=B.Scene.FOGMODE_EXP2;scene.fogDensity=.004;
       scene.fogColor=new B.Color3(.605,.68,.715);
      }
      const skyMat=Array.isArray(scene.materials)?

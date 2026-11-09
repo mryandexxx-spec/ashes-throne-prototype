@@ -66,8 +66,12 @@ const CombatEnvironment017=(()=>{
   const pos=[],idx=[],col=[],uv=[],stride=DEPTHS.length;
   for(let i=0;i<SIDES.length;i++)for(let j=0;j<DEPTHS.length;j++){
    const side=SIDES[i],away=DEPTHS[j];
-   const y=ledgeHeight(side,away);
-   pos.push(...p(side,away,y));uv.push(side*.045,away*.045);
+   // Broad-scale irregular right lip, without small noise or a straight saw cut.
+   const edgeWarp=side>5?Math.min(1,(side-5)/2)*
+    (.8*Math.sin(away*.13)+.3*Math.sin(away*.29+.5)):0;
+   const worldSide=side+edgeWarp;
+   const y=ledgeHeight(worldSide,away);
+   pos.push(...p(worldSide,away,y));uv.push(worldSide*.045,away*.045);
    const drop=Math.max(0,-y),rise=Math.max(0,y);
    const color=drop>2?[.32,.36,.37]:rise>2?[.44,.45,.42]:[.53,.46,.37];
    const value=drop>2?Math.max(.65,1-drop*.009):1;

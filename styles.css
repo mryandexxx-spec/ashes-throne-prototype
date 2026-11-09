@@ -1599,3 +1599,33 @@ body:has(#home.active){height:100dvh;overflow:hidden}
 @media(prefers-reduced-motion:reduce){
  #home .hq-station-actions button:active{transform:none}
 }
+
+
+/* HQ-UI-003: painterly panoramic HQ artwork, graceful fallback to original SVG.
+   The WebP files must be added as assets/hq-hall-painting[-mobile].webp.
+   If either resource is absent, its layer is transparent and the original
+   vector HQ remains visible; keep the DOM stations and all navigation live. */
+#home .hq-scene{
+ width:max(1250px,330dvh);
+ background-color:#55493f;
+ background-image:
+  linear-gradient(90deg,#16121566,transparent 18%,transparent 82%,#16121555),
+  image-set(
+   url("assets/hq-hall-painting-mobile.webp") 1x,
+   url("assets/hq-hall-painting.webp") 2x
+  ),
+  url("assets/hq-hall.svg");
+ background-position:center center,center 42%,center center;
+ background-repeat:no-repeat,no-repeat,no-repeat;
+ background-size:100% 100%,cover,100% 100%;
+}
+#home .hq-scene:before{
+ background:linear-gradient(180deg,#1c191a3d,transparent 34%,#0e0e10a3 100%);
+}
+#home .hq-station-heroes{left:4%}
+#home .hq-station-campaign{left:28%}
+#home .hq-station-operations{left:53%}
+#home .hq-station-challenges{left:76%}
+@media(orientation:landscape) and (max-height:440px){
+ #home .hq-scene{width:max(1250px,330dvh)}
+}

@@ -15,33 +15,39 @@ function createEnv014Glb(){
  // crest altitude, main fold offset]. Different lengths and profiles are
  // intentional — there are no symmetric mountain wings or repeating rings.
  const RIGHT_BANK={
-  name:"front_buttress",color:[.49,.46,.405],haze:.02,sign:1,
-  cols:84,rows:18,
-  outline:[[12,19,-12,0],[18,24,-15,1.2],[27,30,-22,-1.5],
-   [36,38,-24,2.7],[47,47,-31,-3.4],[58,54,-37,2.1],
-   [73,65,-47,-1.2],[91,82,-61,0]]
+  // Beneath and to the RIGHT of the fighters, never a second battle island.
+  // Crest remains below sightline; this bank falls into the gorge.
+  name:"front_buttress",color:[.56,.53,.48],haze:.05,sign:1,
+  cols:94,rows:22,
+  outline:[[10,23,-14,0],[16,27,-20,1.8],[25,34,-26,-1.7],
+   [36,43,-33,2.8],[51,55,-41,-2.1],[69,72,-54,1.6],
+   [90,94,-69,-1.1],[123,118,-86,0]]
  };
  const OPPOSITE_WALL={
-  name:"middle_terraces",color:[.49,.49,.47],haze:.24,sign:1,
-  cols:110,rows:22,
-  outline:[[9,75,-42,0],[22,78,-36,-1.7],[39,82,-31,2.9],
-   [55,85,-38,-1.8],[70,91,-29,1.5],[86,95,-35,2.5],
-   [105,101,-28,-2.4],[126,106,-37,1.1],[146,112,-32,-2.2],
-   [177,124,-51,0]]
+  // The first truly opposite cliff is WELL beyond the foreground lip,
+  // and only its upper weathered shoulders appear in the top of the void.
+  name:"middle_terraces",color:[.68,.67,.62],haze:.36,sign:1,
+  cols:120,rows:25,
+  outline:[[-26,139,-98,0],[-6,142,-89,1.0],[20,147,-83,-1.8],
+   [44,153,-76,2.1],[67,157,-83,-2.0],[93,164,-75,1.8],
+   [116,171,-82,-1.7],[151,181,-91,1.0],[197,200,-108,0]]
  };
  const LEFT_BANK={
-  name:"gorge_floor",color:[.43,.445,.425],haze:.18,sign:-1,
-  cols:66,rows:16,
-  outline:[[-101,78,-63,0],[-83,70,-51,1.1],[-64,63,-43,-2.3],
-   [-47,57,-39,1.5],[-32,51,-32,-1.4],[-22,47,-29,1.8],
-   [-14,42,-27,0]]
+  // A low geological shoulder, almost entirely below the left frame rim:
+  // no giant left wing or overhead canopy.
+  name:"gorge_floor",color:[.54,.55,.53],haze:.29,sign:-1,
+  cols:76,rows:18,
+  outline:[[-146,119,-111,0],[-108,101,-87,1.5],[-79,87,-74,-2.0],
+   [-57,75,-62,1.8],[-37,65,-54,-1.6],[-21,59,-50,0]]
  };
  const FAR_HORIZON={
-  name:"pale_horizon",color:[.57,.60,.62],haze:.56,sign:1,
-  cols:86,rows:12,
-  outline:[[-30,150,-74,0],[-8,156,-65,2.0],[16,161,-57,-1.5],
-   [36,165,-60,2.3],[64,168,-53,-1.1],[90,177,-62,1.4],
-   [112,184,-55,-2.5],[141,194,-61,1.8],[170,202,-70,0]]
+  // A pale far massif, visibly softened by distance rather than dark rock.
+  name:"pale_horizon",color:[.67,.71,.73],haze:.70,sign:1,
+  cols:90,rows:14,
+  outline:[[-110,235,-164,0],[-72,230,-153,1.1],
+   [-35,230,-144,-1.0],[0,235,-135,2.1],[41,240,-143,-1.6],
+   [79,247,-137,1.5],[115,252,-143,-1.7],[158,264,-151,1.4],
+   [213,275,-168,0]]
  };
  // Hand-designed cross-sections give each cliff a jagged crest, weathered
  // shoulder, stepped bedding, undercut, talus and an unseen low base.
@@ -86,20 +92,20 @@ function createEnv014Glb(){
    const [spread,dist,drop]=section(shape,v);
    // Weathering is low-amplitude and sculpted into the offline asset.
    // It cannot move the view silhouettes or create a repeated barcode.
-   const relief=(.9*Math.sin(l*.11+v*8.7)+.35*Math.sin(l*.31-v*13.1))*
+   const relief=(.44*Math.sin(l*.11+v*8.7)+.20*Math.sin(l*.31-v*13.1))*
     Math.sin(Math.PI*v)*(.1+.42*Math.sin(v*2.7));
    const shear=fold*Math.sin(Math.PI*v)*.38;
    const x=l+design.sign*spread*scale+shear;
    const y=crest-drop*scale+relief;
-   const depth=d+dist*scale+1.1*Math.sin(l*.083+v*6.3)*v;
+   const depth=d+dist*scale+.8*Math.sin(l*.083+v*6.3)*v;
    positions.push(...world(x,depth,y));
    // Strata UV: local stone photo 512 px, not stretched across the sky.
    uvs.push(l*.055+v*.04,y*.057+depth*.006);
    const sediment=.035*Math.sin(y*.16+l*.031)+.016*Math.sin(y*.39+l*.091);
    const cleft=Math.abs(Math.sin(l*.128+v*5.3))>.987?-.07:0;
-   const tonal=1-.23*v+sediment+cleft;
-   const atmosphere=design.haze+.06*v;
-   const fog=[.63,.68,.71];
+   const tonal=1-.15*v+sediment+cleft;
+   const atmosphere=design.haze+.16*v;
+   const fog=[.66,.73,.77];
    const pal=design.color.map((c,q)=>clamp(c*tonal*(1-atmosphere)+fog[q]*atmosphere,0,1));
    colors.push(...pal.map(c=>Math.round(c*255)),255);
   }

@@ -1,0 +1,66 @@
+name: ENV017 camera-first real WebGL massing
+on:
+  pull_request:
+    paths:
+      - 'combat-environment-017.js'
+      - 'combat-visual-007.js'
+      - 'index.html'
+      - 'tests/fixtures/env017-full-game.html'
+      - 'tests/combat-env-017-massing.test.js'
+      - '.github/workflows/env017-camera-first.yml'
+  workflow_dispatch:
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm test
+  webgl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Establish real ENV010 baseline beside isolated ENV017
+        run: |
+          git fetch origin main
+          git worktree add --detach /tmp/env017-baseline origin/main
+          ln -s /tmp/env017-baseline baseline
+      - name: Capture actual Babylon WebGL + full HUD, default and far
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)"
+          test -n "$chrome"
+          mkdir -p artifacts
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/env017-server.log 2>&1 &
+          sleep 2
+          for view in normal far; do
+            radius=12
+            if [ "$view" = far ]; then radius=19; fi
+            url="http://127.0.0.1:8765/tests/fixtures/env017-full-game.html?radius=$radius"
+            flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 --virtual-time-budget=13000)
+            timeout 65s "$chrome" "${flags[@]}" --screenshot="$PWD/artifacts/env017-$view-hud-844x390.png" "$url" 2>"/tmp/env017-$view.log"
+            page="$(timeout 65s "$chrome" "${flags[@]}" --dump-dom "$url" 2>>"/tmp/env017-$view.log")"
+            printf '%s\n' "$page" > "artifacts/env017-$view-dom.html"
+            echo "$page" | grep -q 'data-visual-status="ready"'
+            echo "$page" | grep -q 'data-environment="ENV017"'
+            echo "$page" | grep -q 'data-webgl="true"'
+            grep -o 'data-camera="[^"]*"' "artifacts/env017-$view-dom.html" || true
+            test -s "artifacts/env017-$view-hud-844x390.png"
+          done
+          # Baseline is built from the actual main worktree, no ENV017 code.
+          baseline="http://127.0.0.1:8765/baseline/tests/fixtures/env010-full-game.html"
+          timeout 65s "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 --virtual-time-budget=13000 --screenshot="$PWD/artifacts/env010-baseline-full-hud-844x390.png" "$baseline" 2>/tmp/env010-baseline.log
+          test -s artifacts/env010-baseline-full-hud-844x390.png
+      - name: Preserve actual browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env017-vs-env010-real-webgl
+          path: artifacts/
+          if-no-files-found: warn

@@ -1,7 +1,7 @@
-/* ENV022 — real CC0 Gobkit GLB cliffs, static Babylon Mesh/VertexData loader.
- * External assets vendored locally (pinned upstream). No network requests to
- * third parties at game runtime, new npm dependencies, or second render loop.
- * The original ENV009 arena remains the safe walkable fallback.
+/* ENV022 — integrated ready-made CC0 terrain from Grab3D Cozy Terrain Kit.
+ * The genuine Mesa plateau replaces the visible ENV009 walking island only
+ * after all authentic downloaded GLBs validate. The original scene stays
+ * intact as safe fallback on loading/parse failure; no new render loop.
  */
 const CombatEnvironment017=(()=>{
  "use strict";
@@ -134,7 +134,7 @@ const CombatEnvironment017=(()=>{
       if(model.vertexColors)colors.push(...model.vertexColors.slice(j*4,j*4+4));
       else colors.push(1,1,1,1);
      }
-     const mesh=new B.Mesh("env022_external_"+def.source+"_"+i,scene);
+     const mesh=new B.Mesh("env022_terrain_"+def.source+"_"+i,scene);
      created.push(mesh);
      const vd=new B.VertexData(),normal=[];
      B.VertexData.ComputeNormals(pos,indices,normal);
@@ -143,7 +143,7 @@ const CombatEnvironment017=(()=>{
      vd.applyToMesh(mesh,false);
      mesh.isPickable=false;mesh.checkCollisions=false;mesh.receiveShadows=false;
      mesh.useVertexColors=true;
-     const mat=new B.StandardMaterial("env022_external_mat_"+def.source+"_"+i,scene);
+     const mat=new B.StandardMaterial("env022_terrain_mat_"+def.source+"_"+i,scene);
      created.push(mat);
      mat.diffuseColor=new B.Color3(1,1,1);
      mat.emissiveColor=new B.Color3(.20,.21,.21);

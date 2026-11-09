@@ -1,0 +1,36 @@
+name: ENV023 map real walkable bank geometry
+on:
+  pull_request:
+    paths: ['.github/workflows/env023-surface-report.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  survey:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install --disable-pip-version-check trimesh numpy
+      - name: Survey two actual gorge banks as walkable top-surface coordinate map
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import trimesh,numpy as np
+          m=trimesh.load('assets/env023/ContinuousGorgeMobile.glb',force='mesh',process=False)
+          y=m.triangles_center[:,1];x=m.triangles_center[:,0];z=m.triangles_center[:,2]
+          n=m.face_normals[:,1]
+          mask=(n>.45)&(y>5)
+          print('FACES UPWARD WITH HEIGHT >5',mask.sum())
+          for zcenter in np.arange(23,-21,-4):
+              line=''
+              for xcenter in np.arange(-8,26,3):
+                  hits=mask&(np.abs(z-zcenter)<2)&(np.abs(x-xcenter)<1.5)
+                  if hits.sum()<3:line+=' . '
+                  else:
+                      h=np.quantile(y[hits],.75)
+                      line+= ' H ' if h>=10 else ' M ' if h>=7 else ' L '
+              print('Z',f'{zcenter:5.1f}',line,flush=True)
+          print('X ticks',list(np.arange(-8,26,3)))
+          for region in [(-9,-1),(-1,7),(7,15),(15,24)]:
+              hits=mask&(x>=region[0])&(x<region[1])
+              if hits.any():print('X REGION',region,'height',np.quantile(y[hits],[.1,.5,.9]),'Z range',np.quantile(z[hits],[.05,.5,.95]),'faces',hits.sum())
+          PY

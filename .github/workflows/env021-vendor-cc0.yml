@@ -1,0 +1,53 @@
+name: ENV021 vendor verified CC0 rock GLB
+on:
+  push:
+    branches: [feat/combat-env-021-cc0-cliff-assets]
+    paths: ['.github/workflows/env021-vendor-cc0.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Retrieve publisher's unchanged CC0 GLB files (pinned upstream revision)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets/env021
+          upstream=4e73c68fa6e8ca9d948fcc0ce7215c830a022c3b
+          for name in Cliff001 Cliff002 Cliff003 Rock001; do
+            curl --fail --location --retry 3 --connect-timeout 15 --max-time 60               "https://raw.githubusercontent.com/Ariescar/gobkit-free-assets/$upstream/nature/$name.glb"               -o "assets/env021/$name.glb"
+            echo "Fetched $name: $(stat -c %s "assets/env021/$name.glb") bytes"
+          done
+          python3 - <<'PY'
+          import struct,json,pathlib
+          total=0
+          for f in sorted(pathlib.Path("assets/env021").glob("*.glb")):
+              b=f.read_bytes()
+              assert len(b) < 250000 and len(b)>200, (f,len(b))
+              assert b[:4]==b'glTF' and struct.unpack_from("<I",b,4)[0]==2 and struct.unpack_from("<I",b,8)[0]==len(b),f
+              n,t=struct.unpack_from("<II",b,12)
+              assert t==0x4e4f534a,f
+              g=json.loads(b[20:20+n].decode())
+              assert g["asset"]["version"]=="2.0" and len(g.get("meshes",[]))>=1,f
+              tris=sum(g["accessors"][p["indices"]]["count"]//3 for m in g["meshes"] for p in m["primitives"] if "indices" in p)
+              print(f"{f}: {len(b)} bytes, {tris} indexed triangles, {len(g['meshes'])} meshes")
+              assert tris<12000,(f,tris)
+              total+=tris
+          assert total<32000,total
+          PY
+      - name: Commit only pinned CC0 binary asset files to experimental branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/env021/Cliff001.glb assets/env021/Cliff002.glb assets/env021/Cliff003.glb assets/env021/Rock001.glb
+          if git diff --cached --quiet; then echo 'Asset files already present'; exit 0; fi
+          git commit -m 'ENV021: vendor four small genuine Gobkit CC0 rock GLBs at pinned upstream revision'
+          git push origin HEAD:feat/combat-env-021-cc0-cliff-assets

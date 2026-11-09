@@ -1,0 +1,138 @@
+name: ENV016 fractured erosion GLB WebGL review
+on:
+  pull_request:
+    paths:
+      - 'combat-environment-009.js'
+      - 'combat-visual-007.js'
+      - 'combat-environment-010.js'
+      - 'combat-environment-014.js'
+      - 'assets/env010/**'
+      - 'assets/env016/**'
+      - 'tools/env016-erosion-export.cjs'
+      - 'combat-environment-016.js'
+      - '.github/workflows/env016-glb-webgl-review.yml'
+      - 'tests/fixtures/env016-webgl-preview.html'
+      - 'tests/fixtures/env016-full-game.html'
+      - 'tests/fixtures/env016-interactive-smoke.html'
+      - 'tests/combat-env-016-erosion.test.js'
+      - '.github/workflows/env009-webgl-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+      - name: Export hand-authored 3D rock sculpture as local GLB
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/env016-erosion-export.cjs
+          test -s assets/env016/fractured-gorge-v1.glb
+          test "$(wc -c < assets/env016/fractured-gorge-v1.glb)" -lt 750000
+      - name: Capture Babylon.js comparison at the approved camera
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          test -n "$chrome"
+          mkdir -p artifacts
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/env009-http.log 2>&1 &
+          sleep 2
+          for case in 'cv008 default' 'env009 default' 'env010 default' 'env010 far' 'env016 default' 'env016 far'; do
+            read -r mode yaw <<<"$case"
+            name="$mode-$yaw"
+            query="mode=$mode&yaw=$yaw"
+            url="http://127.0.0.1:8765/tests/fixtures/env009-webgl-preview.html?$query"
+            "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
+              --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
+              --hide-scrollbars --force-device-scale-factor=1 --window-size=1808,832 \
+              --virtual-time-budget=14500 --screenshot="$PWD/artifacts/$name.png" "$url" 2>"/tmp/chrome-$name.log"
+            page="$("$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
+              --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
+              --virtual-time-budget=14500 --dump-dom "$url" 2>>"/tmp/chrome-$name.log")"
+            echo "$page" | grep -q 'data-visual-status="ready"'
+            test -s "artifacts/$name.png"
+            file "artifacts/$name.png"
+          done
+      - name: Upload real headless WebGL screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env016-env010-babylon-webgl-comparison
+          path: artifacts/*.png
+          if-no-files-found: warn
+
+      - name: Smoke-test actual battle HUD in landscape (separate from scene artifact)
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)"
+          for mode in env010 env016; do
+          url="http://127.0.0.1:8765/tests/fixtures/env010-full-game.html?mode=$mode"
+          timeout --kill-after=5s 65s "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
+            --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
+            --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 \
+            --virtual-time-budget=12000 --screenshot="$PWD/artifacts/$mode-full-hud-844x390.png" "$url" 2>/tmp/chrome-hud.log
+          page="$(timeout --kill-after=5s 65s "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
+            --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
+            --virtual-time-budget=12000 --dump-dom "$url" 2>>/tmp/chrome-hud.log)"
+          echo "$page" | grep -q 'data-visual-status="ready"'
+          test -s artifacts/$mode-full-hud-844x390.png
+          done
+
+      - name: Verify real battle pinch, 4x, autobattle, battle end and replay (synthetic Chromium)
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)"
+          url="http://127.0.0.1:8765/tests/fixtures/env016-interactive-smoke.html"
+          page="$(timeout --kill-after=5s 90s "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
+            --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
+            --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 \
+            --virtual-time-budget=80000 --dump-dom "$url" 2>/tmp/chrome-interactive.log)"
+          printf '%s\n' "$page" > artifacts/env010-interactive-dump.html
+          echo "$page" | grep -oE 'data-(visual-status|visual-error|pinch-test|auto-test|speed-test|replay-test)="[^"]*"' || true
+          echo "$page" | grep -q 'data-visual-status="ready"'
+          echo "$page" | grep -q 'data-pinch-test="pass"'
+          echo "$page" | grep -q 'data-auto-test="battle-finished"'
+          echo "$page" | grep -q 'data-replay-test="pass"'
+
+      - name: Upload interactive browser diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env010-interactive-dom
+          path: artifacts/env010-interactive-dump.html
+          if-no-files-found: ignore
+      - name: Upload actual battle HUD evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env016-env010-real-game-hud
+          path: artifacts/*-full-hud-*.png
+          if-no-files-found: warn
+
+      - name: Archive one ENV016 actual WebGL comparison and local GLB in draft branch
+        if: success() && github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if test -f docs/evidence/env016/env016-full-hud-844x390.png; then
+            echo "First visual evidence already retained."
+            exit 0
+          fi
+          mkdir -p docs/evidence/env016
+          cp artifacts/env010-default.png artifacts/env010-far.png \
+             artifacts/env016-default.png artifacts/env016-far.png \
+             artifacts/env010-full-hud-844x390.png \
+             artifacts/env016-full-hud-844x390.png docs/evidence/env016/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/env016/fractured-gorge-v1.glb docs/evidence/env016/*.png
+          git commit -m 'test(env016): preserve original fractured GLB and actual WebGL comparisons'
+          git push origin "HEAD:refs/heads/${{ github.head_ref }}"

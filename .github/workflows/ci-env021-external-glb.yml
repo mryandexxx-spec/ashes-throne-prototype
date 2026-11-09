@@ -1,0 +1,115 @@
+name: ENV021 external GLB real WebGL comparison
+run-name: "CI WebGL diagnostic · ${{ github.event_name }} · ${{ github.ref_name }}"
+
+# No paths filter: a pull request, an update to this branch, or a manual
+# dispatch must schedule the workflow even if only documentation changed.
+on:
+  push:
+    branches:
+      - 'feat/combat-env-021-cc0-cliff-assets'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  node:
+    name: Node regression suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Print diagnostic context
+        run: |
+          echo "event=${{ github.event_name }} ref=${{ github.ref }} sha=${{ github.sha }}"
+          node --version
+          git rev-parse HEAD
+      - name: Run existing tests without changing runtime
+        run: npm test
+
+  chromium:
+    name: Chromium WebGL + full HUD 844x390
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Mount exact current main for before images
+        run: |
+          git fetch origin main
+          git worktree add --detach /tmp/env019-main-before origin/main
+          ln -s /tmp/env019-main-before baseline
+      - name: Show available Chromium binaries
+        run: |
+          command -v google-chrome || true
+          command -v google-chrome-stable || true
+          command -v chromium || true
+          command -v chromium-browser || true
+          python3 --version
+      - name: Render actual game at both camera distances
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)"
+          test -n "$chrome"
+          mkdir -p artifacts
+          python3 -m http.server 8765 --bind 127.0.0.1 >artifacts/http-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          sleep 2
+          for view in normal far; do
+            radius=12
+            if [ "$view" = far ]; then radius=19; fi
+            url="http://127.0.0.1:8765/tests/fixtures/env017-full-game.html?radius=$radius"
+            flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390)
+            echo "Capturing $view at radius=$radius"
+            for attempt in 1 2 3; do
+              timeout 65s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --screenshot="$PWD/artifacts/diagnostic-$view-full-hud-844x390.png" "$url" 2>"artifacts/chrome-$view.log" || true
+              bytes="$(stat -c %s "artifacts/diagnostic-$view-full-hud-844x390.png" 2>/dev/null || echo 0)"
+              echo "screenshot attempt $attempt: $bytes bytes"
+              if [ "$bytes" -ge 65000 ]; then break; fi
+            done
+            page="$(timeout 65s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --dump-dom "$url" 2>>"artifacts/chrome-$view.log")"
+            printf '%s\\n' "$page" >"artifacts/diagnostic-$view-dom.html"
+            # The data marker is assigned only after the actual Babylon scene
+            # is running and the real engine reports a WebGL capability.
+            echo "ENV021 DOM diagnostic ($view):"
+            grep -o 'data-visual-status="[^"]*"' "artifacts/diagnostic-$view-dom.html" || true
+            grep -o 'data-error="[^"]*"' "artifacts/diagnostic-$view-dom.html" || true
+            grep -o 'data-env019="[^"]*"' "artifacts/diagnostic-$view-dom.html" || true
+            grep -o 'data-camera="[^"]*"' "artifacts/diagnostic-$view-dom.html" || true
+            grep -q 'data-visual-status="ready"' "artifacts/diagnostic-$view-dom.html"
+            grep -q 'data-environment="ENV017"' "artifacts/diagnostic-$view-dom.html"
+            grep -q 'data-env021="external-glb"' "artifacts/diagnostic-$view-dom.html"
+            grep -q 'data-webgl="true"' "artifacts/diagnostic-$view-dom.html"
+            test "$(stat -c %s "artifacts/diagnostic-$view-full-hud-844x390.png")" -ge 65000
+          done
+          # Capture a real baseline using the exact same browser and HUD.
+          for view in normal far; do
+            radius=12
+            if [ "$view" = far ]; then radius=19; fi
+            before="http://127.0.0.1:8765/baseline/tests/fixtures/env017-full-game.html?radius=$radius"
+            timeout 65s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --screenshot="$PWD/artifacts/main-before-$view-full-hud-844x390.png" "$before" 2>"artifacts/main-before-$view.log"
+            test "$(stat -c %s "artifacts/main-before-$view-full-hud-844x390.png")" -ge 65000
+          done
+      - name: Embed exact real screenshots in job log for review
+        if: always()
+        shell: bash
+        run: |
+          for name in diagnostic-normal-full-hud-844x390 diagnostic-far-full-hud-844x390 main-before-normal-full-hud-844x390 main-before-far-full-hud-844x390; do
+            echo "ART_IMAGE_BEGIN:$name"
+            if [ -f "artifacts/$name.png" ]; then base64 -w0 "artifacts/$name.png"; fi
+            echo
+            echo "ART_IMAGE_END:$name"
+          done
+      - name: Upload diagnostic images, DOM and Chrome logs even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env021-external-glb-webgl-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 14

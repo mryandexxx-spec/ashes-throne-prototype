@@ -1,0 +1,44 @@
+name: ENV021 source photogrammetry and optimize CC0 Poly Haven cliff
+on:
+  push:
+    branches: [feat/combat-env-021-cc0-cliff-assets]
+    paths:
+      - 'tools/env021-optimize-polyhaven.py'
+      - '.github/workflows/env021-polyhaven-vendor.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Install temporary build-only mesh tools
+        run: python3 -m pip install --disable-pip-version-check numpy scipy Pillow trimesh fast-simplification
+      - name: Download exact official CC0 source and verify checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/env021-ph
+          base=https://dl.polyhaven.org/file/ph-assets/Models
+          curl -fL --retry 3 --max-time 120 "$base/gltf/1k/coastal_cliff_02/coastal_cliff_02_1k.gltf" -o /tmp/env021-ph/coastal_cliff_02_1k.gltf
+          curl -fL --retry 3 --max-time 150 "$base/gltf/8k/coastal_cliff_02/coastal_cliff_02.bin" -o /tmp/env021-ph/coastal_cliff_02.bin
+          curl -fL --retry 3 --max-time 120 "$base/jpg/1k/coastal_cliff_02/coastal_cliff_02_diff_1k.jpg" -o /tmp/env021-ph/coastal_cliff_02_diff_1k.jpg
+          echo "adb7787407c87cd1bd74c8e005577a7d  /tmp/env021-ph/coastal_cliff_02_1k.gltf" | md5sum -c -
+          echo "e6324e54479fd0f9aefe707dfa9e728b  /tmp/env021-ph/coastal_cliff_02.bin" | md5sum -c -
+          echo "e4d66e6aab22152dcbdd101d23d19e61  /tmp/env021-ph/coastal_cliff_02_diff_1k.jpg" | md5sum -c -
+      - name: Mesh simplification and material bake into local GLB
+        run: python3 tools/env021-optimize-polyhaven.py /tmp/env021-ph assets/env021/PolyCliff01.glb
+      - name: Commit only optimized source-derived GLB to experiment branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/env021/PolyCliff01.glb
+          if git diff --cached --quiet; then echo "Already saved"; exit 0; fi
+          git commit -m 'ENV021: add decimated genuine Poly Haven Coastal Cliff 02, CC0'
+          git push origin HEAD:feat/combat-env-021-cc0-cliff-assets

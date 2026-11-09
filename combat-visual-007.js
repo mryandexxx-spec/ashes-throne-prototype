@@ -83,17 +83,24 @@ const CombatVisual007=(()=>{
    if(useEnv009){
     CombatEnvironment009.build(B,scene,owned);
     // ENV010: fixed-view atmosphere, visually additive to the stable 3D ledge.
-    // Opt-in ENV010 baseline for paired WebGL QA; ENV014 is the candidate.
-    // Both share the same one Babylon Scene and scene-owned teardown.
-    const use010=typeof location!=="undefined"&&
-      new URLSearchParams(location.search).get("arena")==="env010";
-    let loaded014=false;
-    if(!use010&&typeof CombatEnvironment014!=="undefined"&&CombatEnvironment014.supported(B)){
-     try{CombatEnvironment014.build(B,scene,owned);loaded014=true;}
-     catch(error){console.warn("ENV014 reverted to ENV010",error);}
+    // ENV015 uses the same camera, engine and collision-free visual scene.
+    // Explicit QA switch preserves exact ENV010 and first authored ENV014.
+    const mode=typeof location!=="undefined"?
+      new URLSearchParams(location.search).get("arena"):null;
+    let environmentLoaded=false;
+    if(mode!=="env010"&&mode!=="env014"&&
+       typeof CombatEnvironment015!=="undefined"&&CombatEnvironment015.supported(B)){
+      try{CombatEnvironment015.build(B,scene,owned);environmentLoaded=true;}
+      catch(error){console.warn("ENV015 -> ENV010 fallback",error);}
     }
-    if(!loaded014&&typeof CombatEnvironment010!=="undefined"&&CombatEnvironment010.supported(B)){
-     CombatEnvironment010.build(B,scene,owned);
+    if(!environmentLoaded&&mode==="env014"&&
+       typeof CombatEnvironment014!=="undefined"&&CombatEnvironment014.supported(B)){
+      try{CombatEnvironment014.build(B,scene,owned);environmentLoaded=true;}
+      catch(error){console.warn("ENV014 -> ENV010 fallback",error);}
+    }
+    if(!environmentLoaded&&typeof CombatEnvironment010!=="undefined"&&
+       CombatEnvironment010.supported(B)){
+      CombatEnvironment010.build(B,scene,owned);
     }
    }else{
    // Continuous walkable plane preserves the established combat formation/camera.

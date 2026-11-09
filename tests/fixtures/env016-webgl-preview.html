@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<title>Combat environment comparison</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>
+ html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#18242c}
+ #arena{display:block;width:100%;height:100%;touch-action:none}
+ #diagnostics{position:absolute;top:14px;left:18px;color:#edf2ed;font:600 17px system-ui,sans-serif;
+ text-shadow:0 2px 6px #101518;background:#111a20b3;padding:10px 14px;border-radius:10px}
+</style></head><body>
+<canvas id="arena"></canvas><div id="diagnostics">Загрузка сцены WebGL…</div>
+<script src="https://cdn.babylonjs.com/v9.33.2/babylon.js"></script>
+<script>
+/* A standalone visual-only comparison: exactly the game's ARENA_VIEW and
+ * formation footprint, but simplified fighter stand-ins; no CombatCore.
+ * Tests the actual Babylon scene and geometry modules, not the game UI. */
+(async function(){
+ const p=new URLSearchParams(location.search);
+ const legacy=p.get("mode")==="cv008";
+ const yaw=p.get("yaw")||"default";
+ const alpha=-3*Math.PI/4+(yaw==="left"?.55:yaw==="right"?-.55:0);
+ const diag=document.getElementById("diagnostics");
+ const load=src=>new Promise((resolve,reject)=>{
+  const s=document.createElement("script");s.src=src;s.onload=resolve;s.onerror=()=>reject(Error(src));document.head.appendChild(s);
+ });
+ try{
+  if(typeof BABYLON==="undefined")throw Error("Babylon CDN unavailable");
+  if(!legacy)await load("../../combat-environment-009.js");
+  if(p.get("mode")==="env010")await load("../../combat-environment-010.js");
+  if(p.get("mode")==="env014")await load("../../combat-environment-014.js");
+  if(p.get("mode")==="env015")await load("../../combat-environment-015.js");
+  if(p.get("mode")==="env016")await load("../../combat-environment-016.js");
+  await load("../../combat-visual-007.js");
+  const canvas=document.getElementById("arena");
+  const engine=new BABYLON.Engine(canvas,true,{stencil:true,preserveDrawingBuffer:true});
+  const scene=new BABYLON.Scene(engine);
+  scene.clearColor=new BABYLON.Color4(.035,.045,.065,1);
+  const camera=new BABYLON.ArcRotateCamera("camera",alpha,.96,yaw==="far"?19:12,
+   new BABYLON.Vector3(0,.9,0),scene);
+  camera.fov=.8;camera.minZ=.1;camera.maxZ=200;
+  new BABYLON.HemisphericLight("hemi",new BABYLON.Vector3(0,1,0),scene).intensity=.8;
+  new BABYLON.DirectionalLight("key",new BABYLON.Vector3(-.5,-1,.5),scene).intensity=1.1;
+  const environment=CombatVisual007.create(BABYLON,scene);
+  const material=color=>{
+   const m=new BABYLON.StandardMaterial("fighter_material_"+color,scene);
+   m.diffuseColor=color==="ally"?new BABYLON.Color3(.28,.55,.76):new BABYLON.Color3(.72,.25,.23);
+   return m;
+  };
+  for(const side of ["ally","enemy"]){
+   const direction=side==="ally"?-1:1;
+   const mat=material(side);
+   const places=side==="ally"?[[2.45,-1.9],[2.45,0],[2.45,1.9],[4.05,-.95],[4.05,.95]]:
+    [[2.45,-1.9],[2.45,0],[2.45,1.9]];
+   for(let i=0;i<places.length;i++){
+    const [long,lat]=places[i],x=long*direction,z=lat;
+    const body=BABYLON.MeshBuilder.CreateCapsule(side+"_body_"+i,{height:1.5,radius:.42},scene);
+    body.position=new BABYLON.Vector3(x,.8,z);body.material=mat;
+    const head=BABYLON.MeshBuilder.CreateSphere(side+"_head_"+i,{diameter:.62,segments:12},scene);
+    head.position=new BABYLON.Vector3(x,1.8,z);head.material=mat;
+    const base=BABYLON.MeshBuilder.CreateCylinder(side+"_base_"+i,{diameter:1.15,height:.12,tessellation:24},scene);
+    base.position=new BABYLON.Vector3(x,.08,z);
+    base.material=new BABYLON.StandardMaterial(side+"_base_mat_"+i,scene);
+    base.material.diffuseColor=side==="ally"?new BABYLON.Color3(.65,.48,.2):new BABYLON.Color3(.4,.18,.18);
+   }
+  }
+  engine.resize();scene.render();
+  engine.runRenderLoop(()=>scene.render());
+  if(p.get("mode")==="env016"){
+    document.documentElement.dataset.visualStatus="loading";
+    let polls=0;
+    const untilReady=setInterval(()=>{
+      const state=document.documentElement.dataset.env016Rock;
+      if(state==="ready"){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="ready";
+      }else if(state==="fallback"||state==="disposed"||++polls>210){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="error";
+        diag.textContent="ENV016 GLB: "+(document.documentElement.dataset.env016Error||state);
+      }
+    },75);
+  }else if(p.get("mode")==="env015"){
+    document.documentElement.dataset.visualStatus="loading";
+    let polls=0;
+    const untilReady=setInterval(()=>{
+      const state=document.documentElement.dataset.env015Rock;
+      if(state==="ready"){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="ready";
+      }else if(state==="fallback"||state==="disposed"||++polls>170){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="error";
+        diag.textContent="ENV015 GLB error: "+(document.documentElement.dataset.env015Error||state);
+      }
+    },75);
+  }else if(p.get("mode")==="env014"){
+    document.documentElement.dataset.visualStatus="loading";
+    let polls=0;
+    const untilReady=setInterval(()=>{
+      const state=document.documentElement.dataset.env014Rock;
+      if(state==="ready"){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="ready";
+      }else if(state==="fallback"||state==="disposed"||++polls>100){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="error";
+        diag.textContent="ENV014 GLB не загружен: "+state;
+      }
+    },75);
+  }else if(p.get("mode")==="env010"){
+    document.documentElement.dataset.visualStatus="loading";
+    let polls=0;
+    const untilReady=setInterval(()=>{
+      const state=document.documentElement.dataset.env010Rock;
+      if(state==="ready"){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="ready";
+      }else if(state==="fallback"||state==="disposed"||++polls>100){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="error";
+        diag.textContent="GLB не загружен: "+state;
+      }
+    },75);
+  }else document.documentElement.dataset.visualStatus="ready";
+  document.documentElement.dataset.environment=p.get("mode")==="env015"?"ENV015":p.get("mode")==="env014"?"ENV014":
+    p.get("mode")==="env010"?"ENV010":legacy?"CV008":"ENV009";
+  diag.textContent=(p.get("mode")==="env015"?"ENV015 — связанный скальный уступ":
+    p.get("mode")==="env014"?"ENV014 — глубокая пропасть":
+    p.get("mode")==="env010"?"ENV010 — фиксированный ракурс":legacy?"CV008":"ENV009 — базовый рельеф")+" / "+yaw;
+ }catch(e){
+  document.documentElement.dataset.visualStatus="error";
+  diag.textContent="Ошибка WebGL: "+e.message;
+  console.error(e);
+ }
+})();
+</script></body></html>

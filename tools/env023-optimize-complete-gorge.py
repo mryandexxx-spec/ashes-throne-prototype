@@ -27,7 +27,7 @@ for k,m in enumerate(meshes):
         im=np.asarray(texture.convert("RGB"))
         h,w=im.shape[:2]
         x=np.minimum(w-1,((uv[:,0]%1)*(w-1)).astype(int))
-        y=np.minimum(h-1,((1-uv[:,1]%1))*(h-1)).astype(int))
+        y=np.minimum(h-1,((1-uv[:,1]%1)*(h-1)).astype(int))
         rgb=im[y,x].astype(np.uint8)
     elif m.visual.kind=="vertex":
         rgb=np.asarray(m.visual.vertex_colors)[:,:3]

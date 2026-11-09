@@ -15,13 +15,13 @@ test("ENV017 selection retains the old ENV010 fallback and game HUD",()=>{
  assert.match(visual,/CombatEnvironment017\.build\(B,scene,owned\)/);
  assert.match(visual,/else if\(typeof CombatEnvironment010/);
  assert.match(html,/combat-environment-017\.js/);
- assert.match(html,/v0\.3\.84 · ENV017-MASSING/);
+ assert.match(html,/v0\.3\.84 · OPSHELP.*ENV017-MASSING/);
 });
 test("ENV017 remains non-pickable and inspectable through real Babylon matrix",()=>{
  const src=fs.readFileSync("combat-environment-017.js","utf8");
  assert.match(src,/mesh\.isPickable=false/);
  assert.match(src,/scene\.getTransformMatrix\(\)/);
  assert.match(src,/B\.Vector3\.Project/);
- assert.match(src,/env017Massing="ready"|env017Massing="ready"|env017Massing="ready"|env017Massing="ready"|dataset\.env017Massing="ready"/);
+ assert.match(src,/dataset\.env017Massing="ready"/);
  assert.doesNotMatch(src,/requestAnimationFrame|runRenderLoop|new B\.Engine/);
 });

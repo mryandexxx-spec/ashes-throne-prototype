@@ -1,0 +1,36 @@
+name: ENV023 validate exact full-gorge geometry decoding
+on:
+  pull_request:
+    paths: ['.github/workflows/env023-validate.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Dequantize original publisher GLB, no substitutions
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm exec --yes --package=@gltf-transform/cli -- gltf-transform dequantize             assets/env023/ContinuousGorgeSource.glb /tmp/env023-float.glb
+          stat -c '%n %s bytes' /tmp/env023-float.glb
+      - name: Inspect actual float geometry in metres
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check numpy trimesh Pillow
+          python3 - <<'PY'
+          import trimesh, numpy as np
+          s=trimesh.load('/tmp/env023-float.glb',force='scene',process=False)
+          print('COUNT',len(s.geometry), 'BOUNDS',s.bounds,flush=True)
+          allv=[]
+          for m in s.dump(concatenate=False):
+            allv.append(m.vertices)
+          v=np.concatenate(allv)
+          print('VERTEX RANGES',v.min(0),v.max(0),flush=True)
+          assert np.isfinite(v).all()
+          assert np.max(v)-np.min(v)<1000, 'Still broken quantized range'
+          PY

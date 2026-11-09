@@ -1,4 +1,4 @@
-name: ENV014 authored GLB and Babylon WebGL comparison
+name: ENV014B open gorge GLB WebGL review
 on:
   pull_request:
     paths:
@@ -61,7 +61,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: env014-env010-babylon-webgl-comparison
+          name: env014b-env010-babylon-webgl-comparison
           path: artifacts/*.png
           if-no-files-found: warn
 
@@ -111,7 +111,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: env014-env010-real-game-hud
+          name: env014b-env010-real-game-hud
           path: artifacts/*-full-hud-*.png
           if-no-files-found: warn
 
@@ -121,7 +121,7 @@ jobs:
         run: |
           set -euo pipefail
           # Never overwrite a preserved baseline/evidence on later CI re-runs.
-          if test -f docs/evidence/env014/env014-full-hud-844x390.png; then
+          if test -f docs/evidence/env014b/env014-full-hud-844x390.png; then
             echo "Existing authoritative ENV014 WebGL evidence retained."
             exit 0
           fi

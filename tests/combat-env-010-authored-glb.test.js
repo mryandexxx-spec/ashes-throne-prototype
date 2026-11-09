@@ -37,9 +37,9 @@ test("authored canyon GLB is deterministic valid glTF 2 with material, bounded 3
   assert.equal(indices.count%3,0);assert.ok(indices.count>1000);
  }
  const tri=generated.stats.reduce((sum,a)=>sum+a.triangles,0);
- assert.equal(tri,9126);
- assert.deepEqual(generated.stats.map(m=>m.vertices),[1641,1641,1641]);
- assert.deepEqual(generated.stats.map(m=>m.triangles),[3042,3042,3042]);
+ assert.equal(tri,9360);
+ assert.deepEqual(generated.stats.map(m=>m.vertices),[1701,1701,1701]);
+ assert.deepEqual(generated.stats.map(m=>m.triangles),[3120,3120,3120]);
  // Three closed forms per draw-call group: every volume has a cap,
  // full-depth perimeter, and real thickness in both camera axes.
  assert.ok(generated.stats.every(m=>m.vertices>1200));

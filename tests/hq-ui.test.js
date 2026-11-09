@@ -54,5 +54,5 @@ test("HQ-UI-005 SVG contours trace four painted objects and defer hotspot naviga
  assert.match(game,/scene\.dataset\.hqIlluminated=zone/);
  assert.match(game,/hqContourTimer=setTimeout/);
  assert.match(game,/resetHQContour\(\)/);
- assert.match(game,/b\.matches\("#home \.hq-station"\)/);
+ assert.ok(game.includes('b.matches?.("#home .hq-station")'));
 });

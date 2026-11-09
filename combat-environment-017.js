@@ -11,19 +11,19 @@ const CombatEnvironment017=(()=>{
  const p=(side,away,y)=>[RIGHT.x*side+AWAY.x*away,y,RIGHT.z*side+AWAY.z*away];
  // Unlike ENV018, there is NO 40-unit near ground or slanted right apron.
  // Sixteen units of stable central rock, a narrow vertical edge, open sky.
- const SIDES=Object.freeze([-14,-12,-10,-8,-6,-4,-2,0,2,4,5.4,6.3,7.0]);
- const DEPTHS=Object.freeze([-11,-9,-7,-5,-3,0,3,6,9,12,15]);
+ const SIDES=Object.freeze([-10,-9,-8,-7,-6,-4,-2,0,2,4,5,5.7,6.2]);
+ const DEPTHS=Object.freeze([-9,-7,-5,-3,0,3,6,9,12]);
  function edge(away){
-  return 7+.32*Math.sin(away*.34+.6)+.23*Math.sin(away*.77-1.3);
+  return 6.2+.24*Math.sin(away*.34+.6)+.16*Math.sin(away*.77-1.3);
  }
  function height(side,away){
   // Combat formation must always touch the original y=0 ground.
   if(side>=-6&&side<=6.3&&away>=-7&&away<=9)return 0;
   // The left-hand root is within the SAME terrain mesh and grows gently
   // towards the landmass, rather than a giant isolated triangle.
-  const left=Math.max(0,Math.min(1,(-side-6)/8));
+  const left=Math.max(0,Math.min(1,(-side-6)/4));
   const back=Math.max(0,Math.min(1,(away-1)/14));
-  const front=Math.max(0,Math.min(1,(-away-7)/4));
+  const front=Math.max(0,Math.min(1,(-away-7)/2));
   return left*back*(1.3+.45*Math.sin(away*.22)) - front*.25;
  }
  // Each polyline is a contour on a distant opposite wall. Its first crest
@@ -53,9 +53,13 @@ const CombatEnvironment017=(()=>{
    data.applyToMesh(mesh,false);
    const mat=own(new B.StandardMaterial("env017_mat_"+name,scene));
    mat.diffuseColor=new B.Color3(...materialColor);
-   mat.emissiveColor=new B.Color3(.09,.09,.09);
+   // Emissive fill prevents the one-sided normals from turning a daylight
+   // cliff into a nearly black screen on the fixed mobile camera.
+   const fill=name==="living_ledge"?[.33,.28,.21]:
+    name==="open-cliff-face"?[.23,.25,.25]:[.38,.42,.43];
+   mat.emissiveColor=new B.Color3(...fill);
    mat.specularColor=new B.Color3(0,0,0);
-   mat.disableLighting=true;mat.useVertexColors=true;mat.backFaceCulling=false;
+   mat.disableLighting=false;mat.useVertexColors=true;mat.backFaceCulling=false;
    mat.fogEnabled=fog;
    mesh.material=mat;mesh.useVertexColors=true;
    mesh.isPickable=false;mesh.checkCollisions=false;mesh.receiveShadows=false;
@@ -63,9 +67,9 @@ const CombatEnvironment017=(()=>{
   }
   const pos=[],idx=[],col=[],width=DEPTHS.length;
   for(let i=0;i<SIDES.length;i++)for(let j=0;j<DEPTHS.length;j++){
-   const side=SIDES[i],away=DEPTHS[j],x=side>=7?edge(away):side,y=height(side,away);
+   const side=SIDES[i],away=DEPTHS[j],x=side>=6.2?edge(away):side,y=height(side,away);
    pos.push(...p(x,away,y));
-   const left=Math.max(0,Math.min(1,(-side-6)/8));
+   const left=Math.max(0,Math.min(1,(-side-6)/4));
    const shade=1-.13*left+.025*Math.sin(away*.33+side*.2);
    col.push(.57*shade,.48*shade,.38*shade,1);
   }
@@ -119,11 +123,11 @@ const CombatEnvironment017=(()=>{
   }
   return Object.freeze({meshes:meshes.length,vertices,triangles,stage:"env019-silhouette"});
  }
- function inspect(B,scene,camera,width,height){
+ function inspect(B,scene,camera,width,viewportHeight){
   if(!B?.Vector3?.Project||!scene?.getTransformMatrix||!camera)return null;
   const transform=scene.getTransformMatrix();
   const viewport=camera.viewport?.toGlobal?
-   camera.viewport.toGlobal(width,height):{x:0,y:0,width,height};
+   camera.viewport.toGlobal(width,viewportHeight):{x:0,y:0,width,height:viewportHeight};
   const project=([x,y,z])=>{
    const v=B.Vector3.Project(new B.Vector3(x,y,z),B.Matrix.Identity(),transform,viewport);
    return [Number(v.x.toFixed(1)),Number(v.y.toFixed(1)),Number(v.z.toFixed(3))];
@@ -134,7 +138,7 @@ const CombatEnvironment017=(()=>{
    gapSample:project(p(12,15,-12)),
    bankNear:project(p(...MASS[0].lines[0][0])),
    bankFar:project(p(...MASS[0].lines[0][4])),
-   leftRoot:project(p(-12,12,height(-12,12)))};
+   leftRoot:project(p(-9,9,height(-9,9)))};
  }
  return Object.freeze({supported,build,inspect,MASS,SIDES,DEPTHS,height,edge});
 })();

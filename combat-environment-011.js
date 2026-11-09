@@ -11,8 +11,8 @@ const CombatEnvironment011=(()=>{
  function openRearExit(B,scene){
   if(!B?.VertexData?.ComputeNormals||!scene?.meshes)return false;
   const profiles=[
-   ["env009_living_ledge",[0,0,0,0,0,0,0,0,.32,1.2,2.9,4.6,5.9,6.8]],
-   ["env009_ravine",[6.8,7.4,8.1,8.8,9.6,10.4]]
+   ["env009_living_ledge",[0,0,0,0,0,0,0,0,.08,.35,.75,1.2,1.9,2.8]],
+   ["env009_ravine",[2.8,3.2,4.0,4.8,5.2,5.8]]
   ];
   const ready=profiles.map(([name,drop])=>({
    mesh:scene.meshes.find(m=>m.name===name),drop

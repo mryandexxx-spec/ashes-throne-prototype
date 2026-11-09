@@ -27,3 +27,20 @@ jobs:
               for i,mat in enumerate(g.get('materials',[])):
                   print(' MATERIAL',i,mat)
           PY
+      - name: Probe publisher API for an actual photogrammetric cliff at low resolution
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 2 --connect-timeout 12 --max-time 30             https://api.polyhaven.com/files/coastal_cliff_02 -o /tmp/polyhaven-files.json
+          python3 - <<'PY'
+          import json
+          a=json.load(open('/tmp/polyhaven-files.json'))
+          print('Poly Haven formats:',list(a))
+          for k,v in a.items():
+              if k in ('gltf','glb','blend','fbx'):
+                  print('FORMAT',k,'options',list(v)[:20] if isinstance(v,dict) else type(v).__name__)
+                  if isinstance(v,dict):
+                      for res,items in v.items():
+                          if str(res).lower() in ('1k','2k','lod0','lod1'):
+                              print(' RES',res,str(items)[:1800])
+          PY

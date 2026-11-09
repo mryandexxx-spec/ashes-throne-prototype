@@ -82,8 +82,18 @@ const CombatVisual007=(()=>{
   try{
    if(useEnv009){
     CombatEnvironment009.build(B,scene,owned);
-    // ENV010: fixed-view atmosphere, visually additive to the stable 3D ledge.
-    if(typeof CombatEnvironment010!=="undefined"&&CombatEnvironment010.supported(B)){
+    // ENV013 takes over only the scenic backdrop, never the ENV009 contact
+    // ledge or CombatCore. Explicit ?arena=env010 is visual QA baseline only.
+    const baselineQA=typeof location!=="undefined"&&
+     new URLSearchParams(location.search).get("arena")==="env010";
+    let env013Built=false;
+    if(!baselineQA&&typeof CombatEnvironment013!=="undefined"&&
+       CombatEnvironment013.supported(B)){
+     try{CombatEnvironment013.build(B,scene,owned);env013Built=true;}
+     catch(error){console.warn("ENV013 reverted to ENV010",error);}
+    }
+    if(!env013Built&&typeof CombatEnvironment010!=="undefined"&&
+       CombatEnvironment010.supported(B)){
      CombatEnvironment010.build(B,scene,owned);
     }
    }else{

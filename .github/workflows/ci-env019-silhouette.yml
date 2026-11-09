@@ -73,9 +73,14 @@ jobs:
               if [ "$bytes" -ge 65000 ]; then break; fi
             done
             page="$(timeout 65s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --dump-dom "$url" 2>>"artifacts/chrome-$view.log")"
-            printf '%s\n' "$page" >"artifacts/diagnostic-$view-dom.html"
+            printf '%s\\n' "$page" >"artifacts/diagnostic-$view-dom.html"
             # The data marker is assigned only after the actual Babylon scene
             # is running and the real engine reports a WebGL capability.
+            echo "ENV019 DOM diagnostic ($view):"
+            grep -o 'data-visual-status="[^"]*"' "artifacts/diagnostic-$view-dom.html" || true
+            grep -o 'data-error="[^"]*"' "artifacts/diagnostic-$view-dom.html" || true
+            grep -o 'data-env019="[^"]*"' "artifacts/diagnostic-$view-dom.html" || true
+            grep -o 'data-camera="[^"]*"' "artifacts/diagnostic-$view-dom.html" || true
             grep -q 'data-visual-status="ready"' "artifacts/diagnostic-$view-dom.html"
             grep -q 'data-environment="ENV017"' "artifacts/diagnostic-$view-dom.html"
             grep -q 'data-env019="silhouette"' "artifacts/diagnostic-$view-dom.html"
@@ -91,11 +96,12 @@ jobs:
             test "$(stat -c %s "artifacts/main-before-$view-full-hud-844x390.png")" -ge 65000
           done
       - name: Embed exact real screenshots in job log for review
+        if: always()
         shell: bash
         run: |
           for name in diagnostic-normal-full-hud-844x390 diagnostic-far-full-hud-844x390 main-before-normal-full-hud-844x390 main-before-far-full-hud-844x390; do
             echo "ART_IMAGE_BEGIN:$name"
-            base64 -w0 "artifacts/$name.png"
+            if [ -f "artifacts/$name.png" ]; then base64 -w0 "artifacts/$name.png"; fi
             echo
             echo "ART_IMAGE_END:$name"
           done

@@ -51,7 +51,7 @@
    if(values.some(v=>v.some(n=>!Number.isFinite(n))))
     throw Error("nonfinite projection");
    data.camera=JSON.stringify(view);
-   data.environment="ENV017";data.webgl="true";data.view=far?"far":"normal";
+   data.environment="ENV017";data.env018="integrated-ledge";data.webgl="true";data.view=far?"far":"normal";
    clearInterval(poll);
    setTimeout(()=>{data.visualStatus="ready";},700);
   }catch(e){clearInterval(poll);data.visualStatus="error";data.error=e.message;console.error(e)}

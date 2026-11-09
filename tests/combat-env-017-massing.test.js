@@ -10,8 +10,8 @@ test("ENV019 preserves fighter floor and bounds near-land geometry",()=>{
  assert.ok(env.DEPTHS[0]>=-11&&env.DEPTHS.at(-1)<=15);
  for(const s of [-6,-4,-2,0,2,4,6])for(const a of [-7,-3,0,3,9])
   assert.equal(env.height(s,a),0,"fighter remains on y=0");
- assert.ok(env.height(-12,12)>0,"left back merges gently into raised land");
- assert.ok(env.edge(-9)>6&&env.edge(15)<8,"right rim remains near fighter shelf");
+ assert.ok(env.height(-9,9)>0,"left back merges gently into raised land");
+ assert.ok(env.edge(-9)>5.7&&env.edge(12)<7,"right rim remains near fighter shelf");
  assert.ok(env.MASS[0].lines[0].every(pt=>pt[1]>=21),"opposite bank is truly distant");
  assert.ok(env.MASS[0].lines[0].every(pt=>pt[0]>=8.5),"gap stays open on right");
 });

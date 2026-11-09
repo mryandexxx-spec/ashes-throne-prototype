@@ -1,5 +1,7 @@
 name: ENV022 optimize authentic terrain CC0 assets
 on:
+  pull_request:
+    paths: ['tools/env022-prepare-cc0-terrain.py','.github/workflows/env022-optimize.yml']
   workflow_dispatch:
 permissions:
   contents: write

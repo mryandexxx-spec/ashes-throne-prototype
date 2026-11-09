@@ -64,8 +64,19 @@
   engine.resize();scene.render();
   engine.runRenderLoop(()=>scene.render());
   if(p.get("mode")==="env014"){
-    document.documentElement.dataset.visualStatus=
-     document.documentElement.dataset.env014Rock==="ready"?"ready":"error";
+    document.documentElement.dataset.visualStatus="loading";
+    let polls=0;
+    const untilReady=setInterval(()=>{
+      const state=document.documentElement.dataset.env014Rock;
+      if(state==="ready"){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="ready";
+      }else if(state==="fallback"||state==="disposed"||++polls>100){
+        clearInterval(untilReady);
+        document.documentElement.dataset.visualStatus="error";
+        diag.textContent="ENV014 GLB не загружен: "+state;
+      }
+    },75);
   }else if(p.get("mode")==="env010"){
     document.documentElement.dataset.visualStatus="loading";
     let polls=0;

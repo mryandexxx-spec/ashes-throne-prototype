@@ -223,7 +223,8 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
  }
  playerNickname=nick;
  notice.textContent="Ник сохранён на этом устройстве.";
- renderPlayerProfile();renderHeadquarters();
+ renderPlayerProfile();
+ if(typeof renderHeadquarters==="function")renderHeadquarters();
 });
 let battleIsCampaign=false;
 // STORY-001 is an opt-in sandbox, independent of campaign rewards and saves.
@@ -270,7 +271,8 @@ let simulationMissionId=null;
 
 // HQ-UI-001: use existing progress/state; this view does not own game rules.
 function renderHeadquarters(){
- const root=$("#home");if(!root)return;
+ const root=$("#home");
+ if(!root||typeof root.querySelectorAll!=="function"||typeof PlayerProfileCore==="undefined"||typeof ChallengeCore==="undefined"||typeof CampaignData==="undefined")return;
  const set=(selector,value)=>{const node=$(selector);if(node)node.textContent=String(value);};
  set("#hqNickname",playerNickname);
  const level=ProgressCore.accountLevel(progress);
@@ -781,7 +783,10 @@ function renderStoryDemo(){
 function showScreen(id){
  // Re-entering from home opens the two-mode chooser, not a stale mission list.
  if(id==="challenges"&&$("#home")?.classList.contains("active"))selectedChallengeKind=null;
- if(id!=="home"){closeHQMenu();cancelHQTooltip();}
+ if(id!=="home"){
+  if(typeof closeHQMenu==="function")closeHQMenu();
+  if(typeof cancelHQTooltip==="function")cancelHQTooltip();
+ }
  if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();}
  if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();stopBattleRendering();}
  // Combat-008A: release the document scroll while the arena owns the viewport.
@@ -885,8 +890,8 @@ function showScreen(id){
  }
  if(id==="home"){
   renderDailyClaimBadge();
-  renderHeadquarters();
   maybeOpenLoginOnEntry();
+  renderHeadquarters();
  }
 }
 document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click",()=>{
@@ -898,7 +903,7 @@ $("#startBattle").addEventListener("click",()=>openSquad("home"));
 // HQ-UI-001: More menu and cancellable long-press tooltips.
 const hqMore=$("#hqMoreMenu"),hqMoreToggle=$("#hqMoreToggle"),hqTooltip=$("#hqTooltip"),hqHome=$("#home");
 function closeHQMenu(){if(hqMore)hqMore.hidden=true;if(hqMoreToggle)hqMoreToggle.setAttribute("aria-expanded","false");}
-hqMoreToggle?.addEventListener("click",()=>{
+hqMoreToggle?.addEventListener?.("click",()=>{
  if(!hqMore)return;
  hqMore.hidden=!hqMore.hidden;
  hqMoreToggle.setAttribute("aria-expanded",String(!hqMore.hidden));
@@ -912,7 +917,7 @@ function cancelHQTooltip(){
  if(hqPressTimer!==null)clearTimeout(hqPressTimer);
  hqPressTimer=null;hqPress=null;if(hqTooltip)hqTooltip.hidden=true;
 }
-hqHome?.addEventListener("pointerdown",event=>{
+hqHome?.addEventListener?.("pointerdown",event=>{
  const button=event.target.closest?.("[data-hq-hint]");
  if(!button||event.pointerType==="mouse")return;
  cancelHQTooltip();
@@ -922,10 +927,10 @@ hqHome?.addEventListener("pointerdown",event=>{
   hqTooltip.textContent=button.dataset.hqHint;hqTooltip.hidden=false;hqPressTimer=null;
  },520);
 });
-hqHome?.addEventListener("pointermove",event=>{
+hqHome?.addEventListener?.("pointermove",event=>{
  if(hqPress&&hqPress.id===event.pointerId&&Math.hypot(event.clientX-hqPress.x,event.clientY-hqPress.y)>12)cancelHQTooltip();
 });
-for(const type of ["pointerup","pointercancel","pointerleave"])hqHome?.addEventListener(type,cancelHQTooltip);
+for(const type of ["pointerup","pointercancel","pointerleave"])hqHome?.addEventListener?.(type,cancelHQTooltip);
 
 $("#storyDemoOpen")?.addEventListener("click",beginStoryDemo);
 $("#storyDemoBack")?.addEventListener("click",()=>showScreen("campaign"));

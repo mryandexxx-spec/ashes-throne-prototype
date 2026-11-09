@@ -13,17 +13,17 @@ function createEnv010Glb(){
  // x is horizontal in fixed camera view, d recedes into the ravine.
  const LAYERS=[
  {name:"front_buttress",palette:[.52,.47,.395],haze:0,forms:[
- rock("left_gate",-35,33,22,19,-9,108,[.91,1.12,1.04,.74,.86,1.16,.91,.79,1.11,.91,.88,1.20,.99],[-.105,.024],[[205,2.9],[310,2.4]]),
- rock("right_gate",40,37,26,22,-12,113,[.89,1.13,.80,.95,1.20,.88,.71,1.16,.86,1.08,.83,1.19,.93],[.075,-.035],[[130,3.4],[244,2.7]]),
- rock("left_spur",-64,56,27,22,-28,115,[.83,1.15,1.02,.83,1.18,.82,1.00,.78,1.25,.87,1.08,.82,1.01],[-.07,.018],[[95,2.5],[272,3.2]])]},
+ rock("left_gate",-40,50,17,17,-22,102,[.91,1.12,1.04,.74,.86,1.16,.91,.79,1.11,.91,.88,1.20,.99],[-.105,.024],[[205,2.9],[310,2.4]]),
+ rock("right_gate",48,53,19,20,-23,100,[.89,1.13,.80,.95,1.20,.88,.71,1.16,.86,1.08,.83,1.19,.93],[.075,-.035],[[130,3.4],[244,2.7]]),
+ rock("left_spur",-68,63,23,22,-36,112,[.83,1.15,1.02,.83,1.18,.82,1.00,.78,1.25,.87,1.08,.82,1.01],[-.07,.018],[[95,2.5],[272,3.2]])]},
  {name:"middle_terraces",palette:[.56,.56,.52],haze:.12,forms:[
- rock("west_fork",-40,64,28,23,-32,112,[1.14,.89,1.08,.82,1.15,.85,1.18,.76,.98,1.11,.80,.95,1.23],[.045,.016],[[158,3.0],[296,3.6]]),
- rock("east_shelf",48,69,32,25,-38,106,[.82,.94,1.25,.81,1.17,.94,.75,1.13,.93,1.16,.86,1.06,.82],[-.065,-.014],[[40,2.6],[227,4.1]]),
- rock("gorge_turn",16,87,19,20,-73,93,[1.03,.83,1.24,.88,.92,1.12,.77,1.15,.92,1.03,.86,1.08,1.13],[.022,.032],[[70,2.2],[246,2.7]])]},
+ rock("west_fork",-43,76,26,22,-42,110,[1.14,.89,1.08,.82,1.15,.85,1.18,.76,.98,1.11,.80,.95,1.23],[.045,.016],[[158,3.0],[296,3.6]]),
+ rock("east_shelf",52,75,28,22,-46,114,[.82,.94,1.25,.81,1.17,.94,.75,1.13,.93,1.16,.86,1.06,.82],[-.065,-.014],[[40,2.6],[227,4.1]]),
+ rock("gorge_turn",8,95,19,18,-75,92,[1.03,.83,1.24,.88,.92,1.12,.77,1.15,.92,1.03,.86,1.08,1.13],[.022,.032],[[70,2.2],[246,2.7]])]},
  {name:"pale_horizon",palette:[.67,.69,.66],haze:.29,forms:[
- rock("west_crown",-75,104,34,31,-50,117,[.82,1.18,.84,1.03,1.23,.81,1.08,.94,.79,1.21,.90,1.06,1.10],[.035,-.018],[[199,2.6],[320,2.4]]),
- rock("eastern_rampart",69,107,39,32,-51,125,[1.13,.82,.96,1.22,.87,1.09,.80,1.18,.97,.82,1.17,.95,1.04],[-.035,.019],[[98,2.4],[273,2.8]]),
- rock("distant_saddle",-3,118,26,29,-77,102,[.84,1.04,1.20,.79,1.13,.85,1.08,.95,1.17,.85,1.07,.92,1.04],[.012,-.021],[[40,2.4],[206,3.1]])]}
+ rock("west_crown",-68,111,31,30,-56,115,[.82,1.18,.84,1.03,1.23,.81,1.08,.94,.79,1.21,.90,1.06,1.10],[.035,-.018],[[199,2.6],[320,2.4]]),
+ rock("eastern_rampart",64,111,35,29,-59,122,[1.13,.82,.96,1.22,.87,1.09,.80,1.18,.97,.82,1.17,.95,1.04],[-.035,.019],[[98,2.4],[273,2.8]]),
+ rock("distant_saddle",-5,128,26,28,-86,103,[.84,1.04,1.20,.79,1.13,.85,1.08,.95,1.17,.85,1.07,.92,1.04],[.012,-.021],[[40,2.4],[206,3.1]])]}
  ];
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const smooth=(a,b,t)=>{t=clamp((t-a)/(b-a),0,1);return t*t*(3-2*t);};
@@ -54,7 +54,7 @@ function createEnv010Glb(){
     const x=f.x+nx*f.rx*lateral+shear*nx-fault*nx*.78;
     const d=f.d+nz*f.rd*lateral+shear*nz-fault*nz*.78;
     const rim=tiltX*(x-f.x)+tiltD*(d-f.d);
-    const y=f.top-f.height*t+rim*Math.pow(1-t,1.18)-fault*(1-t)*.65+
+    const y=f.top-f.height*t+(rim+(radial-1)*8)*Math.pow(1-t,1.18)-fault*(1-t)*.65+
        (i%7===0?-.5:0)*Math.pow(1-t,1.5);
     positions.push((d+x)*SQ,y,(d-x)*SQ);
     const strata=Math.sin((y+.16*x+.07*d)*.25+Math.sin(a*3)*.4);
@@ -70,11 +70,32 @@ function createEnv010Glb(){
    const q=first+j*SEG+i,n=first+j*SEG+(i+1)%SEG,b=q+SEG,bn=n+SEG;
    indices.push(q,n,b,n,bn,b);
   }
-  const cap=positions.length/3;
-  positions.push((f.d+f.x)*SQ,f.top-2.4,(f.d-f.x)*SQ);
-  colors.push(Math.round(layer.palette[0]*233),Math.round(layer.palette[1]*233),Math.round(layer.palette[2]*233),255);
-  uvs.push(.5,.5);
-  for(let i=0;i<SEG;i++)indices.push(cap,first+(i+1)%SEG,first+i);
+  // Discontinuous UV island: the roof MUST NOT inherit the side's angular UV.
+  // UVs are planar in world-space; a second uneven inner rim prevents the
+  // large flat fan and radial Rock063 streaks seen in the rejected v5 WebGL.
+  const outer=positions.length/3;
+  const topRing=Array.from({length:SEG},(_,i)=>positions.slice((first+i)*3,(first+i)*3+3));
+  const tint=layer.palette.map(n=>Math.round(n*236));
+  const uv=(x,z)=>[(x-z)*SQ*.062,(x+z)*SQ*.062];
+  for(let i=0;i<SEG;i++){
+   const [x,y,z]=topRing[i];
+   positions.push(x,y,z); colors.push(...tint,255); uvs.push(...uv(x,z));
+  }
+  const inner=positions.length/3;
+  for(let i=0;i<SEG;i++){
+   const [x,y,z]=topRing[i],radius=shapeAt(f,i);
+   const centerX=(f.d+f.x)*SQ,centerZ=(f.d-f.x)*SQ;
+   const px=centerX+(x-centerX)*.42,pz=centerZ+(z-centerZ)*.42;
+   // The crown dips between irregular shoulders; it is not a level roof.
+   const py=f.top+2.1+(radius-1)*5.5+.3*(y-f.top);
+   positions.push(px,py,pz);colors.push(...tint,255);uvs.push(...uv(px,pz));
+  }
+  const center=positions.length/3,xx=(f.d+f.x)*SQ,zz=(f.d-f.x)*SQ;
+  positions.push(xx,f.top+2.7,zz);colors.push(...tint,255);uvs.push(...uv(xx,zz));
+  for(let i=0;i<SEG;i++){
+   const j=(i+1)%SEG,a=outer+i,b=outer+j,c=inner+i,dd=inner+j;
+   indices.push(a,b,c,b,dd,c,center,dd,c);
+  }
  }
  function layerMesh(layer){
   const positions=[],colors=[],uvs=[],indices=[],normals=[];

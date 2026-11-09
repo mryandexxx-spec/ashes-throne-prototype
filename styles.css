@@ -1773,6 +1773,24 @@ body:has(#home.active){height:100dvh;overflow:hidden}
 #home .hq-scene[data-hq-illuminated] .hq-fx-specular{
  animation:hq-specular-flicker .47s ease-out both;
 }
+/* Visible activation: the light flows along painted folds, map routes and
+   metal highlights rather than washing the complete panorama. */
+#home .hq-fx-glint{
+ opacity:0;
+ stroke-dasharray:260 500;
+ stroke-dashoffset:260;
+ filter:drop-shadow(0 0 4px #ffe2a8);
+}
+#home .hq-fx-engraving{
+ opacity:0;
+ filter:drop-shadow(0 0 3px #ffce75);
+}
+#home .hq-scene[data-hq-illuminated] .hq-fx-glint{
+ animation:hq-glint-pass .47s ease-out both;
+}
+#home .hq-scene[data-hq-illuminated] .hq-fx-engraving{
+ animation:hq-engraving-pulse .47s ease-out both;
+}
 #home .hq-station.is-activating .hq-station-caption{
  color:#fff0d2;
  border-color:#dab883;
@@ -1792,7 +1810,22 @@ body:has(#home.active){height:100dvh;overflow:hidden}
  72%{opacity:.5}
  100%{opacity:0}
 }
+@keyframes hq-glint-pass{
+ 0%{opacity:0;stroke-dashoffset:260}
+ 18%{opacity:.15;stroke-dashoffset:195}
+ 50%{opacity:1;stroke-dashoffset:55}
+ 75%{opacity:.82;stroke-dashoffset:0}
+ 100%{opacity:0;stroke-dashoffset:-50}
+}
+@keyframes hq-engraving-pulse{
+ 0%{opacity:0}
+ 32%{opacity:.35}
+ 55%{opacity:1}
+ 100%{opacity:.04}
+}
 @media(prefers-reduced-motion:reduce){
+ #home .hq-scene[data-hq-illuminated] .hq-fx-glint,
+ #home .hq-scene[data-hq-illuminated] .hq-fx-engraving,
  #home .hq-scene[data-hq-illuminated] .hq-fx-zone,
  #home .hq-scene[data-hq-illuminated] .hq-fx-sheen,
  #home .hq-scene[data-hq-illuminated] .hq-fx-specular{

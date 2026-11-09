@@ -1,7 +1,5 @@
 name: ENV022 optimize authentic terrain CC0 assets
 on:
-  pull_request:
-    paths: ['tools/env022-prepare-cc0-terrain.py','.github/workflows/env022-optimize.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -28,4 +26,6 @@ jobs:
           git add assets/env022/MesaTerrain.glb assets/env022/CliffFace.glb assets/env022/CanyonWall.glb
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'ENV022: vendor optimized authentic CC0 mesa and cliff modules'
+          git fetch origin feat/combat-env-022-cc0-integrated-terrain
+          git rebase origin/feat/combat-env-022-cc0-integrated-terrain
           git push origin HEAD:feat/combat-env-022-cc0-integrated-terrain

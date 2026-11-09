@@ -1,22 +1,28 @@
-name: ENV010 WebGL screenshot comparison
+name: ENV013 / ENV010 real WebGL comparison
 on:
   pull_request:
     paths:
       - 'combat-environment-009.js'
       - 'combat-visual-007.js'
       - 'combat-environment-010.js'
+      - 'combat-environment-013.js'
       - 'assets/env010/**'
       - 'tests/fixtures/env009-webgl-preview.html'
       - 'tests/fixtures/env010-full-game.html'
       - 'tests/fixtures/env010-interactive-smoke.html'
+      - 'tests/combat-env-013.test.js'
       - '.github/workflows/env009-webgl-preview.yml'
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   capture:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
       - name: Capture Babylon.js comparison at the approved camera
         shell: bash
         run: |
@@ -26,7 +32,7 @@ jobs:
           mkdir -p artifacts
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/env009-http.log 2>&1 &
           sleep 2
-          for case in 'cv008 default' 'env009 default' 'env010 default' 'env010 far'; do
+          for case in 'cv008 default' 'env009 default' 'env010 default' 'env010 far' 'env013 default' 'env013 far'; do
             read -r mode yaw <<<"$case"
             name="$mode-$yaw"
             query="mode=$mode&yaw=$yaw"
@@ -46,7 +52,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: env009-babylon-webgl-comparison
+          name: env013-env010-babylon-webgl-comparison
           path: artifacts/*.png
           if-no-files-found: warn
 
@@ -55,16 +61,18 @@ jobs:
         run: |
           set -euo pipefail
           chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)"
-          url="http://127.0.0.1:8765/tests/fixtures/env010-full-game.html"
+          for mode in env010 env013; do
+          url="http://127.0.0.1:8765/tests/fixtures/env010-full-game.html?mode=$mode"
           timeout --kill-after=5s 65s "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
             --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
             --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 \
-            --virtual-time-budget=12000 --screenshot="$PWD/artifacts/env010-full-hud-844x390.png" "$url" 2>/tmp/chrome-hud.log
+            --virtual-time-budget=12000 --screenshot="$PWD/artifacts/$mode-full-hud-844x390.png" "$url" 2>/tmp/chrome-hud.log
           page="$(timeout --kill-after=5s 65s "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
             --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
             --virtual-time-budget=12000 --dump-dom "$url" 2>>/tmp/chrome-hud.log)"
           echo "$page" | grep -q 'data-visual-status="ready"'
-          test -s artifacts/env010-full-hud-844x390.png
+          test -s artifacts/$mode-full-hud-844x390.png
+          done
 
       - name: Verify real battle pinch, 4x, autobattle, battle end and replay (synthetic Chromium)
         shell: bash
@@ -94,6 +102,24 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: env010-real-game-hud
-          path: artifacts/env010-full-hud-*.png
+          name: env013-env010-real-game-hud
+          path: artifacts/*-full-hud-*.png
           if-no-files-found: warn
+
+      - name: Keep actual WebGL comparisons in this PR branch (not main)
+        if: success() && github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/evidence/env013
+          cp artifacts/env010-default.png artifacts/env010-far.png \
+             artifacts/env013-default.png artifacts/env013-far.png \
+             artifacts/env010-full-hud-844x390.png \
+             artifacts/env013-full-hud-844x390.png docs/evidence/env013/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/evidence/env013/*.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'test(env013): actual Babylon WebGL baseline and candidate captures'
+            git push origin "HEAD:refs/heads/${{ github.head_ref }}"
+          fi

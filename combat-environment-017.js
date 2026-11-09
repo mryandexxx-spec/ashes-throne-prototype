@@ -1,7 +1,6 @@
-/* COMBAT-ENV-017 — camera-first LARGE MASSES, candidate A.
- * Experimental, non-canonical, deliberately no geology/textures/erosion.
- * Coordinates are expressed relative to the game's fixed ArcRotateCamera yaw.
- * Everything here is owned by the existing Scene, non-pickable, static.
+/* ENV024 — licensed ready-made connected coastline cliff top + shelves.
+ * No procedural rock generation. Same-publisher 6m tiles with matching edge
+ * connectors. Fixed camera first; experimental and noncanonical.
  */
 const CombatEnvironment017=(()=>{
  "use strict";
@@ -9,93 +8,211 @@ const CombatEnvironment017=(()=>{
  const AWAY={x:-Math.cos(ALPHA),z:-Math.sin(ALPHA)};
  const RIGHT={x:-Math.sin(ALPHA),z:Math.cos(ALPHA)};
  const p=(side,away,y)=>[RIGHT.x*side+AWAY.x*away,y,RIGHT.z*side+AWAY.z*away];
- const MASS=Object.freeze([
-  // Rock behind and to the left grows outwards from the existing ledge;
-  // the close edge stays BELOW the fighter plane. No overhead left wing.
-  {id:"landward-root",shade:[.40,.42,.41],lines:[
-   [[-9,0,-.6],[-14,1,-1.1],[-22,4,-2.0],[-33,7,-3.1],[-49,10,-4]],
-   [[-9,0,-5.4],[-14,3,-6.5],[-22,7,-8],[-33,12,-10],[-49,17,-12]],
-   [[-9,0,-14],[-14,6,-16],[-22,10,-19],[-33,17,-22],[-49,24,-25]]
-  ]},
-  // A separated, asymmetric opposite wall. Its nearer boundary is
-  // genuinely distant; no near/right ring encloses the open void.
-  {id:"distant-bank",shade:[.50,.54,.55],lines:[
-   [[18,49,-8],[30,52,-6],[43,57,-2],[57,61,1],[75,70,-3],[98,79,-1]],
-   [[18,49,-28],[30,52,-24],[43,57,-25],[57,61,-19],[75,70,-23],[98,79,-27]],
-   [[18,49,-53],[30,52,-49],[43,57,-50],[57,61,-46],[75,70,-49],[98,79,-52]]
-  ]},
-  // Only a distant shadowed return: never a symmetric facing wall.
-  {id:"far-return",shade:[.60,.63,.63],lines:[
-   [[-64,91,-13],[-33,96,-9],[-5,108,-17],[19,119,-11],[48,134,-20]],
-   [[-64,91,-39],[-33,96,-38],[-5,108,-45],[19,119,-40],[48,134,-47]]
-  ]}
+ const SOURCES=Object.freeze(["RockShelf","CliffTop","CliffFace"]);
+ // Compatible 6m source tiles share exact edge ports, scale and palette.
+ // Coordinates are camera-right/away. Original rock meshes are never
+ // synthesized or heightfield-rebuilt. The original arena is fallback.
+ const PLACEMENTS=Object.freeze([
+  // One connected near-side natural combat ledge (3 x 3 shelf tiles).
+  {source:"RockShelf",side:-6,away:-6,y:-1.50,scale:1,angle:0},
+  {source:"RockShelf",side:0,away:-6,y:-1.50,scale:1,angle:0},
+  {source:"RockShelf",side:6,away:-6,y:-1.50,scale:1,angle:0},
+  {source:"RockShelf",side:-6,away:0,y:-1.50,scale:1,angle:0},
+  {source:"RockShelf",side:0,away:0,y:-1.50,scale:1,angle:0},
+  {source:"RockShelf",side:6,away:0,y:-1.50,scale:1,angle:0},
+  {source:"RockShelf",side:-6,away:6,y:-1.50,scale:1,angle:0},
+  {source:"RockShelf",side:0,away:6,y:-1.50,scale:1,angle:0},
+  {source:"RockShelf",side:6,away:6,y:-1.50,scale:1,angle:0},
+  // Landward root is physically attached at the source tile edge x=-9.
+  {source:"CliffTop",side:-12,away:-6,y:-1.50,scale:1,angle:0},
+  {source:"CliffTop",side:-12,away:0,y:-1.50,scale:1,angle:0},
+  {source:"CliffTop",side:-12,away:6,y:-1.50,scale:1,angle:0},
+  // Right rim has solid, genuine publisher cliff faces at x=+9.
+  // 4.73m high modules align their actual top with the rock shelf lip.
+  {source:"CliffFace",side:9,away:-6,y:-4.72,scale:1,angle:Math.PI/2},
+  {source:"CliffFace",side:9,away:0,y:-4.72,scale:1,angle:Math.PI/2},
+  {source:"CliffFace",side:9,away:6,y:-4.72,scale:1,angle:Math.PI/2},
+  // Wide genuinely empty air gap: no new terrain between x=10 and x=24.
+  // Distant continuous shore uses the SAME cliff module and palette.
+  {source:"CliffFace",side:24,away:24,y:-7.5,scale:1,angle:-Math.PI/2},
+  {source:"CliffFace",side:24,away:30,y:-7.5,scale:1,angle:-Math.PI/2},
+  {source:"CliffFace",side:24,away:36,y:-7.5,scale:1,angle:-Math.PI/2},
+  {source:"CliffTop",side:27.5,away:24,y:-3,scale:1,angle:0},
+  {source:"CliffTop",side:27.5,away:30,y:-3,scale:1,angle:0},
+  {source:"CliffTop",side:27.5,away:36,y:-3,scale:1,angle:0}
  ]);
+ const ROOT=typeof document!=="undefined"&&document.currentScript?.src?
+  new URL("assets/env024/",document.currentScript.src).href:null;
  function supported(B){return !!(B?.Mesh&&B.VertexData?.ComputeNormals&&B.StandardMaterial&&B.Color3);}
- function build(B,scene,own){
-  if(!supported(B)||!scene||typeof own!=="function")throw Error("ENV017 Babylon geometry required");
-  let vertices=0,triangles=0;
-  const meshes=[];
-  const make=(def)=>{
-   const columns=def.lines[0].length,rows=def.lines.length;
-   if(def.lines.some(line=>line.length!==columns))throw Error("ENV017 uneven contour");
-   const positions=[],indices=[],normals=[],colors=[];
-   for(let row=0;row<rows;row++)for(let col=0;col<columns;col++){
-    positions.push(...p(...def.lines[row][col]));
-    const shade=1-row*.085+(col%3===1?.025:0);
-    colors.push(...def.shade.map(c=>c*shade),1);
+ // Small strict glTF2 subset, matched to the four pinned Gobkit GLBs:
+ // Float32 attributes, uint16/uint32 triangle indices, an embedded image.
+ function parse(buffer){
+  if(!(buffer instanceof ArrayBuffer))throw Error("ENV024 GLB buffer required");
+  const dv=new DataView(buffer);
+  if(buffer.byteLength<60||buffer.byteLength>1200000||
+   dv.getUint32(0,true)!==0x46546c67||dv.getUint32(4,true)!==2||
+   dv.getUint32(8,true)!==buffer.byteLength)throw Error("ENV024 GLB header invalid");
+  const jLength=dv.getUint32(12,true),jType=dv.getUint32(16,true);
+  const bHead=20+jLength;
+  if(jType!==0x4e4f534a||jLength>30000||bHead+8>buffer.byteLength||
+    dv.getUint32(bHead+4,true)!==0x004e4942)throw Error("ENV024 GLB chunks invalid");
+  const json=JSON.parse(new TextDecoder().decode(new Uint8Array(buffer,20,jLength)));
+  const binStart=bHead+8,binLength=dv.getUint32(bHead,true);
+  if(binStart+binLength!==buffer.byteLength||json.asset?.version!=="2.0"||
+    json.meshes?.length!==1||json.meshes[0]?.primitives?.length!==1)
+   throw Error("ENV024 unexpected glTF topology");
+  const prim=json.meshes[0].primitives[0];
+  if((prim.mode??4)!==4)throw Error("ENV024 non triangle mesh");
+  function read(accessorId,type,allowed,allowNormalized=false){
+   const a=json.accessors?.[accessorId],v=json.bufferViews?.[a?.bufferView];
+   if(!a||!v||a.type!==type||!allowed.includes(a.componentType)||a.count<3||
+      a.count>(type==="SCALAR"?120000:25000)||a.sparse||(a.normalized&&!allowNormalized))throw Error("ENV024 accessor schema");
+   const components=type==="SCALAR"?1:type==="VEC2"?2:type==="VEC4"?4:3;
+   const bytes=a.componentType===5126||a.componentType===5125?4:a.componentType===5123?2:1;
+   const step=v.byteStride||components*bytes;
+   const offset=(v.byteOffset||0)+(a.byteOffset||0);
+   if(step<components*bytes||offset<0||offset+(a.count-1)*step+components*bytes>
+     (v.byteOffset||0)+v.byteLength||offset+(a.count-1)*step+components*bytes>binLength)
+    throw Error("ENV024 accessor range");
+   const out=[];
+   for(let i=0;i<a.count;i++)for(let j=0;j<components;j++){
+    const address=binStart+offset+i*step+j*bytes;
+    const n=a.componentType===5126?dv.getFloat32(address,true):
+     a.componentType===5125?dv.getUint32(address,true):
+     a.componentType===5123?dv.getUint16(address,true):dv.getUint8(address);
+    if(!Number.isFinite(n))throw Error("ENV024 nonfinite mesh");
+    out.push(a.normalized&&allowNormalized?n/(a.componentType===5121?255:65535):n);
    }
-   for(let row=0;row<rows-1;row++)for(let col=0;col<columns-1;col++){
-    const a=row*columns+col,b=a+columns;
-    indices.push(a,b,a+1,a+1,b,b+1);
-   }
-   B.VertexData.ComputeNormals(positions,indices,normals);
-   const mesh=own(new B.Mesh("env017_"+def.id,scene));
-   const data=new B.VertexData();
-   data.positions=positions;data.indices=indices;data.normals=normals;data.colors=colors;
-   data.applyToMesh(mesh,false);
-   const mat=own(new B.StandardMaterial("env017_mat_"+def.id,scene));
-   mat.diffuseColor=new B.Color3(1,1,1);
-   mat.emissiveColor=new B.Color3(.12,.13,.13);
-   mat.specularColor=new B.Color3(0,0,0);
-   mat.useVertexColors=true;mat.backFaceCulling=false;mat.fogEnabled=true;
-   mesh.material=mat;mesh.useVertexColors=true;
-   mesh.isPickable=false;mesh.checkCollisions=false;mesh.receiveShadows=false;
-   meshes.push(mesh);
-   vertices+=positions.length/3;triangles+=indices.length/3;
-  };
-  MASS.forEach(make);
-  // The three ENV009 scenic annuli occlude the new composition. Preserve
-  // living_ledge and ravine, and only disable the old distant rings.
-  for(const name of ["near_escarpment","far_ridge","horizon_ridge"]){
-   const old=scene.meshes?.find(m=>m.name==="env009_"+name);
-   if(old?.setEnabled)old.setEnabled(false);
+   return out;
   }
-  if(typeof document!=="undefined"&&document.documentElement){
-   document.documentElement.dataset.environment="ENV017";
-   document.documentElement.dataset.env017Massing="ready";
+  const pos=read(prim.attributes.POSITION,"VEC3",[5126]);
+  const normals=prim.attributes.NORMAL===undefined?null:
+    read(prim.attributes.NORMAL,"VEC3",[5126]);
+  const uv=prim.attributes.TEXCOORD_0===undefined?null:
+    read(prim.attributes.TEXCOORD_0,"VEC2",[5126]);
+  const indices=read(prim.indices,"SCALAR",[5123,5125]);
+  const vertexColors=prim.attributes.COLOR_0===undefined?null:
+   read(prim.attributes.COLOR_0,"VEC4",[5121,5123,5126],true);
+  const count=pos.length/3;
+  if(indices.length%3||indices.some(i=>i>=count)||count>25000)
+   throw Error("ENV024 invalid indices");
+  const image=json.images?.[0],view=json.bufferViews?.[image?.bufferView];
+  let imageBytes=null,imageMime=null;
+  if(image&&view&&["image/png","image/jpeg"].includes(image.mimeType)){
+   const start=binStart+(view.byteOffset||0);
+   if(view.byteLength>200000||start+view.byteLength>buffer.byteLength)
+    throw Error("ENV024 image bounds");
+   imageBytes=new Uint8Array(buffer,start,view.byteLength);
+   imageMime=image.mimeType;
   }
-  return Object.freeze({meshes:meshes.length,vertices,triangles,stage:"massing-only"});
+  return {positions:pos,normals,uvs:uv,indices,vertexColors,imageBytes,imageMime,vertices:count,
+   triangles:indices.length/3};
  }
- // Runtime diagnostics must use Babylon's actual Scene transform, not
- // guessed screen coordinates or an orthographic approximation.
+ function build(B,scene,own){
+  if(!supported(B)||!scene||typeof own!=="function")throw Error("ENV024 Babylon geometry required");
+  const mark=value=>{
+   if(typeof document!=="undefined"&&document.documentElement){
+    document.documentElement.dataset.environment="ENV017";
+    document.documentElement.dataset.env017Massing="ready";
+    document.documentElement.dataset.env024Assets=value;
+   }
+  };
+  mark("loading");
+  const disposed=()=>typeof scene.isDisposed==="function"?
+   scene.isDisposed():Boolean(scene.isDisposed);
+  if(!ROOT||typeof fetch!=="function"||typeof TextDecoder!=="function"){
+   mark("fallback");return Object.freeze({stage:"external-assets-unavailable",meshes:0});
+  }
+  // Load every module before creating meshes. On failure keep all ENV009
+  // terrain enabled, preserving the original battle and ability to retry.
+  Promise.all(SOURCES.map(async name=>{
+   const response=await fetch(ROOT+name+".glb",{credentials:"same-origin"});
+   if(!response.ok)throw Error("ENV024 HTTP "+response.status+" "+name);
+   const buffer=await response.arrayBuffer();
+   return [name,parse(buffer)];
+  })).then(entries=>{
+   if(disposed())return;
+   const map=new Map(entries),created=[];
+   try{
+    for(let i=0;i<PLACEMENTS.length;i++){
+     const def=PLACEMENTS[i],model=map.get(def.source);
+     const pos=[],indices=model.indices.slice(),colors=[];
+     const n=model.vertices,source=model.positions;
+     let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity,minY=Infinity;
+     for(let j=0;j<n;j++){
+      const x=source[j*3],y=source[j*3+1],z=source[j*3+2];
+      minX=Math.min(minX,x);maxX=Math.max(maxX,x);
+      minZ=Math.min(minZ,z);maxZ=Math.max(maxZ,z);minY=Math.min(minY,y);
+     }
+     const cX=(minX+maxX)/2,cZ=(minZ+maxZ)/2;
+     const center=p(def.side,def.away,def.y);
+     const co=Math.cos(def.angle),si=Math.sin(def.angle);
+     for(let j=0;j<n;j++){
+      const x=(source[j*3]-cX)*def.scale;
+      const y=(source[j*3+1]-minY)*def.scale*(def.heightScale||1);
+      const z=(source[j*3+2]-cZ)*def.scale*(def.depthScale||1);
+      const world=p(def.side+co*x-si*z,def.away+si*x+co*z,def.y+y);
+      pos.push(...world);
+      // Preserve real external mesh facets rather than paint broad fake walls.
+      if(model.vertexColors)colors.push(...model.vertexColors.slice(j*4,j*4+4));
+      else colors.push(1,1,1,1);
+     }
+     const mesh=new B.Mesh("env024_terrain_"+def.source+"_"+i,scene);
+     created.push(mesh);
+     const vd=new B.VertexData(),normal=[];
+     B.VertexData.ComputeNormals(pos,indices,normal);
+     vd.positions=pos;vd.indices=indices;vd.normals=normal;vd.colors=colors;
+     if(model.uvs)vd.uvs=model.uvs;
+     vd.applyToMesh(mesh,false);
+     mesh.isPickable=false;mesh.checkCollisions=false;mesh.receiveShadows=false;
+     mesh.useVertexColors=true;
+     const mat=new B.StandardMaterial("env024_terrain_mat_"+def.source+"_"+i,scene);
+     created.push(mat);
+     mat.diffuseColor=new B.Color3(1,1,1);
+     mat.emissiveColor=new B.Color3(.20,.21,.21);
+     mat.specularColor=new B.Color3(0,0,0);
+     mat.backFaceCulling=false;mat.useVertexColors=true;mat.fogEnabled=false;
+     if(def.source==="PolyCliff01"&&model.imageBytes&&B.Texture?.CreateFromBase64String){
+      let binary="";
+      for(let k=0;k<model.imageBytes.length;k+=8192)
+       binary+=String.fromCharCode(...model.imageBytes.subarray(k,k+8192));
+      const texture=B.Texture.CreateFromBase64String(
+       btoa(binary),"env024_tex_"+def.source+"_"+i,scene,false,false);
+      mat.diffuseTexture=texture;created.push(texture);
+     }
+     mesh.material=mat;
+    }
+    if(disposed())throw Error("ENV024 scene disposed before commit");
+    created.forEach(x=>own(x));
+    for(const name of ["living_ledge","ravine","near_escarpment","far_ridge","horizon_ridge"]){
+     const old=scene.meshes?.find(m=>m.name==="env009_"+name);
+     old?.setEnabled?.(false);
+    }
+    if(typeof document!=="undefined"&&document.documentElement)
+     document.documentElement.dataset.env024Matched="ready";
+    mark("ready");
+   }catch(error){
+    created.reverse().forEach(x=>{try{x.dispose?.();}catch(_){}});
+    throw error;
+   }
+  }).catch(()=>mark(disposed()?"disposed":"fallback"));
+  return Object.freeze({stage:"loading-matched-coastal-cc0",assets:SOURCES.length,placements:PLACEMENTS.length});
+ }
  function inspect(B,scene,camera,width,height){
   if(!B?.Vector3?.Project||!scene?.getTransformMatrix||!camera)return null;
   const transform=scene.getTransformMatrix();
   const viewport=camera.viewport?.toGlobal?
    camera.viewport.toGlobal(width,height):{x:0,y:0,width,height};
-  const project=([x,y,z])=>{
-   const v=B.Vector3.Project(new B.Vector3(x,y,z),
-    B.Matrix.Identity(),transform,viewport);
+  const project=q=>{
+   const v=B.Vector3.Project(new B.Vector3(...p(...q)),B.Matrix.Identity(),transform,viewport);
    return [Number(v.x.toFixed(1)),Number(v.y.toFixed(1)),Number(v.z.toFixed(3))];
   };
   return {alpha:camera.alpha,beta:camera.beta,radius:camera.radius,
-   fov:camera.fov,target:[camera.target.x,camera.target.y,camera.target.z],
-   viewport,ledgeRightEdge:project(p(9,0,0)),
-   gapSample:project(p(14,20,-12)),
-   bankNear:project(p(...MASS[1].lines[0][0])),
-   bankFar:project(p(...MASS[1].lines[0][4])),
-   leftRoot:project(p(...MASS[0].lines[0][3]))};
+   fov:camera.fov,target:[camera.target.x,camera.target.y,camera.target.z],viewport,
+   ledgeRightEdge:project([9,0,0]),gapSample:project([16,15,-5]),
+   bankNear:project([24,24,-5]),bankFar:project([24,36,-5]),
+   leftRoot:project([-12,6,0])};
  }
- return Object.freeze({supported,build,inspect,MASS});
+ return Object.freeze({supported,build,parse,inspect,SOURCES,PLACEMENTS});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=CombatEnvironment017;

@@ -1,0 +1,62 @@
+name: ENV023 inspect full ready-made CC0 gorge scene
+on:
+  pull_request:
+    paths: ['.github/workflows/env023-get-gorge.yml']
+  workflow_dispatch:
+permissions: {contents: write}
+jobs:
+  fetch-inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download authentic full closed two-bank gorge GLB
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets/env023
+          curl -fLS --retry 3 --connect-timeout 15 --max-time 120             'https://cdn.3dassets.dev/assets/32899/v1/model.glb'             -o assets/env023/ContinuousGorgeSource.glb
+          stat -c '%n %s bytes' assets/env023/ContinuousGorgeSource.glb
+          python3 - <<'PY'
+          import json,struct,collections
+          f='assets/env023/ContinuousGorgeSource.glb';raw=open(f,'rb').read()
+          assert raw[:4]==b'glTF' and struct.unpack_from('<I',raw,4)[0]==2
+          assert struct.unpack_from('<I',raw,8)[0]==len(raw)
+          size=struct.unpack_from('<I',raw,12)[0]
+          g=json.loads(raw[20:20+size])
+          print('ASSET',g.get('asset'), 'MESHES',len(g.get('meshes',[])),'NODES',len(g.get('nodes',[])),'MATERIALS',len(g.get('materials',[])),'IMAGES',len(g.get('images',[])),'EXTENSIONS',g.get('extensionsUsed'))
+          total=0
+          for i,m in enumerate(g.get('meshes',[])):
+            count=0
+            for p in m['primitives']:
+              acc=g['accessors'][p['indices']];count+=acc['count']//3
+              print(' PRIMITIVE',i,'color',p['attributes'].get('COLOR_0'),'texcoord',p['attributes'].get('TEXCOORD_0'),'position',g['accessors'][p['attributes']['POSITION']].get('min'),g['accessors'][p['attributes']['POSITION']].get('max'))
+            print(' MESH',i,m.get('name'),'TRIANGLES',count)
+            total+=count
+          print(' TOTAL_TORS',total)
+          assert total>=20000 and total<250000
+          PY
+      - name: Check Python GLB import and surface bounds
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check numpy trimesh pillow
+          python3 - <<'PY'
+          import trimesh
+          f='assets/env023/ContinuousGorgeSource.glb'
+          scene=trimesh.load(f,force='scene',process=False)
+          print('TRIMESH SCENE',len(scene.geometry),'names',list(scene.geometry.keys()),'geometry nodes',len(scene.graph.nodes_geometry),flush=True)
+          for m in scene.dump(concatenate=False):
+            print('PART',len(m.faces),'bounds',m.bounds,'color',type(m.visual).__name__,flush=True)
+          PY
+      - name: Commit source GLB into isolated experiment branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/env023/ContinuousGorgeSource.glb
+          git diff --cached --quiet && exit 0
+          git commit -m 'ENV023: vendor genuine full two-bank CC0 gorge source geometry'
+          git fetch origin feat/combat-env-023-complete-cc0-gorge
+          git rebase origin/feat/combat-env-023-complete-cc0-gorge
+          git push origin HEAD:feat/combat-env-023-complete-cc0-gorge

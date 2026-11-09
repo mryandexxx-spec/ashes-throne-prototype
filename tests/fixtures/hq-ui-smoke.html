@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HQ UI Chromium smoke</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}iframe{display:block;border:0;width:100vw;height:100dvh}</style></head>
+<body data-hq-status="loading"><iframe id="game" src="../../index.html" title="Штаб"></iframe>
+<script>
+const frame=document.getElementById("game");
+function error(message){document.body.dataset.hqStatus="error";document.body.dataset.hqError=String(message).slice(0,200)}
+frame.addEventListener("load",()=>{
+ try {
+  const doc=frame.contentDocument,win=frame.contentWindow,pan=doc.getElementById("hqPan"),home=doc.getElementById("home");
+  if(!pan||!home||typeof win.showScreen!=="function")throw Error("Main game not initialized");
+  // A first-day login calendar may open automatically: the fixture only changes the visible section.
+  doc.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s===home));
+  const stations=[...home.querySelectorAll(".hq-station")];
+  if(stations.length!==4||pan.scrollWidth<=pan.clientWidth*2)throw Error("Not a four-station panorama");
+  const vr=pan.getBoundingClientRect();
+  const visible=stations.filter(s=>{const r=s.getBoundingClientRect();return Math.min(r.right,vr.right)-Math.max(r.left,vr.left)>60});
+  if(visible.length<2)throw Error("Fewer than two visible stations");
+  const more=doc.getElementById("hqMoreToggle"),menu=doc.getElementById("hqMoreMenu");
+  if(!more||!menu||!menu.hidden)throw Error("More menu starts open");
+  more.click();if(menu.hidden)throw Error("More menu cannot open");
+  more.click();if(!menu.hidden)throw Error("More menu cannot close");
+  home.querySelector(".hq-station-campaign button").click();
+  if(!doc.getElementById("campaign").classList.contains("active"))throw Error("Campaign navigation broken");
+  doc.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s===home));
+  pan.style.scrollBehavior="auto";pan.scrollLeft=400;
+  if(pan.scrollLeft<100)throw Error("Panorama did not scroll");
+  pan.scrollLeft=0;
+  if(doc.documentElement.scrollWidth>doc.documentElement.clientWidth+2)throw Error("Page has horizontal overflow");
+  const bar=home.querySelector(".hq-bottom").getBoundingClientRect();
+  if(bar.bottom>doc.documentElement.clientHeight+3)throw Error("Bottom navigation clipped");
+  document.body.dataset.hqVisibleStations=String(visible.length);
+  document.body.dataset.hqStatus="pass";
+ }catch(e){error(e&&e.message||e)}
+});
+setTimeout(()=>{if(document.body.dataset.hqStatus==="loading")error("Game load timed out")},18000);
+</script></body></html>

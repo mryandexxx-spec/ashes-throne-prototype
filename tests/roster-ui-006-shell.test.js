@@ -30,6 +30,6 @@ test("UIHERO002 preserves cards, filters, marker and return navigation",()=>{
  assert.match(shell,/@media\(orientation:landscape\) and \(max-height:540px\)/);
 });
 test("UIHERO002 candidate build matches package",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.104");
- assert.match(html,/v0\.3\.104 · UIHUD001/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.105");
+ assert.match(html,/v0\.3\.105 · UIHUD001/);
 });

@@ -36,5 +36,5 @@ test("UISYS001C keeps mobile touch, scroll and accessible status",()=>{
 });
 test("UISYS001C candidate version matches package and footer",()=>{
  assert.equal(JSON.parse(read("package.json")).version,"0.3.97");
- assert.match(html,/v0\.3\.96 · UISYS001C/);
+ assert.match(html,/v0\.3\.97 · UISYS001C/);
 });

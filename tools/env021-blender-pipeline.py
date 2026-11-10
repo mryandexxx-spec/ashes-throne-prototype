@@ -75,13 +75,46 @@ def add_camera(radius, name):
     return obj
 
 
-def clay_render(path, camera):
+def clay_render(path, camera, cpu=False):
     scene = bpy.context.scene
     scene.camera = camera
-    scene.render.engine = "BLENDER_WORKBENCH"
-    scene.display.shading.light = "STUDIO"
-    scene.display.shading.color_type = "MATERIAL"
-    scene.display.shading.show_shadows = True
+    if cpu:
+        scene.render.engine = "CYCLES"
+        scene.cycles.device = "CPU"
+        scene.cycles.samples = 8
+        scene.render.threads_mode = "FIXED"
+        scene.render.threads = 2
+        world = scene.world or bpy.data.worlds.new("ENV021_art_review_world")
+        scene.world = world
+        world.use_nodes = True
+        bg = world.node_tree.nodes.get("Background")
+        if bg:
+            bg.inputs["Color"].default_value = (.32,.35,.39,1)
+            bg.inputs["Strength"].default_value = .85
+        if bpy.data.objects.get("ENV021_CLAY_LIGHT") is None:
+            light_data = bpy.data.lights.new("ENV021_CLAY_LIGHT", "AREA")
+            light = bpy.data.objects.new("ENV021_CLAY_LIGHT", light_data)
+            scene.collection.objects.link(light)
+            light.location = (-5,-8,20)
+            light_data.energy = 2100
+            light_data.shape = "DISK"
+            light_data.size = 18
+            light.rotation_euler = (Vector((0,0,0))-light.location).to_track_quat("-Z","Y").to_euler()
+        # CPU Cycles avoids headless Workbench OpenGL context.
+        for obj in bpy.data.objects:
+            if obj.type != "MESH": continue
+            for mat in obj.data.materials:
+                if not mat: continue
+                mat.use_nodes = True
+                principled = next((n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+                if principled:
+                    principled.inputs["Base Color"].default_value = mat.diffuse_color
+                    principled.inputs["Roughness"].default_value = 1.0
+    else:
+        scene.render.engine = "BLENDER_WORKBENCH"
+        scene.display.shading.light = "STUDIO"
+        scene.display.shading.color_type = "MATERIAL"
+        scene.display.shading.show_shadows = True
     scene.render.resolution_x = 844
     scene.render.resolution_y = 390
     scene.render.resolution_percentage = 100
@@ -124,8 +157,8 @@ def main():
     near = add_camera(12.0, "ENV021_REFERENCE_default_not_calibrated")
     distant = add_camera(19.0, "ENV021_REFERENCE_far_not_calibrated")
 
-    clay_render(output / "clay-default.png", near)
-    clay_render(output / "clay-far.png", distant)
+    clay_render(output / "clay-default.png", near, cpu=args.mode == "sculpt3")
+    clay_render(output / "clay-far.png", distant, cpu=args.mode == "sculpt3")
 
     # Save inspectable source before exporting. Does not modify user-supplied source.
     bpy.ops.wm.save_as_mainfile(filepath=str(output / "source.blend"))

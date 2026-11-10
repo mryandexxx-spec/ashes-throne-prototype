@@ -3952,10 +3952,6 @@ body:has(#storyDemo.active)::before{
  animation:ren-loading-spin .85s linear infinite;
 }
 @keyframes ren-loading-spin{to{transform:rotate(360deg)}}
-#heroDetail .ren-loading-indicator progress,#renModelBattleProgress{
- width:min(180px,80%);height:7px;accent-color:#dfb56f;border-radius:6px;
-}
-#heroDetail .ren-loading-indicator progress[hidden],#renModelBattleProgress[hidden]{display:none!important}
 #renModelBattleStatus{
  display:flex;align-items:center;justify-content:center;flex-wrap:wrap;
  gap:5px;max-width:220px;min-width:0;padding:5px 7px;
@@ -3970,7 +3966,6 @@ body:has(#storyDemo.active)::before{
 #renModelBattleStatus[data-status="error"] .ren-loading-spinner{display:none}
 #renModelBattleStatus[data-status="ready"]{color:#b4e0b1}
 #renModelBattleStatus[data-status="error"]{color:#ffb7a1}
-#renModelBattleProgress{width:100%;height:5px}
 @media(orientation:landscape) and (max-height:460px){
  #renModelBattleStatus{max-width:140px;padding:3px 5px;font-size:9px}
  #heroDetail .ren-loading-indicator{font-size:11px;gap:6px}

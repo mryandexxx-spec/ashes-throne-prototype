@@ -42,88 +42,48 @@ def surface(s,a):
     return h+safe*(.20*strata*(.25+.75*max(side,ends))-joint*(.3+.7*max(side,ends))+cap)
 
 def near_mass():
-    na,ns,nv=137,79,44
-    a0,a1=previous.A_NEAR[0][0],previous.A_NEAR[-1][0]
-    aa=[a0+(a1-a0)*j/(na-1) for j in range(na)]
-    vv=[];ff=[]
-    def v(s,a,z):
-        vv.append(pos(s,a,z));return len(vv)-1
-    def q(a,b,c,d):
-        ff.extend(((a,b,c),(a,c,d)))
-    grid=[];rear=[];front=[];bottom=[]
-    for a in aa:
-        left,right=outline(a)
-        tops=[]
-        for k in range(ns):
-            s=left+(right-left)*k/(ns-1)
-            tops.append(v(s,a,surface(s,a)))
-        grid.append(tops)
-        banks=[]
-        for side,edge,level in ((-1,left,surface(left,a)),(1,right,surface(right,a))):
-            row=[tops[0] if side<0 else tops[-1]]
-            for k in range(1,nv+1):
-                t=k/nv
-                down=30*t
-                # Cliff face: hard cap, soft undercut, two resistant benches,
-                # a deep talus step, and large vertical joints.
-                beds=((0,0), (2.0,.05), (4.4,.38), (7.3,.08),
-                      (11.1,1.25), (14.0,.60), (17.0,1.7),
-                      (21.3,.88), (25.6,1.75), (30.0,2.25))
-                offset=beds[-1][1]
-                for (z0,d0),(z1,d1) in zip(beds,beds[1:]):
-                    if down<=z1:
-                        tbed=smooth01((down-z0)/(z1-z0))
-                        offset=d0+(d1-d0)*tbed
-                        break
-                fissure=(.65+.25*t)*(gauss(a,-5.8,.44)+gauss(a,4.7,.35))
-                # No flat rectangular vertical skirt; layers become broader
-                # at the base, warped by coherent bedding deformation.
-                outward=side*(.12+1.65*t+offset+fissure)
-                row.append(v(edge+outward,a,level-down))
-            banks.append(row)
-        rear.append(banks[0]);front.append(banks[1])
-        under=[]
-        for k in range(ns):
-            u=k/(ns-1)
-            under.append(v(left-4.2+(right-left+9.4)*u,a,
-                           min(surface(left,a),surface(right,a))-30))
-        bottom.append(under)
-    for j in range(na-1):
-        for k in range(ns-1):
-            q(grid[j][k],grid[j][k+1],grid[j+1][k+1],grid[j+1][k])
-            q(bottom[j+1][k],bottom[j+1][k+1],bottom[j][k+1],bottom[j][k])
-        for wall in (rear,front):
-            for k in range(nv):
-                q(wall[j][k],wall[j+1][k],wall[j+1][k+1],wall[j][k+1])
-        q(rear[j][-1],bottom[j][0],bottom[j+1][0],rear[j+1][-1])
-        q(front[j][-1],front[j+1][-1],bottom[j+1][-1],front[j][-1])
-    for k in range(ns-1):
-        q(grid[0][k+1],grid[0][k],bottom[0][k],bottom[0][k+1])
-        q(grid[-1][k],grid[-1][k+1],bottom[-1][k+1],bottom[-1][k])
-    # Rock fragments embedded in the bordering shelves. Tiny stones within
-    # six footprints intentionally excluded. Each fragment is a low-poly
-    # asymmetric clipped block, not an overlapping cylindrical prop.
-    for side in (-1,1):
-        for i in range(27):
-            a=-7.0+i*.56
-            edge=outline(a)[0] if side<0 else outline(a)[1]
-            s=edge + (-1 if side<0 else -1)*(.55+(.57*(i*7%11)/11))
-            if side>0:
-                s=edge- (.50+.35*((i*7)%9)/9)
-            radius=.20+.18*((i*5)%9)/9
-            h=.13+.27*((i*3)%11)/11
-            z=surface(s,a)
-            # Four irregular corner points around a flat rock upper plane.
-            ring=[]
-            for k in range(5):
-                ang=math.pi*2*k/5
-                rr=radius*(.78+.27*math.sin(i*1.9+k*2.1))
-                ring.append(v(s+rr*math.cos(ang),a+rr*math.sin(ang),z+h*(.69+.25*math.sin(k+i))))
-            root=v(s,a,z+.025)
-            top=v(s,a,z+h)
-            for k in range(5):
-                q(root,ring[(k+1)%5],ring[k],top)
-    return core.mesh("ENV021_015_near_layered_shelf",vv,ff)
+    """Sculpt the verified Blockout014A mesh without altering its topology.
+
+    This avoids reintroducing experimental loose geometry in a GLB exporter
+    that has already passed native Babylon checks for the same mesh indices.
+    """
+    ob=previous.near_mass("A")
+    # The base comprises 91 x 45 contiguous top vertices, then 30 rear-wall,
+    # 30 front-wall and 45 floor vertices per longitudinal sample. No index
+    # or face count changes, so the known valid mesh topology is preserved.
+    top_count=91*45
+    per_row=30+30+45
+    touched=0
+    for i,vert in enumerate(ob.data.vertices):
+        p=vert.co
+        s=-(p.x*core.RIGHT[0]+p.y*core.RIGHT[1])
+        a=-(p.x*core.AWAY[0]+p.y*core.AWAY[1])
+        if i<top_count:
+            before=previous.height(s,a,"A")
+            after=surface(s,a)
+            vert.co.z+=after-before
+            # Keep the six battle footprints as flat as the source.
+            touched+=abs(after-before)>1e-9
+        else:
+            local=(i-top_count)%per_row
+            left,right=previous.outline(a,"A")
+            side=left if local<30 else right
+            offset=surface(side,a)-previous.height(side,a,"A")
+            vert.co.z+=offset
+            # The visible front scarp gets joints and uneven bed faces,
+            # but only as controlled deformation of its native vertices.
+            if 30<=local<60:
+                t=((local-30)+1)/30
+                cut=(.32*gauss(a,-5.0,.65)+.43*gauss(a,5.5,.65))
+                indent=t*(.18*math.sin(.57*a+2.7*t)-cut)
+                new_s=s+indent
+                coords=pos(new_s,a,float(vert.co.z))
+                vert.co.x,vert.co.y=coords[0],coords[1]
+    ob.data.update()
+    print("ENV021_PASS015_PROVEN_BASE_RESCULPT",len(ob.data.vertices),
+          len(ob.data.polygons),"top displaced",touched,flush=True)
+    ob.name="ENV021_015_near_layered_shelf"
+    return ob
 
 def build(scan_path=None):
     import bpy

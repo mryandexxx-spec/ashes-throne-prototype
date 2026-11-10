@@ -26,14 +26,14 @@ async function main(){
   let loading=await page.evaluate(()=>({
    text:document.getElementById("renCardLoadingText")?.textContent,
    visible:!document.getElementById("renCardLoadIndicator")?.hidden,
-   progressHidden:document.getElementById("renCardLoadingProgress")?.hidden,
+   noFakeProgress:!document.getElementById("renCardLoadingProgress"),
    spinner: getComputedStyle(document.querySelector("#renCardLoadIndicator .ren-loading-spinner")).display,
    width:document.documentElement.scrollWidth,viewport:window.innerWidth
   }));
   console.log("CARD LOADING",loading);
   assert.equal(loading.visible,true);
   assert.match(loading.text,/Загружаем Рена/);
-  assert.equal(loading.progressHidden,true,"no fictional download percentage");
+  assert.equal(loading.noFakeProgress,true,"no fictional download percentage");
   assert.notEqual(loading.spinner,"none");
   assert.ok(loading.width<=loading.viewport+2,"no horizontal overflow");
   await page.waitForFunction(()=>typeof window.RenGlbRuntime!=="undefined");
@@ -47,14 +47,14 @@ async function main(){
   const state=await page.evaluate(()=>({
    status:document.getElementById("renModelBattleStatusText")?.textContent,
    hidden:document.getElementById("renModelBattleStatus")?.hidden,
-   barHidden:document.getElementById("renModelBattleProgress")?.hidden,
+   noFakeProgress:!document.getElementById("renModelBattleProgress"),
    spinner:getComputedStyle(document.querySelector("#renModelBattleStatus .ren-loading-spinner")).display,
    width:document.documentElement.scrollWidth,viewport:window.innerWidth
   }));
   console.log("BATTLE LOADING",state);
   assert.equal(state.hidden,false);
   assert.match(state.status,/Загружаю 3D Рена/);
-  assert.equal(state.barHidden,true);
+  assert.equal(state.noFakeProgress,true);
   assert.notEqual(state.spinner,"none");
   assert.ok(state.width<=state.viewport+2);
   await page.waitForFunction(()=>["ready","error"].includes(document.getElementById("renModelBattleStatus")?.dataset.status),{timeout:30000});

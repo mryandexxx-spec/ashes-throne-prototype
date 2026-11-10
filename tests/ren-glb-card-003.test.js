@@ -46,5 +46,5 @@ test("REN-GLB-003: card and battle share the same immutable GLB",()=>{
   "563766990d2ba4437ff264c2acaa9498d610cc22a268b6d52d4ea464b1fb7b5f");
  assert.match(runtime,/ren-animated-v02\.glb/);
  assert.match(cardSource,/ren-animated-v02\.glb/);
- assert.doesNotMatch(module,/localStorage|sessionStorage|CombatCore\.|ProgressCore\./);
+ assert.doesNotMatch(cardSource,/localStorage|sessionStorage|CombatCore\.|ProgressCore\./);
 });

@@ -1,0 +1,52 @@
+"use strict";
+const test=require("node:test");
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const path=require("node:path");
+const adapter=require("../ren-glb-battle.js");
+const battleAnim=fs.readFileSync(path.join(__dirname,"../battle-animation.js"),"utf8");
+const game=fs.readFileSync(path.join(__dirname,"../game.js"),"utf8");
+const page=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+test("REN-GLB-BATTLE: only an explicit URL flag enables the pilot",()=>{
+ assert.equal(adapter.enabled({search:"?renModel=local"}),true);
+ assert.equal(adapter.enabled({search:"?environment=env017&renModel=local"}),true);
+ assert.equal(adapter.enabled({search:"?renModel=other"}),false);
+ assert.equal(adapter.enabled({search:"?renModel=localish"}),false);
+ assert.equal(adapter.enabled({search:""}),false);
+ assert.equal(adapter.enabled(null),false);
+});
+test("REN-GLB-BATTLE: header and size are checked before local import",()=>{
+ const b=new ArrayBuffer(12),v=new DataView(b);
+ v.setUint32(0,0x46546c67,true);
+ v.setUint32(4,2,true);
+ v.setUint32(8,100,true);
+ assert.equal(adapter.validHeader(b,100),true);
+ assert.equal(adapter.validHeader(b,99),false);
+ v.setUint32(4,1,true);
+ assert.equal(adapter.validHeader(b,100),false);
+ assert.equal(adapter.validHeader(new ArrayBuffer(4),100),false);
+ assert.equal(adapter.validHeader(b,9*1024*1024),false);
+});
+test("REN-GLB-BATTLE: stable clip mapping without a required death clip",()=>{
+ assert.equal(adapter.clipFor("idle"),"Ren_Idle_Breathing_3s");
+ assert.equal(adapter.clipFor("basic"),"Ren_Attack_Unarmed_1p3s");
+ assert.equal(adapter.clipFor("special"),"Ren_Attack_Unarmed_1p3s");
+ assert.equal(adapter.clipFor("hit"),"Ren_Hit_Reaction_0p9s");
+ assert.equal(adapter.clipFor("guard"),"Ren_Guard_3s");
+ assert.equal(adapter.clipFor("death"),"Ren_Hit_Reaction_0p9s");
+});
+test("REN-GLB-BATTLE: combat UI and adapter never alter core rules or account data",()=>{
+ assert.match(page,/renGlbBattleTools" hidden/);
+ assert.match(page,/ren-glb-battle\.js/);
+ assert.match(page,/id="renGlbBattleFile"/);
+ assert.match(game,/renGlbBattle\.update\(BattleAnimation\.activity\("ren"\)\)/);
+ assert.match(game,/RenVisualModel\.create/);
+ assert.match(battleAnim,/function activity\(heroId\)/);
+ assert.match(battleAnim,/return Object\.freeze\(\{enqueue,clear,tick,pose,activity/);
+ const source=fs.readFileSync(path.join(__dirname,"../ren-glb-battle.js"),"utf8");
+ assert.match(source,/ImportMeshAsync/);
+ assert.match(source,/URL\.revokeObjectURL/);
+ assert.match(source,/originalMeshes/);
+ assert.doesNotMatch(source,/localStorage|sessionStorage|XMLHttpRequest|fetch\(/);
+ assert.doesNotMatch(source,/CombatCore\.|ProgressV3Core\.|\.applyDamage\(/);
+});

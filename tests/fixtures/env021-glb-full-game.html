@@ -70,7 +70,9 @@
       data.positions=positions;data.indices=raw;data.normals=normals;
       data.applyToMesh(m);
       const mat=new B.StandardMaterial("env021_preview_clay_"+mi,scene);
-      mat.diffuseColor=mi?new B.Color3(.57,.56,.54):new B.Color3(.44,.48,.49);
+      mat.diffuseColor=mi?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2);
+      mat.emissiveColor=mi?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2);
+      mat.disableLighting=true;mat.fogEnabled=false;
       mat.specularColor=new B.Color3(.02,.02,.02);
       mat.backFaceCulling=false;
       m.material=mat;m.isPickable=false;m.checkCollisions=false;
@@ -101,6 +103,14 @@
       loading=true;
       const result=await inject(win,scene,B);
       camera.radius=far?19:12;
+      // QA sentinel: if this cube is invisible too, the fixture is not
+      // displaying newly added scene geometry at all.
+      const sentinel=B.MeshBuilder.CreateBox("env021_preview_control_cube",{size:1},scene);
+      sentinel.position=new B.Vector3(0,2.5,0);
+      sentinel.material=new B.StandardMaterial("env021_control_emissive",scene);
+      sentinel.material.emissiveColor=new B.Color3(1,.9,.05);
+      sentinel.material.disableLighting=true;
+      sentinel.alwaysSelectAsActiveMesh=true;
       if(!scene.meshes.some(m=>m.name.startsWith("env021_candidate_")))throw Error("No candidate meshes in actual game");
       // Loading bytes is not proof of an on-screen landscape. Wait for render
       // culling and inspect the active mesh list and camera-space bounds.

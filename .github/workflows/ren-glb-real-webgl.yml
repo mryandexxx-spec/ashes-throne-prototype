@@ -10,6 +10,7 @@ on:
       - 'styles.css'
       - 'assets/ren-animated-v02.glb'
       - 'tests/ren-glb-browser-smoke.cjs'
+      - 'tests/ren-loading-webgl-005.cjs'
       - '.github/workflows/ren-glb-real-webgl.yml'
 jobs:
   webgl:
@@ -34,3 +35,5 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ren-webgl-server.log 2>&1 &
           sleep 3
           node tests/ren-glb-browser-smoke.cjs
+          node tests/ren-loading-webgl-005.cjs
+          REN_BROWSER=webkit node tests/ren-loading-webgl-005.cjs

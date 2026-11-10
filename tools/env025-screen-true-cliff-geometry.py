@@ -83,8 +83,15 @@ for i,j in stable_cells:
  hs=[stable_cells.get((i+dx,j+dz)) for dx in range(4) for dz in range(3)]
  if all(h is not None for h in hs) and max(hs)-min(hs)<=1.2:
   stable_patches.append((i,j,round(max(hs)-min(hs),3),round(float(np.median(hs)),3)))
-print("STABLE_2M_CELLS",len(stable_cells),"CANDIDATE_LEVEL_8X6_PATCHES",len(stable_patches),flush=True)
+large_patches=[]
+for i,j in stable_cells:
+ hs=[stable_cells.get((i+dx,j+dz)) for dx in range(6) for dz in range(4)]
+ if all(h is not None for h in hs) and max(hs)-min(hs)<=1.2:
+  large_patches.append((i,j,round(max(hs)-min(hs),3),round(float(np.median(hs)),3)))
+print("STABLE_2M_CELLS",len(stable_cells),"CANDIDATE_LEVEL_8X6_PATCHES",len(stable_patches),
+ "CANDIDATE_LEVEL_12X8_PATCHES",len(large_patches),flush=True)
+if large_patches:print("BEST_LEVEL_12X8_PATCH",min(large_patches,key=lambda q:q[2]),flush=True)
 if stable_patches:print("BEST_LEVEL_PATCH",min(stable_patches,key=lambda q:q[2]),flush=True)
 # A screen-composition decision still needs actual WebGL screenshot.
-report={'mesh_count':len(g['meshes']),'triangles':total,'top_face_triangles':up_count,'top_cell_count':len(occupied),'potential_8x6_patches':len(blocks),'level_8x6_patches':len(stable_patches),'best_level_patch':min(stable_patches,key=lambda q:q[2]) if stable_patches else None,'bounds':[b.tolist() for b in allbounds]}
+report={'mesh_count':len(g['meshes']),'triangles':total,'top_face_triangles':up_count,'top_cell_count':len(occupied),'potential_8x6_patches':len(blocks),'level_8x6_patches':len(stable_patches),'best_level_patch':min(stable_patches,key=lambda q:q[2]) if stable_patches else None,'level_12x8_patches':len(large_patches),'best_large_patch':min(large_patches,key=lambda q:q[2]) if large_patches else None,'bounds':[b.tolist() for b in allbounds]}
 (root/'coastal-cliff-04-surface-report.json').write_text(json.dumps(report,indent=2))

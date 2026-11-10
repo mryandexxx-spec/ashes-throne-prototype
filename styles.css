@@ -3186,3 +3186,191 @@ body:has(#campaign.active)::before{
  #app:has(#campaign.active)>.topbar #accountStatus{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){#campaign button{transition:none}}
+
+
+/* UI-MODES-001B — challenge mode selection and trial missions in HQ style.
+   Styles only: ChallengeCore, score persistence, squad and combat flow stay unchanged. */
+body:has(#challenges.active){background:#16191b}
+body:has(#challenges.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215d7 0%,#10111585 23%,#1011159e 75%,#111215da 100%),
+  linear-gradient(180deg,#101319af 0%,#16141888 36%,#120f14ed 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#challenges.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#challenges.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(#challenges.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#challenges.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#challenges.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#challenges.active)>.topbar .brand small{display:none}
+#app:has(#challenges.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#challenges.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#challenges.screen.active{
+ position:relative;isolation:isolate;width:min(100%,1500px);
+ margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123ef 0%,#242022ef 50%,#241f22ec 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#challenges.screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;
+ border:1px solid #e7c58b25;border-radius:7px;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+#challenges .section-heading{
+ margin:0 0 10px;padding:0 0 10px;border-bottom:1px solid #d7b27c55;
+}
+#challenges .section-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+#challenges .eyebrow{color:#e0b978;letter-spacing:.14em}
+#challenges .muted{color:#d9c5ab;line-height:1.45}
+#challenges .section-heading .ghost,#challenges #challengeModeBack{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+#challenges .challenge-mode-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:clamp(9px,1.4vw,18px);margin:13px 0 16px;min-width:0;
+}
+#challenges .challenge-mode-card{
+ position:relative;display:flex;flex-direction:column;align-items:flex-start;
+ width:100%;min-width:0;min-height:136px;
+ padding:clamp(12px,1.6vw,22px);text-align:left;
+ border:1px solid #c6a06b9c;border-radius:11px;
+ background:radial-gradient(ellipse at 12% 0%,#be92523c,transparent 65%),
+  linear-gradient(155deg,#3c2f2af4,#262027f5 75%);
+ box-shadow:inset 0 1px #f0d6a15a,inset 0 0 0 2px #10101557,0 5px 15px #09070a8a;
+}
+#challenges .challenge-mode-card>span{
+ display:grid;place-items:center;width:44px;height:44px;margin:0 0 10px;
+ border:1px solid #d1ad79b0;border-radius:9px;
+ background:#251f21b8;color:#f2cb8a;font-size:25px;
+}
+#challenges .challenge-mode-card b{
+ display:block;color:#f6e4c6;
+ font:600 clamp(17px,2vw,23px)/1.2 Georgia,serif;
+}
+#challenges .challenge-mode-card small{
+ display:block;margin-top:8px;color:#ddc8ab;
+ font-size:clamp(11px,1.15vw,13px);line-height:1.4;overflow-wrap:anywhere;
+}
+#challenges .challenge-mode-heading{
+ display:flex;align-items:center;flex-wrap:wrap;gap:10px;
+ margin:9px 0 12px;padding-bottom:8px;border-bottom:1px solid #b68d5c6b;
+}
+#challenges .challenge-mode-heading h3{
+ margin:0;color:#f0d2a2;
+ font:600 clamp(16px,1.9vw,23px)/1.25 Georgia,serif;
+}
+#challenges #challengeList{display:grid;gap:clamp(8px,1.2vw,15px);min-width:0}
+#challenges #challengeList[hidden],#challenges #challengeModes[hidden],
+#challenges #challengeModeBack[hidden]{display:none!important}
+#challenges #challengeList .campaign-mission{
+ display:grid;grid-template-columns:44px minmax(0,1fr);align-items:start;
+ gap:clamp(9px,1.3vw,18px);min-width:0;margin:0;
+ padding:clamp(11px,1.4vw,18px);
+ border:1px solid #ab855889;border-radius:10px;
+ background:radial-gradient(ellipse at 5% 0%,#c0944c21,transparent 57%),
+  linear-gradient(155deg,#382c2af3,#252026f6 75%,#1b1b23f9);
+ box-shadow:inset 0 1px #eac68b4b,inset 0 0 0 2px #10101558,0 5px 15px #09070a8a;
+}
+#challenges #challengeList .campaign-mission>.node{
+ width:44px;height:44px;min-width:44px;
+ border:1px solid #d4ab72;border-radius:8px;
+ background:linear-gradient(150deg,#443329,#231f24);
+ color:#f1d09a;font:600 22px Georgia,serif;
+ box-shadow:inset 0 1px #e6c48b44;
+}
+#challenges #challengeList .campaign-mission>div:last-child{min-width:0}
+#challenges #challengeList .campaign-mission h3{
+ margin:0 0 7px;color:#f6e4c6;
+ font:600 clamp(15px,1.7vw,21px)/1.24 Georgia,serif;
+ overflow-wrap:anywhere;
+}
+#challenges #challengeList .campaign-mission p{
+ margin:5px 0;color:#e2d1b8;line-height:1.4;overflow-wrap:anywhere;
+}
+#challenges #challengeList .mission-stars{margin:7px 0;color:#eed097!important}
+#challenges #challengeList .mission-criteria{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,195px),1fr));
+ gap:7px;margin:9px 0 12px;padding:0;
+}
+#challenges #challengeList .mission-criteria li{
+ display:block;min-width:0;padding:8px 9px;
+ border:1px solid #a7835459;border-radius:7px;
+ background:#17181c80;color:#e1cfb4;
+ overflow-wrap:anywhere;
+}
+#challenges #challengeList .campaign-mission-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+#challenges #challengeList [data-start-challenge]{
+ min-height:44px;max-width:100%;white-space:normal;
+ border:1px solid #e9bd77;border-radius:8px;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#challenges #challengeList [data-start-challenge]:disabled{
+ opacity:.6;filter:saturate(.45);box-shadow:none;cursor:not-allowed;
+}
+#challenges #challengeSaveStatus{
+ min-height:1.3em;margin:12px 0 3px;color:#f0c986;overflow-wrap:anywhere;
+}
+#challenges button:focus-visible{outline:3px solid #ffe2a1;outline-offset:2px}
+#app:has(#challenges.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#challenges.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#challenges.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#challenges.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #challenges.screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #challenges .section-heading{margin-bottom:7px;padding-bottom:7px}
+ #challenges .section-heading h2{font-size:21px}
+ #challenges .challenge-mode-grid{gap:8px;margin:9px 0}
+ #challenges .challenge-mode-card{min-height:105px;padding:10px}
+ #challenges .challenge-mode-card>span{width:36px;height:36px;font-size:21px;margin-bottom:6px}
+ #challenges .challenge-mode-card b{font-size:16px}
+ #challenges .challenge-mode-card small{font-size:11px;margin-top:5px}
+ #challenges .challenge-mode-heading{margin:6px 0 8px;padding-bottom:6px}
+ #challenges .challenge-mode-heading h3{font-size:17px}
+ #challenges #challengeList{gap:8px}
+ #challenges #challengeList .campaign-mission{grid-template-columns:32px minmax(0,1fr);gap:8px;padding:9px}
+ #challenges #challengeList .campaign-mission>.node{width:32px;height:32px;min-width:32px;font-size:18px}
+ #challenges #challengeList .campaign-mission h3{font-size:15px}
+ #challenges #challengeList .campaign-mission p{font-size:11px}
+ #challenges #challengeList .mission-criteria{gap:5px;margin:6px 0}
+ #challenges #challengeList .mission-criteria li{font-size:10px;padding:6px}
+}
+@media(max-width:600px) and (orientation:portrait){
+ #challenges .challenge-mode-grid{grid-template-columns:1fr}
+ #challenges #challengeList .mission-criteria{grid-template-columns:1fr}
+}
+@media(max-width:580px){
+ #app:has(#challenges.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#challenges.active)>.topbar #accountStatus{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){#challenges button{transition:none}}

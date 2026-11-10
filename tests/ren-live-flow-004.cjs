@@ -45,6 +45,8 @@ const assert=require("node:assert/strict");
   }));
   console.log("LIVE CARD",JSON.stringify(card),"ERR",JSON.stringify(errors));
   await page.screenshot({path:"/tmp/ren-live-card.png"});
+  if(process.env.REN_BROWSER==="webkit"&&process.env.REN_ORIGIN)
+   console.log("REN_CARD_JPEG64 "+(await page.screenshot({type:"jpeg",quality:65})).toString("base64"));
   await page.evaluate(()=>showScreen("battle"));
   await page.waitForTimeout(6500);
   const battle=await page.evaluate(()=>({
@@ -59,6 +61,8 @@ const assert=require("node:assert/strict");
   }));
   console.log("LIVE BATTLE",JSON.stringify(battle),"ERR",JSON.stringify(errors));
   await page.screenshot({path:"/tmp/ren-live-battle.png"});
+  if(process.env.REN_BROWSER==="webkit"&&process.env.REN_ORIGIN)
+   console.log("REN_BATTLE_JPEG64 "+(await page.screenshot({type:"jpeg",quality:65})).toString("base64"));
   // Reopen dossier AFTER a battle has created a persistent WebGL Engine.
   await page.evaluate(()=>{selectedHeroId="ren";showScreen("heroDetail");});
   await page.waitForTimeout(5500);

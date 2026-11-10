@@ -10,9 +10,10 @@ const CombatVisual007=(()=>{
    B.MeshBuilder.CreateCylinder&&B.MeshBuilder.CreateSphere&&
    B.MeshBuilder.CreateTorus&&B.StandardMaterial&&B.Color3&&B.Vector3);
  }
- function create(B,scene){
+ function create(B,scene,options={}){
   if(!supported(B)||!scene)throw Error("CV007 requires Babylon geometry and a Scene");
   const resources=[],effects=[];
+  const conceptBackdrop=options.conceptBackdrop===true;
   function owned(value){resources.push(value);return value;}
   function material(name,r,g,b,emission=0){
    const m=owned(new B.StandardMaterial("cv007_mat_"+name,scene));
@@ -33,7 +34,7 @@ const CombatVisual007=(()=>{
     {diameterTop:top,diameterBottom:bottom,height,tessellation:7},scene),mat,x,y,z);
   }
   // The CV008 palette remains a safe fallback but is not allocated in ENV009.
-  const useEnv009=typeof CombatEnvironment009!=="undefined" && CombatEnvironment009.supported(B);
+  const useEnv009=conceptBackdrop || (typeof CombatEnvironment009!=="undefined" && CombatEnvironment009.supported(B));
   const legacyMaterial=(...args)=>useEnv009?null:material(...args);
   const sand=legacyMaterial("deck",.67,.64,.56),edge=legacyMaterial("edge",.23,.26,.28),
    worn=legacyMaterial("wear",.47,.42,.35),joint=legacyMaterial("joint",.17,.19,.20),
@@ -80,7 +81,12 @@ const CombatVisual007=(()=>{
    mesh.rotation.z=lean;return mesh;
   }
   try{
-   if(useEnv009){
+   if(conceptBackdrop){
+    // 2D concept is painted behind transparent WebGL; only fighters and hit-FX
+    // remain in 3D. Do not allocate legacy scenery or interfere with picking.
+    if(typeof document!=="undefined"&&document.documentElement)
+     document.documentElement.dataset.environment="ENV022-CONCEPT-PREVIEW";
+   }else if(useEnv009){
     CombatEnvironment009.build(B,scene,owned);
     // ENV010: fixed-view atmosphere, visually additive to the stable 3D ledge.
     const oldEnvironmentPreview=typeof location!=="undefined" && /(?:^|[?&])environment=env010(?:&|$)/.test(location.search);

@@ -252,6 +252,24 @@
         submeshes:m.subMeshes?.length,visibility:m.visibility,
         active:m.alwaysSelectAsActiveMesh
       })));
+      const validity=candidateMeshes.map(m=>{
+        const pp=m.getVerticesData(B.VertexBuffer.PositionKind),ii=m.getIndices();
+        let nondegenerate=0,projected=0;
+        const vp=new B.Viewport(0,0,engine.getRenderWidth(),engine.getRenderHeight());
+        for(let k=0;k<ii.length;k+=3){
+          const a=3*ii[k],b=3*ii[k+1],c=3*ii[k+2];
+          const ux=pp[b]-pp[a],uy=pp[b+1]-pp[a+1],uz=pp[b+2]-pp[a+2];
+          const vx=pp[c]-pp[a],vy=pp[c+1]-pp[a+1],vz=pp[c+2]-pp[a+2];
+          const xx=uy*vz-uz*vy,yy=uz*vx-ux*vz,zz=ux*vy-uy*vx;
+          if(xx*xx+yy*yy+zz*zz<1e-10)continue;
+          nondegenerate++;
+          const center=new B.Vector3((pp[a]+pp[b]+pp[c])/3,(pp[a+1]+pp[b+1]+pp[c+1])/3,(pp[a+2]+pp[b+2]+pp[c+2])/3);
+          const screen=B.Vector3.Project(center,m.getWorldMatrix(),scene.getTransformMatrix(),vp);
+          if(screen.x>=0&&screen.x<vp.width&&screen.y>=0&&screen.y<vp.height&&screen.z>=0&&screen.z<=1)projected++;
+        }
+        return {mesh:m.name,nondegenerate,projected,total:ii.length/3};
+      });
+      d.geometryValidity=JSON.stringify(validity);
       d.cameraPosition=JSON.stringify(camera.position.asArray());
       if(active.length<1)throw Error("GLB geometry loaded but none of it is visible in the actual camera");
       // A green CI result must prove actual rasterization, not just registered meshes.

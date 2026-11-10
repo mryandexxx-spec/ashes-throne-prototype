@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ENV022 real game / concept backdrop</title>
+<style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden;background:#8f8c89}</style>
+</head>
+<body>
+<iframe id="game" src="../../index.html?environment=concept" title="Full battle HUD and live Babylon fighters"></iframe>
+<script>
+/* Visual QA loads the REAL index.html and uses its normal UI controls.
+ * The static 2D art must remain behind REAL 3D fighters in the same engine.
+ * Nothing here replaces battle logic or changes shipped code. */
+const frame=document.querySelector("#game");
+let attempts=0,entered=false,launched=false,readyFrames=0;
+const far=new URLSearchParams(location.search).get("radius")==="far";
+function fail(message){
+ clearInterval(watchdog);
+ document.documentElement.dataset.visualStatus="error";
+ document.documentElement.dataset.visualError=message;
+ console.error(message);
+}
+const watchdog=setInterval(()=>{
+ try{
+  if(++attempts>160)throw Error("ENV022 full game entry timed out");
+  const doc=frame.contentDocument,win=frame.contentWindow;
+  if(!doc||doc.readyState!=="complete")return;
+  if(doc.querySelector("#loginCalendar.active")){
+   doc.querySelector('#loginCalendar [data-screen="home"]')?.click();
+   entered=false;launched=false;return;
+  }
+  if(doc.querySelector("#home.active")&&!entered){
+   entered=true;doc.querySelector("#startBattle")?.click();return;
+  }
+  if(doc.querySelector("#squad.active")&&!launched){
+   launched=true;doc.querySelector("#squadStart")?.click();return;
+  }
+  const canvas=doc.querySelector("#renderCanvas"),battle=doc.querySelector("#battle.active");
+  if(!battle||!canvas||canvas.width===0||canvas.height===0)return;
+  if(doc.documentElement.dataset.environment!=="ENV022-CONCEPT-PREVIEW")
+   throw Error("ENV022 concept flag did not reach Babylon");
+  if(!battle.classList.contains("env022-concept-preview"))
+   throw Error("concept CSS is not applied to battle");
+  const image=win.getComputedStyle(battle.querySelector(".arena-wrap")).backgroundImage;
+  if(!image.includes("env022-canyon-concept.svg"))
+   throw Error("concept art image missing from arena CSS");
+  const engine=win.eval("engine"),scene=win.eval("scene"),camera=win.eval("arenaCamera");
+  if(!engine||!scene||!camera||scene.clearColor.a!==0)
+   throw Error("transparent Babylon Engine / Scene unavailable");
+  if(far)camera.radius=19;
+  // Allow at least 3 real WebGL render frames before taking evidence.
+  const indicators=doc.querySelector("#arenaIndicators");
+  const people=win.eval("Object.values(meshes).filter(f=>f.body.isEnabled()).length");
+  if(people<2||!indicators||indicators.childElementCount<2)return;
+  if(++readyFrames<3)return;
+  clearInterval(watchdog);
+  document.documentElement.dataset.visualStatus="ready";
+  document.documentElement.dataset.canvasAlpha=String(scene.clearColor.a);
+  document.documentElement.dataset.visibleFighters=String(people);
+  document.documentElement.dataset.fighterIndicators=String(indicators.childElementCount);
+  document.documentElement.dataset.cameraRadius=String(camera.radius);
+  document.documentElement.dataset.backdrop="embedded-webp-svg";
+ }catch(e){fail(e.message)}
+},125);
+</script>
+</body></html>

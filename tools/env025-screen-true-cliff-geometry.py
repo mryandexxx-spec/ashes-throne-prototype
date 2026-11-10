@@ -54,10 +54,10 @@ for mesh in g['meshes']:
    up_count+=int(chosen.sum())
    if len(c):
     cells=np.floor(c[:,[0,2]]/2).astype(int)
-    for pair,height in zip(cells,c[:,1]):
+    for pair,surface_y in zip(cells,c[:,1]):
      key=tuple(map(int,pair))
      occupied.add(key)
-     cell_heights.setdefault(key,[]).append(float(height))
+     cell_heights.setdefault(key,[]).append(float(surface_y))
   print("PLATEAU_HEIGHT",round(float(height),3),"top band > ",round(float(top-max(2.2,.24*height)),3),flush=True)
 print("SOURCE_TOTAL_TRIANGLES",total,"TOP_FACING_TRIANGLES",up_count,flush=True)
 print("UPPER_2M_GROUND_CELLS",len(occupied),"APPROX_AREA_UPPER_BOUND_SQM",len(occupied)*4,flush=True)

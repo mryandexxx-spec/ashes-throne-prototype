@@ -1910,22 +1910,28 @@ body:has(#home.active){height:100dvh;overflow:hidden}
 /* ROSTER001: suppress obsolete wide Ren overlays only in roster. */
 #collection .roster-card-art.hero-avatar-ren::before,#collection .roster-card-art.hero-avatar-ren::after{display:none}
 
-/* ROSTER-UI-002: roster-only controls and squad indicators. */
+/* ROSTER-UI-002/003: collection controls; only identity tags on cards. */
 #collection .roster-toolbar{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;margin:0 0 12px;min-width:0}
 #collection .roster-filter{display:flex;flex-wrap:wrap;align-items:center;gap:5px;min-width:0}
 #collection .roster-filter-button{min-height:44px;padding:8px 11px;border:1px solid #8a714d;border-radius:7px;background:#30282a;color:#e5d6be;font-size:12px}
 #collection .roster-filter-button[aria-pressed="true"]{background:#b89155;color:#241b18;border-color:#e1bc80;box-shadow:inset 0 1px #f6d7a7}
-#collection .roster-filter-button:focus-visible,#collection #rosterSort:focus-visible{outline:3px solid #f5d08e;outline-offset:2px}
+#collection .roster-filter-button:focus-visible,#collection .roster-sort-trigger:focus-visible,#collection .roster-sort-menu button:focus-visible{outline:3px solid #f5d08e;outline-offset:2px}
 #collection .roster-sort-wrap{display:flex;gap:7px;align-items:center;min-width:0}
-#collection .roster-sort-wrap label{font-size:11px;color:#d6c4a5}
-#collection #rosterSort{min-height:44px;min-width:118px;max-width:100%;padding:7px 9px;border:1px solid #8a714d;border-radius:7px;background:#30282a;color:#f4ebd8;font:600 12px Inter,system-ui,sans-serif}
+#collection .roster-sort-label{font-size:11px;color:#d6c4a5}
+#collection .roster-sort-picker{position:relative;min-width:146px;z-index:5}
+#collection .roster-sort-trigger{width:100%;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 11px;border:1px solid #a78348;border-radius:7px;background:#30282a;color:#f4ebd8;font:600 12px Inter,system-ui,sans-serif;text-align:left}
+#collection .roster-sort-trigger[aria-expanded="true"]{border-color:#e0b978;background:#453329}
+#collection .roster-sort-menu{position:absolute;top:calc(100% + 5px);right:0;width:max-content;min-width:100%;max-width:min(90vw,240px);padding:5px;border:1px solid #aa8955;border-radius:9px;background:#292326;box-shadow:0 9px 24px #0c0909b8;display:grid;gap:3px}
+#collection .roster-sort-menu[hidden]{display:none}
+#collection .roster-sort-menu button{width:100%;min-height:44px;display:flex;align-items:center;padding:9px 12px;border:0;border-radius:5px;background:transparent;color:#f4ebd8;font:600 12px Inter,system-ui,sans-serif;text-align:left}
+#collection .roster-sort-menu button[aria-pressed="true"]{background:#594028;color:#ffe0ab}
+#collection .roster-sort-menu button[aria-pressed="true"]::after{content:"✓";margin-left:auto;padding-left:10px}
 #collection .roster-shown{color:#d0c0a7;font-size:11px;margin-inline-start:auto}
 #collection .roster-empty{grid-column:1/-1;text-align:center;color:#c9bca8;padding:18px 10px}
-#collection .roster-in-squad{border-color:#c7a36b;box-shadow:inset 0 1px #d7b67b40,0 0 0 1px #b28e5770}
-#collection .roster-squad-badge{position:absolute;bottom:4px;right:4px;max-width:calc(100% - 8px);z-index:2;padding:3px 5px;background:#172b2de8;border:1px solid #85c6c2;border-radius:4px;color:#c6f2e9;font-size:10px;font-weight:700;line-height:1.2}
-#collection .roster-leader-badge{background:#473021eb;border-color:#e0b978;color:#ffe1a8}
+#collection .roster-identity-tags{display:flex;justify-content:center;flex-wrap:wrap;gap:3px;margin:4px 0 2px;min-width:0}
+#collection .roster-identity-tag{display:inline-block;max-width:100%;padding:3px 5px;border:1px solid #a78348;border-radius:4px;background:#493726;color:#e9c78a;font-size:10px;line-height:1.25;overflow-wrap:anywhere}
 @media(orientation:landscape) and (max-height:440px){
  #collection .roster-toolbar{gap:5px 9px;margin-bottom:8px}
- #collection .roster-filter-button,#collection #rosterSort{min-height:44px}
+ #collection .roster-filter-button,#collection .roster-sort-trigger,#collection .roster-sort-menu button{min-height:44px}
  #collection .roster-shown{font-size:10px}
 }

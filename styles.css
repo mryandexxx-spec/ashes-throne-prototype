@@ -1938,3 +1938,157 @@ body:has(#home.active){height:100dvh;overflow:hidden}
 
 /* ROSTER-UI-004: role badge only for the actual selected leader; identity tags stay separate. */
 #collection .roster-leader-indicator{position:absolute;right:4px;bottom:4px;z-index:2;max-width:calc(100% - 8px);padding:3px 6px;border:1px solid #e0b978;border-radius:4px;background:#473021ed;color:#ffe1a8;font-size:10px;font-weight:700;line-height:1.25;pointer-events:none}
+
+/* ROSTER-UI-005 — painted-collection direction.
+   CSS-only depth: no new image assets, 3D scene, render loop or animation workload. */
+#collection.roster-screen{
+ position:relative;isolation:isolate;
+ background:
+  radial-gradient(ellipse 70% 48% at 14% 2%,#97643a30,transparent 75%),
+  radial-gradient(ellipse 50% 42% at 90% 14%,#b17e4330,transparent 74%),
+  radial-gradient(ellipse 80% 55% at 50% 98%,#080b0fbf,transparent 72%),
+  repeating-linear-gradient(104deg,transparent 0 78px,#d3ac6110 79px,transparent 80px 155px),
+  linear-gradient(155deg,#342723 0%,#231d20 46%,#15151a 100%);
+ border-color:#a17b4c91;border-radius:16px;
+ box-shadow:inset 0 1px 0 #efd2a63d,inset 0 0 36px #08080e8c,0 12px 32px #0007;
+}
+#collection.roster-screen::before{
+ content:"";position:absolute;inset:6px;z-index:-1;border:1px solid #e2ba7440;border-radius:11px;
+ pointer-events:none;
+ background:
+  linear-gradient(90deg,#e5b8767d,transparent 18%,transparent 82%,#e5b8767d) top center/100% 1px no-repeat,
+  linear-gradient(90deg,#e5b87640,transparent 25%,transparent 75%,#e5b87640) bottom center/100% 1px no-repeat;
+}
+#collection .roster-heading{
+ border-bottom:1px solid #a687584d;padding-bottom:10px;
+ background:radial-gradient(ellipse at 28% 50%,#e8bc6b12,transparent 74%);
+}
+#collection .roster-heading h2{
+ font:600 clamp(21px,3vw,30px) Georgia,serif;
+ letter-spacing:.025em;
+ text-shadow:0 2px 1px #080507,0 0 18px #d3a45b32;
+}
+#collection .roster-heading .eyebrow{letter-spacing:.17em;text-shadow:0 0 12px #e4b36a44}
+#collection .roster-toolbar{
+ padding:8px 10px;border:1px solid #92704759;border-radius:10px;
+ background:linear-gradient(170deg,#332a2bde,#1c1b20de);
+ box-shadow:inset 0 1px #e5b8761f,0 5px 14px #0a090b60;
+}
+#collection .roster-card{
+ isolation:isolate;
+ border:1px solid #a4804e;border-radius:12px;
+ padding:8px 8px 11px;
+ background:
+  radial-gradient(ellipse at 50% -8%,#d7a56836,transparent 61%),
+  linear-gradient(100deg,#d2a56413 0%,transparent 24%,transparent 74%,#0c0b0f4d 100%),
+  linear-gradient(165deg,#47342d 0%,#2c2528 40%,#19191f 100%);
+ box-shadow:
+  inset 0 0 0 1px #0d0e12,
+  inset 0 2px 1px #f9d39c4f,
+  inset 1px 0 #edbd7d26,
+  inset -2px -2px 7px #09070acc,
+  0 2px 0 #100d0f,
+  0 10px 20px #05040691;
+ transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;
+ -webkit-tap-highlight-color:transparent;
+}
+#collection .roster-card::before{
+ content:"";position:absolute;z-index:0;inset:4px;border:1px solid #d3ad7142;
+ border-radius:9px;pointer-events:none;
+ background:
+  radial-gradient(circle at 4px 4px,#edc38b 0 1.2px,transparent 1.8px),
+  radial-gradient(circle at calc(100% - 4px) 4px,#edc38b 0 1.2px,transparent 1.8px),
+  radial-gradient(circle at 4px calc(100% - 4px),#a87d49 0 1.2px,transparent 1.8px),
+  radial-gradient(circle at calc(100% - 4px) calc(100% - 4px),#a87d49 0 1.2px,transparent 1.8px);
+}
+#collection .roster-card>*{position:relative;z-index:1}
+#collection .roster-card-art{
+ flex:none;overflow:hidden;
+ height:clamp(105px,17vw,166px);
+ margin:0 0 9px;
+ border:2px solid #a58255;border-radius:44% 44% 7px 7px / 12% 12% 7px 7px;
+ background:
+  radial-gradient(ellipse at 48% 26%,#c9a57990,transparent 36%),
+  radial-gradient(ellipse at 48% 96%,#090b14b8,transparent 66%),
+  repeating-linear-gradient(90deg,#d8ba8a10 0 1px,transparent 1px 24px),
+  linear-gradient(145deg,#60483b 0%,#343035 47%,#151920 100%);
+ box-shadow:
+  inset 0 0 0 2px #211c21,
+  inset 0 16px 21px #e7c18a18,
+  inset 0 -16px 26px #070811d6,
+  0 2px 0 #f4cb8b46,0 5px 10px #0008;
+ color:#f2d69d;font-size:clamp(41px,5.8vw,65px);
+ text-shadow:0 3px 0 #1d161b,0 8px 12px #040405,0 0 24px #f3c88680;
+}
+#collection .roster-card-art.hero-avatar-ren{height:clamp(105px,17vw,166px);border-radius:44% 44% 7px 7px / 12% 12% 7px 7px}
+#collection .roster-card-art::before{
+ content:"";display:block!important;position:absolute;inset:0;z-index:2;pointer-events:none;
+ background:
+  linear-gradient(120deg,#ffe1ae20,transparent 37%,#00000030 92%),
+  linear-gradient(180deg,#e5b78000 55%,#090811b5 100%);
+}
+#collection .roster-card-art::after{
+ content:"";display:block!important;position:absolute;inset:3px;z-index:2;pointer-events:none;
+ border:1px solid #f2d39e3e;border-radius:inherit;
+ box-shadow:inset 0 0 0 1px #17161b80;
+}
+#collection .roster-card-art .ren-collection-portrait{
+ position:relative;z-index:1;
+ object-fit:contain;object-position:center;filter:drop-shadow(0 4px 6px #05060899);
+}
+#collection .roster-card-name{
+ min-height:2.2em;padding:4px 2px 2px;
+ font:600 clamp(12px,1.6vw,16px)/1.2 Georgia,serif;
+ letter-spacing:.015em;color:#fff0d5;
+ text-shadow:0 2px 2px #000a,0 0 11px #e6b16e35;
+}
+#collection .roster-card .hero-star-summary{
+ color:#f0c879;text-shadow:0 1px 1px #000,0 0 12px #c9934466;
+ letter-spacing:.01em;
+}
+#collection .roster-card-subtitle{color:#d9c5ab;text-shadow:0 1px 2px #070506}
+#collection .roster-card-gear{
+ border-color:#dbad6478;
+ background:linear-gradient(170deg,#6a4b2f,#36271e);
+ box-shadow:inset 0 1px #f9d18b3e,0 2px 4px #0605068c;
+}
+#collection .roster-identity-tag{
+ background:linear-gradient(165deg,#6f5432,#3c2e27);border-color:#d5ad65a8;
+ color:#ffdd9e;box-shadow:inset 0 1px #ffe3a83b,0 2px 3px #08070780;
+}
+#collection .roster-leader-indicator{
+ border-color:#ffe1a880;
+ background:linear-gradient(155deg,#7c532d,#4c2e20);
+ color:#ffe5b4;box-shadow:0 2px 6px #070606af,inset 0 1px #ffdfa65c;
+}
+#collection .roster-card .hero-open-hint{color:#ebc688;text-shadow:0 1px 1px #050306}
+#collection .roster-card.hero-locked{
+ border-color:#6e6362;
+ background:linear-gradient(155deg,#353137,#24242a 58%,#191b20);
+ box-shadow:inset 0 1px #a49b8b26,inset 0 0 0 1px #17171b,0 8px 15px #0504068c;
+}
+#collection .roster-card.hero-locked .roster-card-art{
+ filter:none;border-color:#746763;
+ background:radial-gradient(ellipse at 48% 26%,#6b676c75,transparent 45%),linear-gradient(145deg,#3c3940,#1d1f24);
+ color:#aaa2a1;text-shadow:0 3px #1b1b20,0 8px 12px #0008;
+}
+#collection .roster-card.hero-locked .roster-card-name{color:#d1c6c1}
+#collection .roster-shard-track{border:1px solid #75665f;background:#16181f;height:7px;box-shadow:inset 0 1px 3px #0009}
+#collection .roster-shard-track span{background:linear-gradient(90deg,#568f91,#a5ddcf);box-shadow:0 0 6px #8cd0cc77}
+@media(hover:hover) and (pointer:fine){
+ #collection .roster-card:hover{
+  transform:translateY(-3px);
+  border-color:#f1bf79;
+  box-shadow:inset 0 0 0 1px #1a1419,inset 0 2px 1px #ffe6b066,0 15px 24px #050406bd,0 0 18px #b67a3333;
+ }
+}
+@media(orientation:landscape) and (max-height:440px){
+ #collection .roster-card{padding:6px 6px 8px}
+ #collection .roster-card-art,#collection .roster-card-art.hero-avatar-ren{height:clamp(86px,18vh,112px);margin-bottom:5px}
+ #collection .roster-toolbar{padding:5px 8px}
+ #collection .roster-card-name{padding:2px 1px;min-height:2.2em}
+}
+@media(prefers-reduced-motion:reduce){
+ #collection .roster-card{transition:none}
+ #collection .roster-card:hover{transform:none}
+}

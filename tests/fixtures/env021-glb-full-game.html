@@ -33,6 +33,48 @@
     }
     return out;
   }
+  // glTF POSITION accessors are local to a node. Blender exports can put
+  // scene-space placement in node.matrix or node TRS rather than the vertex buffer.
+  function gltfMeshTransforms(gltf) {
+    const identity=()=>[1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
+    const mul=(a,b)=>{
+      const out=new Array(16).fill(0);
+      for(let col=0;col<4;col++)for(let row=0;row<4;row++)
+        for(let k=0;k<4;k++)out[col*4+row]+=a[k*4+row]*b[col*4+k];
+      return out;
+    };
+    function local(n) {
+      if(n.matrix)return n.matrix;
+      const [x,y,z,w]=n.rotation||[0,0,0,1];
+      const [sx,sy,sz]=n.scale||[1,1,1], [tx,ty,tz]=n.translation||[0,0,0];
+      return [
+        (1-2*(y*y+z*z))*sx,2*(x*y+z*w)*sx,2*(x*z-y*w)*sx,0,
+        2*(x*y-z*w)*sy,(1-2*(x*x+z*z))*sy,2*(y*z+x*w)*sy,0,
+        2*(x*z+y*w)*sz,2*(y*z-x*w)*sz,(1-2*(x*x+y*y))*sz,0,
+        tx,ty,tz,1
+      ];
+    }
+    const found=new Map(),visited=new Set();
+    function walk(i,parent) {
+      if(visited.has(i))throw Error("Repeated/cyclic glTF node in scene");
+      visited.add(i);
+      const node=gltf.nodes[i],world=mul(parent,local(node));
+      if(node.mesh!==undefined){
+        if(found.has(node.mesh))throw Error("Multiple instances of glTF mesh unsupported by art QA");
+        found.set(node.mesh,world);
+      }
+      for(const child of node.children||[])walk(child,world);
+    }
+    const roots=gltf.scenes?.[gltf.scene||0]?.nodes||[];
+    for(const i of roots)walk(i,identity());
+    if(found.size!==gltf.meshes.length)throw Error("Not all sculpt meshes are instanced in glTF scene");
+    return found;
+  }
+  function gltfWorldPoint(m,x,y,z){
+    return [m[0]*x+m[4]*y+m[8]*z+m[12],
+            m[1]*x+m[5]*y+m[9]*z+m[13],
+            m[2]*x+m[6]*y+m[10]*z+m[14]];
+  }
   async function inject(win,scene,B) {
     const resp=await fetch("../../build/env021/scene.glb",{cache:"no-store"});
     if(!resp.ok)throw Error("Failed to load Blender GLB: HTTP "+resp.status);
@@ -55,6 +97,8 @@
       }
     }
     scene.clearColor=new B.Color4(.56,.61,.64,1);
+    const transforms=gltfMeshTransforms(json);
+    d.gltfNodes=String(json.nodes?.length||0);
     let verts=0,tris=0;
     json.meshes.forEach((item,mi)=>{
       const prim=item.primitives[0];
@@ -66,7 +110,8 @@
       // geometry to Babylon: keep triangles, bounds and topology unchanged.
       const lookup=new Map(),remap=[],positions=[];
       for(let i=0;i<sourcePositions.length;i+=3) {
-        const x=sourcePositions[i],y=sourcePositions[i+1],z=-sourcePositions[i+2];
+        const gltfPoint=gltfWorldPoint(transforms.get(mi),sourcePositions[i],sourcePositions[i+1],sourcePositions[i+2]);
+        const x=gltfPoint[0],y=gltfPoint[1],z=-gltfPoint[2];
         const key=x+","+y+","+z;
         let index=lookup.get(key);
         if(index===undefined){
@@ -180,6 +225,7 @@
       const candidateMeshes=scene.meshes.filter(m=>m.name.startsWith("env021_candidate_"));
       const active=scene.getActiveMeshes().data.filter(m=>m&&m.name.startsWith("env021_candidate_"));
       d.activeMeshes=String(active.length);
+      d.worldTransformApplied="true";
       d.activeAll=String(scene.getActiveMeshes().length);
       d.bounds=JSON.stringify(candidateMeshes.map(m=>({
         name:m.name,

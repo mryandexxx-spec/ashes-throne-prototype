@@ -40,7 +40,12 @@ const RenCard3D=(()=>{
   const canvas=byId("renCard3DCanvas");
   if(controls)controls.hidden=!isRen;
   if(canvas)canvas.hidden=!isRen;
-  if(!isRen){if(active)dispose();return;}
+  if(!isRen){
+   if(active)dispose();
+   const portrait=byId("detailRenPortrait");
+   if(portrait)portrait.hidden=true;
+   return;
+  }
   if(active)return;
   if(!canvas||typeof BABYLON==="undefined"||!BABYLON.Engine||!RenGlbRuntime?.ensureLoader){
    report("3D недоступно; показан портрет.");return;

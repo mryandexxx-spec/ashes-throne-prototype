@@ -99,6 +99,23 @@
       const result=await inject(win,scene,B);
       camera.radius=far?19:12;
       if(!scene.meshes.some(m=>m.name.startsWith("env021_candidate_")))throw Error("No candidate meshes in actual game");
+      // Loading bytes is not proof of an on-screen landscape. Wait for render
+      // culling and inspect the active mesh list and camera-space bounds.
+      await new Promise(resolve=>setTimeout(resolve,400));
+      const candidateMeshes=scene.meshes.filter(m=>m.name.startsWith("env021_candidate_"));
+      const active=scene.getActiveMeshes().data.filter(m=>m&&m.name.startsWith("env021_candidate_"));
+      d.activeMeshes=String(active.length);
+      d.bounds=JSON.stringify(candidateMeshes.map(m=>({
+        name:m.name,
+        lo:m.getBoundingInfo().boundingBox.minimumWorld.asArray().map(n=>Math.round(n*100)/100),
+        hi:m.getBoundingInfo().boundingBox.maximumWorld.asArray().map(n=>Math.round(n*100)/100),
+        indices:m.getTotalIndices(),
+        enabled:m.isEnabled(),
+        visible:m.isVisible,
+        frustum:m.isInFrustum(scene.frustumPlanes)
+      })));
+      d.cameraPosition=JSON.stringify(camera.position.asArray());
+      if(active.length<1)throw Error("GLB geometry loaded but none of it is visible in the actual camera");
       const actualFighters=win.eval("Object.values(meshes).filter(x=>x.body.isEnabled()).length");
       if(actualFighters<2)throw Error("Live game fighters not visible");
       d.art="ENV021_PASS005_GLB_NOT_APPROVED";d.verts=String(result.verts);

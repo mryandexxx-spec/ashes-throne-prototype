@@ -265,15 +265,27 @@
       const without=await engine.readPixels(0,0,engine.getRenderWidth(),engine.getRenderHeight());
       for(const m of candidateMeshes)m.setEnabled(true);
       scene.render();
-      let changedRed=0,changedCyan=0;
+      let changedRed=0,changedCyan=0,anyCandidateDifference=0;
       for(let i=0;i<pixels.length;i+=4){
         const r=pixels[i],g=pixels[i+1],b=pixels[i+2];
         const oldR=without[i],oldG=without[i+1],oldB=without[i+2];
+        if(Math.abs(r-oldR)+Math.abs(g-oldG)+Math.abs(b-oldB)>20)anyCandidateDifference++;
         if(r>165&&g<105&&b<125&&!(oldR>165&&oldG<105&&oldB<125))changedRed++;
         if(r<110&&g>145&&b>155&&!(oldR<110&&oldG>145&&oldB>155))changedCyan++;
       }
+      d.terrainRedPixels=String(red);d.terrainCyanPixels=String(cyan);
+      d.candidateDifferencePixels=String(anyCandidateDifference);
       d.candidateOnlyRedPixels=String(changedRed);
       d.candidateOnlyCyanPixels=String(changedCyan);
+      sentinel.setEnabled(false);
+      scene.render();
+      const noSentinel=await engine.readPixels(0,0,engine.getRenderWidth(),engine.getRenderHeight());
+      sentinel.setEnabled(true);
+      scene.render();
+      let controlDifference=0;
+      for(let i=0;i<pixels.length;i+=4)
+        if(Math.abs(pixels[i]-noSentinel[i])+Math.abs(pixels[i+1]-noSentinel[i+1])+Math.abs(pixels[i+2]-noSentinel[i+2])>20)controlDifference++;
+      d.controlDifferencePixels=String(controlDifference);
       if(changedRed<120||changedCyan<120)
         throw Error("Imported GLB makes no proven raster change: red="+changedRed+", cyan="+changedCyan);
 

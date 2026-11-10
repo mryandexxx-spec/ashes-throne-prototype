@@ -40,5 +40,5 @@ test("UIHERO002 keeps navigation without squad badges",()=>{
 });
 test("UIHERO002 build matches package",()=>{
  assert.equal(JSON.parse(read("package.json")).version,"0.3.97");
- assert.match(html,/v0\.3\.96 · UISYS001C/);
+ assert.match(html,/v0\.3\.97 · UISYS001C/);
 });

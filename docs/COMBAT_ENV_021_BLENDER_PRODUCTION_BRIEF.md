@@ -269,3 +269,16 @@ A second **Pass011 revision** (commit `fcad00c3`) narrowed the near landward edg
 `tools/env021-blender-pipeline.py -- --mode sculpt12 --scan <verified CC0 GLB> --output <directory>` is executed in the existing Blender GitHub workflow. `tests/env021-sculpt12-structure.py` checks mesh triangle indices, non-degenerate geometry and fighter-zone clearance without requiring Blender. The actual Babylon GLB fixture uses `?pass=012` with 844×390 mobile-landscape HUD, radii 12 and 19, both diagnostic and neutral-lit screenshots. **Do not assess art from clay alone.** The workflow also retains `source.blend`, GLB and provenance manifest.
 
 **Acceptance remains NOT_ART_APPROVED.** This is not gameplay integration or approval. All pre-production limitations persist: CC0 scan not welded, no UV/PBR/LOD package, no real iPhone Safari/GPU measurement, no production scene import; published ENV022 stays in `main`. Review the real two-camera images and identify remaining large-scale issues before continuing to asset finishing or asking for art approval.
+
+
+### Фактический результат Pass012 revision 2 (commit `5caa8285c4501ed87121e37370ed4bb58475930d`)
+
+**[ТЕХНИЧЕСКИ ПРОВЕРЕНО / ХУДОЖЕСТВЕННО НЕ ПРИНЯТО]** На этом коммите все четыре workflow завершились успешно:
+- [Blender → GLB → native Babylon HUD 12/19: #42833525050](https://github.com/mryandexxx-spec/ashes-throne-prototype/actions/runs/42833525050), artifact `env021-blender-42833525050`, id `13772243223`;
+- [Геометрия и бойцовские опорные зоны: #42833525136](https://github.com/mryandexxx-spec/ashes-throne-prototype/actions/runs/42833525136);
+- [Combat regression: #42833525113](https://github.com/mryandexxx-spec/ashes-throne-prototype/actions/runs/42833525113);
+- [Независимая GLB-диагностика: #42833525662](https://github.com/mryandexxx-spec/ashes-throne-prototype/actions/runs/42833525662).
+
+Проверен **реальный** GLB (`4 385 208` bytes, SHA256 `af944376ea3d2ea286de0f185377bf2adf8277f3522faf081b98711210fe21b4`), Blender 4.0.2, 2 mesh, нейтральные `art-review-12.png` и `art-review-19.png` с боевым HUD. Манифест исходного Blender-экспорта имеет `hud: NOT_INCLUDED` и `webgl_test: NOT_RUN`, потому что рендер HUD и WebGL проходит **позднее отдельным шагом CI**, а не внутри Blender — не истолковывать поля манифеста как отрицание успешной внешней проверки.
+
+**Художественная самокритика:** первая итерация Pass012 слишком приблизила тёмную дальнюю массу к переднему краю экрана; revision 2 отодвинула её и восстановила полезную видимость боя. Тем не менее белая платформа выглядит искусственно ровной, тёмный правый утёс отделён от неё пустым серым пространством и не создаёт законченного образа живого ущелья. Pass012 **не является подтверждённым художественным улучшением** относительно Pass011. **Не утверждать ART / не интегрировать в `main` / не начинать PBR как средство скрыть ошибки формы.** Следующее содержательное исследование: геометрически разорванные края периферии и композиционное соединение дальнего берега со средним планом с оценкой освещения в игровом ракурсе. Работа на реальном iPhone не проверена.

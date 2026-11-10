@@ -3591,3 +3591,150 @@ body:has(#operations.active)::before,body:has(#signalOperations.active)::before{
 @media(prefers-reduced-motion:reduce){
  :is(#operations,#signalOperations) button{transition:none}
 }
+
+/* UI-MODES-001D — four distinct result screens, one HQ archive presentation.
+   Presentation only. Keep real mission economy, rating, result text and navigation. */
+body:has(#missionResult.active),body:has(#challengeResult.active),
+body:has(#operationResult.active),body:has(#signalOperationResult.active){background:#16191b}
+body:has(#missionResult.active)::before,body:has(#challengeResult.active)::before,
+body:has(#operationResult.active)::before,body:has(#signalOperationResult.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215d9 0%,#10111585 23%,#1011159e 75%,#111215d9 100%),
+  linear-gradient(180deg,#101319b1 0%,#16141889 36%,#120f14ee 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .brand{
+ min-width:0;gap:9px;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .brand small{display:none}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .resources{
+ min-width:0;color:#e6c38b;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).screen.active{
+ display:grid;place-items:start center;
+ width:min(100%,1500px);min-width:0;
+ margin:clamp(9px,1.5dvh,18px) auto 24px;
+ padding:clamp(10px,1.6vw,22px);
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card{
+ position:relative;isolation:isolate;min-width:0;width:min(100%,900px);max-width:900px;
+ margin:0;padding:clamp(15px,2.3vw,29px);
+ border:1px solid #d9b17b92;border-radius:12px;
+ background:
+  radial-gradient(ellipse at 14% 0%,#be99512d,transparent 62%),
+  linear-gradient(105deg,#302626f7,#242024f9 67%,#231e22f7);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card::before{
+ content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;
+ border:1px solid #e7c58b25;border-radius:7px;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .eyebrow{
+ color:#e5bb7d;letter-spacing:.14em;font-size:clamp(10px,.95vw,12px);
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card h2{
+ margin:10px 0 14px;padding-bottom:11px;
+ border-bottom:1px solid #c8a06a82;
+ color:#f6e4c6;font:600 clamp(22px,3vw,34px)/1.18 Georgia,serif;
+ overflow-wrap:anywhere;text-shadow:0 2px 6px #09070b;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card p{
+ margin:9px 0;color:#e6d4b9;font-size:clamp(12px,1.25vw,15px);
+ line-height:1.56;overflow-wrap:anywhere;white-space:normal;
+}
+:is(#missionResult,#challengeResult) .mission-result-card .mission-stars{
+ display:block;padding:10px 12px;margin:12px 0 0;
+ border:1px solid #b18b5b86;border-radius:8px;
+ background:linear-gradient(145deg,#3b302bdc,#252127e7);
+ color:#f0c783!important;font-size:clamp(12px,1.45vw,16px);
+ line-height:1.45;overflow-wrap:anywhere;
+}
+:is(#operationResult,#signalOperationResult) .mission-result-card .muted{
+ color:#d4bfa1;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions{
+ display:flex;flex-wrap:wrap;align-items:stretch;gap:9px;
+ padding-top:13px;margin-top:16px;border-top:1px solid #a8865d78;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions button{
+ min-height:44px;min-width:0;max-width:100%;
+ padding:11px 16px;border-radius:8px;
+ white-space:normal;overflow-wrap:anywhere;text-align:center;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions .primary{
+ border:1px solid #e9bd77;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions .ghost{
+ border:1px solid #b99665;background:linear-gradient(145deg,#47362b,#262329);
+ color:#f0dfbf;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions button:focus-visible{
+ outline:3px solid #ffe2a1;outline-offset:2px;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar{
+  height:42px;padding-inline:9px;
+ }
+ #app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .brand strong{font-size:11px}
+ #app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar #accountStatus{
+  font-size:10px;padding:4px 6px;
+ }
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).screen.active{
+  margin:6px auto 12px;padding:8px 0 12px;
+ }
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card{padding:13px 15px}
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card h2{
+  font-size:21px;margin:6px 0 8px;padding-bottom:7px;
+ }
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card p{
+  font-size:12px;line-height:1.43;margin:6px 0;
+ }
+ :is(#missionResult,#challengeResult) .mission-result-card .mission-stars{
+  padding:7px 9px;margin:8px 0;font-size:12px;
+ }
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions{
+  gap:7px;margin-top:10px;padding-top:10px;
+ }
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions button{
+  min-height:44px;padding:8px 11px;font-size:11px;
+ }
+}
+@media(max-width:580px){
+ #app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .brand strong{font-size:11px}
+ #app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar #accountStatus{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) button{transition:none}
+}

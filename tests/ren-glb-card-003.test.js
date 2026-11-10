@@ -10,15 +10,15 @@ test("REN-GLB-003: production footer and package identify the new build",()=>{
  assert.match(html,/id="buildVersion"[^>]*>Прототип · v0\.3\.105 · UIHUD001/);
  assert.equal(JSON.parse(read("package.json")).version,"0.3.105");
  assert.match(html,/ENV022-DEFAULT \+ RENGLB003/);
- assert.match(html,/styles\.css\?v=0\.3\.104/);
- assert.match(html,/game\.js\?v=0\.3\.104/);
+ assert.match(html,/styles\.css\?v=0\.3\.105/);
+ assert.match(html,/game\.js\?v=0\.3\.105/);
 });
 test("REN-GLB-003: dossier shows a touch-rotatable canvas only for Ren",()=>{
  assert.match(html,/id="renCard3DCanvas"[^>]*hidden/);
  assert.match(html,/id="renCardMode"/);
  assert.match(html,/id="renCardReset"/);
  assert.match(html,/id="renCard3DStatus"/);
- assert.match(html,/ren-card-3d\.js\?v=0\.3\.104/);
+ assert.match(html,/ren-card-3d\.js\?v=0\.3\.105/);
  assert.match(js,/RenCard3D\.activate\(hero\.id\)/);
  assert.match(js,/RenCard3D\.dispose\(\)/);
  assert.match(cardSource,/camera\.attachControl\(canvas,true\)/);
@@ -29,7 +29,7 @@ test("REN-GLB-003: dossier shows a touch-rotatable canvas only for Ren",()=>{
 });
 test("REN-GLB-003: GLB loading is visible to player, errors retain old Ren",()=>{
  assert.match(html,/id="renModelBattleStatus"/);
- assert.match(js,/RenGlbRuntime\.create\(BABYLON,scene,meshes\.ren,\(kind,message\)=>/);
+ assert.match(js,/RenGlbRuntime\.create\(BABYLON,scene,meshes\.ren,\(kind,message,progress\)=>/);
  assert.match(runtime,/onStatus\("ready","3D Рен загружен"\)/);
  assert.match(runtime,/onStatus\("error","3D Рен: ошибка загрузки/);
  assert.match(runtime,/oldParts.*isVisible=false/);

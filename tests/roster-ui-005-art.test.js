@@ -32,6 +32,6 @@ test("UIHERO002 landscape and accessibility avoid mandatory motion",()=>{
  assert.match(css,/#collection \.roster-sort-menu\[hidden\]\{display:none\}/);
 });
 test("UIHERO002 version and marker are aligned",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.97");
- assert.match(html,/v0\.3\.97 · UISYS001C/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.98");
+ assert.match(html,/v0\.3\.98 · UIMODES001A/);
 });

@@ -44,6 +44,6 @@ test("UIMODES001A supports short landscape, safe-area and touch targets",()=>{
 });
 
 test("Current candidate version matches package and footer",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.100");
- assert.match(html,/v0\.3\.100 · UIMODES001C/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.101");
+ assert.match(html,/v0\.3\.101 · UIMODES001D/);
 });

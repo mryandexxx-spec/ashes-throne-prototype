@@ -78,3 +78,12 @@ Acceptance gates: first verify the actual new Blender Actions run and inspect sc
 **[ОШИБКА ВЫЯВЛЕНА]** [Run 42773067390](https://github.com/mryandexxx-spec/ashes-throne-prototype/actions/runs/42773067390) passed node checks but Blender 4.0.2 crashed with exit code 139 (segmentation fault) before output screenshots. No Art Pass 002 model was successfully rendered or exported in this run.
 
 The follow-up isolates the riskiest mesh-fusion stage: voxel remesh and decimate are temporarily disabled in tools/env021-art-pass-002.py, while the CC0 scan remains one Blender object with the near shelf but is **not topologically welded**. Debug progress markers are emitted before each modeling stage to pinpoint any remaining crash. This is an art-composition render pass only, not mobile-ready geometry. After the silhouette is evaluated, real topology repair, scan fusion, UV/baking and LOD remain required.
+
+
+## 11. Art Pass 002 actual screenshots / critique, 2026-11-10
+
+**[ПРОВЕРЕНО, ХУДОЖЕСТВЕННО ОТКЛОНЕНО]** [successful Blender run #42774054527](https://github.com/mryandexxx-spec/ashes-throne-prototype/actions/runs/42774054527) produced source.blend, scene.glb (1,267,268 bytes), clay-default.png, and clay-far.png. Both PNGs were downloaded and visually inspected. Actual mesh has two exported meshes; fighter markers are visible only in the Blender PNG, not in exported scene.glb.
+
+- Unlike Art Pass 001 six fighter markers and the rock ledge are visible; the far bank is separate. However, the foreground rock reads as an oversized flat runway with an unrealistically regular edge. Chasm reads only as a narrow dark band along the right side; the distant bank looks like an angular block. This still does **not** meet target art direction.
+- **[В РАЗРАБОТКЕ]** tools/env021-art-pass-003.py reduces shelf width from ~23 to ~14 units around the fixed fighter positions, pushes the broken rim closer to the rightmost enemy reference, brings distant bank closer while retaining empty chasm, and introduces broad terrain and cliff-face weathering. Sculpt remains clay WIP without topological fusion/texture baking.
+- Do not bake final textures, merge PR into main, or integrate GLB in Babylon until a genuinely accepted clay silhouette has been reviewed at both camera radii.

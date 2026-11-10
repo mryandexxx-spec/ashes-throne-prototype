@@ -82,6 +82,10 @@ def clay_render(path, camera, cpu=False):
         scene.render.engine = "CYCLES"
         scene.cycles.device = "CPU"
         scene.cycles.samples = 8
+        # Ubuntu Blender 4.0.2 is compiled without OpenImageDenoiser.
+        for view_layer in scene.view_layers:
+            if hasattr(view_layer, "cycles"):
+                view_layer.cycles.use_denoising = False
         scene.render.threads_mode = "FIXED"
         scene.render.threads = 2
         world = scene.world or bpy.data.worlds.new("ENV021_art_review_world")

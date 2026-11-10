@@ -1,0 +1,41 @@
+name: ENV025 real coastal cliff crown geometry screen
+on:
+  pull_request:
+    paths: ['.github/workflows/env025-true-cliff-geometry.yml','tools/env025-screen-true-cliff-geometry.py']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  crown:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download only genuine published geometry, never a placeholder
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/env025-source artifacts
+          curl -fLS --retry 3 --connect-timeout 15 --max-time 90 \
+            https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/coastal_cliff_04/coastal_cliff_04_1k.gltf \
+            -o /tmp/env025-source/coastal_cliff_04_1k.gltf
+          curl -fLS --retry 3 --connect-timeout 15 --max-time 180 \
+            https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/coastal_cliff_04/coastal_cliff_04.bin \
+            -o /tmp/env025-source/coastal_cliff_04.bin
+          echo '68418cc5fbddbd0ff1c350fb2aaaa62f45  /tmp/env025-source/coastal_cliff_04_1k.gltf' | md5sum -c -
+          echo '77612519fa9eb44129ba40943612c3c3  /tmp/env025-source/coastal_cliff_04.bin' | md5sum -c -
+          stat -c 'PUBLISHER_FILE %n %s bytes' /tmp/env025-source/*
+      - name: Measure source topology and possible real natural crown area
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check numpy
+          python3 tools/env025-screen-true-cliff-geometry.py /tmp/env025-source | tee artifacts/geometry-report.txt
+          cp /tmp/env025-source/coastal-cliff-04-surface-report.json artifacts/
+          # Original 43MB mesh is for off-line inspection only. Do not
+          # accidentally vendor it into the mobile game.
+      - name: Upload genuine-geometry metrics for authoring decision
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env025-coastal-cliff-04-crown-metrics
+          path: artifacts/
+          retention-days: 14

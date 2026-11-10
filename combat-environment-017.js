@@ -15,7 +15,10 @@ const CombatEnvironment017=(()=>{
  // Site survey validated a nearly level 12x8m crown around source X=22,
  // source Z=-6, Y=8.329. No geometric platform is added.
  function placeSource(sourceX,sourceY,sourceZ){
-  return p((sourceZ+6)*1.0,(sourceX-22)*.65,sourceY-8.329);
+  const world=p((sourceZ+6)*1.0,(sourceX-22)*.65,sourceY-8.329);
+  // Real-mesh contact survey: move the existing ONE rock, not any fighter.
+  // Measured offset is world -1.0 X, +0.5 Z; original y and shape unchanged.
+  return [world[0]-1.0,world[1],world[2]+0.5];
  }
  const ROOT=typeof document!=="undefined"&&document.currentScript?.src?
   new URL("assets/env025/",document.currentScript.src).href:null;

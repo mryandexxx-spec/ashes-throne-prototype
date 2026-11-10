@@ -122,12 +122,27 @@ edit_rock(rootrock,"C_joined_left_buttress",root_xyz)
 
 # Capture one editable scene file and export one static authored GLB,
 # with three genuine mesh subparts and photo colours.
+# All publisher scans carry baked real photo vertex colours from their
+# original CC0 textures. Standardize one material and one attribute name so
+# Blender's GLB exporter emits a SINGLE drawable primitive, not 3 materials.
+shared=bpy.data.materials.new("ENV026_CC0_source_photography")
+shared.use_nodes=True
+nodes=shared.node_tree.nodes
+links=shared.node_tree.links
+bsdf=nodes.get("Principled BSDF")
+if not bsdf:raise RuntimeError("Blender Principled BSDF missing")
+vertex_color=nodes.new('ShaderNodeVertexColor')
+vertex_color.layer_name="COLOR_0"
+links.new(vertex_color.outputs["Color"],bsdf.inputs["Base Color"])
+bsdf.inputs["Roughness"].default_value=.96
 for obj in [near,far,rootrock]:
+    layers=obj.data.vertex_colors
+    print("ORIGINAL_SOURCE_VERTEX_LAYERS",obj.name,[l.name for l in layers],flush=True)
+    if not len(layers):raise RuntimeError("Original CC0 mesh has no baked photo vertex colours: "+obj.name)
+    layers.active.name="COLOR_0"
+    obj.data.materials.clear()
+    obj.data.materials.append(shared)
     obj.select_set(False)
-    # clean old UV texture links that are unnecessary for baked source colours
-    # but keep material if it uses glTF vertex color data.
-    for material in obj.data.materials:
-        if material:material.name="ENV026_CC0_photoscan_color"
 
 # Add a genuinely matched fixed-angle authoring camera. This helper is
 # excluded from GLB export and never changes the game's own camera.
@@ -156,9 +171,13 @@ bpy.context.scene.render.image_settings.file_format='PNG'
 bpy.context.scene.world.color=(.5,.6,.64)
 bpy.ops.wm.save_as_mainfile(filepath=str(out/"ENV026_authored_gorge.blend"))
 
+# Export one combined, static draw-call mesh; the editable .blend keeps three
+# independently adjustable sources saved above for future art revisions.
 bpy.ops.object.select_all(action='DESELECT')
 for obj in [near,far,rootrock]:obj.select_set(True)
 bpy.context.view_layer.objects.active=near
+bpy.ops.object.join()
+bpy.context.view_layer.objects.active.name="ENV026_composite_genuine_CC0_rock"
 bpy.ops.export_scene.gltf(filepath=str(out/"ENV026_authored_gorge.glb"),export_format='GLB',use_selection=True,export_yup=True,export_colors=True,export_materials='EXPORT')
 print("ENV026_AUTHORED_EXPORT",str(out/"ENV026_authored_gorge.glb"),(out/"ENV026_authored_gorge.glb").stat().st_size,flush=True)
 print("ENV026_SOURCE_PARTS",[(o.name,len(o.data.polygons)) for o in [near,far,rootrock]],flush=True)

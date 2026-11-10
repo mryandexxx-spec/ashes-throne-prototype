@@ -3,7 +3,7 @@ const test=require("node:test"),assert=require("node:assert/strict"),fs=require(
 const read=x=>fs.readFileSync(path.join(__dirname,"..",x),"utf8");
 const css=read("styles.css"),html=read("index.html"),js=read("game.js");
 const start=css.indexOf("/* ROSTER-UI-006");
-const shell=css.slice(start);
+const shell=css.slice(start,css.indexOf("/* UI-HERO-001",start));
 test("UIHERO001 shows existing HQ painting only when roster is active",()=>{
  assert.ok(start>0);
  assert.match(shell,/body:has\(#collection\.active\)::before/);

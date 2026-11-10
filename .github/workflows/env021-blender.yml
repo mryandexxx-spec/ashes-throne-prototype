@@ -12,6 +12,7 @@ on:
     paths:
       - ".github/workflows/env021-blender.yml"
       - "tools/env021-blender-pipeline.py"
+      - "tools/env021-build-geology.py"
       - "art/env021/**"
 
 permissions:
@@ -39,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "$SOURCE_BLEND" ]]; then
-            echo "mode=SMOKE_ONLY (not approved art)" >> "$GITHUB_STEP_SUMMARY"
+            echo "mode=CC0_FUSED_CLAY_WIP (not approved art)" >> "$GITHUB_STEP_SUMMARY"
           else
             case "$SOURCE_BLEND" in
               art/env021/*.blend) ;;
@@ -49,13 +50,24 @@ jobs:
             echo "mode=SOURCE_BLEND" >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Run Blender Python authoring/export smoke test
+      - name: Reuse verified CC0 photogrammetry from pinned experimental commit
+        if: env.SOURCE_BLEND == ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/env021
+          git fetch --no-tags --depth=1 origin ec9775db9e89348546c567b18bc625ea6f0b78de
+          git show FETCH_HEAD:assets/env021/PolyCliff01.glb > build/env021/cc0-coastal-cliff-input.glb
+          test "$(stat -c %s build/env021/cc0-coastal-cliff-input.glb)" -gt 100000
+          sha256sum build/env021/cc0-coastal-cliff-input.glb | tee build/env021/source-sha256.txt
+
+      - name: Run Blender Python authoring/export clay sculpt
         run: |
           mkdir -p build/env021
           if [[ -n "$SOURCE_BLEND" ]]; then
             xvfb-run -a -s '-screen 0 1280x720x24' blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --source "$SOURCE_BLEND" --output build/env021
           else
-            xvfb-run -a -s '-screen 0 1280x720x24' blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --output build/env021
+            xvfb-run -a -s '-screen 0 1280x720x24' blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --mode sculpt --scan build/env021/cc0-coastal-cliff-input.glb --output build/env021
           fi
 
       - name: Verify outputs

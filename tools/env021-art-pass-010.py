@@ -118,19 +118,19 @@ def near_land():
             # Lithological sequence with persistent benches at layer contacts.
             # Strong beds resist retreat, weak beds undercut the ledge.
             z=top-(31+1.2*math.sin(a*.12))*t
-            depth=z-top
+            wall_depth=z-top
             # These contacts are shared along the entire exposed escarpment.
             strata=((.0, .0),(-4.2,.10),(-8.7,.72),
                     (-12.9,.20),(-18.5,.95),(-24.4,.35),(-31.0,.55))
             profile=0.0
             for (z0,d0),(z1,d1) in zip(strata,strata[1:]):
-                if depth>=z1:
-                    u=smooth01((depth-z1)/(z0-z1))
+                if wall_depth>=z1:
+                    u=smooth01((wall_depth-z1)/(z0-z1))
                     profile=d1*(1-u)+d0*u
                     break
             # Major joints in the upper resistant layer; cuts intensify below
             # the lip where blocks have detached along fracture planes.
-            joints=sum(.44*math.exp(-((a-center+.025*depth)/width)**2)
+            joints=sum(.44*math.exp(-((a-center+.025*wall_depth)/width)**2)
                        for center,width in ((-8.3,.55),(-3.8,.40),(4.4,.52),(9.0,.42)))
             local=math.sin(a*.30+.1)*.11
             s=lip(a)+1.0+2.1*t+profile+joints*(.35+.65*t)+local

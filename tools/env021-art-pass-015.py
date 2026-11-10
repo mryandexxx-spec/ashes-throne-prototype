@@ -145,28 +145,39 @@ def stone_texture(ob):
     packed into the Blender source and GLB. Not an optimized game PBR asset.
     """
     import bpy
-    image=bpy.data.images.new("ENV021_015_weathered_rock_384",width=384,height=384,alpha=True)
-    pixels=[]
-    def noise(x,y):
-        return (.47*math.sin(12.3*x+7.2*y)*math.sin(6.4*y-4.2*x)
-                +.25*math.sin(35.1*x+23.7*y)*math.sin(39.5*y-15.2*x)
-                +.12*math.sin(93*x-17*y)*math.sin(106*y+28*x))
-    for iy in range(384):
-        y=iy/384
-        for ix in range(384):
-            x=ix/384
-            n=noise(x,y)
-            thin=.5*(math.sin(23*x+5*math.sin(9*y))+1)
-            fissure=max(0.,1.-abs(math.sin(21*x+15*y+1.5*math.sin(8*y)))*18)
-            seam=max(0.,1.-abs(math.sin(63*y+4*math.sin(13*x)))*24)
-            crack=max(fissure*.55,seam*.35)
-            warm=max(0.,math.sin(14*y+8*x))*max(0.,n)
-            gray=.60+.16*n-.13*crack
-            pixels.extend((max(.06,min(.88,gray+.065*warm)),
-                           max(.06,min(.88,gray*.93+.025*thin)),
-                           max(.06,min(.88,gray*.83-.03*warm)),1))
-    image.pixels.foreach_set(pixels)
-    image.pack()
+    import os,hashlib
+    asset_path=os.environ.get("ENV021_PH_ROCKFACE","")
+    if asset_path and Path(asset_path).is_file():
+        image=bpy.data.images.load(asset_path,check_existing=False)
+        digest=hashlib.sha256(Path(asset_path).read_bytes()).hexdigest()
+        image.pack()
+        print("ENV021_015_PHOTOTEXTURE_CC0_SHA256",digest,flush=True)
+    else:
+        # Deterministic offline fallback for CI/network outages, not
+        # mistaken for a photographic production material.
+        image=bpy.data.images.new("ENV021_015_weathered_rock_384",width=384,height=384,alpha=True)
+        pixels=[]
+        def noise(x,y):
+            return (.47*math.sin(12.3*x+7.2*y)*math.sin(6.4*y-4.2*x)
+                    +.25*math.sin(35.1*x+23.7*y)*math.sin(39.5*y-15.2*x)
+                    +.12*math.sin(93*x-17*y)*math.sin(106*y+28*x))
+        for iy in range(384):
+            y=iy/384
+            for ix in range(384):
+                x=ix/384
+                n=noise(x,y)
+                thin=.5*(math.sin(23*x+5*math.sin(9*y))+1)
+                fissure=max(0.,1.-abs(math.sin(21*x+15*y+1.5*math.sin(8*y)))*18)
+                seam=max(0.,1.-abs(math.sin(63*y+4*math.sin(13*x)))*24)
+                crack=max(fissure*.55,seam*.35)
+                warm=max(0.,math.sin(14*y+8*x))*max(0.,n)
+                gray=.60+.16*n-.13*crack
+                pixels.extend((max(.06,min(.88,gray+.065*warm)),
+                               max(.06,min(.88,gray*.93+.025*thin)),
+                               max(.06,min(.88,gray*.83-.03*warm)),1))
+        image.pixels.foreach_set(pixels)
+        image.pack()
+        print("ENV021_015_TEXTURE_OFFLINE_FALLBACK",flush=True)
     material=bpy.data.materials.new("ENV021_015_PBR_rough_cliff_albedo")
     material.diffuse_color=(.69,.65,.59,1)
     material.use_nodes=True
@@ -214,7 +225,7 @@ def build(scan_path=None):
       "source":"Derived from Blockout014A; sculpted near-bank bedding and inset fragments",
       "far_wall":"UNCHANGED_BLOCKOUT_014A",
       "sky":"REAL_TIME_TEST_ONLY_ATMOSPHERE",
-      "material":"PACKED_384_ROCK_ALBEDO_AND_UV0_EXPERIMENTAL",
+      "material":"PACKED_UV0_PHOTO_IF_AVAILABLE_ELSE_PROCEDURAL",
       "safe_fighter_zone":"s ±2.45; a -1.9,0,1.9; flat +0.04 correction",
       "note":"No CC0 scan imported; 3D mesh and Babylon sky experiment; NOT approved for game."
     }

@@ -71,12 +71,23 @@
       for(let i=0;i<candidates.length;i++){
         const mesh=candidates[i];
         mesh.name="env021_candidate_"+i+"_"+mesh.name;
-        const mat=new B.StandardMaterial("env021_preview_clay_"+i,scene);
-        mat.diffuseColor=artReview?(i?new B.Color3(.40,.43,.45):new B.Color3(.54,.50,.46)):(i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2));
-        mat.emissiveColor=artReview?new B.Color3(.03,.03,.03):(i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2));
-        mat.specularColor=new B.Color3(.025,.025,.025);
-        mat.disableLighting=!artReview;mat.fogEnabled=false;mat.backFaceCulling=false;
-        mesh.material=mat;
+        if(isPass015&&artReview&&i===0){
+          // Keep actual imported Blender PBR texture instead of replacing it
+          // with a flat tan QA material. This is real glTF image sampling.
+          const imported=mesh.material;
+          if(!imported?.albedoTexture)throw Error("Pass015 imported GLB rock albedo missing");
+          imported.metallic=0;
+          imported.roughness=.93;
+          imported.backFaceCulling=false;
+          d.rockMaterial="GLB_PBR_TEXTURED_UV0";
+        }else{
+          const mat=new B.StandardMaterial("env021_preview_clay_"+i,scene);
+          mat.diffuseColor=artReview?(i?new B.Color3(.40,.43,.45):new B.Color3(.54,.50,.46)):(i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2));
+          mat.emissiveColor=artReview?new B.Color3(.03,.03,.03):(i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2));
+          mat.specularColor=new B.Color3(.025,.025,.025);
+          mat.disableLighting=!artReview;mat.fogEnabled=false;mat.backFaceCulling=false;
+          mesh.material=mat;
+        }
         mesh.isPickable=false;mesh.checkCollisions=false;
         mesh.alwaysSelectAsActiveMesh=true;
         verts+=mesh.getTotalVertices();tris+=mesh.getTotalIndices()/3;

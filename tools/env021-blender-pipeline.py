@@ -20,7 +20,7 @@ def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", default="")
     parser.add_argument("--output", required=True)
-    parser.add_argument("--mode", choices=("smoke", "sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5"), default="smoke")
+    parser.add_argument("--mode", choices=("smoke", "sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6"), default="smoke")
     parser.add_argument("--scan", default="")
     return parser.parse_args(argv)
 
@@ -53,7 +53,7 @@ def smoke_geometry():
         bpy.ops.object.modifier_apply(modifier=bevel.name)
 
 
-def add_camera(radius, name):
+def add_camera(radius, name, native_gltf=False):
     # Reference ONLY: Babylon target and basis must be calibrated against real live game screenshots.
     # ArcRotateCamera alpha=-3*pi/4, beta=.96; Babylon Y-up to Blender Z-up.
     alpha, beta = -3 * math.pi / 4, 0.96
@@ -61,6 +61,10 @@ def add_camera(radius, name):
     x = radius * math.sin(beta) * math.cos(alpha)
     babylon_z = radius * math.sin(beta) * math.sin(alpha)
     height = radius * math.cos(beta)
+    # Official Babylon glTF root transform reverses legacy Blender X/Y camera
+    # reference. Sculpt6 renders from the actual native-import-equivalent side.
+    if native_gltf:
+        x, babylon_z = -x, -babylon_z
     camera_pos = Vector((x, babylon_z, height + 1.0))
     camera = bpy.data.cameras.new(name)
     obj = bpy.data.objects.new(name, camera)
@@ -138,15 +142,15 @@ def main():
         bpy.ops.wm.open_mainfile(filepath=str(src))
         mode = "USER_SOURCE_UNREVIEWED"
         source_hash = hashlib.sha256(src.read_bytes()).hexdigest()
-    elif args.mode in ("sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5"):
+    elif args.mode in ("sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6"):
         if not args.scan or not pathlib.Path(args.scan).is_file():
             raise RuntimeError("ENV021 sculpt mode requires a verified CC0 scan")
-        module_path = pathlib.Path(__file__).with_name("env021-art-pass-005.py" if args.mode == "sculpt5" else "env021-art-pass-004.py" if args.mode == "sculpt4" else "env021-art-pass-003.py" if args.mode == "sculpt3" else "env021-art-pass-002.py" if args.mode == "sculpt2" else "env021-build-geology.py")
+        module_path = pathlib.Path(__file__).with_name("env021-art-pass-006.py" if args.mode == "sculpt6" else "env021-art-pass-005.py" if args.mode == "sculpt5" else "env021-art-pass-004.py" if args.mode == "sculpt4" else "env021-art-pass-003.py" if args.mode == "sculpt3" else "env021-art-pass-002.py" if args.mode == "sculpt2" else "env021-build-geology.py")
         spec = importlib.util.spec_from_file_location("env021_geology", module_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         provenance = module.build(pathlib.Path(args.scan).resolve())
-        mode = "ART_PASS_005_UNREVIEWED" if args.mode == "sculpt5" else "ART_PASS_004_UNREVIEWED" if args.mode == "sculpt4" else "ART_PASS_003_UNREVIEWED" if args.mode == "sculpt3" else "ART_PASS_002_UNREVIEWED" if args.mode == "sculpt2" else "CLAY_SCULPT_WIP_WITH_CC0"
+        mode = "ART_PASS_006_UNREVIEWED" if args.mode == "sculpt6" else "ART_PASS_005_UNREVIEWED" if args.mode == "sculpt5" else "ART_PASS_004_UNREVIEWED" if args.mode == "sculpt4" else "ART_PASS_003_UNREVIEWED" if args.mode == "sculpt3" else "ART_PASS_002_UNREVIEWED" if args.mode == "sculpt2" else "CLAY_SCULPT_WIP_WITH_CC0"
         source_hash = hashlib.sha256(pathlib.Path(args.scan).read_bytes()).hexdigest()
     else:
         smoke_geometry()
@@ -158,8 +162,8 @@ def main():
         mesh_objects = [o for o in mesh_objects if not o.name.startswith("REF_")]
     if not mesh_objects:
         raise RuntimeError("No visible mesh objects to export")
-    near = add_camera(12.0, "ENV021_REFERENCE_default_not_calibrated")
-    distant = add_camera(19.0, "ENV021_REFERENCE_far_not_calibrated")
+    near = add_camera(12.0, "ENV021_REFERENCE_default_native_glTF" if args.mode == "sculpt6" else "ENV021_REFERENCE_default_not_calibrated",native_gltf=args.mode == "sculpt6")
+    distant = add_camera(19.0, "ENV021_REFERENCE_far_native_glTF" if args.mode == "sculpt6" else "ENV021_REFERENCE_far_not_calibrated",native_gltf=args.mode == "sculpt6")
 
     clay_render(output / "clay-default.png", near, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5"))
     clay_render(output / "clay-far.png", distant, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5"))
@@ -184,7 +188,7 @@ def main():
         "stage": "ENV021",
         "mode": mode,
         "acceptance": "NOT_ART_APPROVED",
-        "camera": "APPROXIMATE_REFERENCE_NOT_GAME_VERIFIED",
+        "camera": "NATIVE_GLTF_ORIENTED_REFERENCE" if args.mode == "sculpt6" else "APPROXIMATE_REFERENCE_NOT_GAME_VERIFIED",
         "hud": "NOT_INCLUDED",
         "blender_version": bpy.app.version_string,
         "source_sha256": source_hash,

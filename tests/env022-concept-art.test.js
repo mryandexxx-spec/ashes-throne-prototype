@@ -57,6 +57,6 @@ test("concept mode keeps live fighter hit effect pool while skipping all old sce
 test("public build label matches package version and unique ENV022 code",()=>{
   const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
   const html=fs.readFileSync("index.html","utf8");
-  assert.equal(pkg.version,"0.3.95");
-  assert.match(html,/id="buildVersion"[^>]*>[^<]*v0\.3\.95 · UISYS001A[^<]*ENV022-DEFAULT/);
+  assert.equal(pkg.version,"0.3.96");
+  assert.match(html,/id="buildVersion"[^>]*>[^<]*v0\.3\.96 · UISYS001B[^<]*ENV022-DEFAULT/);
 });

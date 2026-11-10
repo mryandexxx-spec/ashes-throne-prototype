@@ -3,7 +3,7 @@ const test=require("node:test"),assert=require("node:assert/strict"),fs=require(
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 const css=read("styles.css"),html=read("index.html"),js=read("game.js");
 const start=css.indexOf("/* UI-SYSTEMS-001A:");
-const art=css.slice(start);
+const art=css.slice(start,css.indexOf("/* UI-SYSTEMS-001B",start));
 test("UISYS001A uses HQ painting and compact account HUD on profile only",()=>{
  assert.ok(start>0);
  assert.match(art,/body:has\(#playerProfile\.active\)::before/);
@@ -34,6 +34,6 @@ test("UISYS001A keeps compact landscape, touch sizes and keyboard visibility",()
  assert.match(art,/@media\(prefers-reduced-motion:reduce\)/);
 });
 test("UISYS001A public build is synchronized",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.95");
- assert.match(html,/v0\.3\.95 · UISYS001A/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.96");
+ assert.match(html,/v0\.3\.96 · UISYS001B/);
 });

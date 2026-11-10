@@ -110,7 +110,7 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/env021-preview-http.log 2>&1 &
           sleep 2
           for radius in 12 19; do
-            url="http://127.0.0.1:8765/tests/fixtures/env021-glb-full-game.html?radius=$radius"
+            url="http://127.0.0.1:8765/tests/fixtures/env021-glb-full-game.html?radius=$radius&native=1"
             flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox
               --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader
               --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390

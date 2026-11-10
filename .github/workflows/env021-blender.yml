@@ -127,6 +127,29 @@ jobs:
             test -s "build/env021/webgl-$radius.png"
           done
 
+      - name: Render neutral lit art-review frames with real game HUD
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          python3 -m http.server 8766 --bind 127.0.0.1 > /tmp/env021-review-http.log 2>&1 &
+          sleep 2
+          for radius in 12 19; do
+            url="http://127.0.0.1:8766/tests/fixtures/env021-glb-full-game.html?radius=$radius&pass=006&review=1"
+            flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox
+              --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader
+              --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390
+              --virtual-time-budget=22000)
+            timeout 80s "$chrome" "${flags[@]}" --screenshot="$PWD/build/env021/art-review-$radius.png" "$url" \
+              2>"/tmp/env021-review-$radius.log"
+            timeout 80s "$chrome" "${flags[@]}" --dump-dom "$url" \
+              >"build/env021/art-review-$radius.dom.html" 2>>"/tmp/env021-review-$radius.log"
+            grep -q 'data-visual-status="ready"' "build/env021/art-review-$radius.dom.html"
+            grep -q 'data-art-review="neutral_lit"' "build/env021/art-review-$radius.dom.html"
+            test -s "build/env021/art-review-$radius.png"
+          done
+
       - name: Publish pipeline outputs (no deployment)
         if: always()
         uses: actions/upload-artifact@v4

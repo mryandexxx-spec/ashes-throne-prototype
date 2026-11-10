@@ -8,6 +8,7 @@ import hashlib
 import json
 import math
 import pathlib
+import importlib.util
 import sys
 
 import bpy
@@ -19,6 +20,8 @@ def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", default="")
     parser.add_argument("--output", required=True)
+    parser.add_argument("--mode", choices=("smoke", "sculpt"), default="smoke")
+    parser.add_argument("--scan", default="")
     return parser.parse_args(argv)
 
 
@@ -96,6 +99,16 @@ def main():
         bpy.ops.wm.open_mainfile(filepath=str(src))
         mode = "USER_SOURCE_UNREVIEWED"
         source_hash = hashlib.sha256(src.read_bytes()).hexdigest()
+    elif args.mode == "sculpt":
+        if not args.scan or not pathlib.Path(args.scan).is_file():
+            raise RuntimeError("ENV021 sculpt mode requires a verified CC0 scan")
+        module_path = pathlib.Path(__file__).with_name("env021-build-geology.py")
+        spec = importlib.util.spec_from_file_location("env021_geology", module_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        provenance = module.build(pathlib.Path(args.scan).resolve())
+        mode = "CLAY_SCULPT_WIP_WITH_CC0"
+        source_hash = hashlib.sha256(pathlib.Path(args.scan).read_bytes()).hexdigest()
     else:
         smoke_geometry()
         mode = "SMOKE_GEOMETRY_ONLY"
@@ -123,6 +136,8 @@ def main():
         export_apply=True,
     )
 
+    if not (output / "scene.glb").is_file():
+        raise RuntimeError("Blender GLB exporter did not create scene.glb")
     raw = (output / "scene.glb").read_bytes()
     manifest = {
         "stage": "ENV021",
@@ -132,6 +147,7 @@ def main():
         "hud": "NOT_INCLUDED",
         "blender_version": bpy.app.version_string,
         "source_sha256": source_hash,
+        "source_provenance": provenance if args.mode == "sculpt" and not args.source else None,
         "glb_sha256": hashlib.sha256(raw).hexdigest(),
         "glb_bytes": len(raw),
         "mesh_count": len(mesh_objects),

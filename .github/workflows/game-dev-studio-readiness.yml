@@ -1,0 +1,72 @@
+name: Game Development Studio CLI readiness (no provider calls)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/game-dev-studio-readiness.yml"
+      - "docs/GAME_DEV_STUDIO_CI.md"
+
+permissions:
+  contents: read
+
+jobs:
+  readiness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Download pinned Game Development Studio release and verify bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="1.5.1"
+          ARCHIVE="theisegoria-game-development-studio-${VERSION}.tgz"
+          EXPECTED_SHA256="9f641ed65f47059936169cb5b9ecdae8ddab7df38f1f51e6124f0d720388ee43"
+          URL="https://github.com/theisegoria/game-development-studio/releases/download/v${VERSION}"
+          mkdir -p "$RUNNER_TEMP/game-dev-download"
+          cd "$RUNNER_TEMP/game-dev-download"
+          curl --fail --location --silent --show-error --retry 3 --proto '=https' --tlsv1.2 \
+            "$URL/$ARCHIVE" --output "$ARCHIVE"
+          curl --fail --location --silent --show-error --retry 3 --proto '=https' --tlsv1.2 \
+            "$URL/SHA256SUMS.txt" --output SHA256SUMS.txt
+          printf '%s  %s\n' "$EXPECTED_SHA256" "$ARCHIVE" | sha256sum --check --status
+          grep -F "$EXPECTED_SHA256" SHA256SUMS.txt >/dev/null
+          echo "GAME_DEV_TARBALL=$PWD/$ARCHIVE" >> "$GITHUB_ENV"
+          echo "Verified Game Development Studio CLI v$VERSION against pinned GitHub release SHA-256." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install CLI in temporary runner directory (no lifecycle scripts)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --global --prefix "$RUNNER_TEMP/game-dev-cli" --ignore-scripts "$GAME_DEV_TARBALL"
+          echo "$RUNNER_TEMP/game-dev-cli/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/game-dev-cli/bin/game-dev" --version
+
+      - name: Read-only capabilities and environment doctor
+        shell: bash
+        run: |
+          set -euo pipefail
+          game-dev --version > "$RUNNER_TEMP/game-dev-version.txt"
+          game-dev capabilities --json > "$RUNNER_TEMP/game-dev-capabilities.json"
+          game-dev doctor --json > "$RUNNER_TEMP/game-dev-doctor.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path(os.environ["RUNNER_TEMP"])
+          version = (root / "game-dev-version.txt").read_text().strip()
+          assert "1.5.1" in version, f"Unexpected CLI version: {version!r}"
+          for name in ("capabilities", "doctor"):
+              payload = json.loads((root / f"game-dev-{name}.json").read_text())
+              assert isinstance(payload, dict), name
+              print(f"{name}: JSON decoded; top-level fields = {sorted(payload)[:12]}")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write(f"\n- CLI reported version: `{version}`\n")
+              summary.write("- `capabilities --json`: parsed successfully\n")
+              summary.write("- `doctor --json`: parsed successfully\n")
+              summary.write("- Scope: environment discovery only; **no game execution, GPU capture, paid providers, credentials, or project writes**.\n")
+          PY

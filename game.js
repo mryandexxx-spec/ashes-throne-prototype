@@ -795,6 +795,7 @@ function showScreen(id){
  }
  if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();}
  if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();stopBattleRendering();}
+ if(id!=="heroDetail"&&typeof RenCard3D!=="undefined")RenCard3D.dispose();
  // Combat-008A: release the document scroll while the arena owns the viewport.
  // Guard document.body for headless DOM tests and embedded integrations.
  if(document.body&&document.body.classList)document.body.classList.toggle("battle-mode",id==="battle");
@@ -1813,7 +1814,9 @@ function renderHeroDetail(){
   heroStage.classList.toggle("has-ren-portrait",showRenPortrait);
   heroStage.setAttribute("aria-label",showRenPortrait?"Портрет Рена Терена":"Схематичный силуэт героя, без 3D-модели");
  }
- if(artworkLabel)artworkLabel.textContent=showRenPortrait?"ГЕРОЙ · ПОРТРЕТ":"ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД";
+ if(artworkLabel)artworkLabel.textContent=showRenPortrait?"ГЕРОЙ · 3D-МОДЕЛЬ":"ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД";
+ if(typeof RenCard3D!=="undefined" && $("#heroDetail")?.classList.contains("active"))
+  void RenCard3D.activate(hero.id);
  renderStarPanel(base.id);
  renderHeroAbilities(hero);
  // Keep the existing battle-tested HP/ATK/speed display unchanged.
@@ -2867,7 +2870,10 @@ function initBabylon(){
  // Default GLB Ren replaces the procedural visual when its verified asset loads.
  // Loading is asynchronous and never blocks combat; fallback stays intact.
  if(typeof RenGlbRuntime!=="undefined"&&meshes.ren){
-  renGlbRuntime=RenGlbRuntime.create(BABYLON,scene,meshes.ren);
+  renGlbRuntime=RenGlbRuntime.create(BABYLON,scene,meshes.ren,(kind,message)=>{
+   const info=$("#renModelBattleStatus");
+   if(info){info.textContent=message;info.dataset.status=kind;info.hidden=false;}
+  });
  }
  // Babylon pointer picking supports mouse and touch, registered once with the scene.
   if(scene.onPointerObservable&&BABYLON.PointerEventTypes)

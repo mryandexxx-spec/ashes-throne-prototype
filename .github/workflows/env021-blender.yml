@@ -30,7 +30,7 @@ jobs:
       - name: Install Blender
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y blender
+          sudo apt-get install -y blender libegl1 libgl1 libgl1-mesa-dri libopengl0 xvfb
           blender --version
 
       - name: Resolve source path safely
@@ -53,9 +53,9 @@ jobs:
         run: |
           mkdir -p build/env021
           if [[ -n "$SOURCE_BLEND" ]]; then
-            blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --source "$SOURCE_BLEND" --output build/env021
+            xvfb-run -a -s '-screen 0 1280x720x24' blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --source "$SOURCE_BLEND" --output build/env021
           else
-            blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --output build/env021
+            xvfb-run -a -s '-screen 0 1280x720x24' blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --output build/env021
           fi
 
       - name: Verify outputs

@@ -106,7 +106,8 @@
       d.candidateOnlyCyanPixels=String(cyan);
       if((!artReview&&(red<120||cyan<120))||changed<300)
         throw Error("Pass005 terrain is not visibly rasterized: changed="+changed+" red="+red+" cyan="+cyan);
-      const pass=new URLSearchParams(location.search).get("pass")==="006"?"006":"005";
+      const requestedPass=new URLSearchParams(location.search).get("pass");
+      const pass=["005","006","007"].includes(requestedPass)?requestedPass:"005";
       d.art="ENV021_PASS"+pass+"_GLB_NOT_APPROVED";
       d.verts=String(verts);d.tris=String(tris);d.hiddenScenery=String(hidden);
       d.fighters=String(fighters);d.camera=String(camera.radius);

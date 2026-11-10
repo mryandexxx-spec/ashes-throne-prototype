@@ -1926,6 +1926,6 @@ body:has(#home.active){height:100dvh;overflow:hidden}
 #collection .roster-leader-badge{background:#473021eb;border-color:#e0b978;color:#ffe1a8}
 @media(orientation:landscape) and (max-height:440px){
  #collection .roster-toolbar{gap:5px 9px;margin-bottom:8px}
- #collection .roster-filter-button,#collection #rosterSort{min-height:40px}
+ #collection .roster-filter-button,#collection #rosterSort{min-height:44px}
  #collection .roster-shown{font-size:10px}
 }

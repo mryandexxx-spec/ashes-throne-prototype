@@ -60,3 +60,14 @@
 - **[ЕЩЁ НЕ ПРОВЕРЕНО]** Successful CI run of the new geological sculpt, visual silhouette quality, actual game camera and HUD, production PBR/LOD/mobile performance, runtime import. The Blender sculpt is a clay WIP; it must not be presented as final art.
 - Output `scene.glb` is a *source prototype artifact in Actions*, not an in-game asset. Do not claim main contains it or deploy it.
 - The GitHub Actions runner resolves the earlier Blender access blocker, but does not make Blender available in the assistant's container.
+
+
+## 8. Art Pass 001 rejected after actual Blender image review
+
+**[ПРОВЕРЕНО, ХУДОЖЕСТВЕННО ОТКЛОНЕНО]** [Blender Actions run #42762179833](https://github.com/mryandexxx-spec/ashes-throne-prototype/actions/runs/42762179833) produced a real source blend (6 MB), GLB (7.5 MB / 110382 triangles), and two 844×390 clay renders. Actual PNGs were downloaded and inspected. A coarse rock wall fills almost the entire frame at both camera radii; neither walkable shelf, open abyss nor distant bank reads. This is a failed composition and must not be integrated in Babylon.
+
+## 9. Art Pass 002 corrective modeling
+
+**[В РАЗРАБОТКЕ]** New Python script tools/env021-art-pass-002.py uses Babylon fighter positions as scale reference; reduces the near landmass, shapes continuous broken descending cliff, adds a genuinely separate asymmetrical distant opposite bank, and restrains source Poly Haven CC0 relief to a small fused section. The GLB export excludes REF_ fighter size/reference markers; clay preview retains them to judge scale. Blender preview camera now matches Babylon vertical FOV .8 radians.
+
+Acceptance gates: first verify the actual new Blender Actions run and inspect screenshots. A usable 844×390 composition must show the combat shelf, abyss edge and open void, and an opposing bank. Check at both radius 12/19. Then evaluate inside real Babylon with combat HUD, followed by Safari testing. The temporary ENV022 background remains in the live game until the model passes art review. No canon changes.

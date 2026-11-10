@@ -150,5 +150,5 @@ assert.equal(ability.get(story.heroes()[0],"powerful").name,"Сорвать по
 assert.equal(ability.get(story.heroes()[0],"basic").name,"Точный удар · проба");
 for(const p of ["progress-v3-core.js","hero-collection-core.js","campaign-data.js"])
  assert.ok(!read(p).includes("trial-ren"),"trial hero excluded from "+p);
-assert.equal(JSON.parse(read("package.json")).version,"0.3.93");
+assert.equal(JSON.parse(read("package.json")).version,"0.3.94");
 console.log("REN-COMBAT-E: integrated Ren kit, cooldowns, expiry, waves, autoplay, victory/replay and no save leak");

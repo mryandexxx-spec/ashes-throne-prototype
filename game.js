@@ -16,10 +16,10 @@ const HEROES = [
   {id:"ves-3",name:"Вестник Конклава III",role:"Противник",hp:90,atk:18,speed:105,side:"enemy",glyph:"☠"}
 ];
 const $=s=>document.querySelector(s);
-// ENV022: opt-in concept-art preview. Default game visuals and combat stay unchanged.
+// ENV022: default temporary concept-art backdrop. Combat visuals stay unchanged.
 // Fixed image has no parallax; it is NOT a rendered/reconstructed 3D environment.
 const ENV022_CONCEPT_PREVIEW=typeof location!=="undefined" &&
- /(?:^|[?&])environment=concept(?:&|$)/.test(location.search);
+ !/(?:^|[?&])environment=(?:env017|env010)(?:&|$)/.test(location.search);
 let engine, scene, meshes={};
 let combatVisual007=null; // One optional visual layer per Babylon Scene.
 let arenaCamera=null;

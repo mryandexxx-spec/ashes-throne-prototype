@@ -80,7 +80,9 @@ def opposite_bank():
         back=[]
         for k in range(nb):
             u=k/(nb-1)
-            s=front+18*u
+            crest_joint=.72*sum(gauss(a-q,0,w) for q,w in ((-17,.73),(-1.4,.66),(9.2,.75),(23,.63)))
+            crest_nose=1.05*gauss(a,-8.3,2.7)+.97*gauss(a,11.0,3.8)
+            s=front+crest_joint-crest_nose+18*u
             # Tall near crest, eroded basin and far shoulder: several depths
             # in the horizon without adding a second mesh or skybox.
             z=crest-(.5*u+4.2*u*u+2.2*smooth01((u-.58)/.30))

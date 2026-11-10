@@ -36,8 +36,7 @@ test("REN-GLB-DEFAULT-002: fallback retains gameplay if asset unavailable",()=>{
 test("REN-GLB-DEFAULT-002: binary is exactly the previously tested rigged source when shipped",()=>{
  const file=path.join(__dirname,"../assets/ren-animated-v02.glb");
  if(!fs.existsSync(file)){
-  console.log("REN-GLB-DEFAULT-002 BLOCKED: binary is not in repository; do not merge this PR.");
-  return;
+  assert.fail("REN-GLB-DEFAULT-002 BLOCKED: binary GLB missing; do not merge this PR.");
  }
  const crypto=require("node:crypto");
  const binary=fs.readFileSync(file);

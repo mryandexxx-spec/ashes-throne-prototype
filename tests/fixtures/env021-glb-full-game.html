@@ -127,6 +127,10 @@
       if(positions.length/3>=65536)throw Error("Welded GLB still requires 32bit indices");
       const normals=[];
       B.VertexData.ComputeNormals(positions,indices,normals);
+      const badNormals=normals.filter(v=>!Number.isFinite(v)).length;
+      d["nonfiniteNormals"+mi]=String(badNormals);
+      if(new URLSearchParams(location.search).get("constantNormals")==="1")
+        for(let n=0;n<normals.length;n+=3){normals[n]=0;normals[n+1]=1;normals[n+2]=0;}
       const m=new B.Mesh("env021_candidate_"+mi+"_"+item.name,scene);
       const data=new B.VertexData();
       data.positions=positions;data.indices=indices;data.normals=normals;

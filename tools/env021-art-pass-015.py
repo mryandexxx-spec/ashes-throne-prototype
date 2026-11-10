@@ -24,10 +24,10 @@ def outline(a):
     return l-.7*gauss(a,-5.2,1.5)-.85*gauss(a,5.9,1.7),r-.55*gauss(a,-5.0,.9)-.45*gauss(a,5.9,1.3)
 
 def surface(s,a):
-    h=previous.height(s,a,"A")
     # Flat rectangular fighting corridor cannot carry sculpt-level ridges.
     # All displacement fades to zero within the safe base footprint.
     safe=smooth01((max(abs(s)-3.08,abs(a)-2.68))/1.30)
+    h=-.04+(previous.height(s,a,"A")+.04)*safe
     side=smooth01((abs(s)-3.00)/2.7)
     ends=smooth01((abs(a)-2.60)/3.9)
     # Three *continuous geological fractures* with slanting traces and

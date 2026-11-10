@@ -120,7 +120,10 @@
         indices:m.getTotalIndices(),
         enabled:m.isEnabled(),
         visible:m.isVisible,
-        frustum:m.isInFrustum(scene.frustumPlanes)
+        frustum:m.isInFrustum(scene.frustumPlanes),
+        ready:m.isReady(false),matReady:m.material?.isReady?.(m),
+        submeshes:m.subMeshes?.length,visibility:m.visibility,
+        active:m.alwaysSelectAsActiveMesh
       })));
       d.cameraPosition=JSON.stringify(camera.position.asArray());
       if(active.length<1)throw Error("GLB geometry loaded but none of it is visible in the actual camera");
@@ -131,7 +134,11 @@
       d.fighters=String(actualFighters);d.camera=String(camera.radius);
       d.webgl="true";loaded=true;
       clearInterval(poll);
-      // Capture real frames, not just a canvas initialization moment.
+      // Visible QA-only time marker distinguishes an early Chromium screenshot
+      // from one captured after async GLB import and real frame presentation.
+      const stamp=document.createElement("div");stamp.textContent="ENV021 GLB LOADED";
+      stamp.style.cssText="position:absolute;top:0;left:44%;z-index:1000;background:#e500e5;color:white;padding:2px 7px;font:11px monospace;pointer-events:none";
+      document.body.appendChild(stamp);
       setTimeout(()=>d.visualStatus="ready",1200);
     }catch(e){fail(e);}
   },125);

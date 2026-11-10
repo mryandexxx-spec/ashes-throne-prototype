@@ -8,17 +8,11 @@ const RenCard3D=(()=>{
  let render=null,loadingToken=0,view="model",sizeObserver=null;
  const byId=id=>document.getElementById(id);
  function report(text){const el=byId("renCard3DStatus");if(el)el.textContent=text;}
- function loading(text,percent=null){
+ function loading(text){
   const overlay=byId("renCardLoadIndicator");
   const label=byId("renCardLoadingText");
-  const progress=byId("renCardLoadingProgress");
   if(overlay)overlay.hidden=false;
   if(label)label.textContent=text;
-  if(progress){
-   const known=Number.isFinite(percent);
-   progress.hidden=!known;
-   if(known)progress.value=percent;
-  }
   report(text);
  }
  function endLoading(){
@@ -95,11 +89,7 @@ const RenCard3D=(()=>{
    }
    await RenGlbRuntime.ensureLoader();
    if(!active||token!==loadingToken)return;
-   const result=await BABYLON.SceneLoader.ImportMeshAsync(null,"assets/","ren-animated-v02.glb",scene,event=>{
-    if(!active||token!==loadingToken)return;
-    const percent=RenGlbRuntime.progressPercent(event);
-    if(percent!==null)loading("Загружаем Рена: "+percent+"%",percent);
-   },".glb");
+   const result=await BABYLON.SceneLoader.ImportMeshAsync(null,"assets/","ren-animated-v02.glb",scene,undefined,".glb");
    if(!active||token!==loadingToken){
     for(const group of result.animationGroups)group.dispose();
     for(const mesh of result.meshes)mesh.dispose();

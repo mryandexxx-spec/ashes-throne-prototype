@@ -59,6 +59,20 @@ const assert=require("node:assert/strict");
   }));
   console.log("LIVE BATTLE",JSON.stringify(battle),"ERR",JSON.stringify(errors));
   await page.screenshot({path:"/tmp/ren-live-battle.png"});
+  // Reopen dossier AFTER a battle has created a persistent WebGL Engine.
+  await page.evaluate(()=>{selectedHeroId="ren";showScreen("heroDetail");});
+  await page.waitForTimeout(5500);
+  const returnCard=await page.evaluate(()=>({
+   status:document.getElementById("renCard3DStatus")?.textContent,
+   modelClass:document.getElementById("detailHeroStage")?.className,
+   controlsHidden:document.getElementById("renCard3DControls")?.hidden,
+   canvasHidden:document.getElementById("renCard3DCanvas")?.hidden,
+   canvasDisplay:getComputedStyle(document.getElementById("renCard3DCanvas")).display
+  }));
+  console.log("LIVE CARD AFTER BATTLE",JSON.stringify(returnCard),"ERR",JSON.stringify(errors));
+  assert.equal(returnCard.controlsHidden,false,"Dossier controls remain visible after battle");
+  assert.match(returnCard.status||"",/3D Рен загружен/,"WebGL card must work after battle");
+  assert.match(returnCard.modelClass||"",/has-ren-3d/);
   assert.equal(card.controlsHidden,false,"Card controls should appear during game navigation");
   assert.equal(card.canvasHidden,false,"Card canvas should be present");
   assert.match(card.status||"",/3D Рен загружен/,"Card model imported in real navigation");

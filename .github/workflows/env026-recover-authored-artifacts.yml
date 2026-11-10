@@ -1,0 +1,52 @@
+name: ENV026 recover verified Blender binaries after non-geometry CI assertion
+on:
+  push:
+    branches: [feat/combat-env-026-authored-blender-gorge]
+    paths: [.github/workflows/env026-recover-authored-artifacts.yml]
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: write
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: true}
+      - uses: actions/download-artifact@v4
+        with:
+          name: env026-blender-authored-scene
+          run-id: 42756117871
+          github-token: ${{ github.token }}
+          path: assets/env026
+      - name: Confirm actual Blender outputs are valid, not placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          find assets/env026 -maxdepth 2 -type f -printf '%p %s bytes\n'
+          test -s assets/env026/ENV026_authored_gorge.blend
+          test -s assets/env026/ENV026_authored_gorge.glb
+          python3 - <<'PY'
+          import struct,json,pathlib
+          f=pathlib.Path('assets/env026/ENV026_authored_gorge.glb')
+          b=f.read_bytes()
+          assert b[:4]==b'glTF' and struct.unpack_from('<I',b,8)[0]==len(b)
+          n=struct.unpack_from('<I',b,12)[0]
+          g=json.loads(b[20:20+n])
+          count=sum(g['accessors'][p['indices']]['count']//3 for m in g['meshes'] for p in m['primitives'])
+          print('AUTHENTIC_EDITABLE_BLENDER_CC0',len(b),'bytes',len(g['meshes']),'meshes',count,'triangles',flush=True)
+          assert len(g['meshes'])==1 and 15000<=count<=100000
+          assert 'COLOR_0' in g['meshes'][0]['primitives'][0]['attributes'], 'Source photo colors missing'
+          PY
+      - name: Commit recovered already-built binary assets to experiment branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/env026/ENV026_authored_gorge.blend assets/env026/ENV026_authored_gorge.glb
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'ENV026: recover actual Blender-built CC0 gorge composition after validation-only CI mismatch'
+          git fetch origin feat/combat-env-026-authored-blender-gorge
+          git rebase origin/feat/combat-env-026-authored-blender-gorge
+          git push origin HEAD:feat/combat-env-026-authored-blender-gorge

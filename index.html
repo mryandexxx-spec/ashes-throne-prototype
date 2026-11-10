@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Пепельный престол — прототип</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=0.3.104">
   <!-- Fixed Babylon.js release: no unversioned CDN updates during prototype development. -->
   <script src="https://cdn.babylonjs.com/v9.33.2/babylon.js"></script>
 </head>
@@ -261,7 +261,7 @@
       </section>
         <div class="hero-detail-panel hero-detail-identity">
           <div class="eyebrow" id="detailArtworkLabel">ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД</div>
-          <div class="hero-detail-stage" id="detailHeroStage" aria-label="Схематичный силуэт героя, без 3D-модели">
+          <div class="hero-detail-stage" id="detailHeroStage" aria-label="3D-модель Рена с вращением пальцем">
             <div class="hero-detail-stage-halo" aria-hidden="true"></div>
             <div class="hero-detail-silhouette" aria-hidden="true">
               <span class="hero-detail-silhouette-head"></span>
@@ -272,8 +272,14 @@
               <span class="hero-detail-silhouette-leg hero-detail-silhouette-leg-right"></span>
             </div>
             <img id="detailRenPortrait" class="ren-detail-portrait" src="assets/ren-portrait-ui.webp" width="220" height="275" decoding="async" alt="Рен Терен — портрет проводника Садов над пропастью" hidden>
+            <canvas id="renCard3DCanvas" class="ren-card-3d-canvas" aria-label="Вращаемая трёхмерная модель Рена Терена" hidden></canvas>
             <div class="hero-detail-stage-emblem" id="detailGlyph" aria-hidden="true"></div>
             <div class="hero-detail-stage-platform" aria-hidden="true"></div>
+          </div>
+          <div id="renCard3DControls" class="ren-card-3d-controls" hidden>
+            <button type="button" id="renCardMode" class="ghost" aria-pressed="false">Портрет</button>
+            <button type="button" id="renCardReset" class="ghost">Сбросить ракурс</button>
+            <small id="renCard3DStatus" role="status" aria-live="polite">3D Рен</small>
           </div>
           <div class="gear-panel" aria-label="Экипировка героев — тест G1–G3">
                       <div class="eyebrow">ЭКИПИРОВКА · ТЕСТ G1</div>
@@ -652,6 +658,7 @@
           <button type="button" id="autoBattleBtn" class="ghost auto-battle-btn" aria-pressed="false">Автобой</button>
           <button type="button" id="autoSpeedBtn" class="ghost auto-speed-btn" aria-label="Скорость боя 1×. Нажми, чтобы изменить" title="Скорость боя: 1× → 2× → 4×">1×</button>
           <div class="turn-chip" id="turnChip">Ход 1</div>
+          <small id="renModelBattleStatus" class="ren-battle-model-status" hidden aria-live="polite"></small>
         </div>
         <div id="battleMessage" class="battle-message arena-hud" role="status">Отряд готов к бою</div>
         <div id="battleReward" class="battle-reward arena-hud" hidden aria-live="polite"></div>
@@ -712,7 +719,7 @@
         <button type="button" class="primary" id="lockedHeroUnlock">Открыть за 10 осколков</button>
       </div>
     </dialog>
-    <footer><span id="buildVersion">Прототип · v0.3.103 · UIHUD001 + OPSHELP + RENPLAY + REN3D003 + ENV010 + ENV017-MASSING + ENV022-DEFAULT</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.104 · RENGLB003 + UIHUD001 + OPSHELP + RENPLAY + ENV022</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -756,7 +763,8 @@
   <script src="combat-environment-010.js"></script>
   <script src="combat-environment-017.js"></script>\n  <script src="combat-visual-007.js"></script>
   <script src="ren-visual-model.js"></script>
-  <script src="ren-glb-runtime.js"></script>
-  <script src="game.js"></script>
+  <script src="ren-glb-runtime.js?v=0.3.104"></script>
+  <script src="ren-card-3d.js?v=0.3.104"></script>
+  <script src="game.js?v=0.3.104"></script>
 </body>
 </html>

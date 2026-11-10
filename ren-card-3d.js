@@ -89,7 +89,7 @@ const RenCard3D=(()=>{
    }
    await RenGlbRuntime.ensureLoader();
    if(!active||token!==loadingToken)return;
-   const result=await BABYLON.SceneLoader.ImportMeshAsync(null,"assets/","ren-animated-v02.glb",scene,undefined,".glb");
+   const result=await BABYLON.SceneLoader.ImportMeshAsync(null,"assets/","ren-wanderer-v1.glb",scene,undefined,".glb");
    if(!active||token!==loadingToken){
     for(const group of result.animationGroups)group.dispose();
     for(const mesh of result.meshes)mesh.dispose();
@@ -126,7 +126,7 @@ const RenCard3D=(()=>{
    setMode("model");
    engine.resize();
    endLoading();
-   report("3D Рен загружен. Вращай пальцем, масштабируй двумя пальцами.");
+   report("Модель Странника загружена. Анимации пока отсутствуют. Вращай пальцем, масштабируй двумя пальцами.");
   }catch(error){
    console.warn("REN-GLB-003 card model unavailable",error);
    report("Не удалось загрузить 3D: "+(error.message||String(error))+". Показан портрет.");

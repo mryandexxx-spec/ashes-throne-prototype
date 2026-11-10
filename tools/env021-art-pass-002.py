@@ -102,11 +102,9 @@ def scan_relief(path,base):
     for o in scans:o.select_set(True)
     bpy.context.view_layer.objects.active=base
     bpy.ops.object.join()
-    base.data.remesh_voxel_size=.40
-    bpy.ops.object.voxel_remesh()
-    mod=base.modifiers.new("EDITABLE_medium_geo","DECIMATE")
-    mod.ratio=.58
-    bpy.ops.object.modifier_apply(modifier=mod.name)
+    # Art Pass 002 evaluates silhouette before a fragile voxel fusion/bake.
+    # The imported relief shares one Blender object but is NOT yet watertight.
+    # A proper manifold and baking pass will follow approved composition.
 def material(obj,name,color):
     m=bpy.data.materials.new(name);m.diffuse_color=color
     obj.data.materials.clear();obj.data.materials.append(m)
@@ -119,11 +117,17 @@ def markers():
             material(ob,ob.name+"_mat",color)
 def build(scan_path):
     bpy.ops.object.select_all(action="SELECT");bpy.ops.object.delete(use_global=False)
-    near=near_land();far=opposite_bank()
+    print("ENV021_STAGE: near landmass",flush=True)
+    near=near_land()
+    print("ENV021_STAGE: opposite bank",flush=True)
+    far=opposite_bank()
+    print("ENV021_STAGE: import/reposition source scan (no remesh)",flush=True)
     scan_relief(scan_path,near)
+    print("ENV021_STAGE: clay materials",flush=True)
     material(near,"ENV021_near_clay",(.55,.53,.49,1))
     material(far,"ENV021_far_clay",(.38,.43,.46,1))
     markers()
+    print("ENV021_STAGE: full composition created",flush=True)
     return {"stage":"ART_PASS_002_NOT_APPROVED","source":"CC0 Poly Haven Coastal Cliff 02",
-            "form":"single shelf and cliff; distant separate opposite bank",
-            "note":"Blender reference fighters are EXCLUDED from export; real game HUD not tested"}
+            "form":"shelf and cliff in a single Blender object; distant opposite bank separated",
+            "note":"Scan is NOT welded yet; fighter references excluded from GLB; game HUD not tested"}

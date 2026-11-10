@@ -53,8 +53,11 @@ def edit_rock(obj,label,positioner,clip=None):
     # into a common Blender authoring scene in world units.
     coords=[]
     for vert in mesh.vertices:
-        xyz,side,away=positioner(vert.co)
+        xyz,side,away=positioner(obj.matrix_world @ vert.co)
         coords.append((blender_point(*xyz),side,away))
+    # All placed coordinates are now authored world-space Blender vertices.
+    obj.parent=None
+    obj.matrix_world.identity()
     for vertex,(co,side,away) in zip(mesh.vertices,coords):
         vertex.co=co
     # Remove only source triangles whose authored placement would close the
@@ -69,8 +72,9 @@ def edit_rock(obj,label,positioner,clip=None):
         if removed:
             import bmesh
             bm=bmesh.new();bm.from_mesh(mesh)
-            layers=sorted(list(bm.faces),key=lambda f:f.index)
-            bmesh.ops.delete(bm,geom=[layers[i] for i in removed],context='FACES')
+            bm.faces.ensure_lookup_table()
+            bm.faces.index_update()
+            bmesh.ops.delete(bm,geom=[bm.faces[i] for i in removed],context='FACES')
             bm.to_mesh(mesh);bm.free()
         print("EDITED_SOURCE",label,"REMOVED_SOURCE_FACES",len(removed))
     mesh.update()

@@ -59,15 +59,32 @@
     json.meshes.forEach((item,mi)=>{
       const prim=item.primitives[0];
       if(prim.mode!==undefined&&prim.mode!==4)throw Error("Only triangle GLB supported");
-      const positions=accessor(json,bin,prim.attributes.POSITION);
+      const sourcePositions=accessor(json,bin,prim.attributes.POSITION);
       const raw=accessor(json,bin,prim.indices);
-      for(let i=2;i<positions.length;i+=3)positions[i]*=-1;
-      for(let i=0;i<raw.length;i+=3){const t=raw[i+1];raw[i+1]=raw[i+2];raw[i+2]=t;}
+      // Blender's flat-shaded export duplicates positions, forcing Uint32
+      // indices on the near shelf. Weld identical coordinates BEFORE sending
+      // geometry to Babylon: keep triangles, bounds and topology unchanged.
+      const lookup=new Map(),remap=[],positions=[];
+      for(let i=0;i<sourcePositions.length;i+=3) {
+        const x=sourcePositions[i],y=sourcePositions[i+1],z=-sourcePositions[i+2];
+        const key=x+","+y+","+z;
+        let index=lookup.get(key);
+        if(index===undefined){
+          index=positions.length/3;lookup.set(key,index);
+          positions.push(x,y,z);
+        }
+        remap.push(index);
+      }
+      const indices=raw.map(id=>remap[id]);
+      for(let i=0;i<indices.length;i+=3) {
+        const t=indices[i+1];indices[i+1]=indices[i+2];indices[i+2]=t;
+      }
+      if(positions.length/3>=65536)throw Error("Welded GLB still requires 32bit indices");
       const normals=[];
-      B.VertexData.ComputeNormals(positions,raw,normals);
+      B.VertexData.ComputeNormals(positions,indices,normals);
       const m=new B.Mesh("env021_candidate_"+mi+"_"+item.name,scene);
       const data=new B.VertexData();
-      data.positions=positions;data.indices=raw;data.normals=normals;
+      data.positions=positions;data.indices=indices;data.normals=normals;
       data.applyToMesh(m);
       const mat=new B.StandardMaterial("env021_preview_clay_"+mi,scene);
       mat.diffuseColor=mi?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2);
@@ -79,7 +96,7 @@
       // Culling diagnostic: if large landmasses are skipped by active-mesh
       // selection, force selection only in this isolated QA fixture.
       m.alwaysSelectAsActiveMesh=true;
-      verts+=positions.length/3;tris+=raw.length/3;
+      verts+=positions.length/3;tris+=indices.length/3;
     });
     if(verts<1000||tris<1000)throw Error("Too few GLB vertices or triangles");
     return {verts,tris,hidden};
@@ -140,6 +157,7 @@
       const actualFighters=win.eval("Object.values(meshes).filter(x=>x.body.isEnabled()).length");
       if(actualFighters<2)throw Error("Live game fighters not visible");
       d.art="ENV021_PASS005_GLB_NOT_APPROVED";d.verts=String(result.verts);
+      d.uintIndices=String(engine.getCaps().uintIndices);
       d.tris=String(result.tris);d.hiddenScenery=String(result.hidden);
       d.fighters=String(actualFighters);d.camera=String(camera.radius);
       d.webgl="true";loaded=true;

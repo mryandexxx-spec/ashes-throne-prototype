@@ -1849,3 +1849,63 @@ body:has(#home.active){height:100dvh;overflow:hidden}
   opacity:0!important;
  }
 }
+
+
+/* ROSTER-UI-001: HQ-aligned collection; scoped to #collection to protect squad and dossier. */
+#collection.roster-screen{
+ --roster-bg:#201c1a;--roster-card:#292326;--roster-bronze:#a78348;
+ --roster-gold:#e0b978;--roster-ink:#f4ebd8;--roster-dim:#c9bca8;
+ background:radial-gradient(ellipse at 22% 10%,#453528 0%,#282124 40%,#201c1a 90%);
+ color:var(--roster-ink);
+ padding:clamp(12px,2vw,22px) max(12px,env(safe-area-inset-right)) 24px max(12px,env(safe-area-inset-left));
+ border:1px solid #8e724757;border-radius:14px;min-width:0;
+}
+#collection .roster-heading{margin:0 0 8px;gap:12px;min-width:0}
+#collection .roster-heading h2{margin:4px 0;font:600 clamp(20px,3vw,29px) Georgia,serif;color:#f8e9d0}
+#collection .roster-heading .eyebrow{color:var(--roster-gold)}
+#collection .roster-count{font-size:12px;color:var(--roster-gold);margin:4px 0}
+#collection .roster-heading .ghost{flex:none;min-height:44px;border-color:var(--roster-bronze);color:#f8e9d0;background:#2e2525}
+#collection .roster-intro{color:var(--roster-dim);font-size:12px;line-height:1.35;margin:0 0 12px}
+#collection .roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,148px),1fr));gap:clamp(8px,1.4vw,13px);align-items:stretch;min-width:0}
+#collection .roster-card{
+ display:flex;flex-direction:column;align-items:stretch;min-width:0;min-height:0;text-align:center;
+ border:1px solid #8a6e49;border-radius:9px;padding:6px 6px 9px;
+ background:linear-gradient(150deg,#352b2b,#211e22);
+ box-shadow:inset 0 1px #d7b67b40,0 5px 12px #09070866;
+ color:var(--roster-ink);overflow:hidden;position:relative;
+}
+#collection .roster-card:focus-visible{outline:3px solid #f5d08e;outline-offset:2px}
+#collection .roster-card:active{transform:translateY(1px)}
+#collection .roster-card-art{
+ display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+ width:100%;height:clamp(88px,15vw,138px);margin:0 0 7px;
+ border:1px solid #7d684d;border-radius:5px;
+ background:radial-gradient(ellipse at 50% 24%,#665340,#302c2c 62%,#1b1c1f);
+ color:#d6bb86;font-size:clamp(35px,5vw,60px);
+}
+#collection .roster-card-art.hero-avatar-ren{height:clamp(88px,15vw,138px);padding:0}
+#collection .roster-card-art .ren-collection-portrait{object-fit:contain;object-position:center;width:100%;height:100%;max-width:none;max-height:none}
+#collection .roster-card-name{font:600 clamp(12px,1.65vw,16px)/1.2 Georgia,serif;color:#f7ebd7;min-height:2.4em;display:grid;place-items:center;overflow-wrap:anywhere}
+#collection .roster-card .hero-star-summary{margin:3px 0;min-height:16px;color:#e5bd77;font-size:clamp(12px,1.6vw,17px);letter-spacing:0;white-space:nowrap}
+#collection .roster-card-subtitle{display:block;font-size:11px;line-height:1.25;color:#d7c9b6;min-height:2.4em;overflow-wrap:anywhere}
+#collection .roster-card-gear{align-self:center;margin:6px 0 2px;border:1px solid #96764d;border-radius:4px;padding:2px 7px;background:#493827;color:#f7d7a0;font-weight:700;font-size:11px}
+#collection .roster-card .hero-open-hint{margin-top:auto;padding-top:8px;color:#e0b978;font-size:11px}
+#collection .roster-card.hero-locked{opacity:1;border-style:solid;border-color:#595153;background:#252326}
+#collection .roster-card.hero-locked .roster-card-art{filter:saturate(.4);color:#958d85;background:linear-gradient(#363339,#252428);border-color:#5c5350}
+#collection .roster-card.hero-locked .roster-card-name{color:#c5b9b0}
+#collection .roster-card.hero-locked .hero-open-hint{color:#b8a792}
+#collection .roster-shard-track{height:5px;width:100%;background:#4b4548;border-radius:9px;overflow:hidden;margin-top:8px}
+#collection .roster-shard-track span{display:block;height:100%;background:#85c6c2}
+#collection .roster-shard-value{margin:4px 0;font-size:10px;color:#c9bca8}
+@media(orientation:landscape) and (max-height:440px){
+ #collection.roster-screen{padding-top:8px}
+ #collection .roster-heading{margin-bottom:4px}
+ #collection .roster-intro{margin-bottom:8px}
+ #collection .roster-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,142px),1fr));gap:8px}
+ #collection .roster-card-art,#collection .roster-card-art.hero-avatar-ren{height:86px}
+ #collection .roster-card{padding:5px 5px 7px}
+}
+@media(prefers-reduced-motion:reduce){#collection .roster-card{transition:none}}
+
+/* ROSTER001: suppress obsolete wide Ren overlays only in roster. */
+#collection .roster-card-art.hero-avatar-ren::before,#collection .roster-card-art.hero-avatar-ren::after{display:none}

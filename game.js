@@ -1517,15 +1517,25 @@ $("#lockedHeroUnlock")?.addEventListener("click",()=>{
 $("#lockedHeroClose")?.addEventListener("click",()=>$("#lockedHeroDialog").close());
 $("#lockedHeroDialog")?.addEventListener("close",()=>{lockedStarHeroId=null;});
 function renderHeroes(){
+ const ownedCount=ALLIES.filter(h=>heroOwned(h.id)).length;
+ const countNode=$("#rosterCount");
+ if(countNode)countNode.textContent="Получено "+ownedCount+" из "+ALLIES.length;
  $("#heroList").innerHTML=ALLIES.map(progressedHero).map(h=>{
   const owned=heroOwned(h.id);
   const rank=typeof StarCore!=="undefined"?StarCore.rankOf(progress,h.id):null;
   const cost=typeof StarCore!=="undefined"?StarCore.costOf(progress,h.id):null;
   const amount=typeof StarCore!=="undefined"?StarCore.shardsOf(progress,h.id):null;
+  const safeAmount=Math.max(0,Number(amount)||0);
+  const safeCost=Math.max(1,Number(cost)||10);
+  const progressPercent=Math.min(100,Math.round(safeAmount/safeCost*100));
   const portraitAvatar=owned&&h.id==="ren"?'<img class="ren-collection-portrait" src="assets/ren-portrait-ui.webp" width="220" height="275" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
-  const starInfo=rank===null?"":'<span class="hero-star-summary" aria-label="Ранг '+rank+' из 7">'+
-   starGlyphs(rank)+'</span>';
-  return `<button type="button" class="hero-card hero-open ${owned?"":"hero-locked"}" data-open-hero="${h.id}"><div class="hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":""}">${portraitAvatar}</div><h3>${owned?h.name:"Неизвестный герой"}</h3>${starInfo}<p>${owned?h.role+" · Уровень "+h.level:"Получение: "+heroUnlockLabel(h.id)}</p>${owned?`<div class="stats"><span>Здоровье ${h.hp}</span><span>Сила ${h.atk}</span></div>`:`<p class="muted">Осколки ${amount??0}/${cost??10}</p>`}<span class="hero-open-hint">${owned?"Открыть карточку →":"Условия получения и осколки →"}</span></button>`;
+  const starInfo=owned&&rank!==null?'<span class="hero-star-summary" aria-label="Ранг '+rank+' из 7">'+starGlyphs(rank)+'</span>':"";
+  const name=owned?h.name:"Неизвестный герой";
+  const levelLine=owned?"Ур. "+h.level+" · "+h.role:"Условия получения";
+  const progressLine=!owned?'<div class="roster-shard-track" aria-hidden="true"><span style="width:'+progressPercent+'%"></span></div><span class="roster-shard-value">Осколки '+safeAmount+' / '+safeCost+'</span>':"";
+  const gear=owned&&typeof ProgressCore!=="undefined"?ProgressCore.gearState(progress,h.id):null;
+  const gearLabel=gear&&Number.isFinite(gear.tier)?"G"+gear.tier:"";
+  return `<button type="button" class="hero-card hero-open roster-card ${owned?"":"hero-locked"}" data-open-hero="${h.id}" aria-label="${name}. ${owned?"Открыть досье":"Условия получения"}"><span class="roster-card-art hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":""}">${portraitAvatar}</span><span class="roster-card-name">${name}</span>${starInfo}<span class="roster-card-subtitle">${levelLine}</span>${owned?'<span class="roster-card-gear">'+gearLabel+'</span>':progressLine}<span class="hero-open-hint">${owned?"Открыть досье ›":"Как получить ›"}</span></button>`;
  }).join("");
  document.querySelectorAll("[data-open-hero]").forEach(node=>node.addEventListener("click",()=>{
   const id=node.dataset.openHero;

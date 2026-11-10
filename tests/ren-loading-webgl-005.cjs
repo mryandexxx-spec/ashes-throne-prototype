@@ -4,6 +4,8 @@
  */
 "use strict";
 const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const path=require("node:path");
 const {chromium,webkit}=require("playwright");
 async function main(){
  const useWebkit=process.env.REN_BROWSER==="webkit";
@@ -18,7 +20,8 @@ async function main(){
   await page.route("**/assets/ren-animated-v02.glb",async route=>{
    await new Promise(resolve=>setTimeout(resolve,2200));
    console.log("RELEASING GLB REQUEST",route.request().url());
-   await route.continue();
+   const binary=fs.readFileSync(path.join(__dirname,"../assets/ren-animated-v02.glb"));
+   await route.fulfill({status:200,contentType:"model/gltf-binary",body:binary});
   });
   await page.goto("http://127.0.0.1:8765/",{waitUntil:"load"});
   await page.evaluate(()=>{selectedHeroId="ren";showScreen("heroDetail");});

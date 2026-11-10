@@ -48,13 +48,25 @@ def near_mass():
     that has already passed native Babylon checks for the same mesh indices.
     """
     ob=previous.near_mass("A")
+    # In the Blender-free smoke test core.mesh returns (name, raw_verts,
+    # triangles); expose the identical shape transform on that representation.
+    raw=isinstance(ob,tuple)
+    if raw:
+        name,points,faces=ob
+        class Co:
+            def __init__(self,p): self.x,self.y,self.z=p
+        class Vert:
+            def __init__(self,p): self.co=Co(p)
+        vertices=[Vert(p) for p in points]
+    else:
+        vertices=ob.data.vertices
     # The base comprises 91 x 45 contiguous top vertices, then 30 rear-wall,
     # 30 front-wall and 45 floor vertices per longitudinal sample. No index
     # or face count changes, so the known valid mesh topology is preserved.
     top_count=91*45
     per_row=30+30+45
     touched=0
-    for i,vert in enumerate(ob.data.vertices):
+    for i,vert in enumerate(vertices):
         p=vert.co
         s=-(p.x*core.RIGHT[0]+p.y*core.RIGHT[1])
         a=-(p.x*core.AWAY[0]+p.y*core.AWAY[1])
@@ -79,6 +91,9 @@ def near_mass():
                 new_s=s+indent
                 coords=pos(new_s,a,float(vert.co.z))
                 vert.co.x,vert.co.y=coords[0],coords[1]
+    if raw:
+        transformed=[(v.co.x,v.co.y,v.co.z) for v in vertices]
+        return ("ENV021_015_near_layered_shelf",transformed,faces)
     ob.data.update()
     print("ENV021_PASS015_PROVEN_BASE_RESCULPT",len(ob.data.vertices),
           len(ob.data.polygons),"top displaced",touched,flush=True)

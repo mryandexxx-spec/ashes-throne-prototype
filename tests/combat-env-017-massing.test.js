@@ -19,7 +19,8 @@ test("ENV025 authentic 40k-triangle CC0 cliff remains a single natural scanned r
 });
 test("ENV025 scene transform targets measured source-derived upper crown, never a fake platform",()=>{
  const src=fs.readFileSync("combat-environment-017.js","utf8");
- assert.match(src,/return p\(\(sourceZ\+6\)\*1\.0,\(sourceX-22\)\*\.65,sourceY-8\.329\)/);
+ assert.match(src,/const world=p\(\(sourceZ\+6\)\*1\.0,\(sourceX-22\)\*\.65,sourceY-8\.329\)/);
+ assert.match(src,/return \[world\[0\]-1\.0,world\[1\],world\[2\]\+0\.5\]/);
  assert.match(src,/pos\.push\(\.\.\.placeSource/);
  assert.match(src,/dataset\.env025NaturalCrown="ready"/);
  assert.match(src,/Promise\.all\(SOURCES\.map/);

@@ -36,3 +36,5 @@ jobs:
           sleep 3
           node tests/ren-glb-browser-smoke.cjs
           node tests/ren-live-flow-004.cjs
+          REN_BROWSER=webkit node tests/ren-live-flow-004.cjs
+          REN_ORIGIN=https://mryandexxx-spec.github.io/ashes-throne-prototype/ REN_BROWSER=webkit node tests/ren-live-flow-004.cjs

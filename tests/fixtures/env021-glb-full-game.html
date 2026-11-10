@@ -217,6 +217,13 @@
       probeMat.emissiveColor=new B.Color3(1,.05,.8);
       probeMat.disableLighting=true;probeMat.backFaceCulling=false;probeMat.fogEnabled=false;
       probe.material=probeMat;probe.alwaysSelectAsActiveMesh=true;probe.isPickable=false;
+      // Same VertexData.applyToMesh path as imported terrain, but Babylon's
+      // known-good procedural box coordinates. This isolates the draw path.
+      const vdBox=new B.Mesh("env021_vertexdata_control_box",scene);
+      B.VertexData.CreateBox({size:1}).applyToMesh(vdBox);
+      vdBox.position=new B.Vector3(2,2.5,0);
+      vdBox.material=sentinel.material;
+      vdBox.alwaysSelectAsActiveMesh=true;
       if(!scene.meshes.some(m=>m.name.startsWith("env021_candidate_")))throw Error("No candidate meshes in actual game");
       // Loading bytes is not proof of an on-screen landscape. Wait for render
       // culling and inspect the active mesh list and camera-space bounds.
@@ -286,6 +293,16 @@
       for(let i=0;i<pixels.length;i+=4)
         if(Math.abs(pixels[i]-noSentinel[i])+Math.abs(pixels[i+1]-noSentinel[i+1])+Math.abs(pixels[i+2]-noSentinel[i+2])>20)controlDifference++;
       d.controlDifferencePixels=String(controlDifference);
+      vdBox.setEnabled(false);
+      scene.render();
+      const noVertexDataBox=await engine.readPixels(0,0,engine.getRenderWidth(),engine.getRenderHeight());
+      vdBox.setEnabled(true);
+      scene.render();
+      let vertexDataBoxDifference=0;
+      for(let i=0;i<pixels.length;i+=4)
+        if(Math.abs(pixels[i]-noVertexDataBox[i])+Math.abs(pixels[i+1]-noVertexDataBox[i+1])+Math.abs(pixels[i+2]-noVertexDataBox[i+2])>20)vertexDataBoxDifference++;
+      d.vertexDataControlDifferencePixels=String(vertexDataBoxDifference);
+
       if(changedRed<120||changedCyan<120)
         throw Error("Imported GLB makes no proven raster change: red="+changedRed+", cyan="+changedCyan);
 

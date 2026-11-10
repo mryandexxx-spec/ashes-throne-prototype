@@ -77,7 +77,9 @@ function createENV021Atmosphere(B,scene){
     context.putImageData(pixels,0,0);cloudTex.hasAlpha=true;cloudTex.update(false);
     const cloud=B.MeshBuilder.CreatePlane("env021_015_cloud_plane_"+layer,
       {width:layer?330:260,height:layer?140:112,sideOrientation:B.Mesh.DOUBLESIDE},scene);
-    cloud.position.set(fx*(layer?230:170),layer?100:82,fz*(layer?230:170));
+    // The combat camera looks DOWN ~35 degrees; horizon clouds belong
+    // at negative world Y at this distance, not above the camera frustum.
+    cloud.position.set(fx*(layer?230:170),layer?-52:-37,fz*(layer?230:170));
     cloud.billboardMode=B.Mesh.BILLBOARDMODE_ALL;
     cloud.isPickable=false;cloud.checkCollisions=false;
     cloud.renderingGroupId=0;

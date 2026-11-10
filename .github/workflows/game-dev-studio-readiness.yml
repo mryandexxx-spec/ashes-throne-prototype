@@ -53,8 +53,8 @@ jobs:
         with:
           name: env021-blender-42833525050
           run-id: 42833525050
-          github-token: \${{ github.token }}
-          path: \${{ runner.temp }}/env021-pass012
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/env021-pass012
 
       - name: Verify exact GLB digest, size and art status
         shell: bash

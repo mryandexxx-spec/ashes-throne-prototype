@@ -18,11 +18,6 @@ const RenGlbRuntime=(()=>{
   death:"Ren_Hit_Reaction_0p9s"
  });
  const clipFor=slot=>CLIPS[slot]||CLIPS.idle;
- // Only report genuine network transfer progress; keep import/skin setup indeterminate.
- const progressPercent=event=>{
-  if(!event||event.lengthComputable!==true||!(event.total>0)||!Number.isFinite(event.loaded))return null;
-  return Math.max(0,Math.min(99,Math.floor(100*event.loaded/event.total)));
- };
  // Babylon exposes isDisposed as a boolean in v9; never call it as a method.
  const sceneDisposed=scene=>typeof scene?.isDisposed==="function"
   ?scene.isDisposed():scene?.isDisposed===true;
@@ -41,11 +36,11 @@ const RenGlbRuntime=(()=>{
   }).catch(error=>{loaderPromise=null;throw error;});
   return loaderPromise;
  }
- async function load(B,scene,visual,onProgress){
+ async function load(B,scene,visual){
   if(!B?.SceneLoader||!visual?.body||!scene)throw Error("Ren scene anchors missing");
   await ensureLoader();
   // Babylon SceneLoader resolves the path relative to this web page.
-  const result=await B.SceneLoader.ImportMeshAsync(null,"assets/","ren-animated-v02.glb",scene,onProgress,".glb");
+  const result=await B.SceneLoader.ImportMeshAsync(null,"assets/","ren-animated-v02.glb",scene,undefined,".glb");
   let root=null;
   try{
    if(sceneDisposed(scene))throw Error("Scene disposed during import");
@@ -125,12 +120,7 @@ const RenGlbRuntime=(()=>{
  function create(B,scene,visual,onStatus){
   let disposed=false,instance=null;
   if(typeof onStatus==="function")onStatus("loading","Загружаю 3D Рена…");
-  const progress=event=>{
-   if(disposed||typeof onStatus!=="function")return;
-   const percent=progressPercent(event);
-   if(percent!==null)onStatus("progress","Загружаем Рена: "+percent+"%",percent);
-  };
-  const promise=load(B,scene,visual,progress).then(next=>{
+  const promise=load(B,scene,visual).then(next=>{
    if(disposed||sceneDisposed(scene)){next.dispose();return false;}
    instance=next;
    if(typeof onStatus==="function")onStatus("ready","3D Рен загружен");
@@ -149,6 +139,6 @@ const RenGlbRuntime=(()=>{
    dispose(){disposed=true;instance?.dispose();instance=null;}
   });
  }
- return Object.freeze({ASSET_URL,clipFor,create,ensureLoader,progressPercent});
+ return Object.freeze({ASSET_URL,clipFor,create,ensureLoader});
 })();
 if(typeof module!=="undefined")module.exports=RenGlbRuntime;

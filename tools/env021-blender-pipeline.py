@@ -20,7 +20,7 @@ def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", default="")
     parser.add_argument("--output", required=True)
-    parser.add_argument("--mode", choices=("smoke", "sculpt", "sculpt2", "sculpt3", "sculpt4"), default="smoke")
+    parser.add_argument("--mode", choices=("smoke", "sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5"), default="smoke")
     parser.add_argument("--scan", default="")
     return parser.parse_args(argv)
 
@@ -138,15 +138,15 @@ def main():
         bpy.ops.wm.open_mainfile(filepath=str(src))
         mode = "USER_SOURCE_UNREVIEWED"
         source_hash = hashlib.sha256(src.read_bytes()).hexdigest()
-    elif args.mode in ("sculpt", "sculpt2", "sculpt3", "sculpt4"):
+    elif args.mode in ("sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5"):
         if not args.scan or not pathlib.Path(args.scan).is_file():
             raise RuntimeError("ENV021 sculpt mode requires a verified CC0 scan")
-        module_path = pathlib.Path(__file__).with_name("env021-art-pass-004.py" if args.mode == "sculpt4" else "env021-art-pass-003.py" if args.mode == "sculpt3" else "env021-art-pass-002.py" if args.mode == "sculpt2" else "env021-build-geology.py")
+        module_path = pathlib.Path(__file__).with_name("env021-art-pass-005.py" if args.mode == "sculpt5" else "env021-art-pass-004.py" if args.mode == "sculpt4" else "env021-art-pass-003.py" if args.mode == "sculpt3" else "env021-art-pass-002.py" if args.mode == "sculpt2" else "env021-build-geology.py")
         spec = importlib.util.spec_from_file_location("env021_geology", module_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         provenance = module.build(pathlib.Path(args.scan).resolve())
-        mode = "ART_PASS_004_UNREVIEWED" if args.mode == "sculpt4" else "ART_PASS_003_UNREVIEWED" if args.mode == "sculpt3" else "ART_PASS_002_UNREVIEWED" if args.mode == "sculpt2" else "CLAY_SCULPT_WIP_WITH_CC0"
+        mode = "ART_PASS_005_UNREVIEWED" if args.mode == "sculpt5" else "ART_PASS_004_UNREVIEWED" if args.mode == "sculpt4" else "ART_PASS_003_UNREVIEWED" if args.mode == "sculpt3" else "ART_PASS_002_UNREVIEWED" if args.mode == "sculpt2" else "CLAY_SCULPT_WIP_WITH_CC0"
         source_hash = hashlib.sha256(pathlib.Path(args.scan).read_bytes()).hexdigest()
     else:
         smoke_geometry()
@@ -154,15 +154,15 @@ def main():
         source_hash = None
 
     mesh_objects = [o for o in bpy.data.objects if o.type == "MESH" and not o.hide_render]
-    if args.mode in ("sculpt2", "sculpt3", "sculpt4"):
+    if args.mode in ("sculpt2", "sculpt3", "sculpt4", "sculpt5"):
         mesh_objects = [o for o in mesh_objects if not o.name.startswith("REF_")]
     if not mesh_objects:
         raise RuntimeError("No visible mesh objects to export")
     near = add_camera(12.0, "ENV021_REFERENCE_default_not_calibrated")
     distant = add_camera(19.0, "ENV021_REFERENCE_far_not_calibrated")
 
-    clay_render(output / "clay-default.png", near, cpu=args.mode in ("sculpt3", "sculpt4"))
-    clay_render(output / "clay-far.png", distant, cpu=args.mode == "sculpt3")
+    clay_render(output / "clay-default.png", near, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5"))
+    clay_render(output / "clay-far.png", distant, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5"))
 
     # Save inspectable source before exporting. Does not modify user-supplied source.
     bpy.ops.wm.save_as_mainfile(filepath=str(output / "source.blend"))
@@ -188,7 +188,7 @@ def main():
         "hud": "NOT_INCLUDED",
         "blender_version": bpy.app.version_string,
         "source_sha256": source_hash,
-        "source_provenance": provenance if args.mode in ("sculpt", "sculpt2", "sculpt3", "sculpt4") and not args.source else None,
+        "source_provenance": provenance if args.mode in ("sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5") and not args.source else None,
         "glb_sha256": hashlib.sha256(raw).hexdigest(),
         "glb_bytes": len(raw),
         "mesh_count": len(mesh_objects),

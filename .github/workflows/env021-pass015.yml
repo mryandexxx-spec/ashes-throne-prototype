@@ -99,6 +99,16 @@ jobs:
               assert (p / filename).stat().st_size > 100, f"Missing/empty {filename}"
           manifest = json.loads((p / "manifest.json").read_text())
           assert manifest["acceptance"] == "NOT_ART_APPROVED"
+          assert manifest["mode"] == "ART_PASS_015_UNREVIEWED"
+          json_len, json_type = struct.unpack_from("<I4s",raw,12)
+          assert json_type == b"JSON"
+          document = json.loads(raw[20:20+json_len].decode("utf-8"))
+          assert len(document["meshes"]) == 2, "Near or far geometry missing from GLB"
+          near_prim = document["meshes"][0]["primitives"][0]
+          assert "TEXCOORD_0" in near_prim["attributes"], "Missing near-rock UV0"
+          near_mat = document["materials"][near_prim["material"]]
+          assert "baseColorTexture" in near_mat["pbrMetallicRoughness"], "Missing embedded rock texture"
+          assert len(document.get("textures", [])) >= 1, "No GLB textures"
           print("OK", len(raw), manifest)
           PY
 
@@ -148,6 +158,7 @@ jobs:
             grep -q 'data-visual-status="ready"' "build/env021/art-review-$radius.dom.html"
             grep -q 'data-art-review="neutral_lit"' "build/env021/art-review-$radius.dom.html"
             grep -q 'data-sky="BABYLON_DYNAMIC_3D_PROCEDURAL"' "build/env021/art-review-$radius.dom.html"
+            grep -q 'data-rock-material="GLB_PBR_TEXTURED_UV0"' "build/env021/art-review-$radius.dom.html"
             test -s "build/env021/art-review-$radius.png"
           done
 

@@ -38,7 +38,7 @@ test("ENV026: preserves existing HUD camera and ENV010 safety path",()=>{
  assert.match(visual,/CombatEnvironment017\.build\(B,scene,owned\)/);
  assert.match(visual,/else if\(typeof CombatEnvironment010/);
  assert.match(html,/combat-environment-017\.js/);
- assert.match(html,/v0\.3\.87 · ROSTER003.*ENV017-MASSING/);
+ assert.match(html,/v0\.3\.86 · ROSTER002.*ENV017-MASSING/);
  assert.match(fixture,/env026Assets!=="ready"/);
  assert.match(fixture,/env026AuthoredBlender/);
  assert.match(fixture,/data\.contactStatus/);

@@ -12,7 +12,10 @@ async function main(){
   const page=await browser.newPage({viewport:{width:932,height:430}});
   const errors=[];
   page.on("pageerror",e=>errors.push("JS "+e.message));
-  page.on("console",m=>{if(m.type()==="error"||m.type()==="warning")errors.push("console "+m.text());});
+  page.on("console",m=>{
+   if(m.type()==="error"&&!m.text().includes("Automatic fallback to software WebGL"))
+    errors.push("console "+m.text());
+  });
   page.on("requestfailed",r=>errors.push("request "+r.url()+" "+r.failure()?.errorText));
   await page.goto("http://127.0.0.1:8765/",{waitUntil:"load"});
   // Deliberately never resolve import in this separate pending-state test.

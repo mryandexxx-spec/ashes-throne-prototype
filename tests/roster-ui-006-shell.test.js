@@ -31,5 +31,5 @@ test("UIHERO002 preserves cards, filters, marker and return navigation",()=>{
 });
 test("UIHERO002 candidate build matches package",()=>{
  assert.equal(JSON.parse(read("package.json")).version,"0.3.97");
- assert.match(html,/v0\.3\.96 · UISYS001C/);
+ assert.match(html,/v0\.3\.97 · UISYS001C/);
 });

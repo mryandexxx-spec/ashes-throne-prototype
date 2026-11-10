@@ -30,6 +30,6 @@ assert.match(css,/@media\(orientation:landscape\) and \(max-height:540px\)/);
 assert.ok(game.includes('$("#skillUpgradeButton")?.addEventListener("click"'));
 assert.ok(game.includes('$("#skillLevelButtons")?.addEventListener("click"'));
 assert.ok(game.includes('$("#skillUpgradeClose")?.addEventListener("click"'));
-assert.ok(html.includes("v0.3.97 · UISYS001C"));
-assert.equal(JSON.parse(read("package.json")).version,"0.3.97");
+assert.ok(html.includes("v0.3.98 · UIMODES001A"));
+assert.equal(JSON.parse(read("package.json")).version,"0.3.98");
 console.log("SkillUI-002: own project theme, controls, preview, mobile scroll and version contract passed");

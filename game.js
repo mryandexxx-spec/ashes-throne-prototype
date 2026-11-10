@@ -799,7 +799,7 @@ function showScreen(id){
  if(id==="collection"){
   const restore=rosterRestoreOnReturn&&rosterWasInDossier;
   renderHeroes();
-  if(restore&&typeof window!=="undefined"){
+  if(restore&&typeof window!=="undefined"&&typeof window.scrollTo==="function"){
    const y=rosterReturnScrollY;
    const scroll=()=>window.scrollTo(0,y);
    if(typeof requestAnimationFrame==="function")requestAnimationFrame(scroll);
@@ -1583,7 +1583,7 @@ $("#rosterSort")?.addEventListener("change",event=>{
 function openHeroDetail(id){
  if(!ALLIES.some(h=>h.id===id)||!heroOwned(id))return false;
  if($("#collection")?.classList.contains("active")){
-  rosterReturnScrollY=window.scrollY||document.documentElement.scrollTop||0;
+  rosterReturnScrollY=window.scrollY||document.documentElement?.scrollTop||0;
   rosterRestoreOnReturn=true;
  }
  selectedHeroId=id;

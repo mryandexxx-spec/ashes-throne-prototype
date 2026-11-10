@@ -60,7 +60,7 @@ test("Only permanent ren uses custom geometry; all other fighters keep generic c
  assert.match(build,/for\(const part of \[body,head,base\]\)part\.metadata=\{fighterId:h\.id\}/);
  assert.match(build,/meshes\[h\.id\]=\{body,head,base\}/);
  assert.ok(html.indexOf('src="ren-visual-model.js"')>0);
- assert.ok(html.indexOf('src="ren-visual-model.js"')<html.indexOf('src="game.js"'));
+ assert.ok(html.indexOf('src="ren-visual-model.js"')<html.indexOf('src="game.js?v=0.3.104"'));
  assert.match(game,/visual\.body\.setEnabled\(visible\);[\s\S]*visual\.head\.setEnabled\(visible\)/);
  assert.match(game,/visual\.body\.position\.y=\.8\+pose\.y/);
  assert.match(game,/visual\.head\.position\.y=1\.8\+pose\.y/);
@@ -68,8 +68,8 @@ test("Only permanent ren uses custom geometry; all other fighters keep generic c
 });
 test("New 3D build is marked without modifying ability/progression files",()=>{
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.103");
- assert.ok(html.includes("v0.3.103 · UIHUD001 + OPSHELP + RENPLAY + REN3D003"));
+ assert.equal(pkg.version,"0.3.104");
+ assert.ok(html.includes("v0.3.104 · UIHUD001 + OPSHELP + RENPLAY + REN3D003"));
  assert.ok(pkg.scripts.test.includes("node --check ren-visual-model.js"));
  assert.ok(read("game.js").includes('id:"ren",name:"Рен Терен",classId:"melee"'));
 });

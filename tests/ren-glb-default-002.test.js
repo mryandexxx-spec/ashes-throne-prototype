@@ -9,7 +9,7 @@ const game=read("game.js"),html=read("index.html"),battle=read("battle-animation
 test("REN-GLB-DEFAULT-002: standard game loads GLB adapter, without opt-in flag or file chooser",()=>{
  assert.equal(runtime.ASSET_URL,"assets/ren-animated-v02.glb");
  assert.match(html,/ren-glb-runtime\.js/);
- assert.match(game,/RenGlbRuntime\.create\(BABYLON,scene,meshes\.ren\)/);
+ assert.match(game,/RenGlbRuntime\.create\(BABYLON,scene,meshes\.ren,/);
  assert.match(game,/renGlbRuntime\.update\(BattleAnimation\.activity\("ren"\)\)/);
  assert.doesNotMatch(game,/renModel=local/);
  assert.doesNotMatch(html,/renGlbBattleFile|renGlbBattleTools/);

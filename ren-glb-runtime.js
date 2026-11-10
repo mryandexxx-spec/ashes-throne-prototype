@@ -18,6 +18,9 @@ const RenGlbRuntime=(()=>{
   death:"Ren_Hit_Reaction_0p9s"
  });
  const clipFor=slot=>CLIPS[slot]||CLIPS.idle;
+ // Babylon exposes isDisposed as a boolean in v9; never call it as a method.
+ const sceneDisposed=scene=>typeof scene?.isDisposed==="function"
+  ?scene.isDisposed():scene?.isDisposed===true;
  let loaderPromise=null;
  function ensureLoader(){
   if(typeof window==="undefined"||!window.BABYLON)return Promise.reject(Error("Babylon unavailable"));
@@ -40,7 +43,7 @@ const RenGlbRuntime=(()=>{
   const result=await B.SceneLoader.ImportMeshAsync(null,"assets/","ren-animated-v02.glb",scene,undefined,".glb");
   let root=null;
   try{
-   if(scene.isDisposed?.())throw Error("Scene disposed during import");
+   if(sceneDisposed(scene))throw Error("Scene disposed during import");
    const visible=result.meshes.filter(m=>typeof m.getTotalVertices==="function"&&m.getTotalVertices()>0);
    if(!visible.length)throw Error("No Ren geometry in GLB");
    const groups=new Map(result.animationGroups.map(group=>[group.name,group]));
@@ -114,15 +117,20 @@ const RenGlbRuntime=(()=>{
    throw error;
   }
  }
- function create(B,scene,visual){
+ function create(B,scene,visual,onStatus){
   let disposed=false,instance=null;
+  if(typeof onStatus==="function")onStatus("loading","Загружаю 3D Рена…");
   const promise=load(B,scene,visual).then(next=>{
-   if(disposed||scene.isDisposed?.()){next.dispose();return false;}
+   if(disposed||sceneDisposed(scene)){next.dispose();return false;}
    instance=next;
+   if(typeof onStatus==="function")onStatus("ready","3D Рен загружен");
    return true;
   }).catch(error=>{
    // Missing/deleted asset must never prevent a playable combat scene.
-   if(!disposed)console.warn("REN-GLB-DEFAULT-002: old Ren used as fallback",error);
+   if(!disposed){
+    console.warn("REN-GLB-DEFAULT-002: old Ren used as fallback",error);
+    if(typeof onStatus==="function")onStatus("error","3D Рен: ошибка загрузки ("+(error.message||String(error))+")");
+   }
    return false;
   });
   return Object.freeze({
@@ -131,6 +139,6 @@ const RenGlbRuntime=(()=>{
    dispose(){disposed=true;instance?.dispose();instance=null;}
   });
  }
- return Object.freeze({ASSET_URL,clipFor,create});
+ return Object.freeze({ASSET_URL,clipFor,create,ensureLoader});
 })();
 if(typeof module!=="undefined")module.exports=RenGlbRuntime;

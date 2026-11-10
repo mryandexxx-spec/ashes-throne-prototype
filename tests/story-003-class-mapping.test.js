@@ -34,6 +34,6 @@ for(const id of ["trial-ren","trial-nada","trial-liora"]){
  assert.ok(!v3.includes(id),"do not add literature IDs to v3 save validation");
 }
 const pkg=JSON.parse(read("package.json")),html=read("index.html");
-assert.equal(pkg.version,"0.3.103");
-assert.ok(html.includes("v0.3.103 · UIHUD001"));
+assert.equal(pkg.version,"0.3.104");
+assert.ok(html.includes("v0.3.104 · UIHUD001"));
 console.log("STORY-003: approved class vocabulary, proposed trial mappings, gear compatibility and unchanged saves verified");

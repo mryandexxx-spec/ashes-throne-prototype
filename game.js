@@ -16,6 +16,10 @@ const HEROES = [
   {id:"ves-3",name:"Вестник Конклава III",role:"Противник",hp:90,atk:18,speed:105,side:"enemy",glyph:"☠"}
 ];
 const $=s=>document.querySelector(s);
+// ENV022: opt-in concept-art preview. Default game visuals and combat stay unchanged.
+// Fixed image has no parallax; it is NOT a rendered/reconstructed 3D environment.
+const ENV022_CONCEPT_PREVIEW=typeof location!=="undefined" &&
+ /(?:^|[?&])environment=concept(?:&|$)/.test(location.search);
 let engine, scene, meshes={};
 let combatVisual007=null; // One optional visual layer per Babylon Scene.
 let arenaCamera=null;
@@ -2803,8 +2807,13 @@ function installArenaPointerCamera(canvas,camera){
 }
 // Reuse the scene rather than re-creating meshes on every battle entry.
 function initBabylon(){
- const canvas=$("#renderCanvas");engine=new BABYLON.Engine(canvas,true,{stencil:true});
- scene=new BABYLON.Scene(engine);scene.clearColor=new BABYLON.Color4(.035,.045,.065,1);
+ const canvas=$("#renderCanvas");
+ // Transparent WebGL is required for a real CSS image to show BEHIND 3D actors.
+ engine=new BABYLON.Engine(canvas,true,{stencil:true,alpha:ENV022_CONCEPT_PREVIEW});
+ scene=new BABYLON.Scene(engine);
+ scene.clearColor=new BABYLON.Color4(.035,.045,.065,ENV022_CONCEPT_PREVIEW?0:1);
+ if(ENV022_CONCEPT_PREVIEW && $("#battle")?.classList?.add)
+  $("#battle").classList.add("env022-concept-preview");
  arenaCamera=new BABYLON.ArcRotateCamera("camera",ARENA_VIEW.alpha,ARENA_VIEW.beta,ARENA_VIEW.radius,new BABYLON.Vector3(0,ARENA_VIEW.targetY,0),scene);
  arenaCamera.lowerRadiusLimit=12;arenaCamera.upperRadiusLimit=21;
  // Lock orientation to the established three-quarter view; preserve radius zoom 12–21.
@@ -2822,7 +2831,7 @@ function initBabylon(){
  // Legacy geometry remains a safe fallback for headless fixtures or GPU issues.
  combatVisual007=null;
  if(typeof CombatVisual007!=="undefined"&&CombatVisual007.supported(BABYLON)){
-  try{combatVisual007=CombatVisual007.create(BABYLON,scene);}
+  try{combatVisual007=CombatVisual007.create(BABYLON,scene,{conceptBackdrop:ENV022_CONCEPT_PREVIEW});}
   catch(visualError){console.warn("CV007 arena unavailable, using legacy ground",visualError);}
  }
  if(!combatVisual007){

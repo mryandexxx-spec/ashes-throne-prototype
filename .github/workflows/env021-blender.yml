@@ -17,6 +17,7 @@ on:
       - "tools/env021-art-pass-003.py"
       - "tools/env021-art-pass-004.py"
       - "tools/env021-art-pass-005.py"
+      - "tools/env021-art-pass-006.py"
       - "art/env021/**"
 
 permissions:
@@ -71,7 +72,7 @@ jobs:
           if [[ -n "$SOURCE_BLEND" ]]; then
             xvfb-run -a -s '-screen 0 1280x720x24' blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --source "$SOURCE_BLEND" --output build/env021
           else
-            xvfb-run -a -s '-screen 0 1280x720x24' blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --mode sculpt5 --scan build/env021/cc0-coastal-cliff-input.glb --output build/env021
+            xvfb-run -a -s '-screen 0 1280x720x24' blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --mode sculpt6 --scan build/env021/cc0-coastal-cliff-input.glb --output build/env021
           fi
 
       - name: Preserve Blender crash trace if the runner fails
@@ -110,7 +111,7 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/env021-preview-http.log 2>&1 &
           sleep 2
           for radius in 12 19; do
-            url="http://127.0.0.1:8765/tests/fixtures/env021-glb-full-game.html?radius=$radius&native=1"
+            url="http://127.0.0.1:8765/tests/fixtures/env021-glb-full-game.html?radius=$radius&pass=006"
             flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox
               --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader
               --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390
@@ -121,7 +122,7 @@ jobs:
             grep -o 'data-error="[^"]*"' "build/env021/webgl-$radius.dom.html" || true
             grep -o 'data-candidate-only-[^ ]*' "build/env021/webgl-$radius.dom.html" || true
             grep -q 'data-visual-status="ready"' "build/env021/webgl-$radius.dom.html"
-            grep -q 'data-art="ENV021_PASS005_GLB_NOT_APPROVED"' "build/env021/webgl-$radius.dom.html"
+            grep -q 'data-art="ENV021_PASS006_GLB_NOT_APPROVED"' "build/env021/webgl-$radius.dom.html"
             grep -q 'data-webgl="true"' "build/env021/webgl-$radius.dom.html"
             test -s "build/env021/webgl-$radius.png"
           done

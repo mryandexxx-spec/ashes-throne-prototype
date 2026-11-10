@@ -793,6 +793,7 @@ function showScreen(id){
  // Combat-008A: release the document scroll while the arena owns the viewport.
  // Guard document.body for headless DOM tests and embedded integrations.
  if(document.body&&document.body.classList)document.body.classList.toggle("battle-mode",id==="battle");
+ if(id!=="collection")closeRosterSortMenu();
  const rosterWasInDossier=$("#heroDetail")?.classList.contains("active");
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  $("#"+id).classList.add("active");
@@ -1549,7 +1550,12 @@ function renderHeroes(){
  });
  const visible=rosterOrder(entries,rosterFilter,rosterSort);
  const shown=$("#rosterShown");if(shown)shown.textContent="Показано: "+visible.length;
- const sort=$("#rosterSort");if(sort)sort.value=rosterSort;
+ const sortTrigger=$("#rosterSortTrigger");
+ if(sortTrigger){
+  const names={level:"По уровню",stars:"По звёздам",gear:"По экипировке",name:"По имени"};
+  sortTrigger.firstChild.textContent=names[rosterSort]+" ";
+ }
+ document.querySelectorAll("[data-roster-sort]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.rosterSort===rosterSort)));
  document.querySelectorAll("[data-roster-filter]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.rosterFilter===rosterFilter)));
  $("#heroList").innerHTML=visible.map(({hero:h,owned,rank,tier})=>{
   const cost=typeof StarCore!=="undefined"?StarCore.costOf(progress,h.id):null;
@@ -1562,10 +1568,12 @@ function renderHeroes(){
   const levelLine=owned?"Ур. "+h.level+" · "+h.role:"Условия получения";
   const progressLine=!owned?'<div class="roster-shard-track" aria-hidden="true"><span style="width:'+progressPercent+'%"></span></div><span class="roster-shard-value">Осколки '+safeAmount+' / '+safeCost+'</span>':"";
   const gearLabel=owned&&Number.isFinite(tier)?"G"+tier:"";
-  const slot=owned?squadSlots().indexOf(h.id):-1;
-  const squadBadge=slot===0?'<span class="roster-squad-badge roster-leader-badge">★ Лидер</span>':slot>0?'<span class="roster-squad-badge">В отряде</span>':"";
-  const squadHint=slot===0?", лидер отряда":slot>0?", в отряде":"";
-  return `<button type="button" class="hero-card hero-open roster-card ${owned?"":"hero-locked"} ${slot>=0?"roster-in-squad":""}" data-open-hero="${h.id}" aria-label="${name}${squadHint}. ${owned?"Открыть досье":"Условия получения"}"><span class="roster-card-art hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":""}">${portraitAvatar}${squadBadge}</span><span class="roster-card-name">${name}</span>${starInfo}<span class="roster-card-subtitle">${levelLine}</span>${owned?'<span class="roster-card-gear">'+gearLabel+'</span>':progressLine}<span class="hero-open-hint">${owned?"Открыть досье ›":"Как получить ›"}</span></button>`;
+  // Identity tags come from the existing profile registry; no invented factions for demo heroes.
+  const profile=owned&&typeof HeroProfileData!=="undefined"?HeroProfileData.get(h.id):null;
+  const labels=profile?HeroProfileData.tagLabels(profile.tags):[];
+  const safeTag=text=>String(text).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+  const tags=labels.length?'<span class="roster-identity-tags">'+labels.map(label=>'<span class="roster-identity-tag">'+safeTag(label)+'</span>').join("")+'</span>':"";
+  return `<button type="button" class="hero-card hero-open roster-card ${owned?"":"hero-locked"}" data-open-hero="${h.id}" aria-label="${name}. ${owned?"Открыть досье":"Условия получения"}${labels.length?". "+labels.join(", "):""}"><span class="roster-card-art hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":""}">${portraitAvatar}</span><span class="roster-card-name">${name}</span>${tags}${starInfo}<span class="roster-card-subtitle">${levelLine}</span>${owned?'<span class="roster-card-gear">'+gearLabel+'</span>':progressLine}<span class="hero-open-hint">${owned?"Открыть досье ›":"Как получить ›"}</span></button>`;
  }).join("");
  if(!visible.length)$("#heroList").innerHTML='<p class="roster-empty">В этой категории героев пока нет.</p>';
  document.querySelectorAll("[data-open-hero]").forEach(node=>node.addEventListener("click",()=>{
@@ -1576,9 +1584,31 @@ document.querySelectorAll("[data-roster-filter]").forEach(button=>button.addEven
  if(!["all","owned","locked"].includes(button.dataset.rosterFilter))return;
  rosterFilter=button.dataset.rosterFilter;renderHeroes();
 }));
-$("#rosterSort")?.addEventListener("change",event=>{
- const next=event.target.value;if(!["level","stars","gear","name"].includes(next))return;
- rosterSort=next;renderHeroes();
+function closeRosterSortMenu(){
+ const menu=$("#rosterSortMenu"),trigger=$("#rosterSortTrigger");
+ if(!menu||!trigger)return;
+ menu.hidden=true;trigger.setAttribute("aria-expanded","false");
+}
+$("#rosterSortTrigger")?.addEventListener("click",()=>{
+ const menu=$("#rosterSortMenu"),trigger=$("#rosterSortTrigger");
+ if(!menu||!trigger)return;
+ const open=menu.hidden;
+ menu.hidden=!open;trigger.setAttribute("aria-expanded",String(open));
+});
+document.querySelectorAll("[data-roster-sort]").forEach(button=>button.addEventListener("click",()=>{
+ const next=button.dataset.rosterSort;
+ if(!["level","stars","gear","name"].includes(next))return;
+ rosterSort=next;closeRosterSortMenu();renderHeroes();
+ $("#rosterSortTrigger")?.focus?.();
+}));
+document.addEventListener("click",event=>{
+ const picker=$("#collection")?.querySelector?.(".roster-sort-picker");
+ if(picker&&event.target&&!picker.contains(event.target))closeRosterSortMenu();
+});
+document.addEventListener("keydown",event=>{
+ if(event.key==="Escape"&&!$("#rosterSortMenu")?.hidden){
+  closeRosterSortMenu();$("#rosterSortTrigger")?.focus?.();
+ }
 });
 function openHeroDetail(id){
  if(!ALLIES.some(h=>h.id===id)||!heroOwned(id))return false;

@@ -12,10 +12,8 @@ async function main(){
   const page=await browser.newPage({viewport:{width:932,height:430}});
   const errors=[];
   page.on("pageerror",e=>errors.push(e.message));
-  let deferred=null;
-  let release=()=>{};
-  page.route("**/assets/ren-animated-v02.glb",async route=>{
-   await new Promise(resolve=>{release=resolve;deferred=true;});
+  await page.route("**/assets/ren-animated-v02.glb",async route=>{
+   await new Promise(resolve=>setTimeout(resolve,2200));
    await route.continue();
   });
   await page.goto("http://127.0.0.1:8765/",{waitUntil:"load"});
@@ -35,7 +33,6 @@ async function main(){
   assert.notEqual(loading.spinner,"none");
   assert.ok(loading.width<=loading.viewport+2,"no horizontal overflow");
   await page.waitForFunction(()=>typeof window.RenGlbRuntime!=="undefined");
-  release();
   await page.waitForFunction(()=>document.getElementById("renCard3DStatus")?.textContent?.includes("3D Рен загружен"),{timeout:30000});
   assert.equal(await page.locator("#renCardLoadIndicator").isHidden(),true);
   await page.evaluate(()=>showScreen("battle"));
@@ -53,7 +50,6 @@ async function main(){
   assert.equal(state.barHidden,true);
   assert.notEqual(state.spinner,"none");
   assert.ok(state.width<=state.viewport+2);
-  release();
   await page.waitForFunction(()=>document.getElementById("renModelBattleStatus")?.dataset.status==="ready",{timeout:30000});
   assert.ok((await page.locator("#renModelBattleStatusText").textContent()).includes("загружен"));
   assert.equal(errors.length,0,"JS errors "+errors.join(" | "));

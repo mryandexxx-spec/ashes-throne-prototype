@@ -1,0 +1,83 @@
+name: ENV021 Blender authoring pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_blend:
+        description: "Optional repository-relative .blend source; empty runs pipeline smoke sample"
+        required: false
+        default: ""
+        type: string
+  pull_request:
+    paths:
+      - ".github/workflows/env021-blender.yml"
+      - "tools/env021-blender-pipeline.py"
+      - "art/env021/**"
+
+permissions:
+  contents: read
+
+jobs:
+  blender:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      SOURCE_BLEND: ${{ inputs.source_blend || '' }}
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Install Blender
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y blender
+          blender --version
+
+      - name: Resolve source path safely
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$SOURCE_BLEND" ]]; then
+            echo "source_arg=" >> "$GITHUB_OUTPUT"
+            echo "mode=SMOKE_ONLY (not approved art)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            case "$SOURCE_BLEND" in
+              art/env021/*.blend) ;;
+              *) echo "Only art/env021/*.blend is allowed"; exit 2 ;;
+            esac
+            if [[ ! -f "$SOURCE_BLEND" ]]; then echo "Missing source: $SOURCE_BLEND"; exit 2; fi
+            echo "source_arg=--source=$SOURCE_BLEND" >> "$GITHUB_OUTPUT"
+            echo "mode=SOURCE_BLEND" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Run Blender Python authoring/export smoke test
+        run: |
+          mkdir -p build/env021
+          blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- ${{ steps.source.outputs.source_arg }} --output build/env021
+
+      - name: Verify outputs
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, struct
+          p = pathlib.Path("build/env021")
+          glb = p / "scene.glb"
+          raw = glb.read_bytes()
+          assert len(raw) >= 20 and raw[:4] == b"glTF", "Not a GLB file"
+          version, size = struct.unpack_from("<II", raw, 4)
+          assert version == 2 and size == len(raw), "Invalid GLB v2 length"
+          for filename in ("clay-default.png", "clay-far.png", "manifest.json", "source.blend"):
+              assert (p / filename).stat().st_size > 100, f"Missing/empty {filename}"
+          manifest = json.loads((p / "manifest.json").read_text())
+          assert manifest["acceptance"] == "NOT_ART_APPROVED"
+          print("OK", len(raw), manifest)
+          PY
+
+      - name: Publish pipeline outputs (no deployment)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env021-blender-${{ github.run_id }}
+          path: build/env021/
+          if-no-files-found: warn
+          retention-days: 14

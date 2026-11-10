@@ -20,7 +20,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 random.seed(41)
 bpy.ops.wm.read_factory_settings(use_empty=True)
 # mh_body_ren.build() reads its helpers at call time.
-BODY, EYES, LASHES, LAND, SCALE = mh_body_ren.build(1.86)
+BODY, EYES, LASHES, LAND, SCALE = mh_body_ren.build(2.12)  # authoring units: match 2.1m accessory layout
 G, GV = mh_body_ren.G, mh_body_ren.GV
 L = {key: Vector(value) for key, value in LAND.items()}
 SCENE = bpy.context.scene

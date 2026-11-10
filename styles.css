@@ -2549,3 +2549,139 @@ body:has(#squad.active)::before{
  #app:has(#squad.active)>.topbar #accountStatus{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){#squad button{transition:none}}
+
+
+/* UI-SYSTEMS-001A: player profile shares the approved HQ/roster/dossier visual language.
+   Visual-only, scoped to active #playerProfile; storage and progression stay untouched. */
+body:has(#playerProfile.active){background:#16191b}
+body:has(#playerProfile.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215c9 0%,#10111577 23%,#10111592 75%,#111215ce 100%),
+  linear-gradient(180deg,#10131994 0%,#1614187d 36%,#120f14e0 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#playerProfile.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#playerProfile.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(#playerProfile.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#playerProfile.active)>.topbar .brand .sigil{font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680}
+#app:has(#playerProfile.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#playerProfile.active)>.topbar .brand small{display:none}
+#app:has(#playerProfile.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#playerProfile.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#playerProfile.player-profile-screen.active{
+ position:relative;isolation:isolate;width:min(100%,1500px);
+ margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123e9 0%,#242022e9 50%,#241f22e5 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#playerProfile.player-profile-screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;
+ border:1px solid #e7c58b25;border-radius:7px;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+#playerProfile .section-heading{
+ margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid #d7b27c55;
+}
+#playerProfile .section-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+#playerProfile .eyebrow{color:#e0b978;letter-spacing:.14em}
+#playerProfile .muted{color:#d9c5ab}
+#playerProfile .player-profile-grid{gap:clamp(8px,1.3vw,16px)}
+#playerProfile .player-profile-card{
+ min-width:0;padding:clamp(10px,1.4vw,18px);
+ border:1px solid #af865a8c;border-radius:11px;
+ background:radial-gradient(ellipse at 50% -10%,#bf8d4a24,transparent 62%),
+  linear-gradient(155deg,#332a29f0,#211e24f5 72%,#19191ff5);
+ box-shadow:inset 0 1px #eac68b4a,inset 0 0 0 2px #10101557,0 7px 17px #09070a8a;
+}
+#playerProfile .player-profile-card h3{
+ color:#f1d3a1;font-family:Georgia,serif;text-shadow:0 2px 5px #0009;
+}
+#playerProfile .player-profile-card label{color:#f1dfc6}
+#playerProfile .player-profile-editor{gap:8px}
+#playerProfile .player-profile-editor input{
+ min-height:44px;border:1px solid #ad895b;border-radius:8px;
+ background:linear-gradient(160deg,#1b1b22,#2c2428);
+ color:#fff0d7;box-shadow:inset 0 2px 6px #070608ad;
+}
+#playerProfile .player-profile-editor input::placeholder{color:#c5b29b}
+#playerProfile .player-profile-editor input:focus-visible,
+#playerProfile button:focus-visible{outline:3px solid #ffe2a1;outline-offset:2px}
+#playerProfile .primary{
+ min-height:44px;border:1px solid #e9bd77;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#playerProfile .primary:disabled{opacity:.55;filter:saturate(.35);box-shadow:none}
+#playerProfile .section-heading .ghost{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+#playerProfile .player-profile-xp-track{
+ height:13px;border:1px solid #967247;background:#15141a;
+ box-shadow:inset 0 2px 5px #07070ba6;
+}
+#playerProfile .player-profile-xp-track span{
+ background:linear-gradient(90deg,#9e723e,#e2bf7e 80%,#f6deb1);
+ box-shadow:inset 0 1px #fff4cf99;
+}
+#playerProfile .player-profile-facts{gap:clamp(7px,1.5vw,18px)}
+#playerProfile .player-profile-facts>div{
+ min-width:0;padding:clamp(8px,1.2vw,14px);border:1px solid #9e7b5257;
+ border-radius:9px;background:linear-gradient(160deg,#3a2b28,#201e24);
+ box-shadow:inset 0 1px #edca8c32;
+}
+#playerProfile .player-profile-facts strong{color:#f0c986;font-family:Georgia,serif}
+#playerProfile .player-profile-facts small{color:#d8c2a2;line-height:1.4}
+#playerProfile #playerNicknameNotice{color:#f0c986}
+#app:has(#playerProfile.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#playerProfile.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#playerProfile.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#playerProfile.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #playerProfile.player-profile-screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #playerProfile .section-heading{margin-bottom:8px;padding-bottom:7px}
+ #playerProfile .section-heading h2{font-size:21px}
+ #playerProfile .player-profile-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ #playerProfile .player-profile-card{padding:9px}
+ #playerProfile .player-profile-summary{margin-top:8px}
+ #playerProfile .player-profile-facts{margin-top:8px;gap:7px}
+ #playerProfile .player-profile-facts>div{padding:8px}
+}
+@media(max-width:700px) and (orientation:portrait){
+ #playerProfile .player-profile-grid{grid-template-columns:1fr}
+}
+@media(max-width:580px){
+ #app:has(#playerProfile.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#playerProfile.active)>.topbar #accountStatus{font-size:9px}
+ #playerProfile .player-profile-facts{gap:6px}
+}
+@media(prefers-reduced-motion:reduce){
+ #playerProfile button,#playerProfile .player-profile-xp-track span{transition:none}
+}

@@ -27,8 +27,8 @@ test("UIHERO002 uses styled in-page menu instead of native select",()=>{
  assert.match(css,/#collection \.roster-sort-menu button\{[^\n]*min-height:44px/);
 });
 test("UIHERO002 version is consistent",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.94");
- assert.match(html,/v0\.3\.94 · UIHERO002/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.95");
+ assert.match(html,/v0\.3\.95 · UISYS001A/);
 });
 
 test("UIHERO002 shows only the current leader in the collection, without squad badges",()=>{

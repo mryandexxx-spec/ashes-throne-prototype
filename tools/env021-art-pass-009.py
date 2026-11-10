@@ -26,8 +26,9 @@ def lip(a):
 
 def left_edge(a):
     # Narrow the landward plateau, keep ally bases at s=-2.45 untouched.
-    return (-5.7-.65*math.sin(.33*a+.4)-.31*math.cos(.68*a)
-            +.44*math.exp(-((a-7.7)/1.8)**2))
+    return (-5.25-.68*math.sin(.33*a+.4)-.34*math.cos(.68*a)
+            +.68*math.exp(-((a-7.7)/1.8)**2)
+            +.40*math.exp(-((a+7.2)/1.7)**2))
 
 def ridge_noise(s,a):
     # Large independent geological folds; small ripples cannot rescue silhouette.
@@ -181,10 +182,12 @@ def opposite_bank():
                   +1.1*math.exp(-((a-8.1)/2.5)**2))
         front=16.7+1.6*math.sin(a*.16+.3)-lobes+recessed
         # A continuous uneven spine. Drainage basins cut lower crests.
-        crest=(-7.1+1.7*math.sin(a*.16+.7)
-               +1.2*math.sin(a*.46-.25)
-               +.65*math.cos(a*.82+.35)
-               -.8*math.exp(-((a-7.5)/2.4)**2))
+        crest=(-7.6+2.2*math.sin(a*.16+.7)
+               +1.65*math.sin(a*.46-.25)
+               +.95*math.cos(a*.82+.35)
+               -.95*math.exp(-((a-7.5)/2.4)**2)
+               -1.6*math.exp(-((a+6.2)/1.45)**2)
+               -1.25*math.exp(-((a-3.8)/1.35)**2))
         face=[]
         for k in range(nv):
             t=k/(nv-1)
@@ -202,10 +205,14 @@ def opposite_bank():
             t=k/(nb-1)
             # A falling geological apron, continuous with the crest in geometry;
             # uneven cross-cuts keep the rear profile from being a flat deck.
-            s=front+10*t+.5*math.sin(a*.34+t*5)*t
-            z=(crest+2.4*math.sin(math.pi*t)
-               +.9*math.sin(a*.3+t*3)*t
-               -.9*t**2)
+            s=front+6.5*t+.65*math.sin(a*.34+t*5)*t
+            # Tilt away sharply: no broad hemispherical dome over the gorge.
+            # Erosion troughs split high flanks into several coherent ridges.
+            rill=(.7*math.cos(a*.43+t*3)
+                  -1.0*abs(math.sin(a*.60+t*4.2)))
+            z=(crest+.85*math.sin(math.pi*t)
+               +rill*t-3.5*t*t
+               +.35*math.sin(a*.91+t*7)*math.sin(math.pi*t))
             back.append(add(s,a,z))
         back_rows.append(back)
     for j in range(na-1):
@@ -271,7 +278,7 @@ def build(scan_path):
     material(near,"ENV021_near_clay",(.55,.53,.49,1))
     material(far,"ENV021_far_clay",(.48,.52,.54,1))
     markers()
-    print("ENV021_STAGE: Pass009 continuous carved gorge spine and erosional apron created",flush=True)
+    print("ENV021_STAGE: Pass009 revised ridge silhouette and narrowed shelf created",flush=True)
     return {"stage":"ART_PASS_009_NOT_APPROVED","source":"CC0 Poly Haven Coastal Cliff 02",
             "form":"fighter-safe shelf, continuous far erosion spine and integrated runoff apron",
             "note":"Scan is NOT welded; native Babylon/WebGL camera test required; art unapproved"}

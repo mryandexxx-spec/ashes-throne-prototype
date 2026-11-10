@@ -39,7 +39,6 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "$SOURCE_BLEND" ]]; then
-            echo "source_arg=" >> "$GITHUB_OUTPUT"
             echo "mode=SMOKE_ONLY (not approved art)" >> "$GITHUB_STEP_SUMMARY"
           else
             case "$SOURCE_BLEND" in
@@ -47,14 +46,17 @@ jobs:
               *) echo "Only art/env021/*.blend is allowed"; exit 2 ;;
             esac
             if [[ ! -f "$SOURCE_BLEND" ]]; then echo "Missing source: $SOURCE_BLEND"; exit 2; fi
-            echo "source_arg=--source=$SOURCE_BLEND" >> "$GITHUB_OUTPUT"
             echo "mode=SOURCE_BLEND" >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Run Blender Python authoring/export smoke test
         run: |
           mkdir -p build/env021
-          blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- ${{ steps.source.outputs.source_arg }} --output build/env021
+          if [[ -n "$SOURCE_BLEND" ]]; then
+            blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --source "$SOURCE_BLEND" --output build/env021
+          else
+            blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --output build/env021
+          fi
 
       - name: Verify outputs
         run: |

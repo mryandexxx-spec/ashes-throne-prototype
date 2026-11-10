@@ -22,6 +22,7 @@ const ENV022_CONCEPT_PREVIEW=typeof location!=="undefined" &&
  !/(?:^|[?&])environment=(?:env017|env010)(?:&|$)/.test(location.search);
 let engine, scene, meshes={};
 let combatVisual007=null; // One optional visual layer per Babylon Scene.
+let renGlbBattle=null; // Local-only, explicit opt-in visual pilot; never saved.
 let arenaCamera=null;
 // Combat-008B: allies are near the viewer, enemies farther away.
 const ARENA_VIEW=Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
@@ -2740,6 +2741,7 @@ function renderBattleFrame(){
   visual.head.position.y=1.8+pose.y;
   if(visual.body.rotation)visual.body.rotation.z=pose.tilt;
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
+  if(h.id==="ren"&&renGlbBattle)renGlbBattle.update(BattleAnimation.activity("ren"));
  }
  positionArenaIndicators();
  scene.render();
@@ -2861,6 +2863,13 @@ function initBabylon(){
   for(const part of [body,head,base])part.metadata={fighterId:h.id};
    meshes[h.id]={body,head,base};
  });
+ // The optional file-selected GLB replaces only Ren's presentation.
+ // It leaves the body/head anchors, picking, combat state and fallback intact.
+ renGlbBattle=null;
+ if(typeof RenGlbBattle!=="undefined"&&RenGlbBattle.enabled(typeof location==="undefined"?null:location)){
+  try{renGlbBattle=RenGlbBattle.mount({B:BABYLON,scene,visual:meshes.ren,container:canvas.parentElement,loc:location});}
+  catch(error){console.warn("Optional Ren GLB failed; original model retained",error);}
+ }
  // Babylon pointer picking supports mouse and touch, registered once with the scene.
   if(scene.onPointerObservable&&BABYLON.PointerEventTypes)
    scene.onPointerObservable.add(handleInspectionPointer);

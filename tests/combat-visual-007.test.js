@@ -72,12 +72,12 @@ test("CV007 is only a presentation layer wired into the existing lifecycle",()=>
  const visual=read("combat-visual-007.js"),game=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));
  assert.doesNotMatch(visual,/runRenderLoop|setInterval|setTimeout|\bfetch\(|new\s+B\.Scene|new\s+B\.Engine/);
  assert.match(game,/typeof CombatVisual007!=="undefined"&&CombatVisual007\.supported\(BABYLON\)/);
- assert.match(game,/CombatVisual007\.create\(BABYLON,scene\)/);
+ assert.match(game,/CombatVisual007\.create\(BABYLON,scene,\{conceptBackdrop:ENV022_CONCEPT_PREVIEW\}\)/);
  assert.match(game,/BattleAnimation\.drainStarted\(\)/);
  assert.match(game,/combatVisual007\.emit\(visualCues,meshes\)/);
  assert.match(game,/combatVisual007\.tick\(dt,BattleSpeed\.multiplier\(\)\)/);
  assert.match(game,/combatVisual007\?\.clear\(\)/);
- assert.match(game,/if\(!combatVisual007\)\{[\s\S]*CreateGround\("ground"/,"legacy fallback retained");
+ assert.match(game,/if\(!combatVisual007 && !ENV022_CONCEPT_PREVIEW\)\{[\s\S]*CreateGround\("ground"/,"legacy fallback retained");
  assert.match(game,/scene\.dispose\(\)/);
  assert.ok(html.indexOf('src="combat-visual-007.js"')<html.indexOf('src="game.js"'));
  assert.equal(pkg.version,"0.3.92");

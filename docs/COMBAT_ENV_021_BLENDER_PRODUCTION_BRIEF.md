@@ -238,3 +238,14 @@ Geological **external analogues, not ENV021 canon**: National Park Service notes
 **[АРТ-КРИТИКА — NOT APPROVED]** По фактическим нейтральным кадрам: слоистость породы заметнее, но центр поля сражения остаётся слишком гладким, а противоположная стена — узкой/искусственной и недостаточно масштабной. Технический успех **не** является художественной приёмкой и не разрешает интеграцию или merge.
 
 **[СОХРАНЕН КОНТЕКСТ ПЕРЕХОДА]** Полный handoff, актуальные относительные пути, проверки, риски и следующий рекомендуемый этап **Art Pass011** записаны отдельно в [`docs/HANDOFF_ENV021_2026-11-10.md`](HANDOFF_ENV021_2026-11-10.md). Рабочая ветка синхронизирована с `main` в отдельном merge commit **5a605099a3ffc7c7f378ff82814bcf694ac99a94** без изменения main. PR #221 остаётся Draft и не должен сливаться до конкретного разрешения владельца.
+
+
+## 23. Art Pass 011 — macroform experiment (2026-11-10)
+
+**[В РАЗРАБОТКЕ — ART НЕ УТВЕРЖДЁН]** New `tools/env021-art-pass-011.py` is a separate, source-preserving derivative of Pass010. It reshapes a broken caprock apron beyond the fixed six fighting positions, adds two asymmetric collapse bays and stepped transitions to the exposed cliff, and replaces the narrow opposing-bank strip with a wider continuous recessed escarpment and three large ravine cuts. These are artistic/geological hypotheses, **not** approved world canon or finished production topology.
+
+Pipeline `sculpt11` writes Blender source, GLB, reference clay images, diagnostic and neutral-lit native Babylon+full-HUD screenshots at radius 12 and 19; the fixture recognizes Pass011. New `tests/env021-sculpt11-structure.py` is an independent Blender-free geometry check, and geology CI includes both Pass010 and Pass011. Workflows must be evaluated by run ID and head SHA, not by passing checks on earlier commits.
+
+**Acceptance gate:** exact 844×390 neutral-lit `art-review-12.png` and `art-review-19.png` must be visually reviewed and compared against Pass010 artifact `13769975075`; six actors/HUD visible; open chasm and layered rock silhouette legible; no manufactured distant rectangular curtain. Technical GLB/CI success is **not** artistic approval. Before inspection, do not claim improved visual result.
+
+No changes to published ENV022, combat rules, real game camera, world canon, `main`, or production loader. Scan still unwelded and mesh is not production-ready; topology, UV/PBR, LOD/mobile performance and physical iPhone Safari remain outstanding.

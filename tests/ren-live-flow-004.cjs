@@ -2,17 +2,20 @@
  * Detects whether game.js enters dossier and battle and actually replaces Ren.
  */
 "use strict";
-const {chromium}=require("playwright");
+const {chromium,webkit}=require("playwright");
 const assert=require("node:assert/strict");
 (async()=>{
- const browser=await chromium.launch({headless:true,args:["--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage","--no-sandbox"]});
+ const browserType=process.env.REN_BROWSER==="webkit"?webkit:chromium;
+ const browser=await browserType.launch(browserType===webkit?{headless:true}:{headless:true,args:["--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage","--no-sandbox"]});
  try{
   const page=await browser.newPage({viewport:{width:956,height:440}});
   const errors=[];
   page.on("pageerror",e=>errors.push("pageerror: "+e.message));
   page.on("console",m=>{if(m.type()==="error"||m.type()==="warning")errors.push("console: "+m.text());});
   page.on("requestfailed",r=>errors.push("request: "+r.url()+" "+r.failure()?.errorText));
-  await page.goto("http://127.0.0.1:8765/",{waitUntil:"load",timeout:60000});
+  const origin=process.env.REN_ORIGIN||"http://127.0.0.1:8765/";
+  await page.goto(origin,{waitUntil:"load",timeout:60000});
+  console.log("REN LIVE SOURCE",JSON.stringify({browser:browserType.name(),origin,footer:await page.locator("#buildVersion").textContent()}));
   await page.evaluate(()=>{
    if(typeof showScreen!=="function")throw Error("game.js showScreen missing");
    selectedHeroId="ren";

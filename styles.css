@@ -3936,6 +3936,41 @@ body:has(#storyDemo.active)::before{
  #storyDemo button,#heroBiographyDialog button{transition:none}
 }
 
+/* REN-GLB-003 — portrait-safe, isolated touch viewer in the hero dossier. */
+#heroDetail .ren-card-3d-canvas{
+ position:absolute;inset:0;display:block;width:100%;height:100%;z-index:2;
+ touch-action:none;cursor:grab;opacity:0;pointer-events:none;
+}
+#heroDetail .ren-card-3d-canvas:active{cursor:grabbing}
+#heroDetail .ren-card-3d-canvas[hidden]{display:none!important}
+#heroDetail .hero-detail-stage.has-ren-3d .ren-card-3d-canvas{opacity:1;pointer-events:auto}
+#heroDetail .hero-detail-stage.has-ren-3d .ren-detail-portrait{display:none!important}
+#heroDetail .hero-detail-stage.has-ren-3d .hero-detail-stage-emblem{display:none!important}
+#heroDetail .ren-card-3d-controls{
+ display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+ padding:8px 4px 12px;
+}
+#heroDetail .ren-card-3d-controls[hidden]{display:none!important}
+#heroDetail .ren-card-3d-controls button{
+ min-height:38px;padding:6px 12px;font-size:12px;touch-action:manipulation;
+}
+#heroDetail #renCard3DStatus{
+ flex-basis:100%;min-width:0;color:#dfbf89;font-size:11px;line-height:1.35;overflow-wrap:anywhere;
+}
+#renModelBattleStatus{
+ font:600 10px/1.25 Inter,system-ui,sans-serif;
+ color:#edc987;max-width:220px;overflow-wrap:anywhere;
+}
+#renModelBattleStatus[hidden]{display:none!important}
+#renModelBattleStatus[data-status="error"]{color:#ffb7a1}
+#renModelBattleStatus[data-status="ready"]{color:#b4e0b1}
+@media(orientation:landscape) and (max-height:460px){
+ #heroDetail .ren-card-3d-controls{padding:3px 4px 5px;gap:4px}
+ #heroDetail .ren-card-3d-controls button{min-height:33px;font-size:11px}
+ #heroDetail #renCard3DStatus{font-size:10px}
+ #renModelBattleStatus{font-size:9px;max-width:135px}
+}
+
 /* UI-COMBAT-HUD-001 — visual material pass on the existing full-screen 3D HUD.
    Do not change HUD geometry, z-index, pointer-events, touch-action, canvas or Babylon lifecycle. */
 .battle-screen .battle-top{
@@ -4067,37 +4102,3 @@ body:has(#storyDemo.active)::before{
  .battle-screen .arena-initiative span{transition:none}
 }
 
-/* REN-GLB-003 — portrait-safe, isolated touch viewer in the hero dossier. */
-#heroDetail .ren-card-3d-canvas{
- position:absolute;inset:0;display:block;width:100%;height:100%;z-index:2;
- touch-action:none;cursor:grab;opacity:0;pointer-events:none;
-}
-#heroDetail .ren-card-3d-canvas:active{cursor:grabbing}
-#heroDetail .ren-card-3d-canvas[hidden]{display:none!important}
-#heroDetail .hero-detail-stage.has-ren-3d .ren-card-3d-canvas{opacity:1;pointer-events:auto}
-#heroDetail .hero-detail-stage.has-ren-3d .ren-detail-portrait{display:none!important}
-#heroDetail .hero-detail-stage.has-ren-3d .hero-detail-stage-emblem{display:none!important}
-#heroDetail .ren-card-3d-controls{
- display:flex;align-items:center;gap:8px;flex-wrap:wrap;
- padding:8px 4px 12px;
-}
-#heroDetail .ren-card-3d-controls[hidden]{display:none!important}
-#heroDetail .ren-card-3d-controls button{
- min-height:38px;padding:6px 12px;font-size:12px;touch-action:manipulation;
-}
-#heroDetail #renCard3DStatus{
- flex-basis:100%;min-width:0;color:#dfbf89;font-size:11px;line-height:1.35;overflow-wrap:anywhere;
-}
-#renModelBattleStatus{
- font:600 10px/1.25 Inter,system-ui,sans-serif;
- color:#edc987;max-width:220px;overflow-wrap:anywhere;
-}
-#renModelBattleStatus[hidden]{display:none!important}
-#renModelBattleStatus[data-status="error"]{color:#ffb7a1}
-#renModelBattleStatus[data-status="ready"]{color:#b4e0b1}
-@media(orientation:landscape) and (max-height:460px){
- #heroDetail .ren-card-3d-controls{padding:3px 4px 5px;gap:4px}
- #heroDetail .ren-card-3d-controls button{min-height:33px;font-size:11px}
- #heroDetail #renCard3DStatus{font-size:10px}
- #renModelBattleStatus{font-size:9px;max-width:135px}
-}

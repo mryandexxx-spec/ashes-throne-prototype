@@ -49,6 +49,6 @@ test("UI-STORY-001 has short landscape, reduced motion, touch and exact build",(
  assert.match(art,/min-height:44px/);
  assert.match(art,/#storyDemo button:focus-visible/);
  assert.match(art,/@media\(prefers-reduced-motion:reduce\)/);
- assert.equal(JSON.parse(read("package.json")).version,"0.3.102");
- assert.match(html,/v0\.3\.102 · UISTORY001/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.103");
+ assert.match(html,/v0\.3\.103 · UIHUD001/);
 });

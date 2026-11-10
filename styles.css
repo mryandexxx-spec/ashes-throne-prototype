@@ -3935,3 +3935,134 @@ body:has(#storyDemo.active)::before{
 @media(prefers-reduced-motion:reduce){
  #storyDemo button,#heroBiographyDialog button{transition:none}
 }
+
+/* UI-COMBAT-HUD-001 — visual material pass on the existing full-screen 3D HUD.
+   Do not change HUD geometry, z-index, pointer-events, touch-action, canvas or Babylon lifecycle. */
+.battle-screen .battle-top{
+ background:linear-gradient(180deg,#131317df 0%,#17161993 54%,transparent 100%);
+}
+.battle-screen .battle-top>.ghost,
+.battle-screen .battle-top-controls .ghost{
+ border:1px solid #b99563b8;border-radius:8px;
+ background:linear-gradient(150deg,#49352bdc,#272127e8);
+ color:#f6dfb9;font-weight:650;
+ box-shadow:inset 0 1px #f0ca8c4a,0 2px 9px #06060abb;
+}
+.battle-screen .battle-top .ghost:focus-visible,
+.battle-screen .battle-top-controls .ghost:focus-visible{
+ outline:3px solid #ffe4ae;outline-offset:2px;
+}
+.battle-screen .battle-heading{
+ color:#f5e7d0;text-shadow:0 1px 6px #050407;
+}
+.battle-screen .battle-heading .eyebrow{
+ color:#efc889;letter-spacing:.08em;
+}
+.battle-screen .battle-heading strong{color:#f8eedb}
+.battle-screen .battle-top>.target-fighter-hud{
+ border:1px solid #b698668f;border-radius:9px;
+ background:linear-gradient(145deg,#2e2729ef,#1c1c23f1);
+ color:#f6e8d0;
+ box-shadow:inset 0 1px #e4bb8651,0 5px 14px #040409b0;
+ -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+.battle-screen .battle-top>.target-fighter-hud.enemy{border-color:#bf85798f}
+.battle-screen .target-fighter-heading{color:#f1c68d}
+.battle-screen #targetFighterName{color:#f8e9d1}
+.battle-screen .target-fighter-vitals{color:#e0cfb8}
+.battle-screen .target-fighter-track{
+ background:#15171dcf;border:1px solid #b08e685e;
+}
+.battle-screen .turn-chip{
+ border:1px solid #ba9866a1;border-radius:8px;
+ background:linear-gradient(150deg,#423027e8,#211f27e9);
+ color:#f1cf97;box-shadow:inset 0 1px #eec99242;
+}
+.battle-screen #autoBattleBtn[aria-pressed="true"]{
+ border-color:#f1c67e;background:linear-gradient(150deg,#6a5034,#382d2a);
+ color:#fff0ce;box-shadow:inset 0 1px #ffe4aa89,0 0 0 1px #d7b17059;
+}
+.battle-screen .action-panel{
+ border:1px solid #b995638f;border-radius:10px;
+ background:linear-gradient(150deg,#33292be9,#1d1c22ee);
+ box-shadow:inset 0 1px #edc79055,0 6px 18px #040409b5;
+ -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+.battle-screen .action-description .eyebrow{
+ color:#eac28b;letter-spacing:.1em;
+}
+.battle-screen .action-description strong{color:#f6e5c7}
+.battle-screen .action-description p{color:#d6c4aa}
+.battle-screen .ability-slot .ability-btn{
+ border:1px solid #b0946c9f;border-radius:8px;
+ background:linear-gradient(160deg,#483831eb,#2b2529ee);
+ color:#f2e0c4;font-weight:650;
+ box-shadow:inset 0 1px #eac58c40;
+}
+.battle-screen .ability-slot .ability-btn.selected{
+ border-color:#ffce86;background:linear-gradient(150deg,#795636,#423027);
+ color:#fff1cf;box-shadow:inset 0 1px #ffe6b198,0 0 0 1px #bd915b78;
+}
+.battle-screen .ability-slot .ability-btn:disabled{
+ opacity:.55;filter:none;box-shadow:none;
+}
+.battle-screen .ability-slot .ability-btn:focus-visible,
+.battle-screen #battleRetryBtn:focus-visible{
+ outline:3px solid #ffe4ae;outline-offset:2px;
+}
+.battle-screen #battleRetryBtn{
+ border:1px solid #e9bd77;border-radius:8px;
+ background:linear-gradient(160deg,#e9c78c,#b88c52);
+ color:#251b17;font-weight:700;
+}
+.battle-screen .ability-tooltip{
+ border:1px solid #c5a074b5;border-radius:9px;
+ background:linear-gradient(150deg,#32292af8,#1d1c22fc);
+ color:#f8e9d1;box-shadow:0 5px 20px #050409c9;
+}
+.battle-screen .ability-tooltip p{color:#e0cfb8}
+.battle-screen .arena-utility .combat-log{
+ border:1px solid #b593648d;border-radius:9px;
+ background:linear-gradient(150deg,#32282aed,#1d1c22eb);
+ color:#f0dfc3;
+ -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+.battle-screen .arena-utility .combat-log summary{
+ color:#f1cb8d;
+}
+.battle-screen .arena-utility .combat-log summary:focus-visible{
+ outline:3px solid #ffe4ae;outline-offset:-2px;
+}
+.battle-screen .arena-utility .combat-log-entries{color:#dccbb0}
+.battle-screen .battle-message{
+ border:1px solid #bb976a94;border-radius:8px;
+ background:#211c20e8;color:#f4e4c8;
+ box-shadow:inset 0 1px #e2bb8640;
+}
+.battle-screen .battle-reward{
+ border:1px solid #e6bc7b;border-radius:9px;
+ background:#242026f2;color:#f2d49f;
+ box-shadow:inset 0 1px #f4d0a75a,0 4px 12px #050409a8;
+}
+.battle-screen .fighter-inspect-panel{
+ border:1px solid #c3a074b3;border-radius:12px;
+ background:linear-gradient(150deg,#32292df9,#201e25fc);
+ color:#f7e6ce;box-shadow:0 12px 40px #030307cf,inset 0 1px #f0cb9955;
+}
+.battle-screen .fighter-inspect-top{color:#eac38c}
+.battle-screen .fighter-inspect-top .ghost{
+ border:1px solid #bf9a68;background:#372b2c;color:#f3dfbc;
+}
+.battle-screen .fighter-inspect-top .ghost:focus-visible{
+ outline:3px solid #ffe4ae;outline-offset:2px;
+}
+.battle-screen .fighter-inspect-panel h3{color:#f6e5c9}
+.battle-screen .fighter-inspect-role{color:#d9c5ab}
+.battle-screen .fighter-inspect-effects{
+ border-top-color:#b9956388;color:#eac38c;
+}
+@media(prefers-reduced-motion:reduce){
+ .battle-screen .arena-health span,
+ .battle-screen .arena-protection span,
+ .battle-screen .arena-initiative span{transition:none}
+}

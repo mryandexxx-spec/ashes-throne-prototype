@@ -1,0 +1,56 @@
+[
+  {
+    "id": "kael",
+    "x": -2.45,
+    "z": -1.9,
+    "surfaceY": 0.011,
+    "delta": -0.009,
+    "samples": 5,
+    "contact": true
+  },
+  {
+    "id": "lyra",
+    "x": -2.45,
+    "z": 0,
+    "surfaceY": 0.089,
+    "delta": 0.069,
+    "samples": 5,
+    "contact": true
+  },
+  {
+    "id": "darin",
+    "x": -2.45,
+    "z": 1.9,
+    "surfaceY": 0.144,
+    "delta": 0.124,
+    "samples": 5,
+    "contact": true
+  },
+  {
+    "id": "ren",
+    "x": -4.05,
+    "z": 0,
+    "surfaceY": 0.177,
+    "delta": 0.157,
+    "samples": 5,
+    "contact": true
+  },
+  {
+    "id": "ves",
+    "x": 2.45,
+    "z": -0.95,
+    "surfaceY": -0.2,
+    "delta": -0.22,
+    "samples": 5,
+    "contact": true
+  },
+  {
+    "id": "shade",
+    "x": 2.45,
+    "z": 0.95,
+    "surfaceY": -0.109,
+    "delta": -0.129,
+    "samples": 5,
+    "contact": true
+  }
+]

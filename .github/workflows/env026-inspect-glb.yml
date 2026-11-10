@@ -1,0 +1,24 @@
+name: ENV026 inspect exact Blender glTF attribute schema
+on:
+  push:
+    branches: [feat/combat-env-026-authored-blender-gorge]
+    paths: [.github/workflows/env026-inspect-glb.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: List exact exported accessors, flags and materials without decoding giant binary
+        run: |
+          node - <<'JS'
+          const fs=require("fs"),f="assets/env026/ENV026_authored_gorge.glb";
+          const b=fs.readFileSync(f),len=b.readUInt32LE(12),g=JSON.parse(b.subarray(20,20+len).toString());
+          console.log("GLB",b.length,"meshes",g.meshes.length,"nodes",g.nodes.length,"views",g.bufferViews.length,"accessors",g.accessors.length);
+          for(const [i,mesh] of g.meshes.entries())for(const [j,p] of mesh.primitives.entries()){
+            console.log("PRIMITIVE",i,j,p.mode,p.material,Object.entries(p.attributes).map(([key,id])=>({key,id,accessor:g.accessors[id]})));
+            console.log("INDICES",g.accessors[p.indices]);
+          }
+          console.log("MATERIALS",JSON.stringify(g.materials||[]).slice(0,1800));
+          JS

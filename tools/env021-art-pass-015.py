@@ -100,6 +100,63 @@ def near_mass():
     ob.name="ENV021_015_near_layered_shelf"
     return ob
 
+def stone_texture(ob):
+    """Deterministic self-contained albedo + UV on the near mesh.
+
+    No provider image or external licensed material. Preview-grade texture,
+    packed into the Blender source and GLB. Not an optimized game PBR asset.
+    """
+    import bpy
+    image=bpy.data.images.new("ENV021_015_weathered_rock_384",width=384,height=384,alpha=True)
+    pixels=[]
+    def noise(x,y):
+        return (.47*math.sin(12.3*x+7.2*y)*math.sin(6.4*y-4.2*x)
+                +.25*math.sin(35.1*x+23.7*y)*math.sin(39.5*y-15.2*x)
+                +.12*math.sin(93*x-17*y)*math.sin(106*y+28*x))
+    for iy in range(384):
+        y=iy/384
+        for ix in range(384):
+            x=ix/384
+            n=noise(x,y)
+            thin=.5*(math.sin(23*x+5*math.sin(9*y))+1)
+            fissure=max(0.,1.-abs(math.sin(21*x+15*y+1.5*math.sin(8*y)))*18)
+            seam=max(0.,1.-abs(math.sin(63*y+4*math.sin(13*x)))*24)
+            crack=max(fissure*.55,seam*.35)
+            warm=max(0.,math.sin(14*y+8*x))*max(0.,n)
+            gray=.60+.16*n-.13*crack
+            pixels.extend((max(.06,min(.88,gray+.065*warm)),
+                           max(.06,min(.88,gray*.93+.025*thin)),
+                           max(.06,min(.88,gray*.83-.03*warm)),1))
+    image.pixels.foreach_set(pixels)
+    image.pack()
+    material=bpy.data.materials.new("ENV021_015_PBR_rough_cliff_albedo")
+    material.diffuse_color=(.69,.65,.59,1)
+    material.use_nodes=True
+    nodes=material.node_tree.nodes
+    principled=nodes.get("Principled BSDF")
+    tex=nodes.new("ShaderNodeTexImage")
+    tex.name="ENV021_015_PACKED_ROCK_ALBEDO"
+    tex.image=image
+    material.node_tree.links.new(tex.outputs["Color"],principled.inputs["Base Color"])
+    principled.inputs["Metallic"].default_value=0.0
+    principled.inputs["Roughness"].default_value=.93
+    ob.data.materials.clear();ob.data.materials.append(material)
+    uvs=ob.data.uv_layers.new(name="ENV021_015_UV0")
+    for poly in ob.data.polygons:
+        side=abs(poly.normal.z)<.65
+        for li in poly.loop_indices:
+            p=ob.data.vertices[ob.data.loops[li].vertex_index].co
+            s=-(p.x*core.RIGHT[0]+p.y*core.RIGHT[1])
+            a=-(p.x*core.AWAY[0]+p.y*core.AWAY[1])
+            # Top planar projection and near-vertical wall projection
+            # in stable authoring-space meters; repeat terrain tile.
+            if side:
+                uvs.data[li].uv=(a*.19,(p.z+6)*.19)
+            else:
+                uvs.data[li].uv=(s*.19,a*.19)
+    print("ENV021_PASS015_TEXTURE_PACKED_UV",len(uvs.data),flush=True)
+
+
 def build(scan_path=None):
     import bpy
     bpy.ops.object.select_all(action="SELECT")
@@ -111,7 +168,7 @@ def build(scan_path=None):
             assert abs(surface(s,a)+.04)<1e-9
     near=near_mass()
     far=previous.far_mass("A")  # Preserve the far wall that owner likes.
-    core.material(near,"ENV021_015_NearWeatheredStone",(.47,.42,.38,1))
+    stone_texture(near)
     core.material(far,"ENV021_014A_FarPreserved",(.44,.48,.50,1))
     core.markers()
     return {
@@ -119,6 +176,7 @@ def build(scan_path=None):
       "source":"Derived from Blockout014A; sculpted near-bank bedding and inset fragments",
       "far_wall":"UNCHANGED_BLOCKOUT_014A",
       "sky":"REAL_TIME_TEST_ONLY_ATMOSPHERE",
+      "material":"PACKED_384_ROCK_ALBEDO_AND_UV0_EXPERIMENTAL",
       "safe_fighter_zone":"s ±2.45; a -1.9,0,1.9; flat +0.04 correction",
       "note":"No CC0 scan imported; 3D mesh and Babylon sky experiment; NOT approved for game."
     }

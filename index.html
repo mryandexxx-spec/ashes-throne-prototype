@@ -649,6 +649,12 @@
           </aside>
         </div>
         <div class="battle-top-controls arena-hud">
+          <div id="renGlbBattleTools" hidden style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;max-width:100%">
+            <label for="renGlbBattleFile" class="ghost" style="cursor:pointer;padding:9px 10px;border:1px solid #ad875b;border-radius:6px;background:#302820;color:#f4dbc0">GLB Рена</label>
+            <input type="file" id="renGlbBattleFile" accept=".glb,model/gltf-binary" style="position:absolute;left:-10000px;width:1px;height:1px" aria-label="Выбрать анимированный GLB Рена">
+            <button type="button" id="renGlbBattleReset" class="ghost" disabled aria-label="Вернуть прежнюю 3D-модель Рена">↶ Рен</button>
+            <small id="renGlbBattleStatus" role="status" style="font-size:10px;max-width:210px;color:#efcca2">Выбери GLB из файлов устройства</small>
+          </div>
           <button type="button" id="autoBattleBtn" class="ghost auto-battle-btn" aria-pressed="false">Автобой</button>
           <button type="button" id="autoSpeedBtn" class="ghost auto-speed-btn" aria-label="Скорость боя 1×. Нажми, чтобы изменить" title="Скорость боя: 1× → 2× → 4×">1×</button>
           <div class="turn-chip" id="turnChip">Ход 1</div>
@@ -756,6 +762,7 @@
   <script src="combat-environment-010.js"></script>
   <script src="combat-environment-017.js"></script>\n  <script src="combat-visual-007.js"></script>
   <script src="ren-visual-model.js"></script>
+  <script src="ren-glb-battle.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

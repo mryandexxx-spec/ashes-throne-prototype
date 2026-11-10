@@ -24,6 +24,8 @@ const assert=require("node:assert/strict");
    document.body.appendChild(canvas);
    const engine=new B.Engine(canvas,true);
    const scene=new B.Scene(engine);
+   scene.activeCamera=new B.ArcRotateCamera("testCam",-Math.PI/2,1.2,4,new B.Vector3(0,1,0),scene);
+   new B.HemisphericLight("light",new B.Vector3(0,1,0),scene);
    const body=new B.Mesh("test_body",scene);
    const head=new B.Mesh("test_head",scene);
    body.position.set(0,.8,0);

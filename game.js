@@ -2870,19 +2870,13 @@ function initBabylon(){
  // Default GLB Ren replaces the procedural visual when its verified asset loads.
  // Loading is asynchronous and never blocks combat; fallback stays intact.
  if(typeof RenGlbRuntime!=="undefined"&&meshes.ren){
-  renGlbRuntime=RenGlbRuntime.create(BABYLON,scene,meshes.ren,(kind,message,progress)=>{
+  renGlbRuntime=RenGlbRuntime.create(BABYLON,scene,meshes.ren,(kind,message)=>{
    const info=$("#renModelBattleStatus");
    if(info){
     const label=$("#renModelBattleStatusText");
     if(label)label.textContent=message;
     info.dataset.status=kind;
     info.hidden=false;
-    const bar=$("#renModelBattleProgress");
-    if(bar){
-     const hasProgress=kind==="progress"&&Number.isFinite(progress);
-     bar.hidden=!hasProgress;
-     if(hasProgress)bar.value=progress;
-    }
    }
   });
  }

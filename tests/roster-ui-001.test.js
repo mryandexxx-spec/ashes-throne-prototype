@@ -25,6 +25,6 @@ test("UIHERO002 uses HQ palette and a landscape-responsive grid",()=>{
  assert.match(css,/#collection \.roster-card-art\.hero-avatar-ren::after\{display:none\}/);
 });
 test("UIHERO002 version is consistent",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.95");
- assert.match(html,/v0\.3\.95 · UISYS001A/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.96");
+ assert.match(html,/v0\.3\.96 · UISYS001B/);
 });

@@ -97,6 +97,38 @@
       }
     }
     scene.clearColor=new B.Color4(.56,.61,.64,1);
+    // Standard Babylon glTF loader is the production-parity reference path
+    // for QA only. It is version-matched to index.html's Babylon 9.33.2;
+    // neither loader nor GLB is shipped in the game.
+    if(new URLSearchParams(location.search).get("native")==="1") {
+      if(!B.SceneLoader.IsPluginForExtensionAvailable?.(".glb")) {
+        await new Promise((resolve,reject)=>{
+          const script=win.document.createElement("script");
+          script.src="https://cdn.babylonjs.com/v9.33.2/loaders/babylonjs.loaders.min.js";
+          script.onload=resolve;script.onerror=()=>reject(Error("Babylon 9.33.2 glTF loader unavailable"));
+          win.document.head.appendChild(script);
+        });
+      }
+      const result=await B.SceneLoader.ImportMeshAsync(null,"/build/env021/","scene.glb",scene);
+      const imported=result.meshes.filter(m=>m.getTotalVertices?.()>0);
+      if(imported.length!==2)throw Error("Native glTF import expected two drawable meshes, got "+imported.length);
+      const u=new URLSearchParams(location.search),scale=Number(u.get("scale")||1),lift=Number(u.get("lift")||0);
+      d.candidateScale=String(scale);d.candidateLift=String(lift);d.nativeLoader="true";
+      let vertices=0,triangles=0;
+      for(let i=0;i<imported.length;i++){
+        const m=imported[i];
+        m.name="env021_candidate_"+i+"_"+m.name;
+        m.scaling.scaleInPlace(scale);m.position.y+=lift;
+        m.alwaysSelectAsActiveMesh=true;m.isPickable=false;m.checkCollisions=false;
+        const mat=new B.StandardMaterial("env021_native_clay_"+i,scene);
+        mat.diffuseColor=i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2);
+        mat.emissiveColor=i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2);
+        mat.disableLighting=true;mat.fogEnabled=false;mat.backFaceCulling=false;
+        m.material=mat;
+        vertices+=m.getTotalVertices();triangles+=m.getTotalIndices()/3;
+      }
+      return {verts:vertices,tris:triangles,hidden};
+    }
     const transforms=gltfMeshTransforms(json);
     d.gltfNodes=String(json.nodes?.length||0);
     let verts=0,tris=0;

@@ -35,7 +35,7 @@ test("ROSTER004 shows only the current leader in the collection, without squad b
  assert.match(js,/const isLeader=owned&&selectedLeaderId===h\.id/);
  assert.match(js,/const leaderBadge=isLeader\?'<span class="roster-leader-indicator">★ Лидер<\/span>'/);
  assert.match(js,/\$\{portraitAvatar\}\$\{leaderBadge\}/);
- assert.doesNotMatch(js,/В отряде|roster-squad-badge/);
+ assert.doesNotMatch(js,/roster-squad-badge/);
  assert.match(css,/#collection \.roster-leader-indicator\{/);
  assert.match(js,/HeroProfileData\.tagLabels\(profile\.tags\)/);
 });

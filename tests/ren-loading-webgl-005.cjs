@@ -1,11 +1,9 @@
 /* REN-LOAD-005: browser-level pending/load/error states, on actual game screens.
- * Use a deliberately paused GLB response: this proves the spinner is visible
- * while the model is not yet ready. No simulated percentage is asserted.
+ * Delay actual ImportMeshAsync start to inspect the UI before loading.
+ * The standard WebGL smoke separately checks the unmodified GLB load.
  */
 "use strict";
 const assert=require("node:assert/strict");
-const fs=require("node:fs");
-const path=require("node:path");
 const {chromium,webkit}=require("playwright");
 async function main(){
  const useWebkit=process.env.REN_BROWSER==="webkit";
@@ -16,14 +14,16 @@ async function main(){
   page.on("pageerror",e=>errors.push("JS "+e.message));
   page.on("console",m=>{if(m.type()==="error"||m.type()==="warning")errors.push("console "+m.text());});
   page.on("requestfailed",r=>errors.push("request "+r.url()+" "+r.failure()?.errorText));
-  page.on("response",r=>{if(r.url().includes("ren-animated"))console.log("GLB RESPONSE",r.status(),r.url());});
-  await page.route("**/assets/ren-animated-v02.glb",async route=>{
-   await new Promise(resolve=>setTimeout(resolve,2200));
-   console.log("RELEASING GLB REQUEST",route.request().url());
-   const binary=fs.readFileSync(path.join(__dirname,"../assets/ren-animated-v02.glb"));
-   await route.fulfill({status:200,contentType:"model/gltf-binary",body:binary});
-  });
   await page.goto("http://127.0.0.1:8765/",{waitUntil:"load"});
+  // Defer the actual import, without rewriting the binary network response.
+  // The existing smoke independently verifies a real unmodified GLB load.
+  await page.evaluate(()=>{
+   const original=BABYLON.SceneLoader.ImportMeshAsync.bind(BABYLON.SceneLoader);
+   BABYLON.SceneLoader.ImportMeshAsync=async (...args)=>{
+    await new Promise(resolve=>setTimeout(resolve,1600));
+    return original(...args);
+   };
+  });
   await page.evaluate(()=>{selectedHeroId="ren";showScreen("heroDetail");});
   await page.waitForFunction(()=>!document.querySelector("#renCardLoadIndicator")?.hidden,{timeout:10000});
   let loading=await page.evaluate(()=>({

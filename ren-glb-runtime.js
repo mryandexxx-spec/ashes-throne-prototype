@@ -4,7 +4,7 @@
  */
 const RenGlbRuntime=(()=>{
  "use strict";
- const ASSET_URL="assets/ren-animated-v02.glb";
+ const ASSET_URL="assets/ren-wanderer-v1.glb";
  const CLIPS=Object.freeze({
   idle:"Ren_Idle_Breathing_3s",
   basic:"Ren_Attack_Unarmed_1p3s",
@@ -40,21 +40,35 @@ const RenGlbRuntime=(()=>{
   if(!B?.SceneLoader||!visual?.body||!scene)throw Error("Ren scene anchors missing");
   await ensureLoader();
   // Babylon SceneLoader resolves the path relative to this web page.
-  const result=await B.SceneLoader.ImportMeshAsync(null,"assets/","ren-animated-v02.glb",scene,undefined,".glb");
+  const result=await B.SceneLoader.ImportMeshAsync(null,"assets/","ren-wanderer-v1.glb",scene,undefined,".glb");
   let root=null;
   try{
    if(sceneDisposed(scene))throw Error("Scene disposed during import");
    const visible=result.meshes.filter(m=>typeof m.getTotalVertices==="function"&&m.getTotalVertices()>0);
    if(!visible.length)throw Error("No Ren geometry in GLB");
    const groups=new Map(result.animationGroups.map(group=>[group.name,group]));
-   if(!groups.has(CLIPS.idle)||!groups.has(CLIPS.basic))
-    throw Error("Ren GLB animation clips missing");
+   // The supplied Wanderer v1 is a skinned STATIC model with no animation clips.
+   // Combat still moves the Babylon fighter anchor. Full bone retargeting is a later task.
    root=new B.TransformNode("ren_production_glb",scene);
    const all=[...result.meshes,...result.transformNodes];
    for(const node of all)if(!node.parent)node.parent=root;
    root.parent=visual.body;
-   // Source GLB is 2 m high, centred at origin; combat body anchor is at y=.8.
-   root.position=new B.Vector3(0,.25,0);
+   // Normalize against real mesh bounds; no assumptions about the Blender export origin.
+   let min=new B.Vector3(Infinity,Infinity,Infinity);
+   let max=new B.Vector3(-Infinity,-Infinity,-Infinity);
+   for(const mesh of visible){
+    mesh.computeWorldMatrix(true);
+    const bbox=mesh.getBoundingInfo().boundingBox;
+    min=B.Vector3.Minimize(min,bbox.minimumWorld);
+    max=B.Vector3.Maximize(max,bbox.maximumWorld);
+   }
+   const extent=max.subtract(min);
+   const largest=Math.max(extent.x,extent.y,extent.z);
+   if(!Number.isFinite(largest)||largest<=0)throw Error("Invalid Wanderer GLB bounds");
+   const scale=1.9/largest;
+   root.scaling.set(scale,scale,scale);
+   // Visual fighter anchor is around y=.8; feet belong around y=.1 in world space.
+   root.position=new B.Vector3(-(min.x+max.x)*.5*scale,-.7-min.y*scale,-(min.z+max.z)*.5*scale);
    root.metadata={fighterId:"ren"};
    for(const mesh of result.meshes){
     mesh.metadata={...(mesh.metadata||{}),fighterId:"ren"};
@@ -84,7 +98,7 @@ const RenGlbRuntime=(()=>{
    let lastName=null,stopped=false;
    return {
     update(activity){
-     if(stopped||!activity)return;
+     if(stopped||!activity||!groupsList.length)return;
      const name=clipFor(activity.slot);
      const clip=groups.get(name)||groups.get(CLIPS.idle);
      if(!clip)return;
@@ -123,7 +137,7 @@ const RenGlbRuntime=(()=>{
   const promise=load(B,scene,visual).then(next=>{
    if(disposed||sceneDisposed(scene)){next.dispose();return false;}
    instance=next;
-   if(typeof onStatus==="function")onStatus("ready","3D Рен загружен");
+   if(typeof onStatus==="function")onStatus("ready","3D Рен: модель Странника загружена (анимации ещё не перенесены)");
    return true;
   }).catch(error=>{
    // Missing/deleted asset must never prevent a playable combat scene.

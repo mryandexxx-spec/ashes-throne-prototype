@@ -8,6 +8,17 @@ const RenCard3D=(()=>{
  let render=null,loadingToken=0,view="model",sizeObserver=null;
  const byId=id=>document.getElementById(id);
  function report(text){const el=byId("renCard3DStatus");if(el)el.textContent=text;}
+ function loading(text){
+  const overlay=byId("renCardLoadIndicator");
+  const label=byId("renCardLoadingText");
+  if(overlay)overlay.hidden=false;
+  if(label)label.textContent=text;
+  report(text);
+ }
+ function endLoading(){
+  const overlay=byId("renCardLoadIndicator");
+  if(overlay)overlay.hidden=true;
+ }
  function setMode(mode){
   view=mode;
   const model=view==="model";
@@ -22,6 +33,7 @@ const RenCard3D=(()=>{
  function dispose(){
   loadingToken++;
   active=false;
+  endLoading();
   if(engine){
    engine.stopRenderLoop(render);
    scene?.dispose();
@@ -48,12 +60,12 @@ const RenCard3D=(()=>{
   }
   if(active)return;
   if(!canvas||typeof BABYLON==="undefined"||!BABYLON.Engine||!RenGlbRuntime?.ensureLoader){
-   report("3D недоступно; показан портрет.");return;
+   report("3D недоступно; показан портрет.");endLoading();return;
   }
   active=true;
   const token=++loadingToken;
   view="model";
-  report("Загружаю 3D-модель Рена…");
+  loading("Загружаем Рена…");
   try{
    engine=new BABYLON.Engine(canvas,true,{alpha:true,stencil:true,preserveDrawingBuffer:false});
    scene=new BABYLON.Scene(engine);
@@ -113,6 +125,7 @@ const RenCard3D=(()=>{
    if(animation)animation.start(true,1);
    setMode("model");
    engine.resize();
+   endLoading();
    report("3D Рен загружен. Вращай пальцем, масштабируй двумя пальцами.");
   }catch(error){
    console.warn("REN-GLB-003 card model unavailable",error);

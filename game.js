@@ -2872,7 +2872,12 @@ function initBabylon(){
  if(typeof RenGlbRuntime!=="undefined"&&meshes.ren){
   renGlbRuntime=RenGlbRuntime.create(BABYLON,scene,meshes.ren,(kind,message)=>{
    const info=$("#renModelBattleStatus");
-   if(info){info.textContent=message;info.dataset.status=kind;info.hidden=false;}
+   if(info){
+    const label=$("#renModelBattleStatusText");
+    if(label)label.textContent=message;
+    info.dataset.status=kind;
+    info.hidden=false;
+   }
   });
  }
  // Babylon pointer picking supports mouse and touch, registered once with the scene.

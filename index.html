@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Пепельный престол — прототип</title>
-  <link rel="stylesheet" href="styles.css?v=0.3.104">
+  <link rel="stylesheet" href="styles.css?v=0.3.105">
   <!-- Fixed Babylon.js release: no unversioned CDN updates during prototype development. -->
   <script src="https://cdn.babylonjs.com/v9.33.2/babylon.js"></script>
 </head>
@@ -273,6 +273,10 @@
             </div>
             <img id="detailRenPortrait" class="ren-detail-portrait" src="assets/ren-portrait-ui.webp" width="220" height="275" decoding="async" alt="Рен Терен — портрет проводника Садов над пропастью" hidden>
             <canvas id="renCard3DCanvas" class="ren-card-3d-canvas" aria-label="Вращаемая трёхмерная модель Рена Терена" hidden></canvas>
+            <div id="renCardLoadIndicator" class="ren-loading-indicator" hidden aria-hidden="true">
+              <span class="ren-loading-spinner" aria-hidden="true"></span>
+              <strong id="renCardLoadingText">Загружаем Рена…</strong>
+            </div>
             <div class="hero-detail-stage-emblem" id="detailGlyph" aria-hidden="true"></div>
             <div class="hero-detail-stage-platform" aria-hidden="true"></div>
           </div>
@@ -658,7 +662,10 @@
           <button type="button" id="autoBattleBtn" class="ghost auto-battle-btn" aria-pressed="false">Автобой</button>
           <button type="button" id="autoSpeedBtn" class="ghost auto-speed-btn" aria-label="Скорость боя 1×. Нажми, чтобы изменить" title="Скорость боя: 1× → 2× → 4×">1×</button>
           <div class="turn-chip" id="turnChip">Ход 1</div>
-          <small id="renModelBattleStatus" class="ren-battle-model-status" hidden aria-live="polite"></small>
+          <div id="renModelBattleStatus" class="ren-battle-model-status" hidden role="status" aria-live="polite" data-status="idle">
+            <span class="ren-loading-spinner" aria-hidden="true"></span>
+            <span id="renModelBattleStatusText">Загружаем Рена…</span>
+          </div>
         </div>
         <div id="battleMessage" class="battle-message arena-hud" role="status">Отряд готов к бою</div>
         <div id="battleReward" class="battle-reward arena-hud" hidden aria-live="polite"></div>
@@ -719,7 +726,7 @@
         <button type="button" class="primary" id="lockedHeroUnlock">Открыть за 10 осколков</button>
       </div>
     </dialog>
-    <footer><span id="buildVersion">Прототип · v0.3.104 · UIHUD001 + OPSHELP + RENPLAY + REN3D003 + ENV010 + ENV017-MASSING + ENV022-DEFAULT + RENGLB003</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.105 · UIHUD001 + OPSHELP + RENPLAY + REN3D003 + ENV010 + ENV017-MASSING + ENV022-DEFAULT + RENGLB003 + RENLOAD005</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -763,8 +770,8 @@
   <script src="combat-environment-010.js"></script>
   <script src="combat-environment-017.js"></script>\n  <script src="combat-visual-007.js"></script>
   <script src="ren-visual-model.js"></script>
-  <script src="ren-glb-runtime.js?v=0.3.104"></script>
-  <script src="ren-card-3d.js?v=0.3.104"></script>
-  <script src="game.js?v=0.3.104"></script>
+  <script src="ren-glb-runtime.js?v=0.3.105"></script>
+  <script src="ren-card-3d.js?v=0.3.105"></script>
+  <script src="game.js?v=0.3.105"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@ const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 const css=read("styles.css"),js=read("game.js"),html=read("index.html");
 const start=css.indexOf("/* ROSTER-UI-005");
 const art=css.slice(start);
-test("ROSTER006 artwork enhances only the existing roster",()=>{
+test("UIHERO001 artwork enhances only the existing roster",()=>{
  assert.ok(start>0,"art layer is separately scoped");
  assert.match(art,/#collection\.roster-screen\{/);
  assert.match(art,/#collection \.roster-card\{/);
@@ -16,7 +16,7 @@ test("ROSTER006 artwork enhances only the existing roster",()=>{
  assert.match(art,/#collection \.roster-card\.hero-locked/);
  assert.doesNotMatch(art,/#squad|#battle|#heroDetail/);
 });
-test("ROSTER006 keeps the full Ren portrait and leader/origin labels",()=>{
+test("UIHERO001 keeps the full Ren portrait and leader/origin labels",()=>{
  assert.match(art,/\.roster-card-art \.ren-collection-portrait\{/);
  assert.match(art,/object-fit:contain/);
  assert.match(js,/const isLeader=owned&&selectedLeaderId===h\.id/);
@@ -24,14 +24,14 @@ test("ROSTER006 keeps the full Ren portrait and leader/origin labels",()=>{
  assert.match(js,/roster-identity-tags/);
  assert.doesNotMatch(art,/\.roster-squad-badge/);
 });
-test("ROSTER006 landscape and accessibility avoid mandatory motion",()=>{
+test("UIHERO001 landscape and accessibility avoid mandatory motion",()=>{
  assert.match(art,/@media\(orientation:landscape\) and \(max-height:440px\)/);
  assert.match(art,/@media\(prefers-reduced-motion:reduce\)/);
  assert.match(art,/@media\(hover:hover\) and \(pointer:fine\)/);
  assert.match(css,/#collection \.roster-card:focus-visible/);
  assert.match(css,/#collection \.roster-sort-menu\[hidden\]\{display:none\}/);
 });
-test("ROSTER006 version and marker are aligned",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.90");
- assert.match(html,/v0\.3\.90 · ROSTER006/);
+test("UIHERO001 version and marker are aligned",()=>{
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.91");
+ assert.match(html,/v0\.3\.91 · UIHERO001/);
 });

@@ -30,7 +30,7 @@ jobs:
       - name: Install Blender
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y blender libegl1 libgl1 libgl1-mesa-dri libopengl0 xvfb
+          sudo apt-get install -y blender libegl1 libgl1 libgl1-mesa-dri libopengl0 xvfb python3-numpy
           blender --version
 
       - name: Resolve source path safely

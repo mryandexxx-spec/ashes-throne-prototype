@@ -66,8 +66,15 @@ const CombatEnvironment017=(()=>{
   const uv=prim.attributes.TEXCOORD_0===undefined?null:
     read(prim.attributes.TEXCOORD_0,"VEC2",[5126]);
   const indices=read(prim.indices,"SCALAR",[5123,5125]);
-  const vertexColors=prim.attributes.COLOR_0===undefined?null:
-   read(prim.attributes.COLOR_0,"VEC4",[5121,5123,5126],true);
+  const colorId=prim.attributes.COLOR_0;
+  const colorType=colorId===undefined?null:json.accessors?.[colorId]?.type;
+  if(colorType!==null&&colorType!=="VEC3"&&colorType!=="VEC4")
+   throw Error("ENV026 unsupported color format");
+  const sourceColors=colorId===undefined?null:
+   read(colorId,colorType,[5121,5123,5126],true);
+  const vertexColors=sourceColors&&colorType==="VEC3"?
+   Array.from({length:sourceColors.length/3},(_,i)=>[
+    sourceColors[i*3],sourceColors[i*3+1],sourceColors[i*3+2],1]).flat():sourceColors;
   const count=pos.length/3;
   if(indices.length%3||indices.some(i=>i>=count)||count>160000)
    throw Error("ENV026 invalid indices");

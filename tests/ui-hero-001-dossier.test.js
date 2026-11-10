@@ -33,5 +33,5 @@ test("UIHERO002 keeps accessible touch and landscape protections",()=>{
 });
 test("UIHERO002 build version is aligned",()=>{
  assert.equal(JSON.parse(read("package.json")).version,"0.3.93");
- assert.match(html,/v0\.3\.92 · UIHERO002/);
+ assert.match(html,/v0\.3\.93 · UIHERO002/);
 });

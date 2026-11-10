@@ -2374,3 +2374,15 @@ body:has(#heroDetail.active)::before{
 @media(prefers-reduced-motion:reduce){
  #heroDetail button{transition:none}
 }
+
+
+/* ENV022: optional static art guide behind live 3D combat via ?environment=concept.
+   The actual Babylon canvas remains on top for fighters, pointer picking and FX.
+   Safe rollback: remove query flag to restore the original fully 3D arena. */
+.battle-screen.env022-concept-preview .arena-wrap{
+ background-color:#aaa19c;
+ background-image:url("assets/env022-canyon-concept.svg");
+ background-position:center center;
+ background-repeat:no-repeat;
+ background-size:cover;
+}

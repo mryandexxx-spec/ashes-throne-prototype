@@ -45,5 +45,52 @@ function createENV021Atmosphere(B,scene){
   mat.disableLighting=true;mat.emissiveTexture=tex;mat.diffuseColor=new B.Color3(0,0,0);
   mat.specularColor=new B.Color3(0,0,0);mat.backFaceCulling=false;
   sky.material=mat;
-  return {sky,tex};
+  // Volumetric-looking cloud banks are real camera-distant meshes with
+  // deterministic alpha textures. They sit beyond all canyon geometry.
+  const camera=scene.activeCamera;
+  const forward=camera.getForwardRay().direction;
+  const flat=Math.hypot(forward.x,forward.z)||1;
+  const fx=forward.x/flat,fz=forward.z/flat;
+  const layers=[];
+  for(let layer=0;layer<2;layer++){
+    const w=512,h=256;
+    const cloudTex=new B.DynamicTexture("env021_015_cloud_bank_"+layer,{width:w,height:h},scene,false);
+    const context=cloudTex.getContext();
+    const pixels=context.createImageData(w,h);
+    for(let py=0;py<h;py++){
+      const v=py/h;
+      for(let px=0;px<w;px++){
+        const u=px/w;
+        const grain=noise(u*.8+layer*.2,v*.8+layer*.13);
+        // Cluster clouds in broad banks, never flat rectangular strips.
+        const bank=(.55+.45*Math.sin(u*12+layer*2.1))*Math.sin(Math.PI*v);
+        const silhouette=Math.max(0,(grain-.35)*3.9)*Math.max(0,bank);
+        const alpha=Math.min(.73,silhouette*(layer===0?.73:.43));
+        const warm=Math.exp(-Math.pow((u-.66)/.25,2));
+        const k=4*(py*w+px);
+        pixels.data[k]=Math.min(255,112+67*warm);
+        pixels.data[k+1]=Math.min(255,118+39*warm);
+        pixels.data[k+2]=Math.min(255,128+13*warm);
+        pixels.data[k+3]=Math.round(alpha*255);
+      }
+    }
+    context.putImageData(pixels,0,0);cloudTex.hasAlpha=true;cloudTex.update(false);
+    const cloud=B.MeshBuilder.CreatePlane("env021_015_cloud_plane_"+layer,
+      {width:layer?330:260,height:layer?140:112,sideOrientation:B.Mesh.DOUBLESIDE},scene);
+    cloud.position.set(fx*(layer?230:170),layer?100:82,fz*(layer?230:170));
+    cloud.billboardMode=B.Mesh.BILLBOARDMODE_ALL;
+    cloud.isPickable=false;cloud.checkCollisions=false;
+    cloud.renderingGroupId=0;
+    const cloudMat=new B.StandardMaterial("env021_015_cloud_material_"+layer,scene);
+    cloudMat.diffuseTexture=cloudTex;
+    cloudMat.useAlphaFromDiffuseTexture=true;
+    cloudMat.disableLighting=true;
+    cloudMat.emissiveColor=new B.Color3(.50,.49,.49);
+    cloudMat.specularColor=new B.Color3(0,0,0);
+    cloudMat.backFaceCulling=false;
+    cloudMat.disableDepthWrite=true;
+    cloud.material=cloudMat;
+    layers.push(cloud);
+  }
+  return {sky,tex,layers};
 }

@@ -1,0 +1,22 @@
+name: ENV021 geology shape smoke
+on:
+  pull_request:
+    paths:
+      - "tools/env021-art-pass-010.py"
+      - "tests/env021-sculpt10-structure.py"
+      - ".github/workflows/env021-geology-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shape:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Python syntax and raw authored geometry without Blender
+        run: |
+          python3 -m py_compile tools/env021-art-pass-010.py tests/env021-sculpt10-structure.py
+          python3 tests/env021-sculpt10-structure.py

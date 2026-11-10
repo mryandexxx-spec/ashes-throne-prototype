@@ -107,7 +107,7 @@ assert.equal(baseline.fighters[1].hp,470,"old demo battle stays unchanged");
 
 const html=read("index.html"),game=read("game.js"),pkg=JSON.parse(read("package.json"));
 assert.equal(pkg.version,"0.3.104");
-assert.ok(html.includes("v0.3.104 · RENGLB003"));
+assert.ok(html.includes("v0.3.104 · UIHUD001"));
 assert.ok(html.includes('id="skillUpgradeDialog"'));
 assert.ok(html.indexOf('src="ability-data.js"')<html.indexOf('src="skill-core.js"'));
 assert.ok(html.indexOf('src="skill-core.js"')<html.indexOf('src="progress-v3-core.js"'));

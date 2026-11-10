@@ -66,6 +66,49 @@ jobs:
             echo "mode=SOURCE_BLEND" >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      - name: Retrieve licensed CC0 Poly Haven rock face texture for experimental GLB
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/env021
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, urllib.request, urllib.parse
+          root=pathlib.Path("build/env021")
+          api="https://api.polyhaven.com/files/rock_face"
+          try:
+              req=urllib.request.Request(api,headers={"User-Agent":"AshesThrone ENV021 isolated CI art-prototype"})
+              with urllib.request.urlopen(req,timeout=25) as response:
+                  catalog=json.load(response)
+              candidates=catalog.get("Diffuse",{})
+              choice=candidates.get("1k",{}).get("jpg")
+              if not isinstance(choice,dict) or not choice.get("url"):
+                  raise ValueError("Poly Haven Diffuse/1k/jpg unavailable")
+              url=choice["url"]
+              assert urllib.parse.urlsplit(url).scheme=="https"
+              assert urllib.parse.urlsplit(url).hostname in ("dl.polyhaven.org","cdn.polyhaven.com"),url
+              with urllib.request.urlopen(url,timeout=35) as response:
+                  data=response.read(3_500_001)
+              assert 100_000<len(data)<3_500_000 and data[:3]==b"\xff\xd8\xff","Not a valid 1K JPEG"
+              expected_md5=choice.get("md5")
+              if expected_md5:
+                  assert hashlib.md5(data).hexdigest().lower()==expected_md5.lower(),"Poly Haven source MD5 mismatch"
+              target=root/"polyhaven-rock-face-1k-cc0.jpg"
+              target.write_bytes(data)
+              digest=hashlib.sha256(data).hexdigest()
+              os.environ["SHA256_ROCK"]=digest
+              with open(os.environ["GITHUB_ENV"],"a",encoding="utf-8") as f:
+                  f.write("ENV021_PH_ROCKFACE="+str(target.resolve())+"\n")
+              print("POLYHAVEN_CC0_ROCKFACE_SOURCE",url,"SHA256",digest,"BYTES",len(data))
+              with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as f:
+                  f.write("\n- 1K CC0 rock photo: Poly Haven rock_face; SHA256 "+digest+"\n")
+          except Exception as exc:
+              # Do not turn third-party API outage into a gameplay CI failure;
+              # the Blender script will label and use the offline fallback.
+              print("PHOTO_TEXTURE_UNAVAILABLE_OFFLINE_FALLBACK:",type(exc).__name__,str(exc)[:250])
+              with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as f:
+                  f.write("\n- Photo texture unavailable; **procedural fallback, not photo proof**.\n")
+          PY
+
       - name: Run Blender Python authoring/export clay sculpt
         run: |
           mkdir -p build/env021

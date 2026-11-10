@@ -1,0 +1,56 @@
+name: REN-MH-004 experimental character build
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'tools/ren-mh-build/**'
+      - '.github/workflows/ren-mh-character.yml'
+      - 'docs/REN_MH_004_DUNCAN_PIPELINE.md'
+
+jobs:
+  build-ren-candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Blender generator syntax
+        run: python3 -m py_compile tools/ren-mh-build/*.py
+      - name: Install Blender
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender
+          blender --version
+      - name: Fetch official MakeHuman anatomy and skinning data
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/mh"
+          base=https://raw.githubusercontent.com/makehumancommunity/makehuman/master/makehuman/data
+          curl --fail --location --retry 3 "$base/3dobjs/base.obj" -o "$RUNNER_TEMP/mh/base.obj"
+          curl --fail --location --retry 3 "$base/rigs/default.mhskel" -o "$RUNNER_TEMP/mh/default.mhskel"
+          curl --fail --location --retry 3 "$base/rigs/default_weights.mhw" -o "$RUNNER_TEMP/mh/default_weights.mhw"
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/makehumancommunity/makehuman.git "$RUNNER_TEMP/mh-source"
+          git -C "$RUNNER_TEMP/mh-source" sparse-checkout set makehuman/data/targets
+          test -s "$RUNNER_TEMP/mh/base.obj"
+          test -s "$RUNNER_TEMP/mh/default.mhskel"
+          test -s "$RUNNER_TEMP/mh/default_weights.mhw"
+          test -d "$RUNNER_TEMP/mh-source/makehuman/data/targets"
+      - name: Generate rigged Ren from MakeHuman
+        shell: bash
+        run: |
+          set -euo pipefail
+          export REN_BUILD_OUT="$RUNNER_TEMP/ren-out"
+          export MH_ASSET_DIR="$RUNNER_TEMP/mh"
+          export MH_TARGETS_DIR="$RUNNER_TEMP/mh-source/makehuman/data/targets"
+          mkdir -p "$REN_BUILD_OUT"
+          blender -b --factory-startup --python tools/ren-mh-build/build_ren.py
+          python3 tools/ren-mh-build/validate_glb.py "$REN_BUILD_OUT/ren-teren-mh-v01.glb"
+      - name: Upload candidate GLB, Blender scene and textures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ren-mh-004-review-candidate
+          path: /tmp/ren-out/
+          if-no-files-found: warn
+          retention-days: 14

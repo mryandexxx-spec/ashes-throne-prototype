@@ -102,6 +102,7 @@ def near_mass():
     bpy.ops.object.select_all(action="DESELECT")
     ob.select_set(True)
     fragments=0
+    rock_objects=[]
     for flank in ("landward","rim"):
         for i in range(16):
             a=-7.05+i*.90
@@ -118,10 +119,17 @@ def near_mass():
             rock.name="ENV021_015_talus_"+flank+"_"+str(i)
             rock.scale=(radius*1.35,radius*.82,h)
             rock.rotation_euler=(.15*math.sin(i),.20*math.cos(i*.9),.9*math.sin(i*.47))
-            rock.select_set(True)
+            rock_objects.append(rock)
             fragments+=1
+    # Blender primitive_add deselects previous objects. Explicitly reselect
+    # all pieces before joining or the exported GLB will contain 30+ meshes.
+    bpy.ops.object.select_all(action="DESELECT")
+    ob.select_set(True)
+    for rock in rock_objects:
+        rock.select_set(True)
     bpy.context.view_layer.objects.active=ob
     bpy.ops.object.join()
+    assert all(rock.name not in bpy.data.objects for rock in rock_objects)
     ob.data.update()
     print("ENV021_PASS015_JOINED_FRAGMENTS",fragments,flush=True)
     print("ENV021_PASS015_PROVEN_BASE_RESCULPT",len(ob.data.vertices),

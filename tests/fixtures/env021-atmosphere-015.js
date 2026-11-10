@@ -26,14 +26,14 @@ function createENV021Atmosphere(B,scene){
     for(let xx=0;xx<size;xx++){
       const x=xx/(size-1),idx=4*(yy*size+xx);
       const high=clamp(1.0-t,0,1);
-      const horizon=Math.exp(-Math.pow((t-.47)/.25,2));
-      const field=noise(x,t),cloud=clamp((field-.47)*2.25,0,1);
-      const glaze=Math.exp(-Math.pow((x-.67)/.17,2))*horizon;
-      let r=37+65*horizon+18*t,g=46+73*horizon+24*t,b=61+83*horizon+23*t;
-      const ash=cloud*(.50+.33*high);
+      const horizon=Math.exp(-Math.pow((t-.47)/.31,2));
+      const field=noise(x,t),cloud=clamp((field-.39)*4.5,0,1);
+      const glaze=Math.exp(-Math.pow((x-.70)/.23,2))*horizon;
+      let r=26+65*horizon+30*t,g=36+73*horizon+30*t,b=53+83*horizon+31*t;
+      const ash=cloud*(.77+.18*high);
       r=r*(1-ash)+80*ash;g=g*(1-ash)+82*ash;b=b*(1-ash)+91*ash;
       const glow=glaze*(.55+.45*cloud);
-      r+=68*glow;g+=38*glow;b+=11*glow;
+      r+=102*glow;g+=65*glow;b+=22*glow;
       image.data[idx]=clamp(r,0,255);image.data[idx+1]=clamp(g,0,255);
       image.data[idx+2]=clamp(b,0,255);image.data[idx+3]=255;
     }

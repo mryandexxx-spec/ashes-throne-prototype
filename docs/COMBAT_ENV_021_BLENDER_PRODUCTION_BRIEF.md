@@ -71,3 +71,10 @@
 **[В РАЗРАБОТКЕ]** New Python script tools/env021-art-pass-002.py uses Babylon fighter positions as scale reference; reduces the near landmass, shapes continuous broken descending cliff, adds a genuinely separate asymmetrical distant opposite bank, and restrains source Poly Haven CC0 relief to a small fused section. The GLB export excludes REF_ fighter size/reference markers; clay preview retains them to judge scale. Blender preview camera now matches Babylon vertical FOV .8 radians.
 
 Acceptance gates: first verify the actual new Blender Actions run and inspect screenshots. A usable 844×390 composition must show the combat shelf, abyss edge and open void, and an opposing bank. Check at both radius 12/19. Then evaluate inside real Babylon with combat HUD, followed by Safari testing. The temporary ENV022 background remains in the live game until the model passes art review. No canon changes.
+
+
+## 10. Art Pass 002 crash and isolation
+
+**[ОШИБКА ВЫЯВЛЕНА]** [Run 42773067390](https://github.com/mryandexxx-spec/ashes-throne-prototype/actions/runs/42773067390) passed node checks but Blender 4.0.2 crashed with exit code 139 (segmentation fault) before output screenshots. No Art Pass 002 model was successfully rendered or exported in this run.
+
+The follow-up isolates the riskiest mesh-fusion stage: voxel remesh and decimate are temporarily disabled in tools/env021-art-pass-002.py, while the CC0 scan remains one Blender object with the near shelf but is **not topologically welded**. Debug progress markers are emitted before each modeling stage to pinpoint any remaining crash. This is an art-composition render pass only, not mobile-ready geometry. After the silhouette is evaluated, real topology repair, scan fusion, UV/baking and LOD remain required.

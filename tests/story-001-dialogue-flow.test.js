@@ -44,6 +44,6 @@ assert.match(html,/src="story-demo-core.js"/);
 assert.match(game,/battleIsStoryDemo&&!state.active&&!missionResultShown/);
 assert.match(game,/StoryDemoCore.finishBattle/);
 assert.match(game,/openSquad\("storyDemo"\)/);
-assert.match(html,/v0\.3\.92 · UIHERO001/);
+assert.match(html,/v0\.3\.93 · UIHERO001/);
 assert.equal(StoryDemoCore.fresh().phase,"intro","no persisted story state");
 console.log("STORY-001: narrative flow, guards, retry, and integration wiring checked");

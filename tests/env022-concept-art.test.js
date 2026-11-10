@@ -49,7 +49,8 @@ test("concept mode keeps live fighter hit effect pool while skipping all old sce
   assert.equal(cv.pending(),0);
   cv.emit([{slot:"hit",id:"hero"}],{hero:{head:{position:{x:1,y:2,z:3}}}});
   assert.equal(cv.pending(),1);
-  cv.tick(300,1);
+  cv.tick(100,1);
+  cv.tick(100,1);
   assert.equal(cv.pending(),0);
 });
 

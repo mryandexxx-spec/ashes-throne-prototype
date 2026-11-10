@@ -220,8 +220,13 @@ def build(scan_path=None):
     stone_texture(near)
     core.material(far,"ENV021_014A_FarPreserved",(.44,.48,.50,1))
     core.markers()
+    import os,hashlib
+    material_source=os.environ.get("ENV021_PH_ROCKFACE","")
+    material_sha=hashlib.sha256(Path(material_source).read_bytes()).hexdigest() if material_source and Path(material_source).is_file() else None
     return {
       "stage":"ART_PASS_015_UNREVIEWED",
+      "rock_texture_origin":"Poly Haven rock_face 1k CC0" if material_sha else "procedural fallback",
+      "rock_texture_sha256":material_sha,
       "source":"Derived from Blockout014A; sculpted near-bank bedding and inset fragments",
       "far_wall":"UNCHANGED_BLOCKOUT_014A",
       "sky":"REAL_TIME_TEST_ONLY_ATMOSPHERE",

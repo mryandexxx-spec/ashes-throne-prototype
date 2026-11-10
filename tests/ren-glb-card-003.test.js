@@ -33,7 +33,7 @@ test("REN-GLB-003: GLB loading is visible to player, errors retain old Ren",()=>
  assert.match(runtime,/onStatus\("error","3D Рен: ошибка загрузки/);
  assert.match(runtime,/oldParts.*isVisible=false/);
  assert.match(runtime,/if\(!disposed\)\{/);
- assert.match(module,/3D-модель Рена Терена/);
+ assert.match(module,/renCardGlbRoot/);
  assert.match(module,/ImportMeshAsync/);
  assert.match(module,/holder\.scaling\.set/);
 });

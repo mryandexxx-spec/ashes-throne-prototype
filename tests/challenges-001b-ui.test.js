@@ -12,8 +12,8 @@ test("pilot UI is a distinct navigable mode with separate results and no economi
  assert.match(html,/data-screen="challenges"/);
  assert.ok(html.indexOf('src="challenge-core.js"')>html.indexOf('src="campaign-data.js"'));
  assert.ok(html.indexOf('src="challenge-core.js"')<html.indexOf('src="game.js"'));
- assert.equal(pkg.version,"0.3.99");
- assert.match(html,/v0\.3\.99 · UIMODES001B/);
+ assert.equal(pkg.version,"0.3.100");
+ assert.match(html,/v0\.3\.100 · UIMODES001C/);
 });
 test("pilot uses the real player squad and custom enemy waves, leaving campaign intact",()=>{
  const checks=[

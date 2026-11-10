@@ -5,7 +5,7 @@ const css=read("styles.css"),html=read("index.html"),js=read("game.js");
 const start=css.indexOf("/* UI-MODES-001B");
 const art=css.slice(start);
 
-test("UIMODES001B keeps both trial modes in the accepted HQ visual language",()=>{
+test("UIMODES001C keeps both trial modes in the accepted HQ visual language",()=>{
  assert.ok(start>0);
  assert.match(art,/body:has\(#challenges\.active\)::before/);
  assert.match(art,/url\("assets\/hq-hall-painting-mobile\.webp"\)/);
@@ -16,7 +16,7 @@ test("UIMODES001B keeps both trial modes in the accepted HQ visual language",()=
  assert.doesNotMatch(art,/#campaign\s|#home\s|#playerProfile\s|#battle\s/);
 });
 
-test("UIMODES001B preserves mode switching, unlocks, squad entry and results",()=>{
+test("UIMODES001C preserves mode switching, unlocks, squad entry and results",()=>{
  for(const id of ["challenges","challengeModes","challengeModeBack","challengeModeTitle","challengeList","challengeSaveStatus","challengeResult"])
   assert.ok(html.includes('id="'+id+'"'),id+" retained");
  for(const kind of ["tactical","onslaught"])
@@ -33,7 +33,7 @@ test("UIMODES001B preserves mode switching, unlocks, squad entry and results",()
  assert.match(art,/#challenges #challengeList\[hidden\]/);
 });
 
-test("UIMODES001B keeps non-rewarding pilot and accessibility safeguards",()=>{
+test("UIMODES001C keeps non-rewarding pilot and accessibility safeguards",()=>{
  assert.match(html,/Свободные повторы, без затрат энергии и наград за сам бой/);
  assert.match(html,/УЧЕБНЫЙ PvE-ПИЛОТ · БЕЗ СЮЖЕТА/);
  assert.match(js,/Прогресс испытаний недоступен/);
@@ -44,7 +44,7 @@ test("UIMODES001B keeps non-rewarding pilot and accessibility safeguards",()=>{
  assert.match(art,/@media\(prefers-reduced-motion:reduce\)/);
 });
 
-test("UIMODES001B candidate build matches package and footer",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.99");
- assert.match(html,/v0\.3\.99 · UIMODES001B/);
+test("UIMODES001C candidate build matches package and footer",()=>{
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.100");
+ assert.match(html,/v0\.3\.100 · UIMODES001C/);
 });

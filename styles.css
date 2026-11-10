@@ -3374,3 +3374,220 @@ body:has(#challenges.active)::before{
  #app:has(#challenges.active)>.topbar #accountStatus{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){#challenges button{transition:none}}
+
+
+/* UI-MODES-001C — two operation briefing screens, HQ archive visual system.
+   Styles only: routing, choice logic, save/restore, squad and battle unchanged. */
+body:has(#operations.active),body:has(#signalOperations.active){background:#16191b}
+body:has(#operations.active)::before,body:has(#signalOperations.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215d9 0%,#10111585 23%,#1011159e 75%,#111215d9 100%),
+  linear-gradient(180deg,#101319af 0%,#1614188b 36%,#120f14ef 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#operations.active),#app:has(#signalOperations.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#operations.active)>.topbar,#app:has(#signalOperations.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(#operations.active)>.topbar .brand,
+#app:has(#signalOperations.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#operations.active)>.topbar .brand .sigil,
+#app:has(#signalOperations.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#operations.active)>.topbar .brand strong,
+#app:has(#signalOperations.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#operations.active)>.topbar .brand small,
+#app:has(#signalOperations.active)>.topbar .brand small{display:none}
+#app:has(#operations.active)>.topbar .resources,
+#app:has(#signalOperations.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#operations.active)>.topbar #accountStatus,
+#app:has(#signalOperations.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#operations.screen.active,#signalOperations.screen.active{
+ position:relative;isolation:isolate;width:min(100%,1500px);
+ margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123f0 0%,#242022f0 50%,#241f22ed 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#operations.screen.active::before,#signalOperations.screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;
+ border:1px solid #e7c58b25;border-radius:7px;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+:is(#operations,#signalOperations) .section-heading{
+ margin:0 0 10px;padding:0 0 10px;border-bottom:1px solid #d7b27c55;
+}
+:is(#operations,#signalOperations) .section-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+:is(#operations,#signalOperations) .eyebrow{color:#e0b978;letter-spacing:.14em}
+:is(#operations,#signalOperations) .muted{color:#d9c5ab;line-height:1.45}
+:is(#operations,#signalOperations) .section-heading .ghost{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+:is(#operations,#signalOperations) .ops-guide{
+ margin:8px 0 12px;border:1px solid #a5845a8a;border-radius:9px;
+ background:linear-gradient(155deg,#382d2bea,#211e23ef);
+ box-shadow:inset 0 1px #eac68b32;
+}
+:is(#operations,#signalOperations) .ops-guide>summary{
+ min-height:44px;color:#efc58a;touch-action:manipulation;
+}
+:is(#operations,#signalOperations) .ops-guide[open]>summary{border-color:#b68d5c7e}
+:is(#operations,#signalOperations) .ops-guide-body{
+ color:#e8d8bf;border-top:1px solid #b68d5c4c;
+}
+:is(#operations,#signalOperations) .ops-guide h3{color:#efc58a}
+#operations .sig-operation-entry{
+ margin:10px 0 14px;border:1px solid #bd995f9c;
+ background:radial-gradient(ellipse at 10% 0%,#ac824537,transparent 70%),
+  linear-gradient(155deg,#3c2f2aec,#252127f2);
+ box-shadow:inset 0 1px #eac68b4a,0 4px 12px #08070a75;
+}
+#operations .sig-operation-entry strong{color:#f3dbb5}
+#operations .sig-operation-entry button{min-height:44px}
+#operations .ops-legacy-label{margin:14px 0 9px;color:#f1c68a}
+:is(#operations,#signalOperations) .ops-layout{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+ align-items:start;gap:clamp(9px,1.3vw,17px);margin:10px 0;min-width:0;
+}
+:is(#operations,#signalOperations) .ops-map,
+:is(#operations,#signalOperations) .ops-panel{
+ min-width:0;padding:clamp(11px,1.5vw,19px);
+ border:1px solid #a9875c9c;border-radius:10px;
+ background:linear-gradient(160deg,#372c2cf2,#211f25f5);
+ box-shadow:inset 0 1px #efce9955,0 4px 14px #08070a72;
+}
+:is(#operations,#signalOperations) .ops-report{
+ min-height:0;margin:10px 0 14px;color:#f1dfc1;
+ line-height:1.55;overflow-wrap:anywhere;
+}
+:is(#operations,#signalOperations) .ops-actions{
+ display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;
+}
+:is(#operations,#signalOperations) .ops-actions button{
+ min-width:0;min-height:44px;max-width:100%;white-space:normal;
+ overflow-wrap:anywhere;border-radius:8px;
+}
+:is(#operations,#signalOperations) .ops-actions .primary,
+#operations .sig-operation-entry .primary{
+ border:1px solid #e9bd77;background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+:is(#operations,#signalOperations) .ops-actions .ghost{
+ border:1px solid #b99665;background:linear-gradient(145deg,#47362b,#262329);
+ color:#f0dfbf;
+}
+:is(#operations,#signalOperations) .ops-actions button:disabled{
+ opacity:.6;filter:saturate(.45);cursor:not-allowed;box-shadow:none;
+}
+:is(#operations,#signalOperations) .ops-notice{color:#ffb7a7}
+:is(#operations,#signalOperations) .ops-panel #opsHistory,
+#signalOperations #sigHistory{
+ margin:13px 0 0;padding:9px 0 0;
+ border-top:1px solid #aa865c78;color:#d9c5ab;overflow-wrap:anywhere;
+}
+:is(#operations,#signalOperations) .ops-save-status{
+ margin:11px 0 3px;color:#f0c986;overflow-wrap:anywhere;
+}
+#operations .ops-nodes{gap:clamp(5px,.8vw,10px)}
+#operations .ops-node{
+ border:1px solid #a6875c91;border-radius:8px;
+ background:linear-gradient(155deg,#352b2bf2,#222129f6);
+ color:#eed9b7;box-shadow:inset 0 1px #ead2a346;
+}
+#operations .ops-node strong{color:#f0d5a7}
+#operations .ops-node small{color:#dbc5a8}
+#operations .ops-node b{color:#ffcf86}
+#operations button.ops-node:not(:disabled){
+ border-color:#e4b778;background:linear-gradient(155deg,#5b402edb,#31252aef);
+ box-shadow:inset 0 1px #ffd9a46c,0 0 0 1px #cf9e5747;
+}
+#operations button.ops-node:disabled{opacity:.62;cursor:default}
+#operations .ops-node.confirmed{
+ outline:2px solid #edca8b;outline-offset:1px;
+}
+#operations .ops-crossroads{color:#e7b976}
+#signalOperations .sig-guards{gap:clamp(5px,.7vw,9px)}
+#signalOperations .sig-guard,
+#signalOperations .sig-beacon{
+ min-width:0;border:1px solid #a6875c91;border-radius:8px;
+ background:linear-gradient(155deg,#352b2bf2,#222129f6);
+ color:#eed9b7;box-shadow:inset 0 1px #ead2a346;
+}
+#signalOperations .sig-beacon{
+ border-color:#dfb677;background:linear-gradient(155deg,#59402fe9,#30262bed);
+}
+#signalOperations .sig-guard strong,#signalOperations .sig-beacon strong{color:#f1d4a5}
+#signalOperations .sig-guard small,#signalOperations .sig-beacon small{
+ color:#dbc5a8;overflow-wrap:anywhere;
+}
+#signalOperations .sig-guard-icon,#signalOperations .sig-beacon>span{color:#f0c783}
+#signalOperations .sig-post-status{
+ display:inline-block;max-width:100%;padding:6px 9px;margin:8px 0;
+ border:1px solid #a783545f;border-radius:7px;
+ background:#221d20d6;color:#f1ce94;overflow-wrap:anywhere;
+}
+:is(#operations,#signalOperations) button:focus-visible{
+ outline:3px solid #ffe2a1;outline-offset:2px;
+}
+#app:has(#operations.active)>footer,#app:has(#signalOperations.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#operations.active)>.topbar,#app:has(#signalOperations.active)>.topbar{
+  height:42px;padding-inline:9px;
+ }
+ #app:has(#operations.active)>.topbar .brand strong,
+ #app:has(#signalOperations.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#operations.active)>.topbar #accountStatus,
+ #app:has(#signalOperations.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #operations.screen.active,#signalOperations.screen.active{
+  margin:7px auto 12px;padding:9px 10px 14px;
+ }
+ :is(#operations,#signalOperations) .section-heading{margin-bottom:7px;padding-bottom:7px}
+ :is(#operations,#signalOperations) .section-heading h2{font-size:21px}
+ :is(#operations,#signalOperations) .ops-layout{gap:8px;margin:7px 0}
+ :is(#operations,#signalOperations) .ops-map,
+ :is(#operations,#signalOperations) .ops-panel{padding:9px 11px}
+ :is(#operations,#signalOperations) .ops-guide{margin:5px 0 8px}
+ :is(#operations,#signalOperations) .ops-report{margin:7px 0;font-size:12px;line-height:1.4}
+ :is(#operations,#signalOperations) .ops-actions{gap:6px}
+ :is(#operations,#signalOperations) .ops-actions button{min-height:44px;padding:7px 10px;font-size:11px}
+ #operations .ops-node{min-height:49px;padding:6px 4px}
+ #signalOperations .sig-guard,#signalOperations .sig-beacon{min-height:65px;padding:5px 3px}
+ :is(#operations,#signalOperations) .ops-save-status{font-size:11px;margin:6px 0}
+}
+@media(max-width:650px) and (orientation:portrait){
+ :is(#operations,#signalOperations) .ops-layout{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:560px){
+ :is(#operations,#signalOperations) .ops-layout{grid-template-columns:minmax(0,1fr)}
+ :is(#operations,#signalOperations) .ops-actions button{flex:1 1 145px}
+ #operations .sig-operation-entry{flex-wrap:wrap}
+ #operations .sig-operation-entry button{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ :is(#operations,#signalOperations) button{transition:none}
+}

@@ -8,6 +8,23 @@ const RenCard3D=(()=>{
  let render=null,loadingToken=0,view="model",sizeObserver=null;
  const byId=id=>document.getElementById(id);
  function report(text){const el=byId("renCard3DStatus");if(el)el.textContent=text;}
+ function loading(text,percent=null){
+  const overlay=byId("renCardLoadIndicator");
+  const label=byId("renCardLoadingText");
+  const progress=byId("renCardLoadingProgress");
+  if(overlay)overlay.hidden=false;
+  if(label)label.textContent=text;
+  if(progress){
+   const known=Number.isFinite(percent);
+   progress.hidden=!known;
+   if(known)progress.value=percent;
+  }
+  report(text);
+ }
+ function endLoading(){
+  const overlay=byId("renCardLoadIndicator");
+  if(overlay)overlay.hidden=true;
+ }
  function setMode(mode){
   view=mode;
   const model=view==="model";
@@ -22,6 +39,7 @@ const RenCard3D=(()=>{
  function dispose(){
   loadingToken++;
   active=false;
+  endLoading();
   if(engine){
    engine.stopRenderLoop(render);
    scene?.dispose();
@@ -48,12 +66,12 @@ const RenCard3D=(()=>{
   }
   if(active)return;
   if(!canvas||typeof BABYLON==="undefined"||!BABYLON.Engine||!RenGlbRuntime?.ensureLoader){
-   report("3D недоступно; показан портрет.");return;
+   report("3D недоступно; показан портрет.");endLoading();return;
   }
   active=true;
   const token=++loadingToken;
   view="model";
-  report("Загружаю 3D-модель Рена…");
+  loading("Загружаем Рена…");
   try{
    engine=new BABYLON.Engine(canvas,true,{alpha:true,stencil:true,preserveDrawingBuffer:false});
    scene=new BABYLON.Scene(engine);
@@ -77,7 +95,11 @@ const RenCard3D=(()=>{
    }
    await RenGlbRuntime.ensureLoader();
    if(!active||token!==loadingToken)return;
-   const result=await BABYLON.SceneLoader.ImportMeshAsync(null,"assets/","ren-animated-v02.glb",scene,undefined,".glb");
+   const result=await BABYLON.SceneLoader.ImportMeshAsync(null,"assets/","ren-animated-v02.glb",scene,event=>{
+    if(!active||token!==loadingToken)return;
+    const percent=RenGlbRuntime.progressPercent(event);
+    if(percent!==null)loading("Загружаем Рена: "+percent+"%",percent);
+   },".glb");
    if(!active||token!==loadingToken){
     for(const group of result.animationGroups)group.dispose();
     for(const mesh of result.meshes)mesh.dispose();
@@ -113,6 +135,7 @@ const RenCard3D=(()=>{
    if(animation)animation.start(true,1);
    setMode("model");
    engine.resize();
+   endLoading();
    report("3D Рен загружен. Вращай пальцем, масштабируй двумя пальцами.");
   }catch(error){
    console.warn("REN-GLB-003 card model unavailable",error);

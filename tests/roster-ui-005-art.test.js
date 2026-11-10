@@ -3,7 +3,7 @@ const test=require("node:test"),assert=require("node:assert/strict"),fs=require(
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 const css=read("styles.css"),js=read("game.js"),html=read("index.html");
 const start=css.indexOf("/* ROSTER-UI-005");
-const art=css.slice(start);
+const art=css.slice(start,css.indexOf("/* ROSTER-UI-006",start));
 test("UIHERO001 artwork enhances only the existing roster",()=>{
  assert.ok(start>0,"art layer is separately scoped");
  assert.match(art,/#collection\.roster-screen\{/);

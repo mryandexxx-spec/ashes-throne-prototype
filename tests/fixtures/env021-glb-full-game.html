@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ENV021 GLB / actual battle HUD / ephemeral QA</title>
+<style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden;background:#8c969b}</style></head>
+<body><iframe id="game" src="../../index.html" title="Actual Babylon battle with GLB art-test"></iframe>
+<script>
+/* Art QA only. Loads a REAL Blender-exported local GLB into a REAL Babylon
+ * battle scene and retains the game's fighters, camera, interaction and HUD.
+ * No runtime deployment. The explicit parsed GLB contract is narrow:
+ * uncompressed glTF v2, tightly packed POSITION and SCALAR indices.
+ * Blender output Y-up right-handed -> Babylon left-handed: reflect Z and flip winding.
+ * This is not a substitute for final Babylon glTF loader integration. */
+(()=>{
+  const iframe=document.getElementById("game"),d=document.documentElement.dataset;
+  const far=new URLSearchParams(location.search).get("radius")==="19";
+  let attempts=0,entered=false,launched=false,loading=false,loaded=false,draws=0;
+  function fail(error){clearInterval(poll);d.visualStatus="error";d.error=String(error?.message||error);console.error(error);}
+  function accessor(meta,bin,number) {
+    const a=meta.accessors[number],v=meta.bufferViews[a.bufferView];
+    if(a.sparse||v.byteStride)throw Error("Unsupported interleaved or sparse accessor");
+    const parts=a.type==="VEC3"?3:a.type==="SCALAR"?1:0;
+    if(!parts)throw Error("Unexpected GLB accessor type "+a.type);
+    const byte=a.componentType===5126||a.componentType===5125?4:a.componentType===5123?2:0;
+    if(!byte)throw Error("Unsupported GLB component "+a.componentType);
+    const start=(v.byteOffset||0)+(a.byteOffset||0);
+    if(start+a.count*parts*byte>bin.byteLength)throw Error("Out-of-bounds GLB accessor");
+    const view=new DataView(bin,start,a.count*parts*byte);
+    const out=new Array(a.count*parts);
+    for(let i=0;i<out.length;i++) {
+      const pos=i*byte;
+      out[i]=a.componentType===5126?view.getFloat32(pos,true):
+        a.componentType===5125?view.getUint32(pos,true):view.getUint16(pos,true);
+    }
+    return out;
+  }
+  async function inject(win,scene,B) {
+    const resp=await fetch("../../build/env021/scene.glb",{cache:"no-store"});
+    if(!resp.ok)throw Error("Failed to load Blender GLB: HTTP "+resp.status);
+    const bytes=await resp.arrayBuffer(),head=new DataView(bytes);
+    if(head.getUint32(0,true)!==0x46546c67||head.getUint32(4,true)!==2||head.getUint32(8,true)!==bytes.byteLength)
+      throw Error("Invalid GLB header/length");
+    const jsonSize=head.getUint32(12,true),jsonType=head.getUint32(16,true);
+    if(jsonType!==0x4e4f534a)throw Error("Missing JSON chunk");
+    const json=JSON.parse(new TextDecoder().decode(new Uint8Array(bytes,20,jsonSize)));
+    const binPos=20+jsonSize;
+    if(head.getUint32(binPos+4,true)!==0x004e4942)throw Error("Missing BIN chunk");
+    const bin=bytes.slice(binPos+8,binPos+8+head.getUint32(binPos,true));
+    if(json.meshes?.length!==2)throw Error("Expected two sculpted landmass meshes");
+    // Existing ENV017 scenic meshes and grounds should not occlude the candidate.
+    // Do not remove fighters, their bases, hit FX, targeting proxies, or HUD.
+    let hidden=0;
+    for(const obj of scene.meshes) {
+      if(/^(env017_|env010_|env009_|cv007_)/.test(obj.name) && !/cv007_hit_/.test(obj.name)) {
+        obj.setEnabled(false);hidden++;
+      }
+    }
+    scene.clearColor=new B.Color4(.56,.61,.64,1);
+    let verts=0,tris=0;
+    json.meshes.forEach((item,mi)=>{
+      const prim=item.primitives[0];
+      if(prim.mode!==undefined&&prim.mode!==4)throw Error("Only triangle GLB supported");
+      const positions=accessor(json,bin,prim.attributes.POSITION);
+      const raw=accessor(json,bin,prim.indices);
+      for(let i=2;i<positions.length;i+=3)positions[i]*=-1;
+      for(let i=0;i<raw.length;i+=3){const t=raw[i+1];raw[i+1]=raw[i+2];raw[i+2]=t;}
+      const normals=[];
+      B.VertexData.ComputeNormals(positions,raw,normals);
+      const m=new B.Mesh("env021_candidate_"+mi+"_"+item.name,scene);
+      const data=new B.VertexData();
+      data.positions=positions;data.indices=raw;data.normals=normals;
+      data.applyToMesh(m);
+      const mat=new B.StandardMaterial("env021_preview_clay_"+mi,scene);
+      mat.diffuseColor=mi?new B.Color3(.57,.56,.54):new B.Color3(.44,.48,.49);
+      mat.specularColor=new B.Color3(.02,.02,.02);
+      mat.backFaceCulling=false;
+      m.material=mat;m.isPickable=false;m.checkCollisions=false;
+      verts+=positions.length/3;tris+=raw.length/3;
+    });
+    if(verts<1000||tris<1000)throw Error("Too few GLB vertices or triangles");
+    return {verts,tris,hidden};
+  }
+  const poll=setInterval(async ()=>{
+    if(loading||loaded)return;
+    try{
+      if(++attempts>160)throw Error("Actual game scene did not become ready");
+      const win=iframe.contentWindow,doc=iframe.contentDocument;
+      if(!doc||doc.readyState!=="complete")return;
+      if(doc.querySelector("#loginCalendar.active")){
+        doc.querySelector('#loginCalendar [data-screen="home"]')?.click();
+        entered=false;launched=false;return;
+      }
+      if(doc.querySelector("#home.active")&&!entered){entered=true;doc.querySelector("#startBattle")?.click();return;}
+      if(doc.querySelector("#squad.active")&&!launched){launched=true;doc.querySelector("#squadStart")?.click();return;}
+      const battle=doc.querySelector("#battle.active"),canvas=doc.querySelector("#renderCanvas");
+      if(!battle||!canvas||!canvas.width||!canvas.height)return;
+      const B=win.BABYLON,scene=win.eval("scene"),camera=win.eval("arenaCamera"),engine=win.eval("engine");
+      if(!B||!scene||!camera||!engine)throw Error("Babylon is not initialized");
+      loading=true;
+      const result=await inject(win,scene,B);
+      camera.radius=far?19:12;
+      if(!scene.meshes.some(m=>m.name.startsWith("env021_candidate_")))throw Error("No candidate meshes in actual game");
+      const actualFighters=win.eval("Object.values(meshes).filter(x=>x.body.isEnabled()).length");
+      if(actualFighters<2)throw Error("Live game fighters not visible");
+      d.art="ENV021_PASS005_GLB_NOT_APPROVED";d.verts=String(result.verts);
+      d.tris=String(result.tris);d.hiddenScenery=String(result.hidden);
+      d.fighters=String(actualFighters);d.camera=String(camera.radius);
+      d.webgl="true";loaded=true;
+      clearInterval(poll);
+      // Capture real frames, not just a canvas initialization moment.
+      setTimeout(()=>d.visualStatus="ready",1200);
+    }catch(e){fail(e);}
+  },125);
+})();
+</script></body></html>

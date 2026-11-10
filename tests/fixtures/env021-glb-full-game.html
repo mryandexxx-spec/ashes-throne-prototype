@@ -316,6 +316,14 @@
       d.terrainRedPixels=String(red);d.terrainCyanPixels=String(cyan);
       d.candidateDifferencePixels=String(anyCandidateDifference);
       d.candidateDrawCalls=String(candidateDrawCalls);
+      d.candidateMeshIndexRanges=JSON.stringify(candidateMeshes.map(m=>({
+        verts:m.getTotalVertices(),indices:m.getTotalIndices(),
+        maxIndex:Math.max(...m.getIndices()),
+        submeshIndexStart:m.subMeshes[0]?.indexStart,
+        submeshIndexCount:m.subMeshes[0]?.indexCount
+      })));
+      d.webglError=String(engine._gl?.getError());
+
       d.candidateSubmeshFrustum=JSON.stringify(candidateMeshes.map(m=>m.subMeshes?.map(sm=>sm.isInFrustum(scene.frustumPlanes))));
       d.candidateOnlyRedPixels=String(changedRed);
       d.candidateOnlyCyanPixels=String(changedCyan);

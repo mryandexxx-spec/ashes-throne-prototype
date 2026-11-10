@@ -1935,3 +1935,6 @@ body:has(#home.active){height:100dvh;overflow:hidden}
  #collection .roster-filter-button,#collection .roster-sort-trigger,#collection .roster-sort-menu button{min-height:44px}
  #collection .roster-shown{font-size:10px}
 }
+
+/* ROSTER-UI-004: role badge only for the actual selected leader; identity tags stay separate. */
+#collection .roster-leader-indicator{position:absolute;right:4px;bottom:4px;z-index:2;max-width:calc(100% - 8px);padding:3px 6px;border:1px solid #e0b978;border-radius:4px;background:#473021ed;color:#ffe1a8;font-size:10px;font-weight:700;line-height:1.25;pointer-events:none}

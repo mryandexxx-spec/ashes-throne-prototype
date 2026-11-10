@@ -20,7 +20,7 @@ def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", default="")
     parser.add_argument("--output", required=True)
-    parser.add_argument("--mode", choices=("smoke", "sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11", "sculpt12", "sculpt13"), default="smoke")
+    parser.add_argument("--mode", choices=("smoke", "sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11", "sculpt12", "sculpt13", "blockout14a", "blockout14b"), default="smoke")
     parser.add_argument("--scan", default="")
     return parser.parse_args(argv)
 
@@ -142,6 +142,15 @@ def main():
         bpy.ops.wm.open_mainfile(filepath=str(src))
         mode = "USER_SOURCE_UNREVIEWED"
         source_hash = hashlib.sha256(src.read_bytes()).hexdigest()
+    elif args.mode in ("blockout14a", "blockout14b"):
+        module_path = pathlib.Path(__file__).with_name("env021-blockout-014.py")
+        spec = importlib.util.spec_from_file_location("env021_blockout14", module_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        option = "A" if args.mode.endswith("a") else "B"
+        provenance = module.build(option, None)
+        mode = "BLOCKOUT_014" + option + "_UNREVIEWED"
+        source_hash = None
     elif args.mode in ("sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11", "sculpt12", "sculpt13"):
         if not args.scan or not pathlib.Path(args.scan).is_file():
             raise RuntimeError("ENV021 sculpt mode requires a verified CC0 scan")
@@ -158,14 +167,14 @@ def main():
         source_hash = None
 
     mesh_objects = [o for o in bpy.data.objects if o.type == "MESH" and not o.hide_render]
-    if args.mode in ("sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11", "sculpt12", "sculpt13"):
+    if args.mode.startswith("blockout14") or args.mode in ("sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11", "sculpt12", "sculpt13"):
         mesh_objects = [o for o in mesh_objects if not o.name.startswith("REF_")]
     if not mesh_objects:
         raise RuntimeError("No visible mesh objects to export")
-    near = add_camera(12.0, "ENV021_REFERENCE_default_native_glTF" if args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11", "sculpt12", "sculpt13") else "ENV021_REFERENCE_default_not_calibrated",native_gltf=args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11", "sculpt12", "sculpt13"))
-    distant = add_camera(19.0, "ENV021_REFERENCE_far_native_glTF" if args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11", "sculpt12", "sculpt13") else "ENV021_REFERENCE_far_not_calibrated",native_gltf=args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11", "sculpt12", "sculpt13"))
+    near = add_camera(12.0, "ENV021_REFERENCE_default_native_glTF" if (args.mode.startswith("blockout14") or args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11", "sculpt12", "sculpt13")) else "ENV021_REFERENCE_default_not_calibrated",native_gltf=(args.mode.startswith("blockout14") or args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11", "sculpt12", "sculpt13")))
+    distant = add_camera(19.0, "ENV021_REFERENCE_far_native_glTF" if (args.mode.startswith("blockout14") or args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11", "sculpt12", "sculpt13")) else "ENV021_REFERENCE_far_not_calibrated",native_gltf=(args.mode.startswith("blockout14") or args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11", "sculpt12", "sculpt13")))
 
-    clay_render(output / "clay-default.png", near, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11", "sculpt12", "sculpt13"))
+    clay_render(output / "clay-default.png", near, cpu=args.mode.startswith("blockout14") or args.mode in ("sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11", "sculpt12", "sculpt13"))
     clay_render(output / "clay-far.png", distant, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5"))
 
     # Save inspectable source before exporting. Does not modify user-supplied source.
@@ -188,11 +197,11 @@ def main():
         "stage": "ENV021",
         "mode": mode,
         "acceptance": "NOT_ART_APPROVED",
-        "camera": "NATIVE_GLTF_ORIENTED_REFERENCE" if args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11", "sculpt12", "sculpt13") else "APPROXIMATE_REFERENCE_NOT_GAME_VERIFIED",
+        "camera": "NATIVE_GLTF_ORIENTED_REFERENCE" if (args.mode.startswith("blockout14") or args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11", "sculpt12", "sculpt13")) else "APPROXIMATE_REFERENCE_NOT_GAME_VERIFIED",
         "hud": "NOT_INCLUDED",
         "blender_version": bpy.app.version_string,
         "source_sha256": source_hash,
-        "source_provenance": provenance if args.mode in ("sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11", "sculpt12", "sculpt13") and not args.source else None,
+        "source_provenance": provenance if args.mode.startswith("blockout14") or args.mode in ("sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11", "sculpt12", "sculpt13") and not args.source else None,
         "glb_sha256": hashlib.sha256(raw).hexdigest(),
         "glb_bytes": len(raw),
         "mesh_count": len(mesh_objects),

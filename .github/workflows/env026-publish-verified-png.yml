@@ -1,4 +1,6 @@
 name: ENV026 verified real Chromium PNG and six fighter surface contacts
+# Re-capture edited Blender art pass 2 after Actions-produced GLB commit.
+# GitHub token pushes do not recursively trigger workflows.
 on:
   push:
     branches: [feat/combat-env-026-authored-blender-gorge]

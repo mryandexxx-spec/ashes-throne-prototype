@@ -158,14 +158,14 @@ def main():
         source_hash = None
 
     mesh_objects = [o for o in bpy.data.objects if o.type == "MESH" and not o.hide_render]
-    if args.mode in ("sculpt2", "sculpt3", "sculpt4", "sculpt5"):
+    if args.mode in ("sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6"):
         mesh_objects = [o for o in mesh_objects if not o.name.startswith("REF_")]
     if not mesh_objects:
         raise RuntimeError("No visible mesh objects to export")
     near = add_camera(12.0, "ENV021_REFERENCE_default_native_glTF" if args.mode == "sculpt6" else "ENV021_REFERENCE_default_not_calibrated",native_gltf=args.mode == "sculpt6")
     distant = add_camera(19.0, "ENV021_REFERENCE_far_native_glTF" if args.mode == "sculpt6" else "ENV021_REFERENCE_far_not_calibrated",native_gltf=args.mode == "sculpt6")
 
-    clay_render(output / "clay-default.png", near, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5"))
+    clay_render(output / "clay-default.png", near, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5", "sculpt6"))
     clay_render(output / "clay-far.png", distant, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5"))
 
     # Save inspectable source before exporting. Does not modify user-supplied source.
@@ -192,7 +192,7 @@ def main():
         "hud": "NOT_INCLUDED",
         "blender_version": bpy.app.version_string,
         "source_sha256": source_hash,
-        "source_provenance": provenance if args.mode in ("sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5") and not args.source else None,
+        "source_provenance": provenance if args.mode in ("sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6") and not args.source else None,
         "glb_sha256": hashlib.sha256(raw).hexdigest(),
         "glb_bytes": len(raw),
         "mesh_count": len(mesh_objects),

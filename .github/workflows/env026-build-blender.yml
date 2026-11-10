@@ -1,0 +1,90 @@
+name: ENV026 Blender authors CC0 gorge as one editable scene
+on:
+  push:
+    branches: [feat/combat-env-026-authored-blender-gorge]
+    paths:
+      - tools/env026-author-gorge.blend.py
+      - .github/workflows/env026-build-blender.yml
+  pull_request:
+    paths:
+      - tools/env026-author-gorge.blend.py
+      - .github/workflows/env026-build-blender.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  blender:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: true}
+      - name: Install offline Blender scene authoring tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq blender
+          blender --version | head -3
+      - name: Retrieve ONLY verified genuine Poly Haven CC0 original-derived GLBs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/env026-sources assets/env026
+          git fetch origin research/env025-irregular-cc0-ledge-screening feat/combat-env-021-cc0-cliff-assets
+          git show origin/research/env025-irregular-cc0-ledge-screening:assets/env025/CoastalCliff04Mobile.glb > /tmp/env026-sources/CoastalCliff04Mobile.glb
+          git show origin/feat/combat-env-021-cc0-cliff-assets:assets/env021/PolyCliff01.glb > /tmp/env026-sources/PolyCliff01.glb
+          test "$(stat -c %s /tmp/env026-sources/CoastalCliff04Mobile.glb)" -ge 800000
+          test "$(stat -c %s /tmp/env026-sources/PolyCliff01.glb)" -ge 200000
+          python3 - <<'PY'
+          import pathlib,struct
+          for f in pathlib.Path('/tmp/env026-sources').glob('*.glb'):
+            b=f.read_bytes()
+            assert b[:4]==b'glTF' and struct.unpack_from('<I',b,8)[0]==len(b)
+            print('ORIGINAL_CC0_SOURCE',f.name,len(b),'bytes',flush=True)
+          PY
+      - name: Assemble actual ready-made scan meshes in editable Blender file
+        shell: bash
+        run: |
+          set -euo pipefail
+          blender --background --threads 2 --python tools/env026-author-gorge.blend.py -- /tmp/env026-sources
+          test -s assets/env026/ENV026_authored_gorge.blend
+          test -s assets/env026/ENV026_authored_gorge.glb
+      - name: Inspect exported topology and local mobile geometry budget
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,pathlib,struct
+          f=pathlib.Path('assets/env026/ENV026_authored_gorge.glb')
+          b=f.read_bytes()
+          assert b[:4]==b'glTF' and struct.unpack_from('<I',b,8)[0]==len(b)
+          n=struct.unpack_from('<I',b,12)[0]
+          g=json.loads(b[20:20+n])
+          count=sum(g['accessors'][p['indices']]['count']//3 for m in g['meshes'] for p in m['primitives'])
+          print('AUTHORED_GORGE_GLTF','bytes',len(b),'meshes',len(g['meshes']),'triangles',count,'nodes',len(g.get('nodes',[])))
+          assert 3<=len(g['meshes'])<=8
+          assert 15000<=count<=100000
+          assert len(b)<8000000
+          print('ENV026 geometry export inspected; art NOT accepted.')
+          PY
+      - name: Commit verified Blender scene and runtime GLB only to Draft branch
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/env026/ENV026_authored_gorge.blend assets/env026/ENV026_authored_gorge.glb
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'ENV026: save editable Blender gorge composition and exported genuine CC0 scan geometry'
+          git fetch origin feat/combat-env-026-authored-blender-gorge
+          git rebase origin/feat/combat-env-026-authored-blender-gorge
+          git push origin HEAD:feat/combat-env-026-authored-blender-gorge
+      - name: Retain build artifacts for inspection even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env026-blender-authored-scene
+          path: assets/env026/
+          retention-days: 14

@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y -qq blender
+          sudo apt-get install -y -qq blender python3-numpy
           blender --version | head -3
       - name: Retrieve ONLY verified genuine Poly Haven CC0 original-derived GLBs
         shell: bash
@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          blender --background --threads 2 --python tools/env026-author-gorge.blend.py -- /tmp/env026-sources
+          PYTHONPATH=/usr/lib/python3/dist-packages blender --background --threads 2 --python tools/env026-author-gorge.blend.py -- /tmp/env026-sources
           test -s assets/env026/ENV026_authored_gorge.blend
           test -s assets/env026/ENV026_authored_gorge.glb
       - name: Inspect exported topology and local mobile geometry budget

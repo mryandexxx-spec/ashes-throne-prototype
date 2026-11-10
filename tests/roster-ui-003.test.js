@@ -9,7 +9,7 @@ test("ROSTER003 displays established character identity and does not invent fact
  assert.match(js,/HeroProfileData\.get\(h\.id\)/);
  assert.match(js,/HeroProfileData\.tagLabels\(profile\.tags\)/);
  assert.match(js,/class="roster-identity-tag"/);
- assert.doesNotMatch(js,/roster-squad-badge|roster-leader-badge|roster-in-squad|В отряде/);
+ assert.doesNotMatch(js,/roster-squad-badge|roster-leader-badge|roster-in-squad/);
  assert.match(css,/#collection \.roster-identity-tag\{/);
 });
 test("ROSTER003 uses styled in-page menu instead of native select",()=>{

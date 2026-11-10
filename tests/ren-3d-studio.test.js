@@ -21,7 +21,7 @@ Mesh.CAP_ALL=3;
 const B={
  Vector3,Axis:{Y:new Vector3(0,1,0),X:new Vector3(1,0,0)},
  Quaternion:{Identity:()=>({identity:true}),RotationAxis:(a,angle)=>({axis:a,angle})},
- Color3:{FromHexString:s=>s},
+ Color3:class{constructor(r,g,b){this.r=r;this.g=g;this.b=b;}static FromHexString(s){return s;}},
  StandardMaterial:class{constructor(name){this.name=name;}},
  TransformNode:class{constructor(name){this.name=name;}},
  Mesh,MeshBuilder:{}

@@ -35,5 +35,5 @@ test("UISYS001A keeps compact landscape, touch sizes and keyboard visibility",()
 });
 test("UISYS001A public build is synchronized",()=>{
  assert.equal(JSON.parse(read("package.json")).version,"0.3.97");
- assert.match(html,/v0\.3\.96 · UISYS001C/);
+ assert.match(html,/v0\.3\.97 · UISYS001C/);
 });

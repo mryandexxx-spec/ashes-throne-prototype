@@ -1,0 +1,57 @@
+name: ENV022 real-game concept backdrop WebGL
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/env022-concept-webgl.yml"
+      - "assets/env022-canyon-concept.svg"
+      - "game.js"
+      - "combat-visual-007.js"
+      - "styles.css"
+      - "tests/fixtures/env022-full-game.html"
+
+permissions:
+  contents: read
+
+jobs:
+  full-game:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Capture real Babylon + full HUD over the concept image
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          mkdir -p artifacts
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/env022-http.log 2>&1 &
+          sleep 2
+          for radius in default far; do
+            url="http://127.0.0.1:8765/tests/fixtures/env022-full-game.html?radius=$radius"
+            "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
+              --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
+              --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 \
+              --virtual-time-budget=20000 --screenshot="$PWD/artifacts/env022-$radius.png" \
+              "$url" 2>"/tmp/env022-chrome-$radius.log"
+            "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
+              --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
+              --virtual-time-budget=20000 --dump-dom "$url" \
+              >"artifacts/env022-$radius.dom.html" 2>>"/tmp/env022-chrome-$radius.log"
+            grep -q 'data-visual-status="ready"' "artifacts/env022-$radius.dom.html"
+            grep -q 'data-canvas-alpha="0"' "artifacts/env022-$radius.dom.html"
+            grep -q 'data-backdrop="embedded-webp-svg"' "artifacts/env022-$radius.dom.html"
+            test -s "artifacts/env022-$radius.png"
+            file "artifacts/env022-$radius.png"
+          done
+
+      - name: Upload actual browser evidence, no deployment
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env022-real-game-webgl
+          path: artifacts/
+          retention-days: 14
+          if-no-files-found: warn

@@ -29,7 +29,7 @@ test("REN-GLB-003: dossier shows a touch-rotatable canvas only for Ren",()=>{
 });
 test("REN-GLB-003: GLB loading is visible to player, errors retain old Ren",()=>{
  assert.match(html,/id="renModelBattleStatus"/);
- assert.match(js,/RenGlbRuntime\.create\(BABYLON,scene,meshes\.ren,\(kind,message,progress\)=>/);
+ assert.match(js,/RenGlbRuntime\.create\(BABYLON,scene,meshes\.ren,\(kind,message\)=>/);
  assert.match(runtime,/onStatus\("ready","3D Рен загружен"\)/);
  assert.match(runtime,/onStatus\("error","3D Рен: ошибка загрузки/);
  assert.match(runtime,/oldParts.*isVisible=false/);

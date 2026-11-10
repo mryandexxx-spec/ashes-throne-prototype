@@ -88,7 +88,7 @@ near=load("PolyHaven_04_unedited",inp/"CoastalCliff04Mobile.glb")
 # authored, intentionally *irregular* terrain boundary. Preserve full
 # sampled 6-fighter contact patch, verified later in actual WebGL.
 def keep_near(side,away):
-    right_lip=6.15+.55*math.sin(away*.42)+.38*math.sin(away*.17+1.7)
+    right_lip=4.85+.48*math.sin(away*.42)+.30*math.sin(away*.17+1.7)
     return -20.0<side<right_lip and -16.0<away<19.0
 edit_rock(near,"A_near_integrated_shelf_and_cliff_root",near_xyz,keep_near)
 
@@ -99,12 +99,12 @@ edit_rock(near,"A_near_integrated_shelf_and_cliff_root",near_xyz,keep_near)
 far=load("PolyHaven_04_second_raw",inp/"CoastalCliff04Mobile.glb")
 def far_xyz(v):
     sx,sy,sz=source(v)
-    side=17.0+(sz+6.0)*.76
-    away=22.0+(sx-22.0)*.72
-    y=(sy-8.329)*1.45+1.25
+    side=14.2+(sz+6.0)*.72
+    away=25.0+(sx-22.0)*.72
+    y=(sy-8.329)*1.45-5.25
     return world(side,away,y),side,away
 def keep_far(side,away):
-    return 13.6<side<33.0 and 10.0<away<55.0
+    return 11.0<side<30.5 and 14.0<away<56.0
 edit_rock(far,"B_far_opposite_bank_with_actual_thickness",far_xyz,keep_far)
 
 # Third-party external original photographic slab adds a landward buttress;
@@ -114,9 +114,9 @@ rootrock=load("PolyHaven_02_root_raw",inp/"PolyCliff01.glb")
 # as low, wide *landward* bedrock on the LEFT, physically overlapping shelf.
 def root_xyz(v):
     sx,sy,sz=source(v)
-    side=-11.0+sx*.90
-    away=2.0+sz*1.25
-    y=-5.3+sy*1.50
+    side=-5.3+sx*.90
+    away=3.0+sz*1.25
+    y=-7.2+sy*1.60
     return world(side,away,y),side,away
 edit_rock(rootrock,"C_joined_left_buttress",root_xyz)
 

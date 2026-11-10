@@ -4,7 +4,7 @@ const read=x=>fs.readFileSync(path.join(__dirname,"..",x),"utf8");
 const css=read("styles.css"),html=read("index.html"),js=read("game.js");
 const start=css.indexOf("/* ROSTER-UI-006");
 const shell=css.slice(start);
-test("ROSTER006 shows existing HQ painting only when roster is active",()=>{
+test("UIHERO001 shows existing HQ painting only when roster is active",()=>{
  assert.ok(start>0);
  assert.match(shell,/body:has\(#collection\.active\)::before/);
  assert.match(shell,/url\("assets\/hq-hall-painting-mobile\.webp"\)/);
@@ -12,7 +12,7 @@ test("ROSTER006 shows existing HQ painting only when roster is active",()=>{
  assert.match(shell,/#collection\.roster-screen\.active/);
  assert.doesNotMatch(shell,/#home\.hq-screen|#battle|#squad|#heroDetail/);
 });
-test("ROSTER006 integrates old topbar into scene HUD without removing account",()=>{
+test("UIHERO001 integrates old topbar into scene HUD without removing account",()=>{
  assert.match(html,/<header class="topbar">/);
  assert.match(html,/id="accountStatus"/);
  assert.match(shell,/background:linear-gradient\(180deg,#14181bea/);
@@ -20,7 +20,7 @@ test("ROSTER006 integrates old topbar into scene HUD without removing account",(
  assert.match(shell,/#app:has\(#collection\.active\)>footer/);
  assert.doesNotMatch(shell,/>\.topbar\{[^}]*display:none/);
 });
-test("ROSTER006 preserves cards, filters, marker and return navigation",()=>{
+test("UIHERO001 preserves cards, filters, marker and return navigation",()=>{
  assert.match(js,/const isLeader=owned&&selectedLeaderId===h\.id/);
  assert.match(js,/HeroProfileData\.tagLabels\(profile\.tags\)/);
  assert.match(html,/id="rosterSortTrigger"/);
@@ -29,7 +29,7 @@ test("ROSTER006 preserves cards, filters, marker and return navigation",()=>{
  assert.match(shell,/#collection \.roster-grid/);
  assert.match(shell,/@media\(orientation:landscape\) and \(max-height:540px\)/);
 });
-test("ROSTER006 candidate build matches package",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.90");
- assert.match(html,/v0\.3\.90 · ROSTER006/);
+test("UIHERO001 candidate build matches package",()=>{
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.91");
+ assert.match(html,/v0\.3\.91 · UIHERO001/);
 });

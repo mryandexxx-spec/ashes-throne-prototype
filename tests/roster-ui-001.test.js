@@ -26,5 +26,5 @@ test("UIHERO002 uses HQ palette and a landscape-responsive grid",()=>{
 });
 test("UIHERO002 version is consistent",()=>{
  assert.equal(JSON.parse(read("package.json")).version,"0.3.97");
- assert.match(html,/v0\.3\.96 · UISYS001C/);
+ assert.match(html,/v0\.3\.97 · UISYS001C/);
 });

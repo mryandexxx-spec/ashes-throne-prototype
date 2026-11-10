@@ -2386,3 +2386,166 @@ body:has(#heroDetail.active)::before{
  background-repeat:no-repeat;
  background-size:cover;
 }
+
+
+/* UI-HERO-002 — squad preparation uses the accepted HQ/ROSTER006 visual language.
+   Scope strictly to active squad; preserve data, slot order, leader logic and battle. */
+body:has(#squad.active){background:#16191b}
+body:has(#squad.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215c9 0%,#10111577 23%,#10111592 75%,#111215ce 100%),
+  linear-gradient(180deg,#10131994 0%,#1614187d 36%,#120f14e0 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#squad.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#squad.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);
+ margin:0 auto;padding:0 clamp(8px,2.2vw,32px);
+ border:0;border-bottom:1px solid #e0bc856e;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+ border-radius:0 0 8px 8px;
+}
+#app:has(#squad.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#squad.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#squad.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#squad.active)>.topbar .brand small{display:none}
+#app:has(#squad.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#squad.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#squad.squad-screen.active{
+ position:relative;isolation:isolate;
+ width:min(100%,1500px);margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123e9 0%,#242022e9 50%,#241f22e5 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#squad.squad-screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;
+ border:1px solid #e7c58b25;border-radius:7px;pointer-events:none;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+#squad .squad-heading{margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid #d7b27c55}
+#squad .squad-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+#squad .eyebrow{color:#e0b978;letter-spacing:.14em}
+#squad .muted{color:#d9c5ab}
+#squad .squad-layout{
+ display:grid;grid-template-columns:minmax(0,1.06fr) minmax(0,1fr);
+ gap:clamp(8px,1.3vw,16px);align-items:start;min-width:0;
+}
+#squad .squad-panel{
+ min-width:0;padding:clamp(10px,1.3vw,18px);
+ border:1px solid #af865a8c;border-radius:11px;
+ background:
+  radial-gradient(ellipse at 50% -10%,#bf8d4a24,transparent 62%),
+  linear-gradient(155deg,#332a29f0,#211e24f5 72%,#19191ff5);
+ box-shadow:inset 0 1px #eac68b4a,inset 0 0 0 2px #10101557,0 7px 17px #09070a8a;
+}
+#squad #squadBack,
+#squad .squad-disband,
+#squad #retryBattleLoad{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+#squad .squad-roster{gap:8px;margin-top:12px}
+#squad .squad-choice{
+ min-height:54px;padding:9px 11px;gap:10px;
+ border:1px solid #92714c;border-radius:9px;
+ background:linear-gradient(150deg,#3c302d,#242126 75%);
+ color:#f2e2c8;box-shadow:inset 0 1px #f2c98f27,0 3px 9px #07070b80;
+}
+#squad .squad-choice.chosen{
+ border-color:#e6bc7c;background:linear-gradient(145deg,#6b4b31,#332927 72%);
+ box-shadow:inset 0 1px #ffe2a35c,0 0 0 1px #c5975766,0 4px 11px #0806098c;
+}
+#squad .squad-choice b{color:#fff0d5}
+#squad .squad-choice small{color:#d5bfa2;line-height:1.4}
+#squad .squad-choice>strong{color:#f5cb83}
+#squad .squad-glyph{color:#f0c986;text-shadow:0 2px 4px #000}
+#squad .squad-choice.hero-locked:disabled{
+ opacity:.72;background:linear-gradient(145deg,#333037,#202127);
+ border-color:#696163;box-shadow:inset 0 1px #b6a8a31a;
+}
+#squad .squad-slots{gap:6px;margin-top:12px}
+#squad .squad-slot{
+ min-height:82px;padding:9px 4px;gap:6px;
+ border:1px dashed #887351;border-radius:9px;
+ background:linear-gradient(145deg,#262428,#191a20);
+ color:#c7b8a4;box-shadow:inset 0 2px 9px #08080cb8;
+}
+#squad .squad-slot.filled{
+ border-style:solid;border-color:#bd925b;
+ background:linear-gradient(155deg,#58402d,#2b2526);
+ color:#fff0d5;box-shadow:inset 0 1px #e9c38d36,0 3px 7px #0706096b;
+}
+#squad .squad-slot-number{color:#e7c184}
+#squad .squad-slot-leader{
+ border-width:2px;border-color:#ae9470;
+ background:linear-gradient(145deg,#40312d,#222126);
+}
+#squad .squad-slot-leader.filled{
+ border-color:#e5bd7b;
+ background:linear-gradient(160deg,#725030,#342827);
+}
+#squad .squad-slot-leader .squad-slot-number{
+ color:#ffe0a4;letter-spacing:.03em;text-shadow:0 1px 5px #040406;
+}
+#squad .squad-hint,#squad #squadHint{line-height:1.5}
+#squad .squad-actions{gap:8px}
+#squad .squad-start{
+ min-height:44px;margin:0;border:1px solid #e9bd77;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#squad .squad-start:disabled{
+ opacity:.55;filter:saturate(.35);box-shadow:none;
+}
+#squad .squad-warning{
+ background:#392b25eb;border-color:#d3a86b;color:#ffdfa3;
+}
+#squad button:focus-visible{outline:3px solid #ffe2a1;outline-offset:2px}
+#app:has(#squad.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#squad.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#squad.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#squad.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #squad.squad-screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #squad .squad-heading{margin-bottom:8px;padding-bottom:7px}
+ #squad .squad-heading h2{font-size:21px}
+ #squad .squad-layout{grid-template-columns:minmax(0,1.06fr) minmax(0,1fr);gap:8px}
+ #squad .squad-panel{padding:9px}
+ #squad .squad-roster{gap:5px;margin-top:7px}
+ #squad .squad-choice{min-height:44px;padding:6px 8px;gap:7px}
+ #squad .squad-slots{gap:4px;margin-top:7px}
+ #squad .squad-slot{min-height:65px;padding:5px 3px;font-size:9px}
+ #squad .squad-actions{gap:6px}
+}
+@media(max-width:700px) and (orientation:portrait){
+ #squad .squad-layout{grid-template-columns:1fr}
+}
+@media(max-width:580px){
+ #app:has(#squad.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#squad.active)>.topbar #accountStatus{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){#squad button{transition:none}}

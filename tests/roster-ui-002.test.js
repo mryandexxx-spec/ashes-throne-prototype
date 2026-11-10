@@ -13,17 +13,17 @@ const items=[
  {index:4,owned:false,hero:{name:"Бор",level:99},rank:7,tier:3}
 ];
 const ids=(f,s)=>Array.from(order(items,f,s),e=>e.index);
-test("UIHERO001 filters available and locked while keeping obtained first",()=>{
+test("UIHERO002 filters available and locked while keeping obtained first",()=>{
  assert.deepEqual(ids("all","level"),[2,3,0,1,4]);
  assert.deepEqual(ids("owned","level"),[2,3,0]);
  assert.deepEqual(ids("locked","level"),[1,4]);
 });
-test("UIHERO001 sorts real stars and gear without showing locked names",()=>{
+test("UIHERO002 sorts real stars and gear without showing locked names",()=>{
  assert.deepEqual(ids("all","stars"),[3,0,2,1,4]);
  assert.deepEqual(ids("owned","gear"),[3,0,2]);
  assert.deepEqual(ids("all","name"),[3,2,0,1,4]);
 });
-test("UIHERO001 exposes accessible, touch-friendly roster controls",()=>{
+test("UIHERO002 exposes accessible, touch-friendly roster controls",()=>{
  for(const key of ["all","owned","locked"])assert.ok(html.includes('data-roster-filter="'+key+'"'));
  for(const key of ["level","stars","gear","name"])assert.ok(html.includes('data-roster-sort="'+key+'"'));
  assert.match(html,/id="rosterShown"/);
@@ -31,14 +31,14 @@ test("UIHERO001 exposes accessible, touch-friendly roster controls",()=>{
  assert.match(css,/#collection \.roster-filter-button\{min-height:44px/);
  assert.match(css,/#collection \.roster-sort-trigger\{[^\n]*min-height:44px/);
 });
-test("UIHERO001 keeps navigation without squad badges",()=>{
+test("UIHERO002 keeps navigation without squad badges",()=>{
  assert.doesNotMatch(js,/roster-squad-badge|roster-in-squad/);
  assert.match(js,/if\(heroOwned\(id\)\)openHeroDetail\(id\);else showLockedHero\(id\)/);
  assert.match(js,/rosterReturnScrollY=window\.scrollY/);
  assert.match(js,/const restore=rosterRestoreOnReturn&&rosterWasInDossier/);
  assert.match(js,/requestAnimationFrame\(scroll\)/);
 });
-test("UIHERO001 build matches package",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.92");
- assert.match(html,/v0\.3\.92 · UIHERO001/);
+test("UIHERO002 build matches package",()=>{
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.93");
+ assert.match(html,/v0\.3\.93 · UIHERO002/);
 });

@@ -44,8 +44,8 @@ test("OPS-002B exposes separate touch UI, real battle routing and version",()=>{
  assert.match(html,/data-screen="signalOperations"/);
  assert.ok(html.indexOf('src="signal-operation-core.js"')>html.indexOf('src="operation-core.js"'));
  assert.ok(html.indexOf('src="signal-operation-core.js"')<html.indexOf('src="game.js"'));
- assert.equal(pkg.version,"0.3.92");
- assert.match(html,/v0\.3\.92 · UIHERO001/);
+ assert.equal(pkg.version,"0.3.93");
+ assert.match(html,/v0\.3\.93 · UIHERO002/);
  assert.match(css,/\.sig-guards\{/);
  assert.match(css,/@media \(orientation:landscape\) and \(max-height:540px\)/);
  const tokens=[

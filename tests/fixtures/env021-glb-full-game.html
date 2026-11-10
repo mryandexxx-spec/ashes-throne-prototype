@@ -236,6 +236,8 @@
       await new Promise(resolve=>setTimeout(resolve,250));
       scene.render();
       const candidateMeshes=scene.meshes.filter(m=>m.name.startsWith("env021_candidate_"));
+      if(new URLSearchParams(location.search).get("controlMaterial")==="1")
+        for(const m of candidateMeshes)m.material=sentinel.material;
       const active=scene.getActiveMeshes().data.filter(m=>m&&m.name.startsWith("env021_candidate_"));
       d.activeMeshes=String(active.length);
       d.worldTransformApplied="true";

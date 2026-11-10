@@ -51,3 +51,12 @@
 ## 6. Known execution gap on 2026-11-10
 
 `blender` is not installed in this tool container. Attempted official 4.5.15 Linux x64 download failed; outbound DNS resolution unavailable. Source 3D files cannot be fetched in this runtime. This preparatory PR is **not a completed Blender scene**. Resume modeling only when a capable Blender execution environment and source files are accessible; do not replace the missing sculpt with a purely scripted polygon ribbon.
+
+
+## 7. Production progress update — 2026-11-10
+
+- **[РЕАЛИЗОВАНО / ПРОВЕРЕНО]** GitHub Actions now installs Blender 4.0.2 on Ubuntu with Mesa EGL, Xvfb and NumPy. [Verified run 42761543909](https://github.com/mryandexxx-spec/ashes-throne-prototype/actions/runs/42761543909) completed successfully: actual Blender execution and GLB/PNG/.blend artifact generation. This was a **primitive pipeline smoke test**, not artwork.
+- **[В РАЗРАБОТКЕ]** The PR now contains `tools/env021-build-geology.py`, which authors one closed, substantial cliff-and-shelf volume using Blender and fuses a real CC0 photogrammetry rock through Blender's voxel remesher. The script's source is an **exact pinned GitHub commit** (`ec9775db9e89348546c567b18bc625ea6f0b78de`) from rejected art experiment PR #208, file `assets/env021/PolyCliff01.glb`; provenance is Poly Haven Coastal Cliff 02 CC0. That prior experiment was **art-rejected**; only its verified source geometry is reused.
+- **[ЕЩЁ НЕ ПРОВЕРЕНО]** Successful CI run of the new geological sculpt, visual silhouette quality, actual game camera and HUD, production PBR/LOD/mobile performance, runtime import. The Blender sculpt is a clay WIP; it must not be presented as final art.
+- Output `scene.glb` is a *source prototype artifact in Actions*, not an in-game asset. Do not claim main contains it or deploy it.
+- The GitHub Actions runner resolves the earlier Blender access blocker, but does not make Blender available in the assistant's container.

@@ -2092,3 +2092,1846 @@ body:has(#home.active){height:100dvh;overflow:hidden}
  #collection .roster-card{transition:none}
  #collection .roster-card:hover{transform:none}
 }
+
+
+/* ROSTER-UI-006 — one shared HQ scene: no navy legacy shell or window-within-window.
+   Scene-only selectors leave all other game screens and battle layout unchanged. */
+body:has(#collection.active){
+ background:#16191b;
+}
+body:has(#collection.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215c9 0%,#10111577 23%,#10111592 75%,#111215ce 100%),
+  linear-gradient(180deg,#10131994 0%,#1614187d 36%,#120f14e0 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#collection.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#collection.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);
+ margin:0 auto;padding:0 clamp(8px,2.2vw,32px);
+ border:0;border-bottom:1px solid #e0bc856e;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+ border-radius:0 0 8px 8px;
+}
+#app:has(#collection.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#collection.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#collection.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#collection.active)>.topbar .brand small{display:none}
+#app:has(#collection.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#collection.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#collection.roster-screen.active{
+ display:block;position:relative;isolation:isolate;
+ width:min(100%,1500px);margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);
+ color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:
+  linear-gradient(100deg,#272123dc 0%,#242022df 50%,#241f22da 100%),
+  radial-gradient(ellipse at 16% 0%,#9c754b8f,transparent 53%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,
+  inset 0 0 0 4px #0b0c1163;
+}
+#collection.roster-screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;
+ border:1px solid #e7c58b25;border-radius:7px;pointer-events:none;
+ background:
+  linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat,
+  linear-gradient(90deg,#dcad6b30,transparent 20%,transparent 80%,#dcad6b30) bottom / 100% 1px no-repeat;
+}
+#collection .roster-heading{
+ margin:0 0 8px;padding:0 0 10px;
+ border-bottom:1px solid #d7b27c55;
+ background:none;
+}
+#collection .roster-heading h2{
+ font-size:clamp(22px,3vw,34px);margin:3px 0 3px;
+}
+#collection .roster-heading .ghost{
+ background:linear-gradient(145deg,#4c3529db,#272127e8);
+ box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+ border-color:#bd925b;
+}
+#collection .roster-intro{margin:0 0 9px;color:#e2cdb2}
+#collection .roster-toolbar{
+ margin:0 0 12px;padding:7px 10px;
+ background:linear-gradient(100deg,#18171bbd,#292124e8);
+ border-color:#d0a36f59;
+}
+#collection .roster-grid{
+ grid-template-columns:repeat(auto-fill,minmax(min(100%,185px),1fr));
+ gap:clamp(9px,1.15vw,17px);
+}
+#app:has(#collection.active)>footer{
+ width:min(100%,1500px);margin:0 auto;
+ color:#c5ae91;border-top:1px solid #bd925c4f;
+ text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#collection.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#collection.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#collection.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #collection.roster-screen.active{
+  margin:7px auto 12px;padding:9px 10px 14px;
+ }
+ #collection .roster-heading{padding-bottom:6px;margin-bottom:6px}
+ #collection .roster-heading h2{font-size:clamp(19px,3vw,25px)}
+ #collection .roster-intro{font-size:11px;margin-bottom:6px}
+ #collection .roster-toolbar{margin-bottom:9px;padding:5px 7px}
+ #collection .roster-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,164px),1fr));gap:8px}
+}
+@media(max-width:580px){
+ #app:has(#collection.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#collection.active)>.topbar #accountStatus{font-size:9px}
+ #collection .roster-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr))}
+}
+
+
+/* UI-HERO-001 — accepted HQ / ROSTER006 scene language for the hero dossier.
+   Intentionally isolated: does not change the roster, squad, battle, or dialogs. */
+body:has(#heroDetail.active){background:#16191b}
+body:has(#heroDetail.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215c9 0%,#10111577 23%,#10111592 75%,#111215ce 100%),
+  linear-gradient(180deg,#10131994 0%,#1614187d 36%,#120f14e0 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#heroDetail.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#heroDetail.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);
+ margin:0 auto;padding:0 clamp(8px,2.2vw,32px);
+ border:0;border-bottom:1px solid #e0bc856e;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+ border-radius:0 0 8px 8px;
+}
+#app:has(#heroDetail.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#heroDetail.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#heroDetail.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#heroDetail.active)>.topbar .brand small{display:none}
+#app:has(#heroDetail.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#heroDetail.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#heroDetail.hero-detail-screen.active{
+ position:relative;isolation:isolate;
+ width:min(100%,1500px);margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123e9 0%,#242022e9 50%,#241f22e5 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#heroDetail.hero-detail-screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;
+ border:1px solid #e7c58b25;border-radius:7px;pointer-events:none;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+#heroDetail .hero-detail-heading{
+ margin:0 0 12px;padding:0 0 10px;
+ border-bottom:1px solid #d7b27c55;
+}
+#heroDetail .hero-detail-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+#heroDetail .eyebrow{color:#e0b978;letter-spacing:.14em}
+#heroDetail .muted{color:#d9c5ab}
+#heroDetail .hero-tag-strip{color:#ebc584;text-shadow:0 1px 4px #0009}
+#heroDetail .hero-detail-nav{gap:7px;align-self:flex-start}
+#heroDetail .hero-detail-nav .ghost,
+#heroDetail .hero-biography-button{
+ min-height:44px;border:1px solid #bd925b;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;
+ box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+#heroDetail .hero-detail-reference{
+ grid-template-columns:minmax(0,1fr) minmax(0,1.12fr) minmax(0,1fr);
+ gap:clamp(8px,1.2vw,16px);align-items:start;
+}
+#heroDetail .hero-detail-reference>.hero-abilities-panel,
+#heroDetail .hero-detail-reference>.hero-detail-identity,
+#heroDetail .hero-detail-reference>.hero-detail-progression{
+ min-width:0;border:1px solid #af865a8c;border-radius:11px;
+ background:
+  radial-gradient(ellipse at 50% -10%,#bf8d4a24,transparent 62%),
+  linear-gradient(155deg,#332a29f0,#211e24f5 72%,#19191ff5);
+ box-shadow:inset 0 1px #eac68b4a,inset 0 0 0 2px #10101557,0 7px 17px #09070a8a;
+ color:#f3e5cc;
+ padding:clamp(10px,1.3vw,18px);
+}
+#heroDetail .hero-detail-reference h3{
+ color:#f5e5c6;font-family:Georgia,serif;
+ text-shadow:0 1px 4px #0009;
+}
+#heroDetail .hero-detail-reference .detail-value,
+#heroDetail .hero-detail-reference .hero-detail-stats>div{
+ border-bottom-color:#b18a5847;
+}
+#heroDetail .hero-detail-reference .detail-value span,
+#heroDetail .hero-detail-reference .hero-detail-stats span{color:#d9c5ab}
+#heroDetail .hero-detail-reference .detail-value strong,
+#heroDetail .hero-detail-reference .hero-detail-stats strong{color:#f1c986}
+#heroDetail .hero-detail-stage{
+ border:2px solid #af895c;border-radius:45% 45% 10px 10px / 13% 13% 10px 10px;
+ background:
+  radial-gradient(ellipse at 50% 26%,#bf98677a,transparent 54%),
+  radial-gradient(ellipse at 50% 92%,#0a0b13b0,transparent 65%),
+  linear-gradient(145deg,#5b4438,#2a2830 64%,#171920);
+ box-shadow:inset 0 0 0 2px #1b171b,inset 0 15px 22px #dcb77d20,
+  inset 0 -15px 25px #07080fd9,0 3px 0 #e4bf7e52,0 9px 19px #060506a1;
+}
+#heroDetail .hero-detail-stage::after{
+ content:"";position:absolute;inset:4px;z-index:3;pointer-events:none;
+ border:1px solid #f6da9b42;border-radius:inherit;
+ background:linear-gradient(125deg,#fff1ca10,transparent 39%,#0002);
+}
+#heroDetail .hero-detail-stage.has-ren-portrait .ren-detail-portrait{
+ object-fit:contain;object-position:center;filter:drop-shadow(0 5px 8px #08080d80);
+}
+#heroDetail .hero-detail-reference .hero-ability-card{
+ border-color:#9a794f;background:linear-gradient(165deg,#3b302d,#231f24);
+ box-shadow:inset 0 1px #ecd29b24,0 3px 7px #09070b80;
+}
+#heroDetail .hero-ability-more summary{
+ color:#f0ca88;min-height:44px;text-decoration-color:#bb925c80;
+}
+#heroDetail .hero-detail-reference .gear-panel{border-top-color:#b18a584e}
+#heroDetail .gear-slot{
+ border-color:#94734d;color:#f0deb9;
+ background:linear-gradient(155deg,#49362b,#211e23);
+ box-shadow:inset 0 1px #e3be8131,0 2px 6px #0b090bd1;
+}
+#heroDetail .gear-slot.selected{
+ border-color:#f0c27d;box-shadow:inset 0 1px #ffe0a273,0 0 0 1px #dba76b66;
+}
+#heroDetail .star-panel{
+ border-color:#b18a5866;
+ background:linear-gradient(145deg,#382b28,#201d22);
+ box-shadow:inset 0 1px #e4bf7f27;
+}
+#heroDetail .star-progress{accent-color:#d9aa65}
+#heroDetail .primary{
+ min-height:44px;
+ border:1px solid #e9bd77;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#heroDetail .primary:disabled{opacity:.53;filter:saturate(.4);box-shadow:none}
+#heroDetail button:focus-visible,#heroDetail summary:focus-visible{
+ outline:3px solid #ffe2a1;outline-offset:2px;
+}
+#app:has(#heroDetail.active)>footer{
+ width:min(100%,1500px);margin:0 auto;
+ color:#c5ae91;border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#heroDetail.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#heroDetail.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#heroDetail.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #heroDetail.hero-detail-screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #heroDetail .hero-detail-heading{margin-bottom:8px;padding-bottom:7px}
+ #heroDetail .hero-detail-heading h2{font-size:21px}
+ #heroDetail .hero-detail-reference{gap:7px}
+ #heroDetail .hero-detail-reference>.hero-abilities-panel,
+ #heroDetail .hero-detail-reference>.hero-detail-identity,
+ #heroDetail .hero-detail-reference>.hero-detail-progression{padding:9px}
+ #heroDetail .hero-detail-stage{height:185px}
+ #heroDetail .hero-detail-reference .hero-ability-more summary{min-height:44px}
+}
+@media(max-width:650px) and (orientation:portrait){
+ #heroDetail .hero-detail-reference{grid-template-columns:1fr}
+}
+@media(max-width:580px){
+ #app:has(#heroDetail.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#heroDetail.active)>.topbar #accountStatus{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ #heroDetail button{transition:none}
+}
+
+
+/* ENV022: optional static art guide behind live 3D combat via ?environment=concept.
+   The actual Babylon canvas remains on top for fighters, pointer picking and FX.
+   Safe rollback: remove query flag to restore the original fully 3D arena. */
+.battle-screen.env022-concept-preview .arena-wrap{
+ background-color:#aaa19c;
+ background-image:url("assets/env022-canyon-concept.svg");
+ background-position:center center;
+ background-repeat:no-repeat;
+ background-size:cover;
+}
+
+
+/* UI-HERO-002 — squad preparation uses the accepted HQ/ROSTER006 visual language.
+   Scope strictly to active squad; preserve data, slot order, leader logic and battle. */
+body:has(#squad.active){background:#16191b}
+body:has(#squad.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215c9 0%,#10111577 23%,#10111592 75%,#111215ce 100%),
+  linear-gradient(180deg,#10131994 0%,#1614187d 36%,#120f14e0 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#squad.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#squad.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);
+ margin:0 auto;padding:0 clamp(8px,2.2vw,32px);
+ border:0;border-bottom:1px solid #e0bc856e;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+ border-radius:0 0 8px 8px;
+}
+#app:has(#squad.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#squad.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#squad.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#squad.active)>.topbar .brand small{display:none}
+#app:has(#squad.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#squad.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#squad.squad-screen.active{
+ position:relative;isolation:isolate;
+ width:min(100%,1500px);margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123e9 0%,#242022e9 50%,#241f22e5 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#squad.squad-screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;
+ border:1px solid #e7c58b25;border-radius:7px;pointer-events:none;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+#squad .squad-heading{margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid #d7b27c55}
+#squad .squad-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+#squad .eyebrow{color:#e0b978;letter-spacing:.14em}
+#squad .muted{color:#d9c5ab}
+#squad .squad-layout{
+ display:grid;grid-template-columns:minmax(0,1.06fr) minmax(0,1fr);
+ gap:clamp(8px,1.3vw,16px);align-items:start;min-width:0;
+}
+#squad .squad-panel{
+ min-width:0;padding:clamp(10px,1.3vw,18px);
+ border:1px solid #af865a8c;border-radius:11px;
+ background:
+  radial-gradient(ellipse at 50% -10%,#bf8d4a24,transparent 62%),
+  linear-gradient(155deg,#332a29f0,#211e24f5 72%,#19191ff5);
+ box-shadow:inset 0 1px #eac68b4a,inset 0 0 0 2px #10101557,0 7px 17px #09070a8a;
+}
+#squad #squadBack,
+#squad .squad-disband,
+#squad #retryBattleLoad{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+#squad .squad-roster{gap:8px;margin-top:12px}
+#squad .squad-choice{
+ min-height:54px;padding:9px 11px;gap:10px;
+ border:1px solid #92714c;border-radius:9px;
+ background:linear-gradient(150deg,#3c302d,#242126 75%);
+ color:#f2e2c8;box-shadow:inset 0 1px #f2c98f27,0 3px 9px #07070b80;
+}
+#squad .squad-choice.chosen{
+ border-color:#e6bc7c;background:linear-gradient(145deg,#6b4b31,#332927 72%);
+ box-shadow:inset 0 1px #ffe2a35c,0 0 0 1px #c5975766,0 4px 11px #0806098c;
+}
+#squad .squad-choice b{color:#fff0d5}
+#squad .squad-choice small{color:#d5bfa2;line-height:1.4}
+#squad .squad-choice>strong{color:#f5cb83}
+#squad .squad-glyph{color:#f0c986;text-shadow:0 2px 4px #000}
+#squad .squad-choice.hero-locked:disabled{
+ opacity:.72;background:linear-gradient(145deg,#333037,#202127);
+ border-color:#696163;box-shadow:inset 0 1px #b6a8a31a;
+}
+#squad .squad-slots{gap:6px;margin-top:12px}
+#squad .squad-slot{
+ min-height:82px;padding:9px 4px;gap:6px;
+ border:1px dashed #887351;border-radius:9px;
+ background:linear-gradient(145deg,#262428,#191a20);
+ color:#c7b8a4;box-shadow:inset 0 2px 9px #08080cb8;
+}
+#squad .squad-slot.filled{
+ border-style:solid;border-color:#bd925b;
+ background:linear-gradient(155deg,#58402d,#2b2526);
+ color:#fff0d5;box-shadow:inset 0 1px #e9c38d36,0 3px 7px #0706096b;
+}
+#squad .squad-slot-number{color:#e7c184}
+#squad .squad-slot-leader{
+ border-width:2px;border-color:#ae9470;
+ background:linear-gradient(145deg,#40312d,#222126);
+}
+#squad .squad-slot-leader.filled{
+ border-color:#e5bd7b;
+ background:linear-gradient(160deg,#725030,#342827);
+}
+#squad .squad-slot-leader .squad-slot-number{
+ color:#ffe0a4;letter-spacing:.03em;text-shadow:0 1px 5px #040406;
+}
+#squad .squad-hint,#squad #squadHint{line-height:1.5}
+#squad .squad-actions{gap:8px}
+#squad .squad-start{
+ min-height:44px;margin:0;border:1px solid #e9bd77;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#squad .squad-start:disabled{
+ opacity:.55;filter:saturate(.35);box-shadow:none;
+}
+#squad .squad-warning{
+ background:#392b25eb;border-color:#d3a86b;color:#ffdfa3;
+}
+#squad button:focus-visible{outline:3px solid #ffe2a1;outline-offset:2px}
+#app:has(#squad.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#squad.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#squad.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#squad.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #squad.squad-screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #squad .squad-heading{margin-bottom:8px;padding-bottom:7px}
+ #squad .squad-heading h2{font-size:21px}
+ #squad .squad-layout{grid-template-columns:minmax(0,1.06fr) minmax(0,1fr);gap:8px}
+ #squad .squad-panel{padding:9px}
+ #squad .squad-roster{gap:5px;margin-top:7px}
+ #squad .squad-choice{min-height:44px;padding:6px 8px;gap:7px}
+ #squad .squad-slots{gap:4px;margin-top:7px}
+ #squad .squad-slot{min-height:65px;padding:5px 3px;font-size:9px}
+ #squad .squad-actions{gap:6px}
+}
+@media(max-width:700px) and (orientation:portrait){
+ #squad .squad-layout{grid-template-columns:1fr}
+}
+@media(max-width:580px){
+ #app:has(#squad.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#squad.active)>.topbar #accountStatus{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){#squad button{transition:none}}
+
+
+/* UI-SYSTEMS-001A: player profile shares the approved HQ/roster/dossier visual language.
+   Visual-only, scoped to active #playerProfile; storage and progression stay untouched. */
+body:has(#playerProfile.active){background:#16191b}
+body:has(#playerProfile.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215c9 0%,#10111577 23%,#10111592 75%,#111215ce 100%),
+  linear-gradient(180deg,#10131994 0%,#1614187d 36%,#120f14e0 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#playerProfile.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#playerProfile.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(#playerProfile.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#playerProfile.active)>.topbar .brand .sigil{font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680}
+#app:has(#playerProfile.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#playerProfile.active)>.topbar .brand small{display:none}
+#app:has(#playerProfile.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#playerProfile.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#playerProfile.player-profile-screen.active{
+ position:relative;isolation:isolate;width:min(100%,1500px);
+ margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123e9 0%,#242022e9 50%,#241f22e5 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#playerProfile.player-profile-screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;
+ border:1px solid #e7c58b25;border-radius:7px;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+#playerProfile .section-heading{
+ margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid #d7b27c55;
+}
+#playerProfile .section-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+#playerProfile .eyebrow{color:#e0b978;letter-spacing:.14em}
+#playerProfile .muted{color:#d9c5ab}
+#playerProfile .player-profile-grid{gap:clamp(8px,1.3vw,16px)}
+#playerProfile .player-profile-card{
+ min-width:0;padding:clamp(10px,1.4vw,18px);
+ border:1px solid #af865a8c;border-radius:11px;
+ background:radial-gradient(ellipse at 50% -10%,#bf8d4a24,transparent 62%),
+  linear-gradient(155deg,#332a29f0,#211e24f5 72%,#19191ff5);
+ box-shadow:inset 0 1px #eac68b4a,inset 0 0 0 2px #10101557,0 7px 17px #09070a8a;
+}
+#playerProfile .player-profile-card h3{
+ color:#f1d3a1;font-family:Georgia,serif;text-shadow:0 2px 5px #0009;
+}
+#playerProfile .player-profile-card label{color:#f1dfc6}
+#playerProfile .player-profile-editor{gap:8px}
+#playerProfile .player-profile-editor input{
+ min-height:44px;border:1px solid #ad895b;border-radius:8px;
+ background:linear-gradient(160deg,#1b1b22,#2c2428);
+ color:#fff0d7;box-shadow:inset 0 2px 6px #070608ad;
+}
+#playerProfile .player-profile-editor input::placeholder{color:#c5b29b}
+#playerProfile .player-profile-editor input:focus-visible,
+#playerProfile button:focus-visible{outline:3px solid #ffe2a1;outline-offset:2px}
+#playerProfile .primary{
+ min-height:44px;border:1px solid #e9bd77;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#playerProfile .primary:disabled{opacity:.55;filter:saturate(.35);box-shadow:none}
+#playerProfile .section-heading .ghost{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+#playerProfile .player-profile-xp-track{
+ height:13px;border:1px solid #967247;background:#15141a;
+ box-shadow:inset 0 2px 5px #07070ba6;
+}
+#playerProfile .player-profile-xp-track span{
+ background:linear-gradient(90deg,#9e723e,#e2bf7e 80%,#f6deb1);
+ box-shadow:inset 0 1px #fff4cf99;
+}
+#playerProfile .player-profile-facts{gap:clamp(7px,1.5vw,18px)}
+#playerProfile .player-profile-facts>div{
+ min-width:0;padding:clamp(8px,1.2vw,14px);border:1px solid #9e7b5257;
+ border-radius:9px;background:linear-gradient(160deg,#3a2b28,#201e24);
+ box-shadow:inset 0 1px #edca8c32;
+}
+#playerProfile .player-profile-facts strong{color:#f0c986;font-family:Georgia,serif}
+#playerProfile .player-profile-facts small{color:#d8c2a2;line-height:1.4}
+#playerProfile #playerNicknameNotice{color:#f0c986}
+#app:has(#playerProfile.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#playerProfile.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#playerProfile.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#playerProfile.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #playerProfile.player-profile-screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #playerProfile .section-heading{margin-bottom:8px;padding-bottom:7px}
+ #playerProfile .section-heading h2{font-size:21px}
+ #playerProfile .player-profile-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ #playerProfile .player-profile-card{padding:9px}
+ #playerProfile .player-profile-summary{margin-top:8px}
+ #playerProfile .player-profile-facts{margin-top:8px;gap:7px}
+ #playerProfile .player-profile-facts>div{padding:8px}
+}
+@media(max-width:700px) and (orientation:portrait){
+ #playerProfile .player-profile-grid{grid-template-columns:1fr}
+}
+@media(max-width:580px){
+ #app:has(#playerProfile.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#playerProfile.active)>.topbar #accountStatus{font-size:9px}
+ #playerProfile .player-profile-facts{gap:6px}
+}
+@media(prefers-reduced-motion:reduce){
+ #playerProfile button,#playerProfile .player-profile-xp-track span{transition:none}
+}
+
+
+/* UI-SYSTEMS-001B — daily tasks in the established HQ scene.
+   DailyCore, reward eligibility, local-day logic and claim buttons are unchanged. */
+body:has(#dailyTasks.active){background:#16191b}
+body:has(#dailyTasks.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215c9 0%,#10111577 23%,#10111592 75%,#111215ce 100%),
+  linear-gradient(180deg,#10131994 0%,#1614187d 36%,#120f14e0 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#dailyTasks.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#dailyTasks.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(#dailyTasks.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#dailyTasks.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#dailyTasks.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#dailyTasks.active)>.topbar .brand small{display:none}
+#app:has(#dailyTasks.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#dailyTasks.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#dailyTasks.screen.active{
+ position:relative;isolation:isolate;width:min(100%,1500px);
+ margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123e9 0%,#242022e9 50%,#241f22e5 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#dailyTasks.screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;
+ border:1px solid #e7c58b25;border-radius:7px;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+#dailyTasks .section-heading{
+ margin:0 0 10px;padding:0 0 10px;border-bottom:1px solid #d7b27c55;
+}
+#dailyTasks .section-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+#dailyTasks .eyebrow{color:#e0b978;letter-spacing:.14em}
+#dailyTasks .muted{color:#d9c5ab}
+#dailyTasks #dailyDay{
+ display:inline-block;margin:5px 0 8px;padding:5px 11px;
+ border:1px solid #b8905e9c;border-radius:7px;
+ background:#2b2427e8;color:#f0c986;
+ font-weight:650;letter-spacing:.02em;
+}
+#dailyTasks .section-heading .ghost{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+#dailyTasks .daily-claim-toolbar{
+ margin:10px 0;padding:7px 0;
+ border-top:1px solid #bd925b40;border-bottom:1px solid #bd925b40;
+}
+#dailyTasks .primary{
+ min-height:44px;border:1px solid #e9bd77;border-radius:8px;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#dailyTasks .primary:disabled{opacity:.55;filter:saturate(.3);box-shadow:none}
+#dailyTasks .daily-task-list{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));
+ gap:clamp(8px,1.2vw,15px);max-width:none;align-items:stretch;
+}
+#dailyTasks .daily-task{
+ display:flex;align-items:stretch;flex-direction:column;
+ gap:10px;min-width:0;padding:clamp(11px,1.35vw,18px);
+ border:1px solid #a783548c;border-radius:11px;
+ background:
+  radial-gradient(ellipse at 20% 0%,#bb8d4826,transparent 60%),
+  linear-gradient(155deg,#382b29f1,#252026f4 75%,#1b1b23f7);
+ box-shadow:inset 0 1px #eac68b4a,inset 0 0 0 2px #10101557,0 5px 15px #09070a8a;
+}
+#dailyTasks .daily-task>div{flex:1;min-width:0}
+#dailyTasks .daily-task strong{
+ display:block;font:600 clamp(13px,1.5vw,17px)/1.35 Georgia,serif;
+ color:#f5e5c6;text-shadow:0 1px 3px #000b;
+}
+#dailyTasks .daily-task small{
+ color:#d9c5ab;line-height:1.5;font-size:11px;overflow-wrap:anywhere;
+}
+#dailyTasks .daily-task button{
+ min-height:44px;min-width:0;width:100%;margin-top:auto;
+}
+#dailyTasks .daily-task button.ghost{
+ border:1px solid #bd925b80;background:linear-gradient(160deg,#46372e,#282329);
+ color:#e3c79a;box-shadow:inset 0 1px #eac68b24;
+}
+#dailyTasks .daily-task button:disabled{
+ opacity:.68;cursor:default;filter:saturate(.55);
+}
+#dailyTasks #dailyTaskNotice{
+ margin:10px 0 0;min-height:1.5em;color:#f3d19c;
+ overflow-wrap:anywhere;
+}
+#dailyTasks button:focus-visible{outline:3px solid #ffe2a1;outline-offset:2px}
+#app:has(#dailyTasks.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#dailyTasks.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#dailyTasks.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#dailyTasks.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #dailyTasks.screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #dailyTasks .section-heading{margin-bottom:7px;padding-bottom:7px}
+ #dailyTasks .section-heading h2{font-size:21px}
+ #dailyTasks #dailyDay{font-size:11px;margin:3px 0 5px}
+ #dailyTasks .daily-task-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,235px),1fr));gap:8px}
+ #dailyTasks .daily-task{padding:9px;gap:6px}
+ #dailyTasks .daily-task strong{font-size:13px}
+ #dailyTasks .daily-task small{font-size:10px}
+}
+@media(max-width:600px) and (orientation:portrait){
+ #dailyTasks .daily-task-list{grid-template-columns:1fr}
+}
+@media(max-width:580px){
+ #app:has(#dailyTasks.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#dailyTasks.active)>.topbar #accountStatus{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){#dailyTasks button{transition:none}}
+
+
+/* UI-SYSTEMS-001C — login rewards calendar, shared HQ art language.
+   Only presentation; LoginCore, local-day handling and claim persistence stay unchanged. */
+body:has(#loginCalendar.active){background:#16191b}
+body:has(#loginCalendar.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215d9 0%,#10111585 23%,#1011159e 75%,#111215d9 100%),
+  linear-gradient(180deg,#101319ad 0%,#1614188c 36%,#120f14ee 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#loginCalendar.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#loginCalendar.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(#loginCalendar.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#loginCalendar.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#loginCalendar.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#loginCalendar.active)>.topbar .brand small{display:none}
+#app:has(#loginCalendar.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#loginCalendar.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#loginCalendar.screen.active{
+ position:relative;isolation:isolate;width:min(100%,1500px);
+ margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123f0 0%,#242022f0 50%,#241f22ed 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#loginCalendar.screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;
+ border:1px solid #e7c58b25;border-radius:7px;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+#loginCalendar .section-heading{
+ margin:0 0 9px;padding:0 0 9px;border-bottom:1px solid #d7b27c55;
+}
+#loginCalendar .section-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+#loginCalendar .eyebrow{color:#e0b978;letter-spacing:.14em}
+#loginCalendar .muted{color:#d9c5ab;line-height:1.45}
+#loginCalendar #loginCalendarMonth{
+ display:inline-block;margin:3px 0 8px;padding:5px 12px;
+ border:1px solid #b8905e9c;border-radius:7px;
+ background:#2b2427e8;color:#f0c986;
+ font-weight:650;letter-spacing:.02em;
+}
+#loginCalendar .section-heading .ghost{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+#loginCalendar .login-calendar-grid{
+ display:grid;grid-template-columns:repeat(7,minmax(0,1fr));
+ gap:clamp(5px,.8vw,11px);margin:12px 0 14px;min-width:0;
+}
+#loginCalendar .login-day{
+ position:relative;min-width:0;min-height:88px;
+ padding:clamp(7px,.95vw,12px);border:1px solid #9e7954a3;border-radius:9px;
+ background:radial-gradient(ellipse at 40% 0%,#bb8d482b,transparent 70%),
+  linear-gradient(155deg,#372b2af2,#252026f6 75%,#1b1b23f8);
+ box-shadow:inset 0 1px #eac68b4a,0 4px 11px #09070a8a;
+}
+#loginCalendar .login-day strong{
+ display:block;margin:0 0 6px;color:#f2d3a1;
+ font:600 clamp(12px,1.2vw,16px)/1.25 Georgia,serif;
+}
+#loginCalendar .login-day small{
+ display:block;color:#ddc8aa;line-height:1.35;
+ font-size:clamp(10px,.9vw,12px);overflow-wrap:anywhere;
+}
+#loginCalendar .login-day.claimed{
+ opacity:1;border-color:#897c5b88;
+ background:linear-gradient(155deg,#2b302eeb,#1f2426f2);
+ box-shadow:inset 0 1px #a2b49b2a;
+}
+#loginCalendar .login-day.claimed::after{
+ content:"✓";position:absolute;top:4px;right:6px;
+ color:#b6d3ae;font-size:14px;font-weight:800;
+}
+#loginCalendar .login-day.claimed strong{color:#c8d2ba}
+#loginCalendar .login-day.active{
+ border:2px solid #f0c47e;
+ background:radial-gradient(ellipse at 45% 0%,#d5a25252,transparent 72%),
+  linear-gradient(155deg,#4b352a,#292126 75%);
+ box-shadow:0 0 0 1px #171118,0 0 14px #d19f5660,inset 0 1px #ffdda68c;
+}
+#loginCalendar .login-day.active strong{color:#ffe3aa}
+#loginCalendar #loginClaim{
+ min-height:44px;max-width:100%;
+ border:1px solid #e9bd77;border-radius:8px;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#loginCalendar #loginClaim:disabled{
+ opacity:.68;cursor:default;filter:saturate(.48);box-shadow:none;
+}
+#loginCalendar #loginCalendarStatus{
+ min-height:1.5em;margin:10px 0 0;color:#f3d19c;overflow-wrap:anywhere;
+}
+#loginCalendar button:focus-visible{outline:3px solid #ffe2a1;outline-offset:2px}
+#app:has(#loginCalendar.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#loginCalendar.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#loginCalendar.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#loginCalendar.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #loginCalendar.screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #loginCalendar .section-heading{margin-bottom:7px;padding-bottom:7px}
+ #loginCalendar .section-heading h2{font-size:21px}
+ #loginCalendar #loginCalendarMonth{margin:2px 0 5px;font-size:11px}
+ #loginCalendar .muted{font-size:11px}
+ #loginCalendar .login-calendar-grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin:8px 0}
+ #loginCalendar .login-day{min-height:75px;padding:6px}
+ #loginCalendar .login-day strong{font-size:12px;margin-bottom:4px}
+ #loginCalendar .login-day small{font-size:10px;line-height:1.25}
+}
+@media(max-width:700px) and (orientation:portrait){
+ #loginCalendar .login-calendar-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:580px){
+ #app:has(#loginCalendar.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#loginCalendar.active)>.topbar #accountStatus{font-size:9px}
+ #loginCalendar .login-calendar-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){#loginCalendar button{transition:none}}
+
+
+/* UI-MODES-001A — campaign chapter / route / mission visual hierarchy.
+   Screen-only art: CampaignData, energy, 3-star simulation and battle events unchanged. */
+body:has(#campaign.active){background:#16191b}
+body:has(#campaign.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215d7 0%,#10111585 23%,#1011159e 75%,#111215da 100%),
+  linear-gradient(180deg,#101319af 0%,#16141888 36%,#120f14ed 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#campaign.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#campaign.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(#campaign.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#campaign.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#campaign.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#campaign.active)>.topbar .brand small{display:none}
+#app:has(#campaign.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#campaign.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#campaign.screen.active{
+ position:relative;isolation:isolate;width:min(100%,1500px);
+ margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123ef 0%,#242022ef 50%,#241f22ec 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#campaign.screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;
+ border:1px solid #e7c58b25;border-radius:7px;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+#campaign .section-heading{
+ margin:0 0 10px;padding:0 0 10px;border-bottom:1px solid #d7b27c55;
+}
+#campaign .section-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+#campaign .eyebrow{color:#e0b978;letter-spacing:.14em}
+#campaign .muted{color:#d9c5ab;line-height:1.45}
+#campaign .section-heading .ghost,#campaign #energyRefresh{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+#campaign .energy-toolbar{
+ gap:9px;margin:9px 0 4px;padding:8px 11px;
+ border:1px solid #a5845a85;border-radius:9px;
+ background:linear-gradient(155deg,#382d2bed,#201e23ed);
+ box-shadow:inset 0 1px #eac68b32;
+}
+#campaign #energyStatus{margin:0;color:#f0c986;font-weight:650;overflow-wrap:anywhere}
+#campaign #energyRefreshStatus{min-height:1.2em;margin:5px 0 8px;color:#f1c98f}
+#campaign .story-demo-teaser{
+ margin:9px 0 17px;padding:clamp(11px,1.4vw,18px);
+ border:1px dashed #af8e6188;border-radius:10px;
+ background:linear-gradient(160deg,#30292bea,#201f25ef);
+ box-shadow:inset 0 1px #ddbd8740;
+}
+#campaign .story-demo-teaser h3{
+ margin:7px 0;color:#ead2ad;font:600 clamp(16px,2vw,22px)/1.25 Georgia,serif;
+}
+#campaign .story-demo-teaser p{margin:6px 0;color:#d7c5af}
+#campaign .story-demo-teaser .primary{min-height:44px}
+#campaign #campaignMissions{display:grid;gap:clamp(11px,1.5vw,20px);min-width:0}
+#campaign .campaign-chapter{
+ min-width:0;margin:0;padding:clamp(11px,1.5vw,19px);
+ border-top:2px solid #cda66ec7;border-bottom:1px solid #896e4c78;
+ border-radius:9px;background:linear-gradient(160deg,#39302d89,#211f2385);
+}
+#campaign .campaign-chapter>h2{
+ margin:0 0 6px;color:#f3d7a4;
+ font:600 clamp(19px,2.3vw,27px)/1.18 Georgia,serif;
+ text-shadow:0 2px 6px #060508;
+}
+#campaign .campaign-chapter>.muted{
+ display:inline-block;margin:0 0 12px;padding:5px 9px;
+ border:1px solid #a5845a66;border-radius:6px;
+ background:#211c20aa;color:#ddc6a5;font-weight:600;
+}
+#campaign .campaign-route{
+ min-width:0;margin:0 0 13px;padding-left:clamp(8px,1vw,15px);
+ border-left:2px solid #af865a8a;
+}
+#campaign .campaign-route:last-child{margin-bottom:0}
+#campaign .campaign-route>h3{
+ margin:3px 0 10px;color:#e7c18b;
+ font:600 clamp(13px,1.5vw,17px)/1.3 Georgia,serif;
+ letter-spacing:.045em;
+}
+#campaign .campaign-mission{
+ display:grid;grid-template-columns:44px minmax(0,1fr);
+ align-items:start;gap:clamp(9px,1.3vw,18px);
+ margin:0 0 10px;padding:clamp(11px,1.4vw,18px);
+ border:1px solid #ab855889;border-radius:10px;
+ background:radial-gradient(ellipse at 5% 0%,#c0944c21,transparent 57%),
+  linear-gradient(155deg,#382c2af3,#252026f6 75%,#1b1b23f9);
+ box-shadow:inset 0 1px #eac68b4b,inset 0 0 0 2px #10101558,0 5px 15px #09070a8a;
+}
+#campaign .campaign-mission:last-child{margin-bottom:0}
+#campaign .campaign-mission>.node{
+ width:44px;height:44px;min-width:44px;
+ border:1px solid #d4ab72;border-radius:8px;
+ background:linear-gradient(150deg,#443329,#231f24);
+ color:#f1d09a;font:600 22px Georgia,serif;
+ box-shadow:inset 0 1px #e6c48b44;
+}
+#campaign .campaign-mission>div:last-child{min-width:0}
+#campaign .campaign-mission h3{
+ margin:0 0 6px;color:#f6e4c6;
+ font:600 clamp(15px,1.7vw,21px)/1.22 Georgia,serif;
+}
+#campaign .campaign-mission p{margin:5px 0;line-height:1.45;color:#e2d1b8;overflow-wrap:anywhere}
+#campaign .campaign-mission .campaign-mission-status{
+ display:inline-block;margin:8px 0 4px;padding:5px 9px;
+ border:1px solid #b88a588a;border-radius:6px;
+ background:#4c3929b8;color:#f1cb91;font-size:12px;
+}
+#campaign .campaign-mission .mission-stars{color:#eed097!important;margin:5px 0 8px}
+#campaign .mission-criteria{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,205px),1fr));
+ gap:7px;margin:8px 0 12px;padding:0;
+}
+#campaign .mission-criteria li{
+ min-width:0;align-items:flex-start;padding:7px 8px;
+ border:1px solid #a7835459;border-radius:7px;
+ background:#17181c80;color:#e1cfb4;
+}
+#campaign .mission-criteria-star{color:#f1bf76}
+#campaign .campaign-mission-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+#campaign .campaign-mission-actions button{
+ min-height:44px;max-width:100%;white-space:normal;
+}
+#campaign .primary{
+ border:1px solid #e9bd77;border-radius:8px;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#campaign .campaign-mission-actions .ghost{
+ border:1px solid #b99665;border-radius:8px;
+ background:linear-gradient(145deg,#47362b,#262329);
+ color:#f0dfbf;
+}
+#campaign .campaign-mission-actions button:disabled{
+ opacity:.6;filter:saturate(.45);box-shadow:none;cursor:not-allowed;
+}
+#campaign #campaignSaveStatus{margin:13px 0 5px;color:#f0c986;overflow-wrap:anywhere}
+#campaign button:focus-visible{outline:3px solid #ffe2a1;outline-offset:2px}
+#app:has(#campaign.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#campaign.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#campaign.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#campaign.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #campaign.screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #campaign .section-heading{margin-bottom:7px;padding-bottom:7px}
+ #campaign .section-heading h2{font-size:21px}
+ #campaign .energy-toolbar{margin:6px 0 3px;padding:6px 9px}
+ #campaign .energy-toolbar .muted{font-size:11px}
+ #campaign #energyRefreshStatus{font-size:11px;margin:3px 0 5px}
+ #campaign .story-demo-teaser{margin:6px 0 11px;padding:9px}
+ #campaign .story-demo-teaser p{font-size:11px}
+ #campaign #campaignMissions{gap:9px}
+ #campaign .campaign-chapter{padding:10px}
+ #campaign .campaign-chapter>h2{font-size:19px}
+ #campaign .campaign-chapter>.muted{font-size:11px;margin-bottom:8px}
+ #campaign .campaign-route{padding-left:8px;margin-bottom:8px}
+ #campaign .campaign-route>h3{font-size:13px;margin-bottom:7px}
+ #campaign .campaign-mission{grid-template-columns:32px minmax(0,1fr);gap:8px;padding:9px}
+ #campaign .campaign-mission>.node{width:32px;height:32px;min-width:32px;font-size:18px}
+ #campaign .campaign-mission h3{font-size:15px}
+ #campaign .campaign-mission p{font-size:11px;margin:4px 0}
+ #campaign .campaign-mission .campaign-mission-status{font-size:11px}
+ #campaign .mission-criteria{gap:5px;margin:6px 0}
+ #campaign .mission-criteria li{font-size:10px;padding:6px}
+ #campaign .campaign-mission-actions{gap:6px;margin-top:6px}
+}
+@media(max-width:640px) and (orientation:portrait){
+ #campaign .campaign-mission{grid-template-columns:36px minmax(0,1fr)}
+ #campaign .campaign-mission>.node{width:36px;height:36px;min-width:36px}
+ #campaign .mission-criteria{grid-template-columns:1fr}
+}
+@media(max-width:580px){
+ #app:has(#campaign.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#campaign.active)>.topbar #accountStatus{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){#campaign button{transition:none}}
+
+
+/* UI-MODES-001B — challenge mode selection and trial missions in HQ style.
+   Styles only: ChallengeCore, score persistence, squad and combat flow stay unchanged. */
+body:has(#challenges.active){background:#16191b}
+body:has(#challenges.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215d7 0%,#10111585 23%,#1011159e 75%,#111215da 100%),
+  linear-gradient(180deg,#101319af 0%,#16141888 36%,#120f14ed 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#challenges.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#challenges.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(#challenges.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#challenges.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#challenges.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#challenges.active)>.topbar .brand small{display:none}
+#app:has(#challenges.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#challenges.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#challenges.screen.active{
+ position:relative;isolation:isolate;width:min(100%,1500px);
+ margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123ef 0%,#242022ef 50%,#241f22ec 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#challenges.screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;
+ border:1px solid #e7c58b25;border-radius:7px;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+#challenges .section-heading{
+ margin:0 0 10px;padding:0 0 10px;border-bottom:1px solid #d7b27c55;
+}
+#challenges .section-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+#challenges .eyebrow{color:#e0b978;letter-spacing:.14em}
+#challenges .muted{color:#d9c5ab;line-height:1.45}
+#challenges .section-heading .ghost,#challenges #challengeModeBack{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+#challenges .challenge-mode-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:clamp(9px,1.4vw,18px);margin:13px 0 16px;min-width:0;
+}
+#challenges .challenge-mode-card{
+ position:relative;display:flex;flex-direction:column;align-items:flex-start;
+ width:100%;min-width:0;min-height:136px;
+ padding:clamp(12px,1.6vw,22px);text-align:left;
+ border:1px solid #c6a06b9c;border-radius:11px;
+ background:radial-gradient(ellipse at 12% 0%,#be92523c,transparent 65%),
+  linear-gradient(155deg,#3c2f2af4,#262027f5 75%);
+ box-shadow:inset 0 1px #f0d6a15a,inset 0 0 0 2px #10101557,0 5px 15px #09070a8a;
+}
+#challenges .challenge-mode-card>span{
+ display:grid;place-items:center;width:44px;height:44px;margin:0 0 10px;
+ border:1px solid #d1ad79b0;border-radius:9px;
+ background:#251f21b8;color:#f2cb8a;font-size:25px;
+}
+#challenges .challenge-mode-card b{
+ display:block;color:#f6e4c6;
+ font:600 clamp(17px,2vw,23px)/1.2 Georgia,serif;
+}
+#challenges .challenge-mode-card small{
+ display:block;margin-top:8px;color:#ddc8ab;
+ font-size:clamp(11px,1.15vw,13px);line-height:1.4;overflow-wrap:anywhere;
+}
+#challenges .challenge-mode-heading{
+ display:flex;align-items:center;flex-wrap:wrap;gap:10px;
+ margin:9px 0 12px;padding-bottom:8px;border-bottom:1px solid #b68d5c6b;
+}
+#challenges .challenge-mode-heading h3{
+ margin:0;color:#f0d2a2;
+ font:600 clamp(16px,1.9vw,23px)/1.25 Georgia,serif;
+}
+#challenges #challengeList{display:grid;gap:clamp(8px,1.2vw,15px);min-width:0}
+#challenges #challengeList[hidden],#challenges #challengeModes[hidden],
+#challenges #challengeModeBack[hidden]{display:none!important}
+#challenges #challengeList .campaign-mission{
+ display:grid;grid-template-columns:44px minmax(0,1fr);align-items:start;
+ gap:clamp(9px,1.3vw,18px);min-width:0;margin:0;
+ padding:clamp(11px,1.4vw,18px);
+ border:1px solid #ab855889;border-radius:10px;
+ background:radial-gradient(ellipse at 5% 0%,#c0944c21,transparent 57%),
+  linear-gradient(155deg,#382c2af3,#252026f6 75%,#1b1b23f9);
+ box-shadow:inset 0 1px #eac68b4b,inset 0 0 0 2px #10101558,0 5px 15px #09070a8a;
+}
+#challenges #challengeList .campaign-mission>.node{
+ width:44px;height:44px;min-width:44px;
+ border:1px solid #d4ab72;border-radius:8px;
+ background:linear-gradient(150deg,#443329,#231f24);
+ color:#f1d09a;font:600 22px Georgia,serif;
+ box-shadow:inset 0 1px #e6c48b44;
+}
+#challenges #challengeList .campaign-mission>div:last-child{min-width:0}
+#challenges #challengeList .campaign-mission h3{
+ margin:0 0 7px;color:#f6e4c6;
+ font:600 clamp(15px,1.7vw,21px)/1.24 Georgia,serif;
+ overflow-wrap:anywhere;
+}
+#challenges #challengeList .campaign-mission p{
+ margin:5px 0;color:#e2d1b8;line-height:1.4;overflow-wrap:anywhere;
+}
+#challenges #challengeList .mission-stars{margin:7px 0;color:#eed097!important}
+#challenges #challengeList .mission-criteria{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,195px),1fr));
+ gap:7px;margin:9px 0 12px;padding:0;
+}
+#challenges #challengeList .mission-criteria li{
+ display:block;min-width:0;padding:8px 9px;
+ border:1px solid #a7835459;border-radius:7px;
+ background:#17181c80;color:#e1cfb4;
+ overflow-wrap:anywhere;
+}
+#challenges #challengeList .campaign-mission-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+#challenges #challengeList [data-start-challenge]{
+ min-height:44px;max-width:100%;white-space:normal;
+ border:1px solid #e9bd77;border-radius:8px;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#challenges #challengeList [data-start-challenge]:disabled{
+ opacity:.6;filter:saturate(.45);box-shadow:none;cursor:not-allowed;
+}
+#challenges #challengeSaveStatus{
+ min-height:1.3em;margin:12px 0 3px;color:#f0c986;overflow-wrap:anywhere;
+}
+#challenges button:focus-visible{outline:3px solid #ffe2a1;outline-offset:2px}
+#app:has(#challenges.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#challenges.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#challenges.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#challenges.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #challenges.screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #challenges .section-heading{margin-bottom:7px;padding-bottom:7px}
+ #challenges .section-heading h2{font-size:21px}
+ #challenges .challenge-mode-grid{gap:8px;margin:9px 0}
+ #challenges .challenge-mode-card{min-height:105px;padding:10px}
+ #challenges .challenge-mode-card>span{width:36px;height:36px;font-size:21px;margin-bottom:6px}
+ #challenges .challenge-mode-card b{font-size:16px}
+ #challenges .challenge-mode-card small{font-size:11px;margin-top:5px}
+ #challenges .challenge-mode-heading{margin:6px 0 8px;padding-bottom:6px}
+ #challenges .challenge-mode-heading h3{font-size:17px}
+ #challenges #challengeList{gap:8px}
+ #challenges #challengeList .campaign-mission{grid-template-columns:32px minmax(0,1fr);gap:8px;padding:9px}
+ #challenges #challengeList .campaign-mission>.node{width:32px;height:32px;min-width:32px;font-size:18px}
+ #challenges #challengeList .campaign-mission h3{font-size:15px}
+ #challenges #challengeList .campaign-mission p{font-size:11px}
+ #challenges #challengeList .mission-criteria{gap:5px;margin:6px 0}
+ #challenges #challengeList .mission-criteria li{font-size:10px;padding:6px}
+}
+@media(max-width:600px) and (orientation:portrait){
+ #challenges .challenge-mode-grid{grid-template-columns:1fr}
+ #challenges #challengeList .mission-criteria{grid-template-columns:1fr}
+}
+@media(max-width:580px){
+ #app:has(#challenges.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#challenges.active)>.topbar #accountStatus{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){#challenges button{transition:none}}
+
+
+/* UI-MODES-001C — two operation briefing screens, HQ archive visual system.
+   Styles only: routing, choice logic, save/restore, squad and battle unchanged. */
+body:has(#operations.active),body:has(#signalOperations.active){background:#16191b}
+body:has(#operations.active)::before,body:has(#signalOperations.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215d9 0%,#10111585 23%,#1011159e 75%,#111215d9 100%),
+  linear-gradient(180deg,#101319af 0%,#1614188b 36%,#120f14ef 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#operations.active),#app:has(#signalOperations.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#operations.active)>.topbar,#app:has(#signalOperations.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(#operations.active)>.topbar .brand,
+#app:has(#signalOperations.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#operations.active)>.topbar .brand .sigil,
+#app:has(#signalOperations.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#operations.active)>.topbar .brand strong,
+#app:has(#signalOperations.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#operations.active)>.topbar .brand small,
+#app:has(#signalOperations.active)>.topbar .brand small{display:none}
+#app:has(#operations.active)>.topbar .resources,
+#app:has(#signalOperations.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#operations.active)>.topbar #accountStatus,
+#app:has(#signalOperations.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#operations.screen.active,#signalOperations.screen.active{
+ position:relative;isolation:isolate;width:min(100%,1500px);
+ margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123f0 0%,#242022f0 50%,#241f22ed 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#operations.screen.active::before,#signalOperations.screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;
+ border:1px solid #e7c58b25;border-radius:7px;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+:is(#operations,#signalOperations) .section-heading{
+ margin:0 0 10px;padding:0 0 10px;border-bottom:1px solid #d7b27c55;
+}
+:is(#operations,#signalOperations) .section-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+:is(#operations,#signalOperations) .eyebrow{color:#e0b978;letter-spacing:.14em}
+:is(#operations,#signalOperations) .muted{color:#d9c5ab;line-height:1.45}
+:is(#operations,#signalOperations) .section-heading .ghost{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+:is(#operations,#signalOperations) .ops-guide{
+ margin:8px 0 12px;border:1px solid #a5845a8a;border-radius:9px;
+ background:linear-gradient(155deg,#382d2bea,#211e23ef);
+ box-shadow:inset 0 1px #eac68b32;
+}
+:is(#operations,#signalOperations) .ops-guide>summary{
+ min-height:44px;color:#efc58a;touch-action:manipulation;
+}
+:is(#operations,#signalOperations) .ops-guide[open]>summary{border-color:#b68d5c7e}
+:is(#operations,#signalOperations) .ops-guide-body{
+ color:#e8d8bf;border-top:1px solid #b68d5c4c;
+}
+:is(#operations,#signalOperations) .ops-guide h3{color:#efc58a}
+#operations .sig-operation-entry{
+ margin:10px 0 14px;border:1px solid #bd995f9c;
+ background:radial-gradient(ellipse at 10% 0%,#ac824537,transparent 70%),
+  linear-gradient(155deg,#3c2f2aec,#252127f2);
+ box-shadow:inset 0 1px #eac68b4a,0 4px 12px #08070a75;
+}
+#operations .sig-operation-entry strong{color:#f3dbb5}
+#operations .sig-operation-entry button{min-height:44px}
+#operations .ops-legacy-label{margin:14px 0 9px;color:#f1c68a}
+:is(#operations,#signalOperations) .ops-layout{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+ align-items:start;gap:clamp(9px,1.3vw,17px);margin:10px 0;min-width:0;
+}
+:is(#operations,#signalOperations) .ops-map,
+:is(#operations,#signalOperations) .ops-panel{
+ min-width:0;padding:clamp(11px,1.5vw,19px);
+ border:1px solid #a9875c9c;border-radius:10px;
+ background:linear-gradient(160deg,#372c2cf2,#211f25f5);
+ box-shadow:inset 0 1px #efce9955,0 4px 14px #08070a72;
+}
+:is(#operations,#signalOperations) .ops-report{
+ min-height:0;margin:10px 0 14px;color:#f1dfc1;
+ line-height:1.55;overflow-wrap:anywhere;
+}
+:is(#operations,#signalOperations) .ops-actions{
+ display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;
+}
+:is(#operations,#signalOperations) .ops-actions button{
+ min-width:0;min-height:44px;max-width:100%;white-space:normal;
+ overflow-wrap:anywhere;border-radius:8px;
+}
+:is(#operations,#signalOperations) .ops-actions .primary,
+#operations .sig-operation-entry .primary{
+ border:1px solid #e9bd77;background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+:is(#operations,#signalOperations) .ops-actions .ghost{
+ border:1px solid #b99665;background:linear-gradient(145deg,#47362b,#262329);
+ color:#f0dfbf;
+}
+:is(#operations,#signalOperations) .ops-actions button:disabled{
+ opacity:.6;filter:saturate(.45);cursor:not-allowed;box-shadow:none;
+}
+:is(#operations,#signalOperations) .ops-notice{color:#ffb7a7}
+:is(#operations,#signalOperations) .ops-panel #opsHistory,
+#signalOperations #sigHistory{
+ margin:13px 0 0;padding:9px 0 0;
+ border-top:1px solid #aa865c78;color:#d9c5ab;overflow-wrap:anywhere;
+}
+:is(#operations,#signalOperations) .ops-save-status{
+ margin:11px 0 3px;color:#f0c986;overflow-wrap:anywhere;
+}
+#operations .ops-nodes{gap:clamp(5px,.8vw,10px)}
+#operations .ops-node{
+ border:1px solid #a6875c91;border-radius:8px;
+ background:linear-gradient(155deg,#352b2bf2,#222129f6);
+ color:#eed9b7;box-shadow:inset 0 1px #ead2a346;
+}
+#operations .ops-node strong{color:#f0d5a7}
+#operations .ops-node small{color:#dbc5a8}
+#operations .ops-node b{color:#ffcf86}
+#operations button.ops-node:not(:disabled){
+ border-color:#e4b778;background:linear-gradient(155deg,#5b402edb,#31252aef);
+ box-shadow:inset 0 1px #ffd9a46c,0 0 0 1px #cf9e5747;
+}
+#operations button.ops-node:disabled{opacity:.62;cursor:default}
+#operations .ops-node.confirmed{
+ outline:2px solid #edca8b;outline-offset:1px;
+}
+#operations .ops-crossroads{color:#e7b976}
+#signalOperations .sig-guards{gap:clamp(5px,.7vw,9px)}
+#signalOperations .sig-guard,
+#signalOperations .sig-beacon{
+ min-width:0;border:1px solid #a6875c91;border-radius:8px;
+ background:linear-gradient(155deg,#352b2bf2,#222129f6);
+ color:#eed9b7;box-shadow:inset 0 1px #ead2a346;
+}
+#signalOperations .sig-beacon{
+ border-color:#dfb677;background:linear-gradient(155deg,#59402fe9,#30262bed);
+}
+#signalOperations .sig-guard strong,#signalOperations .sig-beacon strong{color:#f1d4a5}
+#signalOperations .sig-guard small,#signalOperations .sig-beacon small{
+ color:#dbc5a8;overflow-wrap:anywhere;
+}
+#signalOperations .sig-guard-icon,#signalOperations .sig-beacon>span{color:#f0c783}
+#signalOperations .sig-post-status{
+ display:inline-block;max-width:100%;padding:6px 9px;margin:8px 0;
+ border:1px solid #a783545f;border-radius:7px;
+ background:#221d20d6;color:#f1ce94;overflow-wrap:anywhere;
+}
+:is(#operations,#signalOperations) button:focus-visible{
+ outline:3px solid #ffe2a1;outline-offset:2px;
+}
+#app:has(#operations.active)>footer,#app:has(#signalOperations.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#operations.active)>.topbar,#app:has(#signalOperations.active)>.topbar{
+  height:42px;padding-inline:9px;
+ }
+ #app:has(#operations.active)>.topbar .brand strong,
+ #app:has(#signalOperations.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#operations.active)>.topbar #accountStatus,
+ #app:has(#signalOperations.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #operations.screen.active,#signalOperations.screen.active{
+  margin:7px auto 12px;padding:9px 10px 14px;
+ }
+ :is(#operations,#signalOperations) .section-heading{margin-bottom:7px;padding-bottom:7px}
+ :is(#operations,#signalOperations) .section-heading h2{font-size:21px}
+ :is(#operations,#signalOperations) .ops-layout{gap:8px;margin:7px 0}
+ :is(#operations,#signalOperations) .ops-map,
+ :is(#operations,#signalOperations) .ops-panel{padding:9px 11px}
+ :is(#operations,#signalOperations) .ops-guide{margin:5px 0 8px}
+ :is(#operations,#signalOperations) .ops-report{margin:7px 0;font-size:12px;line-height:1.4}
+ :is(#operations,#signalOperations) .ops-actions{gap:6px}
+ :is(#operations,#signalOperations) .ops-actions button{min-height:44px;padding:7px 10px;font-size:11px}
+ #operations .ops-node{min-height:49px;padding:6px 4px}
+ #signalOperations .sig-guard,#signalOperations .sig-beacon{min-height:65px;padding:5px 3px}
+ :is(#operations,#signalOperations) .ops-save-status{font-size:11px;margin:6px 0}
+}
+@media(max-width:650px) and (orientation:portrait){
+ :is(#operations,#signalOperations) .ops-layout{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:560px){
+ :is(#operations,#signalOperations) .ops-layout{grid-template-columns:minmax(0,1fr)}
+ :is(#operations,#signalOperations) .ops-actions button{flex:1 1 145px}
+ #operations .sig-operation-entry{flex-wrap:wrap}
+ #operations .sig-operation-entry button{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ :is(#operations,#signalOperations) button{transition:none}
+}
+
+/* UI-MODES-001D — four distinct result screens, one HQ archive presentation.
+   Presentation only. Keep real mission economy, rating, result text and navigation. */
+body:has(#missionResult.active),body:has(#challengeResult.active),
+body:has(#operationResult.active),body:has(#signalOperationResult.active){background:#16191b}
+body:has(#missionResult.active)::before,body:has(#challengeResult.active)::before,
+body:has(#operationResult.active)::before,body:has(#signalOperationResult.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215d9 0%,#10111585 23%,#1011159e 75%,#111215d9 100%),
+  linear-gradient(180deg,#101319b1 0%,#16141889 36%,#120f14ee 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .brand{
+ min-width:0;gap:9px;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .brand small{display:none}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .resources{
+ min-width:0;color:#e6c38b;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).screen.active{
+ display:grid;place-items:start center;
+ width:min(100%,1500px);min-width:0;
+ margin:clamp(9px,1.5dvh,18px) auto 24px;
+ padding:clamp(10px,1.6vw,22px);
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card{
+ position:relative;isolation:isolate;min-width:0;width:min(100%,900px);max-width:900px;
+ margin:0;padding:clamp(15px,2.3vw,29px);
+ border:1px solid #d9b17b92;border-radius:12px;
+ background:
+  radial-gradient(ellipse at 14% 0%,#be99512d,transparent 62%),
+  linear-gradient(105deg,#302626f7,#242024f9 67%,#231e22f7);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card::before{
+ content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;
+ border:1px solid #e7c58b25;border-radius:7px;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .eyebrow{
+ color:#e5bb7d;letter-spacing:.14em;font-size:clamp(10px,.95vw,12px);
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card h2{
+ margin:10px 0 14px;padding-bottom:11px;
+ border-bottom:1px solid #c8a06a82;
+ color:#f6e4c6;font:600 clamp(22px,3vw,34px)/1.18 Georgia,serif;
+ overflow-wrap:anywhere;text-shadow:0 2px 6px #09070b;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card p{
+ margin:9px 0;color:#e6d4b9;font-size:clamp(12px,1.25vw,15px);
+ line-height:1.56;overflow-wrap:anywhere;white-space:normal;
+}
+:is(#missionResult,#challengeResult) .mission-result-card .mission-stars{
+ display:block;padding:10px 12px;margin:12px 0 0;
+ border:1px solid #b18b5b86;border-radius:8px;
+ background:linear-gradient(145deg,#3b302bdc,#252127e7);
+ color:#f0c783!important;font-size:clamp(12px,1.45vw,16px);
+ line-height:1.45;overflow-wrap:anywhere;
+}
+:is(#operationResult,#signalOperationResult) .mission-result-card .muted{
+ color:#d4bfa1;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions{
+ display:flex;flex-wrap:wrap;align-items:stretch;gap:9px;
+ padding-top:13px;margin-top:16px;border-top:1px solid #a8865d78;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions button{
+ min-height:44px;min-width:0;max-width:100%;
+ padding:11px 16px;border-radius:8px;
+ white-space:normal;overflow-wrap:anywhere;text-align:center;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions .primary{
+ border:1px solid #e9bd77;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions .ghost{
+ border:1px solid #b99665;background:linear-gradient(145deg,#47362b,#262329);
+ color:#f0dfbf;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions button:focus-visible{
+ outline:3px solid #ffe2a1;outline-offset:2px;
+}
+#app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar{
+  height:42px;padding-inline:9px;
+ }
+ #app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .brand strong{font-size:11px}
+ #app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar #accountStatus{
+  font-size:10px;padding:4px 6px;
+ }
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).screen.active{
+  margin:6px auto 12px;padding:8px 0 12px;
+ }
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card{padding:13px 15px}
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card h2{
+  font-size:21px;margin:6px 0 8px;padding-bottom:7px;
+ }
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-card p{
+  font-size:12px;line-height:1.43;margin:6px 0;
+ }
+ :is(#missionResult,#challengeResult) .mission-result-card .mission-stars{
+  padding:7px 9px;margin:8px 0;font-size:12px;
+ }
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions{
+  gap:7px;margin-top:10px;padding-top:10px;
+ }
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) .mission-result-actions button{
+  min-height:44px;padding:8px 11px;font-size:11px;
+ }
+}
+@media(max-width:580px){
+ #app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar .brand strong{font-size:11px}
+ #app:has(:is(#missionResult,#challengeResult,#operationResult,#signalOperationResult).active)>.topbar #accountStatus{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ :is(#missionResult,#challengeResult,#operationResult,#signalOperationResult) button{transition:none}
+}
+
+/* UI-STORY-001 — literary reading scene and native character biographies.
+   Visual-only layer: story choices, provisional lore labels, save and combat untouched. */
+body:has(#storyDemo.active){background:#16191b}
+body:has(#storyDemo.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215dc 0%,#101115a0 26%,#101115b8 78%,#111215de 100%),
+  linear-gradient(180deg,#101319b3 0%,#16141891 36%,#120f14f0 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#storyDemo.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#storyDemo.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(#storyDemo.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#storyDemo.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#storyDemo.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#storyDemo.active)>.topbar .brand small{display:none}
+#app:has(#storyDemo.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#storyDemo.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#storyDemo.story-demo-screen.active{
+ width:min(100%,1500px);margin:clamp(8px,1.3dvh,17px) auto 20px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(105deg,#272123ed,#211f22ef 62%,#242024ee);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#storyDemo .section-heading{
+ margin:0 0 9px;padding-bottom:10px;border-bottom:1px solid #d7b27c55;
+}
+#storyDemo .section-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.13 Georgia,serif;
+ color:#f7e8c9;text-shadow:0 2px 5px #09070a;
+}
+#storyDemo .section-heading .eyebrow,#storyDemo .eyebrow{
+ color:#e0b978;letter-spacing:.12em;
+}
+#storyDemo .section-heading .ghost{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240;
+}
+#storyDemo .story-demo-scene{
+ width:min(100%,950px);max-width:950px;min-width:0;
+ margin:0 auto 8px;padding:clamp(12px,2.1vw,28px);
+ border:1px solid #a98b6185;border-radius:10px;
+ background:linear-gradient(145deg,#2c2526f5,#221f23f7);
+ box-shadow:inset 0 1px #e6c48b3d;
+}
+#storyDemo .story-demo-disclaimer{
+ margin:0 0 12px;padding:8px 10px;
+ border-left:3px solid #e3b978;border-radius:4px;
+ background:#17171b94;color:#edcd9b;
+ font-size:clamp(11px,1.15vw,13px);line-height:1.45;
+ overflow-wrap:anywhere;
+}
+#storyDemo .story-hero-profile{
+ display:flex;gap:clamp(8px,1.3vw,15px);align-items:center;
+ margin:0 0 17px;padding:10px 12px;
+ border:1px solid #a3855c7d;border-radius:9px;
+ background:linear-gradient(145deg,#382e2bcf,#231f25de);
+ box-shadow:inset 0 1px #e6c48b2b;
+}
+#storyDemo .story-hero-profile-name strong{
+ color:#f2d2a0;font:600 clamp(16px,1.8vw,21px)/1.25 Georgia,serif;
+}
+#storyDemo .story-hero-profile .muted{color:#d9c5ab}
+#storyDemo .story-hero-profile .hero-tag-strip{color:#edc992}
+#storyDemo .story-hero-profile .hero-biography-button{
+ min-height:44px;border:1px solid #b99665;
+ background:linear-gradient(145deg,#47362b,#262329);color:#f0dfbf;
+}
+#storyDemo #storyDemoSpeaker{
+ margin:7px 0 9px;color:#f0c98a;font-weight:700;
+ font-size:clamp(11px,1.2vw,14px);
+ letter-spacing:.09em;
+}
+#storyDemo #storyDemoText{
+ max-width:72ch;margin:0;padding:0 0 13px;
+ color:#f3e9dc;font-family:Georgia,serif;
+ font-size:clamp(17px,1.7vw,21px);line-height:1.67;
+ min-height:3em;white-space:pre-line;overflow-wrap:anywhere;
+ text-wrap:pretty;
+}
+#storyDemo .story-demo-actions{
+ margin:0;padding-top:14px;border-top:1px solid #c5a17264;
+ display:flex;flex-wrap:wrap;align-items:stretch;gap:9px;
+}
+#storyDemo .story-demo-choices{
+ display:flex;flex-wrap:wrap;gap:9px;max-width:100%;min-width:0;
+}
+#storyDemo .story-demo-choices[hidden],
+#storyDemo #storyDemoNext[hidden],
+#storyDemo #storyDemoFight[hidden],
+#storyDemo #storyDemoTrialFight[hidden],
+#storyDemo #storyDemoAgain[hidden]{display:none!important}
+#storyDemo .story-demo-actions button{
+ min-height:44px;max-width:100%;padding:10px 15px;
+ border-radius:8px;white-space:normal;overflow-wrap:anywhere;
+}
+#storyDemo .story-demo-choices button{flex:1 1 185px}
+#storyDemo .story-demo-actions .primary{
+ border:1px solid #e9bd77;background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#storyDemo .story-demo-actions .ghost{
+ border:1px solid #b99665;background:linear-gradient(145deg,#47362b,#262329);
+ color:#f0dfbf;
+}
+#storyDemo #storyDemoNotice{
+ flex-basis:100%;margin:0;color:#edcfa9;
+ line-height:1.5;overflow-wrap:anywhere;
+}
+#storyDemo button:focus-visible{outline:3px solid #ffe2a1;outline-offset:2px}
+#app:has(#storyDemo.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+/* The biography belongs to the browser top layer: style without hijacking focus or Escape. */
+#heroBiographyDialog.hero-biography-dialog{
+ width:min(650px,calc(100vw - 24px));
+ max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 20px);
+ overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+ padding:clamp(16px,2.3vw,28px);
+ border:1px solid #cfaa768e;border-radius:12px;
+ background:linear-gradient(150deg,#332828,#211e23 75%);
+ color:#f3e8d5;
+ box-shadow:0 16px 55px #030307da,inset 0 1px #f1d8ae4d;
+}
+#heroBiographyDialog::backdrop{background:#050408c9}
+#heroBiographyDialog .eyebrow{color:#e1b779;letter-spacing:.12em}
+#heroBiographyDialog h2{
+ margin:9px 0 11px;padding-bottom:11px;
+ border-bottom:1px solid #b894617d;color:#f7e2bb;
+ font:600 clamp(21px,2.5vw,29px)/1.2 Georgia,serif;
+ overflow-wrap:anywhere;
+}
+#heroBiographyDialog .hero-tag-strip{color:#eac18a}
+#heroBiographyDialog .hero-biography-text{
+ max-width:66ch;margin:12px 0;color:#f0e2ce;
+ font-family:Georgia,serif;font-size:clamp(15px,1.4vw,17px);
+ line-height:1.72;white-space:pre-line;overflow-wrap:anywhere;
+}
+#heroBiographyDialog #heroBiographyNote{color:#dbc5aa;line-height:1.45}
+#heroBiographyDialog .hero-biography-close{
+ min-height:44px;max-width:100%;padding:10px 18px;
+ border:1px solid #b99665;border-radius:8px;
+ background:linear-gradient(145deg,#47362b,#262329);color:#f0dfbf;
+}
+#heroBiographyDialog .hero-biography-close:focus-visible{
+ outline:3px solid #ffe2a1;outline-offset:2px;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#storyDemo.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#storyDemo.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#storyDemo.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #storyDemo.story-demo-screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #storyDemo .section-heading{margin-bottom:7px;padding-bottom:7px}
+ #storyDemo .section-heading h2{font-size:21px}
+ #storyDemo .story-demo-scene{padding:11px 14px}
+ #storyDemo .story-demo-disclaimer{padding:6px 9px;margin-bottom:8px;font-size:11px}
+ #storyDemo .story-hero-profile{padding:7px 10px;gap:8px;margin-bottom:9px}
+ #storyDemo #storyDemoSpeaker{margin:4px 0 6px}
+ #storyDemo #storyDemoText{font-size:15px;line-height:1.5;min-height:0;padding-bottom:9px}
+ #storyDemo .story-demo-actions{gap:7px;padding-top:10px}
+ #storyDemo .story-demo-actions button{padding:8px 11px}
+ #heroBiographyDialog.hero-biography-dialog{padding:11px 16px}
+ #heroBiographyDialog h2{font-size:19px;margin:5px 0;padding-bottom:7px}
+ #heroBiographyDialog .hero-biography-text{font-size:13px;line-height:1.5;margin:8px 0}
+}
+@media(max-width:580px){
+ #app:has(#storyDemo.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#storyDemo.active)>.topbar #accountStatus{font-size:9px}
+ #storyDemo .story-demo-choices{flex-direction:column;width:100%}
+ #storyDemo .story-demo-choices button{flex:auto}
+}
+@media(prefers-reduced-motion:reduce){
+ #storyDemo button,#heroBiographyDialog button{transition:none}
+}

@@ -793,9 +793,20 @@ function showScreen(id){
  // Combat-008A: release the document scroll while the arena owns the viewport.
  // Guard document.body for headless DOM tests and embedded integrations.
  if(document.body&&document.body.classList)document.body.classList.toggle("battle-mode",id==="battle");
+ const rosterWasInDossier=$("#heroDetail")?.classList.contains("active");
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  $("#"+id).classList.add("active");
- if(id==="collection")renderHeroes();
+ if(id==="collection"){
+  const restore=rosterRestoreOnReturn&&rosterWasInDossier;
+  renderHeroes();
+  if(restore&&typeof window!=="undefined"&&typeof window.scrollTo==="function"){
+   const y=rosterReturnScrollY;
+   const scroll=()=>window.scrollTo(0,y);
+   if(typeof requestAnimationFrame==="function")requestAnimationFrame(scroll);
+   else scroll();
+  }
+  rosterRestoreOnReturn=false;
+ }
  if(id==="playerProfile")renderPlayerProfile();
  if(id==="dailyTasks")renderDailyTasks();
  if(id==="loginCalendar"){
@@ -1516,34 +1527,65 @@ $("#lockedHeroUnlock")?.addEventListener("click",()=>{
 });
 $("#lockedHeroClose")?.addEventListener("click",()=>$("#lockedHeroDialog").close());
 $("#lockedHeroDialog")?.addEventListener("close",()=>{lockedStarHeroId=null;});
+// ROSTER-UI-002: view state only. Squad saves and hero progression are unchanged.
+let rosterFilter="all",rosterSort="level",rosterReturnScrollY=0,rosterRestoreOnReturn=false;
+function rosterOrder(entries,filter,sort){
+ return entries.filter(e=>filter==="owned"?e.owned:filter==="locked"?!e.owned:true).sort((a,b)=>{
+  if(a.owned!==b.owned)return a.owned?-1:1;
+  if(!a.owned)return a.index-b.index; // Never leak concealed hero identity via ordering.
+  if(sort==="name")return a.hero.name.localeCompare(b.hero.name,"ru")||a.index-b.index;
+  const score=e=>sort==="stars"?e.rank??0:sort==="gear"?e.tier??0:e.hero.level??0;
+  return score(b)-score(a)||a.index-b.index;
+ });
+}
 function renderHeroes(){
  const ownedCount=ALLIES.filter(h=>heroOwned(h.id)).length;
- const countNode=$("#rosterCount");
- if(countNode)countNode.textContent="Получено "+ownedCount+" из "+ALLIES.length;
- $("#heroList").innerHTML=ALLIES.map(progressedHero).map(h=>{
+ const count=$("#rosterCount");if(count)count.textContent="Получено "+ownedCount+" из "+ALLIES.length;
+ const entries=ALLIES.map(progressedHero).map((h,index)=>{
   const owned=heroOwned(h.id);
   const rank=typeof StarCore!=="undefined"?StarCore.rankOf(progress,h.id):null;
+  const gear=owned&&typeof ProgressCore!=="undefined"?ProgressCore.gearState(progress,h.id):null;
+  return {hero:h,index,owned,rank,tier:gear?.tier??null};
+ });
+ const visible=rosterOrder(entries,rosterFilter,rosterSort);
+ const shown=$("#rosterShown");if(shown)shown.textContent="Показано: "+visible.length;
+ const sort=$("#rosterSort");if(sort)sort.value=rosterSort;
+ document.querySelectorAll("[data-roster-filter]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.rosterFilter===rosterFilter)));
+ $("#heroList").innerHTML=visible.map(({hero:h,owned,rank,tier})=>{
   const cost=typeof StarCore!=="undefined"?StarCore.costOf(progress,h.id):null;
   const amount=typeof StarCore!=="undefined"?StarCore.shardsOf(progress,h.id):null;
-  const safeAmount=Math.max(0,Number(amount)||0);
-  const safeCost=Math.max(1,Number(cost)||10);
+  const safeAmount=Math.max(0,Number(amount)||0),safeCost=Math.max(1,Number(cost)||10);
   const progressPercent=Math.min(100,Math.round(safeAmount/safeCost*100));
   const portraitAvatar=owned&&h.id==="ren"?'<img class="ren-collection-portrait" src="assets/ren-portrait-ui.webp" width="220" height="275" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
   const starInfo=owned&&rank!==null?'<span class="hero-star-summary" aria-label="Ранг '+rank+' из 7">'+starGlyphs(rank)+'</span>':"";
   const name=owned?h.name:"Неизвестный герой";
   const levelLine=owned?"Ур. "+h.level+" · "+h.role:"Условия получения";
   const progressLine=!owned?'<div class="roster-shard-track" aria-hidden="true"><span style="width:'+progressPercent+'%"></span></div><span class="roster-shard-value">Осколки '+safeAmount+' / '+safeCost+'</span>':"";
-  const gear=owned&&typeof ProgressCore!=="undefined"?ProgressCore.gearState(progress,h.id):null;
-  const gearLabel=gear&&Number.isFinite(gear.tier)?"G"+gear.tier:"";
-  return `<button type="button" class="hero-card hero-open roster-card ${owned?"":"hero-locked"}" data-open-hero="${h.id}" aria-label="${name}. ${owned?"Открыть досье":"Условия получения"}"><span class="roster-card-art hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":""}">${portraitAvatar}</span><span class="roster-card-name">${name}</span>${starInfo}<span class="roster-card-subtitle">${levelLine}</span>${owned?'<span class="roster-card-gear">'+gearLabel+'</span>':progressLine}<span class="hero-open-hint">${owned?"Открыть досье ›":"Как получить ›"}</span></button>`;
+  const gearLabel=owned&&Number.isFinite(tier)?"G"+tier:"";
+  const slot=owned?squadSlots().indexOf(h.id):-1;
+  const squadBadge=slot===0?'<span class="roster-squad-badge roster-leader-badge">★ Лидер</span>':slot>0?'<span class="roster-squad-badge">В отряде</span>':"";
+  const squadHint=slot===0?", лидер отряда":slot>0?", в отряде":"";
+  return `<button type="button" class="hero-card hero-open roster-card ${owned?"":"hero-locked"} ${slot>=0?"roster-in-squad":""}" data-open-hero="${h.id}" aria-label="${name}${squadHint}. ${owned?"Открыть досье":"Условия получения"}"><span class="roster-card-art hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":""}">${portraitAvatar}${squadBadge}</span><span class="roster-card-name">${name}</span>${starInfo}<span class="roster-card-subtitle">${levelLine}</span>${owned?'<span class="roster-card-gear">'+gearLabel+'</span>':progressLine}<span class="hero-open-hint">${owned?"Открыть досье ›":"Как получить ›"}</span></button>`;
  }).join("");
+ if(!visible.length)$("#heroList").innerHTML='<p class="roster-empty">В этой категории героев пока нет.</p>';
  document.querySelectorAll("[data-open-hero]").forEach(node=>node.addEventListener("click",()=>{
-  const id=node.dataset.openHero;
-  if(heroOwned(id))openHeroDetail(id);else showLockedHero(id);
+  const id=node.dataset.openHero;if(heroOwned(id))openHeroDetail(id);else showLockedHero(id);
  }));
 }
+document.querySelectorAll("[data-roster-filter]").forEach(button=>button.addEventListener("click",()=>{
+ if(!["all","owned","locked"].includes(button.dataset.rosterFilter))return;
+ rosterFilter=button.dataset.rosterFilter;renderHeroes();
+}));
+$("#rosterSort")?.addEventListener("change",event=>{
+ const next=event.target.value;if(!["level","stars","gear","name"].includes(next))return;
+ rosterSort=next;renderHeroes();
+});
 function openHeroDetail(id){
  if(!ALLIES.some(h=>h.id===id)||!heroOwned(id))return false;
+ if($("#collection")?.classList.contains("active")){
+  rosterReturnScrollY=window.scrollY||document.documentElement?.scrollTop||0;
+  rosterRestoreOnReturn=true;
+ }
  selectedHeroId=id;
  const current=ProgressCore.gearState(progress,id);
  selectedGearSlot=current?Math.max(0,current.slots.findIndex(installed=>!installed)):0;

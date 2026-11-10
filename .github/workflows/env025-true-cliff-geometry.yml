@@ -21,7 +21,7 @@ jobs:
           curl -fLS --retry 3 --connect-timeout 15 --max-time 180 \
             https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/coastal_cliff_04/coastal_cliff_04.bin \
             -o /tmp/env025-source/coastal_cliff_04.bin
-          echo '68418cc5fbddbd0ff1c350fb2aaaa62f45  /tmp/env025-source/coastal_cliff_04_1k.gltf' | md5sum -c -
+          echo '68418cc5fbddbd0ff1c350fb2aaaa62f  /tmp/env025-source/coastal_cliff_04_1k.gltf' | md5sum -c -
           echo '77612519fa9eb44129ba40943612c3c3  /tmp/env025-source/coastal_cliff_04.bin' | md5sum -c -
           stat -c 'PUBLISHER_FILE %n %s bytes' /tmp/env025-source/*
       - name: Measure source topology and possible real natural crown area

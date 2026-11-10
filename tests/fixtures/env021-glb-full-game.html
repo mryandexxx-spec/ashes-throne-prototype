@@ -60,14 +60,16 @@
       const result=await B.SceneLoader.ImportMeshAsync(null,"/build/env021/","scene.glb",scene);
       const candidates=result.meshes.filter(m=>m.getTotalVertices?.()>0);
       if(candidates.length!==2)throw Error("Expected two drawable GLB meshes; got "+candidates.length);
+      const artReview=new URLSearchParams(location.search).get("review")==="1";
       let verts=0,tris=0;
       for(let i=0;i<candidates.length;i++){
         const mesh=candidates[i];
         mesh.name="env021_candidate_"+i+"_"+mesh.name;
         const mat=new B.StandardMaterial("env021_preview_clay_"+i,scene);
-        mat.diffuseColor=i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2);
-        mat.emissiveColor=i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2);
-        mat.disableLighting=true;mat.fogEnabled=false;mat.backFaceCulling=false;
+        mat.diffuseColor=artReview?(i?new B.Color3(.40,.43,.45):new B.Color3(.54,.50,.46)):(i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2));
+        mat.emissiveColor=artReview?new B.Color3(.03,.03,.03):(i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2));
+        mat.specularColor=new B.Color3(.025,.025,.025);
+        mat.disableLighting=!artReview;mat.fogEnabled=false;mat.backFaceCulling=false;
         mesh.material=mat;
         mesh.isPickable=false;mesh.checkCollisions=false;
         mesh.alwaysSelectAsActiveMesh=true;
@@ -102,13 +104,14 @@
       d.candidateDifferencePixels=String(changed);
       d.candidateOnlyRedPixels=String(red);
       d.candidateOnlyCyanPixels=String(cyan);
-      if(red<120||cyan<120||changed<300)
+      if((!artReview&&(red<120||cyan<120))||changed<300)
         throw Error("Pass005 terrain is not visibly rasterized: changed="+changed+" red="+red+" cyan="+cyan);
       const pass=new URLSearchParams(location.search).get("pass")==="006"?"006":"005";
       d.art="ENV021_PASS"+pass+"_GLB_NOT_APPROVED";
       d.verts=String(verts);d.tris=String(tris);d.hiddenScenery=String(hidden);
       d.fighters=String(fighters);d.camera=String(camera.radius);
       d.loader="BABYLON_9_33_2_NATIVE_GLTF";d.webgl="true";
+      d.artReview=artReview?"neutral_lit":"diagnostic_emissive";
       loaded=true;clearInterval(poll);
       const stamp=document.createElement("div");
       stamp.textContent="ENV021 PASS "+pass+" RASTERIZED — ART UNAPPROVED";

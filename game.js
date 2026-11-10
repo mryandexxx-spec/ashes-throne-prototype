@@ -22,6 +22,7 @@ const ENV022_CONCEPT_PREVIEW=typeof location!=="undefined" &&
  !/(?:^|[?&])environment=(?:env017|env010)(?:&|$)/.test(location.search);
 let engine, scene, meshes={};
 let combatVisual007=null; // One optional visual layer per Babylon Scene.
+let renGlbRuntime=null; // Default Ren GLB visual, no gameplay ownership.
 let arenaCamera=null;
 // Combat-008B: allies are near the viewer, enemies farther away.
 const ARENA_VIEW=Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
@@ -890,6 +891,7 @@ function showScreen(id){
    cancelAutoTimer();autoBattle=false;
    console.error("Не удалось запустить 3D-арену:",error);
    stopBattleRendering();
+   if(renGlbRuntime){renGlbRuntime.dispose();renGlbRuntime=null;}
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
    scene=undefined;engine=undefined;arenaCamera=null;meshes={};indicatorNodes={};combatVisual007=null;renderLoopRunning=false;
@@ -2740,6 +2742,7 @@ function renderBattleFrame(){
   visual.head.position.y=1.8+pose.y;
   if(visual.body.rotation)visual.body.rotation.z=pose.tilt;
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
+  if(h.id==="ren"&&renGlbRuntime)renGlbRuntime.update(BattleAnimation.activity("ren"));
  }
  positionArenaIndicators();
  scene.render();
@@ -2861,6 +2864,11 @@ function initBabylon(){
   for(const part of [body,head,base])part.metadata={fighterId:h.id};
    meshes[h.id]={body,head,base};
  });
+ // Default GLB Ren replaces the procedural visual when its verified asset loads.
+ // Loading is asynchronous and never blocks combat; fallback stays intact.
+ if(typeof RenGlbRuntime!=="undefined"&&meshes.ren){
+  renGlbRuntime=RenGlbRuntime.create(BABYLON,scene,meshes.ren);
+ }
  // Babylon pointer picking supports mouse and touch, registered once with the scene.
   if(scene.onPointerObservable&&BABYLON.PointerEventTypes)
    scene.onPointerObservable.add(handleInspectionPointer);

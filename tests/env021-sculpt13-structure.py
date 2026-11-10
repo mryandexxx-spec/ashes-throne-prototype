@@ -14,7 +14,7 @@ mathutils = types.ModuleType("mathutils")
 mathutils.Vector = tuple
 sys.modules["mathutils"] = mathutils
 
-path = pathlib.Path(__file__).resolve().parents[1] / "tools" / "env021-art-pass-012.py"
+path = pathlib.Path(__file__).resolve().parents[1] / "tools" / "env021-art-pass-013.py"
 spec = importlib.util.spec_from_file_location("env021_sculpt13", path)
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)

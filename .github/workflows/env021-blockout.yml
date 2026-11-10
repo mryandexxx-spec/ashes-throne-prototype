@@ -109,7 +109,7 @@ jobs:
             grep -o 'data-error="[^"]*"' "build/env021/webgl-$radius.dom.html" || true
             grep -o 'data-candidate-only-[^ ]*' "build/env021/webgl-$radius.dom.html" || true
             grep -q 'data-visual-status="ready"' "build/env021/webgl-$radius.dom.html"
-            grep -q "data-art=\\\"ENV021_PASS014${OPTION}_GLB_NOT_APPROVED\\\"" "build/env021/webgl-$radius.dom.html"
+            grep -q "data-art=\"ENV021_PASS014${OPTION}_GLB_NOT_APPROVED\"" "build/env021/webgl-$radius.dom.html"
             grep -q 'data-webgl="true"' "build/env021/webgl-$radius.dom.html"
             test -s "build/env021/webgl-$radius.png"
           done

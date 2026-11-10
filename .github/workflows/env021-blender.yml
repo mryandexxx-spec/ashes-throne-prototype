@@ -15,6 +15,7 @@ on:
       - "tools/env021-build-geology.py"
       - "tools/env021-art-pass-002.py"
       - "tools/env021-art-pass-003.py"
+      - "tools/env021-art-pass-004.py"
       - "art/env021/**"
 
 permissions:
@@ -69,7 +70,7 @@ jobs:
           if [[ -n "$SOURCE_BLEND" ]]; then
             xvfb-run -a -s '-screen 0 1280x720x24' blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --source "$SOURCE_BLEND" --output build/env021
           else
-            xvfb-run -a -s '-screen 0 1280x720x24' blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --mode sculpt3 --scan build/env021/cc0-coastal-cliff-input.glb --output build/env021
+            xvfb-run -a -s '-screen 0 1280x720x24' blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --mode sculpt4 --scan build/env021/cc0-coastal-cliff-input.glb --output build/env021
           fi
 
       - name: Preserve Blender crash trace if the runner fails

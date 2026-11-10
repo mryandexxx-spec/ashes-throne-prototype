@@ -59,6 +59,8 @@ jobs:
             grep -o 'data-visual-status="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
             grep -o 'data-active-meshes="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
             grep -o 'data-bounds="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
+            grep -o 'data-error="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
+            grep -o 'data-candidate-only-[^ ]*' "build/env021/diagnostic-$radius.dom.html" || true
             grep -q 'data-visual-status="ready"' "build/env021/diagnostic-$radius.dom.html"
             grep -Eq 'data-active-meshes="[1-9][0-9]*"' "build/env021/diagnostic-$radius.dom.html"
           done

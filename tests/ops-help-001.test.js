@@ -58,7 +58,7 @@ test("help is touch-friendly, preserves existing handlers and aligns version",()
  assert.ok(game.includes('if(id==="signalOperations")renderSignalOperations()'));
  assert.ok(html.includes('data-screen="signalOperations"'));
  assert.ok(html.includes('data-ops-order=')===false,"buttons are built dynamically as before");
- assert.equal(pkg.version,"0.3.86");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.86 · ROSTER002 + OPSHELP + RENPLAY'));
+ assert.equal(pkg.version,"0.3.87");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.87 · ROSTER003 + OPSHELP + RENPLAY'));
  assert.ok(html.includes('src="signal-operation-core.js"'));
 });

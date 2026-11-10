@@ -232,9 +232,17 @@
           <button type="button" class="roster-filter-button" data-roster-filter="owned" aria-pressed="false">Получены</button>
           <button type="button" class="roster-filter-button" data-roster-filter="locked" aria-pressed="false">Не открыты</button>
         </div>
-        <div class="roster-sort-wrap"><label for="rosterSort">Сортировка</label><select id="rosterSort" aria-label="Сортировка героев">
-          <option value="level">По уровню</option><option value="stars">По звёздам</option><option value="gear">По экипировке</option><option value="name">По имени</option>
-        </select></div>
+        <div class="roster-sort-wrap"><span class="roster-sort-label">Сортировка</span>
+          <div class="roster-sort-picker">
+            <button type="button" id="rosterSortTrigger" class="roster-sort-trigger" aria-controls="rosterSortMenu" aria-expanded="false" aria-haspopup="true">По уровню <span aria-hidden="true">▾</span></button>
+            <div id="rosterSortMenu" class="roster-sort-menu" role="group" aria-label="Порядок героев" hidden>
+              <button type="button" data-roster-sort="level" aria-pressed="true">По уровню</button>
+              <button type="button" data-roster-sort="stars" aria-pressed="false">По звёздам</button>
+              <button type="button" data-roster-sort="gear" aria-pressed="false">По экипировке</button>
+              <button type="button" data-roster-sort="name" aria-pressed="false">По имени</button>
+            </div>
+          </div>
+        </div>
         <span id="rosterShown" class="roster-shown" role="status" aria-live="polite"></span>
       </div>
       <div id="heroList" class="hero-list roster-grid" aria-label="Список полученных и ещё не открытых героев"></div>
@@ -704,7 +712,7 @@
         <button type="button" class="primary" id="lockedHeroUnlock">Открыть за 10 осколков</button>
       </div>
     </dialog>
-    <footer><span id="buildVersion">Прототип · v0.3.86 · ROSTER002 + OPSHELP + RENPLAY + REN3D003 + ENV010 + ENV017-MASSING</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.87 · ROSTER003 + OPSHELP + RENPLAY + REN3D003 + ENV010 + ENV017-MASSING</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">

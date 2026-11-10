@@ -2828,3 +2828,151 @@ body:has(#dailyTasks.active)::before{
  #app:has(#dailyTasks.active)>.topbar #accountStatus{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){#dailyTasks button{transition:none}}
+
+
+/* UI-SYSTEMS-001C — login rewards calendar, shared HQ art language.
+   Only presentation; LoginCore, local-day handling and claim persistence stay unchanged. */
+body:has(#loginCalendar.active){background:#16191b}
+body:has(#loginCalendar.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215d9 0%,#10111585 23%,#1011159e 75%,#111215d9 100%),
+  linear-gradient(180deg,#101319ad 0%,#1614188c 36%,#120f14ee 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#loginCalendar.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#loginCalendar.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(#loginCalendar.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#loginCalendar.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#loginCalendar.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#loginCalendar.active)>.topbar .brand small{display:none}
+#app:has(#loginCalendar.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#loginCalendar.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#loginCalendar.screen.active{
+ position:relative;isolation:isolate;width:min(100%,1500px);
+ margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123f0 0%,#242022f0 50%,#241f22ed 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#loginCalendar.screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;
+ border:1px solid #e7c58b25;border-radius:7px;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+#loginCalendar .section-heading{
+ margin:0 0 9px;padding:0 0 9px;border-bottom:1px solid #d7b27c55;
+}
+#loginCalendar .section-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+#loginCalendar .eyebrow{color:#e0b978;letter-spacing:.14em}
+#loginCalendar .muted{color:#d9c5ab;line-height:1.45}
+#loginCalendar #loginCalendarMonth{
+ display:inline-block;margin:3px 0 8px;padding:5px 12px;
+ border:1px solid #b8905e9c;border-radius:7px;
+ background:#2b2427e8;color:#f0c986;
+ font-weight:650;letter-spacing:.02em;
+}
+#loginCalendar .section-heading .ghost{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+#loginCalendar .login-calendar-grid{
+ display:grid;grid-template-columns:repeat(7,minmax(0,1fr));
+ gap:clamp(5px,.8vw,11px);margin:12px 0 14px;min-width:0;
+}
+#loginCalendar .login-day{
+ position:relative;min-width:0;min-height:88px;
+ padding:clamp(7px,.95vw,12px);border:1px solid #9e7954a3;border-radius:9px;
+ background:radial-gradient(ellipse at 40% 0%,#bb8d482b,transparent 70%),
+  linear-gradient(155deg,#372b2af2,#252026f6 75%,#1b1b23f8);
+ box-shadow:inset 0 1px #eac68b4a,0 4px 11px #09070a8a;
+}
+#loginCalendar .login-day strong{
+ display:block;margin:0 0 6px;color:#f2d3a1;
+ font:600 clamp(12px,1.2vw,16px)/1.25 Georgia,serif;
+}
+#loginCalendar .login-day small{
+ display:block;color:#ddc8aa;line-height:1.35;
+ font-size:clamp(10px,.9vw,12px);overflow-wrap:anywhere;
+}
+#loginCalendar .login-day.claimed{
+ opacity:1;border-color:#897c5b88;
+ background:linear-gradient(155deg,#2b302eeb,#1f2426f2);
+ box-shadow:inset 0 1px #a2b49b2a;
+}
+#loginCalendar .login-day.claimed::after{
+ content:"✓";position:absolute;top:4px;right:6px;
+ color:#b6d3ae;font-size:14px;font-weight:800;
+}
+#loginCalendar .login-day.claimed strong{color:#c8d2ba}
+#loginCalendar .login-day.active{
+ border:2px solid #f0c47e;
+ background:radial-gradient(ellipse at 45% 0%,#d5a25252,transparent 72%),
+  linear-gradient(155deg,#4b352a,#292126 75%);
+ box-shadow:0 0 0 1px #171118,0 0 14px #d19f5660,inset 0 1px #ffdda68c;
+}
+#loginCalendar .login-day.active strong{color:#ffe3aa}
+#loginCalendar #loginClaim{
+ min-height:44px;max-width:100%;
+ border:1px solid #e9bd77;border-radius:8px;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#loginCalendar #loginClaim:disabled{
+ opacity:.68;cursor:default;filter:saturate(.48);box-shadow:none;
+}
+#loginCalendar #loginCalendarStatus{
+ min-height:1.5em;margin:10px 0 0;color:#f3d19c;overflow-wrap:anywhere;
+}
+#loginCalendar button:focus-visible{outline:3px solid #ffe2a1;outline-offset:2px}
+#app:has(#loginCalendar.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#loginCalendar.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#loginCalendar.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#loginCalendar.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #loginCalendar.screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #loginCalendar .section-heading{margin-bottom:7px;padding-bottom:7px}
+ #loginCalendar .section-heading h2{font-size:21px}
+ #loginCalendar #loginCalendarMonth{margin:2px 0 5px;font-size:11px}
+ #loginCalendar .muted{font-size:11px}
+ #loginCalendar .login-calendar-grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin:8px 0}
+ #loginCalendar .login-day{min-height:75px;padding:6px}
+ #loginCalendar .login-day strong{font-size:12px;margin-bottom:4px}
+ #loginCalendar .login-day small{font-size:10px;line-height:1.25}
+}
+@media(max-width:700px) and (orientation:portrait){
+ #loginCalendar .login-calendar-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:580px){
+ #app:has(#loginCalendar.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#loginCalendar.active)>.topbar #accountStatus{font-size:9px}
+ #loginCalendar .login-calendar-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){#loginCalendar button{transition:none}}

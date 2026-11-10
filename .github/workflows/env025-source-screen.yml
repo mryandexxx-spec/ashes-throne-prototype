@@ -24,7 +24,7 @@ jobs:
             print('API_BLOCKED: official metadata unavailable, cannot claim LOD exists',flush=True)
             raise SystemExit(0)
           data=json.loads(path.read_text())
-          print('PUBLISHER',url,'TOP_LEVEL_FORMATS',list(data),flush=True)
+          print('PUBLISHER','https://api.polyhaven.com/files/coastal_cliff_04','TOP_LEVEL_FORMATS',list(data),flush=True)
           for fmt in ('gltf','blend','fbx','usd','usdz'):
             if fmt not in data:continue
             desc=data[fmt]

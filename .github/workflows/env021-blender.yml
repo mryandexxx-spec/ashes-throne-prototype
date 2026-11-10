@@ -72,6 +72,16 @@ jobs:
             xvfb-run -a -s '-screen 0 1280x720x24' blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --mode sculpt3 --scan build/env021/cc0-coastal-cliff-input.glb --output build/env021
           fi
 
+      - name: Preserve Blender crash trace if the runner fails
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p build/env021
+          if [[ -s /tmp/blender.crash.txt ]]; then
+            cp /tmp/blender.crash.txt build/env021/blender-crash.txt
+            tail -100 /tmp/blender.crash.txt
+          fi
+
       - name: Verify outputs
         run: |
           python3 - <<'PY'

@@ -1,0 +1,60 @@
+name: ENV026 verified real Chromium PNG and six fighter surface contacts
+on:
+  push:
+    branches: [feat/combat-env-026-authored-blender-gorge]
+    paths: ['.github/workflows/env026-publish-verified-png.yml','assets/env026/ENV026_authored_gorge.glb']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Save actual Babylon screenshots only if all six fighters stand on scanned rock
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)"
+          mkdir -p docs/art/env026
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/env026-screen-server.log 2>&1 &
+          sleep 2
+          flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390)
+          for view in normal far; do
+            radius=12
+            if [ "$view" = far ]; then radius=19; fi
+            url="http://127.0.0.1:8765/tests/fixtures/env017-full-game.html?radius=$radius"
+            timeout 65s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --screenshot="$PWD/docs/art/env026/$view.png" "$url" 2>"/tmp/env026-$view.log"
+            timeout 65s "$chrome" "${flags[@]}" --virtual-time-budget=30000 --dump-dom "$url" >"/tmp/env026-$view.html" 2>>"/tmp/env026-$view.log"
+            grep -q 'data-visual-status="ready"' "/tmp/env026-$view.html"
+            grep -q 'data-env026="authored-blender"' "/tmp/env026-$view.html"
+            grep -q 'data-contact-status="pass"' "/tmp/env026-$view.html"
+            VIEW="$view" python3 - <<'PY'
+          import os,re,html,json,pathlib
+          view=os.environ['VIEW']
+          document=pathlib.Path('/tmp/env026-'+view+'.html').read_text()
+          match=re.search(r'data-contact="([^"]+)"',document)
+          assert match,"No terrain intersection report"
+          contacts=json.loads(html.unescape(match.group(1)))
+          assert len(contacts)==6 and all(p['contact'] and p['samples']>=3 for p in contacts),contacts
+          assert max(abs(p['delta']) for p in contacts)<=.35
+          pathlib.Path('docs/art/env026/contact-'+view+'.json').write_text(json.dumps(contacts,indent=2,ensure_ascii=False)+'\n')
+          print('VERIFIED',view,'six true scanned-surface contacts, maximum meters:',round(max(abs(p['delta']) for p in contacts),3))
+          PY
+            test "$(stat -c %s "docs/art/env026/$view.png")" -ge 65000
+          done
+      - name: Commit real captured PNG plus surface-contact reports to Draft branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/art/env026/normal.png docs/art/env026/far.png docs/art/env026/contact-normal.json docs/art/env026/contact-far.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'ENV026: publish two real Chromium full-HUD PNGs and six-fighter triangle contacts'
+          git fetch origin feat/combat-env-026-authored-blender-gorge
+          git rebase origin/feat/combat-env-026-authored-blender-gorge
+          git push origin HEAD:feat/combat-env-026-authored-blender-gorge

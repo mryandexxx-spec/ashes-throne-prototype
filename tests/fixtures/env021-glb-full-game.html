@@ -1,402 +1,124 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ENV021 GLB / actual battle HUD / ephemeral QA</title>
-<style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden;background:#8c969b}</style></head>
-<body><iframe id="game" src="../../index.html" title="Actual Babylon battle with GLB art-test"></iframe>
+<title>ENV021 Pass005 / native Babylon GLB / real battle QA only</title>
+<style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden;background:#8c969b}</style>
+</head><body><iframe id="game" src="../../index.html" title="Actual Babylon battle with Pass005 GLB"></iframe>
 <script>
-/* Art QA only. Loads a REAL Blender-exported local GLB into a REAL Babylon
- * battle scene and retains the game's fighters, camera, interaction and HUD.
- * No runtime deployment. The explicit parsed GLB contract is narrow:
- * uncompressed glTF v2, tightly packed POSITION and SCALAR indices.
- * Blender output Y-up right-handed -> Babylon left-handed: reflect Z and flip winding.
- * This is not a substitute for final Babylon glTF loader integration. */
+/* CI-only full-game preview. Official Babylon 9.33.2 glTF loader performs
+ * node transforms and glTF handedness conversion. Custom manual conversion
+ * previously placed the terrain on the wrong side of the camera.
+ * No runtime import, scene asset or loader is shipped to main.
+ * Assert actual GLB-only framebuffer pixels at both game-camera radii. */
 (()=>{
-  const iframe=document.getElementById("game"),d=document.documentElement.dataset;
+  const frame=document.getElementById("game"),d=document.documentElement.dataset;
   const far=new URLSearchParams(location.search).get("radius")==="19";
-  let attempts=0,entered=false,launched=false,loading=false,loaded=false,draws=0;
-  function fail(error){clearInterval(poll);d.visualStatus="error";d.error=String(error?.message||error);console.error(error);}
-  function accessor(meta,bin,number) {
-    const a=meta.accessors[number],v=meta.bufferViews[a.bufferView];
-    if(a.sparse||v.byteStride)throw Error("Unsupported interleaved or sparse accessor");
-    const parts=a.type==="VEC3"?3:a.type==="SCALAR"?1:0;
-    if(!parts)throw Error("Unexpected GLB accessor type "+a.type);
-    const byte=a.componentType===5126||a.componentType===5125?4:a.componentType===5123?2:0;
-    if(!byte)throw Error("Unsupported GLB component "+a.componentType);
-    const start=(v.byteOffset||0)+(a.byteOffset||0);
-    if(start+a.count*parts*byte>bin.byteLength)throw Error("Out-of-bounds GLB accessor");
-    const view=new DataView(bin,start,a.count*parts*byte);
-    const out=new Array(a.count*parts);
-    for(let i=0;i<out.length;i++) {
-      const pos=i*byte;
-      out[i]=a.componentType===5126?view.getFloat32(pos,true):
-        a.componentType===5125?view.getUint32(pos,true):view.getUint16(pos,true);
-    }
-    return out;
-  }
-  // glTF POSITION accessors are local to a node. Blender exports can put
-  // scene-space placement in node.matrix or node TRS rather than the vertex buffer.
-  function gltfMeshTransforms(gltf) {
-    const identity=()=>[1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
-    const mul=(a,b)=>{
-      const out=new Array(16).fill(0);
-      for(let col=0;col<4;col++)for(let row=0;row<4;row++)
-        for(let k=0;k<4;k++)out[col*4+row]+=a[k*4+row]*b[col*4+k];
-      return out;
-    };
-    function local(n) {
-      if(n.matrix)return n.matrix;
-      const [x,y,z,w]=n.rotation||[0,0,0,1];
-      const [sx,sy,sz]=n.scale||[1,1,1], [tx,ty,tz]=n.translation||[0,0,0];
-      return [
-        (1-2*(y*y+z*z))*sx,2*(x*y+z*w)*sx,2*(x*z-y*w)*sx,0,
-        2*(x*y-z*w)*sy,(1-2*(x*x+z*z))*sy,2*(y*z+x*w)*sy,0,
-        2*(x*z+y*w)*sz,2*(y*z-x*w)*sz,(1-2*(x*x+y*y))*sz,0,
-        tx,ty,tz,1
-      ];
-    }
-    const found=new Map(),visited=new Set();
-    function walk(i,parent) {
-      if(visited.has(i))throw Error("Repeated/cyclic glTF node in scene");
-      visited.add(i);
-      const node=gltf.nodes[i],world=mul(parent,local(node));
-      if(node.mesh!==undefined){
-        if(found.has(node.mesh))throw Error("Multiple instances of glTF mesh unsupported by art QA");
-        found.set(node.mesh,world);
-      }
-      for(const child of node.children||[])walk(child,world);
-    }
-    const roots=gltf.scenes?.[gltf.scene||0]?.nodes||[];
-    for(const i of roots)walk(i,identity());
-    if(found.size!==gltf.meshes.length)throw Error("Not all sculpt meshes are instanced in glTF scene");
-    return found;
-  }
-  function gltfWorldPoint(m,x,y,z){
-    return [m[0]*x+m[4]*y+m[8]*z+m[12],
-            m[1]*x+m[5]*y+m[9]*z+m[13],
-            m[2]*x+m[6]*y+m[10]*z+m[14]];
-  }
-  async function inject(win,scene,B) {
-    const resp=await fetch("../../build/env021/scene.glb",{cache:"no-store"});
-    if(!resp.ok)throw Error("Failed to load Blender GLB: HTTP "+resp.status);
-    const bytes=await resp.arrayBuffer(),head=new DataView(bytes);
-    if(head.getUint32(0,true)!==0x46546c67||head.getUint32(4,true)!==2||head.getUint32(8,true)!==bytes.byteLength)
-      throw Error("Invalid GLB header/length");
-    const jsonSize=head.getUint32(12,true),jsonType=head.getUint32(16,true);
-    if(jsonType!==0x4e4f534a)throw Error("Missing JSON chunk");
-    const json=JSON.parse(new TextDecoder().decode(new Uint8Array(bytes,20,jsonSize)));
-    const binPos=20+jsonSize;
-    if(head.getUint32(binPos+4,true)!==0x004e4942)throw Error("Missing BIN chunk");
-    const bin=bytes.slice(binPos+8,binPos+8+head.getUint32(binPos,true));
-    if(json.meshes?.length!==2)throw Error("Expected two sculpted landmass meshes");
-    // Existing ENV017 scenic meshes and grounds should not occlude the candidate.
-    // Do not remove fighters, their bases, hit FX, targeting proxies, or HUD.
-    let hidden=0;
-    for(const obj of scene.meshes) {
-      if(/^(env017_|env010_|env009_|cv007_)/.test(obj.name) && !/cv007_hit_/.test(obj.name)) {
-        obj.setEnabled(false);hidden++;
-      }
-    }
-    scene.clearColor=new B.Color4(.56,.61,.64,1);
-    // Standard Babylon glTF loader is the production-parity reference path
-    // for QA only. It is version-matched to index.html's Babylon 9.33.2;
-    // neither loader nor GLB is shipped in the game.
-    if(new URLSearchParams(location.search).get("native")==="1") {
-      if(!B.SceneLoader.IsPluginForExtensionAvailable?.(".glb")) {
-        await new Promise((resolve,reject)=>{
-          const script=win.document.createElement("script");
-          script.src="https://cdn.babylonjs.com/v9.33.2/loaders/babylonjs.loaders.min.js";
-          script.onload=resolve;script.onerror=()=>reject(Error("Babylon 9.33.2 glTF loader unavailable"));
-          win.document.head.appendChild(script);
-        });
-      }
-      const result=await B.SceneLoader.ImportMeshAsync(null,"/build/env021/","scene.glb",scene);
-      const imported=result.meshes.filter(m=>m.getTotalVertices?.()>0);
-      if(imported.length!==2)throw Error("Native glTF import expected two drawable meshes, got "+imported.length);
-      const u=new URLSearchParams(location.search),scale=Number(u.get("scale")||1),lift=Number(u.get("lift")||0);
-      d.candidateScale=String(scale);d.candidateLift=String(lift);d.nativeLoader="true";
-      let vertices=0,triangles=0;
-      for(let i=0;i<imported.length;i++){
-        const m=imported[i];
-        m.name="env021_candidate_"+i+"_"+m.name;
-        m.scaling.scaleInPlace(scale);m.position.y+=lift;
-        m.alwaysSelectAsActiveMesh=true;m.isPickable=false;m.checkCollisions=false;
-        const mat=new B.StandardMaterial("env021_native_clay_"+i,scene);
-        mat.diffuseColor=i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2);
-        mat.emissiveColor=i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2);
-        mat.disableLighting=true;mat.fogEnabled=false;mat.backFaceCulling=false;
-        m.material=mat;
-        vertices+=m.getTotalVertices();triangles+=m.getTotalIndices()/3;
-      }
-      return {verts:vertices,tris:triangles,hidden};
-    }
-    const transforms=gltfMeshTransforms(json);
-    d.gltfNodes=String(json.nodes?.length||0);
-    let verts=0,tris=0;
-    json.meshes.forEach((item,mi)=>{
-      const prim=item.primitives[0];
-      if(prim.mode!==undefined&&prim.mode!==4)throw Error("Only triangle GLB supported");
-      const sourcePositions=accessor(json,bin,prim.attributes.POSITION);
-      const raw=accessor(json,bin,prim.indices);
-      // Blender's flat-shaded export duplicates positions, forcing Uint32
-      // indices on the near shelf. Weld identical coordinates BEFORE sending
-      // geometry to Babylon: keep triangles, bounds and topology unchanged.
-      const lookup=new Map(),remap=[],positions=[];
-      for(let i=0;i<sourcePositions.length;i+=3) {
-        const gltfPoint=gltfWorldPoint(transforms.get(mi),sourcePositions[i],sourcePositions[i+1],sourcePositions[i+2]);
-        const x=gltfPoint[0],y=gltfPoint[1],z=-gltfPoint[2];
-        const key=x+","+y+","+z;
-        let index=lookup.get(key);
-        if(index===undefined){
-          index=positions.length/3;lookup.set(key,index);
-          positions.push(x,y,z);
-        }
-        remap.push(index);
-      }
-      const indices=raw.map(id=>remap[id]);
-      for(let i=0;i<indices.length;i+=3) {
-        const t=indices[i+1];indices[i+1]=indices[i+2];indices[i+2]=t;
-      }
-      if(positions.length/3>=65536)throw Error("Welded GLB still requires 32bit indices");
-      const normals=[];
-      B.VertexData.ComputeNormals(positions,indices,normals);
-      const badNormals=normals.filter(v=>!Number.isFinite(v)).length;
-      d["nonfiniteNormals"+mi]=String(badNormals);
-      if(new URLSearchParams(location.search).get("constantNormals")==="1")
-        for(let n=0;n<normals.length;n+=3){normals[n]=0;normals[n+1]=1;normals[n+2]=0;}
-      const m=new B.Mesh("env021_candidate_"+mi+"_"+item.name,scene);
-      const data=new B.VertexData();
-      data.positions=positions;data.indices=indices;data.normals=normals;
-      data.applyToMesh(m);
-      const mat=new B.StandardMaterial("env021_preview_clay_"+mi,scene);
-      mat.diffuseColor=mi?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2);
-      mat.emissiveColor=mi?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2);
-      mat.disableLighting=true;mat.fogEnabled=false;
-      mat.specularColor=new B.Color3(.02,.02,.02);
-      mat.backFaceCulling=false;
-      m.material=mat;m.isPickable=false;m.checkCollisions=false;
-      // Placement diagnosis only: expose a selectable vertical offset without modifying GLB.
-      m.position.y=Number(new URLSearchParams(location.search).get("lift")||0);
-      const scale=Number(new URLSearchParams(location.search).get("scale")||1);
-      m.scaling.setAll(scale);
-      d.candidateScale=String(scale);
-      d.candidateLift=String(m.position.y);
-      // Culling diagnostic: if large landmasses are skipped by active-mesh
-      // selection, force selection only in this isolated QA fixture.
-      m.alwaysSelectAsActiveMesh=true;
-      if(mi===0) {
-        // Diagnostic extraction of up to 1,400 genuine GLB triangles near
-        // the fighter formation. Separate small mesh isolates buffer-size
-        // effects from unexpected coordinate/shader behavior.
-        const patchPos=[],patchIdx=[],patchMap=new Map();
-        for(let t=0;t<indices.length;t+=3) {
-          const ids=indices.slice(t,t+3);
-          const cx=(positions[3*ids[0]]+positions[3*ids[1]]+positions[3*ids[2]])/3;
-          const cy=(positions[3*ids[0]+1]+positions[3*ids[1]+1]+positions[3*ids[2]+1])/3;
-          const cz=(positions[3*ids[0]+2]+positions[3*ids[1]+2]+positions[3*ids[2]+2])/3;
-          if(cx*cx+cz*cz>16||cy<-.4)continue;
-          for(const id of ids) {
-            if(!patchMap.has(id)) {
-              patchMap.set(id,patchPos.length/3);
-              patchPos.push(positions[3*id],positions[3*id+1]+.22,positions[3*id+2]);
-            }
-            patchIdx.push(patchMap.get(id));
-          }
-          if(patchIdx.length>=4200)break;
-        }
-        const patch=new B.Mesh("env021_debug_center_patch",scene);
-        const patchData=new B.VertexData();
-        const patchNormals=[];
-        B.VertexData.ComputeNormals(patchPos,patchIdx,patchNormals);
-        patchData.positions=patchPos;patchData.indices=patchIdx;patchData.normals=patchNormals;
-        patchData.applyToMesh(patch);
-        const green=new B.StandardMaterial("env021_debug_patch_mat",scene);
-        green.emissiveColor=new B.Color3(.1,1,.12);
-        green.disableLighting=true;green.backFaceCulling=false;green.fogEnabled=false;
-        patch.material=green;patch.isPickable=false;patch.alwaysSelectAsActiveMesh=true;
-        d.patchTriangles=String(patchIdx.length/3);
-      }
-      verts+=positions.length/3;tris+=indices.length/3;
-    });
-    if(verts<1000||tris<1000)throw Error("Too few GLB vertices or triangles");
-    return {verts,tris,hidden};
-  }
+  let attempts=0,entered=false,launched=false,loading=false,loaded=false;
   const poll=setInterval(async ()=>{
     if(loading||loaded)return;
-    try{
+    try {
       if(++attempts>160)throw Error("Actual game scene did not become ready");
-      const win=iframe.contentWindow,doc=iframe.contentDocument;
+      const win=frame.contentWindow,doc=frame.contentDocument;
       if(!doc||doc.readyState!=="complete")return;
       if(doc.querySelector("#loginCalendar.active")){
         doc.querySelector('#loginCalendar [data-screen="home"]')?.click();
         entered=false;launched=false;return;
       }
-      if(doc.querySelector("#home.active")&&!entered){entered=true;doc.querySelector("#startBattle")?.click();return;}
-      if(doc.querySelector("#squad.active")&&!launched){launched=true;doc.querySelector("#squadStart")?.click();return;}
-      const battle=doc.querySelector("#battle.active"),canvas=doc.querySelector("#renderCanvas");
-      if(!battle||!canvas||!canvas.width||!canvas.height)return;
+      if(doc.querySelector("#home.active")&&!entered){
+        entered=true;doc.querySelector("#startBattle")?.click();return;
+      }
+      if(doc.querySelector("#squad.active")&&!launched){
+        launched=true;doc.querySelector("#squadStart")?.click();return;
+      }
+      const canvas=doc.querySelector("#renderCanvas");
+      if(!doc.querySelector("#battle.active")||!canvas?.width||!canvas?.height)return;
       const B=win.BABYLON,scene=win.eval("scene"),camera=win.eval("arenaCamera"),engine=win.eval("engine");
-      if(!B||!scene||!camera||!engine)throw Error("Babylon is not initialized");
+      if(!B||!scene||!camera||!engine)throw Error("Babylon engine not initialized");
       loading=true;
-      const result=await inject(win,scene,B);
+      const response=await fetch("../../build/env021/scene.glb",{cache:"no-store"});
+      if(!response.ok)throw Error("Pass005 GLB unavailable, HTTP "+response.status);
+      const raw=await response.arrayBuffer(),header=new DataView(raw);
+      if(raw.byteLength<20||header.getUint32(0,true)!==0x46546c67||
+         header.getUint32(4,true)!==2||header.getUint32(8,true)!==raw.byteLength)
+        throw Error("Malformed GLB v2");
+      let hidden=0;
+      for(const obj of scene.meshes){
+        if(/^(env017_|env010_|env009_|cv007_)/.test(obj.name)&&
+           !/cv007_hit_/.test(obj.name)){
+          obj.setEnabled(false);hidden++;
+        }
+      }
+      scene.clearColor=new B.Color4(.56,.61,.64,1);
+      if(!B.SceneLoader.IsPluginForExtensionAvailable?.(".glb")){
+        await new Promise((resolve,reject)=>{
+          const script=doc.createElement("script");
+          script.src="https://cdn.babylonjs.com/v9.33.2/loaders/babylonjs.loaders.min.js";
+          script.onload=resolve;
+          script.onerror=()=>reject(Error("Pinned Babylon GLB loader unavailable"));
+          doc.head.appendChild(script);
+        });
+      }
+      const result=await B.SceneLoader.ImportMeshAsync(null,"/build/env021/","scene.glb",scene);
+      const candidates=result.meshes.filter(m=>m.getTotalVertices?.()>0);
+      if(candidates.length!==2)throw Error("Expected two drawable GLB meshes; got "+candidates.length);
+      let verts=0,tris=0;
+      for(let i=0;i<candidates.length;i++){
+        const mesh=candidates[i];
+        mesh.name="env021_candidate_"+i+"_"+mesh.name;
+        const mat=new B.StandardMaterial("env021_preview_clay_"+i,scene);
+        mat.diffuseColor=i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2);
+        mat.emissiveColor=i?new B.Color3(.1,.85,.9):new B.Color3(.92,.16,.2);
+        mat.disableLighting=true;mat.fogEnabled=false;mat.backFaceCulling=false;
+        mesh.material=mat;
+        mesh.isPickable=false;mesh.checkCollisions=false;
+        mesh.alwaysSelectAsActiveMesh=true;
+        verts+=mesh.getTotalVertices();tris+=mesh.getTotalIndices()/3;
+      }
+      if(verts<1000||tris<1000)throw Error("Too few imported vertices or triangles");
       camera.radius=far?19:12;
-      // QA sentinel: if this cube is invisible too, the fixture is not
-      // displaying newly added scene geometry at all.
-      const sentinel=B.MeshBuilder.CreateBox("env021_preview_control_cube",{size:1},scene);
-      sentinel.position=new B.Vector3(0,2.5,0);
-      sentinel.material=new B.StandardMaterial("env021_control_emissive",scene);
-      sentinel.material.emissiveColor=new B.Color3(1,.9,.05);
-      sentinel.material.disableLighting=true;
-      sentinel.alwaysSelectAsActiveMesh=true;
-      const probe=new B.Mesh("env021_vertex_data_probe",scene);
-      const vertexData=new B.VertexData();
-      vertexData.positions=[-1.5,1.5,0, 1.5,1.5,0, 0,4.0,0];
-      vertexData.indices=[0,1,2];vertexData.normals=[0,0,-1,0,0,-1,0,0,-1];
-      vertexData.applyToMesh(probe);
-      const probeMat=new B.StandardMaterial("env021_probe_material",scene);
-      probeMat.emissiveColor=new B.Color3(1,.05,.8);
-      probeMat.disableLighting=true;probeMat.backFaceCulling=false;probeMat.fogEnabled=false;
-      probe.material=probeMat;probe.alwaysSelectAsActiveMesh=true;probe.isPickable=false;
-      // Same VertexData.applyToMesh path as imported terrain, but Babylon's
-      // known-good procedural box coordinates. This isolates the draw path.
-      const vdBox=new B.Mesh("env021_vertexdata_control_box",scene);
-      B.VertexData.CreateBox({size:1}).applyToMesh(vdBox);
-      vdBox.position=new B.Vector3(2,2.5,0);
-      vdBox.material=sentinel.material;
-      vdBox.alwaysSelectAsActiveMesh=true;
-      if(!scene.meshes.some(m=>m.name.startsWith("env021_candidate_")))throw Error("No candidate meshes in actual game");
-      // Loading bytes is not proof of an on-screen landscape. Wait for render
-      // culling and inspect the active mesh list and camera-space bounds.
-      // Headless iframe may not advance a continuous render loop after async GLB injection.
-      // Force an actual Babylon render; this does not modify game logic or camera.
       scene.render();
       await new Promise(resolve=>setTimeout(resolve,250));
       scene.render();
-      const candidateMeshes=scene.meshes.filter(m=>m.name.startsWith("env021_candidate_"));
-      if(new URLSearchParams(location.search).get("controlMaterial")==="1")
-        for(const m of candidateMeshes)m.material=sentinel.material;
-      let candidateDrawCalls=0;
-      for(const m of candidateMeshes) {
-        const previous=m._draw;
-        if(typeof previous==="function")
-          m._draw=function(...args){candidateDrawCalls++;return previous.apply(this,args);};
-      }
       const active=scene.getActiveMeshes().data.filter(m=>m&&m.name.startsWith("env021_candidate_"));
       d.activeMeshes=String(active.length);
-      d.worldTransformApplied="true";
-      d.activeAll=String(scene.getActiveMeshes().length);
-      d.bounds=JSON.stringify(candidateMeshes.map(m=>({
-        name:m.name,
-        lo:m.getBoundingInfo().boundingBox.minimumWorld.asArray().map(n=>Math.round(n*100)/100),
-        hi:m.getBoundingInfo().boundingBox.maximumWorld.asArray().map(n=>Math.round(n*100)/100),
-        indices:m.getTotalIndices(),
-        enabled:m.isEnabled(),
-        visible:m.isVisible,
-        frustum:m.isInFrustum(scene.frustumPlanes),
-        ready:m.isReady(false),matReady:m.material?.isReady?.(m),
-        submeshes:m.subMeshes?.length,visibility:m.visibility,
-        active:m.alwaysSelectAsActiveMesh
-      })));
-      const validity=candidateMeshes.map(m=>{
-        const pp=m.getVerticesData(B.VertexBuffer.PositionKind),ii=m.getIndices();
-        let nondegenerate=0,projected=0;
-        const vp=new B.Viewport(0,0,engine.getRenderWidth(),engine.getRenderHeight());
-        for(let k=0;k<ii.length;k+=3){
-          const a=3*ii[k],b=3*ii[k+1],c=3*ii[k+2];
-          const ux=pp[b]-pp[a],uy=pp[b+1]-pp[a+1],uz=pp[b+2]-pp[a+2];
-          const vx=pp[c]-pp[a],vy=pp[c+1]-pp[a+1],vz=pp[c+2]-pp[a+2];
-          const xx=uy*vz-uz*vy,yy=uz*vx-ux*vz,zz=ux*vy-uy*vx;
-          if(xx*xx+yy*yy+zz*zz<1e-10)continue;
-          nondegenerate++;
-          const center=new B.Vector3((pp[a]+pp[b]+pp[c])/3,(pp[a+1]+pp[b+1]+pp[c+1])/3,(pp[a+2]+pp[b+2]+pp[c+2])/3);
-          const screen=B.Vector3.Project(center,m.getWorldMatrix(),scene.getTransformMatrix(),vp);
-          if(screen.x>=0&&screen.x<vp.width&&screen.y>=0&&screen.y<vp.height&&screen.z>=0&&screen.z<=1)projected++;
-        }
-        return {mesh:m.name,nondegenerate,projected,total:ii.length/3};
-      });
-      d.geometryValidity=JSON.stringify(validity);
-      d.cameraPosition=JSON.stringify(camera.position.asArray());
-      if(active.length<1)throw Error("GLB geometry loaded but none of it is visible in the actual camera");
-      // A green CI result must prove actual rasterization, not just registered meshes.
-      // Only ENV021 meshes use these deliberately unlit red/cyan diagnostic colors;
-      // read directly from the game WebGL drawing buffer (not the HTML HUD).
+      if(active.length!==2)throw Error("Both GLB meshes must be active");
+      const fighters=win.eval("Object.values(meshes).filter(x=>x.body.isEnabled()).length");
+      if(fighters<2)throw Error("Actual battle fighters missing");
+      // Capture identical gameplay state with/without ONLY imported scenery.
+      const withTerrain=await engine.readPixels(0,0,engine.getRenderWidth(),engine.getRenderHeight());
+      for(const mesh of candidates)mesh.setEnabled(false);
       scene.render();
-      const pixels=await engine.readPixels(0,0,engine.getRenderWidth(),engine.getRenderHeight());
-      let red=0,cyan=0;
-      for(let i=0;i<pixels.length;i+=4) {
-        const r=pixels[i],g=pixels[i+1],b=pixels[i+2];
-        if(r>165&&g<105&&b<125)red++;
-        if(r<110&&g>145&&b>155)cyan++;
+      const withoutTerrain=await engine.readPixels(0,0,engine.getRenderWidth(),engine.getRenderHeight());
+      for(const mesh of candidates)mesh.setEnabled(true);
+      scene.render();
+      if(withTerrain.length!==withoutTerrain.length)throw Error("Inconsistent WebGL frame sizes");
+      let changed=0,red=0,cyan=0;
+      for(let i=0;i<withTerrain.length;i+=4){
+        const r=withTerrain[i],g=withTerrain[i+1],b=withTerrain[i+2];
+        const or=withoutTerrain[i],og=withoutTerrain[i+1],ob=withoutTerrain[i+2];
+        if(Math.abs(r-or)+Math.abs(g-og)+Math.abs(b-ob)>20)changed++;
+        if(r>165&&g<105&&b<125&&!(or>165&&og<105&&ob<125))red++;
+        if(r<110&&g>145&&b>155&&!(or<110&&og>145&&ob>155))cyan++;
       }
-      d.terrainRedPixels=String(red);d.terrainCyanPixels=String(cyan);
-      if(red<120||cyan<120)throw Error("GLB rasterization missing: red="+red+", cyan="+cyan+" terrain pixels");
-      // Controlled A/B pixel evidence: temporarily hide ONLY the two imported
-      // candidates, keeping the same fighters, camera, debug patch and HUD.
-      // Pixel count alone could accidentally match existing battle UI colors.
-      for(const m of candidateMeshes)m.setEnabled(false);
-      scene.render();
-      const without=await engine.readPixels(0,0,engine.getRenderWidth(),engine.getRenderHeight());
-      for(const m of candidateMeshes)m.setEnabled(true);
-      scene.render();
-      let changedRed=0,changedCyan=0,anyCandidateDifference=0;
-      for(let i=0;i<pixels.length;i+=4){
-        const r=pixels[i],g=pixels[i+1],b=pixels[i+2];
-        const oldR=without[i],oldG=without[i+1],oldB=without[i+2];
-        if(Math.abs(r-oldR)+Math.abs(g-oldG)+Math.abs(b-oldB)>20)anyCandidateDifference++;
-        if(r>165&&g<105&&b<125&&!(oldR>165&&oldG<105&&oldB<125))changedRed++;
-        if(r<110&&g>145&&b>155&&!(oldR<110&&oldG>145&&oldB>155))changedCyan++;
-      }
-      d.terrainRedPixels=String(red);d.terrainCyanPixels=String(cyan);
-      d.candidateDifferencePixels=String(anyCandidateDifference);
-      d.candidateDrawCalls=String(candidateDrawCalls);
-      d.candidateMeshIndexRanges=JSON.stringify(candidateMeshes.map(m=>({
-        verts:m.getTotalVertices(),indices:m.getTotalIndices(),
-        maxIndex:Math.max(...m.getIndices()),
-        submeshIndexStart:m.subMeshes[0]?.indexStart,
-        submeshIndexCount:m.subMeshes[0]?.indexCount
-      })));
-      d.webglError=String(engine._gl?.getError());
-
-      d.candidateSubmeshFrustum=JSON.stringify(candidateMeshes.map(m=>m.subMeshes?.map(sm=>sm.isInFrustum(scene.frustumPlanes))));
-      d.candidateOnlyRedPixels=String(changedRed);
-      d.candidateOnlyCyanPixels=String(changedCyan);
-      sentinel.setEnabled(false);
-      scene.render();
-      const noSentinel=await engine.readPixels(0,0,engine.getRenderWidth(),engine.getRenderHeight());
-      sentinel.setEnabled(true);
-      scene.render();
-      let controlDifference=0;
-      for(let i=0;i<pixels.length;i+=4)
-        if(Math.abs(pixels[i]-noSentinel[i])+Math.abs(pixels[i+1]-noSentinel[i+1])+Math.abs(pixels[i+2]-noSentinel[i+2])>20)controlDifference++;
-      d.controlDifferencePixels=String(controlDifference);
-      vdBox.setEnabled(false);
-      scene.render();
-      const noVertexDataBox=await engine.readPixels(0,0,engine.getRenderWidth(),engine.getRenderHeight());
-      vdBox.setEnabled(true);
-      scene.render();
-      let vertexDataBoxDifference=0;
-      for(let i=0;i<pixels.length;i+=4)
-        if(Math.abs(pixels[i]-noVertexDataBox[i])+Math.abs(pixels[i+1]-noVertexDataBox[i+1])+Math.abs(pixels[i+2]-noVertexDataBox[i+2])>20)vertexDataBoxDifference++;
-      d.vertexDataControlDifferencePixels=String(vertexDataBoxDifference);
-
-      if(changedRed<120||changedCyan<120)
-        throw Error("Imported GLB makes no proven raster change: red="+changedRed+", cyan="+changedCyan);
-
-
-      const actualFighters=win.eval("Object.values(meshes).filter(x=>x.body.isEnabled()).length");
-      if(actualFighters<2)throw Error("Live game fighters not visible");
-      d.art="ENV021_PASS005_GLB_NOT_APPROVED";d.verts=String(result.verts);
-      d.uintIndices=String(engine.getCaps().uintIndices);
-      d.tris=String(result.tris);d.hiddenScenery=String(result.hidden);
-      d.fighters=String(actualFighters);d.camera=String(camera.radius);
-      d.webgl="true";loaded=true;
-      clearInterval(poll);
-      // Visible QA-only time marker distinguishes an early Chromium screenshot
-      // from one captured after async GLB import and real frame presentation.
-      const stamp=document.createElement("div");stamp.textContent="ENV021 GLB LOADED";
-      stamp.style.cssText="position:absolute;top:0;left:44%;z-index:1000;background:#e500e5;color:white;padding:2px 7px;font:11px monospace;pointer-events:none";
+      d.candidateDifferencePixels=String(changed);
+      d.candidateOnlyRedPixels=String(red);
+      d.candidateOnlyCyanPixels=String(cyan);
+      if(red<120||cyan<120||changed<300)
+        throw Error("Pass005 terrain is not visibly rasterized: changed="+changed+" red="+red+" cyan="+cyan);
+      d.art="ENV021_PASS005_GLB_NOT_APPROVED";
+      d.verts=String(verts);d.tris=String(tris);d.hiddenScenery=String(hidden);
+      d.fighters=String(fighters);d.camera=String(camera.radius);
+      d.loader="BABYLON_9_33_2_NATIVE_GLTF";d.webgl="true";
+      loaded=true;clearInterval(poll);
+      const stamp=document.createElement("div");
+      stamp.textContent="ENV021 GLB RASTERIZED — ART UNAPPROVED";
+      stamp.style.cssText="position:absolute;top:0;left:34%;z-index:1000;background:#a20b8d;color:white;padding:2px 7px;font:11px monospace;pointer-events:none";
       document.body.appendChild(stamp);
       setTimeout(()=>d.visualStatus="ready",1200);
-    }catch(e){fail(e);}
+    } catch(error){
+      clearInterval(poll);
+      d.visualStatus="error";d.error=String(error?.message||error);
+      console.error(error);
+    }
   },125);
 })();
 </script></body></html>

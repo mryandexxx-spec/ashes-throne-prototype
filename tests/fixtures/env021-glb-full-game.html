@@ -241,6 +241,20 @@
       })));
       d.cameraPosition=JSON.stringify(camera.position.asArray());
       if(active.length<1)throw Error("GLB geometry loaded but none of it is visible in the actual camera");
+      // A green CI result must prove actual rasterization, not just registered meshes.
+      // Only ENV021 meshes use these deliberately unlit red/cyan diagnostic colors;
+      // read directly from the game WebGL drawing buffer (not the HTML HUD).
+      scene.render();
+      const pixels=await engine.readPixels(0,0,engine.getRenderWidth(),engine.getRenderHeight());
+      let red=0,cyan=0;
+      for(let i=0;i<pixels.length;i+=4) {
+        const r=pixels[i],g=pixels[i+1],b=pixels[i+2];
+        if(r>165&&g<105&&b<125)red++;
+        if(r<110&&g>145&&b>155)cyan++;
+      }
+      d.terrainRedPixels=String(red);d.terrainCyanPixels=String(cyan);
+      if(red<120||cyan<120)throw Error("GLB rasterization missing: red="+red+", cyan="+cyan+" terrain pixels");
+
       const actualFighters=win.eval("Object.values(meshes).filter(x=>x.body.isEnabled()).length");
       if(actualFighters<2)throw Error("Live game fighters not visible");
       d.art="ENV021_PASS005_GLB_NOT_APPROVED";d.verts=String(result.verts);

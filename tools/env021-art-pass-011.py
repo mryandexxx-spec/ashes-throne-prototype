@@ -23,8 +23,8 @@ def lip(a):
             + .48*gauss(a,1.7,1.55))
 
 def left_edge(a):
-    return (-5.7 - .48*math.sin(a*.23+.8)
-            + .56*gauss(a,-8.1,2.2)-.31*gauss(a,8.9,2.5))
+    return (-4.16 - .27*math.sin(a*.23+.8)
+            + .20*gauss(a,-8.1,2.2)-.16*gauss(a,8.9,2.5))
 
 def surface(s,a):
     """Level battle footprints transition into stepped ripped rock plates.
@@ -35,7 +35,7 @@ def surface(s,a):
     land=smooth01((-s-3.22)/2.2)
     crown=smooth01((s-3.07)/max(.75,lip(a)-3.07))
     # Massive geological rolls are not high-frequency displacement noise.
-    ramp=.94*land**1.6*(.85+.16*math.sin(a*.28))
+    ramp=.40*land**1.6*(.85+.16*math.sin(a*.28))
     bedrock=-.66*crown**1.2
     # Two collapsed sheet-rock slabs, staggered longitudinally rather than
     # a single shallow sinusoid running along the entire rim.
@@ -48,7 +48,7 @@ def surface(s,a):
     far_ends=(.40*smooth01((a-6.8)/5.0)
               +.27*smooth01((-a-8.0)/3.5))
     # Small foot-level undulation is absent on purpose.
-    return (-.04+ramp+far_ends*land-bedrock*0.0
+    return (-.04+ramp+far_ends*land
             +bedrock-break_one-step+fracture+terrace)
 
 def opposite_bank():
@@ -69,9 +69,9 @@ def opposite_bank():
         a=-24+j*52/(na-1)
         ravines=(3.0*gauss(a,-12.0,3.1)+4.2*gauss(a,3.5,3.8)
                  +2.6*gauss(a,17.6,3.0))
-        front=(19.8+1.25*math.sin(a*.14+.4)+ravines)
+        front=(22.6+1.55*math.sin(a*.14+.4)+ravines)
         joints=sum(1.0*gauss(a,q,.77) for q in (-17.3,-5.6,8.6,22.1))
-        crest=(-7.1+1.75*math.sin(a*.12+.6)+.59*math.sin(a*.37)
+        crest=(-10.0+1.75*math.sin(a*.12+.6)+.59*math.sin(a*.37)
                -joints-1.8*gauss(a,3.5,3.8))
         wall=[]
         for k in range(nv):

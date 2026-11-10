@@ -74,6 +74,9 @@
       mat.specularColor=new B.Color3(.02,.02,.02);
       mat.backFaceCulling=false;
       m.material=mat;m.isPickable=false;m.checkCollisions=false;
+      // Culling diagnostic: if large landmasses are skipped by active-mesh
+      // selection, force selection only in this isolated QA fixture.
+      m.alwaysSelectAsActiveMesh=true;
       verts+=positions.length/3;tris+=raw.length/3;
     });
     if(verts<1000||tris<1000)throw Error("Too few GLB vertices or triangles");
@@ -105,6 +108,7 @@
       const candidateMeshes=scene.meshes.filter(m=>m.name.startsWith("env021_candidate_"));
       const active=scene.getActiveMeshes().data.filter(m=>m&&m.name.startsWith("env021_candidate_"));
       d.activeMeshes=String(active.length);
+      d.activeAll=String(scene.getActiveMeshes().length);
       d.bounds=JSON.stringify(candidateMeshes.map(m=>({
         name:m.name,
         lo:m.getBoundingInfo().boundingBox.minimumWorld.asArray().map(n=>Math.round(n*100)/100),

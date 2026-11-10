@@ -104,7 +104,11 @@
       if(!scene.meshes.some(m=>m.name.startsWith("env021_candidate_")))throw Error("No candidate meshes in actual game");
       // Loading bytes is not proof of an on-screen landscape. Wait for render
       // culling and inspect the active mesh list and camera-space bounds.
-      await new Promise(resolve=>setTimeout(resolve,400));
+      // Headless iframe may not advance a continuous render loop after async GLB injection.
+      // Force an actual Babylon render; this does not modify game logic or camera.
+      scene.render();
+      await new Promise(resolve=>setTimeout(resolve,250));
+      scene.render();
       const candidateMeshes=scene.meshes.filter(m=>m.name.startsWith("env021_candidate_"));
       const active=scene.getActiveMeshes().data.filter(m=>m&&m.name.startsWith("env021_candidate_"));
       d.activeMeshes=String(active.length);

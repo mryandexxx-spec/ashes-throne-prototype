@@ -61,7 +61,8 @@ jobs:
             grep -o 'data-bounds="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
             grep -o 'data-geometry-validity="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
             grep -Eo 'data-nonfinite-normals[0-9]="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
-            grep -Eo 'data-candidate-(draw-calls|submesh-frustum)="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
+            grep -Eo 'data-candidate-(draw-calls|submesh-frustum|mesh-index-ranges)="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
+            grep -o 'data-webgl-error="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
             grep -o 'data-error="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
             grep -Eo 'data-(candidate|control|terrain)[a-z-]*="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
             grep -q 'data-visual-status="ready"' "build/env021/diagnostic-$radius.dom.html"

@@ -54,11 +54,16 @@ def surface(s,a):
     terraces=(-.55*rim_grade**1.6
               -.26*rim_grade*abs(math.sin(a*.72+s*.40))
               +.16*rim_grade*math.cos(a*1.18-s*.52))
-    h=(-.04+.95*land**1.5+.50*back+.33*distant_end
+    # Readable weathering along the landward shoulder and near rim; retain
+    # continuous, gentle footfall terrain around all fighter anchor points.
+    outside=smooth01((abs(s)-3.20)/1.35)
+    cliff_bands=outside*(.46*math.sin(a*.62+s*.43)
+                         -.38*abs(math.sin(a*1.18-s*.56)))
+    h=(-.04+1.23*land**1.5+.58*back+.38*distant_end
        +land*(.19*ridge_noise(s,a))
        +back*(.14*math.sin(a*.8+s*.41))
        -.35*rim*abs(math.sin(a*.64+s*.37))
-       +.11*rim*math.sin(a*1.8+s*.3)+incisions+terraces)
+       +.11*rim*math.sin(a*1.8+s*.3)+incisions+terraces+cliff_bands)
     return h
 
 def mesh(name,verts,faces):
@@ -158,9 +163,9 @@ def opposite_bank():
     # Receding ledges overlap in perspective without becoming a curtain.
     # Intervals retain open air between the main shoulders.
     shoulders=[
-        (-15.0,-4.9,20.0,-8.2,1.25),
-        (-2.7,7.0,24.2,-10.8,1.65),
-        (9.1,19.1,29.0,-13.8,1.95),
+        (-15.0,-4.1,13.8,-5.6,1.25),
+        (-2.7,8.8,16.4,-7.1,1.65),
+        (9.1,19.1,20.0,-9.5,1.95),
     ]
     for order,(begin,end,depth,crest,erosion) in enumerate(shoulders):
         na,nv,nt=34,25,12

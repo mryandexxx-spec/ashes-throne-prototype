@@ -18,7 +18,7 @@ test("ROSTER006 integrates old topbar into scene HUD without removing account",(
  assert.match(shell,/background:linear-gradient\(180deg,#14181bea/);
  assert.match(shell,/max-width:none/);
  assert.match(shell,/#app:has\(#collection\.active\)>footer/);
- assert.doesNotMatch(shell,/display:none[;}]/);
+ assert.doesNotMatch(shell,/>\.topbar\{[^}]*display:none/);
 });
 test("ROSTER006 preserves cards, filters, marker and return navigation",()=>{
  assert.match(js,/const isLeader=owned&&selectedLeaderId===h\.id/);

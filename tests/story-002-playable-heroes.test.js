@@ -39,6 +39,6 @@ assert.match(html,/src="story-trial-data.js"/);
 assert.ok(!read("hero-collection-core.js").includes("trial-ren"));
 assert.ok(!read("progress-v3-core.js").includes("trial-ren"));
 assert.ok(!read("campaign-data.js").includes("trial-ren"));
-assert.equal(pkg.version,"0.3.91");
-assert.match(html,/v0\.3\.91 · UIHERO001/);
+assert.equal(pkg.version,"0.3.92");
+assert.match(html,/v0\.3\.92 · UIHERO002/);
 console.log("STORY-002: 3 trial-only playable heroes, effects, arena setup and save isolation passed");

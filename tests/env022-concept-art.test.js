@@ -15,10 +15,10 @@ test("bundled placeholder decodes to compact actual WebP, not an external URL",(
   assert.match(svg,/viewBox="0 0 480 222"/);
 });
 
-test("ENV022 mode is opt-in; default battle and camera math unchanged",()=>{
+test("ENV022 is default; legacy environments can be explicitly selected",()=>{
   const game=fs.readFileSync("game.js","utf8");
   const styles=fs.readFileSync("styles.css","utf8");
-  assert.match(game,/environment=concept/);
+  assert.match(game,/environment=\\(\\?:env017\\|env010\\)/);
   assert.match(game,/alpha:ENV022_CONCEPT_PREVIEW/);
   assert.match(game,/ENV022_CONCEPT_PREVIEW\?0:1/);
   assert.match(game,/CombatVisual007\.create\(BABYLON,scene,\{conceptBackdrop:ENV022_CONCEPT_PREVIEW\}\)/);
@@ -57,6 +57,6 @@ test("concept mode keeps live fighter hit effect pool while skipping all old sce
 test("public build label matches package version and unique ENV022 code",()=>{
   const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
   const html=fs.readFileSync("index.html","utf8");
-  assert.equal(pkg.version,"0.3.92");
-  assert.match(html,/id="buildVersion"[^>]*>[^<]*v0\.3\.92 · UIHERO001[^<]*ENV022-CONCEPT/);
+  assert.equal(pkg.version,"0.3.93");
+  assert.match(html,/id="buildVersion"[^>]*>[^<]*v0\.3\.92 · UIHERO001[^<]*ENV022-DEFAULT/);
 });

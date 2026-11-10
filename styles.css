@@ -2976,3 +2976,213 @@ body:has(#loginCalendar.active)::before{
  #loginCalendar .login-calendar-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 @media(prefers-reduced-motion:reduce){#loginCalendar button{transition:none}}
+
+
+/* UI-MODES-001A — campaign chapter / route / mission visual hierarchy.
+   Screen-only art: CampaignData, energy, 3-star simulation and battle events unchanged. */
+body:has(#campaign.active){background:#16191b}
+body:has(#campaign.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215d7 0%,#10111585 23%,#1011159e 75%,#111215da 100%),
+  linear-gradient(180deg,#101319af 0%,#16141888 36%,#120f14ed 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#campaign.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#campaign.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);margin:0 auto;
+ padding:0 clamp(8px,2.2vw,32px);border:0;
+ border-bottom:1px solid #e0bc856e;border-radius:0 0 8px 8px;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+}
+#app:has(#campaign.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#campaign.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#campaign.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#campaign.active)>.topbar .brand small{display:none}
+#app:has(#campaign.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#campaign.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#campaign.screen.active{
+ position:relative;isolation:isolate;width:min(100%,1500px);
+ margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123ef 0%,#242022ef 50%,#241f22ec 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#campaign.screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;pointer-events:none;
+ border:1px solid #e7c58b25;border-radius:7px;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+#campaign .section-heading{
+ margin:0 0 10px;padding:0 0 10px;border-bottom:1px solid #d7b27c55;
+}
+#campaign .section-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+#campaign .eyebrow{color:#e0b978;letter-spacing:.14em}
+#campaign .muted{color:#d9c5ab;line-height:1.45}
+#campaign .section-heading .ghost,#campaign #energyRefresh{
+ min-height:44px;border:1px solid #bd925b;border-radius:8px;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+#campaign .energy-toolbar{
+ gap:9px;margin:9px 0 4px;padding:8px 11px;
+ border:1px solid #a5845a85;border-radius:9px;
+ background:linear-gradient(155deg,#382d2bed,#201e23ed);
+ box-shadow:inset 0 1px #eac68b32;
+}
+#campaign #energyStatus{margin:0;color:#f0c986;font-weight:650;overflow-wrap:anywhere}
+#campaign #energyRefreshStatus{min-height:1.2em;margin:5px 0 8px;color:#f1c98f}
+#campaign .story-demo-teaser{
+ margin:9px 0 17px;padding:clamp(11px,1.4vw,18px);
+ border:1px dashed #af8e6188;border-radius:10px;
+ background:linear-gradient(160deg,#30292bea,#201f25ef);
+ box-shadow:inset 0 1px #ddbd8740;
+}
+#campaign .story-demo-teaser h3{
+ margin:7px 0;color:#ead2ad;font:600 clamp(16px,2vw,22px)/1.25 Georgia,serif;
+}
+#campaign .story-demo-teaser p{margin:6px 0;color:#d7c5af}
+#campaign .story-demo-teaser .primary{min-height:44px}
+#campaign #campaignMissions{display:grid;gap:clamp(11px,1.5vw,20px);min-width:0}
+#campaign .campaign-chapter{
+ min-width:0;margin:0;padding:clamp(11px,1.5vw,19px);
+ border-top:2px solid #cda66ec7;border-bottom:1px solid #896e4c78;
+ border-radius:9px;background:linear-gradient(160deg,#39302d89,#211f2385);
+}
+#campaign .campaign-chapter>h2{
+ margin:0 0 6px;color:#f3d7a4;
+ font:600 clamp(19px,2.3vw,27px)/1.18 Georgia,serif;
+ text-shadow:0 2px 6px #060508;
+}
+#campaign .campaign-chapter>.muted{
+ display:inline-block;margin:0 0 12px;padding:5px 9px;
+ border:1px solid #a5845a66;border-radius:6px;
+ background:#211c20aa;color:#ddc6a5;font-weight:600;
+}
+#campaign .campaign-route{
+ min-width:0;margin:0 0 13px;padding-left:clamp(8px,1vw,15px);
+ border-left:2px solid #af865a8a;
+}
+#campaign .campaign-route:last-child{margin-bottom:0}
+#campaign .campaign-route>h3{
+ margin:3px 0 10px;color:#e7c18b;
+ font:600 clamp(13px,1.5vw,17px)/1.3 Georgia,serif;
+ letter-spacing:.045em;
+}
+#campaign .campaign-mission{
+ display:grid;grid-template-columns:44px minmax(0,1fr);
+ align-items:start;gap:clamp(9px,1.3vw,18px);
+ margin:0 0 10px;padding:clamp(11px,1.4vw,18px);
+ border:1px solid #ab855889;border-radius:10px;
+ background:radial-gradient(ellipse at 5% 0%,#c0944c21,transparent 57%),
+  linear-gradient(155deg,#382c2af3,#252026f6 75%,#1b1b23f9);
+ box-shadow:inset 0 1px #eac68b4b,inset 0 0 0 2px #10101558,0 5px 15px #09070a8a;
+}
+#campaign .campaign-mission:last-child{margin-bottom:0}
+#campaign .campaign-mission>.node{
+ width:44px;height:44px;min-width:44px;
+ border:1px solid #d4ab72;border-radius:8px;
+ background:linear-gradient(150deg,#443329,#231f24);
+ color:#f1d09a;font:600 22px Georgia,serif;
+ box-shadow:inset 0 1px #e6c48b44;
+}
+#campaign .campaign-mission>div:last-child{min-width:0}
+#campaign .campaign-mission h3{
+ margin:0 0 6px;color:#f6e4c6;
+ font:600 clamp(15px,1.7vw,21px)/1.22 Georgia,serif;
+}
+#campaign .campaign-mission p{margin:5px 0;line-height:1.45;color:#e2d1b8;overflow-wrap:anywhere}
+#campaign .campaign-mission .campaign-mission-status{
+ display:inline-block;margin:8px 0 4px;padding:5px 9px;
+ border:1px solid #b88a588a;border-radius:6px;
+ background:#4c3929b8;color:#f1cb91;font-size:12px;
+}
+#campaign .campaign-mission .mission-stars{color:#eed097!important;margin:5px 0 8px}
+#campaign .mission-criteria{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,205px),1fr));
+ gap:7px;margin:8px 0 12px;padding:0;
+}
+#campaign .mission-criteria li{
+ min-width:0;align-items:flex-start;padding:7px 8px;
+ border:1px solid #a7835459;border-radius:7px;
+ background:#17181c80;color:#e1cfb4;
+}
+#campaign .mission-criteria-star{color:#f1bf76}
+#campaign .campaign-mission-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+#campaign .campaign-mission-actions button{
+ min-height:44px;max-width:100%;white-space:normal;
+}
+#campaign .primary{
+ border:1px solid #e9bd77;border-radius:8px;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#campaign .campaign-mission-actions .ghost{
+ border:1px solid #b99665;border-radius:8px;
+ background:linear-gradient(145deg,#47362b,#262329);
+ color:#f0dfbf;
+}
+#campaign .campaign-mission-actions button:disabled{
+ opacity:.6;filter:saturate(.45);box-shadow:none;cursor:not-allowed;
+}
+#campaign #campaignSaveStatus{margin:13px 0 5px;color:#f0c986;overflow-wrap:anywhere}
+#campaign button:focus-visible{outline:3px solid #ffe2a1;outline-offset:2px}
+#app:has(#campaign.active)>footer{
+ width:min(100%,1500px);margin:0 auto;color:#c5ae91;
+ border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#campaign.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#campaign.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#campaign.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #campaign.screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #campaign .section-heading{margin-bottom:7px;padding-bottom:7px}
+ #campaign .section-heading h2{font-size:21px}
+ #campaign .energy-toolbar{margin:6px 0 3px;padding:6px 9px}
+ #campaign .energy-toolbar .muted{font-size:11px}
+ #campaign #energyRefreshStatus{font-size:11px;margin:3px 0 5px}
+ #campaign .story-demo-teaser{margin:6px 0 11px;padding:9px}
+ #campaign .story-demo-teaser p{font-size:11px}
+ #campaign #campaignMissions{gap:9px}
+ #campaign .campaign-chapter{padding:10px}
+ #campaign .campaign-chapter>h2{font-size:19px}
+ #campaign .campaign-chapter>.muted{font-size:11px;margin-bottom:8px}
+ #campaign .campaign-route{padding-left:8px;margin-bottom:8px}
+ #campaign .campaign-route>h3{font-size:13px;margin-bottom:7px}
+ #campaign .campaign-mission{grid-template-columns:32px minmax(0,1fr);gap:8px;padding:9px}
+ #campaign .campaign-mission>.node{width:32px;height:32px;min-width:32px;font-size:18px}
+ #campaign .campaign-mission h3{font-size:15px}
+ #campaign .campaign-mission p{font-size:11px;margin:4px 0}
+ #campaign .campaign-mission .campaign-mission-status{font-size:11px}
+ #campaign .mission-criteria{gap:5px;margin:6px 0}
+ #campaign .mission-criteria li{font-size:10px;padding:6px}
+ #campaign .campaign-mission-actions{gap:6px;margin-top:6px}
+}
+@media(max-width:640px) and (orientation:portrait){
+ #campaign .campaign-mission{grid-template-columns:36px minmax(0,1fr)}
+ #campaign .campaign-mission>.node{width:36px;height:36px;min-width:36px}
+ #campaign .mission-criteria{grid-template-columns:1fr}
+}
+@media(max-width:580px){
+ #app:has(#campaign.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#campaign.active)>.topbar #accountStatus{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){#campaign button{transition:none}}

@@ -158,12 +158,12 @@ def main():
         source_hash = None
 
     mesh_objects = [o for o in bpy.data.objects if o.type == "MESH" and not o.hide_render]
-    if args.mode in ("sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11":
+    if args.mode in ("sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11"):
         mesh_objects = [o for o in mesh_objects if not o.name.startswith("REF_")]
     if not mesh_objects:
         raise RuntimeError("No visible mesh objects to export")
-    near = add_camera(12.0, "ENV021_REFERENCE_default_native_glTF" if args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11" else "ENV021_REFERENCE_default_not_calibrated",native_gltf=args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11")
-    distant = add_camera(19.0, "ENV021_REFERENCE_far_native_glTF" if args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11" else "ENV021_REFERENCE_far_not_calibrated",native_gltf=args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11")
+    near = add_camera(12.0, "ENV021_REFERENCE_default_native_glTF" if args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11") else "ENV021_REFERENCE_default_not_calibrated",native_gltf=args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11")
+    distant = add_camera(19.0, "ENV021_REFERENCE_far_native_glTF" if args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11") else "ENV021_REFERENCE_far_not_calibrated",native_gltf=args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11")
 
     clay_render(output / "clay-default.png", near, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11")
     clay_render(output / "clay-far.png", distant, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5"))
@@ -188,11 +188,11 @@ def main():
         "stage": "ENV021",
         "mode": mode,
         "acceptance": "NOT_ART_APPROVED",
-        "camera": "NATIVE_GLTF_ORIENTED_REFERENCE" if args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11" else "APPROXIMATE_REFERENCE_NOT_GAME_VERIFIED",
+        "camera": "NATIVE_GLTF_ORIENTED_REFERENCE" if args.mode in ("sculpt6","sculpt7","sculpt8","sculpt9","sculpt10","sculpt11") else "APPROXIMATE_REFERENCE_NOT_GAME_VERIFIED",
         "hud": "NOT_INCLUDED",
         "blender_version": bpy.app.version_string,
         "source_sha256": source_hash,
-        "source_provenance": provenance if args.mode in ("sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11" and not args.source else None,
+        "source_provenance": provenance if args.mode in ("sculpt", "sculpt2", "sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7", "sculpt8", "sculpt9", "sculpt10", "sculpt11") and not args.source else None,
         "glb_sha256": hashlib.sha256(raw).hexdigest(),
         "glb_bytes": len(raw),
         "mesh_count": len(mesh_objects),

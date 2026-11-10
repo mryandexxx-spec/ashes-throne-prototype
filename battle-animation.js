@@ -75,8 +75,16 @@ const BattleAnimation=(()=>{
   const idle=AnimationProfiles.resolve(heroId,"idle");
   return motion(idle,(idleTime%idle.durationMs)/idle.durationMs);
  }
+ function activity(heroId){
+  if(current&&current.id===heroId){
+   const profile=AnimationProfiles.resolve(heroId,current.slot);
+   return {slot:current.slot,progress:Math.min(1,elapsed/profile.durationMs)};
+  }
+  const idle=AnimationProfiles.resolve(heroId,"idle");
+  return {slot:"idle",progress:(idleTime%idle.durationMs)/idle.durationMs};
+ }
  function isDying(heroId){return dying.has(heroId);}
  function pending(){return queue.length+(current?1:0);}
  function drainStarted(){const cues=started.splice(0);return cues;}
- return Object.freeze({enqueue,clear,tick,pose,isDying,pending,drainStarted});
+ return Object.freeze({enqueue,clear,tick,pose,activity,isDying,pending,drainStarted});
 })();

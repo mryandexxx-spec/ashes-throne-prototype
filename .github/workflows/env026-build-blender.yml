@@ -63,9 +63,10 @@ jobs:
           g=json.loads(b[20:20+n])
           count=sum(g['accessors'][p['indices']]['count']//3 for m in g['meshes'] for p in m['primitives'])
           print('AUTHORED_GORGE_GLTF','bytes',len(b),'meshes',len(g['meshes']),'triangles',count,'nodes',len(g.get('nodes',[])))
-          assert 3<=len(g['meshes'])<=8
+          assert len(g['meshes'])==1, "Composited Blender source must become one mesh"
           assert 15000<=count<=100000
           assert len(b)<8000000
+          print('AUTHORED_GLTF_PRIMITIVES',[(list(p['attributes']),p.get('material')) for p in g['meshes'][0]['primitives']])
           print('ENV026 geometry export inspected; art NOT accepted.')
           PY
       - name: Commit verified Blender scene and runtime GLB only to Draft branch

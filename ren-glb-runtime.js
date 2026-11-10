@@ -18,6 +18,9 @@ const RenGlbRuntime=(()=>{
   death:"Ren_Hit_Reaction_0p9s"
  });
  const clipFor=slot=>CLIPS[slot]||CLIPS.idle;
+ // Babylon exposes isDisposed as a boolean in v9; never call it as a method.
+ const sceneDisposed=scene=>typeof scene?.isDisposed==="function"
+  ?scene.isDisposed():scene?.isDisposed===true;
  let loaderPromise=null;
  function ensureLoader(){
   if(typeof window==="undefined"||!window.BABYLON)return Promise.reject(Error("Babylon unavailable"));
@@ -40,7 +43,7 @@ const RenGlbRuntime=(()=>{
   const result=await B.SceneLoader.ImportMeshAsync(null,"assets/","ren-animated-v02.glb",scene,undefined,".glb");
   let root=null;
   try{
-   if(scene.isDisposed?.())throw Error("Scene disposed during import");
+   if(sceneDisposed(scene))throw Error("Scene disposed during import");
    const visible=result.meshes.filter(m=>typeof m.getTotalVertices==="function"&&m.getTotalVertices()>0);
    if(!visible.length)throw Error("No Ren geometry in GLB");
    const groups=new Map(result.animationGroups.map(group=>[group.name,group]));
@@ -118,7 +121,7 @@ const RenGlbRuntime=(()=>{
   let disposed=false,instance=null;
   if(typeof onStatus==="function")onStatus("loading","Загружаю 3D Рена…");
   const promise=load(B,scene,visual).then(next=>{
-   if(disposed||scene.isDisposed?.()){next.dispose();return false;}
+   if(disposed||sceneDisposed(scene)){next.dispose();return false;}
    instance=next;
    if(typeof onStatus==="function")onStatus("ready","3D Рен загружен");
    return true;

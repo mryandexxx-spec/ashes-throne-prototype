@@ -178,6 +178,6 @@ for obj in [near,far,rootrock]:obj.select_set(True)
 bpy.context.view_layer.objects.active=near
 bpy.ops.object.join()
 bpy.context.view_layer.objects.active.name="ENV026_composite_genuine_CC0_rock"
-bpy.ops.export_scene.gltf(filepath=str(out/"ENV026_authored_gorge.glb"),export_format='GLB',use_selection=True,export_yup=True,export_colors=True,export_materials='EXPORT')
+bpy.ops.export_scene.gltf(filepath=str(out/"ENV026_authored_gorge.glb"),export_format='GLB',use_selection=True,export_yup=True,export_materials='EXPORT')
 print("ENV026_AUTHORED_EXPORT",str(out/"ENV026_authored_gorge.glb"),(out/"ENV026_authored_gorge.glb").stat().st_size,flush=True)
 print("ENV026_SOURCE_PARTS",[(o.name,len(o.data.polygons)) for o in [near,far,rootrock]],flush=True)

@@ -160,6 +160,15 @@
       sentinel.material.emissiveColor=new B.Color3(1,.9,.05);
       sentinel.material.disableLighting=true;
       sentinel.alwaysSelectAsActiveMesh=true;
+      const probe=new B.Mesh("env021_vertex_data_probe",scene);
+      const vertexData=new B.VertexData();
+      vertexData.positions=[-1.5,1.5,0, 1.5,1.5,0, 0,4.0,0];
+      vertexData.indices=[0,1,2];vertexData.normals=[0,0,-1,0,0,-1,0,0,-1];
+      vertexData.applyToMesh(probe);
+      const probeMat=new B.StandardMaterial("env021_probe_material",scene);
+      probeMat.emissiveColor=new B.Color3(1,.05,.8);
+      probeMat.disableLighting=true;probeMat.backFaceCulling=false;probeMat.fogEnabled=false;
+      probe.material=probeMat;probe.alwaysSelectAsActiveMesh=true;probe.isPickable=false;
       if(!scene.meshes.some(m=>m.name.startsWith("env021_candidate_")))throw Error("No candidate meshes in actual game");
       // Loading bytes is not proof of an on-screen landscape. Wait for render
       // culling and inspect the active mesh list and camera-space bounds.

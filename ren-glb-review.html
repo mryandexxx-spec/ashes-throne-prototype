@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Рен Терен — проверка импортированного GLB</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:#171918;color:#eee3cf}
+header{padding:12px max(16px,env(safe-area-inset-left));display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#292823;border-bottom:1px solid #61503e}
+h1{font-size:1.15rem;margin:0}a{color:#e9c28c}
+main{max-width:1100px;margin:auto;padding:12px max(14px,env(safe-area-inset-left))}
+p,small{color:#cdc3b5;line-height:1.45}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0}
+button,.file-label{border:0;border-radius:8px;padding:12px 16px;min-height:44px;font:inherit;font-weight:650;cursor:pointer;background:#bc8b55;color:#1b1712}
+button.secondary{background:#383c3a;color:#f5e7d2;border:1px solid #80745c}
+button:disabled{opacity:.55}
+.file-label:focus-within{outline:3px solid #eac587;outline-offset:2px}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.stage{height:min(65dvh,650px);min-height:290px;position:relative;border:1px solid #685741;border-radius:12px;background:radial-gradient(ellipse,#494137,#181d1b 70%);overflow:hidden}
+canvas{width:100%;height:100%;display:block;touch-action:none}
+#status{display:block;min-height:2.5em;padding:8px 0;white-space:pre-wrap}
+.notes{font-size:.87rem;border-top:1px solid #524b3f;margin-top:10px;padding-top:12px}
+.dragover{outline:3px solid #d7b077;outline-offset:-4px}
+</style>
+<script src="https://cdn.babylonjs.com/v9.33.2/babylon.js"></script>
+<script src="https://cdn.babylonjs.com/v9.33.2/loaders/babylonjs.loaders.min.js"></script>
+<script src="ren-3d-studio.js"></script>
+</head>
+<body>
+<header><h1>Рен · проверка GLB [ПРЕДЛОЖЕНИЕ]</h1><a href="./">В игру</a></header>
+<main>
+<p>Загрузи исходный файл <strong>.glb</strong> из «Файлов» iPhone. Он откроется прямо здесь: можно поворачивать модель, приближать и сравнивать с прежним процедурным макетом. Файл читается локально в браузере — на сервер не отправляется.</p>
+<div class="controls">
+<label class="file-label">Выбрать GLB <input id="pickGlb" type="file" accept=".glb,model/gltf-binary" aria-label="Выбрать GLB-файл персонажа"></label>
+<button class="secondary" type="button" id="showOriginal">Прежний макет</button>
+<button class="secondary" type="button" id="showImported" disabled>Модель из файла</button>
+<button class="secondary" type="button" id="reset">Сбросить ракурс</button>
+</div>
+<div id="dropZone" class="stage">
+<canvas id="renderCanvas" aria-label="Интерактивная 3D-фигурка Рена, вращение и приближение касанием" tabindex="0"></canvas>
+</div>
+<span id="status" role="status">Инициализация 3D-просмотра…</span>
+<div class="notes">Это исследовательский просмотрщик: он не меняет бой, сохранения и игровой канон. GLB без скелета и анимаций пригоден для визуального изучения, но не для анимированного боя без дальнейшей обработки. Для 3D требуется доступ к Babylon.js CDN.</div>
+</main>
+<script src="ren-glb-review.js"></script>
+</body></html>

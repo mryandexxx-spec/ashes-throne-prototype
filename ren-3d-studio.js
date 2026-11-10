@@ -43,9 +43,11 @@
     height:delta.length(),diameterTop:2*r2,diameterBottom:2*r1,tessellation:edges
    },scene),key);
    m.position=start.add(end).scale(.5);
-   m.rotationQuaternion=B.Quaternion.FromUnitVectors
-    ? B.Quaternion.FromUnitVectors(B.Axis.Y,delta.normalize())
-    : B.Quaternion.RotationAxis(B.Vector3.Cross(B.Axis.Y,delta.normalize()).normalize(),Math.acos(B.Vector3.Dot(B.Axis.Y,delta.normalize())));
+   const direction=delta.normalize(), dot=B.Vector3.Dot(B.Axis.Y,direction);
+   if(dot>0.999999)m.rotationQuaternion=B.Quaternion.Identity();
+   else if(dot<-.999999)m.rotationQuaternion=B.Quaternion.RotationAxis(B.Axis.X,Math.PI);
+   else m.rotationQuaternion=B.Quaternion.RotationAxis(
+    B.Vector3.Cross(B.Axis.Y,direction).normalize(),Math.acos(Math.max(-1,Math.min(1,dot))));
    return m;
   }
   function tube(name,pts,r,key){

@@ -3,7 +3,7 @@ const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const read=file=>fs.readFileSync(path.join(__dirname,"..",file),"utf8");
 const html=read("index.html"),js=read("game.js"),css=read("styles.css"),profile=require("../hero-profile-data.js");
-test("ROSTER006 displays established character identity and does not invent factions",()=>{
+test("UIHERO001 displays established character identity and does not invent factions",()=>{
  assert.deepEqual(profile.tagLabels(profile.get("ren").tags),["Сады над пропастью"]);
  assert.deepEqual(profile.tagLabels(profile.get("kael")?.tags),[]);
  assert.match(js,/HeroProfileData\.get\(h\.id\)/);
@@ -12,7 +12,7 @@ test("ROSTER006 displays established character identity and does not invent fact
  assert.doesNotMatch(js,/roster-squad-badge|roster-in-squad/);
  assert.match(css,/#collection \.roster-identity-tag\{/);
 });
-test("ROSTER006 uses styled in-page menu instead of native select",()=>{
+test("UIHERO001 uses styled in-page menu instead of native select",()=>{
  assert.doesNotMatch(html,/<select id="rosterSort"/);
  assert.match(html,/<button type="button" id="rosterSortTrigger"[^>]*aria-expanded="false"/);
  assert.match(html,/id="rosterSortMenu"[^>]*hidden/);
@@ -26,12 +26,12 @@ test("ROSTER006 uses styled in-page menu instead of native select",()=>{
  assert.match(css,/#collection \.roster-sort-menu\[hidden\]\{display:none\}/);
  assert.match(css,/#collection \.roster-sort-menu button\{[^\n]*min-height:44px/);
 });
-test("ROSTER006 version is consistent",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.90");
- assert.match(html,/v0\.3\.90 · ROSTER006/);
+test("UIHERO001 version is consistent",()=>{
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.91");
+ assert.match(html,/v0\.3\.91 · UIHERO001/);
 });
 
-test("ROSTER006 shows only the current leader in the collection, without squad badges",()=>{
+test("UIHERO001 shows only the current leader in the collection, without squad badges",()=>{
  assert.match(js,/const isLeader=owned&&selectedLeaderId===h\.id/);
  assert.match(js,/const leaderBadge=isLeader\?'<span class="roster-leader-indicator">★ Лидер<\/span>'/);
  assert.match(js,/\$\{portraitAvatar\}\$\{leaderBadge\}/);

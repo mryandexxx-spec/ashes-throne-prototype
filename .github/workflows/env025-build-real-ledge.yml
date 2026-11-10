@@ -1,0 +1,42 @@
+name: ENV025 actual Poly Haven cliff mobile surface-preserving LOD
+on:
+  pull_request:
+    paths: ['tools/env025-optimize-original-coast.py','.github/workflows/env025-build-real-ledge.yml']
+  workflow_dispatch:
+permissions: {contents: write}
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: true}
+      - name: Download identical official glTF and photo source by pinned hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/env025-source assets/env025
+          root=https://dl.polyhaven.org/file/ph-assets/Models
+          curl -fLS --retry 2 --max-time 90 "$root/gltf/1k/coastal_cliff_04/coastal_cliff_04_1k.gltf" -o /tmp/env025-source/coastal_cliff_04_1k.gltf
+          curl -fLS --retry 2 --max-time 180 "$root/gltf/8k/coastal_cliff_04/coastal_cliff_04.bin" -o /tmp/env025-source/coastal_cliff_04.bin
+          curl -fLS --retry 2 --max-time 90 "$root/jpg/1k/coastal_cliff_04/coastal_cliff_04_diff_1k.jpg" -o /tmp/env025-source/coastal_cliff_04_diff_1k.jpg
+          echo '68418cc5fbddbd0ff1c350fb2aaaa62f  /tmp/env025-source/coastal_cliff_04_1k.gltf' | md5sum -c -
+          echo '77612519fa9eb44129ba40943612c3c3  /tmp/env025-source/coastal_cliff_04.bin' | md5sum -c -
+          echo '945ccb738b5f2ddc590da02a1a216720  /tmp/env025-source/coastal_cliff_04_diff_1k.jpg' | md5sum -c -
+      - name: Decimate actual source and preserve photographed material
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check numpy Pillow scipy trimesh fast-simplification
+          python3 tools/env025-optimize-original-coast.py /tmp/env025-source assets/env025/CoastalCliff04Mobile.glb 40000
+      - name: Save only the verified small real GLB in experimental branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/env025/CoastalCliff04Mobile.glb
+          git diff --cached --quiet && exit 0
+          git commit -m 'ENV025: source-derived coastal cliff 04 scan mobile GLB, original photographic colors'
+          git fetch origin research/env025-irregular-cc0-ledge-screening
+          git rebase origin/research/env025-irregular-cc0-ledge-screening
+          git push origin HEAD:research/env025-irregular-cc0-ledge-screening

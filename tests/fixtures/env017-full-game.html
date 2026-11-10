@@ -82,6 +82,28 @@
      surfaceY:nearest===null?null:Number(nearest.toFixed(3)),delta,
      samples:valid.length,contact:delta!==null&&Math.abs(delta)<=.35});
    }
+   // Survey translations of the SAME source mesh, with all fighters fixed.
+   // One exact vertical center ray per fighter per trial. The score exists
+   // only to choose a smaller placement correction, not to silently accept it.
+   if(!far){
+    const actors=contact.map(c=>({id:c.id,x:c.x,z:c.z}));
+    const options=[];
+    for(const dx of [-3,-2.5,-2,-1.5,-1,-.5,0,.5]){
+     for(const dz of [-1.5,-1,-.5,0,.5,1,1.5,2]){
+      const rows=actors.map(c=>{
+       const h=sample(c.x-dx,c.z-dz);
+       const delta=h===null?null:Number((h-.02).toFixed(3));
+       return {id:c.id,delta,hit:delta!==null&&Math.abs(delta)<=.35};
+      });
+      const hits=rows.filter(c=>c.hit).length;
+      const spread=rows.reduce((sum,c)=>sum+(c.delta===null?2:Math.min(2,Math.abs(c.delta))),0);
+      options.push({dx,dz,hits,spread:Number(spread.toFixed(2)),rows});
+     }
+    }
+    options.sort((a,b)=>b.hits-a.hits||a.spread-b.spread||
+       Math.hypot(a.dx,a.dz)-Math.hypot(b.dx,b.dz));
+    data.offsetCandidates=JSON.stringify(options.slice(0,5));
+   }
    data.contact=JSON.stringify(contact);
    data.contactStatus=contact.length>=5&&contact.every(x=>x.contact)?"pass":"fail";
    if(far)camera.radius=19;

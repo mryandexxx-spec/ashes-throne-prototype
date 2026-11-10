@@ -39,6 +39,6 @@ test("UIHERO002 keeps navigation without squad badges",()=>{
  assert.match(js,/requestAnimationFrame\(scroll\)/);
 });
 test("UIHERO002 build matches package",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.92");
- assert.match(html,/v0\.3\.92 · UIHERO002/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.93");
+ assert.match(html,/v0\.3\.93 · UIHERO002/);
 });

@@ -68,8 +68,8 @@ test("Only permanent ren uses custom geometry; all other fighters keep generic c
 });
 test("New 3D build is marked without modifying ability/progression files",()=>{
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.92");
- assert.ok(html.includes("v0.3.92 · UIHERO002 + OPSHELP + RENPLAY + REN3D003"));
+ assert.equal(pkg.version,"0.3.93");
+ assert.ok(html.includes("v0.3.93 · UIHERO002 + OPSHELP + RENPLAY + REN3D003"));
  assert.ok(pkg.scripts.test.includes("node --check ren-visual-model.js"));
  assert.ok(read("game.js").includes('id:"ren",name:"Рен Терен",classId:"melee"'));
 });

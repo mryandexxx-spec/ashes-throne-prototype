@@ -99,12 +99,12 @@ test("CV008 lighting/fog is presentation only and compatible with old scene mock
 });
 test("CV008 build and source scope",()=>{
  const pkg=JSON.parse(read("package.json")),html=read("index.html");
- assert.equal(pkg.version,"0.3.92");
- assert.match(html,/v0\.3\.92 · UIHERO002 \+ OPSHELP \+ RENPLAY \+ REN3D003 \+ ENV010/);
+ assert.equal(pkg.version,"0.3.93");
+ assert.match(html,/v0\.3\.93 · UIHERO002 \+ OPSHELP \+ RENPLAY \+ REN3D003 \+ ENV010/);
  assert.ok(html.indexOf('src="combat-visual-007.js"')<html.indexOf('src="game.js"'));
  const game=read("game.js");
  assert.match(game,/CombatVisual007\.supported\(BABYLON\)/);
- assert.match(game,/if\(!combatVisual007\)\{/,"legacy arena fallback retained");
+ assert.match(game,/if\(!combatVisual007 && !ENV022_CONCEPT_PREVIEW\)\{/,"legacy arena fallback retained");
  assert.match(game,/combatVisual007\?\.clear\(\)/,"effect pool resets across battles");
  assert.ok(read("battle-animation.js").includes("drainStarted"));
 });

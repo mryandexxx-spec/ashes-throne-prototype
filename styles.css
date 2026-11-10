@@ -2376,6 +2376,18 @@ body:has(#heroDetail.active)::before{
 }
 
 
+/* ENV022: optional static art guide behind live 3D combat via ?environment=concept.
+   The actual Babylon canvas remains on top for fighters, pointer picking and FX.
+   Safe rollback: remove query flag to restore the original fully 3D arena. */
+.battle-screen.env022-concept-preview .arena-wrap{
+ background-color:#aaa19c;
+ background-image:url("assets/env022-canyon-concept.svg");
+ background-position:center center;
+ background-repeat:no-repeat;
+ background-size:cover;
+}
+
+
 /* UI-HERO-002 — squad preparation uses the accepted HQ/ROSTER006 visual language.
    Scope strictly to active squad; preserve data, slot order, leader logic and battle. */
 body:has(#squad.active){background:#16191b}

@@ -19,7 +19,7 @@ jobs:
       - name: Install Blender
         run: |
           sudo apt-get update
-          sudo apt-get install -y blender
+          sudo apt-get install -y blender python3-numpy
           blender --version
       - name: Fetch official MakeHuman anatomy and skinning data
         shell: bash
@@ -44,6 +44,7 @@ jobs:
           export MH_ASSET_DIR="$RUNNER_TEMP/mh"
           export MH_TARGETS_DIR="$RUNNER_TEMP/mh-source/makehuman/data/targets"
           mkdir -p "$REN_BUILD_OUT"
+          export PYTHONPATH="/usr/lib/python3/dist-packages"
           blender -b --factory-startup --python tools/ren-mh-build/build_ren.py
           python3 tools/ren-mh-build/validate_glb.py "$REN_BUILD_OUT/ren-teren-mh-v01.glb"
       - name: Upload candidate GLB, Blender scene and textures
@@ -51,6 +52,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ren-mh-004-review-candidate
-          path: /tmp/ren-out/
+          path: ${{ runner.temp }}/ren-out/
           if-no-files-found: warn
           retention-days: 14

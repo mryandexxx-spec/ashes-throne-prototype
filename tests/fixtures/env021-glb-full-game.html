@@ -238,6 +238,12 @@
       const candidateMeshes=scene.meshes.filter(m=>m.name.startsWith("env021_candidate_"));
       if(new URLSearchParams(location.search).get("controlMaterial")==="1")
         for(const m of candidateMeshes)m.material=sentinel.material;
+      let candidateDrawCalls=0;
+      for(const m of candidateMeshes) {
+        const previous=m._draw;
+        if(typeof previous==="function")
+          m._draw=function(...args){candidateDrawCalls++;return previous.apply(this,args);};
+      }
       const active=scene.getActiveMeshes().data.filter(m=>m&&m.name.startsWith("env021_candidate_"));
       d.activeMeshes=String(active.length);
       d.worldTransformApplied="true";
@@ -305,6 +311,8 @@
       }
       d.terrainRedPixels=String(red);d.terrainCyanPixels=String(cyan);
       d.candidateDifferencePixels=String(anyCandidateDifference);
+      d.candidateDrawCalls=String(candidateDrawCalls);
+      d.candidateSubmeshFrustum=JSON.stringify(candidateMeshes.map(m=>m.subMeshes?.map(sm=>sm.isInFrustum(scene.frustumPlanes))));
       d.candidateOnlyRedPixels=String(changedRed);
       d.candidateOnlyCyanPixels=String(changedCyan);
       sentinel.setEnabled(false);

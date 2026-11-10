@@ -1884,7 +1884,7 @@ body:has(#home.active){height:100dvh;overflow:hidden}
  color:#d6bb86;font-size:clamp(35px,5vw,60px);
 }
 #collection .roster-card-art.hero-avatar-ren{height:clamp(88px,15vw,138px);padding:0}
-#collection .roster-card-art .ren-collection-portrait{object-fit:cover;object-position:top center;width:100%;height:100%;max-width:none;max-height:none}
+#collection .roster-card-art .ren-collection-portrait{object-fit:contain;object-position:center;width:100%;height:100%;max-width:none;max-height:none}
 #collection .roster-card-name{font:600 clamp(12px,1.65vw,16px)/1.2 Georgia,serif;color:#f7ebd7;min-height:2.4em;display:grid;place-items:center;overflow-wrap:anywhere}
 #collection .roster-card .hero-star-summary{margin:3px 0;min-height:16px;color:#e5bd77;font-size:clamp(12px,1.6vw,17px);letter-spacing:0;white-space:nowrap}
 #collection .roster-card-subtitle{display:block;font-size:11px;line-height:1.25;color:#d7c9b6;min-height:2.4em;overflow-wrap:anywhere}

@@ -3,7 +3,7 @@ const test=require("node:test"),assert=require("node:assert/strict"),fs=require(
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 const css=read("styles.css"),html=read("index.html"),js=read("game.js");
 const start=css.indexOf("/* UI-SYSTEMS-001C");
-const art=css.slice(start);
+const art=css.slice(start,css.indexOf("/* UI-MODES-001A",start));
 test("UISYS001C calendar uses the accepted HQ visual system only for its screen",()=>{
  assert.ok(start>0);
  assert.match(art,/body:has\(#loginCalendar\.active\)::before/);
@@ -35,7 +35,7 @@ test("UISYS001C has narrow landscape, safe-area, touch, and accessibility styles
  assert.match(art,/#loginCalendar button:focus-visible/);
  assert.match(art,/@media\(prefers-reduced-motion:reduce\)/);
 });
-test("UISYS001C candidate build is synchronized",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.97");
- assert.match(html,/v0\.3\.97 · UISYS001C/);
+test("UIMODES001A candidate build is synchronized",()=>{
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.98");
+ assert.match(html,/v0\.3\.98 · UIMODES001A/);
 });

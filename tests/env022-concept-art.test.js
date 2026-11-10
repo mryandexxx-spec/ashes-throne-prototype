@@ -18,7 +18,7 @@ test("bundled placeholder decodes to compact actual WebP, not an external URL",(
 test("ENV022 is default; legacy environments can be explicitly selected",()=>{
   const game=fs.readFileSync("game.js","utf8");
   const styles=fs.readFileSync("styles.css","utf8");
-  assert.match(game,/environment=\\(\\?:env017\\|env010\\)/);
+  assert.ok(game.includes("environment=(?:env017|env010)"));
   assert.match(game,/alpha:ENV022_CONCEPT_PREVIEW/);
   assert.match(game,/ENV022_CONCEPT_PREVIEW\?0:1/);
   assert.match(game,/CombatVisual007\.create\(BABYLON,scene,\{conceptBackdrop:ENV022_CONCEPT_PREVIEW\}\)/);

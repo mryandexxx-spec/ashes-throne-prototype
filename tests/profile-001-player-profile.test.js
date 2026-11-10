@@ -42,7 +42,7 @@ for(const required of ['id="playerProfile"','data-screen="playerProfile"','id="p
  'id="playerAccountXpFill"','id="playerCampaignStars"','src="player-profile-core.js"']){
  assert.ok(html.includes(required),required);
 }
-assert.ok(html.indexOf('src="player-profile-core.js"')<html.indexOf('src="game.js"'));
+assert.ok(html.indexOf('src="player-profile-core.js"')<html.indexOf('src="game.js?v=0.3.104"'));
 assert.match(css,/\.player-profile-grid/);
 assert.match(css,/max-height:540px/);
 assert.match(game,/if\(id==="playerProfile"\)renderPlayerProfile\(\)/);

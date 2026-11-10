@@ -3,7 +3,7 @@ const test=require("node:test"),assert=require("node:assert/strict"),fs=require(
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 const css=read("styles.css"),html=read("index.html"),js=read("game.js");
 const start=css.indexOf("/* UI-MODES-001A");
-const art=css.slice(start);
+const art=css.slice(start,css.indexOf("/* UI-MODES-001B",start));
 
 test("UIMODES001A keeps campaign in the accepted HQ visual language",()=>{
  assert.ok(start>0);
@@ -43,7 +43,7 @@ test("UIMODES001A supports short landscape, safe-area and touch targets",()=>{
  assert.match(art,/@media\(prefers-reduced-motion:reduce\)/);
 });
 
-test("UIMODES001A candidate version matches package and footer",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.98");
- assert.match(html,/v0\.3\.98 · UIMODES001A/);
+test("Current candidate version matches package and footer",()=>{
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.99");
+ assert.match(html,/v0\.3\.99 · UIMODES001B/);
 });

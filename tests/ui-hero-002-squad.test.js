@@ -42,6 +42,6 @@ test("UIHERO002 keeps touch, landscape and reduced motion rules",()=>{
  assert.match(art,/padding-inline:max\(12px,env\(safe-area-inset-left\)\)/);
 });
 test("UIHERO002 candidate version matches build",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.98");
- assert.match(html,/v0\.3\.98 · UIMODES001A/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.99");
+ assert.match(html,/v0\.3\.99 · UIMODES001B/);
 });

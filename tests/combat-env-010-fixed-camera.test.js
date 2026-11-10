@@ -152,8 +152,8 @@ test("fixed camera ignores single-finger rotation, retains 12..21 pinch and clea
 });
 test("candidate build and visual comparison preserve current game wiring",()=>{
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.98");
- assert.ok(html.includes("v0.3.98 · UIMODES001A + OPSHELP + RENPLAY + REN3D003 + ENV010"));
+ assert.equal(pkg.version,"0.3.99");
+ assert.ok(html.includes("v0.3.99 · UIMODES001B + OPSHELP + RENPLAY + REN3D003 + ENV010"));
  assert.ok(html.indexOf('src="combat-environment-010.js"')<html.indexOf('src="combat-visual-007.js"'));
  assert.ok(pkg.scripts.test.includes("node --check combat-environment-010.js"));
 });

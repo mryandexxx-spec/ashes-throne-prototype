@@ -95,6 +95,35 @@ def near_mass():
         transformed=[(v.co.x,v.co.y,v.co.z) for v in vertices]
         return ("ENV021_015_near_layered_shelf",transformed,faces)
     ob.data.update()
+    # Low-poly talus and broken caprock around the playable area. Rocks are
+    # joined into the near sculpt (still one exported GLB mesh), and placed
+    # outside the full six-fighter corridor; the far bank is untouched.
+    import bpy
+    bpy.ops.object.select_all(action="DESELECT")
+    ob.select_set(True)
+    fragments=0
+    for flank in ("landward","rim"):
+        for i in range(16):
+            a=-7.05+i*.90
+            l,r=outline(a)
+            if flank=="landward":
+                s=l+.55+.47*((i*5)%7)/7
+            else:
+                s=r-.26-.40*((i*7)%11)/11
+            radius=.19+.27*((i*3)%9)/9
+            h=.16+.34*((i*5)%13)/13
+            p=pos(s,a,surface(s,a)+h*.38)
+            bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1,radius=1,location=p)
+            rock=bpy.context.object
+            rock.name="ENV021_015_talus_"+flank+"_"+str(i)
+            rock.scale=(radius*1.35,radius*.82,h)
+            rock.rotation_euler=(.15*math.sin(i),.20*math.cos(i*.9),.9*math.sin(i*.47))
+            rock.select_set(True)
+            fragments+=1
+    bpy.context.view_layer.objects.active=ob
+    bpy.ops.object.join()
+    ob.data.update()
+    print("ENV021_PASS015_JOINED_FRAGMENTS",fragments,flush=True)
     print("ENV021_PASS015_PROVEN_BASE_RESCULPT",len(ob.data.vertices),
           len(ob.data.polygons),"top displaced",touched,flush=True)
     ob.name="ENV021_015_near_layered_shelf"

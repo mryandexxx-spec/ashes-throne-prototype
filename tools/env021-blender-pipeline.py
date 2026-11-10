@@ -150,7 +150,7 @@ def main():
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         provenance = module.build(pathlib.Path(args.scan).resolve())
-        mode = "ART_PASS_006_UNREVIEWED" if args.mode == "sculpt6" else "ART_PASS_005_UNREVIEWED" if args.mode == "sculpt5" else "ART_PASS_004_UNREVIEWED" if args.mode == "sculpt4" else "ART_PASS_003_UNREVIEWED" if args.mode == "sculpt3" else "ART_PASS_002_UNREVIEWED" if args.mode == "sculpt2" else "CLAY_SCULPT_WIP_WITH_CC0"
+        mode = "ART_PASS_007_UNREVIEWED" if args.mode == "sculpt7" else "ART_PASS_006_UNREVIEWED" if args.mode == "sculpt6" else "ART_PASS_005_UNREVIEWED" if args.mode == "sculpt5" else "ART_PASS_004_UNREVIEWED" if args.mode == "sculpt4" else "ART_PASS_003_UNREVIEWED" if args.mode == "sculpt3" else "ART_PASS_002_UNREVIEWED" if args.mode == "sculpt2" else "CLAY_SCULPT_WIP_WITH_CC0"
         source_hash = hashlib.sha256(pathlib.Path(args.scan).read_bytes()).hexdigest()
     else:
         smoke_geometry()
@@ -162,8 +162,8 @@ def main():
         mesh_objects = [o for o in mesh_objects if not o.name.startswith("REF_")]
     if not mesh_objects:
         raise RuntimeError("No visible mesh objects to export")
-    near = add_camera(12.0, "ENV021_REFERENCE_default_native_glTF" if args.mode == "sculpt6" else "ENV021_REFERENCE_default_not_calibrated",native_gltf=args.mode == "sculpt6")
-    distant = add_camera(19.0, "ENV021_REFERENCE_far_native_glTF" if args.mode == "sculpt6" else "ENV021_REFERENCE_far_not_calibrated",native_gltf=args.mode == "sculpt6")
+    near = add_camera(12.0, "ENV021_REFERENCE_default_native_glTF" if args.mode in ("sculpt6","sculpt7") else "ENV021_REFERENCE_default_not_calibrated",native_gltf=args.mode in ("sculpt6","sculpt7"))
+    distant = add_camera(19.0, "ENV021_REFERENCE_far_native_glTF" if args.mode in ("sculpt6","sculpt7") else "ENV021_REFERENCE_far_not_calibrated",native_gltf=args.mode == "sculpt6")
 
     clay_render(output / "clay-default.png", near, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7"))
     clay_render(output / "clay-far.png", distant, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5"))
@@ -188,7 +188,7 @@ def main():
         "stage": "ENV021",
         "mode": mode,
         "acceptance": "NOT_ART_APPROVED",
-        "camera": "NATIVE_GLTF_ORIENTED_REFERENCE" if args.mode == "sculpt6" else "APPROXIMATE_REFERENCE_NOT_GAME_VERIFIED",
+        "camera": "NATIVE_GLTF_ORIENTED_REFERENCE" if args.mode in ("sculpt6","sculpt7") else "APPROXIMATE_REFERENCE_NOT_GAME_VERIFIED",
         "hud": "NOT_INCLUDED",
         "blender_version": bpy.app.version_string,
         "source_sha256": source_hash,

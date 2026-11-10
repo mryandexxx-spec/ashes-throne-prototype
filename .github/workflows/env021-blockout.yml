@@ -1,0 +1,147 @@
+name: ENV021 Blockout014 A/B side-by-side gameplay camera proof
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_blend:
+        description: "Optional repository-relative .blend source; empty runs pipeline smoke sample"
+        required: false
+        default: ""
+        type: string
+  pull_request:
+    paths:
+      - ".github/workflows/env021-blender.yml"
+      - "tools/env021-blender-pipeline.py"
+      - "tools/env021-build-geology.py"
+      - "tools/env021-art-pass-002.py"
+      - "tools/env021-art-pass-003.py"
+      - "tools/env021-art-pass-004.py"
+      - "tools/env021-art-pass-005.py"
+      - "tools/env021-art-pass-006.py"
+      - "tools/env021-art-pass-007.py"
+      - "tools/env021-art-pass-008.py"
+      - "tools/env021-art-pass-009.py"
+      - "tools/env021-art-pass-010.py"
+      - "tools/env021-art-pass-011.py"
+      - "tools/env021-art-pass-012.py"
+      - "tools/env021-art-pass-013.py"
+      - "tools/env021-blockout-014.py"
+      - "tests/env021-blockout14-structure.py"
+      - ".github/workflows/env021-blockout.yml"
+      - "art/env021/**"
+
+permissions:
+  contents: read
+
+jobs:
+  blender:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        option: [A, B]
+    env:
+      OPTION: ${{ matrix.option }}
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Install Blender
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y blender libegl1 libgl1 libgl1-mesa-dri libopengl0 xvfb python3-numpy
+          blender --version
+
+      - name: Generate independent 014 blockout in Blender (no scans)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/env021
+          mode="blockout14${OPTION,,}"
+          xvfb-run -a -s '-screen 0 1280x720x24' blender -b --factory-startup -noaudio --python tools/env021-blender-pipeline.py -- --mode "$mode" --output build/env021
+          echo "blockout=${OPTION} / CC0 scan intentionally not imported / art unapproved" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preserve Blender crash trace if the runner fails
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p build/env021
+          if [[ -s /tmp/blender.crash.txt ]]; then
+            cp /tmp/blender.crash.txt build/env021/blender-crash.txt
+            tail -100 /tmp/blender.crash.txt
+          fi
+
+      - name: Verify outputs
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, struct
+          p = pathlib.Path("build/env021")
+          glb = p / "scene.glb"
+          raw = glb.read_bytes()
+          assert len(raw) >= 20 and raw[:4] == b"glTF", "Not a GLB file"
+          version, size = struct.unpack_from("<II", raw, 4)
+          assert version == 2 and size == len(raw), "Invalid GLB v2 length"
+          for filename in ("clay-default.png", "clay-far.png", "manifest.json", "source.blend"):
+              assert (p / filename).stat().st_size > 100, f"Missing/empty {filename}"
+          manifest = json.loads((p / "manifest.json").read_text())
+          assert manifest["acceptance"] == "NOT_ART_APPROVED"
+          print("OK", len(raw), manifest)
+          PY
+
+      - name: Preview actual exported GLB behind real Babylon fighters and full HUD
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/env021-preview-http.log 2>&1 &
+          sleep 2
+          for radius in 12 19; do
+            url="http://127.0.0.1:8765/tests/fixtures/env021-glb-full-game.html?radius=$radius&pass=014${OPTION}"
+            flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox
+              --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader
+              --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390
+              --virtual-time-budget=22000)
+            timeout 80s "$chrome" "${flags[@]}" --screenshot="$PWD/build/env021/webgl-$radius.png" "$url"               2>"/tmp/env021-preview-$radius.log"
+            timeout 80s "$chrome" "${flags[@]}" --dump-dom "$url"               >"build/env021/webgl-$radius.dom.html" 2>>"/tmp/env021-preview-$radius.log"
+            grep -o 'data-visual-status="[^"]*"' "build/env021/webgl-$radius.dom.html" || true
+            grep -o 'data-error="[^"]*"' "build/env021/webgl-$radius.dom.html" || true
+            grep -o 'data-candidate-only-[^ ]*' "build/env021/webgl-$radius.dom.html" || true
+            grep -q 'data-visual-status="ready"' "build/env021/webgl-$radius.dom.html"
+            grep -q 'data-art="ENV021_PASS014${OPTION}_GLB_NOT_APPROVED"' "build/env021/webgl-$radius.dom.html"
+            grep -q 'data-webgl="true"' "build/env021/webgl-$radius.dom.html"
+            test -s "build/env021/webgl-$radius.png"
+          done
+
+      - name: Render neutral lit art-review frames with real game HUD
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          python3 -m http.server 8766 --bind 127.0.0.1 > /tmp/env021-review-http.log 2>&1 &
+          sleep 2
+          for radius in 12 19; do
+            url="http://127.0.0.1:8766/tests/fixtures/env021-glb-full-game.html?radius=$radius&pass=014${OPTION}&review=1"
+            flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox
+              --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader
+              --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390
+              --virtual-time-budget=22000)
+            timeout 80s "$chrome" "${flags[@]}" --screenshot="$PWD/build/env021/art-review-$radius.png" "$url" \
+              2>"/tmp/env021-review-$radius.log"
+            timeout 80s "$chrome" "${flags[@]}" --dump-dom "$url" \
+              >"build/env021/art-review-$radius.dom.html" 2>>"/tmp/env021-review-$radius.log"
+            grep -q 'data-visual-status="ready"' "build/env021/art-review-$radius.dom.html"
+            grep -q 'data-art-review="neutral_lit"' "build/env021/art-review-$radius.dom.html"
+            test -s "build/env021/art-review-$radius.png"
+          done
+
+      - name: Publish pipeline outputs (no deployment)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env021-blockout14${{ matrix.option }}-${{ github.run_id }}
+          path: build/env021/
+          if-no-files-found: warn
+          retention-days: 14

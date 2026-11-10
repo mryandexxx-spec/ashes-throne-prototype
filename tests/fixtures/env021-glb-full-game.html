@@ -104,13 +104,14 @@
       d.candidateOnlyCyanPixels=String(cyan);
       if(red<120||cyan<120||changed<300)
         throw Error("Pass005 terrain is not visibly rasterized: changed="+changed+" red="+red+" cyan="+cyan);
-      d.art="ENV021_PASS005_GLB_NOT_APPROVED";
+      const pass=new URLSearchParams(location.search).get("pass")==="006"?"006":"005";
+      d.art="ENV021_PASS"+pass+"_GLB_NOT_APPROVED";
       d.verts=String(verts);d.tris=String(tris);d.hiddenScenery=String(hidden);
       d.fighters=String(fighters);d.camera=String(camera.radius);
       d.loader="BABYLON_9_33_2_NATIVE_GLTF";d.webgl="true";
       loaded=true;clearInterval(poll);
       const stamp=document.createElement("div");
-      stamp.textContent="ENV021 GLB RASTERIZED — ART UNAPPROVED";
+      stamp.textContent="ENV021 PASS "+pass+" RASTERIZED — ART UNAPPROVED";
       stamp.style.cssText="position:absolute;top:0;left:34%;z-index:1000;background:#a20b8d;color:white;padding:2px 7px;font:11px monospace;pointer-events:none";
       document.body.appendChild(stamp);
       setTimeout(()=>d.visualStatus="ready",1200);

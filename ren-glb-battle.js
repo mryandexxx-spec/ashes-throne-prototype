@@ -124,7 +124,7 @@ const RenGlbBattle=(()=>{
   const status=document.getElementById("renGlbBattleStatus");
   const reset=document.getElementById("renGlbBattleReset");
   if(!tools||!input||!status||!reset)return null;
-  tools.hidden=false;
+  tools.hidden=false;tools.style.display="flex";
   let player=null,busy=false;
   const originalMeshes=[...visual.body.getChildMeshes(),...visual.head.getChildMeshes()];
   const feedback=t=>{status.textContent=t;};

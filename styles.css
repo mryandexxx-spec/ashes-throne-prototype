@@ -3936,6 +3936,47 @@ body:has(#storyDemo.active)::before{
  #storyDemo button,#heroBiographyDialog button{transition:none}
 }
 
+/* REN-LOAD-005 — visible, non-blocking 3D asset loading; not a fake timer. */
+#heroDetail .ren-loading-indicator{
+ position:absolute;inset:0;z-index:4;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:9px;padding:12px;
+ background:linear-gradient(160deg,#15151cef,#302523e9);
+ color:#f4e4c8;font:600 13px/1.35 Inter,system-ui,sans-serif;
+ text-align:center;pointer-events:none;
+}
+#heroDetail .ren-loading-indicator[hidden]{display:none!important}
+.ren-loading-spinner{
+ display:inline-block;flex:none;width:23px;height:23px;
+ border-radius:50%;border:3px solid #bb915c59;border-top-color:#f2cc89;
+ animation:ren-loading-spin .85s linear infinite;
+}
+@keyframes ren-loading-spin{to{transform:rotate(360deg)}}
+#heroDetail .ren-loading-indicator progress,#renModelBattleProgress{
+ width:min(180px,80%);height:7px;accent-color:#dfb56f;border-radius:6px;
+}
+#heroDetail .ren-loading-indicator progress[hidden],#renModelBattleProgress[hidden]{display:none!important}
+#renModelBattleStatus{
+ display:flex;align-items:center;justify-content:center;flex-wrap:wrap;
+ gap:5px;max-width:220px;min-width:0;padding:5px 7px;
+ border:1px solid #aa815b;border-radius:7px;background:#251f21ec;
+ box-shadow:0 2px 8px #09070b8c;
+ color:#f3ddb9;font:600 11px/1.25 Inter,system-ui,sans-serif;
+ pointer-events:none;overflow-wrap:anywhere;
+}
+#renModelBattleStatus[hidden]{display:none!important}
+#renModelBattleStatus .ren-loading-spinner{width:15px;height:15px;border-width:2px}
+#renModelBattleStatus[data-status="ready"] .ren-loading-spinner,
+#renModelBattleStatus[data-status="error"] .ren-loading-spinner{display:none}
+#renModelBattleStatus[data-status="ready"]{color:#b4e0b1}
+#renModelBattleStatus[data-status="error"]{color:#ffb7a1}
+#renModelBattleProgress{width:100%;height:5px}
+@media(orientation:landscape) and (max-height:460px){
+ #renModelBattleStatus{max-width:140px;padding:3px 5px;font-size:9px}
+ #heroDetail .ren-loading-indicator{font-size:11px;gap:6px}
+}
+@media(prefers-reduced-motion:reduce){.ren-loading-spinner{animation:none;border-top-color:#f2cc89}}
+
 /* REN-GLB-003 — portrait-safe, isolated touch viewer in the hero dossier. */
 #heroDetail .ren-card-3d-canvas{
  position:absolute;inset:0;display:block;width:100%;height:100%;z-index:2;

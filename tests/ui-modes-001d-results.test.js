@@ -2,7 +2,7 @@
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 const css=read("styles.css"),html=read("index.html"),game=read("game.js");
-const art=css.slice(css.indexOf("/* UI-MODES-001D"));
+const art=css.slice(css.indexOf("/* UI-MODES-001D"),css.indexOf("/* UI-STORY-001"));
 const ids=["missionResult","challengeResult","operationResult","signalOperationResult"];
 
 test("UIMODES001D gives four results a common, contained HQ scene",()=>{
@@ -52,6 +52,6 @@ test("UIMODES001D preserves short landscape, touch, focus, and version",()=>{
  assert.match(art,/min-height:44px/);
  assert.match(art,/button:focus-visible/);
  assert.match(art,/@media\(prefers-reduced-motion:reduce\)/);
- assert.equal(JSON.parse(read("package.json")).version,"0.3.101");
- assert.match(html,/v0\.3\.101 · UIMODES001D/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.102");
+ assert.match(html,/v0\.3\.102 · UISTORY001/);
 });

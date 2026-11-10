@@ -43,6 +43,6 @@ test("UIMODES001C keeps training labels, accessible help and mobile safeguards",
  assert.match(art,/@media\(prefers-reduced-motion:reduce\)/);
 });
 test("UIMODES001C build identifier is synchronized",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.101");
- assert.match(html,/v0\.3\.101 · UIMODES001D/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.102");
+ assert.match(html,/v0\.3\.102 · UISTORY001/);
 });

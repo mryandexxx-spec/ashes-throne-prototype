@@ -45,6 +45,6 @@ test("UIMODES001C keeps non-rewarding pilot and accessibility safeguards",()=>{
 });
 
 test("UIMODES001C candidate build matches package and footer",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.101");
- assert.match(html,/v0\.3\.101 · UIMODES001D/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.102");
+ assert.match(html,/v0\.3\.102 · UISTORY001/);
 });

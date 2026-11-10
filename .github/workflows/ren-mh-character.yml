@@ -44,7 +44,7 @@ jobs:
           export MH_ASSET_DIR="$RUNNER_TEMP/mh"
           export MH_TARGETS_DIR="$RUNNER_TEMP/mh-source/makehuman/data/targets"
           mkdir -p "$REN_BUILD_OUT"
-          export PYTHONPATH="/usr/lib/python3/dist-packages"
+          export PYTHONPATH="$GITHUB_WORKSPACE/tools/ren-mh-build:/usr/lib/python3/dist-packages"
           blender -b --factory-startup --python tools/ren-mh-build/build_ren.py
           python3 tools/ren-mh-build/validate_glb.py "$REN_BUILD_OUT/ren-teren-mh-v01.glb"
       - name: Upload candidate GLB, Blender scene and textures

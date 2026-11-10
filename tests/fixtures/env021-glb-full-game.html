@@ -138,6 +138,9 @@
       mat.specularColor=new B.Color3(.02,.02,.02);
       mat.backFaceCulling=false;
       m.material=mat;m.isPickable=false;m.checkCollisions=false;
+      // Placement diagnosis only: expose a selectable vertical offset without modifying GLB.
+      m.position.y=Number(new URLSearchParams(location.search).get("lift")||0);
+      d.candidateLift=String(m.position.y);
       // Culling diagnostic: if large landmasses are skipped by active-mesh
       // selection, force selection only in this isolated QA fixture.
       m.alwaysSelectAsActiveMesh=true;

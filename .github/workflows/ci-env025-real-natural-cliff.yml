@@ -81,6 +81,8 @@ jobs:
             grep -o 'data-error="[^"]*"' "artifacts/diagnostic-$view-dom.html" || true
             grep -o 'data-env019="[^"]*"' "artifacts/diagnostic-$view-dom.html" || true
             grep -o 'data-camera="[^"]*"' "artifacts/diagnostic-$view-dom.html" || true
+            grep -o 'data-contact-status="[^"]*"' "artifacts/diagnostic-$view-dom.html" || true
+            grep -o 'data-contact="[^"]*"' "artifacts/diagnostic-$view-dom.html" || true
             grep -q 'data-visual-status="ready"' "artifacts/diagnostic-$view-dom.html"
             grep -q 'data-environment="ENV017"' "artifacts/diagnostic-$view-dom.html"
             grep -q 'data-env025="natural-crown"' "artifacts/diagnostic-$view-dom.html"

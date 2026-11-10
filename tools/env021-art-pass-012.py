@@ -23,7 +23,8 @@ def lip(a):
 
 def left_edge(a):
     # Keep ally capsules protected, but remove the excess white foreground.
-    return -3.93-.16*math.sin(a*.20+.7)-.12*gauss(a,-8,2.4)
+    return (-4.14-.33*math.sin(a*.39+.7)
+            -.48*gauss(a,-7.4,2.3)+.27*gauss(a,7.9,1.9))
 
 def surface(s,a):
     # Preserve original standing planes; modify only the shoulder and cap.
@@ -52,10 +53,10 @@ def opposite_bank():
         # Two flanking promontories frame a deeply recessed central gully.
         gully = 4.8*gauss(a,1.7,3.9)+2.0*gauss(a,-14.0,2.8)+2.6*gauss(a,19.0,3.2)
         thrust = -2.0*gauss(a,-6.9,3.1)-1.9*gauss(a,11.2,3.9)
-        front = 18.8+gully+thrust+.57*math.sin(a*.19)
+        front = 23.0+gully+thrust+.57*math.sin(a*.19)
         breaks = (1.25*gauss(a,-17.0,.85)+2.0*gauss(a,-1.4,1.1)
                   +1.4*gauss(a,9.2,.95)+1.8*gauss(a,23.0,.85))
-        crest = (-5.9+2.1*gauss(a,-7.0,4.6)+2.6*gauss(a,12.5,5.1)
+        crest = (-9.8+2.1*gauss(a,-7.0,4.6)+2.6*gauss(a,12.5,5.1)
                  -1.75*gauss(a,2.6,3.7)-breaks+.35*math.sin(a*.3))
         face=[]
         for k in range(nv):
@@ -107,5 +108,5 @@ def build(scan_path):
     result=core.build(scan_path)
     result["stage"]="ART_PASS_012_NOT_APPROVED"
     result["form"]="asymmetric buttress masses, stepped sedimentary wall, reduced foreground shoulder"
-    result["note"]="Experimental clay only; un-welded CC0 scan; actual Babylon cameras and HUD require review"
+    result["note"]="Revised depth placement; experimental clay only; un-welded CC0 scan; actual Babylon cameras and HUD require review"
     return result

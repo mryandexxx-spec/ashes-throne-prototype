@@ -1,0 +1,75 @@
+name: ENV021 game-camera GLB diagnosis (reuses verified Blender output)
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/env021-webgl-preview.yml"
+      - "tests/fixtures/env021-glb-full-game.html"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  webgl:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reuse the exact Pass005 GLB already built by Blender
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p build/env021
+          gh run download 42788577239 --repo "${{ github.repository }}" \
+            --name env021-blender-42788577239 --dir build/env021
+          test -s build/env021/scene.glb
+          python3 - <<'PY'
+          import hashlib, json, pathlib
+          p=pathlib.Path("build/env021")
+          manifest=json.loads((p/"manifest.json").read_text())
+          actual=hashlib.sha256((p/"scene.glb").read_bytes()).hexdigest()
+          assert actual==manifest["glb_sha256"], "Wrong GLB artifact"
+          assert manifest["mode"]=="ART_PASS_005_UNREVIEWED"
+          print("Verified GLB SHA256",actual)
+          PY
+
+      - name: Check real Babylon active meshes with full battle HUD at both radii
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          test -n "$chrome"
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/env021-http.log 2>&1 &
+          sleep 2
+          for radius in 12 19; do
+            url="http://127.0.0.1:8765/tests/fixtures/env021-glb-full-game.html?radius=$radius"
+            flags=(--headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox
+              --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader
+              --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390
+              --virtual-time-budget=22000)
+            timeout 70s "$chrome" "${flags[@]}" --screenshot="$PWD/build/env021/diagnostic-$radius.png" "$url" \
+              2>"/tmp/env021-preview-$radius.log"
+            timeout 70s "$chrome" "${flags[@]}" --dump-dom "$url" \
+              >"build/env021/diagnostic-$radius.dom.html" 2>>"/tmp/env021-preview-$radius.log"
+            grep -o 'data-visual-status="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
+            grep -o 'data-active-meshes="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
+            grep -o 'data-bounds="[^"]*"' "build/env021/diagnostic-$radius.dom.html" || true
+            grep -q 'data-visual-status="ready"' "build/env021/diagnostic-$radius.dom.html"
+            grep -Eq 'data-active-meshes="[1-9][0-9]*"' "build/env021/diagnostic-$radius.dom.html"
+          done
+
+      - name: Archive browser output even if the assertion fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: env021-pass005-babylon-diagnostic
+          path: |
+            build/env021/diagnostic-*.png
+            build/env021/diagnostic-*.dom.html
+          retention-days: 14
+          if-no-files-found: warn

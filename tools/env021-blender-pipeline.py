@@ -163,7 +163,7 @@ def main():
     if not mesh_objects:
         raise RuntimeError("No visible mesh objects to export")
     near = add_camera(12.0, "ENV021_REFERENCE_default_native_glTF" if args.mode in ("sculpt6","sculpt7") else "ENV021_REFERENCE_default_not_calibrated",native_gltf=args.mode in ("sculpt6","sculpt7"))
-    distant = add_camera(19.0, "ENV021_REFERENCE_far_native_glTF" if args.mode in ("sculpt6","sculpt7") else "ENV021_REFERENCE_far_not_calibrated",native_gltf=args.mode == "sculpt6")
+    distant = add_camera(19.0, "ENV021_REFERENCE_far_native_glTF" if args.mode in ("sculpt6","sculpt7") else "ENV021_REFERENCE_far_not_calibrated",native_gltf=args.mode in ("sculpt6","sculpt7"))
 
     clay_render(output / "clay-default.png", near, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5", "sculpt6", "sculpt7"))
     clay_render(output / "clay-far.png", distant, cpu=args.mode in ("sculpt3", "sculpt4", "sculpt5"))

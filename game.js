@@ -2834,7 +2834,7 @@ function initBabylon(){
   try{combatVisual007=CombatVisual007.create(BABYLON,scene,{conceptBackdrop:ENV022_CONCEPT_PREVIEW});}
   catch(visualError){console.warn("CV007 arena unavailable, using legacy ground",visualError);}
  }
- if(!combatVisual007){
+ if(!combatVisual007 && !ENV022_CONCEPT_PREVIEW){
   const ground=BABYLON.MeshBuilder.CreateGround("ground",{width:16,height:9},scene);const gm=new BABYLON.StandardMaterial("groundMat",scene);gm.diffuseColor=new BABYLON.Color3(.12,.15,.19);gm.specularColor=new BABYLON.Color3(.1,.1,.1);ground.material=gm;
   // Built-in material avoids relying on a separately loaded Babylon Materials Library.
   const grid=BABYLON.MeshBuilder.CreateGround("grid",{width:16,height:9,subdivisions:12},scene);grid.position.y=.012;

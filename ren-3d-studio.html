@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Рен Терен — экспериментальная 3D-фигурка · Пепельный престол</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#151819;color:#f1e5d3;min-height:100dvh}
+header{padding:14px max(16px,env(safe-area-inset-left));background:#272522;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid #5a4b3a}
+a{color:#e6bf83}h1{margin:0;font-size:1.1rem}
+main{max-width:1100px;margin:auto;padding:14px}
+.canvas-wrap{height:min(70dvh,720px);min-height:320px;background:radial-gradient(ellipse,#423a30 0,#1d2020 65%,#101414 100%);border:1px solid #635744;border-radius:12px;overflow:hidden;touch-action:none}
+canvas{display:block;width:100%;height:100%;touch-action:none;outline:none}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:12px}
+button{background:#bd8852;color:#1f1913;border:0;border-radius:8px;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer;min-height:44px}
+button:disabled{opacity:.5;cursor:wait}
+small,p{color:#c5b7a4;line-height:1.5}
+#status{min-height:1.6em}footer{margin-top:14px;font-size:.9rem}
+</style>
+<script src="https://cdn.babylonjs.com/v9.33.2/babylon.js"></script>
+<script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+<script src="ren-3d-studio.js"></script>
+</head>
+<body>
+<header><h1>Рен Терен · 3D-макет 0.1 [ПРЕДЛОЖЕНИЕ]</h1><a href="./">Вернуться в игру</a></header>
+<main>
+<p>Экспериментальная объёмная фигурка по портрету Рена. Это отдельная мастерская: боевые модели, характеристики, сохранения и канон не изменены.</p>
+<div class="canvas-wrap"><canvas id="renderCanvas" aria-label="Вращающаяся 3D-фигурка Рена; проведите пальцем для обзора" tabindex="0"></canvas></div>
+<div class="toolbar">
+<button type="button" id="export" disabled>Сохранить модель GLB</button>
+<button type="button" id="reset">Вернуть камеру</button>
+<span id="status" role="status">Загрузка 3D…</span>
+</div>
+<footer>GLB открывается в Blender и совместимых 3D-редакторах. Данный макет не имеет скелета, анимации, PBR-текстур и утверждённой внешности. На телефоне поворачивайте фигуру пальцем, масштабируйте двумя пальцами.</footer>
+</main>
+<script>
+(function(){
+"use strict";
+const canvas=document.getElementById("renderCanvas"),status=document.getElementById("status");
+const exportButton=document.getElementById("export");
+let engine,scene,camera;
+const state={isReady:false};
+const setStatus=s=>{status.textContent=s;};
+function resetCamera(){camera.alpha=-Math.PI/2;camera.beta=1.27;camera.radius=4.3;camera.setTarget(new BABYLON.Vector3(0,1.04,0));}
+try {
+ if(!window.BABYLON||!window.Ren3DStudio)throw new Error("Не удалось загрузить Babylon.js или модель");
+ engine=new BABYLON.Engine(canvas,true,{stencil:true});
+ scene=new BABYLON.Scene(engine);
+ scene.clearColor=new BABYLON.Color4(.11,.12,.12,1);
+ camera=new BABYLON.ArcRotateCamera("ren-studio-camera",-Math.PI/2,1.27,4.3,new BABYLON.Vector3(0,1.04,0),scene);
+ camera.lowerRadiusLimit=2.2;camera.upperRadiusLimit=9;
+ camera.attachControl(canvas,true);
+ new BABYLON.HemisphericLight("soft_fill",new BABYLON.Vector3(0,1,0),scene).intensity=.9;
+ const key=new BABYLON.DirectionalLight("warm_key",new BABYLON.Vector3(-.6,-1,-.8),scene);
+ key.intensity=1.0;
+ Ren3DStudio.create(BABYLON,scene);
+ engine.runRenderLoop(()=>{if(!document.hidden)scene.render();});
+ const resize=()=>engine?.resize();
+ window.addEventListener("resize",resize,{passive:true});
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden)resize()});
+ document.getElementById("reset").addEventListener("click",resetCamera);
+ state.isReady=true;exportButton.disabled=false;
+ setStatus("Модель готова · поверните её пальцем или мышью");
+}catch(error){setStatus("Ошибка загрузки: "+error.message);console.error(error);}
+exportButton.addEventListener("click",async()=>{
+ if(!state.isReady)return;
+ exportButton.disabled=true;setStatus("Подготовка GLB…");
+ try {
+  if(!BABYLON.GLTF2Export?.GLBAsync)throw new Error("Библиотека экспорта GLB недоступна");
+  const glb=await BABYLON.GLTF2Export.GLBAsync(scene,"Ren_Teren_studio_001",{
+   shouldExportNode:node=>node.name==="Ren_Teren_CONCEPT_001"||node.parent?.name==="Ren_Teren_CONCEPT_001"
+  });
+  glb.downloadFiles();
+  setStatus("GLB подготовлен для сохранения");
+ }catch(error){setStatus("Экспорт не удался: "+error.message);console.error(error);}
+ finally{exportButton.disabled=false;}
+});
+})();
+</script>
+</body></html>

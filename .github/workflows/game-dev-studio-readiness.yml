@@ -90,8 +90,16 @@ jobs:
           report=pathlib.Path("build/game-dev-report/inspect.json")
           data=json.loads(report.read_text())
           assert isinstance(data,dict), "Expected JSON object from CLI"
-          assert str(data.get("status","")).lower() not in ("failed","error"), f"CLI inspection failed: {data}"
-          print("Inspection report keys:", sorted(data)[:20])
+          assert data.get("schema")=="game_dev.result.v1", data.get("schema")
+          assert data.get("operation")=="asset.inspect", data.get("operation")
+          assert data.get("ok") is True, f"CLI inspect reported failure: {data}"
+          metrics=data.get("data")
+          assert isinstance(metrics,dict), "Missing inspect metrics"
+          assert metrics.get("meshCount")==2, metrics.get("meshCount")
+          assert metrics.get("triangleCount")==62734, metrics.get("triangleCount")
+          assert metrics.get("vertexCount")==151265, metrics.get("vertexCount")
+          assert metrics.get("fileBytes")==4385208, metrics.get("fileBytes")
+          print("Static GLB analysis:", {key:metrics.get(key) for key in ("meshCount","triangleCount","vertexCount","hasUVs","hasNormals","textureCount")})
           with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as summary:
               summary.write("- Static GLB inspection: JSON report captured as a downloadable artifact.\n")
               summary.write("- No game execution, mesh edits, GPU or paid provider calls.\n")

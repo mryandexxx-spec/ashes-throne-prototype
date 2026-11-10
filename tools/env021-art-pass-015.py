@@ -127,9 +127,10 @@ def near_mass():
     ob.select_set(True)
     for rock in rock_objects:
         rock.select_set(True)
+    rock_names=[rock.name for rock in rock_objects]
     bpy.context.view_layer.objects.active=ob
     bpy.ops.object.join()
-    assert all(rock.name not in bpy.data.objects for rock in rock_objects)
+    assert all(name not in bpy.data.objects for name in rock_names)
     ob.data.update()
     print("ENV021_PASS015_JOINED_FRAGMENTS",fragments,flush=True)
     print("ENV021_PASS015_PROVEN_BASE_RESCULPT",len(ob.data.vertices),

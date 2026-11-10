@@ -38,7 +38,7 @@ jobs:
           print("Verified GLB SHA256",actual)
           PY
 
-      - name: Check real Babylon active meshes with full battle HUD at both radii
+      - name: Distinguish GLB triangle visibility from new-mesh rendering with QA sentinel
         shell: bash
         run: |
           set -euo pipefail

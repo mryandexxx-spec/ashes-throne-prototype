@@ -2,6 +2,7 @@
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ENV021 Pass005 / native Babylon GLB / real battle QA only</title>
 <style>html,body,iframe{margin:0;width:100%;height:100%;border:0;overflow:hidden;background:#8c969b}</style>
+<script src="./env021-atmosphere-015.js"></script>
 </head><body><iframe id="game" src="../../index.html" title="Actual Babylon battle with Pass005 GLB"></iframe>
 <script>
 /* CI-only full-game preview. Official Babylon 9.33.2 glTF loader performs
@@ -61,6 +62,11 @@
       const candidates=result.meshes.filter(m=>m.getTotalVertices?.()>0);
       if(candidates.length!==2)throw Error("Expected two drawable GLB meshes; got "+candidates.length);
       const artReview=new URLSearchParams(location.search).get("review")==="1";
+      const isPass015=new URLSearchParams(location.search).get("pass")==="015";
+      if(isPass015&&artReview){
+        createENV021Atmosphere(B,scene);
+        d.sky="BABYLON_DYNAMIC_3D_PROCEDURAL";
+      }
       let verts=0,tris=0;
       for(let i=0;i<candidates.length;i++){
         const mesh=candidates[i];
@@ -107,7 +113,7 @@
       if((!artReview&&(red<120||cyan<120))||changed<300)
         throw Error("Pass005 terrain is not visibly rasterized: changed="+changed+" red="+red+" cyan="+cyan);
       const requestedPass=new URLSearchParams(location.search).get("pass");
-      const pass=["005","006","007","008","009","010","011","012","013","014A","014B"].includes(requestedPass)?requestedPass:"005";
+      const pass=["005","006","007","008","009","010","011","012","013","014A","014B","015"].includes(requestedPass)?requestedPass:"005";
       d.art="ENV021_PASS"+pass+"_GLB_NOT_APPROVED";
       d.verts=String(verts);d.tris=String(tris);d.hiddenScenery=String(hidden);
       d.fighters=String(fighters);d.camera=String(camera.radius);

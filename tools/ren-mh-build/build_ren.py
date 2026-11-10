@@ -140,8 +140,6 @@ SKINNED += [
 for side, sign in (("R", 1), ("L", -1)):
     SKINNED.append(shell(BODY, side + "_sleeve",
         lambda p, s=sign: p.x*s > .30 and .94 < p.y < 1.57, .028, "coat_worn"))
-    SKINNED.append(shell(BODY, side + "_wrist_wrap",
-        lambda p, s=sign: p.x*s > .35 and .79 < p.y < .98, .037, "leather"))
 
 # Accessory meshes are given one matching bone influence, making them move with the rig.
 def rigid(obj, bone):
@@ -196,6 +194,13 @@ def circle(cx, cy, cz, rx, rz, count=48, tilt=0):
     return [(cx + rx*math.cos(2*math.pi*i/count),
              cy + tilt*math.cos(2*math.pi*i/count),
              cz + rz*math.sin(2*math.pi*i/count)) for i in range(count)]
+
+# Joint-anchored cloth wrist bands avoid fragile world-Y cuts on the MakeHuman arms.
+for side in ("R", "L"):
+    hand = L["hand" + side]
+    curve_piece("wrist_wrap_" + side,
+                circle(hand.x, hand.y + .07, hand.z, .084, .074),
+                .018, "leather", "hand" + side, True)
 
 # Practical cliff-guide silhouette: unarmoured jacket, rust scarf, harness,
 # side bag and rope. No unsupported weapon, crest or magical artefact.

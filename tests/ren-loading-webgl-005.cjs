@@ -15,14 +15,10 @@ async function main(){
   page.on("console",m=>{if(m.type()==="error"||m.type()==="warning")errors.push("console "+m.text());});
   page.on("requestfailed",r=>errors.push("request "+r.url()+" "+r.failure()?.errorText));
   await page.goto("http://127.0.0.1:8765/",{waitUntil:"load"});
-  // Defer the actual import, without rewriting the binary network response.
-  // The existing smoke independently verifies a real unmodified GLB load.
+  // Deliberately never resolve import in this separate pending-state test.
+  // The existing ren-glb-browser-smoke.cjs independently verifies real success.
   await page.evaluate(()=>{
-   const original=BABYLON.SceneLoader.ImportMeshAsync.bind(BABYLON.SceneLoader);
-   BABYLON.SceneLoader.ImportMeshAsync=async (...args)=>{
-    await new Promise(resolve=>setTimeout(resolve,1600));
-    return original(...args);
-   };
+   BABYLON.SceneLoader.ImportMeshAsync=()=>new Promise(()=>{});
   });
   await page.evaluate(()=>{selectedHeroId="ren";showScreen("heroDetail");});
   await page.waitForFunction(()=>!document.querySelector("#renCardLoadIndicator")?.hidden,{timeout:10000});
@@ -39,12 +35,7 @@ async function main(){
   assert.equal(loading.noFakeProgress,true,"no fictional download percentage");
   assert.notEqual(loading.spinner,"none");
   assert.ok(loading.width<=loading.viewport+2,"no horizontal overflow");
-  await page.waitForFunction(()=>typeof window.RenGlbRuntime!=="undefined");
-  await page.waitForFunction(()=>/загружен|Не удалось/.test(document.getElementById("renCard3DStatus")?.textContent||""),{timeout:30000}).catch(e=>{console.log("CARD TIMEOUT",errors);throw e;});
-  const finalCard=await page.locator("#renCard3DStatus").textContent();
-  console.log("CARD RESULT",finalCard,errors);
-  assert.match(finalCard,/3D Рен загружен/);
-  assert.equal(await page.locator("#renCardLoadIndicator").isHidden(),true);
+  // Navigation while still loading must release the card WebGL context.
   await page.evaluate(()=>showScreen("battle"));
   await page.waitForFunction(()=>document.getElementById("renModelBattleStatus")?.dataset.status==="loading",{timeout:10000});
   const state=await page.evaluate(()=>({
@@ -60,11 +51,8 @@ async function main(){
   assert.equal(state.noFakeProgress,true);
   assert.notEqual(state.spinner,"none");
   assert.ok(state.width<=state.viewport+2);
-  await page.waitForFunction(()=>["ready","error"].includes(document.getElementById("renModelBattleStatus")?.dataset.status),{timeout:30000});
-  console.log("BATTLE RESULT",await page.locator("#renModelBattleStatusText").textContent(),errors);
-  assert.ok((await page.locator("#renModelBattleStatusText").textContent()).includes("загружен"));
   assert.equal(errors.length,0,"JS errors "+errors.join(" | "));
-  console.log("REN-LOAD-005: pending -> ready in card and battle passed, "+(useWebkit?"WebKit":"Chromium"));
+  console.log("REN-LOAD-005: pending UI in card and battle passed, "+(useWebkit?"WebKit":"Chromium"));
  }finally{await browser.close();}
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

@@ -140,6 +140,9 @@
       m.material=mat;m.isPickable=false;m.checkCollisions=false;
       // Placement diagnosis only: expose a selectable vertical offset without modifying GLB.
       m.position.y=Number(new URLSearchParams(location.search).get("lift")||0);
+      const scale=Number(new URLSearchParams(location.search).get("scale")||1);
+      m.scaling.setAll(scale);
+      d.candidateScale=String(scale);
       d.candidateLift=String(m.position.y);
       // Culling diagnostic: if large landmasses are skipped by active-mesh
       // selection, force selection only in this isolated QA fixture.

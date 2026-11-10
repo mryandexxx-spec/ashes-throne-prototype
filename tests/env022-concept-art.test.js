@@ -58,5 +58,5 @@ test("public build label matches package version and unique ENV022 code",()=>{
   const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
   const html=fs.readFileSync("index.html","utf8");
   assert.equal(pkg.version,"0.3.92");
-  assert.match(html,/id="buildVersion"[^>]*>[^<]*v0\.3\.92 · ENV022-CONCEPT/);
+  assert.match(html,/id="buildVersion"[^>]*>[^<]*v0\.3\.92 · UIHERO001[^<]*ENV022-CONCEPT/);
 });

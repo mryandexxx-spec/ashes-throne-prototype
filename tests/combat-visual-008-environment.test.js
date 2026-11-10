@@ -99,8 +99,8 @@ test("CV008 lighting/fog is presentation only and compatible with old scene mock
 });
 test("CV008 build and source scope",()=>{
  const pkg=JSON.parse(read("package.json")),html=read("index.html");
- assert.equal(pkg.version,"0.3.86");
- assert.match(html,/v0\.3\.86 · ROSTER002 \+ OPSHELP \+ RENPLAY \+ REN3D003 \+ ENV010/);
+ assert.equal(pkg.version,"0.3.87");
+ assert.match(html,/v0\.3\.87 · ROSTER003 \+ OPSHELP \+ RENPLAY \+ REN3D003 \+ ENV010/);
  assert.ok(html.indexOf('src="combat-visual-007.js"')<html.indexOf('src="game.js"'));
  const game=read("game.js");
  assert.match(game,/CombatVisual007\.supported\(BABYLON\)/);

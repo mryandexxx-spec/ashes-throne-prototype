@@ -13,33 +13,32 @@ const items=[
  {index:4,owned:false,hero:{name:"Бор",level:99},rank:7,tier:3}
 ];
 const ids=(f,s)=>Array.from(order(items,f,s),e=>e.index);
-test("ROSTER002 filters available and locked while keeping obtained first",()=>{
+test("ROSTER003 filters available and locked while keeping obtained first",()=>{
  assert.deepEqual(ids("all","level"),[2,3,0,1,4]);
  assert.deepEqual(ids("owned","level"),[2,3,0]);
  assert.deepEqual(ids("locked","level"),[1,4]);
 });
-test("ROSTER002 sorts real stars and gear without showing locked names",()=>{
+test("ROSTER003 sorts real stars and gear without showing locked names",()=>{
  assert.deepEqual(ids("all","stars"),[3,0,2,1,4]);
  assert.deepEqual(ids("owned","gear"),[3,0,2]);
  assert.deepEqual(ids("all","name"),[3,2,0,1,4]);
 });
-test("ROSTER002 exposes accessible, touch-friendly roster controls",()=>{
+test("ROSTER003 exposes accessible, touch-friendly roster controls",()=>{
  for(const key of ["all","owned","locked"])assert.ok(html.includes('data-roster-filter="'+key+'"'));
- for(const key of ["level","stars","gear","name"])assert.ok(html.includes('<option value="'+key+'">'));
+ for(const key of ["level","stars","gear","name"])assert.ok(html.includes('data-roster-sort="'+key+'"'));
  assert.match(html,/id="rosterShown"/);
  assert.match(js,/button\.setAttribute\("aria-pressed"/);
  assert.match(css,/#collection \.roster-filter-button\{min-height:44px/);
- assert.match(css,/#collection #rosterSort\{min-height:44px/);
+ assert.match(css,/#collection \.roster-sort-trigger\{[^\n]*min-height:44px/);
 });
-test("ROSTER002 squad badges read current slots and preserve navigation",()=>{
- assert.match(js,/const slot=owned\?squadSlots\(\)\.indexOf\(h\.id\):-1/);
- assert.match(js,/roster-leader-badge/);
+test("ROSTER003 keeps navigation without squad badges",()=>{
+ assert.doesNotMatch(js,/roster-squad-badge|roster-leader-badge|roster-in-squad/);
  assert.match(js,/if\(heroOwned\(id\)\)openHeroDetail\(id\);else showLockedHero\(id\)/);
  assert.match(js,/rosterReturnScrollY=window\.scrollY/);
  assert.match(js,/const restore=rosterRestoreOnReturn&&rosterWasInDossier/);
  assert.match(js,/requestAnimationFrame\(scroll\)/);
 });
-test("ROSTER002 build matches package",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.86");
- assert.match(html,/v0\.3\.86 · ROSTER002/);
+test("ROSTER003 build matches package",()=>{
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.87");
+ assert.match(html,/v0\.3\.87 · ROSTER003/);
 });

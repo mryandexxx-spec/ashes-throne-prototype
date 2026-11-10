@@ -2198,3 +2198,179 @@ body:has(#collection.active)::before{
  #app:has(#collection.active)>.topbar #accountStatus{font-size:9px}
  #collection .roster-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr))}
 }
+
+
+/* UI-HERO-001 — accepted HQ / ROSTER006 scene language for the hero dossier.
+   Intentionally isolated: does not change the roster, squad, battle, or dialogs. */
+body:has(#heroDetail.active){background:#16191b}
+body:has(#heroDetail.active)::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:
+  linear-gradient(90deg,#111215c9 0%,#10111577 23%,#10111592 75%,#111215ce 100%),
+  linear-gradient(180deg,#10131994 0%,#1614187d 36%,#120f14e0 100%),
+  url("assets/hq-hall-painting-mobile.webp") center 43% / cover no-repeat;
+}
+#app:has(#heroDetail.active){
+ position:relative;z-index:1;max-width:none;min-width:0;
+ padding-inline:max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-right));
+}
+#app:has(#heroDetail.active)>.topbar{
+ width:100%;height:clamp(45px,6.5dvh,60px);
+ margin:0 auto;padding:0 clamp(8px,2.2vw,32px);
+ border:0;border-bottom:1px solid #e0bc856e;
+ background:linear-gradient(180deg,#14181bea,#201c1cbd 82%,#201b1a65);
+ box-shadow:0 6px 24px #09090bac,inset 0 1px #f7d7a322;
+ border-radius:0 0 8px 8px;
+}
+#app:has(#heroDetail.active)>.topbar .brand{min-width:0;gap:9px}
+#app:has(#heroDetail.active)>.topbar .brand .sigil{
+ font-size:22px;color:#f2c984;text-shadow:0 0 13px #d19f5680;
+}
+#app:has(#heroDetail.active)>.topbar .brand strong{
+ font-family:Georgia,serif;font-size:clamp(12px,1.4vw,18px);
+ letter-spacing:.07em;color:#f8e9cb;text-shadow:0 2px 7px #050507;
+}
+#app:has(#heroDetail.active)>.topbar .brand small{display:none}
+#app:has(#heroDetail.active)>.topbar .resources{min-width:0;color:#e6c38b}
+#app:has(#heroDetail.active)>.topbar #accountStatus{
+ padding:5px 9px;border:1px solid #ad87484c;border-radius:7px;
+ background:#16151785;color:#e9c68e;font-size:clamp(10px,1.05vw,13px);
+ text-shadow:0 1px 2px #080608;
+}
+#heroDetail.hero-detail-screen.active{
+ position:relative;isolation:isolate;
+ width:min(100%,1500px);margin:clamp(8px,1.3dvh,17px) auto 22px;
+ padding:clamp(10px,1.6vw,24px);color:#f5ead8;
+ border:1px solid #d9b17b82;border-radius:12px;
+ background:linear-gradient(100deg,#272123e9 0%,#242022e9 50%,#241f22e5 100%);
+ box-shadow:0 12px 40px #09080dd6,inset 0 1px #eed4a65b,inset 0 0 0 4px #0b0c1163;
+}
+#heroDetail.hero-detail-screen.active::before{
+ content:"";position:absolute;inset:5px;z-index:-1;
+ border:1px solid #e7c58b25;border-radius:7px;pointer-events:none;
+ background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
+}
+#heroDetail .hero-detail-heading{
+ margin:0 0 12px;padding:0 0 10px;
+ border-bottom:1px solid #d7b27c55;
+}
+#heroDetail .hero-detail-heading h2{
+ font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
+}
+#heroDetail .eyebrow{color:#e0b978;letter-spacing:.14em}
+#heroDetail .muted{color:#d9c5ab}
+#heroDetail .hero-tag-strip{color:#ebc584;text-shadow:0 1px 4px #0009}
+#heroDetail .hero-detail-nav{gap:7px;align-self:flex-start}
+#heroDetail .hero-detail-nav .ghost,
+#heroDetail .hero-biography-button{
+ min-height:44px;border:1px solid #bd925b;
+ background:linear-gradient(145deg,#4c3529,#272127);
+ color:#f2dfbd;
+ box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
+}
+#heroDetail .hero-detail-reference{
+ grid-template-columns:minmax(0,1fr) minmax(0,1.12fr) minmax(0,1fr);
+ gap:clamp(8px,1.2vw,16px);align-items:start;
+}
+#heroDetail .hero-detail-reference>.hero-abilities-panel,
+#heroDetail .hero-detail-reference>.hero-detail-identity,
+#heroDetail .hero-detail-reference>.hero-detail-progression{
+ min-width:0;border:1px solid #af865a8c;border-radius:11px;
+ background:
+  radial-gradient(ellipse at 50% -10%,#bf8d4a24,transparent 62%),
+  linear-gradient(155deg,#332a29f0,#211e24f5 72%,#19191ff5);
+ box-shadow:inset 0 1px #eac68b4a,inset 0 0 0 2px #10101557,0 7px 17px #09070a8a;
+ color:#f3e5cc;
+ padding:clamp(10px,1.3vw,18px);
+}
+#heroDetail .hero-detail-reference h3{
+ color:#f5e5c6;font-family:Georgia,serif;
+ text-shadow:0 1px 4px #0009;
+}
+#heroDetail .hero-detail-reference .detail-value,
+#heroDetail .hero-detail-reference .hero-detail-stats>div{
+ border-bottom-color:#b18a5847;
+}
+#heroDetail .hero-detail-reference .detail-value span,
+#heroDetail .hero-detail-reference .hero-detail-stats span{color:#d9c5ab}
+#heroDetail .hero-detail-reference .detail-value strong,
+#heroDetail .hero-detail-reference .hero-detail-stats strong{color:#f1c986}
+#heroDetail .hero-detail-stage{
+ border:2px solid #af895c;border-radius:45% 45% 10px 10px / 13% 13% 10px 10px;
+ background:
+  radial-gradient(ellipse at 50% 26%,#bf98677a,transparent 54%),
+  radial-gradient(ellipse at 50% 92%,#0a0b13b0,transparent 65%),
+  linear-gradient(145deg,#5b4438,#2a2830 64%,#171920);
+ box-shadow:inset 0 0 0 2px #1b171b,inset 0 15px 22px #dcb77d20,
+  inset 0 -15px 25px #07080fd9,0 3px 0 #e4bf7e52,0 9px 19px #060506a1;
+}
+#heroDetail .hero-detail-stage::after{
+ content:"";position:absolute;inset:4px;z-index:3;pointer-events:none;
+ border:1px solid #f6da9b42;border-radius:inherit;
+ background:linear-gradient(125deg,#fff1ca10,transparent 39%,#0002);
+}
+#heroDetail .hero-detail-stage.has-ren-portrait .ren-detail-portrait{
+ object-fit:contain;object-position:center;filter:drop-shadow(0 5px 8px #08080d80);
+}
+#heroDetail .hero-detail-reference .hero-ability-card{
+ border-color:#9a794f;background:linear-gradient(165deg,#3b302d,#231f24);
+ box-shadow:inset 0 1px #ecd29b24,0 3px 7px #09070b80;
+}
+#heroDetail .hero-ability-more summary{
+ color:#f0ca88;min-height:44px;text-decoration-color:#bb925c80;
+}
+#heroDetail .hero-detail-reference .gear-panel{border-top-color:#b18a584e}
+#heroDetail .gear-slot{
+ border-color:#94734d;color:#f0deb9;
+ background:linear-gradient(155deg,#49362b,#211e23);
+ box-shadow:inset 0 1px #e3be8131,0 2px 6px #0b090bd1;
+}
+#heroDetail .gear-slot.selected{
+ border-color:#f0c27d;box-shadow:inset 0 1px #ffe0a273,0 0 0 1px #dba76b66;
+}
+#heroDetail .star-panel{
+ border-color:#b18a5866;
+ background:linear-gradient(145deg,#382b28,#201d22);
+ box-shadow:inset 0 1px #e4bf7f27;
+}
+#heroDetail .star-progress{accent-color:#d9aa65}
+#heroDetail .primary{
+ min-height:44px;
+ border:1px solid #e9bd77;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#heroDetail .primary:disabled{opacity:.53;filter:saturate(.4);box-shadow:none}
+#heroDetail button:focus-visible,#heroDetail summary:focus-visible{
+ outline:3px solid #ffe2a1;outline-offset:2px;
+}
+#app:has(#heroDetail.active)>footer{
+ width:min(100%,1500px);margin:0 auto;
+ color:#c5ae91;border-top:1px solid #bd925c4f;text-shadow:0 1px 4px #000;
+}
+@media(orientation:landscape) and (max-height:540px){
+ #app:has(#heroDetail.active)>.topbar{height:42px;padding-inline:9px}
+ #app:has(#heroDetail.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#heroDetail.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
+ #heroDetail.hero-detail-screen.active{margin:7px auto 12px;padding:9px 10px 14px}
+ #heroDetail .hero-detail-heading{margin-bottom:8px;padding-bottom:7px}
+ #heroDetail .hero-detail-heading h2{font-size:21px}
+ #heroDetail .hero-detail-reference{gap:7px}
+ #heroDetail .hero-detail-reference>.hero-abilities-panel,
+ #heroDetail .hero-detail-reference>.hero-detail-identity,
+ #heroDetail .hero-detail-reference>.hero-detail-progression{padding:9px}
+ #heroDetail .hero-detail-stage{height:185px}
+ #heroDetail .hero-detail-reference .hero-ability-more summary{min-height:44px}
+}
+@media(max-width:650px) and (orientation:portrait){
+ #heroDetail .hero-detail-reference{grid-template-columns:1fr}
+}
+@media(max-width:580px){
+ #app:has(#heroDetail.active)>.topbar .brand strong{font-size:11px}
+ #app:has(#heroDetail.active)>.topbar #accountStatus{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ #heroDetail button{transition:none}
+}

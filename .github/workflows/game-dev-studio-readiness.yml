@@ -1,4 +1,4 @@
-name: Game Development Studio CLI readiness (no provider calls)
+name: Game Development Studio CLI and ENV021 Pass012 static GLB audit
 
 on:
   workflow_dispatch:
@@ -9,11 +9,12 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   readiness:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Set up Node.js 22
         uses: actions/setup-node@v4
@@ -46,6 +47,63 @@ jobs:
           npm install --global --prefix "$RUNNER_TEMP/game-dev-cli" --ignore-scripts "$GAME_DEV_TARBALL"
           echo "$RUNNER_TEMP/game-dev-cli/bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/game-dev-cli/bin/game-dev" --version
+
+      - name: Download pinned Pass012 artifact from verified Blender run
+        uses: actions/download-artifact@v4
+        with:
+          name: env021-blender-42833525050
+          run-id: 42833525050
+          github-token: \${{ github.token }}
+          path: \${{ runner.temp }}/env021-pass012
+
+      - name: Verify exact GLB digest, size and art status
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])/"env021-pass012"
+          path=root/"scene.glb"
+          meta=json.loads((root/"manifest.json").read_text())
+          expected="af944376ea3d2ea286de0f185377bf2adf8277f3522faf081b98711210fe21b4"
+          actual=hashlib.sha256(path.read_bytes()).hexdigest()
+          assert actual==expected==meta["glb_sha256"], (actual,expected)
+          assert meta["mode"]=="ART_PASS_012_UNREVIEWED"
+          assert meta["acceptance"]=="NOT_ART_APPROVED"
+          assert path.stat().st_size==meta["glb_bytes"]==4385208
+          assert path.read_bytes()[:4]==b"glTF"
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as summary:
+              summary.write("\n- Source: Pass012 revision2 [Blender run 42833525050](https://github.com/mryandexxx-spec/ashes-throne-prototype/actions/runs/42833525050)\n")
+              summary.write("- Verified GLB SHA-256: "+actual+"\n")
+              summary.write("- Art status: NOT_ART_APPROVED; no game integration.\n")
+          print("Pinned source GLB verified:",actual)
+          PY
+
+      - name: Read-only Game Development Studio GLB inspection
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/game-dev-report
+          game-dev asset inspect "$RUNNER_TEMP/env021-pass012/scene.glb" --json > build/game-dev-report/inspect.json
+          python3 - <<'PY'
+          import json,os,pathlib
+          report=pathlib.Path("build/game-dev-report/inspect.json")
+          data=json.loads(report.read_text())
+          assert isinstance(data,dict), "Expected JSON object from CLI"
+          assert str(data.get("status","")).lower() not in ("failed","error"), f"CLI inspection failed: {data}"
+          print("Inspection report keys:", sorted(data)[:20])
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as summary:
+              summary.write("- Static GLB inspection: JSON report captured as a downloadable artifact.\n")
+              summary.write("- No game execution, mesh edits, GPU or paid provider calls.\n")
+          PY
+
+      - name: Preserve CLI inspection report
+        uses: actions/upload-artifact@v4
+        with:
+          name: game-dev-env021-pass012-static-audit
+          path: build/game-dev-report/inspect.json
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Read-only capabilities and environment doctor
         shell: bash

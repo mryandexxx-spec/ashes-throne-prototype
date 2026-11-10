@@ -254,6 +254,26 @@
       }
       d.terrainRedPixels=String(red);d.terrainCyanPixels=String(cyan);
       if(red<120||cyan<120)throw Error("GLB rasterization missing: red="+red+", cyan="+cyan+" terrain pixels");
+      // Controlled A/B pixel evidence: temporarily hide ONLY the two imported
+      // candidates, keeping the same fighters, camera, debug patch and HUD.
+      // Pixel count alone could accidentally match existing battle UI colors.
+      for(const m of candidateMeshes)m.setEnabled(false);
+      scene.render();
+      const without=await engine.readPixels(0,0,engine.getRenderWidth(),engine.getRenderHeight());
+      for(const m of candidateMeshes)m.setEnabled(true);
+      scene.render();
+      let changedRed=0,changedCyan=0;
+      for(let i=0;i<pixels.length;i+=4){
+        const r=pixels[i],g=pixels[i+1],b=pixels[i+2];
+        const oldR=without[i],oldG=without[i+1],oldB=without[i+2];
+        if(r>165&&g<105&&b<125&&!(oldR>165&&oldG<105&&oldB<125))changedRed++;
+        if(r<110&&g>145&&b>155&&!(oldR<110&&oldG>145&&oldB>155))changedCyan++;
+      }
+      d.candidateOnlyRedPixels=String(changedRed);
+      d.candidateOnlyCyanPixels=String(changedCyan);
+      if(changedRed<120||changedCyan<120)
+        throw Error("Imported GLB makes no proven raster change: red="+changedRed+", cyan="+changedCyan);
+
 
       const actualFighters=win.eval("Object.values(meshes).filter(x=>x.body.isEnabled()).length");
       if(actualFighters<2)throw Error("Live game fighters not visible");

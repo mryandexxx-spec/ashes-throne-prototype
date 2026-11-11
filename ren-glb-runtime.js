@@ -17,41 +17,12 @@ const RenGlbRuntime=(()=>{
   const p=Math.max(0,Math.min(1,Number.isFinite(progress)?progress:0));
   return slot!=="idle"&&clipFor(slot)===CLIPS.idle?0:p;
  };
- // RENMOVE020: Meshy combo clip has ~1.05m baked hip-Z translation,
- // while game.js already moves the combat anchor to and from its target.
- // Strip only horizontal hip translations from combat clips. Do NOT alter Y
- // (breathing, crouching, knockdown) or the GLB used on the roster card.
- function stabilizeCombatRoot(groups){
-  const idle=groups.get(CLIPS.idle);
-  const channel=group=>group?.targetedAnimations?.find(item=>
-   item.target?.name==="mixamorig:Hips"&&item.animation?.targetProperty==="position");
-  const ref=channel(idle)?.animation?.getKeys()?.[0]?.value;
-  if(!ref||!Number.isFinite(ref.x)||!Number.isFinite(ref.z))return 0;
-  let fixed=0;
-  for(const [name,group] of groups){
-   if(name==="Dead")continue; // preserve original fall
-   const track=channel(group)?.animation;
-   if(!track)continue;
-   for(const key of track.getKeys()){
-    if(!key.value||!Number.isFinite(key.value.x)||!Number.isFinite(key.value.z))continue;
-    key.value.x=ref.x;
-    key.value.z=ref.z;
-    fixed++;
-   }
-  }
-  return fixed;
- }
- // A dash must use an actual locomotion clip; no ice-skating combo while
- // the game anchor travels. The single authoritative action timeline drives
- // all three segments, including 2x / 4x speeds.
+ // Original clips are immutable. Basic attack X/Z is extracted per sample;
+ // the shared choreography moves the anchor by exactly the same world delta.
  function choreography(activity){
-  const slot=activity?.slot||"idle";
-  const p=clipProgress(slot,activity?.progress);
-  if(slot!=="basic"&&slot!=="special"&&slot!=="powerful")
-   return {name:clipFor(slot),progress:p};
-  if(p<.3)return {name:"Running",progress:p/.3};
-  if(p<.74)return {name:clipFor(slot),progress:(p-.3)/.44};
-  return {name:"Running",progress:Math.max(0,1-(p-.74)/.26)};
+  if(activity?.plan&&activity.slot==="basic"&&typeof RenChoreography!=="undefined")
+   return RenChoreography.sample(activity.plan,activity.elapsedMs);
+  return {name:clipFor(activity?.slot),progress:clipProgress(activity?.slot,activity?.progress)};
  }
  // Babylon exposes isDisposed as a boolean in v9; never call it as a method.
  const sceneDisposed=scene=>typeof scene?.isDisposed==="function"
@@ -173,29 +144,46 @@ const RenGlbRuntime=(()=>{
    const groupsList=result.animationGroups;
    groupsList.forEach(g=>g.stop());
    if(!groups.has(CLIPS.idle)||!groups.has(CLIPS.basic)||!groups.has(CLIPS.hit)||!groups.has(CLIPS.death)||!groups.has("Running"))throw Error("Meshy animation clips missing");
-   if(stabilizeCombatRoot(groups)===0)throw Error("Meshy Hips translation channel missing");
+   const hips=result.transformNodes.find(n=>n.name==="mixamorig:Hips");
+   const hipTrack=groups.get(CLIPS.idle).targetedAnimations.find(a=>a.target===hips&&a.animation.targetProperty==="position");
+   const hipReference=hipTrack?.animation.getKeys()[0]?.value.clone();
+   if(!hips||!hipReference)throw Error("Meshy Hips translation channel missing");
+   if(typeof RenChoreography!=="undefined")RenChoreography.calibrate(scale);
    // Do not hide the fallback until the whole GLB has been validated.
    const oldParts=[...visual.body.getChildMeshes(),...visual.head.getChildMeshes()]
     .filter(mesh=>!result.meshes.includes(mesh));
    for(const mesh of oldParts){mesh.isVisible=false;mesh.isPickable=false;}
-   const skeletalPose=createRigAnimator(B,result.transformNodes);
-   let lastName=null,stopped=false;
+   const poses=result.transformNodes.map(node=>({node,p:node.position.clone(),q:node.rotationQuaternion?.clone(),s:node.scaling.clone()}));
+   let stopped=false;
+   const prepared=new Set();
+   function samplePose(name,progress,extract){
+    restoreImported({slot:"idle",progress:0});
+    const group=groups.get(name)||groups.get(CLIPS.idle);
+    if(!prepared.has(group)){
+     group.start(false,1,group.from,group.to);group.pause();prepared.add(group);
+    }
+    group.goToFrame(group.from+(group.to-group.from)*progress);
+    if(extract&&name===CLIPS.basic){hips.position.x=hipReference.x;hips.position.z=hipReference.z;}
+   }
    return {
+    sampleRaw(name,progress){if(!stopped)samplePose(name,Math.max(0,Math.min(1,progress)),false);},
     update(activity){
      if(stopped||!activity)return;
      const phase=choreography(activity);
-     const name=phase.name;
-     const clip=groups.get(name)||groups.get(CLIPS.idle);
-     if(!clip){skeletalPose(activity);return;}
-     if(lastName!==name){
-      for(const group of groupsList)group.stop();
-      restoreImported({slot:"idle",progress:0});
-      clip.start(false,1,clip.from,clip.to);
-      clip.pause();
-      lastName=name;
+     if(!phase.a){samplePose(phase.name,phase.progress,false);return;}
+     samplePose(phase.a.name,phase.a.progress,true);
+     if(phase.weight>0){
+      for(const pose of poses){
+       pose.p.copyFrom(pose.node.position);pose.s.copyFrom(pose.node.scaling);
+       if(pose.q)pose.q.copyFrom(pose.node.rotationQuaternion);
+      }
+      samplePose(phase.b.name,phase.b.progress,true);
+      for(const pose of poses){
+       B.Vector3.LerpToRef(pose.p,pose.node.position,phase.weight,pose.node.position);
+       B.Vector3.LerpToRef(pose.s,pose.node.scaling,phase.weight,pose.node.scaling);
+       if(pose.q)B.Quaternion.SlerpToRef(pose.q,pose.node.rotationQuaternion,phase.weight,pose.node.rotationQuaternion);
+      }
      }
-     // Pose follows the authoritative Combat-005 timeline and battle speed.
-     clip.goToFrame(clip.from+(clip.to-clip.from)*phase.progress);
     },
     dispose(){
      if(stopped)return;
@@ -235,9 +223,10 @@ const RenGlbRuntime=(()=>{
   return Object.freeze({
    ready:promise,
    update(activity){instance?.update(activity);},
+   sampleRaw(name,progress){instance?.sampleRaw(name,progress);},
    dispose(){disposed=true;instance?.dispose();instance=null;}
   });
  }
- return Object.freeze({ASSET_URL,clipFor,clipProgress,choreography,stabilizeCombatRoot,create,ensureLoader,createRigAnimator});
+ return Object.freeze({ASSET_URL,clipFor,clipProgress,choreography,create,ensureLoader,createRigAnimator});
 })();
 if(typeof module!=="undefined")module.exports=RenGlbRuntime;

@@ -46,7 +46,7 @@ const {chromium}=require("playwright");
   assert.equal(res.ready,true);
   assert.ok(res.meshCount>0);
   assert.equal(res.fallbackHidden,true);
-  assert.ok(res.hipRange<1e-5,"Meshy baked XZ root motion must be pinned: "+res.hipRange);
+  assert.ok(res.hipRange>1,"Original Meshy keys must remain immutable: "+res.hipRange);
   assert.ok(res.poses.every(p=>p.hips),"Actual Mixamo hips must exist");
   for(const n of ["Idle_4","Double_Combo_Attack","Slap_Reaction","Dead"])assert.ok(res.groups.includes(n),n);
   assert.deepEqual(errors,[]);

@@ -8,21 +8,31 @@ const BattleAnimation=(()=>{
  // Presentation-only cues: the first frame of each queued action, no combat side-effects.
  const started=[];
  let current=null,elapsed=0,idleTime=0;
- function enqueue(events){
+ function enqueue(events,positions){
+  let renAction=null;
   if(!Array.isArray(events))return;
   for(let i=0;i<events.length;i++){
    const event=events[i];
    if(event.type==="ability"&&typeof event.actorId==="string"){
     const guard=events.slice(i+1).some(next=>(next.type==="effect"&&next.effect==="guard"||next.type==="heal")&&
      next.actorId===event.actorId&&next.targetId===event.targetId);
-    queue.push({id:event.actorId,targetId:event.targetId,slot:guard?"guard":
-     AnimationProfiles.slots.includes(event.abilityId)?event.abilityId:"special"});
+    const action={id:event.actorId,targetId:event.targetId,slot:guard?"guard":
+     AnimationProfiles.slots.includes(event.abilityId)?event.abilityId:"special"};
+    if(action.id==="ren"&&action.slot==="basic"&&typeof RenChoreography!=="undefined"){
+     const origin=positions?.[action.id],target=positions?.[action.targetId];
+     if(origin&&target){
+      action.plan=RenChoreography.plan(Math.hypot(target.x-origin.x,target.z-origin.z));
+      action.reactions=[];renAction=action;
+     }
+    }else renAction=null;
+    queue.push(action);
    }else if(event.type==="heal"&&typeof event.targetId==="string"){
     queue.push({id:event.targetId,slot:"ward"});
    }else if(event.type==="effect"&&event.effect==="guard"&&typeof event.targetId==="string"){
     queue.push({id:event.targetId,slot:"ward"});
    }else if(event.type==="damage"&&typeof event.targetId==="string"){
-    queue.push({id:event.targetId,slot:"hit"});
+    if(renAction&&event.actorId==="ren")renAction.reactions.push({id:event.targetId,slot:"hit"});
+    else queue.push({id:event.targetId,slot:"hit"});
    }else if(event.type==="death"&&typeof event.targetId==="string"){
     dying.add(event.targetId);
     queue.push({id:event.targetId,slot:"death"});
@@ -43,9 +53,13 @@ const BattleAnimation=(()=>{
   }
   while(current&&remaining>0){
    const profile=AnimationProfiles.resolve(current.id,current.slot);
-   const step=Math.min(remaining,profile.durationMs-elapsed);
+   const duration=current.plan?.durationMs||profile.durationMs;
+   const step=Math.min(remaining,duration-elapsed);
+   const before=elapsed;
    elapsed+=step;remaining-=step;
-   if(elapsed>=profile.durationMs){
+   if(current.plan&&before<current.plan.contactMs&&elapsed>=current.plan.contactMs)
+    started.push(...current.reactions);
+   if(elapsed>=duration){
     if(current.slot==="death")dying.delete(current.id);
     current=queue.shift()||null;
     if(current?.slot==="hit")started.push({id:current.id,slot:current.slot});
@@ -70,7 +84,11 @@ const BattleAnimation=(()=>{
  function pose(heroId){
   if(current&&current.id===heroId){
    const profile=AnimationProfiles.resolve(heroId,current.slot);
-   return motion(profile,Math.min(1,elapsed/profile.durationMs));
+   return current.plan?empty():motion(profile,Math.min(1,elapsed/profile.durationMs));
+  }
+  if(current?.plan&&current.reactions.some(cue=>cue.id===heroId)){
+   const reactionMs=elapsed-current.plan.contactMs,profile=AnimationProfiles.resolve(heroId,"hit");
+   if(reactionMs>=0&&reactionMs<profile.durationMs)return motion(profile,reactionMs/profile.durationMs);
   }
   const idle=AnimationProfiles.resolve(heroId,"idle");
   return motion(idle,(idleTime%idle.durationMs)/idle.durationMs);
@@ -79,7 +97,12 @@ const BattleAnimation=(()=>{
  function activity(heroId){
   if(current&&current.id===heroId){
    const profile=AnimationProfiles.resolve(heroId,current.slot);
-   return {slot:current.slot,progress:Math.min(1,elapsed/profile.durationMs),targetId:current.targetId||null};
+   return {slot:current.slot,progress:Math.min(1,elapsed/(current.plan?.durationMs||profile.durationMs)),targetId:current.targetId||null,
+    ...(current.plan?{plan:current.plan,elapsedMs:elapsed}: {})};
+  }
+  if(current?.plan&&current.reactions.some(cue=>cue.id===heroId)){
+   const reactionMs=elapsed-current.plan.contactMs,duration=AnimationProfiles.resolve(heroId,"hit").durationMs;
+   if(reactionMs>=0&&reactionMs<duration)return {slot:"hit",progress:reactionMs/duration,targetId:null};
   }
   const idle=AnimationProfiles.resolve(heroId,"idle");
   return {slot:"idle",progress:(idleTime%idle.durationMs)/idle.durationMs,targetId:null};
@@ -88,6 +111,8 @@ const BattleAnimation=(()=>{
  // All results were already calculated by CombatCore; this cannot alter hit or damage.
  function approach(activity,origin,target){
   if(!activity||!["basic","special","powerful"].includes(activity.slot)||!target||!origin)return {x:0,z:0};
+  if(activity.plan&&typeof RenChoreography!=="undefined")
+   return RenChoreography.offset(activity.plan,activity.elapsedMs,origin,target);
   const dx=target.x-origin.x,dz=target.z-origin.z;
   const distance=Math.hypot(dx,dz);
   if(!Number.isFinite(distance)||distance<=1.25)return {x:0,z:0};

@@ -1,4 +1,4 @@
-/* RENRETARGET014: world-axis retarget of actual KinemIQ CC0 GLB motion onto Ren.
+/* RENRETARGET014 / RENIDLE015: world-axis retarget of actual KinemIQ CC0 GLB motion onto Ren.
  * We have 19 motion source joints, while production Ren has ~15 articulating joints:
  * missing neck, clavicles and finger chains are safely collapsed into their child
  * target joint. Source root translation is intentionally not transferred.
@@ -10,16 +10,15 @@ const RenMotionRetarget=(()=>{
  "use strict";
  // Per-channel gain: safeguard against differing limb proportions and pinned
  // feet. Multiple KinemIQ source bones can sensibly contribute to one Ren joint.
+ // RENIDLE015: keep the stationary hero upright; no fake combat anticipation.
+ // Clavicle collapse + talking overlay caused shoulder spasms.
  const MAPPINGS=Object.freeze([
-  ["pelvis","hips",.38],
-  ["spine_02","spine",.7],["spine_03","spine",.7],
-  ["neck_01","head",.45],["Head","head",1],
-  ["clavicle_l","shL",.75],["upperarm_l","shL",1],
-  ["lowerarm_l","elL",.9],["hand_l","handL",.75],
-  ["clavicle_r","shR",.75],["upperarm_r","shR",1],
-  ["lowerarm_r","elR",.9],["hand_r","handR",.75],
-  ["thigh_l","hipL",.34],["calf_l","kneeL",.34],["foot_l","ankL",.28],
-  ["thigh_r","hipR",.34],["calf_r","kneeR",.34],["foot_r","ankR",.28]
+  ["spine_02","spine",.24],
+  ["Head","head",.52],
+  ["clavicle_l","shL",.10],["upperarm_l","shL",.14],
+  ["lowerarm_l","elL",.10],
+  ["clavicle_r","shR",.10],["upperarm_r","shR",.14],
+  ["lowerarm_r","elR",.10]
  ]);
  const CLIP_SOURCE=typeof RenRetargetData!=="undefined"?RenRetargetData:
    (typeof require!=="undefined"?require("./ren-kinemiq-retarget-data.js"):null);
@@ -61,10 +60,9 @@ const RenMotionRetarget=(()=>{
   if(!B?.Quaternion||!B?.Vector3||!CLIP_SOURCE||!Array.isArray(nodes))return null;
   const byName=new Map(nodes.filter(n=>n.rotationQuaternion).map(n=>[n.name,n]));
   const map=MAPPINGS.filter(([src,target])=>byName.has(target)&&CLIP_SOURCE.bones.includes(src));
-  const required=["hips","spine","head","shL","shR","elL","elR","hipL","hipR","kneeL","kneeR","ankL","ankR"];
-  if(required.some(n=>!byName.has(n))||map.length<14)return null;
+  const required=["spine","head","shL","shR","elL","elR"];
+  if(required.some(n=>!byName.has(n))||map.length<8)return null;
   const relaxed=decodeClip(CLIP_SOURCE.clips.relaxed,CLIP_SOURCE.bones);
-  const talking=decodeClip(CLIP_SOURCE.clips.talking,CLIP_SOURCE.bones);
   const sourceIndices=new Map(CLIP_SOURCE.bones.map((name,i)=>[name,i]));
   const base=new Map(),worldInverse=new Map();
   for(const [,target] of map){
@@ -79,26 +77,24 @@ const RenMotionRetarget=(()=>{
    worldInverse.set(target,rotation.conjugate().normalize());
   }
   // Scratch vectors are reused; no per-frame GLTF loads or new meshes.
-  const vec=[0,0,0],gesture=[0,0,0];
+  const vec=[0,0,0];
   const groups=new Map();
   for(const [src,target,gain] of map){
    if(!groups.has(target))groups.set(target,[]);
-   groups.get(target).push({index:sourceIndices.get(src),gain});
+   const index=sourceIndices.get(src);
+   groups.get(target).push({index,gain,reference:evaluate(relaxed,index,0).slice()});
   }
   return ms=>{
-   const t=ms*.76; // longer, calmer relaxed loop
-   const tTalk=ms-11000; // a rare short gesture with eased entry/exit
-   const gestureGain=talkStrength(ms);
+   const t=ms*.62; // gentle ~4s resting rhythm; no talking gestures in idle
    for(const [target,channels] of groups){
     const bone=byName.get(target),axis=worldInverse.get(target);
     let x=0,y=0,z=0;
     for(const ch of channels){
      evaluate(relaxed,ch.index,t,vec);
-     if(gestureGain>0){
-      evaluate(talking,ch.index,tTalk,gesture);
-      for(let a=0;a<3;a++)vec[a]=vec[a]*(1-gestureGain)+gesture[a]*gestureGain;
-     }
-     x+=vec[0]*ch.gain;y+=vec[1]*ch.gain;z+=vec[2]*ch.gain;
+     // Subtract source first-frame offsets (different skeleton bind pose).
+     x+=(vec[0]-ch.reference[0])*ch.gain;
+     y+=(vec[1]-ch.reference[1])*ch.gain;
+     z+=(vec[2]-ch.reference[2])*ch.gain;
     }
     // KinemIQ's left thigh is +X, Ren's left thigh is -X.
     // Source faces -Z, Ren faces +Z: align with 180-degree world yaw.

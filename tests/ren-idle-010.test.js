@@ -70,7 +70,7 @@ test("RENIDLE010: only hero viewer uses KinemIQ sampled motion",()=>{
  assert.match(card,/if\(kinemiqIdle\)kinemiqIdle\(idleMs\)/);
  assert.doesNotMatch(runtime,/RenKinemIQIdle/);
  assert.ok(html.indexOf("ren-idle-kinemiq.js?v=")<html.indexOf("ren-card-3d.js?v="));
- assert.ok(/^0\.3\.(?:11\d|[2-9]\d\d)$/.test(pkg.version));
+ assert.ok(/^0\.3\.(?:1[1-9]\d|[2-9]\d\d)$/.test(pkg.version));
  assert.ok(html.includes("v"+pkg.version+" · UIHUD001"));
  assert.match(html,/RENIDLE010/);
 });

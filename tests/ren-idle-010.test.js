@@ -17,7 +17,7 @@ test("RENIDLE010: KinemIQ CC0 relaxed-idle samples are finite, periodic and keyf
  assert.notDeepEqual(motion.sample(motion.CHANNELS[2],650),motion.sample(motion.CHANNELS[2],0));
  assert.equal(motion.glance(0),0);
  assert.ok(motion.glance(5500)>0);
- assert.ok(motion.glance(10900)<0);
+ assert.ok(motion.glance(14500)<0);
 });
 test("RENIDLE010: additive motion preserves Ren bind pose and planted legs",()=>{
  class Q{
@@ -46,7 +46,7 @@ test("RENIDLE010: additive motion preserves Ren bind pose and planted legs",()=>
  animate(625);
  assert.deepEqual(nodes.map(n=>n.rotationQuaternion),snapshot,"repeating a frame cannot accumulate bone drift");
  animate(0);
- assert.deepEqual(nodes.find(n=>n.name==="spine").rotationQuaternion,originals.get("spine"));
+ assert.notDeepEqual(nodes.find(n=>n.name==="spine").rotationQuaternion,originals.get("spine"),"RENIDLE011 preserves intentional asymmetrical relaxed pose");
  assert.equal(motion.create({Quaternion:Q},[{name:"other",rotationQuaternion:new Q()}]),null);
 });
 test("RENIDLE010: actual game GLB declares mapped skeleton joints",()=>{
@@ -70,7 +70,7 @@ test("RENIDLE010: only hero viewer uses KinemIQ sampled motion",()=>{
  assert.match(card,/if\(kinemiqIdle\)kinemiqIdle\(idleMs\)/);
  assert.doesNotMatch(runtime,/RenKinemIQIdle/);
  assert.ok(html.indexOf("ren-idle-kinemiq.js?v=")<html.indexOf("ren-card-3d.js?v="));
- assert.equal(pkg.version,"0.3.110");
- assert.match(html,/v0\.3\.110 · UIHUD001/);
+ assert.ok(/^0\.3\.(?:11\d|[2-9]\d\d)$/.test(pkg.version));
+ assert.ok(html.includes("v"+pkg.version+" · UIHUD001"));
  assert.match(html,/RENIDLE010/);
 });

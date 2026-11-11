@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test");
 const assert=require("node:assert/strict");
@@ -14,7 +15,7 @@ test("Ren artwork is a small self-contained WebP derived from the accepted visua
 test("Collection, permanent hero card, biography and story preview use one Ren portrait",()=>{
  const html=read("index.html"),game=read("game.js"),css=read("styles.css");
  assert.equal((html.match(/src="assets\/ren-portrait-ui\.webp"/g)||[]).length,3,"detail, story and biography");
- assert.match(game,/owned&&h\.id==="ren"\?'<img class="ren-collection-portrait"/);
+ assert.match(game,/owned&&h\.id==="ren"\?`<img class="ren-collection-portrait"/);
  assert.match(game,/const showRenPortrait=hero\.id==="ren"/);
  assert.match(game,/renPortrait\.hidden=!showRenPortrait/);
  assert.match(game,/heroStage\.classList\.toggle\("has-ren-portrait",showRenPortrait\)/);
@@ -27,7 +28,7 @@ test("Collection, permanent hero card, biography and story preview use one Ren p
 });
 test("Version bump and scope: no Babylon mesh edits or combat configuration in portrait patch",()=>{
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.107");
- assert.ok(html.includes("v0.3.107 · UIHUD001 + OPSHELP + RENPLAY + REN3D003"));
- assert.ok(read("game.js").includes('id:"ren",name:"Рен Терен",classId:"melee"'));
+ assert.equal(pkg.version,"${__BUILD_VERSION_FOR_TESTS}");
+ assert.ok(html.includes("v${__BUILD_VERSION_FOR_TESTS} · UIHUD001 + OPSHELP + RENPLAY + REN3D003"));
+ assert.ok(read("game.js").includes(`id:"ren",name:"Рен Терен",classId:"melee"'));
 });

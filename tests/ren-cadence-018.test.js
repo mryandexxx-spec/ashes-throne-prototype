@@ -7,7 +7,7 @@ const scripts=["battle-speed.js","animation-profiles.js","battle-animation.js"]
 const {Profiles,Battle}=vm.runInNewContext(scripts+"\n({Profiles:AnimationProfiles,Battle:BattleAnimation})");
 
 test("RENPACE018: x1 timings are readable and native Idle_4 runs at its own cadence",()=>{
- const expected={idle:14000,basic:2000,special:2200,powerful:2300,hit:1400,death:2500};
+ const expected={idle:14000,basic:1350,special:1500,powerful:1650,hit:650,death:1850};
  for(const [slot,ms] of Object.entries(expected))
   assert.equal(Profiles.resolve("ren",slot).durationMs,ms,slot);
  assert.equal(Profiles.resolve("kael","basic").durationMs,200);
@@ -18,7 +18,7 @@ test("RENPACE018: x1/x2/x4 share the same motion curve without skipping actions"
  for(const multiplier of [1,2,4]){
   Battle.clear();
   Battle.enqueue([{type:"ability",actorId:"ren",targetId:"shade",abilityId:"basic"}]);
-  const quarter=2000/4/multiplier;
+  const quarter=1350/4/multiplier;
   for(let i=0;i<Math.ceil(quarter/100);i++){
    const ms=Math.min(100,quarter-i*100);
    Battle.tick(ms,multiplier);

@@ -51,6 +51,8 @@ let visualTransition=null; // "wave" or "result"
 let visualWaveFighters=null;
 function presentationFighters(){return visualWaveFighters||state.fighters;}
 function isVisualTransition(){return visualTransition!==null;}
+// RENQUEUE019: finish displaying one resolved action before accepting the next.
+function visualActionPending(){return !!scene&&BattleAnimation.pending()>0;}
 function captureResolvedVisuals(beforeFighters){
  // One resolved action batch, not an arbitrary UI render.
  if(battleIsChallenge&&challengeTracker)ChallengeCore.capture(challengeTracker,state.events||[]);
@@ -115,11 +117,11 @@ function cancelAutoTimer(){
  if(autoTimer!==null){clearTimeout(autoTimer);autoTimer=null;}
 }
 function queueAutoAction(){
- if(autoTimer!==null||isVisualTransition()||!autoBattle||!state.active||document.hidden||
+ if(autoTimer!==null||isVisualTransition()||visualActionPending()||!autoBattle||!state.active||document.hidden||
     !$("#battle").classList.contains("active"))return;
  autoTimer=setTimeout(()=>{
   autoTimer=null;
-  if(isVisualTransition()||!autoBattle||!state.active||document.hidden||
+  if(isVisualTransition()||visualActionPending()||!autoBattle||!state.active||document.hidden||
      !$("#battle").classList.contains("active"))return;
   const before=state.fighters.map(f=>({...f}));
   // Combat-015B: plan only when the scheduled auto step actually executes.
@@ -2352,6 +2354,7 @@ function syncBattleUI(){
  }
  const fighters=state.fighters;
  const actor=state.active?fighters[state.currentActor]:null;
+ const visualBusy=visualActionPending();
  const specialReady=CombatCore.abilityReady(state,"special");
  const powerful=actor?AbilityData.get(actor,"powerful"):null;
  const powerfulReady=!!powerful&&CombatCore.abilityReady(state,"powerful");
@@ -2360,16 +2363,16 @@ function syncBattleUI(){
  const targetIndex=supportTarget?state.selectedAlly:state.selectedEnemy;
  const target=state.active?fighters[targetIndex]:null;
  const validTarget=!!target&&target.hp>0&&target.side===(supportTarget?"ally":"enemy");
- $("#battleStatus").textContent=actor?"Ход: "+actor.name:"Бой завершён";
+ $("#battleStatus").textContent=visualBusy?"Действие выполняется…":actor?"Ход: "+actor.name:"Бой завершён";
  $("#turnChip").textContent=(state.totalWaves>1?"Волна "+state.wave+"/"+state.totalWaves+" · ":"")+"Ход "+state.turn;
- $("#actionTitle").textContent=actor?(supportTarget?"Выбери союзника":"Способности: "+actor.name):"Бой завершён";
- $("#basicAbilityBtn").disabled=!actor||autoBattle;
- $("#specialAbilityBtn").disabled=!specialReady||autoBattle;
+ $("#actionTitle").textContent=visualBusy?"Анимация действия":actor?(supportTarget?"Выбери союзника":"Способности: "+actor.name):"Бой завершён";
+ $("#basicAbilityBtn").disabled=!actor||autoBattle||visualBusy;
+ $("#specialAbilityBtn").disabled=!specialReady||autoBattle||visualBusy;
  const powerfulSlot=$("#powerfulAbilitySlot");
  if(powerfulSlot)powerfulSlot.hidden=!powerful;
  $("#abilityOptions")?.classList.toggle("has-powerful",!!powerful);
  const powerfulButton=$("#powerfulAbilityBtn");
- if(powerfulButton)powerfulButton.disabled=!powerfulReady||autoBattle;
+ if(powerfulButton)powerfulButton.disabled=!powerfulReady||autoBattle||visualBusy;
  const autoButton=$("#autoBattleBtn");
  if(autoButton){autoButton.disabled=!state.active;autoButton.textContent=autoBattle?"Ручной бой":"Автобой";autoButton.setAttribute("aria-pressed",String(autoBattle));}
  const speedButton=$("#autoSpeedBtn");
@@ -2379,7 +2382,7 @@ function syncBattleUI(){
  if(powerfulButton)powerfulButton.textContent=powerful?powerful.name+(actor.powerfulCooldown>0?" · "+actor.powerfulCooldown:""):"Мощная способность";
  $("#basicAbilityBtn").classList.toggle("selected",false);
  $("#specialAbilityBtn").classList.toggle("selected",supportTarget);
- $("#actionHint").textContent=autoBattle?"Автобой активен. Нажми «Ручной бой», чтобы управлять.":
+ $("#actionHint").textContent=visualBusy?"Завершается предыдущее действие.":autoBattle?"Автобой активен. Нажми «Ручной бой», чтобы управлять.":
   supportTarget?"Коснись союзника с курсором, чтобы применить способность.":
   actor&&CombatCore.abilityTargetSide(state,"special")==="all-enemies"?"Курсор отмечает основную цель. Учебный широкий удар поражает всех живых врагов.":
   validTarget?"В фокусе: "+target.name+". Нажми на нужную способность.":"Коснись противника, чтобы выбрать цель.";
@@ -2484,7 +2487,7 @@ function resetBattle(){
 }
 // Combat-009: instant offensive abilities; allied skills wait for an ally tap.
 function applyManualAbility(abilityId){
- if(autoBattle||isVisualTransition()||!CombatCore.abilityReady(state,abilityId))return false;
+ if(autoBattle||isVisualTransition()||visualActionPending()||!CombatCore.abilityReady(state,abilityId))return false;
  const side=CombatCore.abilityTargetSide(state,abilityId);
  const targets=CombatCore.abilityTargetIndices(state,side);
  if(!targets.length)return false;
@@ -2502,7 +2505,7 @@ function applyManualAbility(abilityId){
 function pressAbility(abilityId){
  if(abilityHintSuppressClick===abilityId){abilityHintSuppressClick=null;return;}
  hideAbilityTooltip();
- if(!state.active||autoBattle||isVisualTransition()||!CombatCore.abilityReady(state,abilityId))return;
+ if(!state.active||autoBattle||isVisualTransition()||visualActionPending()||!CombatCore.abilityReady(state,abilityId))return;
  if(CombatCore.abilityTargetSide(state,abilityId)==="ally"){
   selectedAbility="special";
   syncBattleUI();
@@ -2712,6 +2715,7 @@ function renderBattleFrame(){
  if(!scene)return;
  // Animation speed is shared with the auto scheduler, never alters combat state.
  const dt=engine&&typeof engine.getDeltaTime==="function"?engine.getDeltaTime():16;
+ const hadPending=visualActionPending();
  BattleAnimation.tick(dt,BattleSpeed.multiplier());
  // Consume hit markers regardless of whether optional visuals are available.
  const visualCues=BattleAnimation.drainStarted();
@@ -2758,6 +2762,7 @@ function renderBattleFrame(){
  scene.render();
  // Draw the last animation frame before revealing the next wave/result.
  finishVisualTransition();
+ if(hadPending&&!visualActionPending()&&state.active&&!isVisualTransition())syncBattleUI();
 }
 function shouldRenderBattle(){return !!engine && !document.hidden && $("#battle").classList.contains("active");}
 function startBattleRendering(){

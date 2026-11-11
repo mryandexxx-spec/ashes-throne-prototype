@@ -106,5 +106,5 @@ assert.equal(JSON.parse(read("package.json")).version,__BUILD_VERSION_FOR_TESTS)
 const game=read("game.js");
 assert.match(game,/const plan=AutoDecision\.chooseAction\(state\)/);
 assert.match(game,/CombatCore\.performAutoAction\(state,plan\)/);
-assert.match(game,/if\(isVisualTransition\(\)\|\|!autoBattle\|\|!state\.active\|\|document\.hidden/);
+assert.match(game,/if\(isVisualTransition\(\)\|\|visualActionPending\(\)\|\|!autoBattle\|\|!state\.active\|\|document\.hidden/);
 console.log("Combat-015B tactical execution, cooldowns, targets, AOE, waves, legacy auto and version passed");

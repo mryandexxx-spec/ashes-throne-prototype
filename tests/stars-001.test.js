@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const read=f=>fs.readFileSync(path.join(__dirname,"..",f),"utf8");
@@ -159,6 +160,6 @@ for(const token of ["StarCore.refillTest(progress)","StarCore.promote(progress,i
  "showLockedHero(id)","Object.assign(progress,JSON.parse(before))"])
  assert.ok(game.includes(token),token);
 assert.ok(css.includes(".star-panel")&&css.includes(".star-locked-dialog"));
-assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
-assert.ok(html.includes("v0.3.107 · UIHUD001"));
+assert.equal(JSON.parse(read("package.json")).version,`${__BUILD_VERSION_FOR_TESTS}`);
+assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · UIHUD001`));
 console.log("Stars-001: seven ranks/330 shards, direct join, legacy saves, ownership, debug resources, rollback and UI contract passed");

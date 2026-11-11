@@ -18,7 +18,7 @@ test("REN-GLB-DEFAULT-002: animated GLB is mapped to existing combat slots",()=>
  assert.equal(runtime.clipFor("idle"),"Idle_4");
  assert.equal(runtime.clipFor("basic"),"Double_Combo_Attack");
  assert.equal(runtime.clipFor("special"),"Double_Combo_Attack");
- assert.equal(runtime.clipFor("powerful"),"Double_Combo_Attack");
+ assert.equal(runtime.clipFor("powerful"),"Axe_Spin_Attack");
  assert.equal(runtime.clipFor("guard"),"Idle_4");
  assert.equal(runtime.clipFor("hit"),"Slap_Reaction");
  assert.match(battle,/function activity\(heroId\)/);

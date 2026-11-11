@@ -5,7 +5,7 @@
 const RenCard3D=(()=>{
  "use strict";
  let active=false,engine=null,scene=null,camera=null,holder=null,animation=null;
- let rigPose=null,idleMs=0;
+ let rigPose=null,kinemiqIdle=null,idleMs=0;
  let render=null,loadingToken=0,view="model",sizeObserver=null;
  const byId=id=>document.getElementById(id);
  function report(text){const el=byId("renCard3DStatus");if(el)el.textContent=text;}
@@ -41,7 +41,7 @@ const RenCard3D=(()=>{
    engine.dispose();
   }
   sizeObserver?.disconnect();sizeObserver=null;
-  engine=null;scene=null;camera=null;holder=null;animation=null;render=null;rigPose=null;idleMs=0;
+  engine=null;scene=null;camera=null;holder=null;animation=null;render=null;rigPose=null;kinemiqIdle=null;idleMs=0;
   const stage=byId("detailHeroStage");
   stage?.classList.remove("has-ren-3d");
   const portrait=byId("detailRenPortrait");
@@ -84,7 +84,8 @@ const RenCard3D=(()=>{
    key.intensity=1;
    render=()=>{if(active&&!document.hidden&&view==="model"){
     idleMs+=Math.min(engine.getDeltaTime(),100);
-    rigPose?.({slot:"idle",progress:(idleMs%3000)/3000});
+    if(kinemiqIdle)kinemiqIdle(idleMs);
+    else rigPose?.({slot:"idle",progress:(idleMs%3000)/3000});
     scene.render();
    }};
    engine.runRenderLoop(render);
@@ -127,7 +128,12 @@ const RenCard3D=(()=>{
    const groups=result.animationGroups;
    animation=groups.find(g=>g.name==="Ren_Idle_Breathing_3s")||null;
    groups.forEach(g=>g.stop());
-   if(animation)animation.start(true,1);
+   // KinemIQ upper-body motion takes priority on the card only.
+   // Never mix imported AnimationGroups with additive quaternion poses.
+   kinemiqIdle=typeof RenKinemIQIdle!=="undefined"
+    ?RenKinemIQIdle.create(BABYLON,result.transformNodes):null;
+   if(kinemiqIdle)kinemiqIdle(0);
+   else if(animation)animation.start(true,1);
    else rigPose=RenGlbRuntime.createRigAnimator(BABYLON,result.transformNodes);
    setMode("model");
    engine.resize();

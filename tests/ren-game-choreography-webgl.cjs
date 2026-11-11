@@ -43,6 +43,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   const finished=await page.evaluate(()=>({active:state.active,pending:BattleAnimation.pending(),transition:isVisualTransition(),winner:state.winner}));
   assert.equal(finished.active,false);assert.equal(finished.pending,0);assert.equal(finished.transition,false);assert.equal(finished.winner,'ally');
   await page.locator('#battleRetryBtn').click();await page.locator('#squadStart').click();
+  if(await page.locator('#squadWarning').isVisible())await page.locator('#squadStart').click();
   const restarted=await page.evaluate(()=>{stopBattleRendering();return {active:state.active,pending:BattleAnimation.pending(),meshes:scene.meshes.length,groups:scene.animationGroups.length};});
   assert.equal(restarted.active,true);assert.equal(restarted.pending,0);assert.equal(restarted.meshes,initial.meshes);assert.equal(restarted.groups,initial.groups);
   await page.evaluate(()=>showScreen('home'));

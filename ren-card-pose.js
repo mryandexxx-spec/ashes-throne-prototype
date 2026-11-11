@@ -9,8 +9,9 @@ const RenCardPose=(()=>{
  const MAX_ROTATION=0.24; // ~14 degrees total per arm joint
  const TARGETS=Object.freeze({
   // Per-hand desired world offsets from Ren's hips, metres in imported rig.
-  handL:Object.freeze({x:-.34,y:-.11,z:.06}),
-  handR:Object.freeze({x:.34,y:.07,z:.10})
+  // x: lateral/right, y: vertical, z: character forward.
+  handL:Object.freeze({x:-.345,y:-.12,z:.10}),
+  handR:Object.freeze({x:.33,y:.005,z:.15})
  });
  function create(B,nodes){
   if(!B?.Quaternion||!B?.Vector3||!Array.isArray(nodes))return null;
@@ -28,6 +29,11 @@ const RenCardPose=(()=>{
    return node.getAbsolutePosition().clone();
   };
   const ref=position(hips);
+  // Derive natural axes from the actual transformed shoulders, not world X/Z.
+  // In the battle scene Ren is rotated 90 degrees relative to the card.
+  const right=position(byName.get("shR")).subtract(position(byName.get("shL"))).normalize();
+  const up=position(byName.get("head")).subtract(ref).normalize();
+  const forward=B.Vector3.Cross(up,right).normalize();
   const start={};
   for(const a of arms)for(const joint of a.joints)
    start[joint]=byName.get(joint).rotationQuaternion.clone();
@@ -52,14 +58,24 @@ const RenCardPose=(()=>{
    parent.getWorldMatrix().decompose(scale,worldParent,translation);
    const inv=worldParent.conjugate().normalize();
    const worldDelta=B.Quaternion.RotationAxis(cross,theta);
-   const localDelta=inv.multiply(worldDelta).multiply(worldParent);
-   joint.rotationQuaternion.copyFrom(localDelta.multiply(joint.rotationQuaternion).normalize());
-   return theta;
+   const original=joint.rotationQuaternion.clone();
+   const before=B.Vector3.Distance(tip,target);
+   let best=before,bestQ=original;
+   for(const sign of [1,-1]){
+    const attempt=B.Quaternion.RotationAxis(cross,theta*sign);
+    const local=inv.multiply(attempt).multiply(worldParent);
+    const q=local.multiply(original).normalize();
+    joint.rotationQuaternion.copyFrom(q);
+    const error=B.Vector3.Distance(position(hand),target);
+    if(error+1e-7<best){best=error;bestQ=q.clone();}
+   }
+   joint.rotationQuaternion.copyFrom(bestQ);
+   return best<before-1e-7?theta:0;
   };
   const measurements={};
   for(const a of arms){
    const hand=byName.get(a.hand),offset=TARGETS[a.hand];
-   const target=new B.Vector3(ref.x+offset.x,ref.y+offset.y,ref.z+offset.z);
+   const target=ref.add(right.scale(offset.x)).add(up.scale(offset.y)).add(forward.scale(offset.z));
    const used={elL:0,shL:0,elR:0,shR:0};
    // Several small steps prevent the extreme wrist-to-groin folding seen before.
    for(let pass=0;pass<8;pass++){

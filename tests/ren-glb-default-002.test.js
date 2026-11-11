@@ -31,7 +31,10 @@ test("REN-GLB-DEFAULT-002: fallback retains gameplay if asset unavailable",()=>{
  assert.match(src,/\.catch\(error=>\{/);
  assert.match(src,/oldParts.*isVisible=false/);
  assert.match(src,/mesh\.metadata=.*fighterId:"ren"/);
- assert.doesNotMatch(src,/localStorage|sessionStorage|CombatCore\.|ProgressCore\.|fetch\(/);
+ assert.doesNotMatch(src,/localStorage|sessionStorage|CombatCore\.|ProgressCore\./);
+ // A HEAD-only metadata probe is allowed; the GLB must still be imported once.
+ assert.match(src,/fetch\(ASSET_URL,\{method:"HEAD"/);
+ assert.doesNotMatch(src,/fetch\(ASSET_URL,\{method:"GET"/);
 });
 test("REN-GLB-DEFAULT-002: binary is exactly the previously tested rigged source when shipped",()=>{
  const file=path.join(__dirname,"../assets/ren-animated-v02.glb");

@@ -17,6 +17,42 @@ const RenGlbRuntime=(()=>{
   const p=Math.max(0,Math.min(1,Number.isFinite(progress)?progress:0));
   return slot!=="idle"&&clipFor(slot)===CLIPS.idle?0:p;
  };
+ // RENMOVE020: Meshy combo clip has ~1.05m baked hip-Z translation,
+ // while game.js already moves the combat anchor to and from its target.
+ // Strip only horizontal hip translations from combat clips. Do NOT alter Y
+ // (breathing, crouching, knockdown) or the GLB used on the roster card.
+ function stabilizeCombatRoot(groups){
+  const idle=groups.get(CLIPS.idle);
+  const channel=group=>group?.targetedAnimations?.find(item=>
+   item.target?.name==="mixamorig:Hips"&&item.animation?.targetProperty==="position");
+  const ref=channel(idle)?.animation?.getKeys()?.[0]?.value;
+  if(!ref||!Number.isFinite(ref.x)||!Number.isFinite(ref.z))return 0;
+  let fixed=0;
+  for(const [name,group] of groups){
+   if(name==="Dead")continue; // preserve original fall
+   const track=channel(group)?.animation;
+   if(!track)continue;
+   for(const key of track.getKeys()){
+    if(!key.value||!Number.isFinite(key.value.x)||!Number.isFinite(key.value.z))continue;
+    key.value.x=ref.x;
+    key.value.z=ref.z;
+    fixed++;
+   }
+  }
+  return fixed;
+ }
+ // A dash must use an actual locomotion clip; no ice-skating combo while
+ // the game anchor travels. The single authoritative action timeline drives
+ // all three segments, including 2x / 4x speeds.
+ function choreography(activity){
+  const slot=activity?.slot||"idle";
+  const p=clipProgress(slot,activity?.progress);
+  if(slot!=="basic"&&slot!=="special"&&slot!=="powerful")
+   return {name:clipFor(slot),progress:p};
+  if(p<.3)return {name:"Running",progress:p/.3};
+  if(p<.74)return {name:clipFor(slot),progress:(p-.3)/.44};
+  return {name:"Running",progress:Math.max(0,1-(p-.74)/.26)};
+ }
  // Babylon exposes isDisposed as a boolean in v9; never call it as a method.
  const sceneDisposed=scene=>typeof scene?.isDisposed==="function"
   ?scene.isDisposed():scene?.isDisposed===true;
@@ -136,7 +172,8 @@ const RenGlbRuntime=(()=>{
    const restoreImported=createRigAnimator(B,result.transformNodes);
    const groupsList=result.animationGroups;
    groupsList.forEach(g=>g.stop());
-   if(!groups.has(CLIPS.idle)||!groups.has(CLIPS.basic)||!groups.has(CLIPS.hit)||!groups.has(CLIPS.death))throw Error("Meshy animation clips missing");
+   if(!groups.has(CLIPS.idle)||!groups.has(CLIPS.basic)||!groups.has(CLIPS.hit)||!groups.has(CLIPS.death)||!groups.has("Running"))throw Error("Meshy animation clips missing");
+   if(stabilizeCombatRoot(groups)===0)throw Error("Meshy Hips translation channel missing");
    // Do not hide the fallback until the whole GLB has been validated.
    const oldParts=[...visual.body.getChildMeshes(),...visual.head.getChildMeshes()]
     .filter(mesh=>!result.meshes.includes(mesh));
@@ -146,7 +183,8 @@ const RenGlbRuntime=(()=>{
    return {
     update(activity){
      if(stopped||!activity)return;
-     const name=clipFor(activity.slot);
+     const phase=choreography(activity);
+     const name=phase.name;
      const clip=groups.get(name)||groups.get(CLIPS.idle);
      if(!clip){skeletalPose(activity);return;}
      if(lastName!==name){
@@ -157,7 +195,7 @@ const RenGlbRuntime=(()=>{
       lastName=name;
      }
      // Pose follows the authoritative Combat-005 timeline and battle speed.
-     clip.goToFrame(clip.from+(clip.to-clip.from)*clipProgress(activity.slot,activity.progress));
+     clip.goToFrame(clip.from+(clip.to-clip.from)*phase.progress);
     },
     dispose(){
      if(stopped)return;
@@ -200,6 +238,6 @@ const RenGlbRuntime=(()=>{
    dispose(){disposed=true;instance?.dispose();instance=null;}
   });
  }
- return Object.freeze({ASSET_URL,clipFor,clipProgress,create,ensureLoader,createRigAnimator});
+ return Object.freeze({ASSET_URL,clipFor,clipProgress,choreography,stabilizeCombatRoot,create,ensureLoader,createRigAnimator});
 })();
 if(typeof module!=="undefined")module.exports=RenGlbRuntime;

@@ -1,5 +1,5 @@
 {
-  "status": "source-only; not connected to game",
+  "status": "integration candidate RENW006; no skeletal animations",
   "source_archive": "wanderer_blender_compact(1).zip",
   "runtime_candidate": "assets/ren-wanderer-v1.glb",
   "animations": 0,

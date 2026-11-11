@@ -1,10 +1,10 @@
-/* REN-GLB-DEFAULT-002: Render the externally generated animated Ren as default,
+/* REN-GLB-DEFAULT-002: Render the supplied static Wanderer as Ren as default,
  * when the production asset is available. Existing procedural Ren is a safe fallback.
  * No gameplay, save or progression changes. One scene loader / one model per Scene.
  */
 const RenGlbRuntime=(()=>{
  "use strict";
- const ASSET_URL="assets/ren-animated-v02.glb";
+ const ASSET_URL="assets/ren-wanderer-v1.glb";
  const CLIPS=Object.freeze({
   idle:"Ren_Idle_Breathing_3s",
   basic:"Ren_Attack_Unarmed_1p3s",
@@ -40,21 +40,32 @@ const RenGlbRuntime=(()=>{
   if(!B?.SceneLoader||!visual?.body||!scene)throw Error("Ren scene anchors missing");
   await ensureLoader();
   // Babylon SceneLoader resolves the path relative to this web page.
-  const result=await B.SceneLoader.ImportMeshAsync(null,"assets/","ren-animated-v02.glb",scene,undefined,".glb");
+  const result=await B.SceneLoader.ImportMeshAsync(null,"assets/",ASSET_URL.slice(7),scene,undefined,".glb");
   let root=null;
   try{
    if(sceneDisposed(scene))throw Error("Scene disposed during import");
    const visible=result.meshes.filter(m=>typeof m.getTotalVertices==="function"&&m.getTotalVertices()>0);
    if(!visible.length)throw Error("No Ren geometry in GLB");
    const groups=new Map(result.animationGroups.map(group=>[group.name,group]));
-   if(!groups.has(CLIPS.idle)||!groups.has(CLIPS.basic))
-    throw Error("Ren GLB animation clips missing");
    root=new B.TransformNode("ren_production_glb",scene);
    const all=[...result.meshes,...result.transformNodes];
    for(const node of all)if(!node.parent)node.parent=root;
+   // Normalize actual imported bounds before parenting to the moving combat anchor.
+   // Feet rest on the base (y=.14); actor height stays comparable to other heroes.
+   let min=new B.Vector3(Infinity,Infinity,Infinity);
+   let max=new B.Vector3(-Infinity,-Infinity,-Infinity);
+   for(const mesh of visible){
+    mesh.computeWorldMatrix(true);
+    const box=mesh.getBoundingInfo().boundingBox;
+    min=B.Vector3.Minimize(min,box.minimumWorld);
+    max=B.Vector3.Maximize(max,box.maximumWorld);
+   }
+   const height=max.y-min.y;
+   if(!Number.isFinite(height)||height<=0)throw Error("Invalid Ren GLB bounds");
+   const scale=2.1/height;
+   root.scaling.set(scale,scale,scale);
+   root.position=new B.Vector3(-(min.x+max.x)*.5*scale,.14-.8-min.y*scale,-(min.z+max.z)*.5*scale);
    root.parent=visual.body;
-   // Source GLB is 2 m high, centred at origin; combat body anchor is at y=.8.
-   root.position=new B.Vector3(0,.25,0);
    root.metadata={fighterId:"ren"};
    for(const mesh of result.meshes){
     mesh.metadata={...(mesh.metadata||{}),fighterId:"ren"};

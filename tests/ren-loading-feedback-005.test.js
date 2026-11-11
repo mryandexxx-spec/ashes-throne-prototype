@@ -7,10 +7,10 @@ const read=f=>fs.readFileSync(path.join(__dirname,"..",f),"utf8");
 const html=read("index.html"),css=read("styles.css"),game=read("game.js");
 const runtime=read("ren-glb-runtime.js"),card=read("ren-card-3d.js"),logic=require("../ren-glb-runtime.js");
 test("REN-LOAD-005: build footer and asset cache-busters are synchronized",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.105");
- assert.match(html,/v0\.3\.105 · UIHUD001.*RENLOAD005/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.106");
+ assert.match(html,/v0\.3\.106 · UIHUD001.*RENLOAD005/);
  for(const asset of ["styles.css","game.js","ren-glb-runtime.js","ren-card-3d.js"])
-  assert.ok(html.includes(asset+"?v=0.3.105"),asset);
+  assert.ok(html.includes(asset+"?v=0.3.106"),asset);
 });
 test("REN-LOAD-005: card has noninteractive overlay, live text and progress",()=>{
  assert.match(html,/id="renCardLoadIndicator"[^>]*hidden/);

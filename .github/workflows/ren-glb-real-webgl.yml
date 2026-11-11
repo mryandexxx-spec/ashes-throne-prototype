@@ -9,6 +9,7 @@ on:
       - 'index.html'
       - 'styles.css'
       - 'assets/ren-animated-v02.glb'
+      - 'assets/ren-wanderer-v1.glb'
       - 'tests/ren-glb-browser-smoke.cjs'
       - 'tests/ren-loading-webgl-005.cjs'
       - '.github/workflows/ren-glb-real-webgl.yml'
@@ -30,7 +31,7 @@ jobs:
         run: |
           npm install --no-save --ignore-scripts playwright@1.56.1
           # Chromium and its libraries are preinstalled in the pinned Noble image.
-      - name: Serve local checkout and verify animated Ren in WebGL
+      - name: Serve local checkout and verify static Wanderer in WebGL
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ren-webgl-server.log 2>&1 &
           sleep 3

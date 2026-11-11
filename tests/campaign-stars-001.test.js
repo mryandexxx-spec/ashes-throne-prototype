@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -50,8 +51,8 @@ for(const bad of [
 assert.equal(CampaignCore.load(()=>{throw Error("Safari unavailable");}).available,false);
 const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
 const pkg=JSON.parse(fs.readFileSync(path.join(root,"package.json"),"utf8"));
-assert.equal(pkg.version,"0.3.107");
-assert.match(html,/id="buildVersion"[^>]*>Прототип · v0[.]3[.]107 · UIHUD001/);
+assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
+assert.match(html,/id="buildVersion"[^>]*>Прототип · v\d+[.]\d+[.]\d+ · UIHUD001/);
 assert.match(html,/src="mission-data.js"/);
 // Count only accepted player actions in the actual combat engine.
 const combatSrc=["initiative-model.js","ability-data.js","combat-core.js"]

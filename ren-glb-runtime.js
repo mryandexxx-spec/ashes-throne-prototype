@@ -11,6 +11,12 @@ const RenGlbRuntime=(()=>{
   guard:"Idle_4", ward:"Idle_4", hit:"Slap_Reaction", death:"Dead"
  });
  const clipFor=slot=>CLIPS[slot]||CLIPS.idle;
+ // Meshy Idle_4 spans almost 14 seconds. Defense slots reuse the same clip
+ // as a neutral stance: do not compress its full motion into 140–360 ms.
+ const clipProgress=(slot,progress)=>{
+  const p=Math.max(0,Math.min(1,Number.isFinite(progress)?progress:0));
+  return slot!=="idle"&&clipFor(slot)===CLIPS.idle?0:p;
+ };
  // Babylon exposes isDisposed as a boolean in v9; never call it as a method.
  const sceneDisposed=scene=>typeof scene?.isDisposed==="function"
   ?scene.isDisposed():scene?.isDisposed===true;
@@ -151,7 +157,7 @@ const RenGlbRuntime=(()=>{
       lastName=name;
      }
      // Pose follows the authoritative Combat-005 timeline and battle speed.
-     clip.goToFrame(clip.from+(clip.to-clip.from)*Math.max(0,Math.min(1,activity.progress)));
+     clip.goToFrame(clip.from+(clip.to-clip.from)*clipProgress(activity.slot,activity.progress));
     },
     dispose(){
      if(stopped)return;
@@ -194,6 +200,6 @@ const RenGlbRuntime=(()=>{
    dispose(){disposed=true;instance?.dispose();instance=null;}
   });
  }
- return Object.freeze({ASSET_URL,clipFor,create,ensureLoader,createRigAnimator});
+ return Object.freeze({ASSET_URL,clipFor,clipProgress,create,ensureLoader,createRigAnimator});
 })();
 if(typeof module!=="undefined")module.exports=RenGlbRuntime;

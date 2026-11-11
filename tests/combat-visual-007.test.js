@@ -79,8 +79,8 @@ test("CV007 is only a presentation layer wired into the existing lifecycle",()=>
  assert.match(game,/combatVisual007\?\.clear\(\)/);
  assert.match(game,/if\(!combatVisual007 && !ENV022_CONCEPT_PREVIEW\)\{[\s\S]*CreateGround\("ground"/,"legacy fallback retained");
  assert.match(game,/scene\.dispose\(\)/);
- assert.ok(html.indexOf('src="combat-visual-007.js"')<html.indexOf('src="game.js?v=0.3.105"'));
- assert.equal(pkg.version,"0.3.105");
- assert.ok(html.includes("v0.3.105 · UIHUD001 + OPSHELP + RENPLAY + REN3D003 + ENV010"));
+ assert.ok(html.indexOf('src="combat-visual-007.js"')<html.indexOf('src="game.js?v=0.3.106"'));
+ assert.equal(pkg.version,"0.3.106");
+ assert.ok(html.includes("v0.3.106 · UIHUD001 + OPSHELP + RENPLAY + REN3D003 + ENV010"));
  assert.ok(pkg.scripts.test.includes("node --check combat-visual-007.js"));
 });

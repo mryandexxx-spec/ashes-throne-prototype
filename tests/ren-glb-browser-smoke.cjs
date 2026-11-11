@@ -7,6 +7,7 @@ const assert=require("node:assert/strict");
 (async()=>{
  const browser=await chromium.launch({
   headless:true,
+  ...(process.env.REN_CHROMIUM_PATH?{executablePath:process.env.REN_CHROMIUM_PATH}:{}),
   args:["--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage","--no-sandbox"]
  });
  const errors=[];
@@ -35,7 +36,7 @@ const assert=require("node:assert/strict");
    const statuses=[];
    const actor=RenGlbRuntime.create(B,scene,{body,head},(kind,text)=>statuses.push({kind,text}));
    const imported=await Promise.race([actor.ready,new Promise(resolve=>setTimeout(()=>resolve("timeout"),25000))]);
-   const meshCount=scene.meshes.filter(m=>m.name.includes("geometry_0")&&m.getTotalVertices?.()>0).length;
+   const meshCount=scene.meshes.filter(m=>m.metadata?.fighterId==="ren"&&m.getTotalVertices?.()>0).length;
    const clipCount=scene.animationGroups.length;
    const fallbackHidden=bodyPart.isVisible===false;
    actor.update({slot:"basic",progress:.5});
@@ -61,7 +62,7 @@ const assert=require("node:assert/strict");
   console.log("REN WEBGL SMOKE",JSON.stringify(result));
   assert.equal(result.imported,true,"Combat GLB should load; browser errors: "+errors.join(" | "));
   assert.ok(result.meshCount>0,"Combat GLB has actual mesh");
-  assert.ok(result.clipCount>=5,"Combat GLB has expected animation groups");
+  assert.equal(result.clipCount,0,"Wanderer loads without animation groups");
   assert.ok(result.fallbackHidden,"Old procedurally-created mesh is hidden");
   assert.ok(result.statuses.some(s=>s.kind==="ready"),"HUD loading success reported");
   assert.equal(result.has3D,true,"3D card is rendered from GLB: "+result.cardStatus);

@@ -89,7 +89,7 @@ const RenCard3D=(()=>{
    }
    await RenGlbRuntime.ensureLoader();
    if(!active||token!==loadingToken)return;
-   const result=await BABYLON.SceneLoader.ImportMeshAsync(null,"assets/","ren-animated-v02.glb",scene,undefined,".glb");
+   const result=await BABYLON.SceneLoader.ImportMeshAsync(null,"assets/",RenGlbRuntime.ASSET_URL.slice(7),scene,undefined,".glb");
    if(!active||token!==loadingToken){
     for(const group of result.animationGroups)group.dispose();
     for(const mesh of result.meshes)mesh.dispose();

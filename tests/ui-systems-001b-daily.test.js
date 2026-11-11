@@ -35,6 +35,6 @@ test("UIMODES001C keeps mobile touch, scroll and accessible status",()=>{
  assert.match(html,/id="dailyTaskNotice"[^>]*role="status" aria-live="polite"/);
 });
 test("UIMODES001C candidate version matches package and footer",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.105");
- assert.match(html,/v0\.3\.105 · UIHUD001/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.106");
+ assert.match(html,/v0\.3\.106 · UIHUD001/);
 });

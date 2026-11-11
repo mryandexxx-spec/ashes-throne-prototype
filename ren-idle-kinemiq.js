@@ -1,4 +1,4 @@
-/* RENIDLE010 — KinemIQ Idle_relaxed (CC0) sampled animation delta overlay.
+/* RENIDLE010/011 — KinemIQ Idle_relaxed (CC0) sampled animation delta overlay.
  * SOURCE: KinemIQ_Free_Animations_CC0_GLB.zip / GLB/Idle_relaxed.glb
  * 14 sampled keys from 76 frames / 2.5 seconds at 30fps. Rotations are local
  * quaternion deltas relative to the source's first frame (not raw bind poses).
@@ -9,6 +9,8 @@
 const RenKinemIQIdle=(()=>{
  "use strict";
  const DURATION_MS=2500;
+ const PLAYBACK_RATE=.58; // 4.31s instead of a brisk 2.5s source loop
+ const GLANCE_PERIOD_MS=19000;
  const TIMES=Object.freeze([0,6,12,18,24,30,36,42,48,54,60,66,72,75]);
  // Each triple is quaternion delta x,y,z scaled by 10000.
  const CHANNELS=Object.freeze([
@@ -32,15 +34,27 @@ const RenKinemIQIdle=(()=>{
   const data=channel.data;
   return [0,1,2].map(k=>(data[index*3+k]*(1-blend)+data[next*3+k]*blend)*channel.weight/10000);
  }
+ // Asymmetric, relaxed upper-body stance: legs remain planted.
+ const STANCE=Object.freeze({
+  spine:Object.freeze({x:.025,y:-.018,z:.026}),
+  head:Object.freeze({x:-.014,y:.018,z:-.018}),
+  shL:Object.freeze({x:-.055,y:0,z:-.075}),
+  shR:Object.freeze({x:-.02,y:0,z:.065}),
+  elL:Object.freeze({x:-.11,y:0,z:.014}),
+  elR:Object.freeze({x:-.075,y:0,z:-.008})
+ });
+ const smooth=(a,b,v)=>{const t=clamp((v-a)/(b-a),0,1);return t*t*(3-2*t);};
+ // Fade source motion at the loop seam to avoid a snapping reset.
+ const seamWeight=phase=>smooth(0,300,phase)*smooth(DURATION_MS,DURATION_MS-350,phase);
  // A rare look left/right, with smooth falloff and a clear rest state.
  function glance(ms){
-  const period=((ms%14000)+14000)%14000;
+  const period=((ms%GLANCE_PERIOD_MS)+GLANCE_PERIOD_MS)%GLANCE_PERIOD_MS;
   const wave=(start,end,direction)=>{
    if(period<start||period>end)return 0;
    const t=(period-start)/(end-start);
    return direction*Math.sin(Math.PI*t)**2;
   };
-  return .14*wave(4500,6600,1)+.11*wave(9800,11800,-1);
+  return .11*wave(5300,8700,1)+.085*wave(13100,16500,-1);
  }
  function create(B,nodes){
   if(!B?.Quaternion||!Array.isArray(nodes))return null;
@@ -51,10 +65,16 @@ const RenKinemIQIdle=(()=>{
   return ms=>{
    for(const channel of found){
     const node=targets.get(channel.target);
-    const [x,y,z]=sample(channel,ms);
-    const rot=new B.Quaternion(x,y,z,Math.sqrt(Math.max(0,1-x*x-y*y-z*z)));
-    // Keep the source rig's bind posture; only sampled motion is additive.
-    let next=baseline.get(channel.target).multiply(rot);
+    const sourceMs=ms*PLAYBACK_RATE;
+    const phase=((sourceMs%DURATION_MS)+DURATION_MS)%DURATION_MS;
+    const weight=seamWeight(phase);
+    const [rawX,rawY,rawZ]=sample(channel,sourceMs);
+    const [x,y,z]=[rawX*weight,rawY*weight,rawZ*weight];
+    const motion=new B.Quaternion(x,y,z,Math.sqrt(Math.max(0,1-x*x-y*y-z*z)));
+    const pose=STANCE[channel.target]||{x:0,y:0,z:0};
+    const relaxed=B.Quaternion.RotationYawPitchRoll(pose.y,pose.x,pose.z);
+    // Keep Ren's original skeleton; preserve the planted legs.
+    let next=baseline.get(channel.target).multiply(relaxed).multiply(motion);
     if(channel.target==="head"){
      next=next.multiply(B.Quaternion.RotationYawPitchRoll(glance(ms),0,0));
     }
@@ -62,6 +82,6 @@ const RenKinemIQIdle=(()=>{
    }
   };
  }
- return Object.freeze({DURATION_MS,TIMES,CHANNELS,sample,glance,create});
+ return Object.freeze({DURATION_MS,PLAYBACK_RATE,GLANCE_PERIOD_MS,TIMES,CHANNELS,STANCE,sample,seamWeight,glance,create});
 })();
 if(typeof module!=="undefined")module.exports=RenKinemIQIdle;

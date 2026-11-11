@@ -11,6 +11,19 @@ const RenGlbRuntime=(()=>{
   guard:"Idle_4", ward:"Idle_4", hit:"Slap_Reaction", death:"Dead"
  });
  const clipFor=slot=>CLIPS[slot]||CLIPS.idle;
+ // Display only actual network bytes; Babylon progress does not measure GLB parsing time.
+ function formatDownloadProgress(event){
+  const loaded=Number(event?.loaded);
+  if(!Number.isFinite(loaded)||loaded<0)return null;
+  const mb=bytes=>(bytes/1048576).toLocaleString("ru-RU",{minimumFractionDigits:1,maximumFractionDigits:1})+" МБ";
+  const total=Number(event?.total);
+  if(event?.lengthComputable===true&&Number.isFinite(total)&&total>0){
+   const received=Math.min(loaded,total);
+   return "Загружаем Рена: "+mb(received)+" из "+mb(total)+" ("+Math.floor(received/total*100)+"%)";
+  }
+  return "Загружаем Рена: скачано "+mb(loaded)+" (общий объём неизвестен)";
+ }
+
  // Meshy Idle_4 spans almost 14 seconds. Defense slots reuse the same clip
  // as a neutral stance: do not compress its full motion into 140–360 ms.
  const clipProgress=(slot,progress)=>{
@@ -101,11 +114,11 @@ const RenGlbRuntime=(()=>{
    };
    return skeletalPose;
  }
- async function load(B,scene,visual){
+ async function load(B,scene,visual,onProgress){
   if(!B?.SceneLoader||!visual?.body||!scene)throw Error("Ren scene anchors missing");
   await ensureLoader();
   // Babylon SceneLoader resolves the path relative to this web page.
-  const result=await B.SceneLoader.ImportMeshAsync(null,"assets/",ASSET_URL.slice(7),scene,undefined,".glb");
+  const result=await B.SceneLoader.ImportMeshAsync(null,"assets/",ASSET_URL.slice(7),scene,onProgress,".glb");
   let root=null;
   try{
    if(sceneDisposed(scene))throw Error("Scene disposed during import");
@@ -219,7 +232,12 @@ const RenGlbRuntime=(()=>{
  function create(B,scene,visual,onStatus){
   let disposed=false,instance=null;
   if(typeof onStatus==="function")onStatus("loading","Загружаю 3D Рена…");
-  const promise=load(B,scene,visual).then(next=>{
+  const progress=event=>{
+   if(disposed)return;
+   const message=formatDownloadProgress(event);
+   if(message&&typeof onStatus==="function")onStatus("loading",message);
+  };
+  const promise=load(B,scene,visual,progress).then(next=>{
    if(disposed||sceneDisposed(scene)){next.dispose();return false;}
    instance=next;
    if(typeof onStatus==="function")onStatus("ready","3D Рен загружен");
@@ -240,6 +258,6 @@ const RenGlbRuntime=(()=>{
    dispose(){disposed=true;instance?.dispose();instance=null;}
   });
  }
- return Object.freeze({ASSET_URL,clipFor,clipProgress,choreography,create,ensureLoader,createRigAnimator});
+ return Object.freeze({ASSET_URL,clipFor,clipProgress,formatDownloadProgress,choreography,create,ensureLoader,createRigAnimator});
 })();
 if(typeof module!=="undefined")module.exports=RenGlbRuntime;

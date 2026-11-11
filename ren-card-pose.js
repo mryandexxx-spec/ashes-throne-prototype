@@ -79,7 +79,7 @@ const RenCardPose=(()=>{
    const target=ref.add(right.scale(offset.x)).add(up.scale(offset.y)).add(forward.scale(offset.z));
    const used={elL:0,shL:0,elR:0,shR:0};
    // Several small steps prevent the extreme wrist-to-groin folding seen before.
-   for(let pass=0;pass<8;pass++){
+   for(let pass=0;pass<16;pass++){
     for(const name of a.joints){
      const remaining=MAX_ROTATION[name]-used[name];
      if(remaining>1e-5)used[name]+=fit(byName.get(name),hand,target,remaining);

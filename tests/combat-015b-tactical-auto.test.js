@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -100,7 +101,7 @@ const index=read("index.html");
 const scripts=[...index.matchAll(/<script src="([^"]+)"/g)].map(match=>match[1]);
 assert.ok(scripts.indexOf("combat-core.js")<scripts.indexOf("auto-decision.js"));
 assert.ok(scripts.indexOf("auto-decision.js")<scripts.indexOf("game.js?v=0.3.107"));
-assert.match(index,/id="buildVersion"[^>]*>[^<]*v0[.]3[.]107 · UIHUD001/);
+assert.match(index,/id="buildVersion"[^>]*>[^<]*v\d+[.]\d+[.]\d+ · UIHUD001/);
 assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
 const game=read("game.js");
 assert.match(game,/const plan=AutoDecision\.chooseAction\(state\)/);

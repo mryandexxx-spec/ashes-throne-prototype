@@ -789,6 +789,7 @@ function renderStoryDemo(){
  $("#storyDemoAgain").hidden=view.kind!=="defeat"&&view.kind!=="ending";
 }
 function showScreen(id){
+ if(typeof HeroCardUI!=="undefined")HeroCardUI.leave(id);
  // Re-entering from home opens the two-mode chooser, not a stale mission list.
  if(id==="challenges"&&$("#home")?.classList.contains("active"))selectedChallengeKind=null;
  if(id!=="home"){
@@ -1683,9 +1684,11 @@ function renderHeroAbilities(hero){
  for(const info of AbilityInfo.forHero(hero)){
   const card=document.createElement("article");
   card.className="hero-ability-card"+(info.status!=="available"?" unavailable":"");
+  card.dataset.heroAbility=info.id;card.tabIndex=0;card.setAttribute("role","button");
+  card.setAttribute("aria-label",info.name+" · "+info.label+" · Открыть подробности");
   const heading=document.createElement("div");
   heading.className="hero-ability-heading";
-  const label=document.createElement("span");label.className="hero-ability-kind";label.textContent=info.label;
+  const label=document.createElement("span");label.className="hero-ability-kind";label.textContent=info.label+(typeof SkillCore!=="undefined"&&SkillCore.IDS.includes(info.id)?" · ур. "+SkillCore.level(progress,hero.id,info.id):"");
   const name=document.createElement("strong");name.textContent=info.name;
   heading.append(label,name);
   const details=document.createElement("details");details.className="hero-ability-more";
@@ -1829,7 +1832,12 @@ function renderHeroDetail(){
    (stat.active?stat.value:'Не рассчитано')+'</strong></div>').join("");
  const activeStats=overview.filter(stat=>stat.active).length;
  $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>Атака (общая, тест)</span><strong>${hero.atk} ATK</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · ${14-activeStats} ожидают формулы</summary><p class="muted">Тестовый пилот: физическая атака наследует текущую общую ATK с бонусами уровня и G; оборона и Protection работают против типизированных ударов. Магическая атака и прочие параметры пока не назначены.</p>${statRows}</details>`;
- $("#detailLevel").textContent="Уровень героя "+hero.level+" / "+ProgressCore.MAX_LEVEL;
+ $("#detailLevel").textContent="Уровень героя "+hero.level;
+ if($("#heroCardCap"))$("#heroCardCap").textContent=saveBlocked?"Сохранение недоступно":
+  hero.level>=levelCap?"Достигнут предел: "+levelCap:
+  cost!==null&&progress.currency<cost?"Не хватает валюты · максимум "+levelCap:"Доступный максимум: "+levelCap;
+ if($("#heroCardWallet"))$("#heroCardWallet").textContent="Валюта "+progress.currency;
+ $("#detailUpgrade").textContent=cost===null?"Предел уровня":"Повысить · "+cost;
  const nextCap=ProgressCore.nextHeroCapUnlock(ProgressCore.accountLevel(progress));
  const limitNote=$("#detailHeroLevelCap");
  if(limitNote)limitNote.textContent="Твой аккаунт: уровень "+ProgressCore.accountLevel(progress)+
@@ -1908,6 +1916,10 @@ $("#gearSlots")?.addEventListener("click",event=>{
  if(!Number.isInteger(slot)||slot<0||slot>=ProgressCore.SLOT_COUNT)return;
  selectedGearSlot=slot;
  renderHeroDetail();
+ if(typeof HeroCardUI!=="undefined"){
+  $("#gearSlots")?.querySelector?.('[data-gear-slot="'+slot+'"]')?.focus?.();
+  HeroCardUI.open("heroGearDialog");
+ }
 });
 $("#gearEquipNext")?.addEventListener("click",()=>{
  const base=ALLIES.find(h=>h.id===selectedHeroId);

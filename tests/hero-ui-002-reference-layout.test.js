@@ -21,12 +21,12 @@ const elementIds=[
  "progressSaveNote","detailBack","detailHome"
 ];
 for(const id of elementIds){
- const matches=dossier.match(new RegExp('id="'+id+'"',"g"))||[];
+ const matches=html.match(new RegExp('id="'+id+'"',"g"))||[];
  assert.equal(matches.length,1,id+" must be preserved exactly once");
 }
 assert.ok(dossier.indexOf('id="gearSlots"')>center);
-assert.ok(dossier.indexOf('id="gearSlots"')>right,"RENCARD009 gear belongs to right-side panel");
-assert.ok(dossier.indexOf('id="detailStats"')>right);
+assert.ok(dossier.indexOf('id="gearSlots"')<right,"HEROCARD001 gear surrounds the central model");
+assert.ok(html.indexOf('id="detailStats"')>html.indexOf('id="heroStatsDialog"'));
 for(const cls of ["hero-detail-stage","hero-detail-silhouette","hero-detail-stage-emblem",
  "hero-detail-stage-platform","hero-detail-reference"]){
  assert.ok(dossier.includes(cls),cls);
@@ -39,7 +39,7 @@ assert.ok(game.includes('document.createElement("details")'),"tap-to-expand abil
 assert.ok(game.includes('document.createElement("summary")'));
 for(const handler of [
  'id="gearEquipNext"','id="detailUpgrade"','id="gearSlots"'
-])assert.ok(dossier.includes(handler));
+])assert.ok(html.includes(handler));
 assert.ok(game.includes('$("#gearEquipNext")?.addEventListener("click"'));
 assert.ok(game.includes('$("#detailUpgrade").addEventListener("click"'));
 assert.ok(game.includes('$("#gearSlots")?.addEventListener("click"'));

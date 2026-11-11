@@ -1,21 +1,14 @@
-/* REN-GLB-DEFAULT-002: Render the supplied static Wanderer as Ren as default,
+/* REN-MESHY-017: Render the supplied static Wanderer as Ren as default,
  * when the production asset is available. Existing procedural Ren is a safe fallback.
  * No gameplay, save or progression changes. One scene loader / one model per Scene.
  */
 const RenGlbRuntime=(()=>{
  "use strict";
- const ASSET_URL="assets/ren-wanderer-v1.glb";
+ const ASSET_URL="assets/ren-meshy-mixamo-animated.glb";
  const CLIPS=Object.freeze({
-  idle:"Ren_Idle_Breathing_3s",
-  basic:"Ren_Attack_Unarmed_1p3s",
-  special:"Ren_Attack_Unarmed_1p3s",
-  powerful:"Ren_Attack_Unarmed_1p3s",
-  passive:"Ren_Guard_3s",
-  leader:"Ren_Guard_3s",
-  guard:"Ren_Guard_3s",
-  ward:"Ren_Guard_3s",
-  hit:"Ren_Hit_Reaction_0p9s",
-  death:"Ren_Hit_Reaction_0p9s"
+  idle:"Idle_4", basic:"Double_Combo_Attack", special:"Double_Combo_Attack",
+  powerful:"Axe_Spin_Attack", passive:"Idle_4", leader:"Idle_4",
+  guard:"Idle_4", ward:"Idle_4", hit:"Slap_Reaction", death:"Dead"
  });
  const clipFor=slot=>CLIPS[slot]||CLIPS.idle;
  // Babylon exposes isDisposed as a boolean in v9; never call it as a method.
@@ -124,7 +117,7 @@ const RenGlbRuntime=(()=>{
    const scale=2.1/height;
    root.scaling.set(scale,scale,scale);
    root.position=new B.Vector3(-(min.x+max.x)*.5*scale,.14-.8-min.y*scale,-(min.z+max.z)*.5*scale);
-   // Wanderer faces +Z in Babylon; allies attack toward +X.
+   // Initial facing is provisional; verify against imported Meshy GLB in WebGL.
    if(root.rotation)root.rotation.y=Math.PI/2;
    root.position.x=-(min.z+max.z)*.5*scale;
    root.position.z=(min.x+max.x)*.5*scale;
@@ -137,6 +130,7 @@ const RenGlbRuntime=(()=>{
    const restoreImported=createRigAnimator(B,result.transformNodes);
    const groupsList=result.animationGroups;
    groupsList.forEach(g=>g.stop());
+   if(!groups.has(CLIPS.idle)||!groups.has(CLIPS.basic)||!groups.has(CLIPS.hit)||!groups.has(CLIPS.death))throw Error("Meshy animation clips missing");
    // Do not hide the fallback until the whole GLB has been validated.
    const oldParts=[...visual.body.getChildMeshes(),...visual.head.getChildMeshes()]
     .filter(mesh=>!result.meshes.includes(mesh));
@@ -189,7 +183,7 @@ const RenGlbRuntime=(()=>{
   }).catch(error=>{
    // Missing/deleted asset must never prevent a playable combat scene.
    if(!disposed){
-    console.warn("REN-GLB-DEFAULT-002: old Ren used as fallback",error);
+    console.warn("REN-MESHY-017: fallback Ren used",error);
     if(typeof onStatus==="function")onStatus("error","3D Рен: ошибка загрузки ("+(error.message||String(error))+")");
    }
    return false;

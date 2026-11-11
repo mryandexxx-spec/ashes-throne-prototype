@@ -22,7 +22,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
      let last=null,maxStep=0;const p=L.plan;
      for(let t=0;t<=p.durationMs;t+=1000/60*speed){L.seek(t,false);hips.computeWorldMatrix(true);const pos=hips.getAbsolutePosition().clone();if(last)maxStep=Math.max(maxStep,B.Vector3.Distance(last,pos));last=pos;}
      L.seek(p.contactMs);const hand=L.hand.getAbsolutePosition();
-     const contactError=Math.abs(Math.hypot(hand.x-L.target.position.x,hand.z-L.target.position.z)-.42);
+     const contactError=RenChoreography.contactError(hand,L.target.position);
      L.seek(p.durationMs);results.push({distance,speed,maxStep,contactError,returnX:L.body.position.x,returnZ:L.body.position.z});
     }
    }

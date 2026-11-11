@@ -25,7 +25,7 @@ test('RENCHOR021: real GLB root samples transferred, including lateral weight sh
  const c=anim.channels.find(c=>g.nodes[c.target.node].name==='mixamorig:Hips'&&c.target.path==='translation');
  const ac=g.accessors[anim.samplers[c.sampler].output],view=g.bufferViews[ac.bufferView],offset=(view.byteOffset||0)+(ac.byteOffset||0);
  C.calibrate(1);
- for(const frame of [0,20,39,60]){
+ for(const frame of [0,20,37,39,60]){
   // Original asset is 30fps; Babylon exposes 60fps frames. Contact interpolates.
   const i=frame/2,lo=Math.floor(i),hi=Math.ceil(i),p=i-lo;
   const read=(i,k)=>data.readFloatLE(offset+i*12+k*4);
@@ -60,4 +60,12 @@ test('RENCHOR021: travel cycles advance by authored stance displacement, indepen
  C.calibrate(1);const p=C.plan(4.9),t=p.approachMs/2,s=C.sample(p,t);
  const cycles=s.forward/C.SOURCE.runStrideSpeed/(C.SOURCE.runMs/1000);
  assert.ok(Math.abs(s.b.progress-(cycles%1))<1e-6);
+});
+
+test('RENCHOR021: contact uses actual capsule and head surfaces, including vertical extent',()=>{
+ assert.equal(C.targetSurfaceRadius(.8),.42);
+ assert.ok(C.targetSurfaceRadius(1.515)<.18,'neck cross section is not the full capsule radius');
+ assert.ok(C.targetSurfaceRadius(1.868)>.30);
+ assert.ok(C.contactError({x:.31,y:1.8,z:0},{x:0,y:.8,z:0})<1e-10);
+ assert.ok(C.contactError({x:.42,y:1.515,z:0},{x:0,y:.8,z:0})>.14,'former cylinder-only contact must fail');
 });

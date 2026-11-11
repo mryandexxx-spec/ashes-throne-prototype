@@ -25,7 +25,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
     }
     renderBattleFrame();
     const target=meshes[a.targetId].body.position,hand=scene.transformNodes.find(n=>n.name==='mixamorig:RightHand').getAbsolutePosition();
-    return {actions:state.allyActions,planMs:a.plan.durationMs,contactError:Math.abs(Math.hypot(hand.x-target.x,hand.z-target.z)-.42),yaw:meshes.ren.body.rotation.y};
+    return {actions:state.allyActions,planMs:a.plan.durationMs,contactError:RenChoreography.contactError(hand,target),yaw:meshes.ren.body.rotation.y};
    });
    assert.equal(contact.actions,before+1);assert.ok(contact.contactError<.05,JSON.stringify(contact));records.push({speed,...contact});
    if(speed===1){fs.mkdirSync('artifacts/ren-choreography',{recursive:true});await page.screenshot({path:'artifacts/ren-choreography/game-contact.png'});}

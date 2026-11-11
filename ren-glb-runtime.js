@@ -172,8 +172,8 @@ const RenGlbRuntime=(()=>{
     const hand=result.transformNodes.find(n=>n.name==="mixamorig:RightHand");
     if(hand){
      hand.computeWorldMatrix(true);
-     const point=hand.getAbsolutePosition(),delta=RenChoreography.rootAt(650,scale);
-     RenChoreography.calibrate(scale,{forward:point.x-visual.body.position.x+delta.forward,lateral:point.z-visual.body.position.z+delta.lateral});
+     const point=hand.getAbsolutePosition(),delta=RenChoreography.rootAt(RenChoreography.SOURCE.contactFrame/60*1000,scale);
+     RenChoreography.calibrate(scale,{forward:point.x-visual.body.position.x+delta.forward,lateral:point.z-visual.body.position.z+delta.lateral,y:point.y});
     }
     samplePose(CLIPS.idle,0,false);
    }

@@ -13,7 +13,8 @@
  for(let i=-8;i<=8;i++)B.MeshBuilder.CreateLines('grid',{points:[new B.Vector3(i,.01,-5),new B.Vector3(i,.01,5)]},scene).color=new B.Color3(.22,.22,.23);
  for(let i=-5;i<=5;i++)B.MeshBuilder.CreateLines('grid',{points:[new B.Vector3(-8,.01,i),new B.Vector3(8,.01,i)]},scene).color=new B.Color3(.22,.22,.23);
  const body=new B.Mesh('ren-anchor',scene),head=new B.Mesh('ren-head-anchor',scene);body.position.y=.8;head.position.y=1.8;
- const target=B.MeshBuilder.CreateCapsule('target',{height:2.1,radius:.42},scene);target.position.y=1.05;target.material=material('target-mat','#854e45');
+ const target=B.MeshBuilder.CreateCapsule('target',{height:1.5,radius:.42},scene);target.position.y=.8;target.material=material('target-mat','#854e45');
+ const targetHead=B.MeshBuilder.CreateSphere('target-head',{diameter:.62,segments:12},scene);targetHead.parent=target;targetHead.position.y=1;targetHead.material=target.material;
  const marker=B.MeshBuilder.CreateSphere('hand-marker',{diameter:.09,segments:8},scene);marker.material=material('marker-mat','#f0c879');marker.material.emissiveColor=new B.Color3(.7,.4,.1);
  const line=B.MeshBuilder.CreateLines('contact-plane',{points:[new B.Vector3(0,0,-.7),new B.Vector3(0,2.5,-.7),new B.Vector3(0,2.5,.7),new B.Vector3(0,0,.7)]},scene);line.color=new B.Color3(1,.3,.2);
  const actor=RenGlbRuntime.create(B,scene,{body,head},(kind,text)=>{$('status').textContent=text;});
@@ -56,9 +57,9 @@
   if(hand){hand.computeWorldMatrix(true);marker.position.copyFrom(hand.getAbsolutePosition());}
   if(render)scene.render();
   $('scrub').value=String(time/plan.durationMs*1000);
-  const text=`${raw?'SOURCE':phase.phase} · ${Math.round(time)} / ${Math.round(plan.durationMs)} ms\nAnchor x ${body.position.x.toFixed(3)} z ${body.position.z.toFixed(3)}\nTarget x ${enemy.x.toFixed(3)} · gap ${(enemy.x-body.position.x).toFixed(3)}\nContact ${Math.round(plan.contactMs)} ms · frame 39\nMeshes ${scene.meshes.length} · Groups ${scene.animationGroups.length}`;
+  const text=`${raw?'SOURCE':phase.phase} · ${Math.round(time)} / ${Math.round(plan.durationMs)} ms\nAnchor x ${body.position.x.toFixed(3)} z ${body.position.z.toFixed(3)}\nTarget x ${enemy.x.toFixed(3)} · gap ${(enemy.x-body.position.x).toFixed(3)}\nContact ${Math.round(plan.contactMs)} ms · frame ${RenChoreography.SOURCE.contactFrame}\nMeshes ${scene.meshes.length} · Groups ${scene.animationGroups.length}`;
   if(text!==lastText){$('telemetry').textContent=text;lastText=text;}
-  $('contact').textContent=!raw&&phase.contact?'● КОНТАКТ · кадр 39':'';
+  $('contact').textContent=!raw&&phase.contact?'● КОНТАКТ · кадр '+RenChoreography.SOURCE.contactFrame:'';
  }
  engine.runRenderLoop(()=>draw(engine.getDeltaTime()));
  window.addEventListener('resize',()=>engine.resize());

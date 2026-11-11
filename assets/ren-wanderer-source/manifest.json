@@ -1,0 +1,42 @@
+{
+  "status": "source-only; not connected to game",
+  "source_archive": "wanderer_blender_compact(1).zip",
+  "runtime_candidate": "assets/ren-wanderer-v1.glb",
+  "animations": 0,
+  "meshes": 477,
+  "skin_joints": [
+    18
+  ],
+  "files": [
+    {
+      "archive_path": "wanderer.blend",
+      "repository_path": "assets/ren-wanderer-source/wanderer.blend",
+      "bytes": 2237257,
+      "sha256": "45ea1974f84d9d9340389d5d7a4130f9641fec6fe0e6e70ba98ca4feb318c7d8"
+    },
+    {
+      "archive_path": "preview.jpg",
+      "repository_path": "assets/ren-wanderer-source/preview.jpg",
+      "bytes": 22658,
+      "sha256": "881bb785a122d52e8ee4dff5c91cc09a44679318cc4900e567ae0be111aa7f1c"
+    },
+    {
+      "archive_path": "README_RU.txt",
+      "repository_path": "assets/ren-wanderer-source/README_RU.txt",
+      "bytes": 891,
+      "sha256": "34b132d272a8835be60e4b77e9c0d203523293823383ca2cb9f760731d8d6d96"
+    },
+    {
+      "archive_path": "verification.json",
+      "repository_path": "assets/ren-wanderer-source/verification.json",
+      "bytes": 118,
+      "sha256": "5eed0c90d48c4b9d4f6debc280868f60dc5af3cba91d5155dcd5a5bf1f5904ba"
+    },
+    {
+      "archive_path": "wanderer.glb",
+      "repository_path": "assets/ren-wanderer-v1.glb",
+      "bytes": 6361580,
+      "sha256": "bf017f6dbd4467a749642f0fcea88dce970da85e39d5f00359b4b603b94f29fb"
+    }
+  ]
+}

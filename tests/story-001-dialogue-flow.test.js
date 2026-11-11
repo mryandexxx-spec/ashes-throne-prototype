@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -44,6 +45,6 @@ assert.match(html,/src="story-demo-core.js"/);
 assert.match(game,/battleIsStoryDemo&&!state.active&&!missionResultShown/);
 assert.match(game,/StoryDemoCore.finishBattle/);
 assert.match(game,/openSquad\("storyDemo"\)/);
-assert.match(html,/v0\.3\.107 · UIHUD001/);
+assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001/);
 assert.equal(StoryDemoCore.fresh().phase,"intro","no persisted story state");
 console.log("STORY-001: narrative flow, guards, retry, and integration wiring checked");

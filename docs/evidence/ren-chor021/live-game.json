@@ -1,0 +1,37 @@
+{
+  "records": [
+    {
+      "speed": 1,
+      "actions": 1,
+      "planMs": 4892.2744107276285,
+      "contactError": 2.505512634032314e-7,
+      "yaw": 0.19150171846961878
+    },
+    {
+      "speed": 2,
+      "actions": 2,
+      "planMs": 4892.2744107276285,
+      "contactError": 2.505512634032314e-7,
+      "yaw": 0.19150171846961878
+    },
+    {
+      "speed": 4,
+      "actions": 3,
+      "planMs": 4892.2744107276285,
+      "contactError": 2.505512634032314e-7,
+      "yaw": 0.19150171846961878
+    }
+  ],
+  "finished": {
+    "active": false,
+    "pending": 0,
+    "transition": false,
+    "winner": "ally"
+  },
+  "restarted": {
+    "active": true,
+    "pending": 0,
+    "meshes": 76,
+    "groups": 9
+  }
+}

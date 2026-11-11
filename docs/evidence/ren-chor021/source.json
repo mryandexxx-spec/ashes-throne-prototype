@@ -1,0 +1,7 @@
+{
+  "source_commit": "1addddaba38b5ba98a7b396454794ee919ce328f",
+  "workflow_run": "https://github.com/mryandexxx-spec/ashes-throne-prototype/actions/runs/43064087153",
+  "engine": "Babylon.js 9.33.2, Chromium WebGL 2",
+  "conversion": "PNG captures converted to WebP quality 92; original CI WebM converted to H.264 MP4 CRF 26 without trimming. No generated imagery.",
+  "acceptance": "technical checks passed; artistic and physical iPhone acceptance pending"
+}

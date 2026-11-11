@@ -52,6 +52,6 @@ test("UIMODES001D preserves short landscape, touch, focus, and version",()=>{
  assert.match(art,/min-height:44px/);
  assert.match(art,/button:focus-visible/);
  assert.match(art,/@media\(prefers-reduced-motion:reduce\)/);
- assert.equal(JSON.parse(read("package.json")).version,"0.3.106");
- assert.match(html,/v0\.3\.106 · UIHUD001/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
+ assert.match(html,/v0\.3\.107 · UIHUD001/);
 });

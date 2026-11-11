@@ -36,6 +36,6 @@ test("UISYS001C has narrow landscape, safe-area, touch, and accessibility styles
  assert.match(art,/@media\(prefers-reduced-motion:reduce\)/);
 });
 test("UIMODES001C candidate build is synchronized",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.106");
- assert.match(html,/v0\.3\.106 · UIHUD001/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
+ assert.match(html,/v0\.3\.107 · UIHUD001/);
 });

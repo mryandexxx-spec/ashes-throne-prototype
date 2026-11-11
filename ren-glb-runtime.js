@@ -36,6 +36,56 @@ const RenGlbRuntime=(()=>{
   }).catch(error=>{loaderPromise=null;throw error;});
   return loaderPromise;
  }
+ function createRigAnimator(B,nodes){
+   const baselines=nodes.map(node=>({
+    node,
+    position:node.position?.clone(),
+    rotation:node.rotation?.clone(),
+    rotationQuaternion:node.rotationQuaternion?.clone(),
+    scaling:node.scaling?.clone()
+   }));
+   const restore=()=>{
+    for(const b of baselines){
+     if(b.position&&b.node.position)b.node.position.copyFrom(b.position);
+     if(b.rotation&&b.node.rotation)b.node.rotation.copyFrom(b.rotation);
+     if(b.rotationQuaternion&&b.node.rotationQuaternion)b.node.rotationQuaternion.copyFrom(b.rotationQuaternion);
+     if(b.scaling&&b.node.scaling)b.node.scaling.copyFrom(b.scaling);
+    }
+   };
+   // Additive local rotations on the supplied rig; no retargeting from the
+   // incompatible old 19-bone model. Legs/hips keep their authored bind pose.
+   const joints=new Map(baselines.filter(b=>b.rotationQuaternion).map(b=>[b.node.name,b]));
+   const turn=(name,x=0,y=0,z=0)=>{
+    const b=joints.get(name);
+    if(b&&B.Quaternion)b.node.rotationQuaternion.copyFrom(
+     b.rotationQuaternion.multiply(B.Quaternion.RotationYawPitchRoll(y,x,z)));
+   };
+   const skeletalPose=activity=>{
+    restore();
+    const p=Math.max(0,Math.min(1,activity.progress));
+    const pulse=Math.sin(Math.PI*p);
+    switch(activity.slot){
+     case "idle":{
+      const breath=Math.sin(2*Math.PI*p);
+      turn("spine",.012*breath);turn("head",-.008*breath);
+      turn("capeA",.015*breath);break;
+     }
+     case "basic":case "special":case "powerful":{
+      const strength=activity.slot==="powerful"?1.2:1;
+      turn("spine",.10*pulse, -.18*pulse*strength);
+      turn("shR",-.65*pulse*strength,0,-.10*pulse);
+      turn("elR",-.55*pulse);turn("shL",-.18*pulse);
+      turn("head",-.05*pulse,.10*pulse);turn("capeA",.08*pulse);break;
+     }
+     case "hit":turn("spine",-.13*pulse);turn("head",.12*pulse);break;
+     case "death":turn("spine",.28*p);turn("head",.25*p);break;
+     default:
+      turn("shR",-.38*pulse);turn("shL",-.38*pulse);
+      turn("elR",-.65*pulse);turn("elL",-.65*pulse);
+    }
+   };
+   return skeletalPose;
+ }
  async function load(B,scene,visual){
   if(!B?.SceneLoader||!visual?.body||!scene)throw Error("Ren scene anchors missing");
   await ensureLoader();
@@ -65,43 +115,34 @@ const RenGlbRuntime=(()=>{
    const scale=2.1/height;
    root.scaling.set(scale,scale,scale);
    root.position=new B.Vector3(-(min.x+max.x)*.5*scale,.14-.8-min.y*scale,-(min.z+max.z)*.5*scale);
+   // Wanderer faces +Z in Babylon; allies attack toward +X.
+   if(root.rotation)root.rotation.y=Math.PI/2;
+   root.position.x=-(min.z+max.z)*.5*scale;
+   root.position.z=(min.x+max.x)*.5*scale;
    root.parent=visual.body;
    root.metadata={fighterId:"ren"};
    for(const mesh of result.meshes){
     mesh.metadata={...(mesh.metadata||{}),fighterId:"ren"};
     mesh.isPickable=true;
    }
+   const restoreImported=createRigAnimator(B,result.transformNodes);
    const groupsList=result.animationGroups;
    groupsList.forEach(g=>g.stop());
-   const baselines=result.transformNodes.map(node=>({
-    node,
-    position:node.position?.clone(),
-    rotation:node.rotation?.clone(),
-    rotationQuaternion:node.rotationQuaternion?.clone(),
-    scaling:node.scaling?.clone()
-   }));
-   const restore=()=>{
-    for(const b of baselines){
-     if(b.position&&b.node.position)b.node.position.copyFrom(b.position);
-     if(b.rotation&&b.node.rotation)b.node.rotation.copyFrom(b.rotation);
-     if(b.rotationQuaternion&&b.node.rotationQuaternion)b.node.rotationQuaternion.copyFrom(b.rotationQuaternion);
-     if(b.scaling&&b.node.scaling)b.node.scaling.copyFrom(b.scaling);
-    }
-   };
    // Do not hide the fallback until the whole GLB has been validated.
    const oldParts=[...visual.body.getChildMeshes(),...visual.head.getChildMeshes()]
     .filter(mesh=>!result.meshes.includes(mesh));
    for(const mesh of oldParts){mesh.isVisible=false;mesh.isPickable=false;}
+   const skeletalPose=createRigAnimator(B,result.transformNodes);
    let lastName=null,stopped=false;
    return {
     update(activity){
      if(stopped||!activity)return;
      const name=clipFor(activity.slot);
      const clip=groups.get(name)||groups.get(CLIPS.idle);
-     if(!clip)return;
+     if(!clip){skeletalPose(activity);return;}
      if(lastName!==name){
       for(const group of groupsList)group.stop();
-      restore();
+      restoreImported({slot:"idle",progress:0});
       clip.start(false,1,clip.from,clip.to);
       clip.pause();
       lastName=name;
@@ -150,6 +191,6 @@ const RenGlbRuntime=(()=>{
    dispose(){disposed=true;instance?.dispose();instance=null;}
   });
  }
- return Object.freeze({ASSET_URL,clipFor,create,ensureLoader});
+ return Object.freeze({ASSET_URL,clipFor,create,ensureLoader,createRigAnimator});
 })();
 if(typeof module!=="undefined")module.exports=RenGlbRuntime;

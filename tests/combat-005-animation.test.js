@@ -38,7 +38,7 @@ assert.equal(profiles.isCustom("hero","idle"),false,"one character override does
 assert.throws(()=>profiles.register("broken",{idle:{kind:"idle",durationMs:100,amplitude:.1,assetId:"missing-clip"}}));
 
 motion.tick(300,1);
-assert.notEqual(motion.pose("hero").y,0,"idle animation runs without combat events");
+assert.equal(motion.pose("hero").y,0,"idle keeps feet planted without combat events");
 motion.clear();
 motion.enqueue(guard);
 assert.equal(motion.pending(),2,"defense animates both caster and protected target");

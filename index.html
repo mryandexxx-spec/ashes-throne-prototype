@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Пепельный престол — прототип</title>
   <link rel="stylesheet" href="styles.css?v=0.3.121">
+  <link rel="stylesheet" href="hero-card.css?v=0.3.121">
   <!-- Fixed Babylon.js release: no unversioned CDN updates during prototype development. -->
   <script src="https://cdn.babylonjs.com/v9.33.2/babylon.js"></script>
 </head>
@@ -249,14 +250,12 @@
     </section>
     <section id="heroDetail" class="screen hero-detail-screen" aria-label="Подробная карточка героя">
       <div class="section-heading hero-detail-heading">
-        <div><div class="eyebrow">ДОСЬЕ ПЕРСОНАЖА</div><h2 id="detailName">Герой</h2><p id="detailRole" class="muted"></p><p id="detailTags" class="hero-tag-strip muted" aria-label="Теги персонажа"></p><button type="button" class="ghost hero-biography-button" id="detailBiography">Биография</button><div id="detailStarStrip" class="star-strip" aria-label="Звёздный ранг героя"></div></div>
+        <div><h2 id="detailName">Герой</h2><span id="heroCardWallet" class="hero-card-wallet"></span><p id="detailRole" class="muted"></p><p id="detailTags" class="hero-tag-strip muted" aria-label="Теги персонажа"></p><div id="detailStarStrip" class="star-strip" aria-label="Звёздный ранг героя"></div></div>
         <div class="hero-detail-nav"><button type="button" class="ghost" id="detailBack">← Назад</button><button type="button" class="ghost" id="detailHome">⌂ Домой</button></div>
       </div>
       <div class="hero-detail-layout hero-detail-reference">
       <section class="hero-abilities-panel" aria-labelledby="heroAbilitiesTitle">
-        <div class="eyebrow">БОЕВЫЕ УМЕНИЯ · ДЕМОНСТРАЦИЯ</div>
-        <h3 id="heroAbilitiesTitle">Способности героя</h3>
-        <p class="muted">Выбери действующий навык, чтобы посмотреть его шесть уровней и улучшить. Пассивные и лидерские эффекты пока не назначены.</p>
+        <h3 id="heroAbilitiesTitle">Умения</h3>
         <div id="heroAbilityList" class="hero-abilities-list" aria-label="Пять типов способностей героя"></div>
       </section>
         <div class="hero-detail-panel hero-detail-identity">
@@ -280,29 +279,13 @@
             <div class="hero-detail-stage-emblem" id="detailGlyph" aria-hidden="true"></div>
             <div class="hero-detail-stage-platform" aria-hidden="true"></div>
           </div>
-          <div id="renCard3DControls" class="ren-card-3d-controls" hidden>
-            <button type="button" id="renCardMode" class="ghost" aria-pressed="false">Портрет</button>
-            <button type="button" id="renCardReset" class="ghost">Сбросить ракурс</button>
-            <small id="renCard3DStatus" role="status" aria-live="polite">3D Рен</small>
-          </div>
 
+
+        <div id="gearSlots" class="gear-slots" aria-label="Шесть слотов экипировки"></div>
+          <div class="hero-card-gear-footer"><strong id="gearTier">G1 · 0/6</strong><button type="button" class="ghost" data-hero-dialog="heroGearDialog">Развитие экипировки</button></div>
         </div>
         <div class="hero-detail-panel hero-detail-progression">
-          <div class="gear-panel" aria-label="Экипировка героев — тест G1–G3">
-                      <div class="eyebrow">ЭКИПИРОВКА · ТЕСТ G1</div>
-                      <h3 id="gearTier">G1 · 0/6</h3>
-                      <div id="gearSlots" class="gear-slots" aria-label="Шесть слотов экипировки"></div>
-                      <div class="detail-value"><span id="gearMaterialLabel">Материалы G1–G3</span><strong id="gearMaterial">0</strong></div>
-                      <div class="detail-value"><span>Игровая валюта</span><strong id="gearWallet">0</strong></div>
-                      <p class="muted gear-hint">Выбери слот, посмотри рецепт и изготовь совместимый с классом предмет. У каждого слота фиксированный бонус.</p>
-                      <div class="detail-value"><span id="gearPriceLabel">Выбранный предмет</span><strong id="gearPrice">—</strong></div>
-                      <div class="detail-value"><span id="gearStatBonusLabel">Бонус предмета</span><strong id="gearStatBonus">—</strong></div>
-                      <button type="button" class="primary" id="gearEquipNext">Установить выбранный предмет</button>
-                      <p class="muted" id="gearNotice" role="status"></p>
-                    </div>
-          <div class="eyebrow">РАЗВИТИЕ ПЕРСОНАЖА · ТЕСТ</div>
-          <p id="detailHeroLevelCap" class="muted" role="status">Твой аккаунт: уровень 1. Доступный максимум героя сейчас: 3.</p>
-          <p class="muted">Повышение уровня героя требует игровую валюту и не может превысить предел аккаунта. Экипировка оплачивается отдельно.</p>
+          <section class="hero-card-level"><h3 id="detailLevel">Уровень героя 1</h3><p id="heroCardCap" class="muted"></p><button type="button" class="primary detail-upgrade" id="detailUpgrade">Повысить уровень</button></section>
           <section class="star-panel" aria-labelledby="starPanelTitle">
             <div class="star-panel-head"><div><div class="eyebrow">ЗВЁЗДНЫЙ РАНГ</div><h3 id="starPanelTitle">Развитие героя</h3></div><strong id="starRankLabel">1 / 7★</strong></div>
             <div id="starRankVisual" class="star-strip" aria-hidden="true"></div>
@@ -310,18 +293,9 @@
             <progress id="starShardProgress" class="star-progress" max="15" value="0"></progress>
             <p id="starNextLabel" class="muted">Следующий ранг: 2★</p>
             <button type="button" class="primary" id="starPromoteButton">Повысить звёздный ранг</button>
-            <p id="starNotice" class="muted" role="status"></p>
-          </section>
-          <h3 id="detailLevel">Уровень 1</h3>
-          <div class="detail-value"><span>Доступно основной валюты</span><strong id="detailWallet">0</strong></div>
-          <div class="detail-value"><span>Стоимость улучшения</span><strong id="detailCost">1</strong></div>
-          <div class="detail-value"><span>После улучшения</span><strong id="detailPreview">—</strong></div>
-          <button type="button" class="primary detail-upgrade" id="detailUpgrade">Повысить уровень</button>
-          <p class="muted" id="detailNotice" role="status"></p>
 
-          <div class="eyebrow hero-detail-stats-heading">ХАРАКТЕРИСТИКИ</div>
-          <div id="detailStats" class="hero-detail-stats"></div>
-          <p class="muted detail-session-note" id="progressSaveNote" role="status">Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить.</p>
+          </section>
+          <div class="hero-card-links"><button type="button" class="ghost" data-hero-dialog="heroStatsDialog">Характеристики</button><button type="button" class="ghost hero-biography-button" id="detailBiography">История героя</button></div>
         </div>
       </div>
     </section>
@@ -496,6 +470,25 @@
       <p class="muted" id="campaignSaveStatus" role="status">Статус прохождения хранится в этом браузере.</p>
       <p class="muted">Стоимость энергии указана в каждой миссии для ручного боя и симуляции. После 3★ симуляция даёт повторные ресурсы и Account XP; награды первого прохождения повторно не выдаются.</p>
     </section>
+    <dialog id="heroGearDialog" class="hero-card-dialog" aria-labelledby="heroGearDialogTitle"><div class="hero-card-dialog-heading"><h2 id="heroGearDialogTitle">Экипировка героя</h2><button type="button" class="ghost" data-hero-dialog-close aria-label="Закрыть">×</button></div><div class="hero-card-dialog-body">          <div class="gear-panel" aria-label="Экипировка героев — тест G1–G3">
+                      <div class="eyebrow">ЭКИПИРОВКА · ТЕСТ G1</div>
+
+
+                      <div class="detail-value"><span id="gearMaterialLabel">Материалы G1–G3</span><strong id="gearMaterial">0</strong></div>
+                      <div class="detail-value"><span>Игровая валюта</span><strong id="gearWallet">0</strong></div>
+                      <p class="muted gear-hint">Выбери слот, посмотри рецепт и изготовь совместимый с классом предмет. У каждого слота фиксированный бонус.</p>
+                      <div class="detail-value"><span id="gearPriceLabel">Выбранный предмет</span><strong id="gearPrice">—</strong></div>
+                      <div class="detail-value"><span id="gearStatBonusLabel">Бонус предмета</span><strong id="gearStatBonus">—</strong></div>
+                      <button type="button" class="primary" id="gearEquipNext">Установить выбранный предмет</button>
+                      <p class="muted" id="gearNotice" role="status"></p>
+                    </div>
+</div></dialog>
+    <dialog id="heroStatsDialog" class="hero-card-dialog" aria-labelledby="heroStatsDialogTitle"><div class="hero-card-dialog-heading"><h2 id="heroStatsDialogTitle">Характеристики и развитие</h2><button type="button" class="ghost" data-hero-dialog-close aria-label="Закрыть">×</button></div><div class="hero-card-dialog-body"><div id="detailStats" class="hero-detail-stats"></div><p class="muted" id="detailNotice" role="status"></p><p class="muted">Повышение уровня героя требует игровую валюту и не может превысить предел аккаунта. Экипировка оплачивается отдельно.</p><p id="detailHeroLevelCap" class="muted" role="status"></p><div class="detail-value"><span>Валюта</span><strong id="detailWallet">0</strong></div><div class="detail-value"><span>Стоимость</span><strong id="detailCost">—</strong></div><div class="detail-value"><span>После улучшения</span><strong id="detailPreview">—</strong></div><p id="starNotice" class="muted" role="status"></p><p id="progressSaveNote" class="muted" role="status"></p>          <div id="renCard3DControls" class="ren-card-3d-controls" hidden>
+            <button type="button" id="renCardMode" class="ghost" aria-pressed="false">Портрет</button>
+            <button type="button" id="renCardReset" class="ghost">Сбросить ракурс</button>
+            <small id="renCard3DStatus" role="status" aria-live="polite">3D Рен</small>
+          </div></div></dialog>
+    <dialog id="heroAbilityDialog" class="hero-card-dialog" aria-labelledby="heroAbilityDialogTitle"><div class="hero-card-dialog-heading"><h2 id="heroAbilityDialogTitle">Способность</h2><button type="button" class="ghost" data-hero-dialog-close aria-label="Закрыть">×</button></div><div class="hero-card-dialog-body"><p id="heroAbilityDescription"></p><p id="heroAbilityMeta" class="muted"></p></div></dialog>
     <dialog id="skillUpgradeDialog" class="skill-upgrade-dialog" aria-labelledby="skillUpgradeTitle">
       <div class="skill-dialog-heading">
         <div class="skill-dialog-title">
@@ -727,7 +720,7 @@
         <button type="button" class="primary" id="lockedHeroUnlock">Открыть за 10 осколков</button>
       </div>
     </dialog>
-    <footer><span id="buildVersion">Прототип · v0.3.121 · UIHUD001 + OPSHELP + RENPLAY + REN3D003 + ENV010 + ENV017-MASSING + ENV022-DEFAULT + RENGLB003 + RENLOAD005 + RENAN008 + RENCARD009 + MELEE009 + RENIDLE010 + RENPOSE011 + RENSTANCE012 + RENSTANCE013 + RENRETARGET014 + RENIDLE015 + RENPOSE016 + RENMESH017 + RENPACE018 + RENQUEUE019 + RENMOVE020 + RENCHOR021</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.121 · UIHUD001 + OPSHELP + RENPLAY + REN3D003 + ENV010 + ENV017-MASSING + ENV022-DEFAULT + RENGLB003 + RENLOAD005 + RENAN008 + RENCARD009 + MELEE009 + RENIDLE010 + RENPOSE011 + RENSTANCE012 + RENSTANCE013 + RENRETARGET014 + RENIDLE015 + RENPOSE016 + RENMESH017 + RENPACE018 + RENQUEUE019 + HEROCARD001 + RENMOVE020 + RENCHOR021</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -779,5 +772,6 @@
   <script src="ren-card-pose.js?v=0.3.121"></script>
   <script src="ren-card-3d.js?v=0.3.121"></script>
   <script src="game.js?v=0.3.121"></script>
+  <script src="hero-card-ui.js?v=0.3.121"></script>
 </body>
 </html>

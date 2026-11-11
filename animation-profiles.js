@@ -19,14 +19,14 @@ const AnimationProfiles=(()=>{
  const overrides=new Map();
  // RENPACE018: Meshy source clips last 14.0s idle, 2.83s combo,
  // 2.5s axe spin, 4.83s hit (including recovery), 2.97s death.
- // Intentional presentation-only pacing at x1; x2/x4 still use BattleSpeed.
+ // RENQUEUE019: moderate timing plus strict visual queue synchronization.\n // x2/x4 still use BattleSpeed, with no changes to the combat simulation.
  overrides.set("ren",Object.freeze({
   idle:Object.freeze({kind:"idle",durationMs:14000,amplitude:0}),
-  basic:Object.freeze({kind:"lunge",durationMs:2000,amplitude:.55}),
-  special:Object.freeze({kind:"lunge",durationMs:2200,amplitude:.7}),
-  powerful:Object.freeze({kind:"lunge",durationMs:2300,amplitude:.85}),
-  hit:Object.freeze({kind:"hit",durationMs:1400,amplitude:.18}),
-  death:Object.freeze({kind:"death",durationMs:2500,amplitude:.85})
+  basic:Object.freeze({kind:"lunge",durationMs:1350,amplitude:.55}),
+  special:Object.freeze({kind:"lunge",durationMs:1500,amplitude:.7}),
+  powerful:Object.freeze({kind:"lunge",durationMs:1650,amplitude:.85}),
+  hit:Object.freeze({kind:"hit",durationMs:650,amplitude:.18}),
+  death:Object.freeze({kind:"death",durationMs:1850,amplitude:.85})
  }));
  function register(heroId,slots){
   if(typeof heroId!=="string"||!heroId.trim()||!slots||typeof slots!=="object"||Array.isArray(slots))

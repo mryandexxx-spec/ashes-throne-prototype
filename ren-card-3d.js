@@ -129,32 +129,27 @@ const RenCard3D=(()=>{
    camera.setTarget(new BABYLON.Vector3(0,1.08,0));
    camera.radius=3.15;
    const groups=result.animationGroups;
-   animation=groups.find(g=>g.name==="Ren_Idle_Breathing_3s")||null;
+   animation=groups.find(g=>g.name==="Idle_4")||groups.find(g=>g.name==="Ren_Idle_Breathing_3s")||null;
    groups.forEach(g=>g.stop());
-   // KinemIQ upper-body motion takes priority on the card only.
-   // Never mix imported AnimationGroups with additive quaternion poses.
-   // RENPOSE016: one-time constrained hand placement from the actual Ren rig.
-   // The retargeter captures this balanced pose as its stable base.
-   const cardPose=typeof RenCardPose!=="undefined"
-    ?RenCardPose.create(BABYLON,result.transformNodes):null;
-   if(cardPose)canvas.dataset.poseSource="balanced-016";
-   // RENRETARGET014: authentic KinemIQ motion converted through both rigs'
-   // rest-space axes. The earlier hand-turned pseudo-pose is fallback only.
-   try{
-    retargetIdle=typeof RenMotionRetarget!=="undefined"
-     ?RenMotionRetarget.create(BABYLON,result.transformNodes):null;
-   }catch(retargetError){
-    console.warn("RENRETARGET014: pose retarget unavailable; using fallback",retargetError);
-    retargetIdle=null;
-   }
-   if(retargetIdle)retargetIdle(0);
-   if(canvas)canvas.dataset.animationSource=retargetIdle?"kinemiq-retarget":"legacy-fallback";
-   if(!retargetIdle){
-    kinemiqIdle=typeof RenKinemIQIdle!=="undefined"
-     ?RenKinemIQIdle.create(BABYLON,result.transformNodes):null;
-    if(kinemiqIdle)kinemiqIdle(0);
-    else if(animation)animation.start(true,1);
-    else rigPose=RenGlbRuntime.createRigAnimator(BABYLON,result.transformNodes);
+   // RENMESH017: use the animation baked into the same Mixamo GLB.
+   // Never combine native AnimationGroups with old hand-authored retarget poses.
+   if(animation){
+    animation.start(true,0.75);
+    canvas.dataset.animationSource="meshy-native-idle";
+   }else{
+    // The legacy rig can still use its previous safe fallback.
+    try{
+     retargetIdle=typeof RenMotionRetarget!=="undefined"
+      ?RenMotionRetarget.create(BABYLON,result.transformNodes):null;
+    }catch(error){console.warn("Ren fallback retarget unavailable",error);}
+    if(retargetIdle)retargetIdle(0);
+    else{
+     kinemiqIdle=typeof RenKinemIQIdle!=="undefined"
+      ?RenKinemIQIdle.create(BABYLON,result.transformNodes):null;
+     if(kinemiqIdle)kinemiqIdle(0);
+     else rigPose=RenGlbRuntime.createRigAnimator(BABYLON,result.transformNodes);
+    }
+    canvas.dataset.animationSource="legacy-fallback";
    }
    setMode("model");
    engine.resize();

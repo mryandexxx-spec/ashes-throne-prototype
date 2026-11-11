@@ -109,6 +109,10 @@ function tick(){
  assert.ok(first,"expected pending autobattle step");
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
+function clickWhenReady(el){
+ for(let i=0;i<450&&api.getMotion().pending()>0&&!api.isVisualTransition();i++)api.renderBattleFrame();
+ click(el);
+}
 function tickAfterVisual(){
  if(!timers.size){
   for(let i=0;i<450&&api.getMotion().pending()>0;i++)api.renderBattleFrame();
@@ -701,7 +705,7 @@ const manualFinish=api.getBattle();
 const rewardBeforeManual=api.getCurrency();
 manualFinish.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
 let manualActions=0;
-while(manualFinish.active&&manualActions++<20)click(elements.basicAbilityBtn);
+while(manualFinish.active&&manualActions++<20)clickWhenReady(elements.basicAbilityBtn);
 assert.ok(manualActions<20,"manual encounter completes");
 assert.equal(manualFinish.winner,"ally");
 assert.equal(api.isVisualTransition(),true);
@@ -723,7 +727,7 @@ const interrupted=api.getBattle();
 const rewardBeforeInterrupt=api.getCurrency();
 interrupted.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
 let interruptActions=0;
-while(interrupted.active&&interruptActions++<20)click(elements.basicAbilityBtn);
+while(interrupted.active&&interruptActions++<20)clickWhenReady(elements.basicAbilityBtn);
 assert.equal(api.isVisualTransition(),true);
 assert.equal(api.getCurrency(),rewardBeforeInterrupt,"repeat combat does not mint currency before exit");
 api.showScreen("home");
@@ -740,7 +744,7 @@ losing.fighters.filter(f=>f.side==="ally").forEach(f=>{f.hp=1;if(Number.isFinite
 losing.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=10000;f.maxHp=10000;});
 const beforeDefeatReward=api.getCurrency();
 let defeatActions=0;
-while(losing.active&&defeatActions++<35)click(elements.basicAbilityBtn);
+while(losing.active&&defeatActions++<35)clickWhenReady(elements.basicAbilityBtn);
 assert.ok(defeatActions<35,"controlled losing battle should finish");
 assert.equal(losing.winner,"enemy");
 assert.equal(api.isVisualTransition(),true,"defeat waits for the last death animations");
@@ -826,7 +830,7 @@ let challengeBattle=api.getBattle();
 assert.equal(challengeBattle.totalWaves,1);
 challengeBattle.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
 let turns=0;
-while(challengeBattle.active&&turns++<25)click(elements.basicAbilityBtn);
+while(challengeBattle.active&&turns++<25)clickWhenReady(elements.basicAbilityBtn);
 assert.ok(turns<25);
 assert.equal(challengeBattle.winner,"ally");
 flushVisual();
@@ -846,11 +850,11 @@ challengeBattle=api.getBattle();
 assert.equal(challengeBattle.totalWaves,2);
 challengeBattle.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
 turns=0;
-while(challengeBattle.active&&challengeBattle.wave===1&&turns++<25)click(elements.basicAbilityBtn);
+while(challengeBattle.active&&challengeBattle.wave===1&&turns++<25)clickWhenReady(elements.basicAbilityBtn);
 assert.equal(challengeBattle.wave,2);
 flushVisual();
 challengeBattle.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
-while(challengeBattle.active&&turns++<40)click(elements.basicAbilityBtn);
+while(challengeBattle.active&&turns++<40)clickWhenReady(elements.basicAbilityBtn);
 assert.ok(turns<40);
 assert.equal(challengeBattle.winner,"ally");
 flushVisual();

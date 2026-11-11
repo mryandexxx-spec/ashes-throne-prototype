@@ -50,7 +50,7 @@ async function main(){
   }));
   console.log("BATTLE LOADING",state);
   assert.equal(state.hidden,false);
-  assert.match(state.status,/Загружаю 3D Рена/);
+  assert.match(state.status,/Загружаю 3D Рена|Загружаем Рена(?:: (?:скачано )?\d|…)/);
   assert.equal(state.noFakeProgress,true);
   assert.notEqual(state.spinner,"none");
   assert.ok(state.width<=state.viewport+2);

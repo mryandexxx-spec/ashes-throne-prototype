@@ -41,8 +41,6 @@ const RenKinemIQIdle=(()=>{
  const STANCE=Object.freeze({
   hips:Object.freeze({x:0,y:-.025,z:.024}),
   spine:Object.freeze({x:.035,y:-.035,z:-.045}),
-  chest:Object.freeze({x:-.012,y:.018,z:.025}),
-  neck:Object.freeze({x:0,y:0,z:0}),
   head:Object.freeze({x:-.032,y:.025,z:-.012}),
   shL:Object.freeze({x:-.13,y:.015,z:-.16}),
   shR:Object.freeze({x:-.085,y:-.01,z:.13}),

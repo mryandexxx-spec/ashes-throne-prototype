@@ -21,16 +21,22 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
     for(const speed of [1,2,4]){
      let last=null,maxStep=0;const p=L.plan;
      for(let t=0;t<=p.durationMs;t+=1000/60*speed){L.seek(t,false);hips.computeWorldMatrix(true);const pos=hips.getAbsolutePosition().clone();if(last)maxStep=Math.max(maxStep,B.Vector3.Distance(last,pos));last=pos;}
+     const toe=L.scene.transformNodes.find(n=>n.name==='mixamorig:LeftToeBase');
+     let planted=null,strikeFootDrift=0;
+     for(let frame=0;frame<=60;frame+=2){
+      L.seek(p.attackStart+frame/60*1000,false);toe.computeWorldMatrix(true);const foot=toe.getAbsolutePosition();
+      if(!planted)planted=foot.clone();strikeFootDrift=Math.max(strikeFootDrift,Math.hypot(foot.x-planted.x,foot.z-planted.z));
+     }
      L.seek(p.contactMs);const hand=L.hand.getAbsolutePosition();
      const contactError=RenChoreography.contactError(hand,L.target.position);
-     L.seek(p.durationMs);results.push({distance,speed,maxStep,contactError,returnX:L.body.position.x,returnZ:L.body.position.z});
+     L.seek(p.durationMs);results.push({distance,speed,maxStep,strikeFootDrift,contactError,returnX:L.body.position.x,returnZ:L.body.position.z});
     }
    }
    for(let i=0;i<8;i++){L.seek(L.plan.contactMs);L.seek(L.plan.durationMs);L.reset();}
    return {results,firstZ,lastZ:keys[0].value.z,meshes:count,meshesAfter:L.scene.meshes.length,engine:L.engine.webGLVersion,groups:L.scene.animationGroups.length};
   });
   assert.equal(result.engine,2);assert.equal(result.groups,9);assert.equal(result.firstZ,result.lastZ);assert.ok(result.firstZ<-1,'source keys must remain original');assert.equal(result.meshes,result.meshesAfter);
-  for(const r of result.results){assert.ok(r.maxStep<.6,JSON.stringify(r));assert.ok(r.contactError<.04,JSON.stringify(r));assert.ok(Math.abs(r.returnX+r.distance/2)<1e-6);assert.ok(Math.abs(r.returnZ)<1e-6);}
+  for(const r of result.results){assert.ok(r.maxStep<.6,JSON.stringify(r));assert.ok(r.contactError<.04,JSON.stringify(r));assert.ok(r.strikeFootDrift<.08,JSON.stringify(r));assert.ok(Math.abs(r.returnX+r.distance/2)<1e-6);assert.ok(Math.abs(r.returnZ)<1e-6);}
   await page.evaluate(()=>{document.getElementById('distance').value='4.9';RenLab.reset();});
   for(const phase of ['0','brake','windup','contact','recover','retreat','end']){
    await page.locator('#phase').selectOption(phase);await page.evaluate(()=>RenLab.seek(RenLab.time));await page.screenshot({path:`artifacts/ren-choreography/${phase}.png`});

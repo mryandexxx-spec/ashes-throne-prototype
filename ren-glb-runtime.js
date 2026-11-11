@@ -23,9 +23,9 @@ const RenGlbRuntime=(()=>{
     const received=Math.min(loaded,total);
     message=received>=total
      ?"Файл Рена скачан · "+formatMb(total)+". Подготавливаем 3D…"
-     :"Рен: "+formatMb(received)+" из "+formatMb(total)+" ("+Math.floor(received/total*100)+"%)";
+     :"Загружаем Рена: "+formatMb(received)+" из "+formatMb(total)+" ("+Math.floor(received/total*100)+"%)";
    }else{
-    message=loaded>0?"Рен: скачано "+formatMb(loaded):"Загружаем Рена…";
+    message=loaded>0?"Загружаем Рена: скачано "+formatMb(loaded):"Загружаем Рена…";
    }
    onMessage?.(message);
   };

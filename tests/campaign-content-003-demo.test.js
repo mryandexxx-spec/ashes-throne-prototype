@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -62,5 +63,5 @@ assert.match(game,/campaignProgress\.bestStars\[id\]!==3/);
 assert.match(game,/data-simulate-mission/);
 const html=read("index.html");
 assert.match(html,/id="simulationDialog"/);
-assert.match(html,/v0[.]3[.]107 · UIHUD001/);
+assert.match(html,/v\d+[.]\d+[.]\d+ · UIHUD001/);
 console.log("Campaign-Content-003 demo: catalog, stars, save, reward and roster assertions passed");

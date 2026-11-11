@@ -132,7 +132,7 @@ const RenCard3D=(()=>{
    setMode("model");
    engine.resize();
    endLoading();
-   report("Рен смотрит вперёд. Проводите влево или вправо для поворота; двумя пальцами меняйте масштаб.");
+   report("3D Рен загружен. Проводите влево или вправо для поворота; двумя пальцами меняйте масштаб.");
   }catch(error){
    console.warn("REN-GLB-003 card model unavailable",error);
    report("Не удалось загрузить 3D: "+(error.message||String(error))+". Показан портрет.");

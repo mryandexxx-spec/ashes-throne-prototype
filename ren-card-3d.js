@@ -45,7 +45,7 @@ const RenCard3D=(()=>{
   const stage=byId("detailHeroStage");
   stage?.classList.remove("has-ren-3d");
   const canvas=byId("renCard3DCanvas");
-  if(canvas)delete canvas.dataset.animationSource;
+  if(canvas){delete canvas.dataset.animationSource;delete canvas.dataset.poseSource;}
   const portrait=byId("detailRenPortrait");
   if(portrait)portrait.hidden=false;
  }
@@ -133,6 +133,11 @@ const RenCard3D=(()=>{
    groups.forEach(g=>g.stop());
    // KinemIQ upper-body motion takes priority on the card only.
    // Never mix imported AnimationGroups with additive quaternion poses.
+   // RENPOSE016: one-time constrained hand placement from the actual Ren rig.
+   // The retargeter captures this balanced pose as its stable base.
+   const cardPose=typeof RenCardPose!=="undefined"
+    ?RenCardPose.create(BABYLON,result.transformNodes):null;
+   if(cardPose)canvas.dataset.poseSource="balanced-016";
    // RENRETARGET014: authentic KinemIQ motion converted through both rigs'
    // rest-space axes. The earlier hand-turned pseudo-pose is fallback only.
    try{

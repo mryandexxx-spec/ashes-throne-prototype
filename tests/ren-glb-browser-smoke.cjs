@@ -81,6 +81,16 @@ const assert=require("node:assert/strict");
     node.computeWorldMatrix(true);
     return node.getAbsolutePosition().clone();
    };
+   const prePoseHandL=boneWorld("handL"),prePoseHandR=boneWorld("handR");
+   const poseBeforeCoords={hips:boneWorld("hips").asArray(),shL:boneWorld("shL").asArray(),shR:boneWorld("shR").asArray(),elL:boneWorld("elL").asArray(),elR:boneWorld("elR").asArray(),handL:prePoseHandL.asArray(),handR:prePoseHandR.asArray()};
+   const pose=RenCardPose.create(B,scene.transformNodes);
+   const poseReady=!!pose;
+   const poseHandL=boneWorld("handL"),poseHandR=boneWorld("handR");
+   const poseDisplacement=Math.max(B.Vector3.Distance(prePoseHandL,poseHandL),
+    B.Vector3.Distance(prePoseHandR,poseHandR));
+   const poseSeparation=B.Vector3.Distance(poseHandL,poseHandR);
+   const poseAfterCoords={handL:poseHandL.asArray(),handR:poseHandR.asArray()};
+   const poseLegOrigin=[boneWorld("ankL"),boneWorld("ankR")];
    const ankLeftBefore=boneWorld("ankL"),ankRightBefore=boneWorld("ankR");
    const targetRig=RenMotionRetarget.create(B,scene.transformNodes);
    const targetRetargetReady=typeof targetRig==="function";
@@ -138,12 +148,31 @@ const assert=require("node:assert/strict");
    const cardStatus=document.getElementById("renCard3DStatus")?.textContent||"";
    const has3D=document.getElementById("detailHeroStage")?.classList.contains("has-ren-3d");
    const cardSource=cardCanvas?.dataset.animationSource;
-   RenCard3D.dispose();
-   return {skeletalAttack,plantedHips,restoredSpine,repeatStable,facing,imported,meshCount,clipCount,fallbackHidden,statuses,cardStatus,has3D,cardSource,status,usesRealRig,kinHeadMoves,kinShoulderMoves,kinHipsStance,kinHipsPositionStable,kinStable,targetRetargetReady,retargetHeadMoves,retargetShoulderMoves,retargetRootPinned,retargetStable,retargetFootDrift,retargetHandsApart,shoulderPeak,shoulderJerk,spinePeak,legDrift};
+   const cardPoseSource=cardCanvas?.dataset.poseSource;
+   return {skeletalAttack,plantedHips,restoredSpine,repeatStable,facing,imported,meshCount,clipCount,fallbackHidden,statuses,cardStatus,has3D,cardSource,cardPoseSource,status,usesRealRig,kinHeadMoves,kinShoulderMoves,kinHipsStance,kinHipsPositionStable,kinStable,targetRetargetReady,retargetHeadMoves,retargetShoulderMoves,retargetRootPinned,retargetStable,retargetFootDrift,retargetHandsApart,poseReady,poseDisplacement,poseSeparation,poseMetrics:pose?.measurements,poseBeforeCoords,poseAfterCoords,shoulderPeak,shoulderJerk,spinePeak,legDrift};
   });
+  // Visual review artifact: screenshot the actual card, not a guessed stick figure.
+  const cardImage=await page.locator("#renCard3DCanvas").screenshot({type:"jpeg",quality:32,timeout:15000});
+  console.log("RENPOSE016_VIEW "+cardImage.toString("base64"));
+  const stage=await page.locator("#renCard3DCanvas").boundingBox();
+  if(stage){
+   await page.mouse.move(stage.x+stage.width*.60,stage.y+stage.height*.5);
+   await page.mouse.down();
+   await page.mouse.move(stage.x+stage.width*.20,stage.y+stage.height*.5,{steps:9});
+   await page.mouse.up();
+   await page.waitForTimeout(200);
+   const sideImage=await page.locator("#renCard3DCanvas").screenshot({type:"jpeg",quality:30,timeout:15000});
+   console.log("RENPOSE016_SIDE "+sideImage.toString("base64"));
+  }
+  await page.evaluate(()=>RenCard3D.dispose());
   console.log("REN WEBGL SMOKE",JSON.stringify(result));
   assert.equal(result.skeletalAttack,true,"attack moves the actual supplied rig");
   assert.equal(result.usesRealRig,true,"KinemIQ connects to actual Ren GLB transform nodes");
+  assert.equal(result.poseReady,true,"RENPOSE016 runs on actual GLB skeleton");
+  assert.ok(result.poseDisplacement>.008,"RENPOSE016 must visibly move at least one hand: "+result.poseDisplacement);
+  assert.ok(result.poseSeparation>.4,"RENPOSE016 must not bring the hands toward the groin");
+  assert.ok(result.poseDisplacement<.31,"RENPOSE016 should be a deliberate arm pose, not an arm swing");
+  assert.ok(result.poseMetrics.handL<.10&&result.poseMetrics.handR<.15,"RENPOSE016 hands must approach rig-relative side targets: "+JSON.stringify(result.poseMetrics));
   assert.equal(result.targetRetargetReady,true,"RETARGET014 connects to the actual Ren GLB");
   assert.equal(result.retargetHeadMoves,true,"RETARGET014 moves head on real GLB");
   assert.equal(result.retargetShoulderMoves,true,"RETARGET014 moves shoulder on real GLB");
@@ -171,6 +200,7 @@ const assert=require("node:assert/strict");
   assert.ok(result.statuses.some(s=>s.kind==="ready"),"HUD loading success reported");
   assert.equal(result.has3D,true,"3D card is rendered from GLB: "+result.cardStatus);
   assert.equal(result.cardSource,"kinemiq-retarget","Card must select actual retarget, not silent fallback");
+  assert.equal(result.cardPoseSource,"balanced-016","Card must actually apply RENPOSE016");
   assert.match(result.cardStatus,/3D Рен загружен/);
   console.log("REN-GLB-003: Chromium live import & card passed");
  }finally{await browser.close();}

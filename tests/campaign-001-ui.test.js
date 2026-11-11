@@ -109,6 +109,12 @@ function tick(){
  assert.ok(first,"expected pending autobattle step");
  timers.delete(first[0]);scheduledDelays.delete(first[0]);first[1]();
 }
+function tickAfterVisual(){
+ if(!timers.size){
+  for(let i=0;i<450&&api.getMotion().pending()>0;i++)api.renderBattleFrame();
+ }
+ tick();
+}
 const api=vm.runInNewContext(src+
  "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getEnergy:()=>progress.energy.value,getEnergyState:()=>progress.energy,getGearMaterials:()=>progress.gearMaterials,getAccountXp:()=>progress.accountXp,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=['kael','lyra','darin'];},getCampaignProgress:()=>campaignProgress,getChallengeProgress:()=>challengeProgress,getChallengeState:()=>({id:activeChallengeId,tracker:challengeTracker}),openChallenge,renderChallenges,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderTargetFighterHud, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), enemyTemplates:()=>ENEMIES, configuredLineup:()=>battleLineup(), setAutoSpeed})",
  {document,window:liveWindow,BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
@@ -660,7 +666,7 @@ click(elements.autoSpeedBtn);
 assert.equal(api.getSpeed(),4);
 assert.equal(pendingDelay(),88);
 let actions=0;
-while(autoWaves.wave===1&&autoWaves.active&&actions++<10)tick();
+while(autoWaves.wave===1&&autoWaves.active&&actions++<10)tickAfterVisual();
 assert.equal(autoWaves.wave,2);
 assert.equal(elements.battle.classList.active,true);
 const rewardBeforeFinal=api.getCurrency();
@@ -671,7 +677,7 @@ assert.equal(timers.size,0,"next wave must not start while previous wave animati
 flushVisual();
 assert.equal(timers.size,1,"autobattle resumes after wave animations");
 autoWaves.fighters.filter(f=>f.side==="enemy").forEach(f=>{f.hp=1;});
-while(autoWaves.active&&actions++<25)tick();
+while(autoWaves.active&&actions++<25)tickAfterVisual();
 assert.ok(actions<25,"auto must finish multi-wave mission");
 assert.equal(autoWaves.winner,"ally");
 assert.equal(api.isVisualTransition(),true,"battle result waits for final animation");

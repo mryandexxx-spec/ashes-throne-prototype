@@ -45,7 +45,7 @@ test("REN-GLB-003: card and battle share the same immutable GLB",()=>{
  assert.equal(b.readUInt32LE(0),0x46546c67);
  assert.equal(crypto.createHash("sha256").update(b).digest("hex"),
   "bf017f6dbd4467a749642f0fcea88dce970da85e39d5f00359b4b603b94f29fb");
- assert.match(runtime,/ren-wanderer-v1\.glb/);
+ assert.match(runtime,/ren-meshy-mixamo-animated\.glb/);
  assert.match(cardSource,/RenGlbRuntime\.ASSET_URL/);
  assert.doesNotMatch(cardSource,/localStorage|sessionStorage|CombatCore\.|ProgressCore\./);
 });

@@ -1,9 +1,10 @@
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
-const Profiles=require("../animation-profiles.js");
+const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const Runtime=require("../ren-glb-runtime.js");
-const Speed=require("../battle-speed.js");
-const Battle=require("../battle-animation.js");
+const scripts=["battle-speed.js","animation-profiles.js","battle-animation.js"]
+ .map(file=>fs.readFileSync(path.join(__dirname,"..",file),"utf8")).join("\n");
+const {Profiles,Battle}=vm.runInNewContext(scripts+"\n({Profiles:AnimationProfiles,Battle:BattleAnimation})");
 
 test("RENPACE018: x1 timings are readable and native Idle_4 runs at its own cadence",()=>{
  const expected={idle:14000,basic:2000,special:2200,powerful:2300,hit:1400,death:2500};

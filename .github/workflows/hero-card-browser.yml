@@ -1,0 +1,38 @@
+name: Hero card viewport and live actions
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'hero-card*'
+      - 'game.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'tests/hero-card-browser.cjs'
+      - '.github/workflows/hero-card-browser.yml'
+  workflow_dispatch:
+jobs:
+  viewport:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Test Chromium and WebKit
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/hero-server.log 2>&1 &
+          sleep 2
+          node tests/hero-card-browser.cjs
+          HERO_BROWSER=webkit node tests/hero-card-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hero-card-browser
+          path: artifacts/

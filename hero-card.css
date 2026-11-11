@@ -1,0 +1,125 @@
+/* HEROCARD001 — owner-approved hero-first scene. No document scroll in landscape. */
+body.hero-card-mode{overflow:hidden;height:100dvh;min-height:0;background:#141419}
+body.hero-card-mode #app{height:100dvh;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) 16px;max-width:none;padding:env(safe-area-inset-top,0px) max(12px,env(safe-area-inset-right)) env(safe-area-inset-bottom,0px) max(12px,env(safe-area-inset-left))}
+body.hero-card-mode #app>.topbar{display:none}
+body.hero-card-mode #app>footer{margin:0;padding:0;border:0;font-size:9px;line-height:16px;height:16px;overflow:hidden}
+#heroDetail.hero-detail-screen.active{display:grid;grid-template-rows:56px minmax(0,1fr);width:100%;height:100%;min-height:0;margin:0;padding:0;border:0;border-radius:0;box-shadow:none;background:radial-gradient(ellipse at 50% 56%,#67543b70,transparent 52%)}
+#heroDetail.hero-detail-screen.active::before{display:none}
+#heroDetail .hero-detail-heading{position:relative;display:flex;align-items:center;gap:10px;margin:0;padding:4px 0;border-bottom:1px solid #b08b5059;min-width:0}
+#heroDetail .hero-detail-heading>div:first-child{flex:1;min-width:0}
+#heroDetail .hero-detail-heading h2{font:600 clamp(20px,2.6vw,32px)/1.05 Georgia,serif;margin:0;color:#efd19b;display:inline}
+#heroDetail #detailRole,#heroDetail #detailStarStrip{display:none}
+#heroDetail .hero-tag-strip{margin:2px 0 0;font-size:11px;line-height:1.1}
+#heroDetail .hero-card-wallet{float:right;font-size:12px;color:#e8c78e;margin:5px 8px}
+#heroDetail .hero-detail-nav{display:flex;flex-wrap:nowrap;align-self:center;gap:6px}
+#heroDetail .hero-detail-nav button{min-height:44px;padding:6px 10px}
+#heroDetail .hero-detail-reference{display:grid;grid-template-columns:minmax(166px,24%) minmax(0,1fr) minmax(180px,24%);gap:12px;min-height:0;height:100%;padding-top:9px;align-items:stretch}
+#heroDetail .hero-detail-reference>.hero-abilities-panel{border:0;padding:0;margin:0;background:none;box-shadow:none;min-height:0;height:100%;display:grid;grid-template-rows:18px minmax(0,1fr)}
+#heroDetail #heroAbilitiesTitle{font:500 11px/1.2 Inter,system-ui,sans-serif;color:#c6b18e;text-transform:uppercase;letter-spacing:.15em;margin:0}
+#heroDetail .hero-abilities-list{display:grid;grid-template-rows:repeat(5,minmax(44px,1fr));gap:5px;min-height:0;padding-bottom:7px}
+#heroDetail .hero-ability-card{margin:0;min-height:44px;min-width:0;padding:5px 8px 5px 43px;border:0;border-radius:6px;background:linear-gradient(90deg,#393036cf,#201e2440);position:relative;cursor:pointer;display:flex;align-items:center}
+#heroDetail .hero-ability-card::before{content:'✦';display:grid;place-items:center;position:absolute;left:4px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:1px solid #ad8954;border-radius:50%;background:#242126;color:#e8c78e;font-size:20px}
+#heroDetail .hero-ability-heading{display:flex;flex-direction:column-reverse;gap:3px;min-width:0}
+#heroDetail .hero-ability-heading strong{font-size:clamp(11px,1.4vw,16px);line-height:1.15;overflow-wrap:anywhere}
+#heroDetail .hero-ability-kind{font-size:10px;line-height:1.1;color:#c9b493;letter-spacing:0}
+#heroDetail .hero-ability-more,#heroDetail .skill-open-button{display:none}
+#heroDetail .hero-ability-card:focus-visible{outline:2px solid #f0c879;outline-offset:-2px}
+#heroDetail .hero-detail-reference>.hero-detail-identity{position:relative;display:block;margin:0;padding:0;min-height:0;min-width:0;border:0;background:none;box-shadow:none;overflow:visible}
+#heroDetail #detailArtworkLabel{display:none}
+#heroDetail .hero-detail-stage{position:absolute;inset:0 0 58px;height:auto;min-height:0;width:100%;margin:0;border:0;border-radius:0;background:radial-gradient(ellipse at 50% 70%,#725c362b,transparent 68%);overflow:hidden}
+#heroDetail .hero-detail-stage-platform{bottom:1%;width:68%;height:8%;opacity:.45}
+#heroDetail .hero-detail-stage-halo{display:none}
+#heroDetail #gearSlots{position:absolute;inset:15px 0 65px;z-index:2;display:grid;grid-template-columns:48px 1fr 48px;grid-template-rows:repeat(3,48px);align-content:space-between;gap:0;pointer-events:none}
+#heroDetail #gearSlots .gear-slot{width:48px;height:48px;min-height:44px;min-width:44px;padding:3px;border:1px solid #977447;border-radius:7px;background:linear-gradient(145deg,#343036,#18181e);box-shadow:inset 0 0 0 3px #07080c66;pointer-events:auto;display:flex;flex-direction:column;justify-content:center;gap:2px}
+#heroDetail #gearSlots .gear-slot:nth-child(-n+3){grid-column:1}
+#heroDetail #gearSlots .gear-slot:nth-child(1){grid-row:1}
+#heroDetail #gearSlots .gear-slot:nth-child(2){grid-row:2}
+#heroDetail #gearSlots .gear-slot:nth-child(3){grid-row:3}
+#heroDetail #gearSlots .gear-slot:nth-child(n+4){grid-column:3}
+#heroDetail #gearSlots .gear-slot:nth-child(4){grid-row:1}
+#heroDetail #gearSlots .gear-slot:nth-child(5){grid-row:2}
+#heroDetail #gearSlots .gear-slot:nth-child(6){grid-row:3}
+#heroDetail #gearSlots .gear-slot span{font-size:16px;line-height:1}
+#heroDetail #gearSlots .gear-slot small{font-size:8px;line-height:1.05;white-space:normal}
+#heroDetail #gearSlots .gear-slot.selected{border-color:#f0c879}
+#heroDetail #gearSlots .gear-slot.filled{background:linear-gradient(145deg,#625039,#272222)}
+#heroDetail .hero-card-gear-footer{position:absolute;bottom:0;left:0;right:0;display:grid;justify-items:center;gap:2px}
+#heroDetail #gearTier{font-size:12px;line-height:1.1;color:#e8c995;margin:0;text-align:center}
+#heroDetail .hero-card-gear-footer button{min-height:44px;padding:4px 10px;font-size:11px}
+#heroDetail .hero-detail-reference>.hero-detail-progression{display:flex;flex-direction:column;gap:7px;border:0;padding:0;margin:0;min-height:0;background:none;box-shadow:none}
+#heroDetail .hero-card-level,#heroDetail .star-panel{padding:8px 10px;border:1px solid #a7834859;border-radius:7px;background:#131318bd;margin:0}
+#heroDetail #detailLevel{font:600 15px/1.1 Inter,system-ui,sans-serif;margin:0 0 3px;color:#f4ebd8}
+#heroDetail #heroCardCap{font-size:10px;line-height:1.2;margin:3px 0}
+#heroDetail #detailUpgrade{min-height:44px;width:100%;font-size:12px;padding:4px 7px;margin:3px 0 0}
+#heroDetail #detailNotice{font-size:9px;line-height:1.15;margin:4px 0 0}
+#heroDetail .star-panel-head{display:flex;gap:4px;justify-content:space-between;align-items:center;margin:0}
+#heroDetail .star-panel-head .eyebrow,#heroDetail #starPanelTitle{display:none}
+#heroDetail .star-panel-head::before{content:'ЗВЁЗДНЫЙ РАНГ';font-size:9px;color:#cbb18b}
+#heroDetail #starRankLabel{font-size:10px}
+#heroDetail #starRankVisual{margin:2px 0;font-size:17px;line-height:1.1}
+#heroDetail .star-panel .detail-value{padding:2px 0;font-size:10px;margin:0}
+#heroDetail .star-progress{height:4px;margin:3px 0;display:block;width:100%}
+#heroDetail #starNextLabel{font-size:9px;line-height:1.15;margin:3px 0}
+#heroDetail #starPromoteButton{min-height:44px;padding:3px 5px;font-size:11px;width:100%;margin:2px 0 0}
+#heroDetail #starPromoteButton:disabled{display:none}
+#heroDetail .hero-card-links{display:grid;grid-template-columns:1fr;gap:5px;margin-top:auto}
+#heroDetail .hero-card-links button{min-height:44px;font-size:12px;padding:4px 6px;margin:0;width:100%}
+.hero-card-dialog{color:#f4ebd8;background:linear-gradient(145deg,#30262a,#18181f);border:1px solid #bd925b;border-radius:12px;width:min(620px,calc(100vw - 32px));max-width:calc(100vw - 32px);max-height:calc(100dvh - 24px);padding:0;box-shadow:0 12px 48px #000b}
+.hero-card-dialog::backdrop{background:#08090dc9}
+.hero-card-dialog[open]{display:flex;flex-direction:column}
+.hero-card-dialog-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;border-bottom:1px solid #a7834859;flex-shrink:0}
+.hero-card-dialog-heading h2{font:600 20px Georgia,serif;margin:0;color:#f0c879}
+.hero-card-dialog-heading button{min-height:44px;min-width:44px;padding:4px}
+.hero-card-dialog-body{padding:12px 16px;overflow:auto;overscroll-behavior:contain;min-height:0}
+.hero-card-dialog-body .detail-value{font-size:12px;line-height:1.5;align-items:start}
+.hero-card-dialog-body .detail-value strong{white-space:normal;overflow-wrap:anywhere;max-width:75%}
+.hero-card-dialog-body .gear-panel{padding:0;margin:0;border:0}
+.hero-card-dialog-body .muted{color:#d9c5ab;font-size:12px}
+.hero-card-dialog-body button{min-height:44px}
+.hero-card-dialog #renCard3DControls{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.hero-card-dialog #renCard3DControls[hidden]{display:none}
+.hero-card-dialog #renCard3DStatus{flex-basis:100%;font-size:11px}
+@media(orientation:landscape) and (max-height:360px){
+ #heroDetail.hero-detail-screen.active{grid-template-rows:48px minmax(0,1fr)}
+ #heroDetail .hero-detail-reference{padding-top:5px;gap:8px;grid-template-columns:minmax(150px,23%) minmax(0,1fr) minmax(174px,24%)}
+ #heroDetail .hero-abilities-list{gap:2px;padding-bottom:0}
+ #heroDetail .hero-detail-reference>.hero-abilities-panel{grid-template-rows:14px minmax(0,1fr)}
+ #heroDetail .hero-card-level,#heroDetail .star-panel{padding:5px 7px}
+ #heroDetail .hero-detail-reference>.hero-detail-progression{gap:4px}
+ #heroDetail #detailNotice{display:none}
+ #heroDetail .hero-card-links{grid-template-columns:1fr 1fr;gap:4px}
+ #heroDetail .hero-card-links button{font-size:10px}
+ #heroDetail #gearSlots{inset:8px 0 65px}
+}
+@media(orientation:portrait){body.hero-card-mode #app{display:block}#heroDetail.hero-detail-screen.active{display:none}}
+#heroDetail #gearSlots .gear-slot:nth-child(2){grid-column:3;grid-row:1}
+#heroDetail #gearSlots .gear-slot:nth-child(3){grid-column:1;grid-row:2}
+#heroDetail #gearSlots .gear-slot:nth-child(4){grid-column:1;grid-row:3}
+#heroDetail #gearSlots .gear-slot:nth-child(5){grid-column:3;grid-row:2}
+#heroDetail .hero-card-links{grid-template-columns:1fr 1fr}
+#heroDetail .hero-card-links button{font-size:10px}
+/* Keep the model on the scene, without the legacy framed viewport. */
+#heroDetail .hero-detail-stage{box-shadow:none}
+#heroDetail .hero-detail-stage::after{display:none}
+#heroDetail .hero-detail-reference .hero-ability-card{background:linear-gradient(90deg,#393036cf,#201e2440);box-shadow:none}
+#heroDetail .hero-ability-card:has(.hero-card-ability-icon)::before{display:none}
+#heroDetail .hero-card-ability-icon{display:grid;place-items:center;position:absolute;left:4px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:1px solid #ad8954;border-radius:50%;background:#242126;color:#e8c78e;pointer-events:none}
+#heroDetail .hero-card-ability-icon svg{width:23px;height:23px}
+#heroDetail #gearSlots .gear-slot svg{width:24px;height:24px;flex-shrink:0;pointer-events:none}
+body.hero-card-mode:has(#heroDetail.active)::before{background:linear-gradient(90deg,#101115ef,#101115c2 40%,#101115c2 60%,#101115ef),url("assets/hq-hall-painting-mobile.webp") center / cover no-repeat}
+/* Keep this screen's build marker visible instead of clipping the legacy history. */
+body.hero-card-mode #buildVersion{font-size:0}
+body.hero-card-mode #buildVersion::before{content:attr(data-short-build);font-size:9px;line-height:16px}
+/* At low Safari heights, secondary links share the header, freeing progression space. */
+@media(orientation:landscape) and (max-height:360px){
+ #heroDetail .hero-detail-heading>div:first-child{padding-right:180px}
+ #heroDetail .hero-card-links{position:absolute;top:2px;right:170px;width:176px;grid-template-columns:1fr 1fr;margin:0}
+ #heroDetail .hero-card-links button{height:44px;font-size:10px}
+ #heroDetail .hero-card-level{padding:4px 7px}
+ #heroDetail #detailLevel{font-size:13px;margin:0}
+ #heroDetail #heroCardCap{font-size:9px;margin:2px 0}
+ #heroDetail #detailUpgrade{margin:0}
+ #heroDetail .hero-detail-reference>.hero-abilities-panel{grid-template-rows:minmax(0,1fr)}
+ #heroDetail #heroAbilitiesTitle{display:none}
+ #heroDetail .hero-abilities-list{grid-template-rows:repeat(5,minmax(44px,1fr))}
+}

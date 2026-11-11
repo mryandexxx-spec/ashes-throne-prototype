@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -34,6 +35,6 @@ for(const id of ["trial-ren","trial-nada","trial-liora"]){
  assert.ok(!v3.includes(id),"do not add literature IDs to v3 save validation");
 }
 const pkg=JSON.parse(read("package.json")),html=read("index.html");
-assert.equal(pkg.version,"0.3.107");
-assert.ok(html.includes("v0.3.107 · UIHUD001"));
+assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
+assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · UIHUD001`));
 console.log("STORY-003: approved class vocabulary, proposed trial mappings, gear compatibility and unchanged saves verified");

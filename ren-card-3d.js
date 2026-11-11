@@ -44,6 +44,8 @@ const RenCard3D=(()=>{
   engine=null;scene=null;camera=null;holder=null;animation=null;render=null;rigPose=null;kinemiqIdle=null;retargetIdle=null;idleMs=0;
   const stage=byId("detailHeroStage");
   stage?.classList.remove("has-ren-3d");
+  const canvas=byId("renCard3DCanvas");
+  if(canvas)delete canvas.dataset.animationSource;
   const portrait=byId("detailRenPortrait");
   if(portrait)portrait.hidden=false;
  }
@@ -141,7 +143,8 @@ const RenCard3D=(()=>{
     retargetIdle=null;
    }
    if(retargetIdle)retargetIdle(0);
-   else{
+   if(canvas)canvas.dataset.animationSource=retargetIdle?"kinemiq-retarget":"legacy-fallback";
+   if(!retargetIdle){
     kinemiqIdle=typeof RenKinemIQIdle!=="undefined"
      ?RenKinemIQIdle.create(BABYLON,result.transformNodes):null;
     if(kinemiqIdle)kinemiqIdle(0);

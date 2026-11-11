@@ -44,6 +44,6 @@ test("UIHUD001 does not replace 3D interactions or inspection lifecycle",()=>{
 test("UIHUD001 is motion-conscious and version is synchronized",()=>{
  assert.match(art, /@media\(prefers-reduced-motion:reduce\)/);
  assert.match(art, /\.arena-protection span/);
- assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
+ assert.equal(JSON.parse(read("package.json")).version,__BUILD_VERSION_FOR_TESTS);
  assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001/);
 });

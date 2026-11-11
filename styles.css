@@ -3945,6 +3945,8 @@ body:has(#storyDemo.active)::before{
  color:#f4e4c8;font:600 13px/1.35 Inter,system-ui,sans-serif;
  text-align:center;pointer-events:none;
 }
+#heroDetail .ren-loading-indicator{min-width:0;max-width:100%;box-sizing:border-box;overflow:hidden}
+#heroDetail #renCardLoadingText{display:block;width:100%;max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:normal;text-wrap:balance;line-height:1.35}
 #heroDetail .ren-loading-indicator[hidden]{display:none!important}
 .ren-loading-spinner{
  display:inline-block;flex:none;width:23px;height:23px;

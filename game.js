@@ -2738,9 +2738,16 @@ function renderBattleFrame(){
   const pose=BattleAnimation.pose(h.id);
   const team=sides[h.side];
   const slot=team.findIndex(f=>f.id===h.id);
-  const x=formationPosition(h.side,slot,team.length).x;
+  const origin=formationPosition(h.side,slot,team.length);
+  const activity=BattleAnimation.activity(h.id);
+  const target=roster.find(f=>f.id===activity.targetId&&f.side!==h.side);
+  const opponents=target?sides[target.side]:null;
+  const targetSlot=target?opponents.findIndex(f=>f.id===target.id):-1;
+  const targetPosition=targetSlot>=0?formationPosition(target.side,targetSlot,opponents.length):null;
+  const approach=BattleAnimation.approach(activity,origin,targetPosition);
   const offset=pose.x*(h.side==="ally"?1:-1);
-  visual.body.position.x=visual.head.position.x=visual.base.position.x=x+offset;
+  visual.body.position.x=visual.head.position.x=visual.base.position.x=origin.x+offset+approach.x;
+  visual.body.position.z=visual.head.position.z=visual.base.position.z=origin.z+approach.z;
   visual.body.position.y=.8+pose.y;
   visual.head.position.y=1.8+pose.y;
   if(visual.body.rotation)visual.body.rotation.z=pose.tilt;

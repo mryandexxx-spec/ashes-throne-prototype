@@ -71,11 +71,11 @@ const RenCard3D=(()=>{
    engine=new BABYLON.Engine(canvas,true,{alpha:true,stencil:true,preserveDrawingBuffer:false});
    scene=new BABYLON.Scene(engine);
    scene.clearColor=new BABYLON.Color4(0,0,0,0);
-   camera=new BABYLON.ArcRotateCamera("renCardCamera",-Math.PI/2,Math.PI/2.25,3.4,new BABYLON.Vector3(0,1,0),scene);
+   camera=new BABYLON.ArcRotateCamera("renCardCamera",Math.PI/2,Math.PI/2.15,3.15,new BABYLON.Vector3(0,1,0),scene);
    camera.lowerRadiusLimit=1.65;
    camera.upperRadiusLimit=6.6;
-   camera.lowerBetaLimit=.45;
-   camera.upperBetaLimit=Math.PI-.45;
+   camera.lowerBetaLimit=Math.PI/2.15;
+   camera.upperBetaLimit=Math.PI/2.15; // Single-finger drag rotates only horizontally.
    camera.panningSensibility=0;
    camera.attachControl(canvas,true);
    const fill=new BABYLON.HemisphericLight("renFill",new BABYLON.Vector3(0,1,0),scene);
@@ -123,7 +123,7 @@ const RenCard3D=(()=>{
    holder.scaling.set(scale,scale,scale);
    holder.position.set(-center.x*scale,1.08-center.y*scale,-center.z*scale);
    camera.setTarget(new BABYLON.Vector3(0,1.08,0));
-   camera.radius=3.4;
+   camera.radius=3.15;
    const groups=result.animationGroups;
    animation=groups.find(g=>g.name==="Ren_Idle_Breathing_3s")||null;
    groups.forEach(g=>g.stop());
@@ -132,7 +132,7 @@ const RenCard3D=(()=>{
    setMode("model");
    engine.resize();
    endLoading();
-   report("3D Рен загружен. Вращай пальцем, масштабируй двумя пальцами.");
+   report("3D Рен загружен. Проводите влево или вправо для поворота; двумя пальцами меняйте масштаб.");
   }catch(error){
    console.warn("REN-GLB-003 card model unavailable",error);
    report("Не удалось загрузить 3D: "+(error.message||String(error))+". Показан портрет.");
@@ -145,7 +145,7 @@ const RenCard3D=(()=>{
   button?.addEventListener("click",()=>setMode(view==="model"?"portrait":"model"));
   reset?.addEventListener("click",()=>{
    if(camera){
-    camera.alpha=-Math.PI/2;camera.beta=Math.PI/2.25;camera.radius=3.4;
+    camera.alpha=Math.PI/2;camera.beta=Math.PI/2.15;camera.radius=3.15;
     camera.setTarget(new BABYLON.Vector3(0,1.08,0));
    }
   });

@@ -3,7 +3,7 @@ const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 const css=read("styles.css"),html=read("index.html"),game=read("game.js");
-const start=css.indexOf("/* UI-COMBAT-HUD-001"),art=css.slice(start);
+const start=css.indexOf("/* UI-COMBAT-HUD-001"),art=css.slice(start,css.indexOf("/* RENCARD009",start));
 test("UIHUD001 is a contained bronze-graphite skin over existing 3D battle",()=>{
  assert.ok(start>0);
  for(const text of [".battle-top",".action-panel",".ability-slot .ability-btn",

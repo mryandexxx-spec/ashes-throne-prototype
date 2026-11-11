@@ -12,7 +12,7 @@ assert.ok(dossier,"dossier section");
 const left=dossier.indexOf('class="hero-abilities-panel"');
 const center=dossier.indexOf('class="hero-detail-panel hero-detail-identity"');
 const right=dossier.indexOf('class="hero-detail-panel hero-detail-progression"');
-assert.ok(left>=0&&center>left&&right>center,"abilities -> schematic hero and gear -> progression");
+assert.ok(left>=0&&center>left&&right>center,"abilities -> large hero -> gear and progression");
 const elementIds=[
  "heroAbilityList","detailGlyph","detailStats","detailName","detailRole",
  "detailHeroLevelCap","detailLevel","detailWallet","detailCost","detailPreview",
@@ -25,7 +25,7 @@ for(const id of elementIds){
  assert.equal(matches.length,1,id+" must be preserved exactly once");
 }
 assert.ok(dossier.indexOf('id="gearSlots"')>center);
-assert.ok(dossier.indexOf('id="gearSlots"')<right);
+assert.ok(dossier.indexOf('id="gearSlots"')>right,"RENCARD009 gear belongs to right-side panel");
 assert.ok(dossier.indexOf('id="detailStats"')>right);
 for(const cls of ["hero-detail-stage","hero-detail-silhouette","hero-detail-stage-emblem",
  "hero-detail-stage-platform","hero-detail-reference"]){

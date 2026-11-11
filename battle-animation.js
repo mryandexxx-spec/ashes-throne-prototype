@@ -15,7 +15,7 @@ const BattleAnimation=(()=>{
    if(event.type==="ability"&&typeof event.actorId==="string"){
     const guard=events.slice(i+1).some(next=>(next.type==="effect"&&next.effect==="guard"||next.type==="heal")&&
      next.actorId===event.actorId&&next.targetId===event.targetId);
-    queue.push({id:event.actorId,slot:guard?"guard":
+    queue.push({id:event.actorId,targetId:event.targetId,slot:guard?"guard":
      AnimationProfiles.slots.includes(event.abilityId)?event.abilityId:"special"});
    }else if(event.type==="heal"&&typeof event.targetId==="string"){
     queue.push({id:event.targetId,slot:"ward"});
@@ -79,13 +79,25 @@ const BattleAnimation=(()=>{
  function activity(heroId){
   if(current&&current.id===heroId){
    const profile=AnimationProfiles.resolve(heroId,current.slot);
-   return {slot:current.slot,progress:Math.min(1,elapsed/profile.durationMs)};
+   return {slot:current.slot,progress:Math.min(1,elapsed/profile.durationMs),targetId:current.targetId||null};
   }
   const idle=AnimationProfiles.resolve(heroId,"idle");
-  return {slot:"idle",progress:(idleTime%idle.durationMs)/idle.durationMs};
+  return {slot:"idle",progress:(idleTime%idle.durationMs)/idle.durationMs,targetId:null};
+ }
+ // MELEE009: purely visual approach/hold/retreat with a fixed safe gap to the target.
+ // All results were already calculated by CombatCore; this cannot alter hit or damage.
+ function approach(activity,origin,target){
+  if(!activity||!["basic","special","powerful"].includes(activity.slot)||!target||!origin)return {x:0,z:0};
+  const dx=target.x-origin.x,dz=target.z-origin.z;
+  const distance=Math.hypot(dx,dz);
+  if(!Number.isFinite(distance)||distance<=1.25)return {x:0,z:0};
+  const p=Math.max(0,Math.min(1,activity.progress));
+  const fraction=p<.38?p/.38:p<.64?1:(1-p)/.36;
+  const travel=(distance-1.25)*Math.max(0,fraction);
+  return {x:dx/distance*travel,z:dz/distance*travel};
  }
  function isDying(heroId){return dying.has(heroId);}
  function pending(){return queue.length+(current?1:0);}
  function drainStarted(){const cues=started.splice(0);return cues;}
- return Object.freeze({enqueue,clear,tick,pose,activity,isDying,pending,drainStarted});
+ return Object.freeze({enqueue,clear,tick,pose,activity,approach,isDying,pending,drainStarted});
 })();

@@ -4138,3 +4138,39 @@ body:has(#storyDemo.active)::before{
  .battle-screen .arena-initiative span{transition:none}
 }
 
+
+/* RENCARD009: SWGOH-inspired character-first dossier, scoped to the Ren 3D view.
+   Left abilities / large centered hero / right gear and progression. */
+#heroDetail .hero-detail-reference{
+ grid-template-columns:minmax(180px,1fr) minmax(250px,1.55fr) minmax(190px,1fr);
+ align-items:start;
+}
+#heroDetail .hero-detail-reference>.hero-detail-identity{
+ padding:8px;min-width:0;
+ background:linear-gradient(180deg,#211e23d9,#171820f0);
+}
+#heroDetail .hero-detail-identity>.eyebrow{text-align:center;margin:4px 0}
+#heroDetail .hero-detail-stage{
+ height:clamp(320px,calc(100dvh - 154px),690px);
+ min-height:320px;margin-top:4px;
+ border-radius:12px;
+ background:radial-gradient(ellipse at 50% 60%,#6450399c 0%,#27242a 38%,#12151c 88%);
+}
+#heroDetail .hero-detail-stage.has-ren-3d .hero-detail-stage-halo,
+#heroDetail .hero-detail-stage.has-ren-3d .hero-detail-stage-platform{opacity:.38;pointer-events:none}
+#heroDetail .ren-card-3d-controls{justify-content:center}
+#heroDetail .ren-card-3d-controls button{min-height:44px}
+#heroDetail #renCard3DStatus{flex-basis:100%;text-align:center}
+#heroDetail .hero-detail-reference>.hero-detail-progression .gear-panel{
+ margin:0 0 12px;padding:0 0 12px;border-top:0;border-bottom:1px solid #b18a584e;
+}
+@media(orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ #heroDetail .hero-detail-reference{grid-template-columns:minmax(155px,1fr) minmax(240px,1.55fr) minmax(165px,1fr);gap:7px}
+ #heroDetail .hero-detail-stage{height:clamp(245px,calc(100dvh - 112px),430px);min-height:245px}
+ #heroDetail .hero-detail-reference>.hero-detail-identity{padding:5px}
+}
+@media(max-width:700px) and (orientation:portrait){
+ #heroDetail .hero-detail-reference{grid-template-columns:1fr}
+ #heroDetail .hero-detail-stage{height:min(65dvh,540px);min-height:300px}
+ #heroDetail .hero-detail-identity{order:-1}
+}

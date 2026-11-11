@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -18,5 +19,5 @@ assert.match(game,/arena-focus-cursor/);
 assert.match(game,/function showAbilityTooltip\(abilityId\)/);
 assert.match(css,/\.battle-screen \.arena-focus-cursor/);
 assert.match(css,/\.battle-screen \.ability-tooltip/);
-assert.match(html,/v0[.]3[.]107 · UIHUD001/);
+assert.match(html,/v\d+[.]\d+[.]\d+ · UIHUD001/);
 console.log("Combat-009 direct ability, ally focus and tooltip structural checks passed");

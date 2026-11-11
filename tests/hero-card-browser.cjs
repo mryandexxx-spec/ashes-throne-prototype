@@ -11,6 +11,20 @@ const {chromium,webkit}=require('playwright');
   await page.goto('http://127.0.0.1:8765/',{waitUntil:'load'});
   await page.evaluate(()=>{selectedHeroId='ren';showScreen('heroDetail');});
   await page.waitForFunction(()=>document.querySelector('#detailHeroStage').classList.contains('has-ren-3d'),null,{timeout:45000});
+  async function drawn(){
+   const pixels=await page.evaluate(()=>new Promise((resolve,reject)=>{
+    const engine=BABYLON.EngineStore.Instances.find(e=>e.getRenderingCanvas()?.id==='renCard3DCanvas');
+    const scene=engine?.scenes[0];if(!scene){reject(Error('No card engine'));return;}
+    const timer=setTimeout(()=>reject(Error('No rendered card frame after resize')),5000);
+    scene.onAfterRenderObservable.addOnce(()=>{
+     Promise.resolve(engine.readPixels(0,0,engine.getRenderWidth(),engine.getRenderHeight())).then(bytes=>{
+      clearTimeout(timer);let n=0;for(let i=3;i<bytes.length;i+=4)if(bytes[i]>20)n++;resolve(n);
+     },reject);
+    });
+   }));
+   assert.ok(pixels>100,'Real non-transparent GLB pixels must be rendered: '+pixels);
+   console.log('real GLB pixels',pixels);
+  }
   async function fits(label){
    const boxes=await page.evaluate(()=>{
     const ids=['heroDetail','detailHeroStage','heroAbilityList','gearSlots','detailUpgrade','starRankVisual','starShardCount','detailBiography'];
@@ -24,7 +38,7 @@ const {chromium,webkit}=require('playwright');
    console.log(label,boxes);assert.equal(boxes.overflow,false);assert.deepEqual(boxes.outside,[]);assert.deepEqual(boxes.tiny,[]);assert.deepEqual(boxes.outsideButtons,[]);assert.ok(boxes.model>160);
   }
   for(const [w,h] of [[844,390],[932,430],[844,320]]){
-   await page.setViewportSize({width:w,height:h});await page.waitForTimeout(150);await fits(`${w}x${h}`);
+   await page.setViewportSize({width:w,height:h});await page.waitForTimeout(500);await drawn();await fits(`${w}x${h}`);
    await page.screenshot({path:`artifacts/hero-card-${useWebkit?'webkit':'chromium'}-${w}x${h}.png`});
   }
   await page.setViewportSize({width:844,height:390});

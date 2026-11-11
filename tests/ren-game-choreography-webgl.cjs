@@ -30,15 +30,15 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
    assert.equal(contact.actions,before+1);assert.ok(contact.contactError<.05,JSON.stringify(contact));records.push({speed,...contact});
    if(speed===1){fs.mkdirSync('artifacts/ren-choreography',{recursive:true});await page.screenshot({path:'artifacts/ren-choreography/game-contact.png'});}
    await page.evaluate(()=>{
-    let frames=0;while(BattleAnimation.pending()&&frames++<1000){BattleAnimation.tick(100,BattleSpeed.multiplier());renderBattleFrame();}
-    if(BattleAnimation.pending())throw Error('Live queue hung');syncBattleUI();
+    engine.getDeltaTime=()=>100;let frames=0;while(BattleAnimation.pending()&&frames++<1000)renderBattleFrame();
+    engine.getDeltaTime=()=>0;if(BattleAnimation.pending())throw Error('Live queue hung');
    });
    assert.equal(await page.locator('#basicAbilityBtn').isEnabled(),true);
   }
   await page.evaluate(()=>{state.fighters.filter(f=>f.side==='enemy').forEach(f=>{f.hp=1;f.protection=0;});});
   for(let i=0;i<3&&await page.evaluate(()=>state.active);i++){
    await page.locator('#basicAbilityBtn').click();
-   await page.evaluate(()=>{for(let i=0;i<1000&&BattleAnimation.pending();i++){BattleAnimation.tick(100,4);renderBattleFrame();}});
+   await page.evaluate(()=>{engine.getDeltaTime=()=>100;for(let i=0;i<1000&&BattleAnimation.pending();i++)renderBattleFrame();engine.getDeltaTime=()=>0;});
   }
   const finished=await page.evaluate(()=>({active:state.active,pending:BattleAnimation.pending(),transition:isVisualTransition(),winner:state.winner}));
   assert.equal(finished.active,false);assert.equal(finished.pending,0);assert.equal(finished.transition,false);assert.equal(finished.winner,'ally');

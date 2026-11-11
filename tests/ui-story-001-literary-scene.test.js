@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
@@ -49,6 +50,6 @@ test("UI-STORY-001 has short landscape, reduced motion, touch and exact build",(
  assert.match(art,/min-height:44px/);
  assert.match(art,/#storyDemo button:focus-visible/);
  assert.match(art,/@media\(prefers-reduced-motion:reduce\)/);
- assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
- assert.match(html,/v0\.3\.107 · UIHUD001/);
+ assert.equal(JSON.parse(read("package.json")).version,`${__BUILD_VERSION_FOR_TESTS}`);
+ assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001/);
 });

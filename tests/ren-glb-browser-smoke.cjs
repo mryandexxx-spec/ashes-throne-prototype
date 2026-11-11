@@ -115,8 +115,9 @@ const assert=require("node:assert/strict");
    }
    const cardStatus=document.getElementById("renCard3DStatus")?.textContent||"";
    const has3D=document.getElementById("detailHeroStage")?.classList.contains("has-ren-3d");
+   const cardSource=cardCanvas?.dataset.animationSource;
    RenCard3D.dispose();
-   return {skeletalAttack,plantedHips,restoredSpine,repeatStable,facing,imported,meshCount,clipCount,fallbackHidden,statuses,cardStatus,has3D,status,usesRealRig,kinHeadMoves,kinShoulderMoves,kinHipsStance,kinHipsPositionStable,kinStable,targetRetargetReady,retargetHeadMoves,retargetShoulderMoves,retargetRootPinned,retargetStable,retargetFootDrift,retargetHandsApart};
+   return {skeletalAttack,plantedHips,restoredSpine,repeatStable,facing,imported,meshCount,clipCount,fallbackHidden,statuses,cardStatus,has3D,cardSource,status,usesRealRig,kinHeadMoves,kinShoulderMoves,kinHipsStance,kinHipsPositionStable,kinStable,targetRetargetReady,retargetHeadMoves,retargetShoulderMoves,retargetRootPinned,retargetStable,retargetFootDrift,retargetHandsApart};
   });
   console.log("REN WEBGL SMOKE",JSON.stringify(result));
   assert.equal(result.skeletalAttack,true,"attack moves the actual supplied rig");
@@ -143,6 +144,7 @@ const assert=require("node:assert/strict");
   assert.ok(result.fallbackHidden,"Old procedurally-created mesh is hidden");
   assert.ok(result.statuses.some(s=>s.kind==="ready"),"HUD loading success reported");
   assert.equal(result.has3D,true,"3D card is rendered from GLB: "+result.cardStatus);
+  assert.equal(result.cardSource,"kinemiq-retarget","Card must select actual retarget, not silent fallback");
   assert.match(result.cardStatus,/3D Рен загружен/);
   console.log("REN-GLB-003: Chromium live import & card passed");
  }finally{await browser.close();}

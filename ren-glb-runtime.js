@@ -67,8 +67,9 @@ const RenGlbRuntime=(()=>{
     switch(activity.slot){
      case "idle":{
       const breath=Math.sin(2*Math.PI*p);
-      turn("spine",.012*breath);turn("head",-.008*breath);
-      turn("capeA",.015*breath);break;
+      turn("spine",.055*breath);turn("head",-.025*breath);
+      turn("shR",.035*breath);turn("shL",.035*breath);
+      turn("capeA",.055*breath);break;
      }
      case "basic":case "special":case "powerful":{
       const strength=activity.slot==="powerful"?1.2:1;

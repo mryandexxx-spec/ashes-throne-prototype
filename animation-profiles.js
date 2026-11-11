@@ -17,12 +17,16 @@ const AnimationProfiles=(()=>{
   death:Object.freeze({kind:"death",durationMs:400,amplitude:.85})
  });
  const overrides=new Map();
+ // RENPACE018: Meshy source clips last 14.0s idle, 2.83s combo,
+ // 2.5s axe spin, 4.83s hit (including recovery), 2.97s death.
+ // Intentional presentation-only pacing at x1; x2/x4 still use BattleSpeed.
  overrides.set("ren",Object.freeze({
-  idle:Object.freeze({kind:"idle",durationMs:3000,amplitude:0}),
-  basic:Object.freeze({kind:"lunge",durationMs:420,amplitude:.55}),
-  special:Object.freeze({kind:"lunge",durationMs:520,amplitude:.7}),
-  powerful:Object.freeze({kind:"lunge",durationMs:650,amplitude:.85}),
-  hit:Object.freeze({kind:"hit",durationMs:260,amplitude:.18})
+  idle:Object.freeze({kind:"idle",durationMs:14000,amplitude:0}),
+  basic:Object.freeze({kind:"lunge",durationMs:2000,amplitude:.55}),
+  special:Object.freeze({kind:"lunge",durationMs:2200,amplitude:.7}),
+  powerful:Object.freeze({kind:"lunge",durationMs:2300,amplitude:.85}),
+  hit:Object.freeze({kind:"hit",durationMs:1400,amplitude:.18}),
+  death:Object.freeze({kind:"death",durationMs:2500,amplitude:.85})
  }));
  function register(heroId,slots){
   if(typeof heroId!=="string"||!heroId.trim()||!slots||typeof slots!=="object"||Array.isArray(slots))

@@ -102,12 +102,17 @@ const RenMotionRetarget=(()=>{
     }
     // Change from source (Y-up global) axes to target bone-local axes.
     // No Euler-angle guessing; this preserves direction under Ren's rig axes.
-    const v=new B.Vector3(x,y,z);
-    const local=B.Vector3.TransformCoordinates(v,
-      B.Matrix.FromQuaternion(axis)); // inverse world-rest orientation
-    const magnitude=local.length();
+    // Quaternion vector rotation (axis = inverse target world-rest):
+    // v' = v + q.w*(2*q.xyz × v) + q.xyz × (2*q.xyz × v).
+    // Avoid Babylon Matrix.FromQuaternion (not available in pinned v9).
+    const {x:qx,y:qy,z:qz,w:qw}=axis;
+    const tx=2*(qy*z-qz*y),ty=2*(qz*x-qx*z),tz=2*(qx*y-qy*x);
+    const lx=x+qw*tx+(qy*tz-qz*ty);
+    const ly=y+qw*ty+(qz*tx-qx*tz);
+    const lz=z+qw*tz+(qx*ty-qy*tx);
+    const magnitude=Math.hypot(lx,ly,lz);
     const q=magnitude>1e-9
-     ?B.Quaternion.RotationAxis(local.scale(1/magnitude),magnitude)
+     ?B.Quaternion.RotationAxis(new B.Vector3(lx/magnitude,ly/magnitude,lz/magnitude),magnitude)
      :B.Quaternion.Identity();
     bone.rotationQuaternion.copyFrom(base.get(target).multiply(q));
    }

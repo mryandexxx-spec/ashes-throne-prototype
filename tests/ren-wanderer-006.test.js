@@ -11,7 +11,7 @@ test("RENW006: static import succeeds, grounds feet and preserves fallback lifec
  let root,requested;
  const fallback={isVisible:true,isPickable:true};
  const mesh={getTotalVertices:()=>3,computeWorldMatrix(){},getBoundingInfo:()=>({boundingBox:{minimumWorld:new V(-2,-1,-1),maximumWorld:new V(2,3,1)}})};
- const result={meshes:[mesh],transformNodes:[],skeletons:[{dispose(){this.disposed=true;}}],animationGroups:["Idle_4","Double_Combo_Attack","Slap_Reaction","Dead"].map(name=>({name,from:0,to:1,start(){},stop(){},pause(){},goToFrame(){},dispose(){}}))};
+ const result={meshes:[mesh],transformNodes:[],skeletons:[{dispose(){this.disposed=true;}}],animationGroups:["Idle_4","Double_Combo_Attack","Slap_Reaction","Dead","Running"].map(name=>({name,from:0,to:1,start(){},stop(){},pause(){},goToFrame(){},dispose(){},targetedAnimations:[{target:{name:"mixamorig:Hips"},animation:{targetProperty:"position",getKeys(){return [{value:{x:0,y:.9,z:-1}},{value:{x:0,y:.8,z:0}}];}}}]}))};
  const B={Vector3:V,GLTFFileLoader:function(){},SceneLoader:{async ImportMeshAsync(...args){requested=args;return result;}},TransformNode:class {
   constructor(){this.scaling=new V(1,1,1);root=this;}
   dispose(){this.disposed=true;}

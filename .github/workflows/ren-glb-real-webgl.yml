@@ -7,6 +7,7 @@ on:
       - 'ren-choreography.js'
       - 'ren-combat-lab.*'
       - 'tests/ren-choreography-webgl.cjs'
+      - 'tests/ren-game-choreography-webgl.cjs'
       - 'ren-card-3d.js'
       - 'ren-idle-kinemiq.js'
       - 'game.js'
@@ -43,6 +44,7 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ren-webgl-server.log 2>&1 &
           sleep 3
           node tests/ren-choreography-webgl.cjs
+          node tests/ren-game-choreography-webgl.cjs
           node tests/ren-meshy-browser-smoke.cjs
           node tests/ren-loading-webgl-005.cjs
           REN_BROWSER=webkit node tests/ren-loading-webgl-005.cjs

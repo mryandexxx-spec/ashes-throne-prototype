@@ -16,6 +16,7 @@ const BattleAnimation=(()=>{
    if(event.type==="ability"&&typeof event.actorId==="string"){
     const guard=events.slice(i+1).some(next=>(next.type==="effect"&&next.effect==="guard"||next.type==="heal")&&
      next.actorId===event.actorId&&next.targetId===event.targetId);
+    renAction=null;
     const action={id:event.actorId,targetId:event.targetId,slot:guard?"guard":
      AnimationProfiles.slots.includes(event.abilityId)?event.abilityId:"special"};
     if(action.id==="ren"&&action.slot==="basic"&&typeof RenChoreography!=="undefined"){

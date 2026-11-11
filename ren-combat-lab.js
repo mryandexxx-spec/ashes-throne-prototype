@@ -37,7 +37,7 @@
   time=times[$('phase').value]||0;$('scrub').value=String(time/plan.durationMs*1000);
  };
  for(const button of document.querySelectorAll('[data-view]'))button.onclick=()=>{
-  camera.alpha=button.dataset.view==='front'?0:-Math.PI/2;camera.beta=button.dataset.view==='top'?.2:1.27;
+  camera.alpha=button.dataset.view==='front'?Math.PI/4:-Math.PI/2;camera.beta=button.dataset.view==='top'?.2:1.27;
  };
  function draw(dt,render=true){
   if(document.hidden)return;

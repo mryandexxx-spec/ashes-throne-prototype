@@ -5,7 +5,7 @@
 const RenChoreography=(()=>{
  "use strict";
  const ROOT=[[0.0,0.0,0.0],[33.33333,-0.00025704,0.00485814],[66.66667,-0.00207348,0.01217616],[100.0,-0.00462442,0.02179861],[133.33333,-0.00755734,0.03363061],[166.66666,-0.01100961,0.04765725],[200.00002,-0.01573567,0.06268841],[233.33335,-0.02016575,0.07705772],[266.66668,-0.02428869,0.09006917],[300.00001,-0.02811859,0.10144454],[333.33334,-0.0317331,0.11132336],[366.66667,-0.03513082,0.11945611],[400.00001,-0.03975413,0.12748599],[433.33334,-0.04555387,0.13581735],[466.6667,-0.05196732,0.14454585],[500.0,-0.0580711,0.1530506],[533.33336,-0.0610682,0.15820181],[566.66666,-0.0627835,0.16183764],[600.00002,-0.0651592,0.16427982],[633.33333,-0.06932061,0.1660856],[666.66669,-0.07558867,0.16771066],[699.99999,-0.08159651,0.17580104],[733.33335,-0.08560837,0.18761182],[766.66665,-0.08879833,0.20249629],[800.00001,-0.0915693,0.2200259],[833.33331,-0.09341441,0.23981309],[866.66667,-0.0940056,0.26195377],[899.99998,-0.09327966,0.2845034],[933.33334,-0.09203122,0.30644405],[966.66664,-0.090551,0.32682282],[1000.0,-0.0885254,0.34470099]];
- const SOURCE=Object.freeze({attackEndFrame:60,contactFrame:39,attackMs:1000,runMs:633.333333,walkMs:1033.333333});
+ const SOURCE=Object.freeze({attackEndFrame:60,contactFrame:39,attackMs:1000,runMs:633.333333,walkMs:1033.333333,runStrideSpeed:4.665,walkStrideSpeed:1.35});
  const clamp=v=>Math.max(0,Math.min(1,v));
  const smooth=v=>{v=clamp(v);return v*v*(3-2*v);};
  let scale=1,spacing=1.05;
@@ -25,7 +25,7 @@ const RenChoreography=(()=>{
   distance=Number.isFinite(distance)?Math.max(0,distance):4.9;
   // Candidate contact spacing; exposed on the lab for visual acceptance.
   const travel=Math.max(0,distance-spacing);
-  const runSpeed=4.6*scale,walkSpeed=1.65*scale;
+  const runSpeed=SOURCE.runStrideSpeed*scale,walkSpeed=SOURCE.walkStrideSpeed*scale;
   const approachMs=travel?travel/runSpeed*1000+160:0;
   const attackStart=approachMs+120;
   const attackEnd=attackStart+SOURCE.attackMs;
@@ -52,10 +52,10 @@ const RenChoreography=(()=>{
   let forward=0,lateral=0,a={name:'Idle_4',progress:0},b=a,weight=0,phase='idle';
   if(t<p.approachMs){
    phase='approach';forward=p.travel*travelAt(t,p.approachMs);
-   a={name:'Idle_4',progress:0};b=clip('Running',p.travel*travelAt(t,p.approachMs)/(4.6*p.scale)*1000);weight=smooth(t/120);
+   a={name:'Idle_4',progress:0};b=clip('Running',p.travel*travelAt(t,p.approachMs)/(SOURCE.runStrideSpeed*p.scale)*1000);weight=smooth(t/120);
   }else if(t<p.attackStart){
    phase='brake';forward=p.travel;
-   a=clip('Running',p.travel/(4.6*p.scale)*1000);b=clip('Double_Combo_Attack',0);weight=smooth((t-p.approachMs)/120);
+   a=clip('Running',p.travel/(SOURCE.runStrideSpeed*p.scale)*1000);b=clip('Double_Combo_Attack',0);weight=smooth((t-p.approachMs)/120);
    if(!p.approachMs)a={name:'Idle_4',progress:0};
   }else if(t<p.attackEnd){
    phase=t<p.contactMs?'windup':'strike';
@@ -67,7 +67,7 @@ const RenChoreography=(()=>{
   }else if(t<p.settleStart){
    phase='retreat';const ms=t-p.retreatStart,f=1-travelAt(ms,p.retreatMs);
    forward=(p.travel+p.endRoot.forward)*f;lateral=p.endRoot.lateral*f;
-   a={name:'Idle_4',progress:0};b=clip('Walking',-p.retreatDistance*(1-f)/(1.65*p.scale)*1000);weight=smooth(ms/140)*smooth((p.settleStart-t)/140);
+   a={name:'Idle_4',progress:0};b=clip('Walking',-p.retreatDistance*(1-f)/(SOURCE.walkStrideSpeed*p.scale)*1000);weight=smooth(ms/140)*smooth((p.settleStart-t)/140);
   }else{phase='settle';}
   return {phase,forward,lateral,a,b,weight,contact:Math.abs(t-p.contactMs)<35};
  }

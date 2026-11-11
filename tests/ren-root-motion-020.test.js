@@ -55,3 +55,9 @@ test('RENCHOR021: calibration cannot change an existing action or activate an un
  C.calibrate(1.5);assert.deepEqual(C.sample(p,p.contactMs),before);
  A.clear();A.enqueue([{type:'ability',actorId:'ren',targetId:'shade',abilityId:'basic'}],{ren:{x:0,z:0,choreographyReady:false},shade:{x:5,z:0}});A.tick(1);assert.equal(A.activity('ren').plan,undefined);A.clear();
 });
+
+test('RENCHOR021: travel cycles advance by authored stance displacement, independent of ramps',()=>{
+ C.calibrate(1);const p=C.plan(4.9),t=p.approachMs/2,s=C.sample(p,t);
+ const cycles=s.forward/C.SOURCE.runStrideSpeed/(C.SOURCE.runMs/1000);
+ assert.ok(Math.abs(s.b.progress-(cycles%1))<1e-6);
+});

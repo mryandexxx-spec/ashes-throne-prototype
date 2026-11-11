@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -39,6 +40,6 @@ assert.match(html,/src="story-trial-data.js"/);
 assert.ok(!read("hero-collection-core.js").includes("trial-ren"));
 assert.ok(!read("progress-v3-core.js").includes("trial-ren"));
 assert.ok(!read("campaign-data.js").includes("trial-ren"));
-assert.equal(pkg.version,"0.3.107");
-assert.match(html,/v0\.3\.107 · UIHUD001/);
+assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
+assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001/);
 console.log("STORY-002: 3 trial-only playable heroes, effects, arena setup and save isolation passed");

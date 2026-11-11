@@ -149,9 +149,12 @@ const assert=require("node:assert/strict");
    const has3D=document.getElementById("detailHeroStage")?.classList.contains("has-ren-3d");
    const cardSource=cardCanvas?.dataset.animationSource;
    const cardPoseSource=cardCanvas?.dataset.poseSource;
-   RenCard3D.dispose();
    return {skeletalAttack,plantedHips,restoredSpine,repeatStable,facing,imported,meshCount,clipCount,fallbackHidden,statuses,cardStatus,has3D,cardSource,cardPoseSource,status,usesRealRig,kinHeadMoves,kinShoulderMoves,kinHipsStance,kinHipsPositionStable,kinStable,targetRetargetReady,retargetHeadMoves,retargetShoulderMoves,retargetRootPinned,retargetStable,retargetFootDrift,retargetHandsApart,poseReady,poseDisplacement,poseSeparation,poseMetrics:pose?.measurements,poseBeforeCoords,poseAfterCoords,shoulderPeak,shoulderJerk,spinePeak,legDrift};
   });
+  // Visual review artifact: screenshot the actual card, not a guessed stick figure.
+  const cardImage=await page.locator("#renCard3DCanvas").screenshot({type:"jpeg",quality:32,timeout:15000});
+  console.log("RENPOSE016_VIEW "+cardImage.toString("base64"));
+  await page.evaluate(()=>RenCard3D.dispose());
   console.log("REN WEBGL SMOKE",JSON.stringify(result));
   assert.equal(result.skeletalAttack,true,"attack moves the actual supplied rig");
   assert.equal(result.usesRealRig,true,"KinemIQ connects to actual Ren GLB transform nodes");

@@ -66,6 +66,11 @@ const RenGlbRuntime=(()=>{
   return text;
  }
 
+ // Keep combat animation timing unchanged; loading feedback must not alter it.
+ const clipProgress=(slot,progress)=>{
+  const p=Math.max(0,Math.min(1,Number.isFinite(progress)?progress:0));
+  return slot!=="idle"&&clipFor(slot)===CLIPS.idle?0:p;
+ };
  function choreography(activity){
   if(activity?.plan&&activity.slot==="basic"&&typeof RenChoreography!=="undefined")
    return RenChoreography.sample(activity.plan,activity.elapsedMs);

@@ -1,4 +1,4 @@
-/* RENIDLE010/011/012 — KinemIQ Idle_relaxed (CC0) sampled animation delta overlay.
+/* RENIDLE010/011/012/013 — KinemIQ Idle_relaxed (CC0) sampled animation delta overlay.
  * SOURCE: KinemIQ_Free_Animations_CC0_GLB.zip / GLB/Idle_relaxed.glb
  * 14 sampled keys from 76 frames / 2.5 seconds at 30fps. Rotations are local
  * quaternion deltas relative to the source's first frame (not raw bind poses).
@@ -34,24 +34,20 @@ const RenKinemIQIdle=(()=>{
   const data=channel.data;
   return [0,1,2].map(k=>(data[index*3+k]*(1-blend)+data[next*3+k]*blend)*channel.weight/10000);
  }
- // Asymmetric, relaxed upper-body stance: legs remain planted.
- // RENPOSE012: a readable *whole-body* resting silhouette, not micro-pose.
- // Compensate outward thigh rotations at the ankles to keep the soles near level.
- // All values are in radians; no joint translations, scaling or root motion.
+ // Local card-only pose (radians). Ren retains his authored leg/foot bind pose.
+ // RENSTANCE013: conservative, upright rest pose after the awkward bent-knee,
+ // hands-in-front silhouette observed on iPhone. Avoid arbitrary leg IK with
+ // local joint rotations: knee/ankle compensation without a planted-foot solve
+ // breaks balance and can make feet cross.
+ // The source skeleton owns the feet. Mild torso/arm asymmetry stays readable.
  const STANCE=Object.freeze({
-  hips:Object.freeze({x:0,y:-.025,z:.024}),
-  spine:Object.freeze({x:.035,y:-.035,z:-.045}),
-  head:Object.freeze({x:-.032,y:.025,z:-.012}),
-  shL:Object.freeze({x:-.13,y:.015,z:-.16}),
-  shR:Object.freeze({x:-.085,y:-.01,z:.13}),
-  elL:Object.freeze({x:-.24,y:0,z:.035}),
-  elR:Object.freeze({x:-.17,y:0,z:-.025}),
-  hipL:Object.freeze({x:.085,y:0,z:-.085}),
-  hipR:Object.freeze({x:-.06,y:0,z:.072}),
-  kneeL:Object.freeze({x:-.095,y:0,z:0}),
-  kneeR:Object.freeze({x:-.055,y:0,z:0}),
-  ankL:Object.freeze({x:.048,y:0,z:.08}),
-  ankR:Object.freeze({x:.057,y:0,z:-.072})
+  hips:Object.freeze({x:0,y:0,z:.012}),
+  spine:Object.freeze({x:.006,y:-.018,z:-.022}),
+  head:Object.freeze({x:-.012,y:.022,z:.008}),
+  shL:Object.freeze({x:.012,y:.005,z:-.09}),
+  shR:Object.freeze({x:-.014,y:-.008,z:.07}),
+  elL:Object.freeze({x:.012,y:0,z:.006}),
+  elR:Object.freeze({x:-.016,y:0,z:-.006})
  });
  const STANCE_TARGETS=Object.freeze(Object.keys(STANCE));
  const smooth=(a,b,v)=>{const t=clamp((v-a)/(b-a),0,1);return t*t*(3-2*t);};
@@ -79,7 +75,7 @@ const RenKinemIQIdle=(()=>{
    const sourceMs=ms*PLAYBACK_RATE;
    const phase=((sourceMs%DURATION_MS)+DURATION_MS)%DURATION_MS;
    const weight=seamWeight(phase);
-   // Small and non-metronomic weight shift: no global y translation.
+   // Subtle, slow torso shift; no root translation or artificial knee cycling.
    const sway=Math.sin(2*Math.PI*ms/11300)*.016;
    for(const name of involved){
     const node=targets.get(name),channel=channels.get(name);

@@ -1,0 +1,19 @@
+name: Ren retarget skeletal audit
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tests/ren-retarget-rig-audit.cjs'
+      - 'assets/ren-wanderer-v1.glb'
+      - '.github/workflows/ren-retarget-audit.yml'
+jobs:
+  rig:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: node tests/ren-retarget-rig-audit.cjs

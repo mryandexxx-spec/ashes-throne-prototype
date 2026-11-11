@@ -5,7 +5,7 @@
 const RenCard3D=(()=>{
  "use strict";
  let active=false,engine=null,scene=null,camera=null,holder=null,animation=null;
- let rigPose=null,kinemiqIdle=null,idleMs=0;
+ let rigPose=null,kinemiqIdle=null,retargetIdle=null,idleMs=0;
  let render=null,loadingToken=0,view="model",sizeObserver=null;
  const byId=id=>document.getElementById(id);
  function report(text){const el=byId("renCard3DStatus");if(el)el.textContent=text;}
@@ -41,9 +41,11 @@ const RenCard3D=(()=>{
    engine.dispose();
   }
   sizeObserver?.disconnect();sizeObserver=null;
-  engine=null;scene=null;camera=null;holder=null;animation=null;render=null;rigPose=null;kinemiqIdle=null;idleMs=0;
+  engine=null;scene=null;camera=null;holder=null;animation=null;render=null;rigPose=null;kinemiqIdle=null;retargetIdle=null;idleMs=0;
   const stage=byId("detailHeroStage");
   stage?.classList.remove("has-ren-3d");
+  const canvas=byId("renCard3DCanvas");
+  if(canvas)delete canvas.dataset.animationSource;
   const portrait=byId("detailRenPortrait");
   if(portrait)portrait.hidden=false;
  }
@@ -84,7 +86,8 @@ const RenCard3D=(()=>{
    key.intensity=1;
    render=()=>{if(active&&!document.hidden&&view==="model"){
     idleMs+=Math.min(engine.getDeltaTime(),100);
-    if(kinemiqIdle)kinemiqIdle(idleMs);
+    if(retargetIdle)retargetIdle(idleMs);
+    else if(kinemiqIdle)kinemiqIdle(idleMs);
     else rigPose?.({slot:"idle",progress:(idleMs%3000)/3000});
     scene.render();
    }};
@@ -130,11 +133,24 @@ const RenCard3D=(()=>{
    groups.forEach(g=>g.stop());
    // KinemIQ upper-body motion takes priority on the card only.
    // Never mix imported AnimationGroups with additive quaternion poses.
-   kinemiqIdle=typeof RenKinemIQIdle!=="undefined"
-    ?RenKinemIQIdle.create(BABYLON,result.transformNodes):null;
-   if(kinemiqIdle)kinemiqIdle(0);
-   else if(animation)animation.start(true,1);
-   else rigPose=RenGlbRuntime.createRigAnimator(BABYLON,result.transformNodes);
+   // RENRETARGET014: authentic KinemIQ motion converted through both rigs'
+   // rest-space axes. The earlier hand-turned pseudo-pose is fallback only.
+   try{
+    retargetIdle=typeof RenMotionRetarget!=="undefined"
+     ?RenMotionRetarget.create(BABYLON,result.transformNodes):null;
+   }catch(retargetError){
+    console.warn("RENRETARGET014: pose retarget unavailable; using fallback",retargetError);
+    retargetIdle=null;
+   }
+   if(retargetIdle)retargetIdle(0);
+   if(canvas)canvas.dataset.animationSource=retargetIdle?"kinemiq-retarget":"legacy-fallback";
+   if(!retargetIdle){
+    kinemiqIdle=typeof RenKinemIQIdle!=="undefined"
+     ?RenKinemIQIdle.create(BABYLON,result.transformNodes):null;
+    if(kinemiqIdle)kinemiqIdle(0);
+    else if(animation)animation.start(true,1);
+    else rigPose=RenGlbRuntime.createRigAnimator(BABYLON,result.transformNodes);
+   }
    setMode("model");
    engine.resize();
    endLoading();

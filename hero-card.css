@@ -110,3 +110,16 @@ body.hero-card-mode:has(#heroDetail.active)::before{background:linear-gradient(9
 /* Keep this screen's build marker visible instead of clipping the legacy history. */
 body.hero-card-mode #buildVersion{font-size:0}
 body.hero-card-mode #buildVersion::before{content:attr(data-short-build);font-size:9px;line-height:16px}
+/* At low Safari heights, secondary links share the header, freeing progression space. */
+@media(orientation:landscape) and (max-height:360px){
+ #heroDetail .hero-detail-heading>div:first-child{padding-right:180px}
+ #heroDetail .hero-card-links{position:absolute;top:2px;right:170px;width:176px;grid-template-columns:1fr 1fr;margin:0}
+ #heroDetail .hero-card-links button{height:44px;font-size:10px}
+ #heroDetail .hero-card-level{padding:4px 7px}
+ #heroDetail #detailLevel{font-size:13px;margin:0}
+ #heroDetail #heroCardCap{font-size:9px;margin:2px 0}
+ #heroDetail #detailUpgrade{margin:0}
+ #heroDetail .hero-detail-reference>.hero-abilities-panel{grid-template-rows:minmax(0,1fr)}
+ #heroDetail #heroAbilitiesTitle{display:none}
+ #heroDetail .hero-abilities-list{grid-template-rows:repeat(5,minmax(44px,1fr))}
+}

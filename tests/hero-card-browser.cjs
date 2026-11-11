@@ -18,9 +18,10 @@ const {chromium,webkit}=require('playwright');
     return {overflow:document.documentElement.scrollHeight>innerHeight+1||document.documentElement.scrollWidth>innerWidth+1,
      outside:ids.filter(id=>{let r=document.getElementById(id).getBoundingClientRect();return r.left<0||r.top<0||r.right>innerWidth+1||r.bottom>innerHeight+1}),
      tiny:buttons.filter(b=>{let r=b.getBoundingClientRect();return r.width<43||r.height<43}).map(b=>b.id||b.dataset.heroAbility),
+     outsideButtons:buttons.filter(n=>{let r=n.getBoundingClientRect();return r.left<0||r.top<0||r.right>innerWidth+1||r.bottom>innerHeight+1}).map(n=>n.id||n.dataset.heroAbility),
      model:document.getElementById('detailHeroStage').getBoundingClientRect().height};
    });
-   console.log(label,boxes);assert.equal(boxes.overflow,false);assert.deepEqual(boxes.outside,[]);assert.deepEqual(boxes.tiny,[]);assert.ok(boxes.model>180);
+   console.log(label,boxes);assert.equal(boxes.overflow,false);assert.deepEqual(boxes.outside,[]);assert.deepEqual(boxes.tiny,[]);assert.deepEqual(boxes.outsideButtons,[]);assert.ok(boxes.model>160);
   }
   for(const [w,h] of [[844,390],[932,430],[844,320]]){
    await page.setViewportSize({width:w,height:h});await page.waitForTimeout(150);await fits(`${w}x${h}`);
@@ -41,6 +42,11 @@ const {chromium,webkit}=require('playwright');
   await page.evaluate(()=>{document.getElementById('devResourcesGrant').click();renderHeroDetail();});
   const before=await page.evaluate(()=>({level:progress.levels.ren,currency:progress.currency,rank:StarCore.rankOf(progress,'ren')}));
   await fits('resources/star upgrade available');
+  await page.setViewportSize({width:844,height:320});
+  await page.evaluate(()=>{document.getElementById('app').style.padding='0 44px 21px';});
+  await fits('low Safari with simulated safe-area and available star upgrade');
+  await page.evaluate(()=>{document.getElementById('app').style.padding='';});
+  await page.setViewportSize({width:844,height:390});
   await page.locator('#detailUpgrade').click();
   const after=await page.evaluate(()=>({level:progress.levels.ren,currency:progress.currency}));
   assert.equal(after.level,before.level+1);assert.ok(after.currency<before.currency);

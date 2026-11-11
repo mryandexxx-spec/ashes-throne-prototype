@@ -5,12 +5,14 @@ on:
     paths:
       - 'ren-glb-runtime.js'
       - 'ren-card-3d.js'
+      - 'ren-idle-kinemiq.js'
       - 'game.js'
       - 'index.html'
       - 'styles.css'
       - 'assets/ren-animated-v02.glb'
       - 'assets/ren-wanderer-v1.glb'
       - 'tests/ren-glb-browser-smoke.cjs'
+      - 'tests/ren-idle-010.test.js'
       - 'tests/ren-loading-webgl-005.cjs'
       - '.github/workflows/ren-glb-real-webgl.yml'
 jobs:

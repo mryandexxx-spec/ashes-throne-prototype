@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 const test=require("node:test");
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -15,7 +16,7 @@ test("ENV017 selection retains the old ENV010 fallback and game HUD",()=>{
  assert.match(visual,/CombatEnvironment017\.build\(B,scene,owned\)/);
  assert.match(visual,/else if\(typeof CombatEnvironment010/);
  assert.match(html,/combat-environment-017\.js/);
- assert.match(html,/v0\.3\.107 · UIHUD001.*ENV017-MASSING/);
+ assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001.*ENV017-MASSING/);
 });
 test("ENV017 remains non-pickable and inspectable through real Babylon matrix",()=>{
  const src=fs.readFileSync("combat-environment-017.js","utf8");

@@ -99,6 +99,28 @@ const assert=require("node:assert/strict");
    const retargetHeadFirst=headBone.rotationQuaternion.clone();
    if(targetRig)targetRig(13000);
    const retargetStable=headBone.rotationQuaternion.equalsWithEpsilon(retargetHeadFirst);
+   // RENIDLE015 regression: test the full timeline, not just one snapshot.
+   const angleBetween=(a,b)=>{
+    const dot=Math.min(1,Math.abs(a.x*b.x+a.y*b.y+a.z*b.z+a.w*b.w));
+    return 2*Math.acos(dot);
+   };
+   targetRig(0);
+   let shoulderPeak=0,shoulderJerk=0,spinePeak=0,legDrift=0;
+   const shoulderStart=shoulderBone.rotationQuaternion.clone();
+   const spineCheck=scene.transformNodes.find(n=>n.name==="spine");
+   const spineStart=spineCheck.rotationQuaternion.clone();
+   const ankLeftHome=boneWorld("ankL"),ankRightHome=boneWorld("ankR");
+   let previousShoulder=shoulderStart.clone();
+   for(let t=100;t<=20000;t+=100){
+    targetRig(t);
+    const q=shoulderBone.rotationQuaternion;
+    shoulderPeak=Math.max(shoulderPeak,angleBetween(q,shoulderStart));
+    shoulderJerk=Math.max(shoulderJerk,angleBetween(q,previousShoulder));
+    previousShoulder=q.clone();
+    spinePeak=Math.max(spinePeak,angleBetween(spineCheck.rotationQuaternion,spineStart));
+    legDrift=Math.max(legDrift,B.Vector3.Distance(ankLeftHome,boneWorld("ankL")),
+      B.Vector3.Distance(ankRightHome,boneWorld("ankR")));
+   }
    scene.render();
    actor.dispose();
    scene.dispose();engine.dispose();canvas.remove();
@@ -117,7 +139,7 @@ const assert=require("node:assert/strict");
    const has3D=document.getElementById("detailHeroStage")?.classList.contains("has-ren-3d");
    const cardSource=cardCanvas?.dataset.animationSource;
    RenCard3D.dispose();
-   return {skeletalAttack,plantedHips,restoredSpine,repeatStable,facing,imported,meshCount,clipCount,fallbackHidden,statuses,cardStatus,has3D,cardSource,status,usesRealRig,kinHeadMoves,kinShoulderMoves,kinHipsStance,kinHipsPositionStable,kinStable,targetRetargetReady,retargetHeadMoves,retargetShoulderMoves,retargetRootPinned,retargetStable,retargetFootDrift,retargetHandsApart};
+   return {skeletalAttack,plantedHips,restoredSpine,repeatStable,facing,imported,meshCount,clipCount,fallbackHidden,statuses,cardStatus,has3D,cardSource,status,usesRealRig,kinHeadMoves,kinShoulderMoves,kinHipsStance,kinHipsPositionStable,kinStable,targetRetargetReady,retargetHeadMoves,retargetShoulderMoves,retargetRootPinned,retargetStable,retargetFootDrift,retargetHandsApart,shoulderPeak,shoulderJerk,spinePeak,legDrift};
   });
   console.log("REN WEBGL SMOKE",JSON.stringify(result));
   assert.equal(result.skeletalAttack,true,"attack moves the actual supplied rig");
@@ -129,6 +151,10 @@ const assert=require("node:assert/strict");
   assert.equal(result.retargetStable,true,"RETARGET014 poses must not accumulate drift");
   assert.ok(result.retargetFootDrift<.08,"RETARGET014 should not visibly slide ankles: "+result.retargetFootDrift);
   assert.ok(result.retargetHandsApart>.18,"RETARGET014 should not clasp hands in front of groin: "+result.retargetHandsApart);
+  assert.ok(result.shoulderPeak<.16,"RENIDLE015 no exaggerated shoulder motion: "+result.shoulderPeak);
+  assert.ok(result.shoulderJerk<.045,"RENIDLE015 no shoulder twitch over 100ms: "+result.shoulderJerk);
+  assert.ok(result.spinePeak<.12,"RENIDLE015 no fighter anticipation rocking: "+result.spinePeak);
+  assert.ok(result.legDrift<.005,"RENIDLE015 planted feet over 20s: "+result.legDrift);
   assert.equal(result.kinHeadMoves,true,"KinemIQ moves actual Ren head");
   assert.equal(result.kinShoulderMoves,true,"KinemIQ moves actual Ren shoulder");
   assert.equal(result.kinHipsStance,true,"Ren has intended slight pelvis tilt for relaxed stance");

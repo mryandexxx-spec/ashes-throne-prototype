@@ -6,12 +6,13 @@
  */
 const RenCardPose=(()=>{
  "use strict";
- const MAX_ROTATION=0.24; // ~14 degrees total per arm joint
+ const MAX_ROTATION=Object.freeze({elL:.12,shL:.18,elR:.85,shR:.30});
+ // Right elbow has room to bend so that the hand can rest near the belt.
  const TARGETS=Object.freeze({
   // Per-hand desired world offsets from Ren's hips, metres in imported rig.
   // x: lateral/right, y: vertical, z: character forward.
   handL:Object.freeze({x:-.345,y:-.12,z:.10}),
-  handR:Object.freeze({x:.33,y:.005,z:.15})
+  handR:Object.freeze({x:.36,y:.10,z:.20})
  });
  function create(B,nodes){
   if(!B?.Quaternion||!B?.Vector3||!Array.isArray(nodes))return null;
@@ -80,7 +81,7 @@ const RenCardPose=(()=>{
    // Several small steps prevent the extreme wrist-to-groin folding seen before.
    for(let pass=0;pass<8;pass++){
     for(const name of a.joints){
-     const remaining=MAX_ROTATION-used[name];
+     const remaining=MAX_ROTATION[name]-used[name];
      if(remaining>1e-5)used[name]+=fit(byName.get(name),hand,target,remaining);
     }
    }

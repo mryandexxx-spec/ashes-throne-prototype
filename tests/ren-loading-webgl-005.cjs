@@ -16,7 +16,11 @@ async function main(){
    if(m.type()==="error"&&!m.text().includes("Automatic fallback to software WebGL"))
     errors.push("console "+m.text());
   });
-  page.on("requestfailed",r=>errors.push("request "+r.url()+" "+r.failure()?.errorText));
+  page.on("requestfailed",r=>{
+   // Navigation can cancel non-blocking HEAD metadata probes; not a GLB download failure.
+   if(r.method()==="HEAD"&&r.url().endsWith("/assets/ren-meshy-mixamo-animated.glb")&&r.failure()?.errorText==="net::ERR_ABORTED")return;
+   errors.push("request "+r.url()+" "+r.failure()?.errorText);
+  });
   await page.goto("http://127.0.0.1:8765/",{waitUntil:"load"});
   // Deliberately never resolve import in this separate pending-state test.
   // The existing ren-glb-browser-smoke.cjs independently verifies real success.

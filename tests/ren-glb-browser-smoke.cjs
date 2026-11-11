@@ -158,6 +158,8 @@ const assert=require("node:assert/strict");
   assert.equal(result.poseReady,true,"RENPOSE016 runs on actual GLB skeleton");
   assert.ok(result.poseDisplacement>.008,"RENPOSE016 must visibly move at least one hand: "+result.poseDisplacement);
   assert.ok(result.poseSeparation>.4,"RENPOSE016 must not bring the hands toward the groin");
+  assert.ok(result.poseDisplacement<.18,"RENPOSE016 must remain a restrained pose, not an arm swing");
+  assert.ok(result.poseMetrics.handL<.10&&result.poseMetrics.handR<.15,"RENPOSE016 hands must approach rig-relative side targets: "+JSON.stringify(result.poseMetrics));
   assert.equal(result.targetRetargetReady,true,"RETARGET014 connects to the actual Ren GLB");
   assert.equal(result.retargetHeadMoves,true,"RETARGET014 moves head on real GLB");
   assert.equal(result.retargetShoulderMoves,true,"RETARGET014 moves shoulder on real GLB");

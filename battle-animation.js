@@ -58,7 +58,7 @@ const BattleAnimation=(()=>{
   const a=profile.amplitude;
   const pulse=progress<.42?progress/.42:(1-progress)/.58;
   switch(profile.kind){
-   case "idle":return {x:0,y:Math.sin(progress*Math.PI*2)*a,tilt:0};
+   case "idle":return empty(); // Feet stay planted; breathing belongs to the skeleton.
    case "lunge":return {x:a*pulse,y:.07*pulse,tilt:-.14*pulse};
    case "guard":return {x:-.05*pulse,y:a*pulse,tilt:.11*pulse};
    case "ward":return {x:0,y:a*Math.sin(progress*Math.PI),tilt:.05*pulse};

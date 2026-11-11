@@ -7,18 +7,18 @@ const read=f=>fs.readFileSync(path.join(__dirname,"..",f),"utf8");
 const html=read("index.html"),js=read("game.js"),css=read("styles.css"),cardSource=read("ren-card-3d.js");
 const runtime=read("ren-glb-runtime.js");
 test("REN-GLB-003: production footer and package identify the new build",()=>{
- assert.match(html,/id="buildVersion"[^>]*>Прототип · v0\.3\.106 · UIHUD001/);
- assert.equal(JSON.parse(read("package.json")).version,"0.3.106");
+ assert.match(html,/id="buildVersion"[^>]*>Прототип · v0\.3\.107 · UIHUD001/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
  assert.match(html,/ENV022-DEFAULT \+ RENGLB003/);
- assert.match(html,/styles\.css\?v=0\.3\.106/);
- assert.match(html,/game\.js\?v=0\.3\.106/);
+ assert.match(html,/styles\.css\?v=0\.3\.107/);
+ assert.match(html,/game\.js\?v=0\.3\.107/);
 });
 test("REN-GLB-003: dossier shows a touch-rotatable canvas only for Ren",()=>{
  assert.match(html,/id="renCard3DCanvas"[^>]*hidden/);
  assert.match(html,/id="renCardMode"/);
  assert.match(html,/id="renCardReset"/);
  assert.match(html,/id="renCard3DStatus"/);
- assert.match(html,/ren-card-3d\.js\?v=0\.3\.106/);
+ assert.match(html,/ren-card-3d\.js\?v=0\.3\.107/);
  assert.match(js,/RenCard3D\.activate\(hero\.id\)/);
  assert.match(js,/RenCard3D\.dispose\(\)/);
  assert.match(cardSource,/camera\.attachControl\(canvas,true\)/);

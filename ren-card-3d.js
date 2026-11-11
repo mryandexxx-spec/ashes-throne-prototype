@@ -5,6 +5,7 @@
 const RenCard3D=(()=>{
  "use strict";
  let active=false,engine=null,scene=null,camera=null,holder=null,animation=null;
+ let rigPose=null,idleMs=0;
  let render=null,loadingToken=0,view="model",sizeObserver=null;
  const byId=id=>document.getElementById(id);
  function report(text){const el=byId("renCard3DStatus");if(el)el.textContent=text;}
@@ -40,7 +41,7 @@ const RenCard3D=(()=>{
    engine.dispose();
   }
   sizeObserver?.disconnect();sizeObserver=null;
-  engine=null;scene=null;camera=null;holder=null;animation=null;render=null;
+  engine=null;scene=null;camera=null;holder=null;animation=null;render=null;rigPose=null;idleMs=0;
   const stage=byId("detailHeroStage");
   stage?.classList.remove("has-ren-3d");
   const portrait=byId("detailRenPortrait");
@@ -81,7 +82,11 @@ const RenCard3D=(()=>{
    fill.intensity=1.1;
    const key=new BABYLON.DirectionalLight("renKey",new BABYLON.Vector3(-.7,-1,-.5),scene);
    key.intensity=1;
-   render=()=>{if(active&&!document.hidden&&view==="model")scene.render();};
+   render=()=>{if(active&&!document.hidden&&view==="model"){
+    idleMs+=Math.min(engine.getDeltaTime(),100);
+    rigPose?.({slot:"idle",progress:(idleMs%3000)/3000});
+    scene.render();
+   }};
    engine.runRenderLoop(render);
    if(typeof ResizeObserver!=="undefined"){
     sizeObserver=new ResizeObserver(()=>{if(engine)engine.resize();});
@@ -123,6 +128,7 @@ const RenCard3D=(()=>{
    animation=groups.find(g=>g.name==="Ren_Idle_Breathing_3s")||null;
    groups.forEach(g=>g.stop());
    if(animation)animation.start(true,1);
+   else rigPose=RenGlbRuntime.createRigAnimator(BABYLON,result.transformNodes);
    setMode("model");
    engine.resize();
    endLoading();

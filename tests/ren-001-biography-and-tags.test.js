@@ -36,7 +36,7 @@ const heroSection=html.split('<section id="heroDetail"')[1]?.split('<section id=
 assert.ok(heroSection.includes('id="detailBiography"'),"normal hero profile has biography button");
 const storySection=html.split('<section id="storyDemo"')[1]?.split('<section id="squad"')[0];
 assert.ok(storySection.includes('id="storyRenBiography"'),"trial Ren profile can open biography without recruitment");
-assert.ok(html.indexOf('src="hero-profile-data.js"')<html.indexOf('src="game.js?v=0.3.106"'));
+assert.ok(html.indexOf('src="hero-profile-data.js"')<html.indexOf('src="game.js?v=0.3.107"'));
 assert.match(js,/function showHeroBiography\(/);
 assert.match(js,/HeroProfileData\.tagLabels/);
 assert.match(js,/heroBiographyDialog/);

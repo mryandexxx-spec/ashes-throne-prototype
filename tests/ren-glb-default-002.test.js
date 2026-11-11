@@ -7,7 +7,7 @@ const runtime=require("../ren-glb-runtime.js");
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 const game=read("game.js"),html=read("index.html"),battle=read("battle-animation.js");
 test("REN-GLB-DEFAULT-002: standard game loads GLB adapter, without opt-in flag or file chooser",()=>{
- assert.equal(runtime.ASSET_URL,"assets/ren-wanderer-v1.glb");
+ assert.equal(runtime.ASSET_URL,"assets/ren-meshy-mixamo-animated.glb");
  assert.match(html,/ren-glb-runtime\.js/);
  assert.match(game,/RenGlbRuntime\.create\(BABYLON,scene,meshes\.ren,/);
  assert.match(game,/renGlbRuntime\.update\(BattleAnimation\.activity\("ren"\)\)/);
@@ -15,12 +15,12 @@ test("REN-GLB-DEFAULT-002: standard game loads GLB adapter, without opt-in flag 
  assert.doesNotMatch(html,/renGlbBattleFile|renGlbBattleTools/);
 });
 test("REN-GLB-DEFAULT-002: animated GLB is mapped to existing combat slots",()=>{
- assert.equal(runtime.clipFor("idle"),"Ren_Idle_Breathing_3s");
- assert.equal(runtime.clipFor("basic"),"Ren_Attack_Unarmed_1p3s");
- assert.equal(runtime.clipFor("special"),"Ren_Attack_Unarmed_1p3s");
- assert.equal(runtime.clipFor("powerful"),"Ren_Attack_Unarmed_1p3s");
- assert.equal(runtime.clipFor("guard"),"Ren_Guard_3s");
- assert.equal(runtime.clipFor("hit"),"Ren_Hit_Reaction_0p9s");
+ assert.equal(runtime.clipFor("idle"),"Idle_4");
+ assert.equal(runtime.clipFor("basic"),"Double_Combo_Attack");
+ assert.equal(runtime.clipFor("special"),"Double_Combo_Attack");
+ assert.equal(runtime.clipFor("powerful"),"Double_Combo_Attack");
+ assert.equal(runtime.clipFor("guard"),"Idle_4");
+ assert.equal(runtime.clipFor("hit"),"Slap_Reaction");
  assert.match(battle,/function activity\(heroId\)/);
  assert.match(battle,/return Object\.freeze\(\{enqueue,clear,tick,pose,activity/);
 });

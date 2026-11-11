@@ -107,3 +107,6 @@ body.hero-card-mode #app>footer{margin:0;padding:0;border:0;font-size:9px;line-h
 #heroDetail .hero-card-ability-icon svg{width:23px;height:23px}
 #heroDetail #gearSlots .gear-slot svg{width:24px;height:24px;flex-shrink:0;pointer-events:none}
 body.hero-card-mode:has(#heroDetail.active)::before{background:linear-gradient(90deg,#101115ef,#101115c2 40%,#101115c2 60%,#101115ef),url("assets/hq-hall-painting-mobile.webp") center / cover no-repeat}
+/* Keep this screen's build marker visible instead of clipping the legacy history. */
+body.hero-card-mode #buildVersion{font-size:0}
+body.hero-card-mode #buildVersion::before{content:attr(data-short-build);font-size:9px;line-height:16px}

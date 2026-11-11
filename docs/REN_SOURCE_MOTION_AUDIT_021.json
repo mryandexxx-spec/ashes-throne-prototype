@@ -1,0 +1,39 @@
+{
+  "status": "technical measurements, artistic acceptance pending",
+  "asset": "assets/ren-meshy-mixamo-animated.glb",
+  "engine": "Babylon.js 9.33.2",
+  "method": "Original GLB evaluated with AnimationGroup.start/pause/goToFrame; stance ToeBase samples rounded to 1 mm before finite differences.",
+  "clipFramesPerSecond": 60,
+  "sourceKeysPerSecond": 30,
+  "runningStanceVelocitySamples": [
+    4.62,
+    4.59,
+    5.25,
+    4.71
+  ],
+  "runningStanceMedian": 4.665,
+  "walkingStanceMedian": 1.35,
+  "contactFrame": 37,
+  "contactSourceSeconds": 0.6166666666666667,
+  "normalizedModelScale": 1.2352938679274168,
+  "contactHandWorld": {
+    "x": 4.599409103393555,
+    "y": 1.867967963218689,
+    "z": 0.033552322536706924
+  },
+  "testTarget": {
+    "x": 4.9,
+    "z": 0,
+    "body": {
+      "y": 0.8,
+      "height": 1.5,
+      "radius": 0.42
+    },
+    "head": {
+      "y": 1.8,
+      "radius": 0.31
+    }
+  },
+  "calibratedStandOff": 1.2973097706624939,
+  "note": "Coordinates use origin x=0,z=0 and 4.9 m target distance. Contact was moved from frame 39 after discovering that a horizontal radius-only test missed the rounded capsule/head surface. This is a geometric cue, not proof of artistic quality."
+}

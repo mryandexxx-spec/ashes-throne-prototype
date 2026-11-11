@@ -10,7 +10,7 @@ test("REN-GLB-DEFAULT-002: standard game loads GLB adapter, without opt-in flag 
  assert.equal(runtime.ASSET_URL,"assets/ren-meshy-mixamo-animated.glb");
  assert.match(html,/ren-glb-runtime\.js/);
  assert.match(game,/RenGlbRuntime\.create\(BABYLON,scene,meshes\.ren,/);
- assert.match(game,/renGlbRuntime\.update\(BattleAnimation\.activity\("ren"\)\)/);
+ assert.match(game,/renGlbRuntime\.update\(activity\)/);
  assert.doesNotMatch(game,/renModel=local/);
  assert.doesNotMatch(html,/renGlbBattleFile|renGlbBattleTools/);
 });

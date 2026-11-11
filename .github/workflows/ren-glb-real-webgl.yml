@@ -4,6 +4,10 @@ on:
     branches: [main]
     paths:
       - 'ren-glb-runtime.js'
+      - 'ren-choreography.js'
+      - 'ren-combat-lab.*'
+      - 'tests/ren-choreography-webgl.cjs'
+      - 'tests/ren-game-choreography-webgl.cjs'
       - 'ren-card-3d.js'
       - 'ren-idle-kinemiq.js'
       - 'game.js'
@@ -39,6 +43,16 @@ jobs:
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ren-webgl-server.log 2>&1 &
           sleep 3
+          node tests/ren-choreography-webgl.cjs
+          node tests/ren-game-choreography-webgl.cjs
           node tests/ren-meshy-browser-smoke.cjs
           node tests/ren-loading-webgl-005.cjs
           REN_BROWSER=webkit node tests/ren-loading-webgl-005.cjs
+
+      - name: Upload choreography evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ren-choreography-webgl
+          path: artifacts/ren-choreography
+          retention-days: 14

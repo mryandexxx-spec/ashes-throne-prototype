@@ -17,6 +17,13 @@ const RenGlbRuntime=(()=>{
   const p=Math.max(0,Math.min(1,Number.isFinite(progress)?progress:0));
   return slot!=="idle"&&clipFor(slot)===CLIPS.idle?0:p;
  };
+ // Original clips are immutable. Basic attack X/Z is extracted per sample;
+ // the shared choreography moves the anchor by exactly the same world delta.
+ function choreography(activity){
+  if(activity?.plan&&activity.slot==="basic"&&typeof RenChoreography!=="undefined")
+   return RenChoreography.sample(activity.plan,activity.elapsedMs);
+  return {name:clipFor(activity?.slot),progress:clipProgress(activity?.slot,activity?.progress)};
+ }
  // Babylon exposes isDisposed as a boolean in v9; never call it as a method.
  const sceneDisposed=scene=>typeof scene?.isDisposed==="function"
   ?scene.isDisposed():scene?.isDisposed===true;
@@ -136,28 +143,59 @@ const RenGlbRuntime=(()=>{
    const restoreImported=createRigAnimator(B,result.transformNodes);
    const groupsList=result.animationGroups;
    groupsList.forEach(g=>g.stop());
-   if(!groups.has(CLIPS.idle)||!groups.has(CLIPS.basic)||!groups.has(CLIPS.hit)||!groups.has(CLIPS.death))throw Error("Meshy animation clips missing");
+   if(!groups.has(CLIPS.idle)||!groups.has(CLIPS.basic)||!groups.has(CLIPS.hit)||!groups.has(CLIPS.death)||!groups.has("Running"))throw Error("Meshy animation clips missing");
+   const hips=result.transformNodes.find(n=>n.name==="mixamorig:Hips");
+   const hipTrack=groups.get(CLIPS.idle).targetedAnimations.find(a=>a.target===hips&&a.animation.targetProperty==="position");
+   const hipReference=hipTrack?.animation.getKeys()[0]?.value.clone();
+   if(!hips||!hipReference)throw Error("Meshy Hips translation channel missing");
+   if(typeof RenChoreography!=="undefined")RenChoreography.calibrate(scale);
    // Do not hide the fallback until the whole GLB has been validated.
    const oldParts=[...visual.body.getChildMeshes(),...visual.head.getChildMeshes()]
     .filter(mesh=>!result.meshes.includes(mesh));
    for(const mesh of oldParts){mesh.isVisible=false;mesh.isPickable=false;}
-   const skeletalPose=createRigAnimator(B,result.transformNodes);
-   let lastName=null,stopped=false;
+   const poses=result.transformNodes.map(node=>({node,p:node.position.clone(),q:node.rotationQuaternion?.clone(),s:node.scaling.clone()}));
+   let stopped=false;
+   const prepared=new Set();
+   function samplePose(name,progress,extract){
+    restoreImported({slot:"idle",progress:0});
+    const group=groups.get(name)||groups.get(CLIPS.idle);
+    if(!prepared.has(group)){
+     group.start(false,1,group.from,group.to);group.pause();prepared.add(group);
+    }
+    group.goToFrame(group.from+(group.to-group.from)*progress);
+    if(extract&&name===CLIPS.basic){hips.position.x=hipReference.x;hips.position.z=hipReference.z;}
+   }
+   if(typeof RenChoreography!=="undefined"){
+    // Calibrate against the actual transformed hand at the candidate contact.
+    // Existing enemy capsules have radius .42; gameplay collision is unaffected.
+    samplePose(CLIPS.basic,RenChoreography.SOURCE.contactFrame/170,true);
+    const hand=result.transformNodes.find(n=>n.name==="mixamorig:RightHand");
+    if(hand){
+     hand.computeWorldMatrix(true);
+     const point=hand.getAbsolutePosition(),delta=RenChoreography.rootAt(RenChoreography.SOURCE.contactFrame/60*1000,scale);
+     RenChoreography.calibrate(scale,{forward:point.x-visual.body.position.x+delta.forward,lateral:point.z-visual.body.position.z+delta.lateral,y:point.y});
+    }
+    samplePose(CLIPS.idle,0,false);
+   }
    return {
+    sampleRaw(name,progress){if(!stopped)samplePose(name,Math.max(0,Math.min(1,progress)),false);},
     update(activity){
      if(stopped||!activity)return;
-     const name=clipFor(activity.slot);
-     const clip=groups.get(name)||groups.get(CLIPS.idle);
-     if(!clip){skeletalPose(activity);return;}
-     if(lastName!==name){
-      for(const group of groupsList)group.stop();
-      restoreImported({slot:"idle",progress:0});
-      clip.start(false,1,clip.from,clip.to);
-      clip.pause();
-      lastName=name;
+     const phase=choreography(activity);
+     if(!phase.a){samplePose(phase.name,phase.progress,false);return;}
+     samplePose(phase.a.name,phase.a.progress,true);
+     if(phase.weight>0){
+      for(const pose of poses){
+       pose.p.copyFrom(pose.node.position);pose.s.copyFrom(pose.node.scaling);
+       if(pose.q)pose.q.copyFrom(pose.node.rotationQuaternion);
+      }
+      samplePose(phase.b.name,phase.b.progress,true);
+      for(const pose of poses){
+       B.Vector3.LerpToRef(pose.p,pose.node.position,phase.weight,pose.node.position);
+       B.Vector3.LerpToRef(pose.s,pose.node.scaling,phase.weight,pose.node.scaling);
+       if(pose.q)B.Quaternion.SlerpToRef(pose.q,pose.node.rotationQuaternion,phase.weight,pose.node.rotationQuaternion);
+      }
      }
-     // Pose follows the authoritative Combat-005 timeline and battle speed.
-     clip.goToFrame(clip.from+(clip.to-clip.from)*clipProgress(activity.slot,activity.progress));
     },
     dispose(){
      if(stopped)return;
@@ -196,10 +234,12 @@ const RenGlbRuntime=(()=>{
   });
   return Object.freeze({
    ready:promise,
+   get isReady(){return !!instance&&!disposed;},
    update(activity){instance?.update(activity);},
+   sampleRaw(name,progress){instance?.sampleRaw(name,progress);},
    dispose(){disposed=true;instance?.dispose();instance=null;}
   });
  }
- return Object.freeze({ASSET_URL,clipFor,clipProgress,create,ensureLoader,createRigAnimator});
+ return Object.freeze({ASSET_URL,clipFor,clipProgress,choreography,create,ensureLoader,createRigAnimator});
 })();
 if(typeof module!=="undefined")module.exports=RenGlbRuntime;

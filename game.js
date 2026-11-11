@@ -63,7 +63,13 @@ function captureResolvedVisuals(beforeFighters){
  }
  // Non-rendering contexts still finish immediately; never let graphics gate rules.
  if(!scene||!engine)return;
- BattleAnimation.enqueue(state.events);
+ const positions={};
+ const fighters=beforeFighters||presentationFighters();
+ for(const side of ["ally","enemy"]){
+  const team=fighters.filter(f=>f.side===side);
+  team.forEach((f,i)=>{positions[f.id]={...formationPosition(side,i,team.length),choreographyReady:f.id!=="ren"||renGlbRuntime?.isReady===true};});
+ }
+ BattleAnimation.enqueue(state.events,positions);
  const events=state.events||[];
  const waveChanged=events.some(event=>event.type==="wave-start");
  const ended=events.some(event=>event.type==="battle-end");
@@ -2769,7 +2775,16 @@ function renderBattleFrame(){
   visual.head.position.y=1.8+pose.y;
   if(visual.body.rotation)visual.body.rotation.z=pose.tilt;
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
-  if(h.id==="ren"&&renGlbRuntime)renGlbRuntime.update(BattleAnimation.activity("ren"));
+  if(h.id==="ren"&&renGlbRuntime){
+   if(visual.body.rotation&&targetPosition&&activity.plan){
+    const yaw=-Math.atan2(targetPosition.z-origin.z,targetPosition.x-origin.x);
+    if(visual.renPlan!==activity.plan){visual.renPlan=activity.plan;visual.renStartYaw=visual.body.rotation.y||0;}
+    const turn=Math.atan2(Math.sin(yaw-visual.renStartYaw),Math.cos(yaw-visual.renStartYaw));
+    const u=Math.min(1,activity.elapsedMs/120);
+    visual.body.rotation.y=visual.renStartYaw+turn*u*u*(3-2*u);
+   }
+   renGlbRuntime.update(activity);
+  }
  }
  positionArenaIndicators();
  scene.render();

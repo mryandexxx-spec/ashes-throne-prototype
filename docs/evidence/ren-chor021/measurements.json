@@ -1,0 +1,91 @@
+{
+  "results": [
+    {
+      "distance": 2.5,
+      "speed": 1,
+      "maxStep": 0.09427693890363804,
+      "strikeFootDrift": 0.040368407865414964,
+      "contactError": 3.2821699735841037e-7,
+      "returnX": -1.25,
+      "returnZ": 0
+    },
+    {
+      "distance": 2.5,
+      "speed": 2,
+      "maxStep": 0.18528705634738185,
+      "strikeFootDrift": 0.040368407865414964,
+      "contactError": 3.2821699735841037e-7,
+      "returnX": -1.25,
+      "returnZ": 0
+    },
+    {
+      "distance": 2.5,
+      "speed": 4,
+      "maxStep": 0.36440120231173473,
+      "strikeFootDrift": 0.040368407865414964,
+      "contactError": 3.2821699735841037e-7,
+      "returnX": -1.25,
+      "returnZ": 0
+    },
+    {
+      "distance": 4.9,
+      "speed": 1,
+      "maxStep": 0.11778356027681537,
+      "strikeFootDrift": 0.04036827135242041,
+      "contactError": 5.131624060683571e-7,
+      "returnX": -2.45,
+      "returnZ": 0
+    },
+    {
+      "distance": 4.9,
+      "speed": 2,
+      "maxStep": 0.22798760949737787,
+      "strikeFootDrift": 0.04036827135242041,
+      "contactError": 5.131624060683571e-7,
+      "returnX": -2.45,
+      "returnZ": 0
+    },
+    {
+      "distance": 4.9,
+      "speed": 4,
+      "maxStep": 0.42914703732476445,
+      "strikeFootDrift": 0.04036827135242041,
+      "contactError": 5.131624060683571e-7,
+      "returnX": -2.45,
+      "returnZ": 0
+    },
+    {
+      "distance": 8,
+      "speed": 1,
+      "maxStep": 0.11778356027681537,
+      "strikeFootDrift": 0.04036827135242041,
+      "contactError": 1.341464935245007e-7,
+      "returnX": -4,
+      "returnZ": 0
+    },
+    {
+      "distance": 8,
+      "speed": 2,
+      "maxStep": 0.22798766905318002,
+      "strikeFootDrift": 0.04036827135242041,
+      "contactError": 1.341464935245007e-7,
+      "returnX": -4,
+      "returnZ": 0
+    },
+    {
+      "distance": 8,
+      "speed": 4,
+      "maxStep": 0.4469415950602947,
+      "strikeFootDrift": 0.04036827135242041,
+      "contactError": 1.341464935245007e-7,
+      "returnX": -4,
+      "returnZ": 0
+    }
+  ],
+  "firstZ": -1.0453884601593018,
+  "lastZ": -1.0453884601593018,
+  "meshes": 37,
+  "meshesAfter": 37,
+  "engine": 2,
+  "groups": 9
+}

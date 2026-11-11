@@ -1,4 +1,4 @@
-/* RENIDLE010/011 — KinemIQ Idle_relaxed (CC0) sampled animation delta overlay.
+/* RENIDLE010/011/012 — KinemIQ Idle_relaxed (CC0) sampled animation delta overlay.
  * SOURCE: KinemIQ_Free_Animations_CC0_GLB.zip / GLB/Idle_relaxed.glb
  * 14 sampled keys from 76 frames / 2.5 seconds at 30fps. Rotations are local
  * quaternion deltas relative to the source's first frame (not raw bind poses).
@@ -9,7 +9,7 @@
 const RenKinemIQIdle=(()=>{
  "use strict";
  const DURATION_MS=2500;
- const PLAYBACK_RATE=.58; // 4.31s instead of a brisk 2.5s source loop
+ const PLAYBACK_RATE=.52; // 4.31s instead of a brisk 2.5s source loop
  const GLANCE_PERIOD_MS=19000;
  const TIMES=Object.freeze([0,6,12,18,24,30,36,42,48,54,60,66,72,75]);
  // Each triple is quaternion delta x,y,z scaled by 10000.
@@ -35,14 +35,25 @@ const RenKinemIQIdle=(()=>{
   return [0,1,2].map(k=>(data[index*3+k]*(1-blend)+data[next*3+k]*blend)*channel.weight/10000);
  }
  // Asymmetric, relaxed upper-body stance: legs remain planted.
+ // RENPOSE012: a readable *whole-body* resting silhouette, not micro-pose.
+ // Compensate outward thigh rotations at the ankles to keep the soles near level.
+ // All values are in radians; no joint translations, scaling or root motion.
  const STANCE=Object.freeze({
-  spine:Object.freeze({x:.025,y:-.018,z:.026}),
-  head:Object.freeze({x:-.014,y:.018,z:-.018}),
-  shL:Object.freeze({x:-.055,y:0,z:-.075}),
-  shR:Object.freeze({x:-.02,y:0,z:.065}),
-  elL:Object.freeze({x:-.11,y:0,z:.014}),
-  elR:Object.freeze({x:-.075,y:0,z:-.008})
+  hips:Object.freeze({x:0,y:-.025,z:.024}),
+  spine:Object.freeze({x:.035,y:-.035,z:-.045}),
+  head:Object.freeze({x:-.032,y:.025,z:-.012}),
+  shL:Object.freeze({x:-.13,y:.015,z:-.16}),
+  shR:Object.freeze({x:-.085,y:-.01,z:.13}),
+  elL:Object.freeze({x:-.24,y:0,z:.035}),
+  elR:Object.freeze({x:-.17,y:0,z:-.025}),
+  hipL:Object.freeze({x:.085,y:0,z:-.085}),
+  hipR:Object.freeze({x:-.06,y:0,z:.072}),
+  kneeL:Object.freeze({x:-.095,y:0,z:0}),
+  kneeR:Object.freeze({x:-.055,y:0,z:0}),
+  ankL:Object.freeze({x:.048,y:0,z:.08}),
+  ankR:Object.freeze({x:.057,y:0,z:-.072})
  });
+ const STANCE_TARGETS=Object.freeze(Object.keys(STANCE));
  const smooth=(a,b,v)=>{const t=clamp((v-a)/(b-a),0,1);return t*t*(3-2*t);};
  // Fade source motion at the loop seam to avoid a snapping reset.
  const seamWeight=phase=>smooth(0,300,phase)*smooth(DURATION_MS,DURATION_MS-350,phase);
@@ -60,23 +71,29 @@ const RenKinemIQIdle=(()=>{
   if(!B?.Quaternion||!Array.isArray(nodes))return null;
   const baseline=new Map(nodes.filter(n=>n.rotationQuaternion).map(n=>[n.name,n.rotationQuaternion.clone()]));
   const found=CHANNELS.filter(c=>baseline.has(c.target));
-  if(!found.length)return null;
   const targets=new Map(nodes.filter(n=>baseline.has(n.name)).map(n=>[n.name,n]));
+  const involved=[...new Set([...STANCE_TARGETS,...found.map(c=>c.target)])].filter(n=>baseline.has(n));
+  if(!found.length||involved.length<6)return null;
+  const channels=new Map(found.map(c=>[c.target,c]));
   return ms=>{
-   for(const channel of found){
-    const node=targets.get(channel.target);
-    const sourceMs=ms*PLAYBACK_RATE;
-    const phase=((sourceMs%DURATION_MS)+DURATION_MS)%DURATION_MS;
-    const weight=seamWeight(phase);
-    const [rawX,rawY,rawZ]=sample(channel,sourceMs);
-    const [x,y,z]=[rawX*weight,rawY*weight,rawZ*weight];
-    const motion=new B.Quaternion(x,y,z,Math.sqrt(Math.max(0,1-x*x-y*y-z*z)));
-    const pose=STANCE[channel.target]||{x:0,y:0,z:0};
-    const relaxed=B.Quaternion.RotationYawPitchRoll(pose.y,pose.x,pose.z);
-    // Keep Ren's original skeleton; preserve the planted legs.
-    let next=baseline.get(channel.target).multiply(relaxed).multiply(motion);
-    if(channel.target==="head"){
-     next=next.multiply(B.Quaternion.RotationYawPitchRoll(glance(ms),0,0));
+   const sourceMs=ms*PLAYBACK_RATE;
+   const phase=((sourceMs%DURATION_MS)+DURATION_MS)%DURATION_MS;
+   const weight=seamWeight(phase);
+   // Small and non-metronomic weight shift: no global y translation.
+   const sway=Math.sin(2*Math.PI*ms/11300)*.016;
+   for(const name of involved){
+    const node=targets.get(name),channel=channels.get(name);
+    const pose=STANCE[name]||{x:0,y:0,z:0};
+    const relaxed=B.Quaternion.RotationYawPitchRoll(
+     pose.y+(name==="head"?glance(ms):0),
+     pose.x,
+     pose.z+(name==="hips"?sway:name==="spine"?-.5*sway:0));
+    let next=baseline.get(name).multiply(relaxed);
+    if(channel){
+     const [rawX,rawY,rawZ]=sample(channel,sourceMs);
+     const [x,y,z]=[rawX*weight,rawY*weight,rawZ*weight];
+     const motion=new B.Quaternion(x,y,z,Math.sqrt(Math.max(0,1-x*x-y*y-z*z)));
+     next=next.multiply(motion);
     }
     node.rotationQuaternion.copyFrom(next);
    }

@@ -20,8 +20,8 @@ test("RENPOSE011: card owns slow pose, combat never uses it, version remains con
  const html=fs.readFileSync("index.html","utf8"),pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
  assert.match(card,/if\(kinemiqIdle\)kinemiqIdle\(idleMs\)/);
  assert.doesNotMatch(combat,/RenKinemIQIdle/);
- assert.equal(pkg.version,"0.3.111");
- assert.ok(html.includes("v0.3.111 ·"));
+ assert.ok(/^0\.3\.(?:11[1-9]|1[2-9]\d)$/.test(pkg.version));
+ assert.ok(html.includes("v"+pkg.version+" ·"));
  assert.ok(html.includes("RENPOSE011"));
- assert.ok(html.includes("ren-idle-kinemiq.js?v=0.3.111"));
+ assert.ok(html.includes("ren-idle-kinemiq.js?v="+pkg.version));
 });

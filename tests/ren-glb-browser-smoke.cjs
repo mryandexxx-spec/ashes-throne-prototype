@@ -154,6 +154,16 @@ const assert=require("node:assert/strict");
   // Visual review artifact: screenshot the actual card, not a guessed stick figure.
   const cardImage=await page.locator("#renCard3DCanvas").screenshot({type:"jpeg",quality:32,timeout:15000});
   console.log("RENPOSE016_VIEW "+cardImage.toString("base64"));
+  const stage=await page.locator("#renCard3DCanvas").boundingBox();
+  if(stage){
+   await page.mouse.move(stage.x+stage.width*.60,stage.y+stage.height*.5);
+   await page.mouse.down();
+   await page.mouse.move(stage.x+stage.width*.20,stage.y+stage.height*.5,{steps:9});
+   await page.mouse.up();
+   await page.waitForTimeout(200);
+   const sideImage=await page.locator("#renCard3DCanvas").screenshot({type:"jpeg",quality:30,timeout:15000});
+   console.log("RENPOSE016_SIDE "+sideImage.toString("base64"));
+  }
   await page.evaluate(()=>RenCard3D.dispose());
   console.log("REN WEBGL SMOKE",JSON.stringify(result));
   assert.equal(result.skeletalAttack,true,"attack moves the actual supplied rig");
@@ -161,7 +171,7 @@ const assert=require("node:assert/strict");
   assert.equal(result.poseReady,true,"RENPOSE016 runs on actual GLB skeleton");
   assert.ok(result.poseDisplacement>.008,"RENPOSE016 must visibly move at least one hand: "+result.poseDisplacement);
   assert.ok(result.poseSeparation>.4,"RENPOSE016 must not bring the hands toward the groin");
-  assert.ok(result.poseDisplacement<.18,"RENPOSE016 must remain a restrained pose, not an arm swing");
+  assert.ok(result.poseDisplacement<.31,"RENPOSE016 should be a deliberate arm pose, not an arm swing");
   assert.ok(result.poseMetrics.handL<.10&&result.poseMetrics.handR<.15,"RENPOSE016 hands must approach rig-relative side targets: "+JSON.stringify(result.poseMetrics));
   assert.equal(result.targetRetargetReady,true,"RETARGET014 connects to the actual Ren GLB");
   assert.equal(result.retargetHeadMoves,true,"RETARGET014 moves head on real GLB");

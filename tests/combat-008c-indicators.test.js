@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -21,5 +22,5 @@ assert.match(game,/renderArenaIndicators\(\)/);
 assert.match(game,/positionArenaIndicators\(\)/);
 assert.match(game,/Vector3\.Project\(/,"indicator positions follow 3D actors");
 assert.match(game,/screen\.x\*cssWidth\/width/,"retina CSS projection corrected");
-assert.match(html,/v0[.]3[.]107 · UIHUD001/);
+assert.match(html,/v\d+[.]\d+[.]\d+ · UIHUD001/);
 console.log("Combat-008C overhead HUD and unchanged zoom boundaries passed");

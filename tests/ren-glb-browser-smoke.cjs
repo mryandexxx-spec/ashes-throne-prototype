@@ -60,6 +60,8 @@ const assert=require("node:assert/strict");
    const neutralHead=headBone.rotationQuaternion.clone();
    const neutralShoulder=shoulderBone.rotationQuaternion.clone();
    const hipsPosBefore=hips.position.clone();
+   const originalBoneRotations=scene.transformNodes
+    .filter(n=>n.rotationQuaternion).map(n=>({node:n,q:n.rotationQuaternion.clone()}));
    const kinMotion=RenKinemIQIdle.create(B,scene.transformNodes);
    const usesRealRig=typeof kinMotion==="function";
    if(kinMotion)kinMotion(5600);
@@ -70,8 +72,16 @@ const assert=require("node:assert/strict");
    const kinOnceHead=headBone.rotationQuaternion.clone();
    if(kinMotion)kinMotion(5600);
    const kinStable=headBone.rotationQuaternion.equalsWithEpsilon(kinOnceHead);
-   if(kinMotion)kinMotion(0);
+   // Restore the original GLB bind pose before creating a *separate*
+   // retarget instance: real game does not stack previous pseudo-poses.
+   for(const {node,q} of originalBoneRotations)node.rotationQuaternion.copyFrom(q);
    // RENRETARGET014: verify the actual bone-axis retargeter, not just source samples.
+   const boneWorld=name=>{
+    const node=scene.transformNodes.find(n=>n.name===name);
+    node.computeWorldMatrix(true);
+    return node.getAbsolutePosition().clone();
+   };
+   const ankLeftBefore=boneWorld("ankL"),ankRightBefore=boneWorld("ankR");
    const targetRig=RenMotionRetarget.create(B,scene.transformNodes);
    const targetRetargetReady=typeof targetRig==="function";
    const headBeforeRetarget=headBone.rotationQuaternion.clone();
@@ -81,6 +91,11 @@ const assert=require("node:assert/strict");
    const retargetHeadMoves=!headBone.rotationQuaternion.equalsWithEpsilon(headBeforeRetarget);
    const retargetShoulderMoves=!shoulderBone.rotationQuaternion.equalsWithEpsilon(shoulderBeforeRetarget);
    const retargetRootPinned=hips.position.equalsWithEpsilon(hipsBeforeRetarget);
+   const ankLeftAfter=boneWorld("ankL"),ankRightAfter=boneWorld("ankR");
+   const retargetFootDrift=Math.max(
+    B.Vector3.Distance(ankLeftBefore,ankLeftAfter),
+    B.Vector3.Distance(ankRightBefore,ankRightAfter));
+   const retargetHandsApart=B.Vector3.Distance(boneWorld("handL"),boneWorld("handR"));
    const retargetHeadFirst=headBone.rotationQuaternion.clone();
    if(targetRig)targetRig(13000);
    const retargetStable=headBone.rotationQuaternion.equalsWithEpsilon(retargetHeadFirst);
@@ -101,7 +116,7 @@ const assert=require("node:assert/strict");
    const cardStatus=document.getElementById("renCard3DStatus")?.textContent||"";
    const has3D=document.getElementById("detailHeroStage")?.classList.contains("has-ren-3d");
    RenCard3D.dispose();
-   return {skeletalAttack,plantedHips,restoredSpine,repeatStable,facing,imported,meshCount,clipCount,fallbackHidden,statuses,cardStatus,has3D,status,usesRealRig,kinHeadMoves,kinShoulderMoves,kinHipsStance,kinHipsPositionStable,kinStable,targetRetargetReady,retargetHeadMoves,retargetShoulderMoves,retargetRootPinned,retargetStable};
+   return {skeletalAttack,plantedHips,restoredSpine,repeatStable,facing,imported,meshCount,clipCount,fallbackHidden,statuses,cardStatus,has3D,status,usesRealRig,kinHeadMoves,kinShoulderMoves,kinHipsStance,kinHipsPositionStable,kinStable,targetRetargetReady,retargetHeadMoves,retargetShoulderMoves,retargetRootPinned,retargetStable,retargetFootDrift,retargetHandsApart};
   });
   console.log("REN WEBGL SMOKE",JSON.stringify(result));
   assert.equal(result.skeletalAttack,true,"attack moves the actual supplied rig");
@@ -111,6 +126,8 @@ const assert=require("node:assert/strict");
   assert.equal(result.retargetShoulderMoves,true,"RETARGET014 moves shoulder on real GLB");
   assert.equal(result.retargetRootPinned,true,"RETARGET014 must not translate pelvis");
   assert.equal(result.retargetStable,true,"RETARGET014 poses must not accumulate drift");
+  assert.ok(result.retargetFootDrift<.08,"RETARGET014 should not visibly slide ankles: "+result.retargetFootDrift);
+  assert.ok(result.retargetHandsApart>.18,"RETARGET014 should not clasp hands in front of groin: "+result.retargetHandsApart);
   assert.equal(result.kinHeadMoves,true,"KinemIQ moves actual Ren head");
   assert.equal(result.kinShoulderMoves,true,"KinemIQ moves actual Ren shoulder");
   assert.equal(result.kinHipsStance,true,"Ren has intended slight pelvis tilt for relaxed stance");

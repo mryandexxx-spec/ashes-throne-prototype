@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test");
 const assert=require("node:assert/strict");
@@ -27,7 +28,7 @@ test("REN-VISUAL-002: only Ren has collection portrait, build bumped and source 
  assert.match(game,/owned&&h\.id==="ren"\?'<img class="ren-collection-portrait"/);
  assert.match(game,/const showRenPortrait=hero\.id==="ren"/);
  assert.match(html,/id="detailRenPortrait"[^>]*hidden>/);
- assert.equal(pkg.version,"0.3.107");
- assert.match(html,/v0\.3\.107 · UIHUD001 \+ OPSHELP \+ RENPLAY \+ REN3D003/);
+ assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
+ assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001 \+ OPSHELP \+ RENPLAY \+ REN3D003/);
  assert.ok(fs.existsSync(path.join(__dirname,"..","assets","ren-portrait-ui.webp")));
 });

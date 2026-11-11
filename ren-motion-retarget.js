@@ -100,8 +100,10 @@ const RenMotionRetarget=(()=>{
      }
      x+=vec[0]*ch.gain;y+=vec[1]*ch.gain;z+=vec[2]*ch.gain;
     }
-    // Change from source (Y-up global) axes to target bone-local axes.
-    // No Euler-angle guessing; this preserves direction under Ren's rig axes.
+    // KinemIQ's left thigh is +X, Ren's left thigh is -X.
+    // Source faces -Z, Ren faces +Z: align with 180-degree world yaw.
+    x=-x;z=-z;
+    // Then convert to Ren's real bone-local rest axes.
     // Quaternion vector rotation (axis = inverse target world-rest):
     // v' = v + q.w*(2*q.xyz × v) + q.xyz × (2*q.xyz × v).
     // Avoid Babylon Matrix.FromQuaternion (not available in pinned v9).

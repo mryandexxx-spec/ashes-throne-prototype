@@ -2752,7 +2752,7 @@ function renderBattleFrame(){
   visual.head.position.y=1.8+pose.y;
   if(visual.body.rotation)visual.body.rotation.z=pose.tilt;
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
-  if(h.id==="ren"&&renGlbRuntime)renGlbRuntime.update(activity);
+  if(h.id==="ren"&&renGlbRuntime)renGlbRuntime.update(BattleAnimation.activity("ren"));
  }
  positionArenaIndicators();
  scene.render();

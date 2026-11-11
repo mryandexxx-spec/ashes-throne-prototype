@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -117,5 +118,5 @@ function replay(){
 assert.equal(replay(),replay());
 assert.ok(!read("hero-collection-core.js").includes("trial-ren"));
 assert.ok(!read("progress-v3-core.js").includes("trial-ren"));
-assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
+assert.equal(JSON.parse(read("package.json")).version,`${__BUILD_VERSION_FOR_TESTS}`);
 console.log("REN-COMBAT-F: opt-in legacy weaken, story status rolls, determinism, backwards compatibility, atomicity");

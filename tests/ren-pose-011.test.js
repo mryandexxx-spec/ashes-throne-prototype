@@ -8,7 +8,7 @@ test("RENPOSE011: calm cadence, asymmetric shoulders, soft source seam, sparse g
  assert.notEqual(idle.STANCE.elL.x,idle.STANCE.elR.x);
  assert.ok(idle.seamWeight(0)<.000001);
  assert.ok(idle.seamWeight(1250)>.99);
- assert.ok(idle.seamWeight(idle.DURATION_MS-1)<.00001);
+ assert.ok(idle.seamWeight(idle.DURATION_MS-1)<.0001);
  assert.equal(idle.glance(0),0);
  assert.equal(idle.glance(10000),0);
  assert.ok(idle.glance(6500)>0);

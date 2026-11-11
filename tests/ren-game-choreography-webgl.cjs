@@ -6,9 +6,9 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
  page.on('pageerror',e=>errors.push(e.message));
  try{
   await page.goto('http://127.0.0.1:8765/');
-  await page.evaluate(()=>{selectedLeaderId=null;selectedPartyIds=['ren'];battleIsCampaign=false;battleIsStoryDemo=false;resetBattle();state.fighters.forEach(f=>{f.hp=f.maxHp=10000;});syncBattleUI();showScreen('battle');});
+  await page.evaluate(()=>{selectedLeaderId=null;selectedPartyIds=['ren'];battleIsCampaign=false;battleIsStoryDemo=false;showScreen('battle');});
   await page.waitForFunction(()=>renGlbRuntime?.isReady,{timeout:90000});
-  await page.evaluate(()=>{stopBattleRendering();engine.getDeltaTime=()=>0;});
+  await page.evaluate(()=>{stopBattleRendering();engine.getDeltaTime=()=>0;state.fighters.forEach(f=>{f.hp=f.maxHp=10000;});syncBattleUI();});
   const initial=await page.evaluate(()=>({meshes:scene.meshes.length,groups:scene.animationGroups.length}));
   const records=[];
   for(const speed of [1,2,4]){

@@ -165,6 +165,18 @@ const RenGlbRuntime=(()=>{
     group.goToFrame(group.from+(group.to-group.from)*progress);
     if(extract&&name===CLIPS.basic){hips.position.x=hipReference.x;hips.position.z=hipReference.z;}
    }
+   if(typeof RenChoreography!=="undefined"){
+    // Calibrate against the actual transformed hand at the candidate contact.
+    // Existing enemy capsules have radius .42; gameplay collision is unaffected.
+    samplePose(CLIPS.basic,RenChoreography.SOURCE.contactFrame/170,true);
+    const hand=result.transformNodes.find(n=>n.name==="mixamorig:RightHand");
+    if(hand){
+     hand.computeWorldMatrix(true);
+     const point=hand.getAbsolutePosition(),delta=RenChoreography.rootAt(650,scale);
+     RenChoreography.calibrate(scale,{forward:point.x-visual.body.position.x+delta.forward,lateral:point.z-visual.body.position.z+delta.lateral});
+    }
+    samplePose(CLIPS.idle,0,false);
+   }
    return {
     sampleRaw(name,progress){if(!stopped)samplePose(name,Math.max(0,Math.min(1,progress)),false);},
     update(activity){
@@ -222,6 +234,7 @@ const RenGlbRuntime=(()=>{
   });
   return Object.freeze({
    ready:promise,
+   get isReady(){return !!instance&&!disposed;},
    update(activity){instance?.update(activity);},
    sampleRaw(name,progress){instance?.sampleRaw(name,progress);},
    dispose(){disposed=true;instance?.dispose();instance=null;}

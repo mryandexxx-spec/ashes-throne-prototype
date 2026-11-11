@@ -8,28 +8,33 @@ const RenChoreography=(()=>{
  const SOURCE=Object.freeze({attackEndFrame:60,contactFrame:39,attackMs:1000,runMs:633.333333,walkMs:1033.333333});
  const clamp=v=>Math.max(0,Math.min(1,v));
  const smooth=v=>{v=clamp(v);return v*v*(3-2*v);};
- let scale=1;
- function calibrate(value){if(Number.isFinite(value)&&value>0)scale=value;}
- function rootAt(ms){
+ let scale=1,spacing=1.05;
+ function calibrate(value,contact){
+  if(!Number.isFinite(value)||value<=0)return;
+  scale=value;spacing=1.05*value;
+  if(contact&&Number.isFinite(contact.forward)&&Number.isFinite(contact.lateral))
+   spacing=contact.forward+Math.sqrt(Math.max(0,.42**2-contact.lateral**2));
+ }
+ function rootAt(ms,units=scale){
   ms=Math.max(0,Math.min(1000,ms));
   let i=0;while(i<ROOT.length-2&&ROOT[i+1][0]<ms)i++;
   const a=ROOT[i],b=ROOT[i+1],p=clamp((ms-a[0])/(b[0]-a[0]));
-  return {forward:(a[2]+(b[2]-a[2])*p)*scale,lateral:(a[1]+(b[1]-a[1])*p)*scale};
+  return {forward:(a[2]+(b[2]-a[2])*p)*units,lateral:(a[1]+(b[1]-a[1])*p)*units};
  }
  function plan(distance=4.9){
   distance=Number.isFinite(distance)?Math.max(0,distance):4.9;
   // Candidate contact spacing; exposed on the lab for visual acceptance.
-  const travel=Math.max(0,distance-1.6*scale);
+  const travel=Math.max(0,distance-spacing);
   const runSpeed=4.6*scale,walkSpeed=1.65*scale;
   const approachMs=travel?travel/runSpeed*1000+160:0;
   const attackStart=approachMs+120;
   const attackEnd=attackStart+SOURCE.attackMs;
   const retreatStart=attackEnd+200;
-  const endRoot=rootAt(1000);
+  const endRoot=rootAt(1000,scale);
   const retreatDistance=Math.hypot(travel+endRoot.forward,endRoot.lateral);
   const retreatMs=retreatDistance?retreatDistance/walkSpeed*1000+160:0;
   const settleStart=retreatStart+retreatMs;
-  return Object.freeze({distance,travel,approachMs,attackStart,attackEnd,retreatStart,retreatMs,settleStart,
+  return Object.freeze({scale,spacing,distance,travel,retreatDistance,approachMs,attackStart,attackEnd,retreatStart,retreatMs,settleStart,
    contactMs:attackStart+SOURCE.contactFrame/60*1000,durationMs:settleStart+140,endRoot});
  }
  // Acceleration/deceleration ramps; full speed is determined by the distance,
@@ -47,14 +52,14 @@ const RenChoreography=(()=>{
   let forward=0,lateral=0,a={name:'Idle_4',progress:0},b=a,weight=0,phase='idle';
   if(t<p.approachMs){
    phase='approach';forward=p.travel*travelAt(t,p.approachMs);
-   a={name:'Idle_4',progress:0};b=clip('Running',t);weight=smooth(t/120);
+   a={name:'Idle_4',progress:0};b=clip('Running',p.travel*travelAt(t,p.approachMs)/(4.6*p.scale)*1000);weight=smooth(t/120);
   }else if(t<p.attackStart){
    phase='brake';forward=p.travel;
-   a=clip('Running',p.approachMs);b=clip('Double_Combo_Attack',0);weight=smooth((t-p.approachMs)/120);
+   a=clip('Running',p.travel/(4.6*p.scale)*1000);b=clip('Double_Combo_Attack',0);weight=smooth((t-p.approachMs)/120);
    if(!p.approachMs)a={name:'Idle_4',progress:0};
   }else if(t<p.attackEnd){
    phase=t<p.contactMs?'windup':'strike';
-   const ms=t-p.attackStart,r=rootAt(ms);forward=p.travel+r.forward;lateral=r.lateral;
+   const ms=t-p.attackStart,r=rootAt(ms,p.scale);forward=p.travel+r.forward;lateral=r.lateral;
    a=b=clip('Double_Combo_Attack',ms);
   }else if(t<p.retreatStart){
    phase='recover';forward=p.travel+p.endRoot.forward;lateral=p.endRoot.lateral;
@@ -62,7 +67,7 @@ const RenChoreography=(()=>{
   }else if(t<p.settleStart){
    phase='retreat';const ms=t-p.retreatStart,f=1-travelAt(ms,p.retreatMs);
    forward=(p.travel+p.endRoot.forward)*f;lateral=p.endRoot.lateral*f;
-   a={name:'Idle_4',progress:0};b=clip('Walking',-ms);weight=smooth(ms/140)*smooth((p.settleStart-t)/140);
+   a={name:'Idle_4',progress:0};b=clip('Walking',-p.retreatDistance*(1-f)/(1.65*p.scale)*1000);weight=smooth(ms/140)*smooth((p.settleStart-t)/140);
   }else{phase='settle';}
   return {phase,forward,lateral,a,b,weight,contact:Math.abs(t-p.contactMs)<35};
  }

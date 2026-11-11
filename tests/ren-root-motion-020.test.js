@@ -49,3 +49,9 @@ test('RENCHOR021: other actors retain sequential presentation and clear cancels 
  assert.equal(A.pending(),2);A.tick(100,4);assert.equal(A.pending(),0);
  A.enqueue([{type:'ability',actorId:'ren',targetId:'shade',abilityId:'basic'},{type:'damage',actorId:'ren',targetId:'shade'}],{ren:{x:0,z:0},shade:{x:5,z:0}});A.clear();A.tick(100,4);assert.equal(A.drainStarted().length,0);
 });
+
+test('RENCHOR021: calibration cannot change an existing action or activate an unready model',()=>{
+ C.calibrate(1);const p=C.plan(4.9),before=C.sample(p,p.contactMs);
+ C.calibrate(1.5);assert.deepEqual(C.sample(p,p.contactMs),before);
+ A.clear();A.enqueue([{type:'ability',actorId:'ren',targetId:'shade',abilityId:'basic'}],{ren:{x:0,z:0,choreographyReady:false},shade:{x:5,z:0}});A.tick(1);assert.equal(A.activity('ren').plan,undefined);A.clear();
+});

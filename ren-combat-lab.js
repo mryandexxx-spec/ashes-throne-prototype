@@ -39,7 +39,7 @@
  for(const button of document.querySelectorAll('[data-view]'))button.onclick=()=>{
   camera.alpha=button.dataset.view==='front'?0:-Math.PI/2;camera.beta=button.dataset.view==='top'?.2:1.27;
  };
- function draw(dt){
+ function draw(dt,render=true){
   if(document.hidden)return;
   if(playing){time=Math.min(plan.durationMs,time+Math.min(dt,100)*Number($('speed').value));
    if(time>=plan.durationMs){if($('repeat').checked){repeatWait+=dt;if(repeatWait>400){time=0;repeatWait=0;}}else playing=false;}}
@@ -53,7 +53,8 @@
   const reaction=Math.max(0,time-plan.contactMs)/120;
   target.rotation.z=!raw&&time>=plan.contactMs&&reaction<1?-.14*Math.sin(Math.PI*reaction):0;
   target.material.emissiveColor.set(...(!raw&&Math.abs(time-plan.contactMs)<45?[.3,.12,.02]:[0,0,0]));
-  scene.render();if(hand)marker.position.copyFrom(hand.getAbsolutePosition());
+  if(hand){hand.computeWorldMatrix(true);marker.position.copyFrom(hand.getAbsolutePosition());}
+  if(render)scene.render();
   $('scrub').value=String(time/plan.durationMs*1000);
   const text=`${raw?'SOURCE':phase.phase} · ${Math.round(time)} / ${Math.round(plan.durationMs)} ms\nAnchor x ${body.position.x.toFixed(3)} z ${body.position.z.toFixed(3)}\nTarget x ${enemy.x.toFixed(3)} · gap ${(enemy.x-body.position.x).toFixed(3)}\nContact ${Math.round(plan.contactMs)} ms · frame 39\nMeshes ${scene.meshes.length} · Groups ${scene.animationGroups.length}`;
   if(text!==lastText){$('telemetry').textContent=text;lastText=text;}
@@ -63,5 +64,5 @@
  window.addEventListener('resize',()=>engine.resize());
  window.addEventListener('pagehide',()=>{engine.stopRenderLoop();actor.dispose();scene.dispose();engine.dispose();},{once:true});
  // Explicit deterministic test API, confined to this lab page.
- window.RenLab={scene,engine,actor,body,target,hand,get plan(){return plan;},get time(){return time;},seek(ms){playing=false;time=Math.max(0,Math.min(plan.durationMs,ms));draw(0);},reset,draw};
+ window.RenLab={scene,engine,actor,body,target,hand,get plan(){return plan;},get time(){return time;},seek(ms,render=true){playing=false;time=Math.max(0,Math.min(plan.durationMs,ms));draw(0,render);},reset,draw};
 })().catch(error=>{document.getElementById('status').textContent='Ошибка: '+error.message;console.error(error);});

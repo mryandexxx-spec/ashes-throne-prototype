@@ -20,7 +20,7 @@ const BattleAnimation=(()=>{
      AnimationProfiles.slots.includes(event.abilityId)?event.abilityId:"special"};
     if(action.id==="ren"&&action.slot==="basic"&&typeof RenChoreography!=="undefined"){
      const origin=positions?.[action.id],target=positions?.[action.targetId];
-     if(origin&&target){
+     if(origin&&target&&origin.choreographyReady!==false){
       action.plan=RenChoreography.plan(Math.hypot(target.x-origin.x,target.z-origin.z));
       action.reactions=[];renAction=action;
      }

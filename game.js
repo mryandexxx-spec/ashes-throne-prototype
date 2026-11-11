@@ -67,7 +67,7 @@ function captureResolvedVisuals(beforeFighters){
  const fighters=beforeFighters||presentationFighters();
  for(const side of ["ally","enemy"]){
   const team=fighters.filter(f=>f.side===side);
-  team.forEach((f,i)=>{positions[f.id]=formationPosition(side,i,team.length);});
+  team.forEach((f,i)=>{positions[f.id]={...formationPosition(side,i,team.length),choreographyReady:f.id!=="ren"||renGlbRuntime?.isReady===true};});
  }
  BattleAnimation.enqueue(state.events,positions);
  const events=state.events||[];
@@ -2763,8 +2763,13 @@ function renderBattleFrame(){
   if(visual.body.rotation)visual.body.rotation.z=pose.tilt;
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
   if(h.id==="ren"&&renGlbRuntime){
-   if(visual.body.rotation&&targetPosition&&activity.plan)
-    visual.body.rotation.y=-Math.atan2(targetPosition.z-origin.z,targetPosition.x-origin.x);
+   if(visual.body.rotation&&targetPosition&&activity.plan){
+    const yaw=-Math.atan2(targetPosition.z-origin.z,targetPosition.x-origin.x);
+    if(visual.renPlan!==activity.plan){visual.renPlan=activity.plan;visual.renStartYaw=visual.body.rotation.y||0;}
+    const turn=Math.atan2(Math.sin(yaw-visual.renStartYaw),Math.cos(yaw-visual.renStartYaw));
+    const u=Math.min(1,activity.elapsedMs/120);
+    visual.body.rotation.y=visual.renStartYaw+turn*u*u*(3-2*u);
+   }
    renGlbRuntime.update(activity);
   }
  }

@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path");
@@ -58,7 +59,7 @@ test("help is touch-friendly, preserves existing handlers and aligns version",()
  assert.ok(game.includes('if(id==="signalOperations")renderSignalOperations()'));
  assert.ok(html.includes('data-screen="signalOperations"'));
  assert.ok(html.includes('data-ops-order=')===false,"buttons are built dynamically as before");
- assert.equal(pkg.version,"0.3.107");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.107 · UIHUD001 + OPSHELP + RENPLAY'));
+ assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
+ assert.ok(html.includes(`id="buildVersion">Прототип · v${__BUILD_VERSION_FOR_TESTS} · UIHUD001 + OPSHELP + RENPLAY`));
  assert.ok(html.includes('src="signal-operation-core.js"'));
 });

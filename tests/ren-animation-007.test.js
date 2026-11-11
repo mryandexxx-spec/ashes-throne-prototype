@@ -20,5 +20,18 @@ test("RENAN007: additive rig motion resets each frame and preserves hips and leg
   for(const name of ["hips","hipR","kneeR","ankR"])assert.deepEqual(joint(name),new Q(),slot+" keeps legs planted");
  }
  pose({slot:"basic",progress:.5});assert.notEqual(joint("shR").x,0);
+ pose({slot:"idle",progress:.25});
+ assert.ok(Math.abs(joint("spine").x)>=.05,"idle breathing should be perceptible");
+ assert.ok(Math.abs(joint("shR").x)>=.03,"shoulders move with breathing");
  pose({slot:"idle",progress:0});assert.deepEqual(joint("shR"),new Q());
+});
+
+test("RENAN008: Ren action durations remain readable at normal battle speed",()=>{
+ const fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
+ const source=fs.readFileSync(path.join(__dirname,"../animation-profiles.js"),"utf8");
+ const ctx={};vm.runInNewContext(source+";this.profiles=AnimationProfiles;",ctx);
+ for(const [slot,minMs] of [["basic",400],["special",500],["powerful",600],["hit",250]]){
+  assert.ok(ctx.profiles.resolve("ren",slot).durationMs>=minMs,slot+" must be readable at 1x");
+ }
+ assert.equal(ctx.profiles.resolve("kael","basic").durationMs,200,"other fighters unchanged");
 });

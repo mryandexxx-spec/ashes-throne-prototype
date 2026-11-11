@@ -76,6 +76,14 @@ const RenGlbRuntime=(()=>{
       turn("spine",.10*pulse, -.18*pulse*strength);
       turn("shR",-.65*pulse*strength,0,-.10*pulse);
       turn("elR",-.55*pulse);turn("shL",-.18*pulse);
+      // Walk cycle during approach/retreat; legs reset before contact and idle.
+      const gaitPhase=p<.38?p/.38:p>.64?(p-.64)/.36:0;
+      if(p<.38||p>.64){
+       const stride=Math.sin(gaitPhase*Math.PI*4)*.32;
+       turn("hipR",stride);turn("hipL",-stride);
+       turn("kneeR",Math.max(0,-stride)*.48);
+       turn("kneeL",Math.max(0,stride)*.48);
+      }
       turn("head",-.05*pulse,.10*pulse);turn("capeA",.08*pulse);break;
      }
      case "hit":turn("spine",-.13*pulse);turn("head",.12*pulse);break;

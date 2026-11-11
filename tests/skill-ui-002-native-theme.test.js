@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
 const read=f=>fs.readFileSync(path.join(__dirname,"..",f),"utf8");
@@ -30,6 +31,6 @@ assert.match(css,/@media\(orientation:landscape\) and \(max-height:540px\)/);
 assert.ok(game.includes('$("#skillUpgradeButton")?.addEventListener("click"'));
 assert.ok(game.includes('$("#skillLevelButtons")?.addEventListener("click"'));
 assert.ok(game.includes('$("#skillUpgradeClose")?.addEventListener("click"'));
-assert.ok(html.includes("v0.3.107 · UIHUD001"));
-assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
+assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · UIHUD001`));
+assert.equal(JSON.parse(read("package.json")).version,`${__BUILD_VERSION_FOR_TESTS}`);
 console.log("SkillUI-002: own project theme, controls, preview, mobile scroll and version contract passed");

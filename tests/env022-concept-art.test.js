@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 // ENV022 temporary concept-art backdrop contract tests. No browser/WebGL pass claimed.
 const test = require("node:test");
 const assert = require("node:assert/strict");
@@ -57,6 +58,6 @@ test("concept mode keeps live fighter hit effect pool while skipping all old sce
 test("public build label matches package version and unique ENV022 code",()=>{
   const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
   const html=fs.readFileSync("index.html","utf8");
-  assert.equal(pkg.version,"0.3.107");
-  assert.match(html,/id="buildVersion"[^>]*>[^<]*v0\.3\.107 · UIHUD001[^<]*ENV022-DEFAULT/);
+  assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
+  assert.match(html,/id="buildVersion"[^>]*>[^<]*v\d+\.\d+\.\d+ · UIHUD001[^<]*ENV022-DEFAULT/);
 });

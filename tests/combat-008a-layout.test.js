@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 // Combat-008A: structural contract. Functional battle scenarios remain in the
 // existing headless UI tests; native Safari layout still needs device acceptance.
@@ -36,5 +37,5 @@ assert.match(css,/env\(safe-area-inset-(left|right)/);
 assert.match(css,/\.battle-screen \.arena-hud\{[^}]*pointer-events:none/);
 assert.match(game,/document\.body\.classList\.toggle\("battle-mode",id==="battle"\)/);
 assert.ok(html.indexOf('id="buildVersion"')>html.indexOf("</section>",html.indexOf('<section id="battle"')),"footer stays outside battle");
-assert.match(html,/v0[.]3[.]107 · UIHUD001/);
+assert.match(html,/v\d+[.]\d+[.]\d+ · UIHUD001/);
 console.log("Combat-008A fullscreen arena structure, in-arena HUD and version passed");

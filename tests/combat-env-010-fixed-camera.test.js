@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
@@ -152,8 +153,8 @@ test("fixed camera ignores single-finger rotation, retains 12..21 pinch and clea
 });
 test("candidate build and visual comparison preserve current game wiring",()=>{
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.107");
- assert.ok(html.includes("v0.3.107 · UIHUD001 + OPSHELP + RENPLAY + REN3D003 + ENV010"));
+ assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
+ assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · UIHUD001 + OPSHELP + RENPLAY + REN3D003 + ENV010`));
  assert.ok(html.indexOf('src="combat-environment-010.js"')<html.indexOf('src="combat-visual-007.js"'));
  assert.ok(pkg.scripts.test.includes("node --check combat-environment-010.js"));
 });

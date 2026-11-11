@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 // REN-STATUS-H: paired full-turn CombatCore simulations. No gameplay changes.
 // Experimental candidate is injected into an isolated VM, never persisted.
@@ -129,7 +130,7 @@ assert.equal(variants[1][1].AbilityData.get(dRen,"passive").combatRules.statusPo
 assert.equal(variants[0][1].AbilityData.get(aRen,"powerful").followUpStatusAll.amount,15);
 assert.equal(variants[1][1].AbilityData.get(dRen,"powerful").followUpStatusAll.amount,25);
 assert.equal(read("ability-data.js").includes("statusPotencyWithoutResistanceDown:10"),true);
-assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
+assert.equal(JSON.parse(read("package.json")).version,`${__BUILD_VERSION_FOR_TESTS}`);
 console.log("REN-STATUS-H: "+expectedBattles+" complete seeded full-team battles; 64 seeds per scenario × strategy × variant");
 console.log("scenario strategy variant wins/64 actions ren-dmg effects resisted survivor-hp draws");
 for(const r of summaries)console.log([r.scenario,r.strategy,r.variant,

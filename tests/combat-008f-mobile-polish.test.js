@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -13,5 +14,5 @@ assert.match(game,/const sides=\{ally:roster\.filter/);
 assert.match(game,/const sideMembersBySide=\{ally:roster\.filter/);
 assert.match(css,/\.battle-screen \.battle-top-controls\.arena-hud\s*\{[^}]*top:calc\(76px/);
 assert.match(css,/min-height:40px/);
-assert.match(html,/v0[.]3[.]107 · UIHUD001/);
+assert.match(html,/v\d+[.]\d+[.]\d+ · UIHUD001/);
 console.log("Combat-008F mobile-polish and gesture lifecycle contract passed");

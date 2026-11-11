@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
 const read=f=>fs.readFileSync(path.join(__dirname,"..",f),"utf8");
@@ -106,8 +107,8 @@ assert.equal(C.performPlayerAbility(baseline,"special"),true);
 assert.equal(baseline.fighters[1].hp,470,"old demo battle stays unchanged");
 
 const html=read("index.html"),game=read("game.js"),pkg=JSON.parse(read("package.json"));
-assert.equal(pkg.version,"0.3.107");
-assert.ok(html.includes("v0.3.107 · UIHUD001"));
+assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
+assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · UIHUD001`));
 assert.ok(html.includes('id="skillUpgradeDialog"'));
 assert.ok(html.indexOf('src="ability-data.js"')<html.indexOf('src="skill-core.js"'));
 assert.ok(html.indexOf('src="skill-core.js"')<html.indexOf('src="progress-v3-core.js"'));

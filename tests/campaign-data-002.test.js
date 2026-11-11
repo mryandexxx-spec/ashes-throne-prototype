@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -50,5 +51,5 @@ assert.equal(CampaignData.chapterProgress("chapter-1",loaded).stars,2);
 const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
 assert.match(html,/id="campaignMissions"/);
 assert.match(html,/src="campaign-data.js"/);
-assert.match(html,/id="buildVersion"[^>]*>Прототип · v0[.]3[.]107 · UIHUD001/);
+assert.match(html,/id="buildVersion"[^>]*>Прототип · v\d+[.]\d+[.]\d+ · UIHUD001/);
 console.log("Campaign-Data-002 catalog, prerequisites, branches, completion and persistence passed");

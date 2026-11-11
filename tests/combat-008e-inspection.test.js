@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 'use strict';
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -10,5 +11,5 @@ assert.ok(css.includes('.fighter-inspect[hidden]'));
 assert.ok(game.includes('INSPECT_HOLD_MS=400'));
 assert.ok(game.includes('function handleInspectionPointer(info)'));
 assert.ok(game.includes('suppressInspectionPick'));
-assert.ok(html.includes('v0.3.107 · UIHUD001'));
+assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · UIHUD001`));
 console.log('Combat-008E inspection markup and gesture handling passed');

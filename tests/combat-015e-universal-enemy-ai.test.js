@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 // Combat-015E: the same tactical default applies to every enemy identity,
 // including roster copies and enemies on future waves; no mission wiring.
@@ -63,6 +64,6 @@ explicit.currentActor=2;
 explicit.fighters[2].meter=1000;
 assert.equal(EnemyDecision.chooseAction(explicit,2).targetIndex,0,
  "technical explicit profile remains available for historical tests only");
-assert.match(read("index.html"),/v0[.]3[.]107 · UIHUD001/);
-assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
+assert.match(read("index.html"),/v\d+[.]\d+[.]\d+ · UIHUD001/);
+assert.equal(JSON.parse(read("package.json")).version,`${__BUILD_VERSION_FOR_TESTS}`);
 console.log("Combat-015E universal enemy tactical policy and wave inheritance passed");

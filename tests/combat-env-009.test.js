@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
@@ -105,9 +106,9 @@ test("ENV009 keeps no-VertexData/old-browser fallback and candidate version cont
  delete B.VertexData;
  assert.equal(Env.supported(B),false);
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.107");
- assert.ok(html.includes("v0.3.107 · UIHUD001 + OPSHELP + RENPLAY + REN3D003 + ENV010"));
+ assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
+ assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · UIHUD001 + OPSHELP + RENPLAY + REN3D003 + ENV010`));
  assert.ok(html.indexOf('src="combat-environment-009.js"')<html.indexOf('src="combat-visual-007.js"'));
- assert.ok(html.indexOf('src="combat-visual-007.js"')<html.indexOf('src="game.js?v=0.3.107"'));
+ assert.ok(html.indexOf('src="combat-visual-007.js"')<html.indexOf(`src="game.js?v=${__BUILD_VERSION_FOR_TESTS}"`));
  assert.ok(pkg.scripts.test.includes("node --check combat-environment-009.js"));
 });

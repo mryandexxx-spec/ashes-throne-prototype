@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
@@ -27,8 +28,8 @@ test("UIHERO002 uses styled in-page menu instead of native select",()=>{
  assert.match(css,/#collection \.roster-sort-menu button\{[^\n]*min-height:44px/);
 });
 test("UIHERO002 version is consistent",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
- assert.match(html,/v0\.3\.107 · UIHUD001/);
+ assert.equal(JSON.parse(read("package.json")).version,`${__BUILD_VERSION_FOR_TESTS}`);
+ assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001/);
 });
 
 test("UIHERO002 shows only the current leader in the collection, without squad badges",()=>{

@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
@@ -41,10 +42,10 @@ assert.match(mage[1].meta.join(" "),/все живые противники/);
 const doc=read("index.html"),game=read("game.js"),css=read("styles.css");
 assert.ok(doc.includes('src="ability-info.js"'));
 assert.ok(doc.indexOf('src="ability-data.js"')<doc.indexOf('src="ability-info.js"'));
-assert.ok(doc.indexOf('src="ability-info.js"')<doc.indexOf('src="game.js?v=0.3.107"'));
+assert.ok(doc.indexOf('src="ability-info.js"')<doc.indexOf(`src="game.js?v=${__BUILD_VERSION_FOR_TESTS}"`));
 assert.ok(doc.includes('id="heroAbilityList"'));
 assert.ok(doc.includes('id="heroAbilitiesTitle"'));
-assert.ok(doc.includes("v0.3.107 · UIHUD001"));
+assert.ok(doc.includes(`v${__BUILD_VERSION_FOR_TESTS} · UIHUD001`));
 assert.ok(game.includes("function renderHeroAbilities(hero)"));
 assert.ok(game.includes("renderHeroAbilities(hero);"));
 assert.ok(game.includes('document.createElement("article")'));

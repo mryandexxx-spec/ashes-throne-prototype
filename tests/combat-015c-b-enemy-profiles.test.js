@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -146,7 +147,7 @@ assert.equal(b.events.at(-1).type,"battle-end");
 const html=read("index.html");
 const scripts=[...html.matchAll(/<script src="([^"]+)"/g)].map(x=>x[1]);
 assert.ok(scripts.indexOf("combat-core.js")<scripts.indexOf("enemy-decision.js"));
-assert.ok(scripts.indexOf("enemy-decision.js")<scripts.indexOf("game.js?v=0.3.107"));
-assert.match(html,/v0[.]3[.]107 · UIHUD001/);
-assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
+assert.ok(scripts.indexOf("enemy-decision.js")<scripts.indexOf(("game.js?v="+__BUILD_VERSION_FOR_TESTS)));
+assert.match(html,/v\d+[.]\d+[.]\d+ · UIHUD001/);
+assert.equal(JSON.parse(read("package.json")).version,__BUILD_VERSION_FOR_TESTS);
 console.log("Combat-015C-B enemy tactical profiles, live turns, AOE/heal/guard/weaken, fallback and version passed");

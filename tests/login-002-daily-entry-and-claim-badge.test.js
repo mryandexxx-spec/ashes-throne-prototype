@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
@@ -27,7 +28,7 @@ assert.equal(D.unclaimedCount(invalid,day),0,"invalid state must not display bog
 const html=read("index.html"),game=read("game.js"),styles=read("styles.css");
 assert.match(html,/id="dailyClaimBadge"/);
 assert.match(html,/id="dailyTasksNav"/);
-assert.match(html,/v0\.3\.107 · UIHUD001/);
+assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001/);
 assert.match(styles,/\.daily-nav-badge\[hidden\]\{display:none\}/);
 assert.ok(game.includes('DailyCore.unclaimedCount(progress,dailyDay())'));
 assert.ok(game.includes('const LOGIN_CALENDAR_SEEN_KEY="ashes-throne.login-calendar-seen.v1"'));

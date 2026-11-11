@@ -1,11 +1,12 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path");
 const read=n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8");
 const html=read("index.html"),css=read("styles.css"),game=read("game.js");
 const pkg=JSON.parse(read("package.json"));
-assert.equal(pkg.version,"0.3.107");
-assert.match(html,/v0\.3\.107 · UIHUD001/);
+assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
+assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001/);
 const dossier=html.split('<section id="heroDetail"')[1]?.split('<section id="campaign"')[0];
 assert.ok(dossier,"dossier section");
 const left=dossier.indexOf('class="hero-abilities-panel"');

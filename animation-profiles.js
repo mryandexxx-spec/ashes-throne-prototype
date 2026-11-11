@@ -17,7 +17,13 @@ const AnimationProfiles=(()=>{
   death:Object.freeze({kind:"death",durationMs:400,amplitude:.85})
  });
  const overrides=new Map();
- overrides.set("ren",Object.freeze({idle:Object.freeze({kind:"idle",durationMs:3000,amplitude:0})}));
+ overrides.set("ren",Object.freeze({
+  idle:Object.freeze({kind:"idle",durationMs:3000,amplitude:0}),
+  basic:Object.freeze({kind:"lunge",durationMs:420,amplitude:.55}),
+  special:Object.freeze({kind:"lunge",durationMs:520,amplitude:.7}),
+  powerful:Object.freeze({kind:"lunge",durationMs:650,amplitude:.85}),
+  hit:Object.freeze({kind:"hit",durationMs:260,amplitude:.18})
+ }));
  function register(heroId,slots){
   if(typeof heroId!=="string"||!heroId.trim()||!slots||typeof slots!=="object"||Array.isArray(slots))
    throw Error("Invalid character animation profile");

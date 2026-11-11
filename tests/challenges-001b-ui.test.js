@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
@@ -11,9 +12,9 @@ test("pilot UI is a distinct navigable mode with separate results and no economi
  "battleChallengeGoal"])assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(html,/data-screen="challenges"/);
  assert.ok(html.indexOf('src="challenge-core.js"')>html.indexOf('src="campaign-data.js"'));
- assert.ok(html.indexOf('src="challenge-core.js"')<html.indexOf('src="game.js?v=0.3.107"'));
- assert.equal(pkg.version,"0.3.107");
- assert.match(html,/v0\.3\.107 · UIHUD001/);
+ assert.ok(html.indexOf('src="challenge-core.js"')<html.indexOf(`src="game.js?v=${__BUILD_VERSION_FOR_TESTS}"`));
+ assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
+ assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001/);
 });
 test("pilot uses the real player squad and custom enemy waves, leaving campaign intact",()=>{
  const checks=[

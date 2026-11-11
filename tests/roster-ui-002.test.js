@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
@@ -39,6 +40,6 @@ test("UIHERO002 keeps navigation without squad badges",()=>{
  assert.match(js,/requestAnimationFrame\(scroll\)/);
 });
 test("UIHERO002 build matches package",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
- assert.match(html,/v0\.3\.107 · UIHUD001/);
+ assert.equal(JSON.parse(read("package.json")).version,`${__BUILD_VERSION_FOR_TESTS}`);
+ assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001/);
 });

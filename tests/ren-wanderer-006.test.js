@@ -19,10 +19,10 @@ test("RENW006: static import succeeds, grounds feet and preserves fallback lifec
  const ctx={module:{exports:{}},window:{BABYLON:B},console};
  vm.runInNewContext(fs.readFileSync(path.join(__dirname,"../ren-glb-runtime.js"),"utf8"),ctx);
  const body={getChildMeshes:()=>[mesh,fallback]},head={getChildMeshes:()=>[]};
- const statuses=[];const actor=ctx.module.exports.create(B,{isDisposed:false},{body,head},s=>statuses.push(s));
- assert.equal(await actor.ready,true);
+ const statuses=[];const actor=ctx.module.exports.create(B,{isDisposed:false},{body,head},(s,msg)=>statuses.push({status:s,message:msg}));
+ assert.equal(await actor.ready,true,JSON.stringify(statuses));
  assert.equal(requested[1]+requested[2],"assets/ren-meshy-mixamo-animated.glb");
- assert.deepEqual(statuses,["loading","ready"]);
+ assert.deepEqual(statuses.map(x=>x.status),["loading","ready"]);
  assert.equal(fallback.isVisible,false);assert.equal(root.parent,body);
  assert.equal(root.scaling.y*4,2.1);
  assert.ok(Math.abs(.8+root.position.y-root.scaling.y-.14)<1e-9,"feet on base");

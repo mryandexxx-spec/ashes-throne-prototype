@@ -96,14 +96,20 @@ const RenCard3D=(()=>{
     sizeObserver=new ResizeObserver(()=>{if(engine)engine.resize();});
     sizeObserver.observe(canvas);
    }
+   const tracker=RenGlbRuntime.createDownloadTracker(message=>{
+    if(active&&token===loadingToken)loading(message);
+   });
+   // Non-blocking HEAD: use the file size if the host exposes it.
+   void RenGlbRuntime.probeAssetBytes().then(bytes=>{
+    if(active&&token===loadingToken&&bytes!==null)tracker.setTotal(bytes);
+   });
    await RenGlbRuntime.ensureLoader();
-   if(!active||token!==loadingToken)return;
+   if(!active||token!==loadingToken){tracker.done();return;}
    const result=await BABYLON.SceneLoader.ImportMeshAsync(
     null,"assets/",RenGlbRuntime.ASSET_URL.slice(7),scene,event=>{
-     if(!active||token!==loadingToken)return;
-     const message=RenGlbRuntime.formatDownloadProgress(event);
-     if(message)loading(message);
+     if(active&&token===loadingToken)tracker.update(event);
     },".glb");
+   tracker.done();
    if(!active||token!==loadingToken){
     for(const group of result.animationGroups)group.dispose();
     for(const mesh of result.meshes)mesh.dispose();

@@ -27,8 +27,8 @@ test("RENIDLE015: shoulders anchored to source first frame and no talking overla
 test("RENIDLE015: version and cache bust are paired",()=>{
  const html=fs.readFileSync("index.html","utf8");
  const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
- assert.equal(pkg.version,"0.3.115");
- assert.ok(html.includes("v0.3.115 ·"));
+ assert.ok(/^0\.3\.(?:11[5-9]|1[2-9]\d)$/.test(pkg.version));
+ assert.ok(html.includes("v"+pkg.version+" ·"));
  assert.ok(html.includes("RENIDLE015"));
- assert.ok(html.includes("ren-motion-retarget.js?v=0.3.115"));
+ assert.ok(html.includes("ren-motion-retarget.js?v="+pkg.version));
 });

@@ -22,10 +22,23 @@ const {chromium}=require("playwright");
    const ready=await actor.ready;
    const groups=scene.animationGroups.map(g=>g.name);
    const meshCount=scene.meshes.filter(m=>m.metadata?.fighterId==="ren"&&m.getTotalVertices?.()>0).length;
-   const slots=["idle","basic","hit","death"];
+   const hips=scene.transformNodes.find(n=>n.name==="mixamorig:Hips");
+   const track=scene.animationGroups.find(g=>g.name==="Double_Combo_Attack")
+    ?.targetedAnimations.find(a=>a.target?.name==="mixamorig:Hips"&&a.animation?.targetProperty==="position")
+    ?.animation.getKeys();
+   const hipXZ=(track||[]).map(k=>({x:k.value.x,z:k.value.z}));
+   const hipRange=hipXZ.length?Math.max(
+    ...hipXZ.map(v=>Math.abs(v.x-hipXZ[0].x)),
+    ...hipXZ.map(v=>Math.abs(v.z-hipXZ[0].z))):Infinity;
+   const poses=[];
+   for(const p of [.10,.50,.85]){
+    actor.update({slot:"basic",progress:p});scene.render();
+    poses.push({progress:p,hips:hips?{x:hips.position.x,z:hips.position.z}:null});
+   }
+   const slots=["idle","hit","death"];
    for(const slot of slots){actor.update({slot,progress:.5});scene.render();}
    actor.update({slot:"idle",progress:.2});scene.render();
-   const result={ready,groups,meshCount,fallbackHidden:!fallback.isVisible};
+   const result={ready,groups,meshCount,fallbackHidden:!fallback.isVisible,hipRange,poses};
    actor.dispose();scene.dispose();engine.dispose();canvas.remove();
    return result;
   });
@@ -33,6 +46,8 @@ const {chromium}=require("playwright");
   assert.equal(res.ready,true);
   assert.ok(res.meshCount>0);
   assert.equal(res.fallbackHidden,true);
+  assert.ok(res.hipRange<1e-5,"Meshy baked XZ root motion must be pinned: "+res.hipRange);
+  assert.ok(res.poses.every(p=>p.hips),"Actual Mixamo hips must exist");
   for(const n of ["Idle_4","Double_Combo_Attack","Slap_Reaction","Dead"])assert.ok(res.groups.includes(n),n);
   assert.deepEqual(errors,[]);
   console.log("RENMESH017 WebGL: passed");

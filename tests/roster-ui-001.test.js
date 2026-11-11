@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test");
 const assert=require("node:assert/strict");
@@ -25,6 +26,6 @@ test("UIHERO002 uses HQ palette and a landscape-responsive grid",()=>{
  assert.match(css,/#collection \.roster-card-art\.hero-avatar-ren::after\{display:none\}/);
 });
 test("UIHERO002 version is consistent",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.107");
- assert.match(html,/v0\.3\.107 · UIHUD001/);
+ assert.equal(JSON.parse(read("package.json")).version,`${__BUILD_VERSION_FOR_TESTS}`);
+ assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001/);
 });

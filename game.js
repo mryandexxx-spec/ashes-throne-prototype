@@ -1908,6 +1908,7 @@ function renderHeroDetail(){
   ?"Сохранение повреждено или недоступно. Покупки заблокированы, прежние данные не перезаписаны."
   :saveAvailable?"Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить."
   :"Сохранение сейчас недоступно. Прогресс может сброситься после перезагрузки.";
+ if(typeof HeroCardUI!=="undefined")HeroCardUI.decorate();
 }
 $("#gearSlots")?.addEventListener("click",event=>{
  const button=event.target.closest?.("[data-gear-slot]");

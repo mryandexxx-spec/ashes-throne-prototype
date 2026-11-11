@@ -98,3 +98,12 @@ body.hero-card-mode #app>footer{margin:0;padding:0;border:0;font-size:9px;line-h
 #heroDetail #gearSlots .gear-slot:nth-child(5){grid-column:3;grid-row:2}
 #heroDetail .hero-card-links{grid-template-columns:1fr 1fr}
 #heroDetail .hero-card-links button{font-size:10px}
+/* Keep the model on the scene, without the legacy framed viewport. */
+#heroDetail .hero-detail-stage{box-shadow:none}
+#heroDetail .hero-detail-stage::after{display:none}
+#heroDetail .hero-detail-reference .hero-ability-card{background:linear-gradient(90deg,#393036cf,#201e2440);box-shadow:none}
+#heroDetail .hero-ability-card:has(.hero-card-ability-icon)::before{display:none}
+#heroDetail .hero-card-ability-icon{display:grid;place-items:center;position:absolute;left:4px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:1px solid #ad8954;border-radius:50%;background:#242126;color:#e8c78e;pointer-events:none}
+#heroDetail .hero-card-ability-icon svg{width:23px;height:23px}
+#heroDetail #gearSlots .gear-slot svg{width:24px;height:24px;flex-shrink:0;pointer-events:none}
+body.hero-card-mode:has(#heroDetail.active)::before{background:linear-gradient(90deg,#101115ef,#101115c2 40%,#101115c2 60%,#101115ef),url("assets/hq-hall-painting-mobile.webp") center / cover no-repeat}

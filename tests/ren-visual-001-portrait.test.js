@@ -15,7 +15,7 @@ test("Ren artwork is a small self-contained WebP derived from the accepted visua
 test("Collection, permanent hero card, biography and story preview use one Ren portrait",()=>{
  const html=read("index.html"),game=read("game.js"),css=read("styles.css");
  assert.equal((html.match(/src="assets\/ren-portrait-ui\.webp"/g)||[]).length,3,"detail, story and biography");
- assert.match(game,/owned&&h\.id==="ren"\?`<img class="ren-collection-portrait"/);
+ assert.match(game,/owned&&h\.id==="ren"\?'<img class="ren-collection-portrait"/);
  assert.match(game,/const showRenPortrait=hero\.id==="ren"/);
  assert.match(game,/renPortrait\.hidden=!showRenPortrait/);
  assert.match(game,/heroStage\.classList\.toggle\("has-ren-portrait",showRenPortrait\)/);

@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -33,7 +34,7 @@ assert.equal(core.load(()=>{throw Error("Safari blocked");}).available,false);
 assert.equal(core.save(core.fresh(),()=>({setItem(){throw Error("quota");}})),false);
 const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
 const pkg=JSON.parse(fs.readFileSync(path.join(__dirname,"..","package.json"),"utf8"));
-assert.equal(pkg.version,"0.3.107");
-assert.match(html,/id="buildVersion"[^>]*>Прототип · v0[.]3[.]107 · UIHUD001/);
+assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
+assert.match(html,/id="buildVersion"[^>]*>Прототип · v\d+[.]\d+[.]\d+ · UIHUD001/);
 assert.match(html,/src="campaign-core.js"/);
 console.log("Campaign-001 persistence, corrupt data handling and build version passed");

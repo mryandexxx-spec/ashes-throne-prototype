@@ -11,27 +11,61 @@ const RenGlbRuntime=(()=>{
   guard:"Idle_4", ward:"Idle_4", hit:"Slap_Reaction", death:"Dead"
  });
  const clipFor=slot=>CLIPS[slot]||CLIPS.idle;
- // Display only actual network bytes; Babylon progress does not measure GLB parsing time.
+ // Keep progress stable if browser events intermittently omit total.
+ // HEAD runs in parallel with the GLB import, so it does not delay the download.
+ const formatMb=bytes=>(bytes/1048576).toLocaleString("ru-RU",{minimumFractionDigits:1,maximumFractionDigits:1})+" МБ";
+ function createDownloadTracker(onMessage){
+  let loaded=0,total=null,finished=false;
+  const emit=()=>{
+   if(finished)return;
+   let message;
+   if(total!==null){
+    const received=Math.min(loaded,total);
+    message=received>=total
+     ?"Файл Рена скачан · "+formatMb(total)+". Подготавливаем 3D…"
+     :"Рен: "+formatMb(received)+" из "+formatMb(total)+" ("+Math.floor(received/total*100)+"%)";
+   }else{
+    message=loaded>0?"Рен: скачано "+formatMb(loaded):"Загружаем Рена…";
+   }
+   onMessage?.(message);
+  };
+  return Object.freeze({
+   update(event){
+    const value=Number(event?.loaded);
+    if(!Number.isFinite(value)||value<0||finished)return;
+    loaded=Math.max(loaded,value);
+    const reported=Number(event?.total);
+    if(total===null&&event?.lengthComputable===true&&Number.isFinite(reported)&&reported>0&&reported>=loaded)
+     total=reported;
+    emit();
+   },
+   setTotal(bytes){
+    if(finished)return;
+    const value=Number(bytes);
+    if(Number.isFinite(value)&&value>0){total=value;emit();}
+   },
+   done(){finished=true;}
+  });
+ }
+ // A same-origin HEAD may provide the actual GLB size even if Babylon's progress
+ // events have lengthComputable=false. Missing headers are a supported fallback.
+ async function probeAssetBytes(){
+  if(typeof fetch!=="function")return null;
+  try{
+   const response=await fetch(ASSET_URL,{method:"HEAD",cache:"force-cache"});
+   if(!response.ok)return null;
+   const length=Number(response.headers.get("content-length"));
+   return Number.isSafeInteger(length)&&length>0?length:null;
+  }catch{return null;}
+ }
+ // Legacy one-shot formatter retained for old callers and unit tests.
  function formatDownloadProgress(event){
-  const loaded=Number(event?.loaded);
-  if(!Number.isFinite(loaded)||loaded<0)return null;
-  const mb=bytes=>(bytes/1048576).toLocaleString("ru-RU",{minimumFractionDigits:1,maximumFractionDigits:1})+" МБ";
-  const total=Number(event?.total);
-  if(event?.lengthComputable===true&&Number.isFinite(total)&&total>0){
-   const received=Math.min(loaded,total);
-   return "Загружаем Рена: "+mb(received)+" из "+mb(total)+" ("+Math.floor(received/total*100)+"%)";
-  }
-  return "Загружаем Рена: скачано "+mb(loaded)+" (общий объём неизвестен)";
+  let text=null;
+  const tracker=createDownloadTracker(value=>{text=value;});
+  tracker.update(event);
+  return text;
  }
 
- // Meshy Idle_4 spans almost 14 seconds. Defense slots reuse the same clip
- // as a neutral stance: do not compress its full motion into 140–360 ms.
- const clipProgress=(slot,progress)=>{
-  const p=Math.max(0,Math.min(1,Number.isFinite(progress)?progress:0));
-  return slot!=="idle"&&clipFor(slot)===CLIPS.idle?0:p;
- };
- // Original clips are immutable. Basic attack X/Z is extracted per sample;
- // the shared choreography moves the anchor by exactly the same world delta.
  function choreography(activity){
   if(activity?.plan&&activity.slot==="basic"&&typeof RenChoreography!=="undefined")
    return RenChoreography.sample(activity.plan,activity.elapsedMs);
@@ -232,17 +266,18 @@ const RenGlbRuntime=(()=>{
  function create(B,scene,visual,onStatus){
   let disposed=false,instance=null;
   if(typeof onStatus==="function")onStatus("loading","Загружаю 3D Рена…");
-  const progress=event=>{
-   if(disposed)return;
-   const message=formatDownloadProgress(event);
-   if(message&&typeof onStatus==="function")onStatus("loading",message);
-  };
-  const promise=load(B,scene,visual,progress).then(next=>{
+  const tracker=createDownloadTracker(message=>{
+   if(!disposed&&typeof onStatus==="function")onStatus("loading",message);
+  });
+  void probeAssetBytes().then(bytes=>{if(!disposed&&bytes!==null)tracker.setTotal(bytes);});
+  const promise=load(B,scene,visual,event=>{if(!disposed)tracker.update(event);}).then(next=>{
+   tracker.done();
    if(disposed||sceneDisposed(scene)){next.dispose();return false;}
    instance=next;
    if(typeof onStatus==="function")onStatus("ready","3D Рен загружен");
    return true;
   }).catch(error=>{
+   tracker.done();
    // Missing/deleted asset must never prevent a playable combat scene.
    if(!disposed){
     console.warn("REN-MESHY-017: fallback Ren used",error);
@@ -258,6 +293,6 @@ const RenGlbRuntime=(()=>{
    dispose(){disposed=true;instance?.dispose();instance=null;}
   });
  }
- return Object.freeze({ASSET_URL,clipFor,clipProgress,formatDownloadProgress,choreography,create,ensureLoader,createRigAnimator});
+ return Object.freeze({ASSET_URL,clipFor,clipProgress,formatDownloadProgress,createDownloadTracker,probeAssetBytes,choreography,create,ensureLoader,createRigAnimator});
 })();
 if(typeof module!=="undefined")module.exports=RenGlbRuntime;

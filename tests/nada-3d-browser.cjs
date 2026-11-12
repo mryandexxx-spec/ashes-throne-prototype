@@ -65,7 +65,12 @@ const {chromium,webkit}=require("playwright");
   assert.equal(await page.locator("#renCard3DCanvas").isHidden(),true);
   await page.evaluate(()=>{selectedHeroId="nada";showScreen("heroDetail");});
   await page.waitForFunction(()=>document.querySelector("#renCard3DCanvas")?.dataset.animationSource==="nada-mixamo-native-idle",{timeout:60000});
-  await page.evaluate(()=>showScreen("battle"));
+  await page.evaluate(()=>{
+   // Ensure Nada is in the actual five-slot party, including fresh accounts
+   // whose defaults put her beyond the first five heroes.
+   if(!squadSlots().includes("nada"))selectedPartyIds[selectedPartyIds.length-1]="nada";
+   showScreen("battle");
+  });
   await page.waitForFunction(()=>typeof meshes!=="undefined"&&!!meshes.nada&&!!nadaGlbRuntime,null,{timeout:20000});
   const combat=await page.evaluate(async()=>{
    const ok=await nadaGlbRuntime.ready;

@@ -9,7 +9,8 @@ const trial=require("../story-trial-data.js");
 const collection=require("../hero-collection-core.js");
 const stars=require("../star-core.js");
 const skills=require("../skill-core.js");
-const abilities=require("../ability-data.js");
+const vm=require("node:vm");
+const abilities=vm.runInNewContext(root("skill-core.js")+"\n"+root("ability-data.js")+"\nAbilityData");
 
 test("permanent Nada is a separate playable hero, not the story fixture",()=>{
  const nada=profiles.get("nada");

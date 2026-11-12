@@ -25,6 +25,7 @@ const ENV022_CONCEPT_PREVIEW=typeof location!=="undefined" &&
 let engine, scene, meshes={};
 let combatVisual007=null; // One optional visual layer per Babylon Scene.
 let renGlbRuntime=null; // Default Ren GLB visual, no gameplay ownership.
+let nadaGlbRuntime=null; // Optional Nada GLB only when she is in the party.
 let arenaCamera=null;
 // Combat-008B: allies are near the viewer, enemies farther away.
 const ARENA_VIEW=Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
@@ -914,6 +915,7 @@ function showScreen(id){
    console.error("Не удалось запустить 3D-арену:",error);
    stopBattleRendering();
    if(renGlbRuntime){renGlbRuntime.dispose();renGlbRuntime=null;}
+   if(nadaGlbRuntime){nadaGlbRuntime.dispose();nadaGlbRuntime=null;}
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
    scene=undefined;engine=undefined;arenaCamera=null;meshes={};indicatorNodes={};combatVisual007=null;renderLoopRunning=false;
@@ -1843,10 +1845,10 @@ function renderHeroDetail(){
  if(heroStage){
   heroStage.classList.toggle("has-ren-portrait",showRenPortrait);
   if(showNadaPortrait)heroStage.classList.add("has-ren-portrait");
-  heroStage.setAttribute("aria-label",showNadaPortrait?"Портрет Нады, 3D-модель ещё не создана":
+  heroStage.setAttribute("aria-label",showNadaPortrait?"Нада — 3D-модель при загрузке, иначе портрет":
    showRenPortrait?"Рен Терен: 3D-модель и портрет":"Схематичный силуэт героя, без 3D-модели");
  }
- if(artworkLabel)artworkLabel.textContent=showNadaPortrait?"ГЕРОЙ · ПОРТРЕТ (3D В РАЗРАБОТКЕ)":
+ if(artworkLabel)artworkLabel.textContent=showNadaPortrait?"ГЕРОЙ · 3D-ПРОСМОТР (ПИЛОТ)":
   showRenPortrait?"ГЕРОЙ · 3D-МОДЕЛЬ":"ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД";
  if(typeof RenCard3D!=="undefined" && $("#heroDetail")?.classList.contains("active"))
   void RenCard3D.activate(hero.id);
@@ -2797,6 +2799,7 @@ function renderBattleFrame(){
   visual.head.position.y=1.8+pose.y;
   if(visual.body.rotation)visual.body.rotation.z=pose.tilt;
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
+  if(h.id==="nada"&&nadaGlbRuntime)nadaGlbRuntime.update(activity);
   if(h.id==="ren"&&renGlbRuntime){
    if(visual.body.rotation&&targetPosition&&activity.plan){
     const yaw=-Math.atan2(targetPosition.z-origin.z,targetPosition.x-origin.x);
@@ -2873,6 +2876,16 @@ function installArenaPointerCamera(canvas,camera){
  window.addEventListener("pointerup",up);
  window.addEventListener("orientationchange",()=>{pointers.clear();pinchDistance=0;});
 }
+// Only load the skinned GLB when Nada participates. No additional Engine
+// or animation timer; the established arena frame loop drives it.
+function ensureNada3D(){
+ if(!scene||nadaGlbRuntime||!meshes.nada||
+    typeof NadaGlbRuntime==="undefined"||
+    !presentationFighters().some(f=>f.id==="nada"&&f.side==="ally"))return;
+ nadaGlbRuntime=NadaGlbRuntime.create(BABYLON,scene,meshes.nada,(kind,message)=>{
+  if(kind==="error")console.warn("NADA3D001: "+message);
+ });
+}
 // Reuse the scene rather than re-creating meshes on every battle entry.
 function initBabylon(){
  const canvas=$("#renderCanvas");
@@ -2942,6 +2955,7 @@ function initBabylon(){
    }
   });
  }
+ ensureNada3D();
  // Babylon pointer picking supports mouse and touch, registered once with the scene.
   if(scene.onPointerObservable&&BABYLON.PointerEventTypes)
    scene.onPointerObservable.add(handleInspectionPointer);
@@ -2989,6 +3003,7 @@ function initBabylon(){
 }
 function updateMeshes(){
  if(!scene)return;
+ ensureNada3D();
  const roster=presentationFighters();
  const sideMembersBySide={ally:roster.filter(f=>f.side==="ally"),enemy:roster.filter(f=>f.side==="enemy")};
  for(const h of HEROES){

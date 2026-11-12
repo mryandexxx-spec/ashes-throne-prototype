@@ -19,9 +19,7 @@ test("NADA3D001: Dune dev layout and mobile GLB contract",t=>{
  assert.equal(runtime.clipFor("death"),"Electrocuted_Fall");
  const file=path.join(root,map.url);
  if(!fs.existsSync(file)){
-  t.diagnostic("BINARY PENDING: manual upload into branch required before merge");
-  t.skip("GLB binary has not yet been uploaded; do not merge this PR");
-  return;
+  assert.fail("BINARY PENDING: upload dev/assets/models/nada-mobile-animated.glb before merge");
  }
  const buffer=fs.readFileSync(file);
  assert.equal(buffer.length,map.bytes);

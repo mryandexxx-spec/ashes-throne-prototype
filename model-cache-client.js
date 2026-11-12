@@ -17,7 +17,7 @@ const ModelCache=(()=>{
   return Number.isFinite(loaded)&&Number.isFinite(total)&&total>0
    ?Math.max(0,Math.min(100,Math.floor(100*loaded/total))):0;
  }
- let started=false,warmStarted=false;
+ let started=false,warmStarted=false,cacheReady=false;
  const current={ren:"pending",nada:"pending"};
  function update(asset,status,loaded,total){
   const hero=HEROES[asset];
@@ -68,10 +68,11 @@ const ModelCache=(()=>{
      if(!controller)return;
      talk(controller,"CACHE002_STATUS",results=>{
       const cached=results?.filter(item=>item.status==="cached").length||0;
-      setMessage(cached===2?"3D сохранены · доступны без сети":"3D · фоновая подготовка");
+      cacheReady=cached===2;
+      setMessage(cacheReady?"3D готовы · в кеше":"3D · фоновая подготовка");
      });
      const warm=()=>{
-      if(warmStarted)return;
+      if(warmStarted||cacheReady)return;
       const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
       if(!mayWarm({connection,visible:document.visibilityState==="visible"})){
        setMessage("Фоновая загрузка приостановлена · сеть/экономия");
@@ -92,8 +93,15 @@ const ModelCache=(()=>{
      };
      schedule();
     };
-    if(navigator.serviceWorker.controller)startWithController();
-    else navigator.serviceWorker.addEventListener("controllerchange",startWithController,{once:true});
+    const isCurrent=()=>navigator.serviceWorker.controller?.scriptURL===
+     new URL(SW_URL,window.location.href).href;
+    // Existing visitors may be controlled by CACHE001 during the first
+    // CACHE002 visit. Wait for controllerchange instead of messaging the old
+    // worker, which cannot report progress or cache status.
+    if(isCurrent())startWithController();
+    else navigator.serviceWorker.addEventListener("controllerchange",()=>{
+     if(isCurrent())startWithController();
+    });
    }).catch(()=>setMessage("Кеш недоступен · загрузка при открытии"));
   },{once:true});
  }

@@ -536,7 +536,7 @@ function heroOwned(id){
 }
 function heroUnlockLabel(id){
  const mission=typeof HeroCollectionCore!=="undefined"?HeroCollectionCore.unlockMission(id):null;
- return id==="ren"||id==="nada"?"Доступен с начала":mission?(MissionData.get(mission)?.title||"миссия"):"сюжетное прохождение";
+ return id==="ren"?"Доступен с начала":id==="nada"?"Доступен с начала":mission?(MissionData.get(mission)?.title||"миссия"):"сюжетное прохождение";
 }
 function defaultSquad(){
  const ids=ALLIES.filter(h=>heroOwned(h.id)).slice(0,MAX_SQUAD).map(h=>h.id);

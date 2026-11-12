@@ -1590,7 +1590,7 @@ function renderHeroes(){
   const amount=typeof StarCore!=="undefined"?StarCore.shardsOf(progress,h.id):null;
   const safeAmount=Math.max(0,Number(amount)||0),safeCost=Math.max(1,Number(cost)||10);
   const progressPercent=Math.min(100,Math.round(safeAmount/safeCost*100));
-  const portraitAvatar=owned&&h.id==="ren"?'<img class="ren-collection-portrait" src="assets/ren-portrait-ui.webp" width="220" height="275" loading="lazy" decoding="async" alt="">':
+  const portraitAvatar=owned&&h.id==="ren"?'<img class="ren-collection-portrait" src="assets/ren-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':
    owned&&h.id==="nada"?'<img class="nada-collection-portrait" src="assets/nada-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
   const starInfo=owned&&rank!==null?'<span class="hero-star-summary" aria-label="Ранг '+rank+' из 7">'+starGlyphs(rank)+'</span>':"";
   const name=owned?h.name:"Неизвестный герой";

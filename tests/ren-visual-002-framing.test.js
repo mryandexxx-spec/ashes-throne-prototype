@@ -18,7 +18,7 @@ test("REN-VISUAL-002: collection portrait retains its 4:5 shape in a taller fram
 });
 test("REN-VISUAL-002: detailed hero portrait is centered and never cropped by cover",()=>{
  assert.match(renCSS,/\.hero-detail-stage \.ren-detail-portrait\s*\{[^}]*left:50%;[^}]*transform:translateX\(-50%\);[^}]*width:auto;max-width:100%;height:100%;[^}]*object-fit:contain/);
- assert.doesNotMatch(renCSS,/\.ren-(?:collection|detail)-portrait\s*\{[^}]*object-fit:cover/);
+ assert.doesNotMatch(renCSS,/\.hero-detail-stage \.ren-detail-portrait\s*\{[^}]*object-fit:cover/);
  assert.match(renCSS,/\.ren-detail-portrait\[hidden\]\{display:none!important\}/);
  assert.match(renCSS,/\.hero-detail-stage\.has-ren-portrait \.hero-detail-silhouette/);
  assert.match(css,/\.ren-biography-sketch\{[^}]*object-fit:contain/,"existing biography framing unchanged");
@@ -29,6 +29,6 @@ test("REN-VISUAL-002: only Ren has collection portrait, build bumped and source 
  assert.match(game,/const showRenPortrait=hero\.id==="ren"/);
  assert.match(html,/id="detailRenPortrait"[^>]*hidden>/);
  assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
- assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001 \+ OPSHELP \+ RENPLAY \+ REN3D003/);
+ assert.match(html,/v\d+\.\d+\.\d+ · RENROSTER001/);
  assert.ok(fs.existsSync(path.join(__dirname,"..","assets","ren-portrait-ui.webp")));
 });

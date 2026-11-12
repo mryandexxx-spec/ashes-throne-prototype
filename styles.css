@@ -4188,3 +4188,16 @@ body:has(#storyDemo.active)::before{
  width:100%;height:100%;max-width:none;max-height:none;
  object-fit:cover;object-position:center 42%;
 }
+
+/* RENROSTER001: same wide roster treatment as Nada, never applied to Ren's
+   biography, hero detail or 3D rendering. */
+#collection .roster-card-art.hero-avatar-ren{padding:0}
+#collection .roster-card-art.hero-avatar-ren .ren-collection-portrait{
+ position:absolute;inset:0;z-index:1;display:block;
+ width:100%;height:100%;max-width:none;max-height:none;
+ object-fit:cover;object-position:center 42%;filter:none;
+}
+/* Compact visible build ID; release history lives in docs/BUILD_HISTORY.md.
+   Keep the footer within safe-area widths on narrow landscape screens. */
+#app>footer{gap:4px 12px;flex-wrap:wrap;min-width:0}
+#buildVersion{white-space:nowrap;font-variant-numeric:tabular-nums;max-width:100%}

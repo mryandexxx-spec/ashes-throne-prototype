@@ -32,8 +32,9 @@ const URL = "http://127.0.0.1:8765/tests/fixtures/env022-full-game.html";
             const front=Math.min(3,count),back=count-front,isBack=slot>=front;
             const rank=isBack?slot-front:slot,rankCount=isBack?back:front;
             const signed=side==="ally"?1:-1;
-            const depth=signed*(2.85+(isBack?.75:-.45));
-            const lateral=(rank-(rankCount-1)/2)*1.58;
+            const depth=signed*(2.35+(isBack?.65:-.45));
+            // Separate teams horizontally in camera space to avoid ten stacked silhouettes.
+            const lateral=(side==="ally"?-3.25:3.25)+(rank-(rankCount-1)/2)*1.65;
             return {x:near.x*depth+tangent.x*lateral,z:near.z*depth+tangent.z*lateral};
           };
           arenaCamera.lowerAlphaLimit=null;arenaCamera.upperAlphaLimit=null;

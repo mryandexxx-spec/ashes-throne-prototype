@@ -770,7 +770,15 @@ function showHeroBiography(hero){
   "Биография персонажа пока не подготовлена. Демонстрационные герои не являются утверждёнными персонажами вселенной.";
  $("#heroBiographyNote").textContent=data?.note||"История персонажа будет добавлена после согласования.";
  const sketch=$("#heroBiographyPortrait");
- if(sketch)sketch.hidden=hero.id!=="trial-ren"&&hero.id!=="ren";
+ if(sketch){
+  const portrait=hero.id==="nada"?"assets/nada-portrait-ui.webp":
+   hero.id==="ren"||hero.id==="trial-ren"?"assets/ren-portrait-ui.webp":null;
+  sketch.hidden=!portrait;
+  if(portrait){
+   sketch.src=portrait;
+   sketch.alt=hero.id==="nada"?"Нада — утверждённый живописный портрет":"Рен Терен — портрет проводника Садов над пропастью";
+  }
+ }
  if(typeof dialog.showModal==="function"&&!dialog.open)dialog.showModal();
  return true;
 }
@@ -1565,7 +1573,9 @@ function renderHeroes(){
   return {hero:h,index,owned,rank,tier:gear?.tier??null};
  });
  const visible=rosterOrder(entries,rosterFilter,rosterSort);
- const shown=$("#rosterShown");if(shown)shown.textContent="Показано: "+visible.length;
+ // NADAART001: separate nonplayable art preview, never a saved or unlockable hero.
+ const showNadaPreview=rosterFilter!=="owned";
+ const shown=$("#rosterShown");if(shown)shown.textContent="Показано: "+(visible.length+(showNadaPreview?1:0));
  const sortTrigger=$("#rosterSortTrigger");
  if(sortTrigger){
   const names={level:"По уровню",stars:"По звёздам",gear:"По экипировке",name:"По имени"};
@@ -1592,8 +1602,13 @@ function renderHeroes(){
   const isLeader=owned&&selectedLeaderId===h.id;
   const leaderBadge=isLeader?'<span class="roster-leader-indicator">★ Лидер</span>':"";
   return `<button type="button" class="hero-card hero-open roster-card ${owned?"":"hero-locked"}" data-open-hero="${h.id}" aria-label="${name}${isLeader?". Лидер отряда":""}. ${owned?"Открыть досье":"Условия получения"}${labels.length?". "+labels.join(", "):""}"><span class="roster-card-art hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":""}">${portraitAvatar}${leaderBadge}</span><span class="roster-card-name">${name}</span>${tags}${starInfo}<span class="roster-card-subtitle">${levelLine}</span>${owned?'<span class="roster-card-gear">'+gearLabel+'</span>':progressLine}<span class="hero-open-hint">${owned?"Открыть досье ›":"Как получить ›"}</span></button>`;
- }).join("");
- if(!visible.length)$("#heroList").innerHTML='<p class="roster-empty">В этой категории героев пока нет.</p>';
+ }).join("")+(showNadaPreview?
+  '<button type="button" class="hero-card hero-open roster-card" data-preview-nada="true" aria-label="Нада. Утверждённый портрет и досье. Герой в разработке. Открыть досье">'+
+  '<span class="roster-card-art hero-avatar hero-avatar-ren"><img class="ren-collection-portrait" src="assets/nada-portrait-ui.webp" width="256" height="256" loading="lazy" decoding="async" alt=""></span>'+
+  '<span class="roster-card-name">Нада</span><span class="roster-card-subtitle">Полевой исследователь · игровой герой в разработке</span>'+
+  '<span class="hero-open-hint">Открыть досье ›</span></button>':"");
+ $("#heroList").querySelector("[data-preview-nada]")?.addEventListener("click",()=>showHeroBiography({id:"nada",name:"Нада"}));
+ if(!visible.length&&!showNadaPreview)$("#heroList").innerHTML='<p class="roster-empty">В этой категории героев пока нет.</p>';
  document.querySelectorAll("[data-open-hero]").forEach(node=>node.addEventListener("click",()=>{
   const id=node.dataset.openHero;if(heroOwned(id))openHeroDetail(id);else showLockedHero(id);
  }));

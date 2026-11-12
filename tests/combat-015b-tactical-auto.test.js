@@ -101,7 +101,7 @@ const index=read("index.html");
 const scripts=[...index.matchAll(/<script src="([^"]+)"/g)].map(match=>match[1]);
 assert.ok(scripts.indexOf("combat-core.js")<scripts.indexOf("auto-decision.js"));
 assert.ok(scripts.indexOf("auto-decision.js")<scripts.indexOf(("game.js?v="+__BUILD_VERSION_FOR_TESTS)));
-assert.match(index,/id="buildVersion"[^>]*>[^<]*v\d+[.]\d+[.]\d+ · RENROSTER001/);
+assert.match(index,/id="buildVersion"[^>]*>[^<]*v\d+[.]\d+[.]\d+ · NADA3D001/);
 assert.equal(JSON.parse(read("package.json")).version,__BUILD_VERSION_FOR_TESTS);
 const game=read("game.js");
 assert.match(game,/const plan=AutoDecision\.chooseAction\(state\)/);

@@ -39,11 +39,12 @@ const URL = "http://127.0.0.1:8765/tests/fixtures/env022-full-game.html";
           arenaCamera.lowerAlphaLimit=null;arenaCamera.upperAlphaLimit=null;
           arenaCamera.lowerBetaLimit=.5;arenaCamera.upperBetaLimit=1.55;
           arenaCamera.lowerRadiusLimit=9;arenaCamera.upperRadiusLimit=22;
+          // Target first: Babylon's setTarget recalculates the current alpha/beta/radius.
+          arenaCamera.setTarget(new BABYLON.Vector3(0,1.35,0));
           arenaCamera.alpha=Math.atan2(10,-11.5);
           arenaCamera.radius=Math.hypot(-11.5,10,2.55);
           arenaCamera.beta=Math.acos(2.55/arenaCamera.radius);
           arenaCamera.fov=36*Math.PI/180;
-          arenaCamera.setTarget(new BABYLON.Vector3(0,1.35,0));
           updateMeshes(); positionArenaIndicators();
         `);
         return win.eval(`({fighters:state.fighters.length,camera:{alpha:arenaCamera.alpha,beta:arenaCamera.beta,radius:arenaCamera.radius,fov:arenaCamera.fov}})`);

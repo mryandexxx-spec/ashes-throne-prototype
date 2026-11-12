@@ -42,6 +42,7 @@ function formationPosition(side,slot,count){
 }
 let renderLoopRunning=false;
 let indicatorNodes={}; // Rebuilt on combat HUD changes, not each animation frame.
+let arenaHudLayout=null; // Dune-inspired independent 2D packing; no combat ownership.
 let inspectionId=null,inspectionGesture=null,suppressInspectionPick=false;
 const INSPECT_HOLD_MS=400,INSPECT_MOVE_PX=12;
 let selectedAbility="basic"; // "special" is only armed while choosing an ally.
@@ -2473,6 +2474,7 @@ function renderArenaIndicators(){
   </div>`;
  }).join("");
  indicatorNodes={};
+ if(arenaHudLayout)arenaHudLayout.begin();
  if(typeof overlay.querySelectorAll==="function")for(const node of overlay.querySelectorAll(".arena-indicator"))
   indicatorNodes[node.dataset.fighterId]=node;
  positionArenaIndicators();
@@ -2485,7 +2487,14 @@ function positionArenaIndicators(){
  const overlay=$("#arenaIndicators");
  if(!width||!height||!overlay||!arenaCamera.viewport?.toGlobal)return;
  // Render pixels can differ from CSS pixels on retina/HiDPI iPhones.
- const cssWidth=overlay.clientWidth||width,cssHeight=overlay.clientHeight||height;
+ // Avoid per-frame DOM reads: the ported observer caches overlay CSS dimensions.
+ // Legacy measurements remain only as a compatibility fallback for old fixtures.
+ if(!arenaHudLayout && typeof ArenaWorldHud!=="undefined")
+  arenaHudLayout=new ArenaWorldHud.Layout(overlay);
+ const cssWidth=arenaHudLayout?arenaHudLayout.width:(overlay.clientWidth||width);
+ const cssHeight=arenaHudLayout?arenaHudLayout.height:(overlay.clientHeight||height);
+ if(!cssWidth||!cssHeight)return;
+ if(arenaHudLayout)arenaHudLayout.begin();
  const viewport=arenaCamera.viewport.toGlobal(width,height);
  const transform=scene.getTransformMatrix();
  const identity=BABYLON.Matrix?.Identity?.();
@@ -2498,8 +2507,13 @@ function positionArenaIndicators(){
   const screen=BABYLON.Vector3.Project(world,identity,transform,viewport);
   const visible=screen.z>=0&&screen.z<=1&&screen.x>=0&&screen.x<=width&&screen.y>=0&&screen.y<=height;
   node.style.display=visible?"":"none";
-  if(visible){node.style.left=screen.x*cssWidth/width+"px";node.style.top=screen.y*cssHeight/height+"px";}
+  if(visible){
+   const ax=screen.x*cssWidth/width,ay=screen.y*cssHeight/height;
+   node.style.left=ax+"px";node.style.top=ay+"px";
+   if(arenaHudLayout)arenaHudLayout.track(id,node,ax,ay);
+  }
  }
+ if(arenaHudLayout)arenaHudLayout.place();
 }
 function resetBattle(){
  closeFighterInspection();hideAbilityTooltip();

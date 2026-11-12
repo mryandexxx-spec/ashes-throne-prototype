@@ -777,7 +777,7 @@ function showHeroBiography(hero){
  // Preserve Ren's established biography visibility; Nada is an independent preview.
  if(sketch&&hero.id==="nada"){
   sketch.hidden=false;
-  sketch.src="assets/nada-portrait-ui.webp";
+  sketch.src="assets/nada-portrait-ui.webp?v=2";
   sketch.alt="Нада — утверждённый живописный портрет";
  }else if(sketch&&(hero.id==="ren"||hero.id==="trial-ren")){
   sketch.src="assets/ren-portrait-ui.webp";
@@ -1591,7 +1591,7 @@ function renderHeroes(){
   const safeAmount=Math.max(0,Number(amount)||0),safeCost=Math.max(1,Number(cost)||10);
   const progressPercent=Math.min(100,Math.round(safeAmount/safeCost*100));
   const portraitAvatar=owned&&h.id==="ren"?'<img class="ren-collection-portrait" src="assets/ren-portrait-ui.webp" width="220" height="275" loading="lazy" decoding="async" alt="">':
-   owned&&h.id==="nada"?'<img class="nada-collection-portrait" src="assets/nada-portrait-ui.webp" width="256" height="256" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
+   owned&&h.id==="nada"?'<img class="nada-collection-portrait" src="assets/nada-portrait-ui.webp?v=2" width="256" height="256" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
   const starInfo=owned&&rank!==null?'<span class="hero-star-summary" aria-label="Ранг '+rank+' из 7">'+starGlyphs(rank)+'</span>':"";
   const name=owned?h.name:"Неизвестный герой";
   const levelLine=owned?"Ур. "+h.level+" · "+h.role:"Условия получения";
@@ -1837,7 +1837,7 @@ function renderHeroDetail(){
  if(renPortrait){
   renPortrait.hidden=!showRenPortrait;
   if(showNadaPortrait)renPortrait.hidden=false;
-  renPortrait.src=showNadaPortrait?"assets/nada-portrait-ui.webp":"assets/ren-portrait-ui.webp";
+  renPortrait.src=showNadaPortrait?"assets/nada-portrait-ui.webp?v=2":"assets/ren-portrait-ui.webp";
   renPortrait.alt=showNadaPortrait?"Нада — утверждённый портрет исследовательницы":"Рен Терен — портрет проводника Садов над пропастью";
  }
  if(heroStage){

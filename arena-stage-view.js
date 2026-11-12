@@ -8,6 +8,8 @@ const ArenaStageView=(()=>{
  const NEAR_X=-11.5, NEAR_Z=10;
  const AZIMUTH=Math.atan2(NEAR_Z,NEAR_X)-radians(8);
  const RADIUS=15.5;
+ // Presentation-only normalization height: 26% larger Ren/Nada in battle.
+ const HERO_HEIGHT=2.65;
  const VIEW=Object.freeze({
    alpha:AZIMUTH,
    beta:Math.acos(3.3/RADIUS),
@@ -33,6 +35,6 @@ const ArenaStageView=(()=>{
    const lateral=(side==="ally"?3.45:-3.45)+(rank-(rowSize-1)/2)*2.35;
    return {x:near.x*depth+tangent.x*lateral,z:near.z*depth+tangent.z*lateral};
  }
- return Object.freeze({view:VIEW,formation});
+ return Object.freeze({view:VIEW,formation,heroHeight:HERO_HEIGHT});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=ArenaStageView;

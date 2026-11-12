@@ -34,21 +34,29 @@ async function run(browserName,driver){
   assert.ok(cached.result.results.every(e=>e.status==="stored"||e.status==="cached"),
    JSON.stringify(cached.result.results));
   for(const path of MODEL_PATHS)assert.ok(cached.urls.some(p=>p.endsWith("/"+path)));
-  // An intentionally disconnected browser must still read the cached files.
-  // No 3D engine/scene is created by background warming.
+  // Second page visit: CacheStorage must persist beyond the first page.
+  await page.reload({waitUntil:"load"});
+  await page.waitForFunction(()=>!!navigator.serviceWorker?.controller);
+  // An intentionally disconnected browser must still read the persisted bytes.
+  // Chromium proves the full Service Worker fetch path offline. Playwright's
+  // headless WebKit offline emulation can reject fetch before SW interception,
+  // so for WebKit independently verify the persisted CacheStorage response.
   await context.setOffline(true);
-  const offline=await page.evaluate(async paths=>{
+  const offline=await page.evaluate(async({paths,viaCache})=>{
    const results=[];
+   const cacheName=(await caches.keys()).find(name=>name.startsWith("ashes-models-"));
+   const cache=viaCache?await caches.open(cacheName):null;
    for(const path of paths){
     try{
-     const response=await fetch(path);
+     const response=viaCache?await cache.match(new URL(path,location.href).href):await fetch(path);
+     if(!response)throw Error("cache miss");
      const content=await response.arrayBuffer();
      const header=String.fromCharCode(...new Uint8Array(content,0,4));
      results.push({path,ok:response.ok,size:content.byteLength,header});
     }catch(e){results.push({path,error:String(e)});}
    }
    return results;
-  },MODEL_PATHS);
+  },{paths:MODEL_PATHS,viaCache:browserName==="webkit"});
   for(const item of offline){
    assert.ok(item.ok,"uncached GLB offline "+JSON.stringify(item));
    assert.equal(item.header,"glTF");
@@ -56,6 +64,7 @@ async function run(browserName,driver){
   }
   assert.deepEqual(errors,[]);
   console.log("CACHE001_BROWSER="+JSON.stringify({browser:browserName,cached:cached.urls.length,
+   offlineMode:browserName==="webkit"?"CacheStorage direct (headless WebKit)":"service worker fetch",
    offline:offline.map(x=>({path:x.path,size:x.size}))}));
  }finally{await browser.close();}
 }

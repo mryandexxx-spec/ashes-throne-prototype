@@ -11,7 +11,10 @@ const ArenaWorldHud = (() => {
   function pack(rows,width,height,insets={left:8,right:8,top:8,bottom:8}) {
     if(!rows.length || width<=0 || height<=0)return rows;
     const left=insets.left,right=width-insets.right;
-    const top=insets.top,bottom=height-insets.bottom;
+    // Reserve the fixed battle title above and action bar below (Dune v94).
+    // Scale the reserve down on unusually short embedded arena viewports.
+    const top=Math.max(insets.top,Math.min(60,Math.floor(height*.16)));
+    const bottom=height-Math.max(insets.bottom,Math.min(100,Math.floor(height*.25)));
     const placed=[];
     let crowded=false;
     const ordered=[...rows].sort((a,b)=>b.ay-a.ay||String(a.id).localeCompare(String(b.id)));

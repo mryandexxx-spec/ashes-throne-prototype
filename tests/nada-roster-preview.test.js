@@ -21,7 +21,7 @@ test("approved Nada profile is present and not trial-Nada",()=>{
 test("Nada preview is visible only in roster all/locked, separate from saved playable party",()=>{
  const code=root("game.js");
  const rosterStart=code.indexOf("function renderHeroes()");
- const rosterEnd=code.indexOf('document.querySelectorAll("[data-roster-filter]")',rosterStart);
+ const rosterEnd=code.indexOf('document.querySelectorAll("[data-roster-filter]").forEach(button=>button.addEventListener',rosterStart);
  assert.ok(rosterStart>0&&rosterEnd>rosterStart);
  const render=code.slice(rosterStart,rosterEnd);
  assert.match(render,/showNadaPreview=rosterFilter!=="owned"/);
@@ -34,7 +34,7 @@ test("Nada preview is visible only in roster all/locked, separate from saved pla
 });
 test("portrait biography remains a reusable modal without breaking Ren",()=>{
  const code=root("game.js");
- assert.match(code,/hero\.id==="nada"\?"assets\/nada-portrait-ui\.webp"/);
+ assert.match(code,/sketch\.src="assets\/nada-portrait-ui\.webp"/);
  assert.match(code,/hero\.id==="ren"\|\|hero\.id==="trial-ren"/);
  assert.equal(profiles.get("ren")?.name,"Рен Терен");
  const html=root("index.html"),pkg=JSON.parse(root("package.json"));

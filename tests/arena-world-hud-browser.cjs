@@ -28,7 +28,9 @@ const fs=require("node:fs"),assert=require("node:assert/strict");
        const a=bounds[i],b=bounds[j];
        if(a.x<b.x+b.w+4&&a.x+a.w+4>b.x&&a.y<b.y+b.h+4&&a.y+a.h+4>b.y)overlap.push([a.id,b.id]);
       }
-      return {fighters:state.fighters.length,engineFrames:scene.getFrameId(),tracked:arenaHudLayout?.rows.size||0,
+      const camera={alpha:arenaCamera.alpha,beta:arenaCamera.beta,radius:arenaCamera.radius,fov:arenaCamera.fov};
+      const stage=typeof ArenaStageView!=="undefined";
+      return {fighters:state.fighters.length,engineFrames:scene.getFrameId(),tracked:arenaHudLayout?.rows.size||0,camera,stage,
        overlay:{width:hud.clientWidth,height:hud.clientHeight},overlap,bounds};
     })()`);
    });
@@ -36,6 +38,10 @@ const fs=require("node:fs"),assert=require("node:assert/strict");
    report.push({viewport:`${width}x${height}`,...result,errors});
    assert.equal(result.fighters,10);
    assert.equal(result.tracked,10);
+   if(result.stage){
+    assert.ok(Math.abs(result.camera.radius-15.5)<.05,"approved camera radius");
+    assert.ok(Math.abs(result.camera.fov*180/Math.PI-39)<.01,"approved FOV");
+   }
    assert.ok(result.engineFrames>2);
    assert.deepEqual(errors,[]);
    await page.close();

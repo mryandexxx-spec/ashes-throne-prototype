@@ -16,9 +16,15 @@ async function run(browserName,driver){
   await page.waitForFunction(()=>!!navigator.serviceWorker?.controller,null,{timeout:45000});
   const cached=await page.evaluate(async()=>{
    const channel=new MessageChannel();
+   const progress=[];
    const complete=new Promise((resolve,reject)=>{
     const timeout=setTimeout(()=>reject(Error("model warmup timed out")),90000);
-    channel.port1.onmessage=event=>{clearTimeout(timeout);resolve(event.data);};
+    channel.port1.onmessage=event=>{
+     if(event.data?.type==="CACHE002_ASSET")progress.push(event.data);
+     if(event.data?.type==="CACHE001_DONE"||event.data?.type==="CACHE002_ERROR"){
+      clearTimeout(timeout);resolve(event.data);
+     }
+    };
    });
    navigator.serviceWorker.controller.postMessage({type:"CACHE001_WARM"},[channel.port2]);
    const result=await complete;
@@ -26,9 +32,15 @@ async function run(browserName,driver){
    const cacheName=keys.find(n=>n.startsWith("ashes-models-"));
    const cache=await caches.open(cacheName);
    const urls=await cache.keys();
-   return {result,cacheName,urls:urls.map(r=>new URL(r.url).pathname)};
+   return {result,progress,cacheName,urls:urls.map(r=>new URL(r.url).pathname)};
   });
   assert.equal(cached.result?.type,"CACHE001_DONE");
+  assert.ok(cached.progress.length>=2,"SW must send per-character progress/cache reports");
+  assert.ok(cached.progress.some(x=>x.asset==="ren-meshy-mixamo-animated.glb"));
+  assert.ok(cached.progress.some(x=>x.asset==="nada-mobile-animated.glb"));
+  assert.ok(cached.progress.every(x=>x.type==="CACHE002_ASSET"));
+  assert.ok(cached.progress.some(x=>x.status==="cached"||x.status==="stored"),
+   "SW must confirm persistent cache when warmup completes");
   assert.ok(cached.cacheName,"missing persistent model cache");
   assert.equal(cached.urls.length,2,"only two model files may be cached");
   assert.ok(cached.result.results.every(e=>e.status==="stored"||e.status==="cached"),

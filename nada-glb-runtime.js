@@ -30,13 +30,13 @@ const NadaGlbRuntime=(()=>{
    if(!root)for(const node of result.transformNodes||[])node.dispose();
   }catch(error){console.warn("Nada GLB cleanup",error);}
  }
- async function load(B,scene,visual){
+ async function load(B,scene,visual,onProgress){
   if(!B?.SceneLoader||!visual?.body||!scene)throw Error("Nada scene anchors missing");
   await ensureLoader();
   if(sceneDisposed(scene))throw Error("Scene disposed before Nada import");
   const path=assetUrl(),slash=path.lastIndexOf("/");
   const result=await B.SceneLoader.ImportMeshAsync(
-   null,path.slice(0,slash+1),path.slice(slash+1),scene,null,".glb");
+   null,path.slice(0,slash+1),path.slice(slash+1),scene,onProgress,".glb");
   let root=null,savedVisibility=null;
   try{
    if(sceneDisposed(scene))throw Error("Scene disposed during Nada import");
@@ -122,10 +122,15 @@ const NadaGlbRuntime=(()=>{
   let disposed=false,instance=null;
   const report=(state,message)=>{if(!disposed)onStatus?.(state,message);};
   report("loading","Загружаю Наду · 3D…");
-  const ready=load(B,scene,visual).then(value=>{
+  const tracker=typeof RenGlbRuntime!=="undefined"&&RenGlbRuntime.createDownloadTracker
+   ?RenGlbRuntime.createDownloadTracker(message=>report("loading",message),"Нады"):null;
+  if(tracker&&model()?.bytes)tracker.setTotal(model().bytes);
+  const ready=load(B,scene,visual,event=>{if(!disposed)tracker?.update(event);}).then(value=>{
+   tracker?.done();
    if(disposed||sceneDisposed(scene)){value.dispose();return false;}
    instance=value;report("ready","3D Нада загружена");return true;
   }).catch(error=>{
+   tracker?.done();
    report("error","3D Нада недоступна — показана простая модель");
    if(!disposed)console.warn("NADA3D001: combat fallback",error);
    return false;

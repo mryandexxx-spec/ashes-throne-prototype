@@ -70,6 +70,9 @@ const RenCard3D=(()=>{
   }
   active=true;activeHeroId=heroId;
   const token=++loadingToken;
+  const clock=()=>typeof performance!=="undefined"&&typeof performance.now==="function"?performance.now():Date.now();
+  const startedAt=clock();
+  let downloadedAt=null;
   view="model";
   loading(isNada?"Загружаем Наду…":"Загружаем Рена…");
   try{
@@ -110,13 +113,20 @@ const RenCard3D=(()=>{
     if(active&&token===loadingToken&&bytes!==null)tracker.setTotal(bytes);
    });
    await RenGlbRuntime.ensureLoader();
+   const loaderReadyAt=clock();
    if(!active||token!==loadingToken){tracker.done();return;}
    const assetUrl=isNada?NadaGlbRuntime.assetUrl():RenGlbRuntime.ASSET_URL;
    const slash=assetUrl.lastIndexOf("/");
+   const bytes=isNada?Number(typeof NadaModelAssets!=="undefined"?NadaModelAssets.bytes:0):0;
    const result=await BABYLON.SceneLoader.ImportMeshAsync(
     null,assetUrl.slice(0,slash+1),assetUrl.slice(slash+1),scene,event=>{
-     if(active&&token===loadingToken)tracker.update(event);
+     if(active&&token===loadingToken){
+      tracker.update(event);
+      const total=bytes>0?bytes:(event?.lengthComputable?Number(event.total):0);
+      if(downloadedAt===null&&total>0&&Number(event?.loaded)>=total)downloadedAt=clock();
+     }
     },".glb");
+   const importedAt=clock();
    tracker.done();
    if(!active||token!==loadingToken){
     for(const group of result.animationGroups)group.dispose();
@@ -175,6 +185,12 @@ const RenCard3D=(()=>{
    setMode("model");
    engine.resize();
    engine.runRenderLoop(render);
+   if(active&&token===loadingToken){
+    canvas.dataset.modelLoaderMs=String(Math.round(loaderReadyAt-startedAt));
+    canvas.dataset.modelImportMs=String(Math.round(importedAt-loaderReadyAt));
+    canvas.dataset.modelTotalMs=String(Math.round(clock()-startedAt));
+    if(downloadedAt!==null)canvas.dataset.modelPrepareMs=String(Math.round(importedAt-downloadedAt));
+   }
    endLoading();
    report((isNada?"3D Нада":"3D Рен")+" загружен. Проведите пальцем для поворота; двумя пальцами меняйте масштаб.");
   }catch(error){

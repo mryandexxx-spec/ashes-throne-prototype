@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "source": "user-provided Mixamo animated GLB optimized for mobile",
+  "assets": [
+    {
+      "id": "nada",
+      "file": "nada-mobile-animated.glb",
+      "bytes": 3096808,
+      "sha256": "1ecd7859754191e296c68171c03a2c180859db52957629905a90cd8d7a61e87d",
+      "vertices": 16673,
+      "triangles": 17381,
+      "bones": 66,
+      "animations": 8,
+      "textureSize": [
+        2048,
+        2048
+      ],
+      "textureMime": "image/jpeg",
+      "source": "../../assets-src/characters/nada/README.md"
+    }
+  ]
+}

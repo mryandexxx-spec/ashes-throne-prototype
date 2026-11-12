@@ -32,9 +32,9 @@ const URL = "http://127.0.0.1:8765/tests/fixtures/env022-full-game.html";
             const front=Math.min(3,count),back=count-front,isBack=slot>=front;
             const rank=isBack?slot-front:slot,rankCount=isBack?back:front;
             const signed=side==="ally"?1:-1;
-            const depth=signed*(2.35+(isBack?.65:-.45));
+            const depth=signed*(2.65+(isBack?1.10:-.55));
             // Separate teams horizontally in camera space to avoid ten stacked silhouettes.
-            const lateral=(side==="ally"?3.25:-3.25)+(rank-(rankCount-1)/2)*1.65;
+            const lateral=(side==="ally"?3.45:-3.45)+(rank-(rankCount-1)/2)*2.35;
             return {x:near.x*depth+tangent.x*lateral,z:near.z*depth+tangent.z*lateral};
           };
           arenaCamera.lowerAlphaLimit=null;arenaCamera.upperAlphaLimit=null;
@@ -43,9 +43,9 @@ const URL = "http://127.0.0.1:8765/tests/fixtures/env022-full-game.html";
           // Target first: Babylon's setTarget recalculates the current alpha/beta/radius.
           arenaCamera.setTarget(new BABYLON.Vector3(0,1.35,0));
           arenaCamera.alpha=Math.atan2(10,-11.5);
-          arenaCamera.radius=Math.hypot(-11.5,10,2.55);
-          arenaCamera.beta=Math.acos(2.55/arenaCamera.radius);
-          arenaCamera.fov=36*Math.PI/180;
+          arenaCamera.radius=18.25;
+          arenaCamera.beta=Math.acos(3.3/arenaCamera.radius);
+          arenaCamera.fov=42*Math.PI/180;
           updateMeshes(); positionArenaIndicators();
         `);
         return win.eval(`({fighters:state.fighters.length,camera:{alpha:arenaCamera.alpha,beta:arenaCamera.beta,radius:arenaCamera.radius,fov:arenaCamera.fov}})`);

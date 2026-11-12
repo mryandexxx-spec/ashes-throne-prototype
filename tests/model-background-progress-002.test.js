@@ -20,7 +20,7 @@ test("CACHE002: UI reports both characters and cache states without stealing tou
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(html,/v0\.3\.131 · CACHE002/);
  assert.match(html,/model-cache-client\.js\?v=0\.3\.131/);
- assert.match(css,/#home \.hq-model-cache\{[^}]*pointer-events:none/);
+ assert.match(css,/\.hq-screen \.hq-model-cache\{[^}]*pointer-events:none/);
  assert.match(css,/safe-area-inset-left/);
  assert.match(source,/CACHE002_STATUS/);
  assert.match(source,/CACHE002_ASSET/);

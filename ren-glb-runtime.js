@@ -14,7 +14,7 @@ const RenGlbRuntime=(()=>{
  // Keep progress stable if browser events intermittently omit total.
  // HEAD runs in parallel with the GLB import, so it does not delay the download.
  const formatMb=bytes=>(bytes/1048576).toLocaleString("ru-RU",{minimumFractionDigits:1,maximumFractionDigits:1})+" МБ";
- function createDownloadTracker(onMessage){
+ function createDownloadTracker(onMessage,heroName="Рена"){
   let loaded=0,total=null,finished=false;
   const emit=()=>{
    if(finished)return;
@@ -22,10 +22,10 @@ const RenGlbRuntime=(()=>{
    if(total!==null){
     const received=Math.min(loaded,total);
     message=received>=total
-     ?"Файл Рена скачан · "+formatMb(total)+". Подготавливаем 3D…"
-     :"Загружаем Рена: "+formatMb(received)+" из "+formatMb(total)+" ("+Math.floor(received/total*100)+"%)";
+     ?"Файл "+heroName+" скачан · "+formatMb(total)+". Подготавливаем 3D…"
+     :"Загружаем "+heroName+": "+formatMb(received)+" из "+formatMb(total)+" ("+Math.floor(received/total*100)+"%)";
    }else{
-    message=loaded>0?"Загружаем Рена: скачано "+formatMb(loaded):"Загружаем Рена…";
+    message=loaded>0?"Загружаем "+heroName+": скачано "+formatMb(loaded):"Загружаем "+heroName+"…";
    }
    onMessage?.(message);
   };

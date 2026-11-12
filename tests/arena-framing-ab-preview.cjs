@@ -50,6 +50,13 @@ const URL = "http://127.0.0.1:8765/tests/fixtures/env022-full-game.html";
         `);
         return win.eval(`({fighters:state.fighters.length,camera:{alpha:arenaCamera.alpha,beta:arenaCamera.beta,radius:arenaCamera.radius,fov:arenaCamera.fov}})`);
       });
+      await page.waitForTimeout(1100);
+      await page.screenshot({path:`artifacts/arena-ab/close-baseline-${w}x${h}-${profile}.png`,animations:"disabled"});
+      // Rotate only the camera azimuth by four degrees; all formation and framing settings stay intact.
+      await page.evaluate(()=>{
+        const win=document.querySelector("#game").contentWindow;
+        win.eval("arenaCamera.alpha += 4*Math.PI/180; positionArenaIndicators();");
+      });
       await page.waitForTimeout(1800);
       await page.screenshot({path:`artifacts/arena-ab/proposed-${w}x${h}-${profile}.png`,animations:"disabled"});
       const geometry=await page.evaluate(()=>{

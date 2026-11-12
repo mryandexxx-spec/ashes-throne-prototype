@@ -4201,3 +4201,35 @@ body:has(#storyDemo.active)::before{
    Keep the footer within safe-area widths on narrow landscape screens. */
 #app>footer{gap:4px 12px;flex-wrap:wrap;min-width:0}
 #buildVersion{white-space:nowrap;font-variant-numeric:tabular-nums;max-width:100%}
+
+
+/* CACHE002: tiny, read-only transfer monitor above the lobby navigation.
+   Do not change scene height, intercept touches, or overlap safe-area edges. */
+#home .hq-model-cache{
+ position:absolute;z-index:4;
+ left:max(9px,env(safe-area-inset-left));
+ bottom:calc(clamp(49px,7dvh,58px) + 5px);
+ width:min(340px,calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right) - 20px));
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:3px 9px;min-width:0;padding:5px 9px;
+ border:1px solid #b4956b92;border-radius:8px;
+ background:#182b2de9;color:#f4e6cf;
+ box-shadow:0 2px 10px #090c0db8;
+ pointer-events:none;font:500 10px/1.15 Inter,system-ui,sans-serif;
+}
+#home .hq-model-cache .hq-cache-caption{
+ grid-column:1/-1;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ color:#e9c997;font-weight:700;letter-spacing:.02em;
+}
+#home .hq-cache-model{display:flex;flex-direction:column;gap:3px;min-width:0;white-space:nowrap}
+#home .hq-cache-model>span:first-child{overflow:hidden;text-overflow:ellipsis}
+#home .hq-cache-track{display:block;height:3px;overflow:hidden;border-radius:3px;background:#a7a89b44}
+#home .hq-cache-track>span{display:block;width:0;height:100%;border-radius:3px;background:#d4b07b;transition:width .12s linear}
+#home .hq-model-cache[data-state="ready"] .hq-cache-track>span{background:#9cc7a1}
+@media(orientation:landscape) and (max-height:380px){
+ #home .hq-model-cache{padding:3px 7px;gap:2px 7px;bottom:calc(49px + 3px);font-size:9px}
+ #home .hq-cache-track{height:2px}
+}
+@media(prefers-reduced-motion:reduce){
+ #home .hq-cache-track>span{transition:none}
+}

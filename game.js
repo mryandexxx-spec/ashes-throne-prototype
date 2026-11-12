@@ -2955,7 +2955,7 @@ function initBabylon(){
    }
   });
  }
- ensureNada3D();
+ // Loading a participant GLB must happen in updateMeshes(), AFTER resetBattle() confirms the party.
  // Babylon pointer picking supports mouse and touch, registered once with the scene.
   if(scene.onPointerObservable&&BABYLON.PointerEventTypes)
    scene.onPointerObservable.add(handleInspectionPointer);

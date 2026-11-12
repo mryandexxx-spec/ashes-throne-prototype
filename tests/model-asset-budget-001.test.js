@@ -39,6 +39,7 @@ function auditGlb(name){
   const info={
    asset:name,totalBytes:length,jsonBytes:jsonSize,
    images:gltf.images?.length||0,
+   imageDetails:(gltf.images||[]).map((image,index)=>({index,mime:image.mimeType||null,bytes:gltf.bufferViews?.[image.bufferView]?.byteLength||0})),
    texturesBytes:bytes("textures"),
    geometryBytes:bytes("geometry"),
    animationBytes:bytes("animations"),

@@ -4,7 +4,7 @@
  */
 const RenCard3D=(()=>{
  "use strict";
- let active=false,engine=null,scene=null,camera=null,holder=null,animation=null;
+ let active=false,activeHeroId=null,engine=null,scene=null,camera=null,holder=null,animation=null;
  let rigPose=null,kinemiqIdle=null,retargetIdle=null,idleMs=0;
  let render=null,loadingToken=0,view="model",sizeObserver=null;
  const byId=id=>document.getElementById(id);
@@ -33,7 +33,7 @@ const RenCard3D=(()=>{
  }
  function dispose(){
   loadingToken++;
-  active=false;
+  active=false;activeHeroId=null;
   endLoading();
   if(engine){
    engine.stopRenderLoop(render);
@@ -51,11 +51,14 @@ const RenCard3D=(()=>{
  }
  async function activate(heroId){
   const isRen=heroId==="ren";
+  const isNada=heroId==="nada";
+  const canDisplay3D=isRen||isNada;
+  if(active&&activeHeroId!==heroId)dispose();
   const controls=byId("renCard3DControls");
   const canvas=byId("renCard3DCanvas");
-  if(controls)controls.hidden=!isRen;
-  if(canvas)canvas.hidden=!isRen;
-  if(!isRen){
+  if(controls)controls.hidden=!canDisplay3D;
+  if(canvas){canvas.hidden=!canDisplay3D;canvas.setAttribute("aria-label",isNada?"Нада, трёхмерная модель; вращение пальцем":"Рен Терен, трёхмерная модель; вращение пальцем");}
+  if(!canDisplay3D){
    if(active)dispose();
    const portrait=byId("detailRenPortrait");
    if(portrait)portrait.hidden=heroId!=="nada";
@@ -65,10 +68,10 @@ const RenCard3D=(()=>{
   if(!canvas||typeof BABYLON==="undefined"||!BABYLON.Engine||!RenGlbRuntime?.ensureLoader){
    report("3D недоступно; показан портрет.");endLoading();return;
   }
-  active=true;
+  active=true;activeHeroId=heroId;
   const token=++loadingToken;
   view="model";
-  loading("Загружаем Рена…");
+  loading(isNada?"Загружаем Наду…":"Загружаем Рена…");
   try{
    engine=new BABYLON.Engine(canvas,true,{alpha:true,stencil:true,preserveDrawingBuffer:false});
    scene=new BABYLON.Scene(engine);
@@ -97,16 +100,18 @@ const RenCard3D=(()=>{
     sizeObserver.observe(canvas);
    }
    const tracker=RenGlbRuntime.createDownloadTracker(message=>{
-    if(active&&token===loadingToken)loading(message);
+    if(!isNada&&active&&token===loadingToken)loading(message);
    });
-   // Non-blocking HEAD: use the file size if the host exposes it.
-   void RenGlbRuntime.probeAssetBytes().then(bytes=>{
+   // Only probe the Ren legacy URL. Nada uses a separate manifest path.
+   if(isRen)void RenGlbRuntime.probeAssetBytes().then(bytes=>{
     if(active&&token===loadingToken&&bytes!==null)tracker.setTotal(bytes);
    });
    await RenGlbRuntime.ensureLoader();
    if(!active||token!==loadingToken){tracker.done();return;}
+   const assetUrl=isNada?NadaGlbRuntime.assetUrl():RenGlbRuntime.ASSET_URL;
+   const slash=assetUrl.lastIndexOf("/");
    const result=await BABYLON.SceneLoader.ImportMeshAsync(
-    null,"assets/",RenGlbRuntime.ASSET_URL.slice(7),scene,event=>{
+    null,assetUrl.slice(0,slash+1),assetUrl.slice(slash+1),scene,event=>{
      if(active&&token===loadingToken)tracker.update(event);
     },".glb");
    tracker.done();
@@ -140,14 +145,16 @@ const RenCard3D=(()=>{
    camera.setTarget(new BABYLON.Vector3(0,1.08,0));
    camera.radius=3.15;
    const groups=result.animationGroups;
-   animation=groups.find(g=>g.name==="Idle_4")||groups.find(g=>g.name==="Ren_Idle_Breathing_3s")||null;
+   animation=isNada?groups.find(g=>g.name==="Idle_11")||null:
+    groups.find(g=>g.name==="Idle_4")||groups.find(g=>g.name==="Ren_Idle_Breathing_3s")||null;
    groups.forEach(g=>g.stop());
    // RENMESH017: use the animation baked into the same Mixamo GLB.
    // Never combine native AnimationGroups with old hand-authored retarget poses.
    if(animation){
     animation.start(true,0.75);
-    canvas.dataset.animationSource="meshy-native-idle";
+    canvas.dataset.animationSource=isNada?"nada-mixamo-native-idle":"meshy-native-idle";
    }else{
+    if(isNada)throw Error("В GLB Нады отсутствует Idle_11");
     // The legacy rig can still use its previous safe fallback.
     try{
      retargetIdle=typeof RenMotionRetarget!=="undefined"
@@ -165,9 +172,9 @@ const RenCard3D=(()=>{
    setMode("model");
    engine.resize();
    endLoading();
-   report("3D Рен загружен. Проводите влево или вправо для поворота; двумя пальцами меняйте масштаб.");
+   report((isNada?"3D Нада":"3D Рен")+" загружен. Проведите пальцем для поворота; двумя пальцами меняйте масштаб.");
   }catch(error){
-   console.warn("REN-GLB-003 card model unavailable",error);
+   console.warn(isNada?"NADA3D001 card fallback":"REN-GLB-003 card model unavailable",error);
    report("Не удалось загрузить 3D: "+(error.message||String(error))+". Показан портрет.");
    // Retain portrait and release the card's WebGL context on load failure.
    dispose();

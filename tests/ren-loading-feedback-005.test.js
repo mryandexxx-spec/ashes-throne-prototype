@@ -17,9 +17,9 @@ test("REN-LOAD-005: card has noninteractive overlay, live text and progress",()=
  assert.match(html,/id="renCardLoadIndicator"[^>]*hidden/);
  assert.match(html,/id="renCardLoadingText"/);
  assert.doesNotMatch(html,/id="renCardLoadingProgress"/);
- assert.match(card,/loading\("Загружаем Рена…"/);
+ assert.match(card,/loading\(isNada\?"Загружаем Наду…":"Загружаем Рена…"/);
  assert.match(card,/endLoading\(\)/);
- assert.match(card,/loading\("Загружаем Рена…"/);
+ assert.match(card,/loading\(isNada\?"Загружаем Наду…":"Загружаем Рена…"/);
  assert.match(css,/ren-loading-indicator[^\{]*\{[^}]*pointer-events:none/);
  assert.match(css,/prefers-reduced-motion:reduce[^}]*ren-loading-spinner/);
  assert.match(html,/id="renCard3DStatus" role="status" aria-live="polite"/);

@@ -1,0 +1,37 @@
+name: Experimental Ren texture candidate
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ren-texture-candidate.yml"
+      - "assets/ren-meshy-mixamo-animated.glb"
+  workflow_dispatch:
+
+jobs:
+  ren-webp-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install asset conversion CLI (CI only)
+        run: npm install --prefix /tmp/ren-glb-tools --no-audit --no-fund --no-save @gltf-transform/cli@^4
+      - name: Recompress only base-color textures as high-quality WebP
+        run: |
+          mkdir -p build/model-candidates
+          /tmp/ren-glb-tools/node_modules/.bin/gltf-transform webp \
+            assets/ren-meshy-mixamo-animated.glb \
+            build/model-candidates/ren-webp92-preview.glb \
+            --slots baseColor --quality 92
+      - name: Report original and candidate sizes
+        run: |
+          node -e 'const fs=require("fs"); const original=fs.statSync("assets/ren-meshy-mixamo-animated.glb").size; const candidate=fs.statSync("build/model-candidates/ren-webp92-preview.glb").size; console.log("REN_TEXTURE_CANDIDATE="+JSON.stringify({original,candidate,savedBytes:original-candidate,reductionPercent:Math.round((1-candidate/original)*1000)/10})); if(candidate>=original)console.warn("Candidate is not smaller; do not integrate.");'
+      - name: Upload experiment for visual inspection (not a game asset)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ren-webp92-preview-only
+          path: build/model-candidates/ren-webp92-preview.glb
+          retention-days: 7

@@ -39,5 +39,6 @@ test("portrait biography remains a reusable modal without breaking Ren",()=>{
  assert.equal(profiles.get("ren")?.name,"Рен Терен");
  const html=root("index.html"),pkg=JSON.parse(root("package.json"));
  assert.equal(pkg.version,"0.3.124");
- assert.match(html,/v0\.3\.124 · UIHUD001/);\n assert.match(html,/RENBYTES002 \+ NADAART001/);
+ assert.match(html,/v0\.3\.124 · UIHUD001/);
+ assert.match(html,/RENBYTES002 \+ NADAART001/);
 });

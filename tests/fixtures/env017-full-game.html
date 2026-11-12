@@ -42,7 +42,8 @@
    if(far)camera.radius=19;
    const view=win.eval("CombatEnvironment017").inspect(B,scene,camera,
     engine.getRenderWidth(),engine.getRenderHeight());
-   if(!view||Math.abs(view.radius-(far?19:12))>.01)
+   // Normal view follows the active approved arena camera; far remains explicit.
+   if(!view||Math.abs(view.radius-(far?19:win.eval("ARENA_VIEW.radius")))>.01)
     throw Error("camera projection unavailable");
    const values=[view.ledgeRightEdge,view.gapSample,view.bankNear,view.bankFar,view.leftRoot];
    if(values.some(v=>v.some(n=>!Number.isFinite(n))))

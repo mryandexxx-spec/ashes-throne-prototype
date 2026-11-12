@@ -21,20 +21,26 @@ async function openCache(){return caches.open(CACHE_NAME);}
 async function getOrFetch(url){
  const cache=await openCache();
  const hit=await cache.match(url);
- if(hit)return hit;
- if(inflight.has(url))return inflight.get(url);
- const pending=(async()=>{
-  const response=await fetch(url,{cache:"no-store"});
-  if(!response.ok||response.type==="opaque"||response.status!==200)return response;
-  // CacheStorage can be unavailable or full on private/low-storage iPhones.
-  // A cache failure must never prevent the model from loading normally.
-  try{await cache.put(url,response.clone());}catch(error){
-   console.warn("CACHE001: model not persisted",error);
-  }
-  return response;
- })();
- inflight.set(url,pending);
- try{return await pending;}finally{inflight.delete(url);}
+ if(hit)return {response:hit,persisted:Promise.resolve(true)};
+ if(!inflight.has(url)){
+  const pending=(async()=>{
+   // Do not block Babylon's download progress on CacheStorage writing the GLB.
+   const response=await fetch(url,{cache:"no-store"});
+   const persisted=response.ok&&response.type!=="opaque"&&response.status===200
+    ?cache.put(url,response.clone()).then(()=>true).catch(error=>{
+      console.warn("CACHE001: model not persisted",error);return false;
+     })
+    :Promise.resolve(false);
+   return {response,persisted};
+  })();
+  inflight.set(url,pending);
+  // Share a single network transfer even if Babylon opens the model while
+  // background warming is in progress. Every caller gets its own body stream.
+  void pending.then(({persisted})=>persisted).catch(()=>{})
+   .finally(()=>{if(inflight.get(url)===pending)inflight.delete(url);});
+ }
+ const {response,persisted}=await inflight.get(url);
+ return {response:response.clone(),persisted};
 }
 self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
@@ -47,7 +53,9 @@ self.addEventListener("fetch",event=>{
  if(event.request.method!=="GET"||event.request.headers.has("range"))return;
  const url=modelUrl(event.request);
  if(!url)return;
- event.respondWith(getOrFetch(url).catch(()=>fetch(event.request)));
+ const task=getOrFetch(url);
+ event.respondWith(task.then(item=>item.response).catch(()=>fetch(event.request)));
+ event.waitUntil(task.then(item=>item.persisted).catch(()=>{}));
 });
 self.addEventListener("message",event=>{
  if(event.data?.type!=="CACHE001_WARM")return;
@@ -59,8 +67,9 @@ self.addEventListener("message",event=>{
    try{
     const existing=await (await openCache()).match(url);
     if(existing){results.push({asset:url.split("/").pop(),status:"cached"});continue;}
-    const response=await getOrFetch(url);
-    results.push({asset:url.split("/").pop(),status:response.ok?"stored":"http-error"});
+    const {response,persisted}=await getOrFetch(url);
+    const stored=await persisted;
+    results.push({asset:url.split("/").pop(),status:stored?"stored":response.ok?"not-persisted":"http-error"});
    }catch(error){results.push({asset:url.split("/").pop(),status:"unavailable"});}
   }
   port?.postMessage({type:"CACHE001_DONE",results});

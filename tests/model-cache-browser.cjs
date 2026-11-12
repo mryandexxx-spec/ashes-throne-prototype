@@ -14,6 +14,17 @@ async function run(browserName,driver){
   page.on("pageerror",e=>errors.push(e.message));
   await page.goto(HOST,{waitUntil:"load"});
   await page.waitForFunction(()=>!!navigator.serviceWorker?.controller,null,{timeout:45000});
+  await page.waitForFunction(()=>document.getElementById("cache002-indicator")!==null);
+  const dock=await page.evaluate(()=>({
+   ren:document.getElementById("cache002-ren")?.textContent,
+   nada:document.getElementById("cache002-nada")?.textContent,
+   pointerEvents:getComputedStyle(document.getElementById("cache002-indicator")).pointerEvents,
+   overflow:document.documentElement.scrollWidth>window.innerWidth+2
+  }));
+  assert.match(dock.ren,/Рен/);
+  assert.match(dock.nada,/Нада/);
+  assert.equal(dock.pointerEvents,"none");
+  assert.equal(dock.overflow,false);
   const cached=await page.evaluate(async()=>{
    const channel=new MessageChannel();
    const progress=[];

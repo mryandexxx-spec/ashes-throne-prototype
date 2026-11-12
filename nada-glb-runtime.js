@@ -77,7 +77,7 @@ const NadaGlbRuntime=(()=>{
    // Do not use setEnabled(false) on body: that would hide the imported GLB.
    visual.body.isVisible=false;
    visual.head.isVisible=false;
-   const started=new Set();
+   let activeGroup=null;
    const hips=result.transformNodes.find(node=>node.name==="mixamorig:Hips");
    const hipX=hips?.position.x,hipZ=hips?.position.z;
    let disposed=false;
@@ -87,10 +87,12 @@ const NadaGlbRuntime=(()=>{
     const slot=activity?.slot||"idle";
     const group=groups.get(clipFor(slot))||groups.get(CLIPS.idle);
     const p=clamp(activity?.progress);
-    if(!started.has(group)){
+    if(activeGroup!==group){
+     // Never leave two paused Mixamo groups fighting over the same rig pose.
+     activeGroup?.stop();
      group.start(false,1,group.from,group.to);
      group.pause();
-     started.add(group);
+     activeGroup=group;
     }
     // One pose at a time. Match existing CombatAnimation normalized clock.
     // Idle is driven by the clock; never start an independent render loop.

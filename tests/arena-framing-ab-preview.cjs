@@ -59,6 +59,13 @@ const URL = "http://127.0.0.1:8765/tests/fixtures/env022-full-game.html";
       });
       await page.waitForTimeout(1800);
       await page.screenshot({path:`artifacts/arena-ab/proposed-${w}x${h}-${profile}.png`,animations:"disabled"});
+      // Counter-direction visual control: -4 degrees relative to the baseline.
+      await page.evaluate(()=>{
+        const win=document.querySelector("#game").contentWindow;
+        win.eval("arenaCamera.alpha -= 8*Math.PI/180; positionArenaIndicators();");
+      });
+      await page.waitForTimeout(1200);
+      await page.screenshot({path:`artifacts/arena-ab/rotate-minus4-${w}x${h}-${profile}.png`,animations:"disabled"});
       const geometry=await page.evaluate(()=>{
         const win=document.querySelector("#game").contentWindow;
         return win.eval(`(() => {

@@ -100,8 +100,10 @@ const RenCard3D=(()=>{
     sizeObserver.observe(canvas);
    }
    const tracker=RenGlbRuntime.createDownloadTracker(message=>{
-    if(!isNada&&active&&token===loadingToken)loading(message);
-   });
+    if(active&&token===loadingToken)loading(message);
+   },isNada?"Нады":"Рена");
+   // Nada has a verified local manifest size; no extra HEAD request needed.
+   if(isNada&&typeof NadaModelAssets!=="undefined")tracker.setTotal(NadaModelAssets.bytes);
    // Only probe the Ren legacy URL. Nada uses a separate manifest path.
    if(isRen)void RenGlbRuntime.probeAssetBytes().then(bytes=>{
     if(active&&token===loadingToken&&bytes!==null)tracker.setTotal(bytes);

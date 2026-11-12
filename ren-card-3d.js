@@ -94,7 +94,8 @@ const RenCard3D=(()=>{
     else rigPose?.({slot:"idle",progress:(idleMs%3000)/3000});
     scene.render();
    }};
-   engine.runRenderLoop(render);
+   // No empty WebGL frames while a slow connection downloads the GLB.
+   // Keep the CSS loader visible and start rendering only once the scene is ready.
    if(typeof ResizeObserver!=="undefined"){
     sizeObserver=new ResizeObserver(()=>{if(engine)engine.resize();});
     sizeObserver.observe(canvas);
@@ -173,6 +174,7 @@ const RenCard3D=(()=>{
    }
    setMode("model");
    engine.resize();
+   engine.runRenderLoop(render);
    endLoading();
    report((isNada?"3D Нада":"3D Рен")+" загружен. Проведите пальцем для поворота; двумя пальцами меняйте масштаб.");
   }catch(error){

@@ -34,14 +34,17 @@ const file="build/model-candidates/ren-webp92-preview.glb";
      }finally{scene.dispose();engine.dispose();canvas.remove();}
     }
     return {original:await inspect("assets/ren-meshy-mixamo-animated.glb"),
-     candidate:await inspect("build/model-candidates/ren-webp92-preview.glb")};
+     candidate:await inspect("build/model-candidates/ren-webp92-preview.glb"),
+     lossless:await inspect("build/model-candidates/ren-webp-lossless-preview.glb")};
    });
-   assert.ok(result.candidate.vertices>0);
-   assert.equal(result.candidate.vertices,result.original.vertices,"mesh geometry changed");
-   assert.equal(result.candidate.bones,result.original.bones,"skeleton changed");
-   assert.deepEqual(result.candidate.animations,result.original.animations,"animation clips changed");
-   assert.ok(result.candidate.textures.length>0,"no loaded textures");
-   assert.ok(result.candidate.textures.every(t=>t.ready),"unready WebP texture");
+   for(const variant of [result.candidate,result.lossless]){
+    assert.ok(variant.vertices>0);
+    assert.equal(variant.vertices,result.original.vertices,"mesh geometry changed");
+    assert.equal(variant.bones,result.original.bones,"skeleton changed");
+    assert.deepEqual(variant.animations,result.original.animations,"animation clips changed");
+    assert.ok(variant.textures.length>0,"no loaded textures");
+    assert.ok(variant.textures.every(t=>t.ready),"unready WebP texture");
+   }
    assert.deepEqual(errors,[]);
    console.log("REN_TEXTURE_WEBP_BROWSER="+JSON.stringify({browser:name,original:result.original.vertices,
     candidate:result.candidate.vertices,bones:result.candidate.bones,

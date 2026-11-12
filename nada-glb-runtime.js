@@ -6,7 +6,7 @@ const NadaGlbRuntime=(()=>{
  "use strict";
  const CLIPS=Object.freeze({
   idle:"Idle_11",basic:"Archery_Shot_3",special:"Archery_Shot_3",
-  powerful:"mage_soell_cast",passive:"Idle_11",leader:"Idle_11",
+  powerful:"Archery_Shot_3",passive:"Idle_11",leader:"Idle_11",
   guard:"Idle_11",ward:"Hit_Reaction_1",hit:"Hit_Reaction_1",
   death:"Electrocuted_Fall",run:"Running",walk:"Walking"
  });
@@ -77,6 +77,8 @@ const NadaGlbRuntime=(()=>{
    visual.body.isVisible=false;
    visual.head.isVisible=false;
    const started=new Set();
+   const hips=result.transformNodes.find(node=>node.name==="mixamorig:Hips");
+   const hipX=hips?.position.x,hipZ=hips?.position.z;
    let disposed=false;
    for(const group of result.animationGroups)group.stop();
    function sample(activity){
@@ -92,6 +94,9 @@ const NadaGlbRuntime=(()=>{
     // One pose at a time. Match existing CombatAnimation normalized clock.
     // Idle is driven by the clock; never start an independent render loop.
     group.goToFrame(group.from+(group.to-group.from)*p);
+    // Mixamo clips carry translation; combat approach is owned by BattleAnimation.
+    // Prevent duplicate horizontal root motion and drifting outside the fighter base.
+    if(hips){hips.position.x=hipX;hips.position.z=hipZ;}
    }
    sample({slot:"idle",progress:0});
    return Object.freeze({

@@ -57,21 +57,61 @@ self.addEventListener("fetch",event=>{
  event.respondWith(task.then(item=>item.response).catch(()=>fetch(event.request)));
  event.waitUntil(task.then(item=>item.persisted).catch(()=>{}));
 });
-self.addEventListener("message",event=>{
- if(event.data?.type!=="CACHE001_WARM")return;
- // The page requests this only after startup and network policy checks.
- const port=event.ports?.[0];
- event.waitUntil((async()=>{
-  const results=[];
-  for(const url of MODEL_URLS){
-   try{
-    const existing=await (await openCache()).match(url);
-    if(existing){results.push({asset:url.split("/").pop(),status:"cached"});continue;}
-    const {response,persisted}=await getOrFetch(url);
-    const stored=await persisted;
-    results.push({asset:url.split("/").pop(),status:stored?"stored":response.ok?"not-persisted":"http-error"});
-   }catch(error){results.push({asset:url.split("/").pop(),status:"unavailable"});}
+// CACHE002: exact downloadable GLB sizes; progress is based on bytes actually
+// consumed from the response stream, not a timer or a simulated percentage.
+const MODEL_BYTES=[14225032,3096808];
+async function reportCacheStatus(port){
+ const cache=await openCache();
+ const results=[];
+ for(let i=0;i<MODEL_URLS.length;i++){
+  const stored=!!(await cache.match(MODEL_URLS[i]));
+  const asset=MODEL_PATHS[i].split("/").pop();
+  const status=stored?"cached":"missing";
+  results.push({asset,status});
+  port?.postMessage({type:"CACHE002_ASSET",asset,status,loaded:stored?MODEL_BYTES[i]:0,total:MODEL_BYTES[i]});
+ }
+ port?.postMessage({type:"CACHE002_STATUS_DONE",results});
+}
+async function warmCache(port){
+ const results=[];
+ for(let i=0;i<MODEL_URLS.length;i++){
+  const url=MODEL_URLS[i],asset=MODEL_PATHS[i].split("/").pop(),total=MODEL_BYTES[i];
+  try{
+   const existing=await (await openCache()).match(url);
+   if(existing){
+    results.push({asset,status:"cached"});
+    port?.postMessage({type:"CACHE002_ASSET",asset,status:"cached",loaded:total,total});
+    continue;
+   }
+   port?.postMessage({type:"CACHE002_ASSET",asset,status:"downloading",loaded:0,total});
+   const {response,persisted}=await getOrFetch(url);
+   if(!response.ok||!response.body)throw Error("Model response unavailable");
+   // Read a dedicated cloned stream; CacheStorage writes its own clone in
+   // parallel. No extra network request, GPU engine or full-file arrayBuffer.
+   const reader=response.body.getReader();
+   let loaded=0;
+   while(true){
+    const {done,value}=await reader.read();
+    if(done)break;
+    loaded+=value.byteLength;
+    port?.postMessage({type:"CACHE002_ASSET",asset,status:"downloading",loaded,total});
+   }
+   port?.postMessage({type:"CACHE002_ASSET",asset,status:"saving",loaded,total});
+   const stored=await persisted;
+   const status=stored?"stored":"not-persisted";
+   results.push({asset,status});
+   port?.postMessage({type:"CACHE002_ASSET",asset,status,loaded,total});
+  }catch(error){
+   results.push({asset,status:"unavailable"});
+   port?.postMessage({type:"CACHE002_ASSET",asset,status:"unavailable",loaded:0,total});
   }
-  port?.postMessage({type:"CACHE001_DONE",results});
- })());
+ }
+ port?.postMessage({type:"CACHE001_DONE",results});
+}
+self.addEventListener("message",event=>{
+ const type=event.data?.type;
+ if(type!=="CACHE001_WARM"&&type!=="CACHE002_STATUS")return;
+ const port=event.ports?.[0];
+ event.waitUntil((type==="CACHE002_STATUS"?reportCacheStatus(port):warmCache(port))
+  .catch(()=>port?.postMessage({type:"CACHE002_ERROR"})));
 });

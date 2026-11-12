@@ -2888,6 +2888,13 @@ function ensureNada3D(){
  }
  if(nadaGlbRuntime)return;
  nadaGlbRuntime=NadaGlbRuntime.create(BABYLON,scene,meshes.nada,(kind,message)=>{
+  const info=$("#renModelBattleStatus");
+  if(info){
+   const label=$("#renModelBattleStatusText");
+   if(label)label.textContent=message;
+   info.dataset.status=kind;
+   info.hidden=false;
+  }
   if(kind==="error")console.warn("NADA3D001: "+message);
  });
 }

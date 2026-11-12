@@ -28,10 +28,11 @@ let renGlbRuntime=null; // Default Ren GLB visual, no gameplay ownership.
 let nadaGlbRuntime=null; // Optional Nada GLB only when she is in the party.
 let arenaCamera=null;
 // Combat-008B: allies are near the viewer, enemies farther away.
-const ARENA_VIEW=Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
+const ARENA_VIEW=typeof ArenaStageView!=="undefined"?ArenaStageView.view:Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
 // Staggered 3-front / 2-rear formation on each team.
 const FORMATION_SPACING=1.9;
 function formationPosition(side,slot,count){
+ if(typeof ArenaStageView!=="undefined")return ArenaStageView.formation(side,slot,count);
  const front=Math.min(3,count);
  const rear=count-front;
  const isRear=slot>=front;
@@ -2845,12 +2846,14 @@ function stopBattleRendering(){
 // Reuse the camera and GPU resources on every battle entry.
 function resetArenaCamera(){
  if(!arenaCamera)return;
- arenaCamera.alpha=ARENA_VIEW.alpha;
- arenaCamera.beta=ARENA_VIEW.beta;
- arenaCamera.radius=ARENA_VIEW.radius;
  const center=new BABYLON.Vector3(0,ARENA_VIEW.targetY,0);
  if(typeof arenaCamera.setTarget==="function")arenaCamera.setTarget(center);
  else arenaCamera.target=center; // Minimal test stub.
+ // Babylon setTarget recalculates spherical coordinates; restore approved angle LAST.
+ arenaCamera.alpha=ARENA_VIEW.alpha;
+ arenaCamera.beta=ARENA_VIEW.beta;
+ arenaCamera.radius=ARENA_VIEW.radius;
+ if(ARENA_VIEW.fov)arenaCamera.fov=ARENA_VIEW.fov;
 }
 // ENV010: fixed three-quarter battle view; retain pinch and wheel zoom only.
 // One-finger movement remains available to the inspection/target gestures;
@@ -2922,7 +2925,8 @@ function initBabylon(){
  if(ENV022_CONCEPT_PREVIEW && $("#battle")?.classList?.add)
   $("#battle").classList.add("env022-concept-preview");
  arenaCamera=new BABYLON.ArcRotateCamera("camera",ARENA_VIEW.alpha,ARENA_VIEW.beta,ARENA_VIEW.radius,new BABYLON.Vector3(0,ARENA_VIEW.targetY,0),scene);
- arenaCamera.lowerRadiusLimit=12;arenaCamera.upperRadiusLimit=21;
+ arenaCamera.lowerRadiusLimit=ARENA_VIEW.minRadius||12;arenaCamera.upperRadiusLimit=ARENA_VIEW.maxRadius||21;
+ if(ARENA_VIEW.fov)arenaCamera.fov=ARENA_VIEW.fov;
  // Lock orientation to the established three-quarter view; preserve radius zoom 12–21.
  arenaCamera.lowerAlphaLimit=ARENA_VIEW.alpha;arenaCamera.upperAlphaLimit=ARENA_VIEW.alpha;
  arenaCamera.lowerBetaLimit=ARENA_VIEW.beta;arenaCamera.upperBetaLimit=ARENA_VIEW.beta;

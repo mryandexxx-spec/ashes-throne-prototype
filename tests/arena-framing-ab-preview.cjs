@@ -66,6 +66,24 @@ const URL = "http://127.0.0.1:8765/tests/fixtures/env022-full-game.html";
       });
       await page.waitForTimeout(1200);
       await page.screenshot({path:`artifacts/arena-ab/rotate-minus4-${w}x${h}-${profile}.png`,animations:"disabled"});
+      // Minimal 3+2 stagger: shift only the rear-left ally 0.7 units toward screen-left.
+      await page.evaluate(()=>{
+        const win=document.querySelector("#game").contentWindow;
+        win.eval(`
+          const formationBaseForPreview=formationPosition;
+          formationPosition=function(side,slot,count){
+            const p=formationBaseForPreview(side,slot,count);
+            if(side==="ally" && slot===3) {
+              const tangent={x:10/15.24,z:11.5/15.24};
+              p.x+=.7*tangent.x;p.z+=.7*tangent.z;
+            }
+            return p;
+          };
+          updateMeshes();positionArenaIndicators();
+        `);
+      });
+      await page.waitForTimeout(1300);
+      await page.screenshot({path:`artifacts/arena-ab/rotate-minus4-stagger-${w}x${h}-${profile}.png`,animations:"disabled"});
       const geometry=await page.evaluate(()=>{
         const win=document.querySelector("#game").contentWindow;
         return win.eval(`(() => {

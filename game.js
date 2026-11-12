@@ -828,6 +828,10 @@ function showScreen(id){
  if(id==="collection"){
   const restore=rosterRestoreOnReturn&&rosterWasInDossier;
   renderHeroes();
+  // Start the shared GLB loader during roster browsing, not after the user opens
+  // a 3D hero card. Do not prefetch 18 MB Ren or 3 MB Nada on mobile.
+  if(typeof RenGlbRuntime!=="undefined"&&RenGlbRuntime.ensureLoader)
+   void RenGlbRuntime.ensureLoader().catch(()=>{});
   if(restore&&typeof window!=="undefined"&&typeof window.scrollTo==="function"){
    const y=rosterReturnScrollY;
    const scroll=()=>window.scrollTo(0,y);

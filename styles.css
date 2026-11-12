@@ -4233,3 +4233,9 @@ body:has(#storyDemo.active)::before{
 @media(prefers-reduced-motion:reduce){
  .hq-screen .hq-cache-track>span{transition:none}
 }
+
+/* ARENA-ENGINE-001: Dune-inspired packed world HUD. The mesh anchor remains
+   the source of truth; CSS translations move only the noninteractive label. */
+.battle-screen .arena-indicator{
+ transform:translate(calc(-50% + var(--arena-hud-x,0px)),calc(-100% + var(--arena-hud-y,0px)));
+}

@@ -1,0 +1,50 @@
+name: RENWEBP001 generate lossless WebP Ren GLB in feature branch
+on:
+  push:
+    branches: [feat/ren-webp-lossless-trial]
+    paths:
+      - '.github/workflows/ren-webp-lossless-integrate.yml'
+
+jobs:
+  convert-and-commit:
+    if: github.ref == 'refs/heads/feat/ren-webp-lossless-trial'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated conversion tools
+        run: npm install --prefix /tmp/ren-glb-tools --no-audit --no-fund --no-save @gltf-transform/cli@^4
+      - name: Produce pixel-exact lossless WebP version at the same game path
+        run: |
+          mkdir -p build
+          cp assets/ren-meshy-mixamo-animated.glb build/ren-original-before-webp.glb
+          /tmp/ren-glb-tools/node_modules/.bin/gltf-transform webp \
+            build/ren-original-before-webp.glb \
+            build/ren-webp-lossless.glb \
+            --lossless true
+          node tools/verify-lossless-glb-textures.cjs
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const original=fs.statSync('build/ren-original-before-webp.glb').size;
+          const next=fs.statSync('build/ren-webp-lossless.glb').size;
+          const percent=Math.round((1-next/original)*1000)/10;
+          console.log('REN_WEBP_INTEGRATION_SIZE='+JSON.stringify({original,next,saved:original-next,percent}));
+          if(original!==18282888||next>=15000000||next>=original)throw Error('Asset size outside verified lossless conversion range');
+          NODE
+          cp build/ren-webp-lossless.glb assets/ren-meshy-mixamo-animated.glb
+          node --test tests/ren-webp-lossless-001.test.js tests/ren-meshy-017.test.js
+      - name: Commit binary only to the experimental feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- assets/ren-meshy-mixamo-animated.glb
+          git diff --cached --quiet && { echo "No binary change"; exit 1; }
+          git commit -m "perf(ren): replace PNG textures with pixel-identical lossless WebP"
+          git push origin HEAD:feat/ren-webp-lossless-trial

@@ -179,7 +179,8 @@ const RenGlbRuntime=(()=>{
    }
    const height=max.y-min.y;
    if(!Number.isFinite(height)||height<=0)throw Error("Invalid Ren GLB bounds");
-   const scale=2.1/height;
+   // Keep GLB source unchanged. Only the battle scene's visual root grows.
+   const scale=(typeof ArenaStageView!=="undefined"?ArenaStageView.heroHeight:2.1)/height;
    root.scaling.set(scale,scale,scale);
    root.position=new B.Vector3(-(min.x+max.x)*.5*scale,.14-.8-min.y*scale,-(min.z+max.z)*.5*scale);
    // Initial facing is provisional; verify against imported Meshy GLB in WebGL.

@@ -26,9 +26,15 @@ jobs:
             assets/ren-meshy-mixamo-animated.glb \
             build/model-candidates/ren-webp92-preview.glb \
             --slots baseColor --quality 92
+      - name: Losslessly recompress every PNG texture as WebP
+        run: |
+          /tmp/ren-glb-tools/node_modules/.bin/gltf-transform webp \
+            assets/ren-meshy-mixamo-animated.glb \
+            build/model-candidates/ren-webp-lossless-preview.glb \
+            --lossless true
       - name: Report original and candidate sizes
         run: |
-          node -e 'const fs=require("fs"); const original=fs.statSync("assets/ren-meshy-mixamo-animated.glb").size; const candidate=fs.statSync("build/model-candidates/ren-webp92-preview.glb").size; console.log("REN_TEXTURE_CANDIDATE="+JSON.stringify({original,candidate,savedBytes:original-candidate,reductionPercent:Math.round((1-candidate/original)*1000)/10})); if(candidate>=original)console.warn("Candidate is not smaller; do not integrate.");'
+          node -e 'const fs=require("fs"); const original=fs.statSync("assets/ren-meshy-mixamo-animated.glb").size; const webp92=fs.statSync("build/model-candidates/ren-webp92-preview.glb").size; const lossless=fs.statSync("build/model-candidates/ren-webp-lossless-preview.glb").size; console.log("REN_TEXTURE_CANDIDATE="+JSON.stringify({original,webp92,lossless,savedWebp92:original-webp92,savedLossless:original-lossless,reductionWebp92Percent:Math.round((1-webp92/original)*1000)/10,reductionLosslessPercent:Math.round((1-lossless/original)*1000)/10})); if(lossless>=original)console.warn("Lossless candidate is not smaller; do not integrate.");'
       - name: Install browser smoke dependencies
         run: |
           npm ci
@@ -40,6 +46,6 @@ jobs:
       - name: Upload experiment for visual inspection (not a game asset)
         uses: actions/upload-artifact@v4
         with:
-          name: ren-webp92-preview-only
-          path: build/model-candidates/ren-webp92-preview.glb
+          name: ren-webp-experiments-preview-only
+          path: build/model-candidates/*.glb
           retention-days: 7

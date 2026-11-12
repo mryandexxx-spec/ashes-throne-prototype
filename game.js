@@ -1590,8 +1590,8 @@ function renderHeroes(){
   const amount=typeof StarCore!=="undefined"?StarCore.shardsOf(progress,h.id):null;
   const safeAmount=Math.max(0,Number(amount)||0),safeCost=Math.max(1,Number(cost)||10);
   const progressPercent=Math.min(100,Math.round(safeAmount/safeCost*100));
-  const portraitAvatar=owned&&(h.id==="ren"||h.id==="nada")?
-    '<img class="'+(h.id==="ren"?"ren":"nada")+'-collection-portrait" src="assets/'+h.id+'-portrait-ui.webp" width="256" height="256" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
+  const portraitAvatar=owned&&h.id==="ren"?'<img class="ren-collection-portrait" src="assets/ren-portrait-ui.webp" width="220" height="275" loading="lazy" decoding="async" alt="">':
+   owned&&h.id==="nada"?'<img class="nada-collection-portrait" src="assets/nada-portrait-ui.webp" width="256" height="256" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
   const starInfo=owned&&rank!==null?'<span class="hero-star-summary" aria-label="Ранг '+rank+' из 7">'+starGlyphs(rank)+'</span>':"";
   const name=owned?h.name:"Неизвестный герой";
   const levelLine=owned?"Ур. "+h.level+" · "+h.role:"Условия получения";
@@ -1831,15 +1831,18 @@ function renderHeroDetail(){
  $("#detailRole").textContent=hero.role+((hero.id==="ren"||hero.id==="nada")?" · Играбельный герой (баланс тестовый)":" · Демонстрационный персонаж");
  if($("#detailTags"))$("#detailTags").textContent=heroTagText(hero);
  $("#detailGlyph").textContent=hero.glyph;
- const showRenPortrait=hero.id==="ren",showNadaPortrait=hero.id==="nada";
+ const showRenPortrait=hero.id==="ren";
+ const showNadaPortrait=hero.id==="nada";
  const renPortrait=$("#detailRenPortrait"),heroStage=$("#detailHeroStage"),artworkLabel=$("#detailArtworkLabel");
  if(renPortrait){
-  renPortrait.hidden=!(showRenPortrait||showNadaPortrait);
+  renPortrait.hidden=!showRenPortrait;
+  if(showNadaPortrait)renPortrait.hidden=false;
   renPortrait.src=showNadaPortrait?"assets/nada-portrait-ui.webp":"assets/ren-portrait-ui.webp";
   renPortrait.alt=showNadaPortrait?"Нада — утверждённый портрет исследовательницы":"Рен Терен — портрет проводника Садов над пропастью";
  }
  if(heroStage){
-  heroStage.classList.toggle("has-ren-portrait",showRenPortrait||showNadaPortrait);
+  heroStage.classList.toggle("has-ren-portrait",showRenPortrait);
+  if(showNadaPortrait)heroStage.classList.add("has-ren-portrait");
   heroStage.setAttribute("aria-label",showNadaPortrait?"Портрет Нады, 3D-модель ещё не создана":
    showRenPortrait?"Рен Терен: 3D-модель и портрет":"Схематичный силуэт героя, без 3D-модели");
  }

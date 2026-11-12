@@ -45,7 +45,10 @@ const RenCard3D=(()=>{
   const stage=byId("detailHeroStage");
   stage?.classList.remove("has-ren-3d");
   const canvas=byId("renCard3DCanvas");
-  if(canvas){delete canvas.dataset.animationSource;delete canvas.dataset.poseSource;}
+  if(canvas){
+   for(const field of ["animationSource","poseSource","modelLoaderMs","modelImportMs","modelTotalMs","modelPrepareMs"])
+    delete canvas.dataset[field];
+  }
   const portrait=byId("detailRenPortrait");
   if(portrait)portrait.hidden=false;
  }

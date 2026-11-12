@@ -1,4 +1,4 @@
-/* NADAART001: no accidental migration of trial Nada or unapproved combat skills. */
+/* NADAPLAY001: stable playable identity, portrait, battle pilot and trial separation. */
 const test=require("node:test");
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
@@ -8,37 +8,51 @@ const profiles=require("../hero-profile-data.js");
 const trial=require("../story-trial-data.js");
 const collection=require("../hero-collection-core.js");
 const stars=require("../star-core.js");
+const skills=require("../skill-core.js");
+const abilities=require("../ability-data.js");
 
-test("approved Nada profile is present and not trial-Nada",()=>{
+test("permanent Nada is a separate playable hero, not the story fixture",()=>{
  const nada=profiles.get("nada");
  assert.equal(nada?.name,"Нада");
  assert.match(nada.biography,/документ/);
- assert.match(nada.note,/не утверждены/);
  assert.ok(trial.profiles.some(hero=>hero.id==="trial-nada"));
- assert.equal(collection.IDS.includes("nada"),false);
- assert.equal(stars.IDS.includes("nada"),false);
+ assert.ok(collection.IDS.includes("nada")&&collection.START.includes("nada"));
+ assert.ok(stars.IDS.includes("nada")&&stars.START.includes("nada"));
+ assert.ok(skills.HERO_IDS.includes("nada"));
+ assert.equal(trial.profiles.some(hero=>hero.id==="nada"),false);
+ const game=root("game.js"),defs=game.slice(0,game.indexOf("const $="));
+ assert.match(defs,/id:"nada",name:"Нада",classId:"support"/);
+ assert.doesNotMatch(root("story-trial-data.js"),/id:"nada",/);
 });
-test("Nada preview is visible only in roster all/locked, separate from saved playable party",()=>{
- const code=root("game.js");
- const rosterStart=code.indexOf("function renderHeroes()");
- const rosterEnd=code.indexOf('document.querySelectorAll("[data-roster-filter]").forEach(button=>button.addEventListener',rosterStart);
- assert.ok(rosterStart>0&&rosterEnd>rosterStart);
- const render=code.slice(rosterStart,rosterEnd);
- assert.match(render,/showNadaPreview=rosterFilter!=="owned"/);
- assert.match(render,/data-preview-nada/);
- assert.match(render,/nada-portrait-ui\.webp/);
- assert.match(render,/showHeroBiography\(\{id:"nada",name:"Нада"\}\)/);
- const heroDefs=code.slice(0,code.indexOf("const $="));
- assert.doesNotMatch(heroDefs,/id:"nada"/);
+test("approved artwork is now a real owned roster card and 2D hero dossier",()=>{
+ const game=root("game.js");
+ const roster=game.slice(game.indexOf("function renderHeroes()"),
+  game.indexOf('document.querySelectorAll("[data-roster-filter]").forEach(button=>button.addEventListener'));
+ assert.doesNotMatch(roster,/showNadaPreview|data-preview-nada/);
+ assert.match(roster,/h\.id==="nada"/);
+ assert.match(roster,/nada-collection-portrait/);
+ assert.match(game,/showNadaPortrait=hero\.id==="nada"/);
+ assert.match(game,/renPortrait\.src=showNadaPortrait\?"assets\/nada-portrait-ui\.webp"/);
+ assert.match(root("ren-card-3d.js"),/portrait\.hidden=heroId!=="nada"/);
  assert.equal(fs.existsSync(path.join(__dirname,"..","assets","nada-portrait-ui.webp")),true);
-});
-test("portrait biography remains a reusable modal without breaking Ren",()=>{
- const code=root("game.js");
- assert.match(code,/sketch\.src="assets\/nada-portrait-ui\.webp"/);
- assert.match(code,/hero\.id==="ren"\|\|hero\.id==="trial-ren"/);
  assert.equal(profiles.get("ren")?.name,"Рен Терен");
+});
+test("temporary physical support abilities are distinct and can level",()=>{
+ const actor={id:"nada",combatProfile:"stats002c",skillLevels:{basic:3,special:1,powerful:1}};
+ assert.equal(abilities.get(actor,"basic").name,"Прицельный выстрел");
+ assert.equal(abilities.get(actor,"basic").damageType,"physical");
+ assert.equal(abilities.get(actor,"basic").multiplier,1.2);
+ assert.equal(abilities.get(actor,"special").name,"Найти слабость");
+ assert.equal(abilities.get(actor,"special").weakening,2);
+ assert.equal(abilities.get(actor,"powerful").name,"Уязвимое место");
+ assert.equal(abilities.get(actor,"passive").name,"Внимание к деталям");
+ assert.equal(abilities.get(actor,"leader"),null);
+ assert.notEqual(abilities.get(actor,"special").name,
+  abilities.get({id:"trial-nada"},"special").name);
+});
+test("new build still preserves the original UIHUD version prefix",()=>{
  const html=root("index.html"),pkg=JSON.parse(root("package.json"));
- assert.equal(pkg.version,"0.3.124");
- assert.match(html,/v0\.3\.124 · UIHUD001/);
- assert.match(html,/RENBYTES002 \+ NADAART001/);
+ assert.equal(pkg.version,"0.3.125");
+ assert.match(html,/v0\.3\.125 · UIHUD001/);
+ assert.match(html,/NADAART001 \+ NADAPLAY001/);
 });

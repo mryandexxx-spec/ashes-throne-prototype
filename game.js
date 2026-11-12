@@ -2925,7 +2925,7 @@ function initBabylon(){
  if(ENV022_CONCEPT_PREVIEW && $("#battle")?.classList?.add)
   $("#battle").classList.add("env022-concept-preview");
  arenaCamera=new BABYLON.ArcRotateCamera("camera",ARENA_VIEW.alpha,ARENA_VIEW.beta,ARENA_VIEW.radius,new BABYLON.Vector3(0,ARENA_VIEW.targetY,0),scene);
- arenaCamera.lowerRadiusLimit=ARENA_VIEW.minRadius||12;arenaCamera.upperRadiusLimit=ARENA_VIEW.maxRadius||21;
+ arenaCamera.lowerRadiusLimit=12;arenaCamera.upperRadiusLimit=21;
  if(ARENA_VIEW.fov)arenaCamera.fov=ARENA_VIEW.fov;
  // Lock orientation to the established three-quarter view; preserve radius zoom 12–21.
  arenaCamera.lowerAlphaLimit=ARENA_VIEW.alpha;arenaCamera.upperAlphaLimit=ARENA_VIEW.alpha;

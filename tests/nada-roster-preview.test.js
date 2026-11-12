@@ -29,7 +29,7 @@ test("Nada preview is visible only in roster all/locked, separate from saved pla
  assert.match(render,/nada-portrait-ui\.webp/);
  assert.match(render,/showHeroBiography\(\{id:"nada",name:"Нада"\}\)/);
  const heroDefs=code.slice(0,code.indexOf("const $="));
- assert.doesNotMatch(heroDefs,/\bid:"nada"\b/);
+ assert.doesNotMatch(heroDefs,/id:"nada"/);
  assert.equal(fs.existsSync(path.join(__dirname,"..","assets","nada-portrait-ui.webp")),true);
 });
 test("portrait biography remains a reusable modal without breaking Ren",()=>{

@@ -1,0 +1,38 @@
+name: ARENA-ENGINE-001 real Babylon World HUD preview
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'arena-world-hud.js'
+      - 'game.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'tests/arena-world-hud-browser.cjs'
+      - '.github/workflows/arena-world-hud-browser.yml'
+permissions:
+  contents: read
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Verify live 5x5 WebGL and packed HUD
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/arena-hud-server.log 2>&1 &
+          sleep 2
+          node tests/arena-world-hud-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: arena-world-hud-webgl
+          path: artifacts/arena-world-hud/
+          retention-days: 14
+          if-no-files-found: warn

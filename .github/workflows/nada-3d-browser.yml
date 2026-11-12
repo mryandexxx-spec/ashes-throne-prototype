@@ -1,0 +1,35 @@
+name: Nada GLB browser integration
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'dev/assets/models/nada-mobile-animated.glb'
+      - 'dev/src/assets/models.js'
+      - 'nada-glb-runtime.js'
+      - 'ren-card-3d.js'
+      - 'game.js'
+      - 'index.html'
+      - 'tests/nada-3d-browser.cjs'
+      - '.github/workflows/nada-3d-browser.yml'
+  workflow_dispatch:
+jobs:
+  nada-chromium-webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Exercise live Nada GLB in both browser engines
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/nada-server.log 2>&1 &
+          sleep 2
+          node tests/nada-3d-browser.cjs
+          NADA_BROWSER=webkit node tests/nada-3d-browser.cjs

@@ -37,7 +37,7 @@ const NadaGlbRuntime=(()=>{
   const path=assetUrl(),slash=path.lastIndexOf("/");
   const result=await B.SceneLoader.ImportMeshAsync(
    null,path.slice(0,slash+1),path.slice(slash+1),scene,null,".glb");
-  let root=null;
+  let root=null,savedVisibility=null;
   try{
    if(sceneDisposed(scene))throw Error("Scene disposed during Nada import");
    const visible=result.meshes.filter(mesh=>mesh.getTotalVertices?.()>0);
@@ -72,6 +72,7 @@ const NadaGlbRuntime=(()=>{
     mesh.isPickable=true;
    }
    const oldBodyVisible=visual.body.isVisible,oldHeadVisible=visual.head.isVisible;
+   savedVisibility={body:oldBodyVisible,head:oldHeadVisible};
    // Invisible anchor mesh still moves and enables all descendants.
    // Do not use setEnabled(false) on body: that would hide the imported GLB.
    visual.body.isVisible=false;
@@ -109,7 +110,11 @@ const NadaGlbRuntime=(()=>{
      cleanup(result,root);
     }
    });
-  }catch(error){cleanup(result,root);throw error;}
+  }catch(error){
+   if(savedVisibility){visual.body.isVisible=savedVisibility.body;visual.head.isVisible=savedVisibility.head;}
+   cleanup(result,root);
+   throw error;
+  }
  }
  function create(B,scene,visual,onStatus){
   let disposed=false,instance=null;

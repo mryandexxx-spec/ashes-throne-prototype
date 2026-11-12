@@ -32,6 +32,8 @@ jobs:
             assets/ren-meshy-mixamo-animated.glb \
             build/model-candidates/ren-webp-lossless-preview.glb \
             --lossless true
+      - name: Verify lossless candidate preserves exact original pixels
+        run: node tools/verify-lossless-glb-textures.cjs
       - name: Report original and candidate sizes
         run: |
           node -e 'const fs=require("fs"); const original=fs.statSync("assets/ren-meshy-mixamo-animated.glb").size; const webp92=fs.statSync("build/model-candidates/ren-webp92-preview.glb").size; const lossless=fs.statSync("build/model-candidates/ren-webp-lossless-preview.glb").size; console.log("REN_TEXTURE_CANDIDATE="+JSON.stringify({original,webp92,lossless,savedWebp92:original-webp92,savedLossless:original-lossless,reductionWebp92Percent:Math.round((1-webp92/original)*1000)/10,reductionLosslessPercent:Math.round((1-lossless/original)*1000)/10})); if(lossless>=original)console.warn("Lossless candidate is not smaller; do not integrate.");'

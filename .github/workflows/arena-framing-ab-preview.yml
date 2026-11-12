@@ -1,0 +1,35 @@
+name: Arena Dune v94 A/B visual review (no deployment)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tests/arena-framing-ab-preview.cjs'
+      - '.github/workflows/arena-framing-ab-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Capture genuine 5v5 Babylon screenshots at 844 and 667
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/arena-ab-http.log 2>&1 &
+          sleep 2
+          node tests/arena-framing-ab-preview.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ashes-arena-framing-ab
+          path: artifacts/arena-ab/
+          retention-days: 14
+          if-no-files-found: warn

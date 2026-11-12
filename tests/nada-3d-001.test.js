@@ -42,6 +42,14 @@ test("NADA3D001: game and card load the same asset without new engine in combat"
  assert.match(page,/dev\/src\/assets\/models\.js\?v=0\.3\.129/);
  assert.match(page,/nada-glb-runtime\.js\?v=0\.3\.129/);
  assert.match(game,/function ensureNada3D\(\)/);
+ // The scene may exist before the chosen squad is materialized.
+ // Never inject Nada's Mixamo rig into a Ren-only fight at initBabylon().
+ const init=game.slice(game.indexOf("function initBabylon(){"),game.indexOf("function updateMeshes(){"));
+ assert.doesNotMatch(init,/ensureNada3D\(\)/);
+ assert.match(game,/resetBattle\(\);\s*updateMeshes\(\)/);
+ assert.match(game,/function updateMeshes\(\)\{\s*if\(!scene\)return;\s*ensureNada3D\(\);/);
+ assert.match(game,/if\(!selected\)\{[\s\S]*?nadaGlbRuntime\.dispose\(\)/);
+
  assert.match(game,/nadaGlbRuntime=NadaGlbRuntime\.create\(BABYLON,scene,meshes\.nada/);
  assert.match(game,/if\(h\.id==="nada"&&nadaGlbRuntime\)nadaGlbRuntime\.update\(activity\)/);
  assert.match(game,/if\(nadaGlbRuntime\)\{nadaGlbRuntime\.dispose\(\);nadaGlbRuntime=null;\}/);

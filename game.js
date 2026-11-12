@@ -770,14 +770,15 @@ function showHeroBiography(hero){
   "Биография персонажа пока не подготовлена. Демонстрационные герои не являются утверждёнными персонажами вселенной.";
  $("#heroBiographyNote").textContent=data?.note||"История персонажа будет добавлена после согласования.";
  const sketch=$("#heroBiographyPortrait");
- if(sketch){
-  const portrait=hero.id==="nada"?"assets/nada-portrait-ui.webp":
-   hero.id==="ren"||hero.id==="trial-ren"?"assets/ren-portrait-ui.webp":null;
-  sketch.hidden=!portrait;
-  if(portrait){
-   sketch.src=portrait;
-   sketch.alt=hero.id==="nada"?"Нада — утверждённый живописный портрет":"Рен Терен — портрет проводника Садов над пропастью";
-  }
+ if(sketch)sketch.hidden=hero.id!=="trial-ren"&&hero.id!=="ren";
+ // Preserve Ren's established biography visibility; Nada is an independent preview.
+ if(sketch&&hero.id==="nada"){
+  sketch.hidden=false;
+  sketch.src="assets/nada-portrait-ui.webp";
+  sketch.alt="Нада — утверждённый живописный портрет";
+ }else if(sketch&&(hero.id==="ren"||hero.id==="trial-ren")){
+  sketch.src="assets/ren-portrait-ui.webp";
+  sketch.alt="Рен Терен — портрет проводника Садов над пропастью";
  }
  if(typeof dialog.showModal==="function"&&!dialog.open)dialog.showModal();
  return true;

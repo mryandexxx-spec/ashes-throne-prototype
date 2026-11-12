@@ -1,0 +1,36 @@
+name: ARENA-ENGINE-002 Ren Nada full battle WebGL
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'arena-stage-view.js'
+      - 'arena-world-hud.js'
+      - 'tests/arena-stage-real-heroes.cjs'
+      - '.github/workflows/arena-stage-real-heroes.yml'
+permissions:
+  contents: read
+jobs:
+  real-models:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Render real Ren/Nada GLB in a 5v5 arena and check HUD
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/arena-real-models.log 2>&1 &
+          sleep 2
+          node tests/arena-stage-real-heroes.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: arena-stage-real-glbs
+          path: artifacts/arena-stage-real-heroes/
+          if-no-files-found: warn
+          retention-days: 14

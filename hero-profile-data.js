@@ -18,8 +18,8 @@ const HeroProfileData=(()=>{
    ].join("\n\n"),
    note:"Биография основана на утверждённой литературе. Боевой баланс и место персонажа в игровой хронологии ещё не утверждены."
   }),
-  // NADAART001: approved literary facts and approved portrait, preview only.
-  // No playable combat class or recruitment chronology is established.
+  // NADA-PLAYABLE-001: literature-grounded bio; gameplay role is an explicit pilot.
+  // The recruitment timeline and class remain game proposals, not world canon.
   "nada":Object.freeze({
    id:"nada",name:"Нада",tags:Object.freeze([]),
    biography:[
@@ -27,7 +27,7 @@ const HeroProfileData=(()=>{
     "Однажды её работу недооценили и не оплатили полностью. Поэтому она особенно настойчива, когда речь заходит о праве исследователя на собственные результаты и ответственности за сохранность свидетельств.",
     "В истории «Пять теней» Нада путешествует по опасным маршрутам вместе с проводником Реном. Они спорят о способах проверки и принимаемых рисках, но признают сильные стороны друг друга."
    ].join("\n\n"),
-   note:"Визуальный образ и портрет утверждены владельцем. Боевая роль, владение оружием в литературной хронологии, получение героя и навыки для RPG пока не утверждены."
+   note:"Визуальный образ утверждён. Игровые способности, поддержка и стартовое получение — тестовый игровой пилот, а не литературный канон."
   }),
   "trial-ren":Object.freeze({
    id:"trial-ren",name:"Рен Терен",tags:Object.freeze(["gardens-over-abyss"]),

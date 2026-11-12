@@ -1604,7 +1604,7 @@ function renderHeroes(){
   return `<button type="button" class="hero-card hero-open roster-card ${owned?"":"hero-locked"}" data-open-hero="${h.id}" aria-label="${name}${isLeader?". Лидер отряда":""}. ${owned?"Открыть досье":"Условия получения"}${labels.length?". "+labels.join(", "):""}"><span class="roster-card-art hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":""}">${portraitAvatar}${leaderBadge}</span><span class="roster-card-name">${name}</span>${tags}${starInfo}<span class="roster-card-subtitle">${levelLine}</span>${owned?'<span class="roster-card-gear">'+gearLabel+'</span>':progressLine}<span class="hero-open-hint">${owned?"Открыть досье ›":"Как получить ›"}</span></button>`;
  }).join("")+(showNadaPreview?
   '<button type="button" class="hero-card hero-open roster-card" data-preview-nada="true" aria-label="Нада. Утверждённый портрет и досье. Герой в разработке. Открыть досье">'+
-  '<span class="roster-card-art hero-avatar hero-avatar-ren"><img class="ren-collection-portrait" src="assets/nada-portrait-ui.webp" width="256" height="256" loading="lazy" decoding="async" alt=""></span>'+
+  '<span class="roster-card-art hero-avatar hero-avatar-nada"><img class="nada-collection-portrait" src="assets/nada-portrait-ui.webp" width="256" height="256" loading="lazy" decoding="async" alt=""></span>'+
   '<span class="roster-card-name">Нада</span><span class="roster-card-subtitle">Полевой исследователь · игровой герой в разработке</span>'+
   '<span class="hero-open-hint">Открыть досье ›</span></button>':"");
  $("#heroList").querySelector("[data-preview-nada]")?.addEventListener("click",()=>showHeroBiography({id:"nada",name:"Нада"}));

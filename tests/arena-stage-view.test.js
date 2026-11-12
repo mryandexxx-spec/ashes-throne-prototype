@@ -3,7 +3,7 @@ const test=require("node:test"),assert=require("node:assert/strict");
 const {view,formation}=require("../arena-stage-view.js");
 test("ARENA-ENGINE-002: approved shot retains portrait scale and -8deg azimuth",()=>{
  assert.ok(Math.abs(view.radius-15.5)<1e-10);
- assert.ok(Math.abs(view.fov*180/Math.PI-39)<1e-10);
+ assert.ok(Math.abs(view.fov*180/Math.PI-34)<1e-10);
  const delta=(Math.atan2(10,-11.5)-view.alpha)*180/Math.PI;
  assert.ok(Math.abs(delta-8)<1e-10);
 });

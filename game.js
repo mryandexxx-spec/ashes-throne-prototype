@@ -1607,7 +1607,7 @@ function renderHeroes(){
   '<span class="roster-card-art hero-avatar hero-avatar-nada"><img class="nada-collection-portrait" src="assets/nada-portrait-ui.webp" width="256" height="256" loading="lazy" decoding="async" alt=""></span>'+
   '<span class="roster-card-name">Нада</span><span class="roster-card-subtitle">Полевой исследователь · игровой герой в разработке</span>'+
   '<span class="hero-open-hint">Открыть досье ›</span></button>':"");
- $("#heroList").querySelector("[data-preview-nada]")?.addEventListener("click",()=>showHeroBiography({id:"nada",name:"Нада"}));
+ document.querySelector("[data-preview-nada]")?.addEventListener("click",()=>showHeroBiography({id:"nada",name:"Нада"}));
  if(!visible.length&&!showNadaPreview)$("#heroList").innerHTML='<p class="roster-empty">В этой категории героев пока нет.</p>';
  document.querySelectorAll("[data-open-hero]").forEach(node=>node.addEventListener("click",()=>{
   const id=node.dataset.openHero;if(heroOwned(id))openHeroDetail(id);else showLockedHero(id);

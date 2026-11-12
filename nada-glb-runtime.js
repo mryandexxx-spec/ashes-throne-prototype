@@ -59,7 +59,8 @@ const NadaGlbRuntime=(()=>{
    }
    const height=max.y-min.y;
    if(!Number.isFinite(height)||height<=0)throw Error("Invalid Nada GLB height");
-   const scale=2.1/height;
+   // Keep GLB source unchanged. Only the battle scene's visual root grows.
+   const scale=(typeof ArenaStageView!=="undefined"?ArenaStageView.heroHeight:2.1)/height;
    // Meshy faces +Z; give the actress the same battlefield facing as Ren.
    root.scaling.set(scale,scale,scale);
    root.rotation.y=Math.PI/2;

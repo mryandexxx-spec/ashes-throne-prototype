@@ -2879,9 +2879,14 @@ function installArenaPointerCamera(canvas,camera){
 // Only load the skinned GLB when Nada participates. No additional Engine
 // or animation timer; the established arena frame loop drives it.
 function ensureNada3D(){
- if(!scene||nadaGlbRuntime||!meshes.nada||
-    typeof NadaGlbRuntime==="undefined"||
-    !presentationFighters().some(f=>f.id==="nada"&&f.side==="ally"))return;
+ if(!scene||!meshes.nada||typeof NadaGlbRuntime==="undefined")return;
+ const selected=presentationFighters().some(f=>f.id==="nada"&&f.side==="ally");
+ if(!selected){
+  // Arena persists between encounters: release the old rig for Ren-only squads.
+  if(nadaGlbRuntime){nadaGlbRuntime.dispose();nadaGlbRuntime=null;}
+  return;
+ }
+ if(nadaGlbRuntime)return;
  nadaGlbRuntime=NadaGlbRuntime.create(BABYLON,scene,meshes.nada,(kind,message)=>{
   if(kind==="error")console.warn("NADA3D001: "+message);
  });

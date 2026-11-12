@@ -14,6 +14,16 @@ for(const [width,height] of [[844,390],[667,375],[667,210],[844,210]]){
   }
  });
 }
+test("notch-side safe area keeps ten labels out of unsafe 59px inset",()=>{
+ const rows=Array.from({length:10},(_,i)=>({id:"s"+i,ax:320+(i%5-2)*18,ay:90+(i%2)*15,w:70,h:27}));
+ pack(rows,667,375,{left:59,right:12,top:8,bottom:8});
+ for(const a of rows){
+  assert.ok(a.x>=59,"label behind landscape notch "+a.id);
+  assert.ok(a.x+a.w<=667-12,"label behind right safe area "+a.id);
+ }
+ for(let i=0;i<rows.length;i++)for(let j=0;j<i;j++)
+  assert.equal(overlap(rows[i],rows[j]),false,`notch collision ${rows[i].id}/${rows[j].id}`);
+});
 test("reproducible positions independent of insertion order",()=>{
  const make=()=>Array.from({length:10},(_,i)=>({id:"f"+i,ax:320+(i%5-2)*14,ay:72+(i%2)*20,w:70,h:28}));
  const a=make(),b=make().reverse();

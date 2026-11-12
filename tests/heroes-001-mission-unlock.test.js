@@ -10,7 +10,7 @@ const db=new Map(),get=()=>({getItem:key=>db.get(key)??null,setItem:(key,val)=>d
 const fresh=SaveCore.load(allies,get);
 assert.equal(fresh.progress.saveVersion,3);
 assert.deepEqual(Array.from(fresh.progress.unlockedHeroes),["kael","lyra","darin","ren","nada"]);
-assert.deepEqual(Array.from(H.IDS.filter(id=>H.owned(fresh.progress,id))),["kael","lyra","darin","ren"]);
+assert.deepEqual(Array.from(H.IDS.filter(id=>H.owned(fresh.progress,id))),["kael","lyra","darin","ren","nada"]);
 assert.equal(H.owned(fresh.progress,"medic-demo"),false);
 assert.equal(H.owned(fresh.progress,"test-area-damage"),false);
 assert.equal(H.owned(fresh.progress,"ves"),false);

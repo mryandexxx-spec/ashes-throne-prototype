@@ -68,6 +68,7 @@ const ArenaWorldHud = (() => {
       this.rows=new Map();
       this.nodes=new WeakMap();
       this.width=0;this.height=0;this.dirty=true;
+      this.insets={left:8,right:8,top:8,bottom:8};
       this.observer=typeof ResizeObserver==="function"?new ResizeObserver(entries=>{
         for(const entry of entries){
           const size=entry.borderBoxSize && (Array.isArray(entry.borderBoxSize)?entry.borderBoxSize[0]:entry.borderBoxSize);
@@ -75,6 +76,13 @@ const ArenaWorldHud = (() => {
           const h=Math.ceil(size?size.blockSize:entry.contentRect.height);
           if(entry.target===overlay){
             if(w!==this.width||h!==this.height){this.width=w;this.height=h;this.dirty=true;}
+            // Read notch/safe-area padding only on resize, never each WebGL frame.
+            if(typeof getComputedStyle==="function"){
+              const css=getComputedStyle(overlay);
+              const left=Math.max(8,Math.ceil(parseFloat(css.paddingLeft)||0));
+              const right=Math.max(8,Math.ceil(parseFloat(css.paddingRight)||0));
+              if(left!==this.insets.left||right!==this.insets.right){this.insets={...this.insets,left,right};this.dirty=true;}
+            }
           }else{
             const row=this.nodes.get(entry.target);
             if(row && (row.w!==w||row.h!==h)){row.w=w;row.h=h;this.dirty=true;}
@@ -109,7 +117,7 @@ const ArenaWorldHud = (() => {
       if(!this.dirty||!this.width||!this.height)return;
       this.dirty=false;
       const rows=[...this.rows.values()];
-      pack(rows,this.width,this.height);
+      pack(rows,this.width,this.height,this.insets);
       for(const row of rows){
         const dx=row.x+row.w/2-row.ax,dy=row.y+row.h-row.ay;
         if(Math.abs(dx-row.dx)<.05&&Math.abs(dy-row.dy)<.05)continue;

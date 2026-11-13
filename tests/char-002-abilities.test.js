@@ -59,7 +59,7 @@ test("CHAR002B Ren bonuses rely exclusively on marks, not generic weaken/slow",(
  const d=fighter("target","enemy",1,1000,0);
  const b=Combat.createBattle([r,d]);
  Combat.advanceToPlayerTurn(b);
- d.weakenAttacks=2;
+ b.fighters[1].weakenAttacks=2;
  assert.equal(Combat.performPlayerAbility(b,"basic"),true);
  const generic=1000-d.hp;
  const b2=Combat.createBattle([r,d]);
@@ -102,4 +102,28 @@ test("CHAR002B Gardens tags and passives are independent, trial actors unchanged
  for(const id of ["ren","nada"])assert.equal(api.AbilityData.get(actor(id),"leader"),null);
  assert.match(api.AbilityInfo.format(actor("nada"),"passive").description,/Садов/);
  assert.match(api.AbilityInfo.format(actor("ren"),"passive").description,/зацепку/);
+});
+
+test("CHAR002B enemy special attempt is replaced with basic, consuming 3 marks",()=>{
+ const source=["initiative-model.js","battle-rng.js","combat-status-core.js",
+  "skill-core.js","ability-data.js","ability-info.js",
+  "const EnemyDecision={chooseAction:()=>({abilityId:\"special\",targetIndex:0})};",
+  "combat-core.js","combat-log.js"].map(name=>name.startsWith("const ")?name:read(name)).join("\n");
+ const forced=vm.runInNewContext(source+"\n({CombatCore,CombatStatusCore})");
+ const ally=fighter("ren","ally",120,500,4,["gardens-over-abyss"]);
+ const enemy=fighter("enemy","enemy",180,1000,10);
+ const battle=forced.CombatCore.createBattle([ally,enemy]);
+ assert.equal(forced.CombatStatusCore.applyReadMove(battle.fighters[1],4,2),true);
+ forced.CombatCore.advanceToPlayerTurn(battle);
+ const interrupted=battle.events.filter(e=>e.type==="read-move-disrupted");
+ assert.equal(interrupted.length,1);
+ assert.equal(interrupted[0].requestedAbilityId,"special");
+ assert.equal(interrupted[0].remainingStacks,1);
+ assert.equal(battle.events.find(e=>e.type==="ability").abilityId,"basic");
+ assert.equal(forced.CombatStatusCore.read(battle.fighters[1],"read-move").stacks,1);
+ // A new battle starts clean, without leaking accumulated marks.
+ const reset=forced.CombatCore.createBattle([ally,enemy]);
+ assert.equal(forced.CombatStatusCore.read(reset.fighters[1],"read-move"),null);
+ forced.CombatCore.advanceToPlayerTurn(reset);
+ assert.equal(reset.events.some(e=>e.type==="read-move-disrupted"),false);
 });

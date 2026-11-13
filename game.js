@@ -604,18 +604,24 @@ function equippedPilotStats(hero,profile){
   magicDefense:profile.magicDefense,protection:profile.maxProtection,
   maxProtection:profile.maxProtection};
 }
-// STATS-001B: explicit developer opt-in. No default gameplay/save migration.
-const STATS001B_PILOT=typeof location!=="undefined"&&
- /(?:^|[?&])stats001b=1(?:&|$)/.test(location.search);
+// STATS-001B: the two production heroes use one stat source, directly.
+// Other fighters remain test mannequins under their existing demo rules.
 function progressedHero(hero){
- const calculated=ProgressCore.heroStats(progress,hero);
- if(!calculated)return null;
- let h=equippedPilotStats(calculated,PILOT_HERO_STATS[hero.id]);
- if(STATS001B_PILOT&&(hero.id==="ren"||hero.id==="nada")&&
+ let h;
+ if((hero.id==="ren"||hero.id==="nada")&&
     typeof HeroStatsCore!=="undefined"&&
     typeof HeroStatsProfiles!=="undefined"&&
     typeof HeroStatsCombatBridge!=="undefined"){
-  h=HeroStatsCombatBridge.apply(hero,calculated,HeroStatsProfiles[hero.id],HeroStatsCore);
+  const level=ProgressCore.levelOf(progress,hero.id);
+  const stars=typeof StarCore!=="undefined"?StarCore.rankOf(progress,hero.id):1;
+  if(level===null||stars===null||stars<1)return null;
+  h=HeroStatsCombatBridge.apply(hero,{
+   level,stars,gearPercent:ProgressCore.gearBonuses(progress,hero.id)
+  },HeroStatsProfiles[hero.id],HeroStatsCore);
+ }else{
+  const calculated=ProgressCore.heroStats(progress,hero);
+  if(!calculated)return null;
+  h=equippedPilotStats(calculated,PILOT_HERO_STATS[hero.id]);
  }
  return typeof SkillCore==="undefined"?h:
   {...h,skillLevels:Object.fromEntries(SkillCore.IDS.map(id=>[id,SkillCore.level(progress,hero.id,id)]))};

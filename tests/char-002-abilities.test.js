@@ -95,3 +95,29 @@ test("CHAR002 live Nada aura adds 10 percentage points to Ren 15% passive",()=>{
  assert.equal(damageAlone,Math.round(28*1.15));
  assert.equal(damageTogether,Math.round(28*1.25));
 });
+
+test("CHAR002 Ren powerful affects surviving enemies, never friendly units",()=>{
+ const ren=fighter("ren","ally",150,120,28);
+ ren.skillLevels={basic:6,special:6,powerful:6};
+ const a=fighter("dummy-a","enemy",2,500,1);
+ const b=fighter("dummy-b","enemy",2,500,1);
+ const battle=api.CombatCore.createBattle([ren,a,b]);
+ api.CombatCore.advanceToPlayerTurn(battle);
+ assert.equal(api.CombatCore.performPlayerAbility(battle,"powerful"),true);
+ assert.equal(battle.fighters[1].renStatuses?.["debuff-resistance-down"]?.amount,20);
+ assert.equal(battle.fighters[2].renStatuses?.["debuff-resistance-down"]?.amount,20);
+ assert.equal(battle.fighters[0].renStatuses,undefined);
+ assert.equal(battle.fighters[0].powerfulCooldown,3);
+});
+test("CHAR002 Nada powerful only marks its chosen target and respects cooldown",()=>{
+ const nada=fighter("nada","ally",125,110,19);
+ nada.skillLevels={basic:6,special:6,powerful:6};
+ const a=fighter("dummy-a","enemy",2,500,1);
+ const b=fighter("dummy-b","enemy",2,500,1);
+ const battle=api.CombatCore.createBattle([nada,a,b]);
+ api.CombatCore.advanceToPlayerTurn(battle);
+ assert.equal(api.CombatCore.performPlayerAbility(battle,"powerful"),true);
+ assert.equal(battle.fighters[1].renStatuses?.["debuff-resistance-down"]?.amount,25);
+ assert.equal(battle.fighters[2].renStatuses?.["debuff-resistance-down"],undefined);
+ assert.equal(battle.fighters[0].powerfulCooldown,3);
+});

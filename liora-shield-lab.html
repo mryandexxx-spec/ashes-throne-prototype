@@ -36,11 +36,12 @@ details{margin-top:10px}summary{cursor:pointer;min-height:36px}
 <button id="reset" type="button">Сбросить положение щита</button>
 <button id="scan" type="button">Проверить 12 клипов</button>
 </div>
-<details><summary>Настроить крепление щита (координаты в системе кисти)</summary>
+<details open><summary>Настроить крепление щита (координаты в системе кисти)</summary>
+<label style="display:inline-flex;margin:10px 4px;gap:10px;align-items:center"><input id="stabilize" type="checkbox" checked> Стабилизация лицевой стороны щита (рекомендовано; без неё некоторые движения переворачивают щит)</label>
 <div class="grid" id="sliders">
-<label>Смещение X <input data-key="ox" type="number" step=".01" value="-.09"></label>
-<label>Смещение Y <input data-key="oy" type="number" step=".01" value=".03"></label>
-<label>Смещение Z <input data-key="oz" type="number" step=".01" value=".17"></label>
+<label>Смещение X <input data-key="ox" type="number" step=".01" value="-.22055"></label>
+<label>Смещение Y <input data-key="oy" type="number" step=".01" value=".05394"></label>
+<label>Смещение Z <input data-key="oz" type="number" step=".01" value="-.01236"></label>
 <label>Вращение X, ° <input data-key="rx" type="number" step="5" value="0"></label>
 <label>Вращение Y, ° <input data-key="ry" type="number" step="5" value="0"></label>
 <label>Вращение Z, ° <input data-key="rz" type="number" step="5" value="0"></label>
@@ -48,7 +49,7 @@ details{margin-top:10px}summary{cursor:pointer;min-height:36px}
 </div></details>
 <p role="status" id="status">Загрузка 3D...</p>
 <pre id="checks" aria-label="Результаты проверки клипов"></pre>
-<p>Привязка подготовлена как технический прототип; проверяйте визуально, не пересекает ли щит тело на каждом клипе. Запросы GLB требуют WebP в Babylon Loader. В реальном iPhone Safari эта сцена ещё не проверена.</p>
+<p>Базовая ориентация откалибрована на 36 офлайн-рендерах: золотое солнце обращено наружу, щит расположен ближе к левому предплечью. В движениях Block1 и Shield_Push_Left остаются артефакты исходных движений рук: требуется отдельная доработка анимаций. Визуальная проверка именно в Babylon/Safari ещё не выполнена. Запросы GLB требуют WebP в Babylon Loader. В реальном iPhone Safari эта сцена ещё не проверена.</p>
 </main>
 <script src="liora-shield-lab.js"></script>
 </body></html>

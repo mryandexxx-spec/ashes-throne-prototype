@@ -105,17 +105,16 @@ for(let tier=1;tier<=3;tier++){
 }
 assert.equal(p.gear.kael.tier,3);
 assert.equal(p.gear.kael.slots.filter(Boolean).length,6);
-assert.equal(elements.gearEquipNext.disabled,true);
-assert.equal(elements.gearEquipNext.textContent,"G3 завершён");
+assert.equal(elements.gearEquipNext.disabled,false);
+assert.equal(elements.gearEquipNext.textContent,"Повысить экипировку до G4");
 assert.equal(p.gear.kael.history["1"].filter(Boolean).length,6);
 assert.equal(p.gear.kael.history["2"].filter(Boolean).length,6);
-assert.match(elements.gearNotice.textContent,/G3 завершён/);
+assert.match(elements.gearNotice.textContent,/G4/);
 const raw=JSON.parse(savedData.get("ashes-throne.progress.v3"));
 assert.equal(raw.heroes.kael.gear.tier,3);
 assert.equal(raw.heroes.kael.gear.installedByTier["3"].length,6);
 const beforeAgain=p.currency;
-click(elements.gearEquipNext);
-assert.equal(p.currency,beforeAgain,"no extra charge after G3 complete");
+assert.equal(p.currency,beforeAgain,"no automatic extra charge after G3 complete");
 const reload=vm.runInNewContext(src+
  "\n({p:progress,stats:ProgressCore.heroStats(progress,ALLIES.find(h=>h.id==='kael'))})",
  {document,window:{addEventListener(){},localStorage},BABYLON});

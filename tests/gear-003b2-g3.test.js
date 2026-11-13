@@ -24,9 +24,9 @@ function fill(p,id,tier){
  }
 }
 function approx(a,b){assert.ok(Math.abs(a-b)<1e-10,a+" differs from "+b);}
-assert.equal(G.ITEMS.length,36);
+assert.equal(G.ITEMS.length,336);
 for(const tier of [1,2,3])assert.equal(G.ITEMS.filter(item=>item.tier===tier).length,12);
-assert.equal(G.offered("tank","head",4).length,0);
+assert.equal(G.offered("tank","head",4).length,1);
 assert.equal(G.get("g4-blade"),null);
 // Explicit v0.5 optimized recipes; no unwanted legacy v0.4 G3 substitutions.
 const recipes={
@@ -92,7 +92,7 @@ for(const hero of heroes){
  approx(P.gearBonuses(restored,hero.id).hp,.24);
  approx(P.gearBonuses(restored,hero.id).atk,.24);
  assert.equal(P.gearInstalled(restored,hero.id),18);
- assert.equal(P.gearPromotionCost(restored,hero.id),null);
+ assert.equal(P.gearPromotionCost(restored,hero.id).to,4);
  assert.equal(P.heroStats(restored,hero).speed,hero.speed);
  assert.equal(restored.currency,5250,"three full sets 1000+2000+3000, two transitions 750");
  assert.equal(S.save(restored,()=>s),true);

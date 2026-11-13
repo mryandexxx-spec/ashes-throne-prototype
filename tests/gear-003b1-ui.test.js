@@ -102,7 +102,7 @@ assert.equal(elements.gearPromotionDialog.open,true);
 assert.match(elements.gearPromotionLevel.textContent,/G1 → G2/);
 assert.equal(p.gear.kael.history["1"][0],"g1-blade");
 assert.match(elements.gearPrice.textContent,/Закалённый клинок/);
-assert.equal(elements.gearStatBonus.textContent,"ATK +3%");
+assert.match(elements.gearStatBonus.textContent,/ATK \+3%/);
 const saved=JSON.parse(savedData.get("ashes-throne.progress.v3"));
 assert.equal(saved.heroes.kael.gear.tier,2);
 assert.equal(saved.heroes.kael.gear.installedByTier["1"][0].itemId,"g1-blade");

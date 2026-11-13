@@ -523,7 +523,8 @@ $("#devResourcesGrant")?.addEventListener("click",()=>{
  const status=$("#devResourcesNotice");
  if(status)status.textContent="Тестовый запас готов: энергия "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX+
   ", игровая валюта "+progress.currency+", материал C "+progress.gearMaterials+
-  (progress.saveVersion===3?" · G1: "+GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(", "):"")+
+  (progress.saveVersion===3?" · G"+Math.max(1,...Object.values(progress.gear||{}).map(g=>g.tier||1))+": "+
+   GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(", "):"")+
   (progress.saveVersion===3&&typeof SkillCore!=="undefined"&&progress.skillMaterials?" · Навыки: "+
    SkillCore.RESOURCE_IDS.map(id=>SkillCore.LABELS[id]+" "+
     progress.skillMaterials[id]).join(", "):"")+
@@ -621,9 +622,11 @@ const PILOT_HERO_STATS=Object.freeze({
 const PILOT_ENEMY_STATS=Object.freeze({physicalDefense:8,magicDefense:8,maxProtection:0});
 function equippedPilotStats(hero,profile){
  if(!hero||!profile)return hero;
- return {...hero,combatProfile:"stats002c",physicalAttack:hero.atk,physicalDefense:profile.physicalDefense,
-  magicDefense:profile.magicDefense,protection:profile.maxProtection,
-  maxProtection:profile.maxProtection};
+ const protection=profile.maxProtection+(hero.protection||0);
+ return {...hero,combatProfile:"stats002c",physicalAttack:hero.atk,
+  physicalDefense:profile.physicalDefense+(hero.physicalDefense||0),
+  magicDefense:profile.magicDefense+(hero.magicDefense||0),
+  protection,maxProtection:protection};
 }
 // STATS-001B: the two production heroes use one stat source, directly.
 // Other fighters remain test mannequins under their existing demo rules.
@@ -637,7 +640,8 @@ function progressedHero(hero){
   const stars=typeof StarCore!=="undefined"?StarCore.rankOf(progress,hero.id):1;
   if(level===null||stars===null||stars<1)return null;
   h=HeroStatsCombatBridge.apply(hero,{
-   level,stars,gearPercent:ProgressCore.gearBonuses(progress,hero.id)
+   level,stars,gearPercent:ProgressCore.gearBonuses(progress,hero.id),
+   gearStats:ProgressCore.gearBonuses(progress,hero.id).stats
   },HeroStatsProfiles[hero.id],HeroStatsCore);
  }else{
   const calculated=ProgressCore.heroStats(progress,hero);
@@ -1720,7 +1724,7 @@ function renderItemizedGear(base,gear){
  const installed=gear.slots[selectedGearSlot];
  const promotion=ready?ProgressCore.gearPromotionCost(progress,base.id):null;
  $("#gearTier").textContent="G"+gear.tier+" · "+completed+"/6"+
-  (ready&&gear.tier===3?" · тестовый максимум":"");
+  (ready&&gear.tier===GearData.MAX_TIER?" · максимум":"");
  $("#gearSlots").innerHTML=GearData.SLOTS.map((entry,i)=>{
   const filled=gear.slots[i],selected=i===selectedGearSlot;
   return '<button type="button" class="gear-slot '+(filled?'filled ':'')+
@@ -1732,27 +1736,31 @@ function renderItemizedGear(base,gear){
  $("#gearMaterial").textContent=GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(" · ");
  $("#gearWallet").textContent=String(progress.currency);
  $("#gearPriceLabel").textContent=ready?"Стоимость перехода":"Выбранный предмет";
- $("#gearStatBonusLabel").textContent=ready?"Бонус повышения":"Фиксированный бонус";
+ $("#gearStatBonusLabel").textContent=ready?"Бонус повышения":"Бонус предмета";
  const chosen=installed?GearData.get(installed):item;
- $("#gearPrice").textContent=ready?(promotion?promotion.currency+" валюты · G"+promotion.from+" → G"+promotion.to:"G3 · тестовый максимум"):
+ $("#gearPrice").textContent=ready?(promotion?promotion.currency+" валюты · G"+promotion.from+" → G"+promotion.to:"G"+GearData.MAX_TIER+" · максимум"):
   chosen?chosen.name+" · "+Object.entries(chosen.ingredients).map(([id,n])=>
    GearData.MATERIAL_LABELS[id]+" ×"+n).join(", ")+" · "+chosen.currency+" валюты":"—";
  $("#gearStatBonus").textContent=ready?(promotion?"HP и ATK +3%":"—"):
-  chosen?[chosen.bonuses.hp?"HP +"+Math.round(chosen.bonuses.hp*100)+"%":"",
-   chosen.bonuses.atk?"ATK +"+Math.round(chosen.bonuses.atk*100)+"%":""].filter(Boolean).join(" · "):"—";
+  chosen?[
+   chosen.bonuses.hp?"HP +"+Math.round(chosen.bonuses.hp*100)+"%":"",
+   chosen.bonuses.atk?"ATK +"+Math.round(chosen.bonuses.atk*100)+"%":"",
+   ...Object.entries(chosen.statBonuses||{}).map(([id,n])=>
+    (GearData.STAT_LABELS[id]||id)+" +"+n)
+  ].filter(Boolean).join(" · "):"—";
  const button=$("#gearEquipNext");
  button.disabled=saveBlocked||(ready?!promotion||!ProgressCore.canPromoteGear(progress,base.id):
   !!installed||!item||!ProgressCore.canEquipItem(progress,base.id,item.id));
- button.textContent=ready?(promotion?"Повысить экипировку до G"+promotion.to:"G3 завершён"):
+ button.textContent=ready?(promotion?"Повысить экипировку до G"+promotion.to:"G"+GearData.MAX_TIER+" завершён"):
   installed?"Предмет установлен":"Изготовить и установить";
  $("#gearNotice").textContent=saveBlocked
   ?"Обнаружена проблема сохранения: покупки заблокированы."
   :ready?(promotion?(ProgressCore.gearPromotionBlockReason(progress,base.id)||
    "Все шесть предметов G"+gear.tier+" установлены. Можно повысить до G"+promotion.to+" за "+promotion.currency+" валюты."):
-   "G3 завершён. Следующие ступени появятся отдельным этапом.")
+   "G"+GearData.MAX_TIER+" завершён. Максимальная ступень достигнута.")
   :installed?"Установлено: "+chosen.name+"."
   :item?(ProgressCore.itemBlockReason(progress,base.id,item.id)||
-   "Тестовый предмет доступен. Материалы — в кнопке «Тестовые ресурсы».")
+   "Предмет доступен для изготовления. Бонусы будут действовать в бою.")
   :"Для класса нет доступного предмета.";
 }
 function renderHeroAbilities(hero){
@@ -2042,17 +2050,17 @@ $("#gearEquipNext")?.addEventListener("click",()=>{
    if(!cost||!ProgressCore.canPromoteGear(progress,selectedHeroId)){
     renderHeroDetail();return;
    }
-   const before=JSON.stringify(progress),oldStats=ProgressCore.heroStats(progress,base);
+   const before=JSON.stringify(progress),oldStats=progressedHero(base);
    const result=ProgressCore.promoteGear(progress,selectedHeroId);
    if(!result)return;
    if(!persistProgress()){
     Object.keys(progress).forEach(k=>delete progress[k]);
     Object.assign(progress,JSON.parse(before));
     renderAccountHeader();renderHeroDetail();
-    $("#gearNotice").textContent="Переход не сохранён. Валюта и G1 восстановлены.";
+    $("#gearNotice").textContent="Переход не сохранён. Валюта и прежний ранг восстановлены.";
     return;
    }
-   const newStats=ProgressCore.heroStats(progress,base);
+   const newStats=progressedHero(base);
    selectedGearSlot=0;renderHeroDetail();renderHeroes();
    $("#gearPromotionTitle").textContent="Поздравляем!";
    $("#gearPromotionLevel").textContent="G"+result.from+" → G"+result.to+". Предметы прошлых G сохранены в истории.";

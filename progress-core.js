@@ -16,11 +16,12 @@ const ProgressCore=(()=>{
  });
  const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
  // VS-001B: six physical placements at each G stage. Temporary recipes.
- const GEAR=Object.freeze({
-  1:Object.freeze({heroLevel:1,material:2,currency:1000}),
-  2:Object.freeze({heroLevel:6,material:3,currency:2000}),
-  3:Object.freeze({heroLevel:12,material:4,currency:3000})
- });
+ const MAX_GEAR_TIER=13;
+ const GEAR=Object.freeze(Object.fromEntries(Array.from({length:MAX_GEAR_TIER},(_,i)=>{
+  const tier=i+1;
+  return [tier,Object.freeze({heroLevel:tier===1?1:tier===2?6:tier===3?12:
+   Math.min(85,12+5*(tier-3)),material:tier+1,currency:tier*1000})];
+ })));
  // Gear-002: six independent items within each sequential G tier. Recipes/buffs
  // are temporary vertical-slice data, NOT final balance or canonical item names.
  const SLOT_COUNT=6;
@@ -37,7 +38,8 @@ const ProgressCore=(()=>{
  };
  // Gear-002B: promotion is a distinct paid step after the sixth item.
  // These fees and stats are PROTOTYPE balance, not approved GDD values.
- const GEAR_PROMOTION_CURRENCY=Object.freeze({1:250,2:500});
+ const GEAR_PROMOTION_CURRENCY=Object.freeze(Object.fromEntries(
+  Array.from({length:MAX_GEAR_TIER-1},(_,i)=>[i+1,(i+1)*250])));
  const GEAR_PROMOTION_STAT_BONUS=0.03;
  const freshGear=()=>({tier:1,slots:Array(SLOT_COUNT).fill(false)});
  const installedInTier=state=>state.slots.filter(Boolean).length;
@@ -88,7 +90,11 @@ const ProgressCore=(()=>{
      (typeof GearData==="undefined"||!progress.materials||
       GearData.MATERIALS.some(id=>!Number.isSafeInteger(progress.materials[id])||progress.materials[id]<0)))
    return null;
-  const currency=Math.max(0,TEST_RESOURCE_FLOOR.currency-progress.currency);
+  const maxTier=progress.saveVersion===3?Math.max(1,...Object.values(progress.gear||{})
+   .filter(g=>g?.mode==="itemized").map(g=>g.tier)):1;
+  const targetCurrency=maxTier>=4?Math.max(TEST_RESOURCE_FLOOR.currency,
+   maxTier*1000+maxTier*250):TEST_RESOURCE_FLOOR.currency;
+  const currency=Math.max(0,targetCurrency-progress.currency);
   const material=Math.max(0,TEST_RESOURCE_FLOOR.material-progress.gearMaterials);
   const energy=ENERGY_MAX-progress.energy.value;
   progress.currency+=currency;
@@ -98,8 +104,8 @@ const ProgressCore=(()=>{
   const materials={};
   if(progress.saveVersion===3&&typeof GearData!=="undefined"&&progress.materials){
    for(const id of GearData.MATERIALS){
-    const maxTier=Math.max(1,...Object.values(progress.gear||{}).filter(g=>g?.mode==="itemized").map(g=>g.tier));
-    const floor=maxTier>=3?GearData.G3_FLOOR:maxTier>=2?GearData.G2_FLOOR:GearData.FLOOR;
+    const floor=maxTier>=4?GearData.tierFloor(maxTier):
+     maxTier>=3?GearData.G3_FLOOR:maxTier>=2?GearData.G2_FLOOR:GearData.FLOOR;
     materials[id]=Math.max(0,floor[id]-progress.materials[id]);
     progress.materials[id]+=materials[id];
    }
@@ -288,8 +294,7 @@ const ProgressCore=(()=>{
  }
  function gearPromotionCost(progress,id){
   const state=gearState(progress,id);
-  if(!state||state.tier>=3||installedInTier(state)!==SLOT_COUNT)return null;
-  if(state.mode==="itemized"&&![1,2].includes(state.tier))return null;
+  if(!state||state.tier>=MAX_GEAR_TIER||installedInTier(state)!==SLOT_COUNT)return null;
   return {from:state.tier,to:state.tier+1,currency:GEAR_PROMOTION_CURRENCY[state.tier],
    heroLevel:GEAR[state.tier+1].heroLevel};
  }
@@ -317,7 +322,7 @@ const ProgressCore=(()=>{
  // Gear-003A2: G1 only. Each purchase produces one permanent installed item.
  function itemOffer(progress,id,slotId){
   const state=gearState(progress,id);
-  if(progress.saveVersion!==3||state?.mode!=="itemized"||![1,2,3].includes(state.tier)||
+  if(progress.saveVersion!==3||state?.mode!=="itemized"||state.tier<1||state.tier>MAX_GEAR_TIER||
      !progress.classes||!Object.prototype.hasOwnProperty.call(progress.classes,id)||
      typeof GearData==="undefined")return [];
   return GearData.offered(progress.classes[id],slotId,state.tier);
@@ -356,6 +361,7 @@ const ProgressCore=(()=>{
   if(!state)return {hp:0,atk:0};
   if(state.mode==="itemized"){
    let hp=0,atk=0;
+   const stats={};
    for(let tier=1;tier<=state.tier;tier++){
     const slots=tier===state.tier?state.slots:state.history?.[String(tier)];
     if(!Array.isArray(slots))continue;
@@ -364,11 +370,13 @@ const ProgressCore=(()=>{
      const item=typeof GearData!=="undefined"?GearData.get(itemId):null;
      if(!item||item.tier!==tier)continue;
      hp+=item.bonuses.hp;atk+=item.bonuses.atk;
+     for(const [key,value] of Object.entries(item.statBonuses||{}))
+      stats[key]=(stats[key]||0)+value;
     }
    }
    hp+=(state.tier-1)*GEAR_PROMOTION_STAT_BONUS;
    atk+=(state.tier-1)*GEAR_PROMOTION_STAT_BONUS;
-   return {hp,atk};
+   return {hp,atk,stats};
   }
   let hp=0,atk=0;
   for(let tier=1;tier<=state.tier;tier++){
@@ -388,8 +396,25 @@ const ProgressCore=(()=>{
   if(level===null||level<1||level>maxLevelOf(hero.id))return null;
   // Gear-002: individual bonuses by slot; neither levels nor gear modify speed.
   const bonus=gearBonuses(progress,hero.id),baseFactor=1+(level-1)*0.04;
-  return {...hero,level,hp:Math.round(hero.hp*(baseFactor+bonus.hp)),
-   atk:Math.round(hero.atk*(baseFactor+bonus.atk))};
+  const stats=bonus.stats||{},extra={};
+  // Prototype fighters also receive their real equipped effects; the
+  // presentation bridge must not discard these values.
+  for(const [key,value] of Object.entries(stats)){
+   if(["hp","physicalAttack","protection","physicalDefense","magicDefense","speed"].includes(key))
+    continue;
+   extra[key]=(hero[key]??(key==="critDamage"?150:0))+value;
+  }
+  // CombatCore requires protection and maxProtection as an inseparable pair.
+  // An unequipped training hero may legitimately have neither field.
+  const itemProtection=stats.protection||0;
+  const hasPool=hero.protection!==undefined||hero.maxProtection!==undefined||itemProtection>0;
+  const basePool=hero.protection??hero.maxProtection??0;
+  const pool=hasPool?{protection:basePool+itemProtection,
+   maxProtection:(hero.maxProtection??basePool)+itemProtection}:{};
+  return {...hero,...extra,...pool,level,hp:Math.round(hero.hp*(baseFactor+bonus.hp)+(stats.hp||0)),
+   atk:Math.round(hero.atk*(baseFactor+bonus.atk)+(stats.physicalAttack||0)),
+   physicalDefense:(hero.physicalDefense||0)+(stats.physicalDefense||0),
+   magicDefense:(hero.magicDefense||0)+(stats.magicDefense||0)};
  }
  function claimFirstClear(progress,missionId,battle){
   const reward=FIRST_CLEAR_REWARDS[missionId];
@@ -405,7 +430,7 @@ const ProgressCore=(()=>{
  }
  return Object.freeze({MAX_LEVEL,MAX_ACCOUNT_LEVEL,DEMO_HERO_MAX_LEVEL,FULL_LEVEL_HERO_IDS,maxLevelOf,FIRST_CLEAR_REWARDS,createProgress,xpCost,xpThresholdForLevel,grantLevelTestResources,
   accountLevel,heroLevelCapForAccountLevel,nextHeroCapUnlock,heroLevelCap,upgradeBlockReason,levelOf,upgradeCost,upgradePlan,upgradeMany,canUpgrade,upgrade,heroStats,claimFirstClear,
-  GEAR,SLOT_COUNT,SLOT_NAMES,gearItem,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,
+  GEAR,MAX_GEAR_TIER,SLOT_COUNT,SLOT_NAMES,gearItem,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,
   itemOffer,itemCost,itemBlockReason,canEquipItem,equipItem,gearBonuses,
   GEAR_PROMOTION_CURRENCY,GEAR_PROMOTION_STAT_BONUS,gearPromotionCost,gearPromotionBlockReason,canPromoteGear,promoteGear,
   ENERGY_MAX,ENERGY_REGEN_MS,MISSION_FARM,MISSION_GEAR_FARM,grantRepeatFarm,TEST_RESOURCE_FLOOR,grantTestResources,freshEnergy,refreshEnergy,

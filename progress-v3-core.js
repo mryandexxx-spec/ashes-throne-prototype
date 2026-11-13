@@ -184,9 +184,10 @@ const ProgressV3Core=(()=>{
    const hero=data.heroes[id],gear=hero?.gear;
    if(!object(hero)||hero.classId!==TEST_CLASSES[id]||
       !Number.isInteger(hero.level)||hero.level<1||hero.level>ProgressCore.maxLevelOf(id)||
-      !object(gear)||![1,2,3].includes(gear.tier)||!object(gear.installedByTier))
+      !object(gear)||!Number.isInteger(gear.tier)||gear.tier<1||
+      gear.tier>(typeof GearData==="undefined"?13:GearData.MAX_TIER)||!object(gear.installedByTier))
     return null;
-   const keys=Object.keys(gear.installedByTier).sort();
+   const keys=Object.keys(gear.installedByTier).sort((a,b)=>Number(a)-Number(b));
    const expected=Array.from({length:gear.tier},(_,i)=>String(i+1));
    if(JSON.stringify(keys)!==JSON.stringify(expected))return null;
    for(let tier=1;tier<=gear.tier;tier++){

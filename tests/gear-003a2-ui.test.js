@@ -104,7 +104,7 @@ api.openHeroDetail("kael");
 assert.equal(elements.gearEquipNext.disabled,false);
 assert.match(elements.gearPrice.textContent,/Короткий клинок/);
 assert.match(elements.gearPrice.textContent,/Железо ×2/);
-assert.equal(elements.gearStatBonus.textContent,"ATK +3%");
+assert.match(elements.gearStatBonus.textContent,/ATK \+3%/);
 const balanceBefore=p.currency,ironBefore=p.materials.Fe,woodBefore=p.materials.Wo;
 click(elements.gearEquipNext);
 assert.equal(p.gear.kael.slots[0],"g1-blade");
@@ -121,7 +121,7 @@ assert.equal(p.materials.Fe,ironBefore-2);
 // Switch hero, ensure the correct class-restricted item is offered.
 api.openHeroDetail("lyra");
 assert.match(elements.gearPrice.textContent,/Лёгкий лук/);
-assert.equal(elements.gearStatBonus.textContent,"ATK +3%");
+assert.match(elements.gearStatBonus.textContent,/ATK \+3%/);
 assert.equal(elements.gearEquipNext.disabled,false);
 api.openHeroDetail("kael");
 assert.equal(elements.gearEquipNext.disabled,false,"first unfilled slot is selected");

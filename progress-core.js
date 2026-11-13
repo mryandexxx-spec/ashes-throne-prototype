@@ -178,7 +178,7 @@ const ProgressCore=(()=>{
   if(!progress||!Number.isSafeInteger(progress.accountXp)||progress.accountXp<0||
      !Number.isSafeInteger(progress.currency)||progress.currency<0)return false;
   progress.accountXp=Math.max(progress.accountXp,xpThresholdForLevel(MAX_ACCOUNT_LEVEL));
-  progress.currency=Math.max(progress.currency,250000);
+  progress.currency=Math.max(progress.currency,500000);
   return true;
  }
  function accountLevel(progress){

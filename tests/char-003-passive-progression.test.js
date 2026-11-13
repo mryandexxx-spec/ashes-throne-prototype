@@ -67,8 +67,8 @@ test("CHAR003 real passive descriptions and combat rules scale at levels 1–6",
   assert.equal(r.combatRules.readMoveBonusPercentPerStack,11+level);
   assert.equal(r.combatRules.gardensEvasionBonus,[8,8,9,10,11,12][level-1]);
   assert.equal(n.combatRules.gardensAccuracyBonus,7+level);
-  assert.match(a.AbilityInfo.format(ren,"passive").description,new RegExp("+"+(11+level)+"%"));
-  assert.match(a.AbilityInfo.format(nada,"passive").description,new RegExp("+"+(7+level)+" п.п."));
+  assert.match(a.AbilityInfo.format(ren,"passive").description,new RegExp("\\+"+(11+level)+"%"));
+  assert.match(a.AbilityInfo.format(nada,"passive").description,new RegExp("\\+"+(7+level)+" п.п."));
  }
  const story=a.AbilityData.get({id:"trial-ren",skillLevels:{passive:6}},"passive");
  assert.equal(story.combatRules.bonusVsDebuffedPercent,15);

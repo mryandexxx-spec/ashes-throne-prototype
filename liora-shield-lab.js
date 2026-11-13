@@ -33,7 +33,7 @@
    hip.position.x=hip.metadata.lioraBase.x;
    hip.position.z=hip.metadata.lioraBase.z;
   }
-  combatPose?.apply(group.name,p); // Correct ONLY block/bash left-arm joints.
+  if(el("combatCorrection")?.checked)combatPose?.apply(group.name,p); // Only two clips.
   attachment.setClipProgress(group.name,p); // Follow the corrected hand in world space.
  }
  function setClip(name){
@@ -65,6 +65,7 @@
   for(const input of el("sliders").querySelectorAll("input"))
    input.addEventListener("change",setPoseFromInputs);
   el("stabilize").addEventListener("change",setPoseFromInputs);
+  el("combatCorrection").addEventListener("change",()=>frameAt(active,Number(el("frame").value)/100));
   el("reset").addEventListener("click",()=>{
    const values=["-.22055",".05394","-.01236","0","180","0","1"];
    el("stabilize").checked=true;

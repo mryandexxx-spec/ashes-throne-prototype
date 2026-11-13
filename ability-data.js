@@ -13,6 +13,8 @@ const AbilityData=(()=>{
   "trial-ren":Object.freeze({id:"special",name:"Найти брешь · проба",target:"enemy",kind:"damage",multiplier:1,weakening:2,cooldown:2}),
   // NADA-PLAYABLE-001: provisional physical support abilities, not literary canon.
   nada:Object.freeze({id:"special",name:"Найти слабость",target:"enemy",kind:"damage",damageType:"physical",multiplier:.8,weakening:2,cooldown:2}),
+  // LIORAPLAY001: unarmed test pilot; not canonical combat techniques.
+  liora:Object.freeze({id:"special",name:"Защитная стойка · тест",target:"self",kind:"guard",guardHits:2,cooldown:2}),
   "trial-nada":Object.freeze({id:"special",name:"Выверенное действие · проба",target:"enemy",kind:"damage",multiplier:.8,weakening:2,cooldown:2}),
   "trial-liora":Object.freeze({id:"special",name:"Прикрыть товарища · проба",target:"ally",kind:"guard",guardHits:2,cooldown:2}),
   // Combat-011B regression fixtures: not in HEROES or campaign content.
@@ -58,6 +60,7 @@ const AbilityData=(()=>{
    // Temporary REN-COMBAT-D pilot numbers, NOT approved balance or canon.
    followUpStatusAll:Object.freeze({type:"debuff-resistance-down",amount:15,turns:2})}),
   nada:Object.freeze({id:"powerful",name:"Уязвимое место",target:"enemy",kind:"damage",damageType:"physical",multiplier:1.25,weakening:2,cooldown:2}),
+  liora:Object.freeze({id:"powerful",name:"Удержать позицию · тест",target:"self",kind:"guard",guardHits:3,cooldown:2}),
   "trial-nada":Object.freeze({id:"powerful",name:"Слабое место · проба",target:"enemy",kind:"damage",multiplier:1.25,weakening:2,cooldown:2}),
   "trial-liora":Object.freeze({id:"powerful",name:"Удержать позицию · проба",target:"self",kind:"guard",guardHits:3,cooldown:2}),
   // Combat-012B: same temporary parameters for the existing optional demo fighter.
@@ -85,6 +88,7 @@ const AbilityData=(()=>{
     statusPotencyWithoutResistanceDown:10
    })}),
   nada:Object.freeze({id:"passive",name:"Внимание к деталям",triggers:Object.freeze([]),modifiers:Object.freeze([])}),
+  liora:passiveEmpty,
   "trial-nada":passiveEmpty,"trial-liora":passiveEmpty,
   // Nonplayable fixtures verify automatic trigger registration and ownership.
   "test-passive-attacker":Object.freeze({id:"passive",name:"Тест реакции атакующего",
@@ -141,6 +145,7 @@ const AbilityData=(()=>{
   // Stats-002C pilot: only explicitly outfitted fighters use typed basic attacks.
   if(abilityId==="basic"){
    if(actor?.id==="nada")return Object.freeze({...typedBasic,name:"Прицельный выстрел"});
+   if(actor?.id==="liora")return Object.freeze({...typedBasic,name:"Удар без оружия · тест"});
    // REN-COMBAT-B: story-only temporary skill level; no v3 progression.
    if(actor?.id==="trial-ren"||actor?.id==="ren"){
     const level=actor.skillLevels?.basic;

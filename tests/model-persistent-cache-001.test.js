@@ -15,7 +15,7 @@ test("CACHE001: background prefetch stays off on metered networks and hidden tab
  assert.equal(client.mayWarm({connection:{effectiveType:"4g"},visible:true}),true);
  assert.equal(client.mayWarm({visible:true}),true);
 });
-test("CACHE001: only the two current, versioned GLB URLs can be stored",()=>{
+test("CACHE001: only the three current, versioned GLB URLs can be stored",()=>{
  const worker=read("model-cache-sw.js"),html=read("index.html");
  assert.match(worker,/assets\/ren-meshy-mixamo-animated\.glb/);
  assert.match(worker,/dev\/assets\/models\/nada-mobile-animated\.glb/);

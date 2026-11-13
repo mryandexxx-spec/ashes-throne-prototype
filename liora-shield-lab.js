@@ -104,8 +104,8 @@
  }
  async function init(){
   try{
-   if(!window.BABYLON||!BABYLON.SceneLoader||!window.LioraShieldAttachment||
-    !window.LioraModelAssets||!window.LioraShieldAssets)throw Error("Babylon/реестр ассетов не загружены");
+   if(!window.BABYLON||!BABYLON.SceneLoader||typeof LioraShieldAttachment==="undefined"||
+    typeof LioraModelAssets==="undefined"||typeof LioraShieldAssets==="undefined")throw Error("Babylon/реестр ассетов не загружены");
    const canvas=el("stage");
    engine=new BABYLON.Engine(canvas,true,{stencil:true,alpha:true});
    scene=new BABYLON.Scene(engine);

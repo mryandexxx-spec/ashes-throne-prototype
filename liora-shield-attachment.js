@@ -61,6 +61,22 @@ const LioraShieldAttachment=(()=>{
      reference.getWorldMatrix());
     point=B.Vector3.Lerp(baseWorld,landing,drop);
    }
+   // Two short shield-aware pose biases: lift the guard to the upper chest,
+   // and bring the bash shield slightly toward the body. All other clips,
+   // including death, receive exactly zero bias.
+   const poseBias=activity.clip==="Liora_Shield_Block"
+    ?new B.Vector3(.06,.13,0)
+    :activity.clip==="Liora_Shield_Bash"
+     ?new B.Vector3(.06,.07,0):null;
+   if(poseBias){
+    const envelope=Math.sin(Math.PI*activity.progress)**2;
+    if(envelope>0){
+     const worldBias=reference?.getWorldMatrix&&B.Vector3.TransformNormal
+      ?B.Vector3.TransformNormal(poseBias,reference.getWorldMatrix()):poseBias;
+     point=new B.Vector3(point.x+worldBias.x*envelope,
+      point.y+worldBias.y*envelope,point.z+worldBias.z*envelope);
+    }
+   }
    socket.position.copyFrom(point);
    const modelRotation=worldRotation(B,reference);
    const userRotation=B.Quaternion.FromEulerAngles(

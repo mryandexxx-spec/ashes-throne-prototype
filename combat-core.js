@@ -83,12 +83,13 @@ const CombatCore = (() => {
        CombatStatusCore.read(target,"debuff-resistance-down"))return 0;
     return rules.statusPotencyWithoutResistanceDown;
   }
-  function statusChance(actor,target){
+  function statusChance(actor,target,readMovePenalty=false){
     const effectiveResistance=typeof CombatStatusCore!=="undefined"
       ?CombatStatusCore.effectiveDebuffResistance(target,target.debuffResistance)
       :target.debuffResistance;
     return Math.max(5,Math.min(100,
-      100+actor.debuffPotency+passiveStatusPotencyBonus(actor,target)-effectiveResistance));
+      100+actor.debuffPotency+passiveStatusPotencyBonus(actor,target)-
+      effectiveResistance-(readMovePenalty?20:0)));
   }
   function bonusDamage(battle,actor,target,raw){
     const percent=passiveDamageBonusPercent(battle,actor,target);
@@ -647,14 +648,14 @@ const CombatCore = (() => {
     const reserve=direct+followUps;
     return snapshot.draws<=Number.MAX_SAFE_INTEGER-reserve;
   }
-  function applyNegativeStatus(battle,actor,target,stacks,type){
+  function applyNegativeStatus(battle,actor,target,stacks,type,readMovePenalty=false){
     if(!statusCheckEnabled(battle,type)){
       target.weakenAttacks=stacks;
       emit(battle,"effect",{actorId:actor.id,targetId:target.id,
         effect:"weaken",stacks});
       return;
     }
-    const chance=statusChance(actor,target);
+    const chance=statusChance(actor,target,readMovePenalty);
     const roll=BattleRng.roll(battle,chance);
     if(!roll.hit){
       emit(battle,"status-resisted",{actorId:actor.id,targetId:target.id,
@@ -680,11 +681,11 @@ const CombatCore = (() => {
        Number.isFinite(x.amount)&&x.amount>=0&&x.amount<=100)&&
       Number.isSafeInteger(x.turns)&&x.turns>0;
   }
-  function applyOnHitStatus(battle,actor,target,ability){
+  function applyOnHitStatus(battle,actor,target,ability,readMovePenalty=false){
     const x=ability.onHitStatus;
     if(!x||target.hp<=0)return;
     if(battle.statusChecks===true){
-      const chance=statusChance(actor,target);
+      const chance=statusChance(actor,target,readMovePenalty);
       const roll=BattleRng.roll(battle,chance);
       if(!roll.hit){
         emit(battle,"status-resisted",{actorId:actor.id,targetId:target.id,
@@ -724,13 +725,13 @@ const CombatCore = (() => {
     return valid(actor.debuffPotency)&&
       areaStatusTargets(battle,actor).every(t=>valid(t.debuffResistance));
   }
-  function applyAreaStatusAfterHit(battle,actor,ability){
+  function applyAreaStatusAfterHit(battle,actor,ability,readMovePenalty=false){
     const x=ability.followUpStatusAll;
     if(!x)return;
     // Each surviving opponent gets its own optional RNG check.
     for(const target of areaStatusTargets(battle,actor)){
       if(battle.statusChecks===true){
-        const chance=statusChance(actor,target);
+        const chance=statusChance(actor,target,readMovePenalty);
         const roll=BattleRng.roll(battle,chance);
         if(!roll.hit){
           emit(battle,"status-resisted",{actorId:actor.id,targetId:target.id,
@@ -761,7 +762,7 @@ const CombatCore = (() => {
   }
   // Recipients were selected before the primary action. Bonus effects resolve
   // afterwards, but only on survivors; a fallen primary is never replaced.
-  function applyFollowUpEffects(battle,actor,ability,recipients,primary,type="legacy"){
+  function applyFollowUpEffects(battle,actor,ability,recipients,primary,type="legacy",readMovePenalty=false){
     for(const effect of ability.followUpEffects||[]){
       const affected=effect.scope==="self"?[actor]:
         effect.scope==="primary"?[primary]:recipients;
@@ -769,7 +770,7 @@ const CombatCore = (() => {
         if(!target||target.hp<=0)continue;
         const remaining=Math.max(effectCount(target,effect.status),effect.stacks);
         if(effect.status==="weaken"&&statusCheckEnabled(battle,type)){
-          applyNegativeStatus(battle,actor,target,remaining,type);
+          applyNegativeStatus(battle,actor,target,remaining,type,readMovePenalty);
         }else{
           setEffect(target,effect.status,remaining);
           emit(battle,"effect",{actorId:actor.id,targetId:target.id,
@@ -796,7 +797,8 @@ const CombatCore = (() => {
     if(!CombatStatusCore.spendReadMove(actor,3))return false;
     emit(battle,"read-move-predicted",{actorId:actor.id,remainingStacks:
       CombatStatusCore.read(actor,"read-move")?.stacks??0,
-      accuracyPenalty:20,damageReduction:READ_MOVE_DAMAGE_REDUCTION_PERCENT});
+      accuracyPenalty:20,statusPotencyPenalty:20,
+      damageReduction:READ_MOVE_DAMAGE_REDUCTION_PERCENT});
     return true;
   }
   function performMultiTargetAbility(battle, actor, ability, targets, chosenPrimaryIndex,readMovePenalty=false) {
@@ -843,8 +845,8 @@ const CombatCore = (() => {
           ...typedDamageFields(target,type,oldHp,oldProtection)});
         if(target.hp===0)emit(battle,"death",{targetId:target.id});
         if(ability.weakening>0&&target.hp>0)
-          applyNegativeStatus(battle,actor,target,ability.weakening,type);
-        applyOnHitStatus(battle,actor,target,ability);
+          applyNegativeStatus(battle,actor,target,ability.weakening,type,readMovePenalty);
+        applyOnHitStatus(battle,actor,target,ability,readMovePenalty);
       }else if(ability.kind==="heal"){
         const restored=Math.min(ability.healAmount,Math.max(0,target.maxHp-target.hp));
         target.hp+=restored;
@@ -861,7 +863,7 @@ const CombatCore = (() => {
       recipients;
     const primary=battle.fighters[primaryIndex];
     applyFollowUpEffects(battle,actor,ability,hitRecipients,
-      hitRecipients.includes(primary)?primary:null,type);
+      hitRecipients.includes(primary)?primary:null,type,readMovePenalty);
     // Weakening counts attacks (commands), not recipients. All group targets
     // get the same weakened damage; one use is consumed at the end.
     if(ability.kind==="damage"&&weakened)actor.weakenAttacks--;
@@ -940,9 +942,9 @@ const CombatCore = (() => {
         ...typedDamageFields(target,type,oldHp,oldProtection)});
       if(target.hp===0)emit(battle,"death",{targetId:target.id});
       if(ability.weakening>0&&target.hp>0)
-        applyNegativeStatus(battle,actor,target,ability.weakening,type);
-      applyOnHitStatus(battle,actor,target,ability);
-      applyAreaStatusAfterHit(battle,actor,ability);
+        applyNegativeStatus(battle,actor,target,ability.weakening,type,readMovePenalty);
+      applyOnHitStatus(battle,actor,target,ability,readMovePenalty);
+      applyAreaStatusAfterHit(battle,actor,ability,readMovePenalty);
       battle.message=actor.side==="enemy"&&ability.id==="basic"
         ? actor.name+" атакует "+target.name+": "+damage+" урона."
         : actor.name+(ability.id!=="basic"?" применяет "+ability.name+": ":" атакует: ")+
@@ -955,7 +957,7 @@ const CombatCore = (() => {
     }
     if(ability.kind!=="damage"||!hitCheckEnabled(battle,type)||
       !battle.events.some(event=>event.type==="miss"&&event.actorId===actor.id&&event.targetId===target.id))
-      applyFollowUpEffects(battle,actor,ability,[target],target,type);
+      applyFollowUpEffects(battle,actor,ability,[target],target,type,readMovePenalty);
     finishAbilityCooldowns(actor,ability);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
     tickActorStatuses(actor);

@@ -9,7 +9,7 @@ const LioraShieldCombatPose=(()=>{
   "mixamorig:LeftForeArm","mixamorig:LeftHand"];
  const WEIGHTS=Object.freeze({
   Liora_Shield_Block:Object.freeze([.12,.36,.27,.10]),
-  Liora_Shield_Bash:Object.freeze([.22,.54,.43,.17])
+  Liora_Shield_Bash:Object.freeze([.25,.72,.56,.23])
  });
  function create(B,character,idleGroup){
   if(!B?.Quaternion?.Slerp||!idleGroup)throw Error("Babylon animation pose reference unavailable");

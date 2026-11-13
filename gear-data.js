@@ -108,17 +108,37 @@ const GearData=(()=>{
  const RANK_NAMES={4:"Кованое",5:"Стойкое",6:"Мастерское",7:"Закалённое",
   8:"Усиленное",9:"Ветеранское",10:"Редкое",11:"Превосходное",
   12:"Легендарное",13:"Вершинное"};
+ // GEAR014 [PROPOSAL]: prototype construction families. Class decides
+ // the primary body, reinforcement and finishing material; slot decides
+ // their proportions and a functional component. No new material types.
+ // Former G1–G3 item IDs/recipes stay intact for installed v3 equipment.
+ const CLASS_CONSTRUCTION=Object.freeze({
+  melee:Object.freeze({body:"Fe",reinforcement:"Le",finishing:"Fa"}),
+  ranged:Object.freeze({body:"Wo",reinforcement:"Th",finishing:"Le"}),
+  mage:Object.freeze({body:"Cl",reinforcement:"Gl",finishing:"Th"}),
+  support:Object.freeze({body:"Cl",reinforcement:"Le",finishing:"Fa"}),
+  tank:Object.freeze({body:"Fe",reinforcement:"Le",finishing:"Cl"})
+ });
+ const SLOT_CONSTRUCTION=Object.freeze({
+  weapon:Object.freeze({body:3,reinforcement:1,finishing:1,component:"Wo"}),
+  torso:Object.freeze({body:3,reinforcement:3,finishing:1,component:"Le"}),
+  head:Object.freeze({body:2,reinforcement:2,finishing:1,component:"Gl"}),
+  hands:Object.freeze({body:1,reinforcement:2,finishing:2,component:"Th"}),
+  feet:Object.freeze({body:2,reinforcement:3,finishing:1,component:"Le"}),
+  utility:Object.freeze({body:1,reinforcement:1,finishing:3,component:"Gl"})
+ });
  for(let tier=4;tier<=MAX_TIER;tier++){
+  const scale=Math.ceil(tier/3);
   for(const classId of CLASS_IDS)for(const {id:slotId} of SLOTS){
-   const metal=classId==="mage"||classId==="support"?"Cl":"Fe";
+   const family=CLASS_CONSTRUCTION[classId],slot=SLOT_CONSTRUCTION[slotId];
    const recipe={};
+   // Fold overlaps (e.g. leather body + leather sole) into a single
+   // ingredient; no duplicate object keys or negative component counts.
    const add=(id,n)=>{recipe[id]=(recipe[id]||0)+n;};
-   const pairs={weapon:["Wo","Th"],torso:["Le","Cl"],head:["Le","Gl"],
-    hands:["Th","Le"],feet:["Le","Th"],utility:["Gl","Cl"]};
-   add(metal,Math.ceil(tier/2)+1);
-   add("Fa",Math.ceil(tier/3));
-   add(pairs[slotId][0],Math.ceil(tier/4)+1);
-   add(pairs[slotId][1],Math.ceil(tier/5)+1);
+   add(family.body,slot.body*scale+1);
+   add(family.reinforcement,slot.reinforcement*scale);
+   add(family.finishing,slot.finishing+Math.ceil(tier/5));
+   add(slot.component,Math.ceil(tier/4));
    specs.push([`g${tier}-${classId}-${slotId}`,
     RANK_NAMES[tier]+" "+SLOT_NAMES[slotId]+" "+CLASS_NAMES[classId],
     slotId,classId,recipe]);

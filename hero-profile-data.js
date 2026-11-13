@@ -18,6 +18,12 @@ const HeroProfileData=(()=>{
    ].join("\n\n"),
    note:"Биография основана на утверждённой литературе. Боевой баланс и место персонажа в игровой хронологии ещё не утверждены."
   }),
+  // LIORAPLAY001: do not invent an unapproved biography or affiliation.
+  "liora":Object.freeze({
+   id:"liora",name:"Лиора Вель",tags:Object.freeze([]),
+   biography:"Биография Лиоры Вель для игровой карточки ещё не утверждена. Игровые параметры и боевые действия демонстрационные.",
+   note:"Отдельная 3D-модель утверждена для показа без щита. Класс, стартовое получение и способности — временный игровой пилот, не канон."
+  }),
   // NADA-PLAYABLE-001: literature-grounded bio; gameplay role is an explicit pilot.
   // The recruitment timeline and class remain game proposals, not world canon.
   "nada":Object.freeze({

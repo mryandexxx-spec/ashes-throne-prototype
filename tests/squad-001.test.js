@@ -104,7 +104,7 @@ assert.equal(elements.battle.classList.active,true);
 assert.equal(allyIds(),"lyra");
 assert.equal(api.getBattle().leaderId,"lyra","first selected hero after an empty squad occupies slot 1");
 assert.equal(engineCreates,1);
-assert.equal(meshCreates,36,"twelve fighter templates including Ren and Nada get 3D shapes");
+assert.equal(meshCreates,39,"thirteen fighter templates including Ren, Nada and Liora get 3D shapes");
 assert.equal(createdCameras.length,1,"one 3D camera allocated");
 const camera=createdCameras[0];
 assert.ok(Math.abs(camera.alpha+3*Math.PI/4)<1e-9);
@@ -139,7 +139,7 @@ assert.equal(camera.beta,.96);
 assert.equal(camera.radius,12);
 assert.equal(createdCameras.length,1);
 assert.equal(engineCreates,1);
-assert.equal(meshCreates,36,"replay reuses 3D meshes for expanded roster");
+assert.equal(meshCreates,39,"replay reuses 3D meshes for expanded roster");
 
 // All entry points still route through the composition screen.
 api.openSquad();

@@ -57,13 +57,15 @@ fs.mkdirSync(out,{recursive:true});
    source:document.querySelector("#renCard3DCanvas")?.dataset.animationSource,
    viewer:!!BABYLON.EngineStore.Instances.find(e=>e.getRenderingCanvas()?.id==="renCard3DCanvas"),
    overflow:document.documentElement.scrollWidth>innerWidth+2,
-   loadingHidden:document.querySelector("#renCardLoadIndicator")?.hidden
+   loadingHidden:document.querySelector("#renCardLoadIndicator")?.hidden,
+   silhouetteHidden:getComputedStyle(document.querySelector("#detailHeroStage .hero-detail-silhouette")).display==="none"
   }));
   console.log("LIORAPLAY001 hero card",JSON.stringify(card));
   assert.equal(card.source,"liora-native-idle");
   assert.equal(card.viewer,true);
   assert.equal(card.loadingHidden,true);
   assert.equal(card.overflow,false);
+  assert.equal(card.silhouetteHidden,true,"legacy blue fallback must be hidden under Liora model");
   await page.locator("#renCard3DCanvas").screenshot({path:path.join(out,"liora-card.png")});
   await page.evaluate(()=>showScreen("collection"));
   assert.equal(await page.locator("#renCard3DCanvas").isHidden(),true);

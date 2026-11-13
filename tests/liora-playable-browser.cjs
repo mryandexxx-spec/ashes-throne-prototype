@@ -57,14 +57,14 @@ const {chromium,webkit}=require("playwright");
    loadingHidden:document.querySelector("#renCardLoadIndicator")?.hidden
   }));
   console.log("LIORAPLAY001 hero card",JSON.stringify(card));
-  assert.equal(card.source,"liora-mixamo-native-idle");
+  assert.equal(card.source,"liora-native-idle");
   assert.equal(card.viewer,true);
   assert.equal(card.loadingHidden,true);
   assert.equal(card.overflow,false);
   await page.evaluate(()=>showScreen("collection"));
   assert.equal(await page.locator("#renCard3DCanvas").isHidden(),true);
   await page.evaluate(()=>{selectedHeroId="liora";showScreen("heroDetail");});
-  await page.waitForFunction(()=>document.querySelector("#renCard3DCanvas")?.dataset.animationSource==="liora-mixamo-native-idle",{timeout:60000});
+  await page.waitForFunction(()=>document.querySelector("#renCard3DCanvas")?.dataset.animationSource==="liora-native-idle",{timeout:60000});
   await page.evaluate(()=>{
    // Ensure Liora is in the actual five-slot party, including fresh accounts
    // whose defaults put her beyond the first five heroes.

@@ -16,7 +16,7 @@ const SaveCore=(()=>{
   const levels={};
   for(const id of ids){
    const level=own(data.levels,id)?data.levels[id]:1;
-   if(!Number.isInteger(level)||level<1||level>ProgressCore.MAX_LEVEL)return null;
+   if(!Number.isInteger(level)||level<1||level>ProgressCore.maxLevelOf(id))return null;
    levels[id]=level;
   }
   const claims=data.claimedMissions;

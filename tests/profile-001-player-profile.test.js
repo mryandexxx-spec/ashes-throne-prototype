@@ -31,7 +31,7 @@ assert.deepEqual(same(api.levelProgress(0,P.xpCost,15)),
  {level:1,current:0,required:47,totalXp:0,percent:0});
 assert.equal(api.levelProgress(47,P.xpCost,15).level,2);
 for(const xp of [0,1,46,47,80,350,10000]){
- const calc=api.levelProgress(xp,P.xpCost,15);
+ const calc=api.levelProgress(xp,P.xpCost,P.MAX_ACCOUNT_LEVEL);
  assert.equal(calc.level, P.accountLevel({accountXp:xp}));
  assert.ok(calc.percent>=0&&calc.percent<=100);
 }
@@ -77,7 +77,7 @@ assert.equal(nodes.get("playerAccountLevel").textContent,"Уровень 2");
 assert.equal(nodes.get("playerCompletedMissions").textContent,"1 / 3");
 assert.equal(nodes.get("playerCampaignStars").textContent,"3 / 9");
 assert.equal(nodes.get("playerHeroCount").textContent,5);
-assert.equal(nodes.get("playerAccountXpFill").style.width,api.levelProgress(85,P.xpCost,15).percent+"%");
+assert.equal(nodes.get("playerAccountXpFill").style.width,api.levelProgress(85,P.xpCost,P.MAX_ACCOUNT_LEVEL).percent+"%");
 fakeProgress.accountXp=0;
 stage.renderPlayerProfile();
 assert.equal(nodes.get("playerAccountXpFill").style.width,"0%");

@@ -47,7 +47,7 @@ assert.equal(core.levelOf(p,"kael"),5);
 p.accountXp=1000000;p.currency=100000;
 while(core.canUpgrade(p,"kael"))assert.equal(core.upgrade(p,"kael"),true);
 assert.equal(core.levelOf(p,"kael"),15,"slice hero cap");
-assert.equal(core.accountLevel(p),15,"slice account cap");
+assert.equal(core.accountLevel(p),85,"current test account cap for L85 Ren/Nada");
 assert.equal(core.upgradeCost(p,"kael"),null);
 assert.equal(heroes[0].hp,120,"base data immutable");
 console.log("Progress VS-UNBLOCK: account XP display, currency costs and independent hero cap passed");

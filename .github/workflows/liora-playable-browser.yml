@@ -39,3 +39,12 @@ jobs:
           sleep 2
           node tests/liora-playable-browser.cjs
           LIORA_BROWSER=webkit node tests/liora-playable-browser.cjs
+
+      - name: Store Liora card and battle WebGL screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: liora-playable-webgl-review
+          path: artifacts/liora-playable/
+          if-no-files-found: warn
+          retention-days: 14

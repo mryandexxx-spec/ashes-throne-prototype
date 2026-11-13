@@ -60,7 +60,7 @@ fs.mkdirSync(outDir,{recursive:true});
    const model=scene.meshes.filter(m=>m.getTotalVertices?.()>0);
    return {engineName:engine.getClassName?.()||engine.constructor.name,
     gl:!!engine._gl,hand:!!hand,socket:!!socket,
-    attached:socket?.parent===hand,clipNames:scene.animationGroups.map(a=>a.name),
+    attached:socket?.metadata?.lioraJoint===hand?.name,clipNames:scene.animationGroups.map(a=>a.name),
     meshCount:model.length,
     shieldVertices:model.find(m=>m.getTotalVertices()===4445)?.getTotalVertices()||0,
     sceneReady:scene.isReady(),webglVersion:engine.webGLVersion};
@@ -127,9 +127,15 @@ fs.mkdirSync(outDir,{recursive:true});
    const dot=Math.abs(baseline.reduce((sum,v,i)=>sum+v*q[i],0));
    return (2*Math.acos(Math.min(1,Math.max(0,dot))))*180/Math.PI;
   };
-  console.log("LIORA shield world-facing",JSON.stringify(results.map(x=>({
+  const facing=results.map(x=>({
    clip:x.clip,midAngleDegrees:+difference(x.phases[2].worldShield).toFixed(2)
-  }))));
+  }));
+  console.log("LIORA shield world-facing",JSON.stringify(facing));
+  for(const item of facing){
+   if(item.clip==="Dead"||item.clip==="Liora_Shield_Death")continue;
+   assert.ok(item.midAngleDegrees<3,
+    item.clip+" shield rotates unexpectedly despite stabilization: "+item.midAngleDegrees);
+  }
   // During death the shield must detach visually from the hand and descend
   // toward the model-space floor, then return on a new idle clip.
   const death=results.find(x=>x.clip==="Liora_Shield_Death");
@@ -149,7 +155,10 @@ fs.mkdirSync(outDir,{recursive:true});
     sock=s.getTransformNodeByName("lioraShieldSocket");
    return {x:sock.position.x,y:sock.position.y,z:sock.position.z};
   });
-  assert.ok(Math.abs(reset.x+.22055)<.01,"idle must restore calibrated grip");
+  const idle=results.find(x=>x.clip==="Idle_02").phases[2].socket;
+  assert.ok(Math.abs(reset.x-idle.x)<.02&&
+   Math.abs(reset.y-idle.y)<.02&&Math.abs(reset.z-idle.z)<.02,
+   "idle must restore pre-death world grip position");
   await page.locator("#stage").screenshot({
    path:path.join(outDir,"Idle_AFTER_DEATH.png"),timeout:30000});
   await page.click("#scan");

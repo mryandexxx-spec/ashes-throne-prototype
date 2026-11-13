@@ -1526,7 +1526,8 @@ function renderStarPanel(id){
  $("#starPromoteButton").disabled=saveBlocked||cost===null||amount<cost;
  $("#starPromoteButton").textContent=cost===null?"Достигнут максимум 7★":"Повысить до "+(rank+1)+"★";
  $("#starNotice").textContent=saveBlocked?"Сохранение недоступно. Развитие заблокировано.":
-  "Боевые характеристики и скорость от звёзд пока не меняются. Источник в этом тесте: «Тестовые ресурсы».";
+  (id==="ren"||id==="nada"?"Звёзды увеличивают боевые характеристики героя, но не скорость. ":"Для учебных героев звёзды пока не увеличивают характеристики. ")+
+  "Источник осколков в тестовой версии: «Тестовые ресурсы».";
 }
 function showLockedHero(id){
  if(typeof StarCore==="undefined"||heroOwned(id)||!ALLIES.some(h=>h.id===id))return false;
@@ -1855,7 +1856,13 @@ function renderHeroDetail(){
  const hero=progressedHero(base);
  const cost=ProgressCore.upgradeCost(progress,base.id);
  const levelCap=ProgressCore.heroLevelCap(progress);
- const next=cost===null?null:equippedPilotStats(ProgressCore.heroStats(progress,base,hero.level+1),PILOT_HERO_STATS[base.id]);
+ const next=cost===null?null:((base.id==="ren"||base.id==="nada")?
+  HeroStatsCombatBridge.apply(base,{
+   level:hero.level+1,
+   stars:StarCore.rankOf(progress,base.id),
+   gearPercent:ProgressCore.gearBonuses(progress,base.id)
+  },HeroStatsProfiles[base.id],HeroStatsCore):
+  equippedPilotStats(ProgressCore.heroStats(progress,base,hero.level+1),PILOT_HERO_STATS[base.id]));
  $("#detailName").textContent=hero.name;
  $("#detailRole").textContent=hero.role+((hero.id==="ren"||hero.id==="nada")?" · Играбельный герой (баланс тестовый)":" · Демонстрационный персонаж");
  if($("#detailTags"))$("#detailTags").textContent=heroTagText(hero);
@@ -1881,14 +1888,14 @@ function renderHeroDetail(){
   void RenCard3D.activate(hero.id);
  renderStarPanel(base.id);
  renderHeroAbilities(hero);
- // Keep the existing battle-tested HP/ATK/speed display unchanged.
- // Other approved stats are shown as TBD, never as misleading zero bonuses.
+ // The real heroes display all 14 derived stats. Mannequins retain pilot data.
  const overview=typeof GearData!=="undefined"&&GearData.statOverview?GearData.statOverview(hero):[];
  const statRows=overview.map(stat=>
   '<div class="stat-catalog-row"><span>'+stat.label+'</span><strong>'+
    (stat.active?stat.value:'Не рассчитано')+'</strong></div>').join("");
  const activeStats=overview.filter(stat=>stat.active).length;
- $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>Атака (общая, тест)</span><strong>${hero.atk} ATK</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · ${14-activeStats} ожидают формулы</summary><p class="muted">Тестовый пилот: физическая атака наследует текущую общую ATK с бонусами уровня и G; оборона и Protection работают против типизированных ударов. Магическая атака и прочие параметры пока не назначены.</p>${statRows}</details>`;
+ const trueHero=hero.id==="ren"||hero.id==="nada";
+ $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>${trueHero?"Физическая атака":"Атака (тест)"}</span><strong>${trueHero?hero.physicalAttack:hero.atk}</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · ${activeStats} рассчитано</summary><p class="muted">${trueHero?"Параметры Рена и Нады рассчитываются из уровня, звёзд и снаряжения. Числа и формулы роста — рабочие, баланс ещё не утверждён.":"Учебный персонаж: часть характеристик ещё не рассчитывается."}</p>${statRows}</details>`;
  $("#detailLevel").textContent="Уровень героя "+hero.level;
  if($("#heroCardCap"))$("#heroCardCap").textContent=saveBlocked?"Сохранение недоступно":
   hero.level>=levelCap?"Достигнут предел: "+levelCap:

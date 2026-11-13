@@ -109,7 +109,7 @@ test("permanent Ren uses upgraded basic, own physical combat and all active slot
  assert.equal(abilities.get(ren,"special").damageType,"physical");
  assert.equal(abilities.get(ren,"powerful").name,"Сорвать построение");
  assert.equal(abilities.get(ren,"powerful").damageType,"physical");
- assert.equal(abilities.get(ren,"powerful").followUpStatusAll.amount,15);
+ assert.equal(abilities.get(ren,"powerful").followUpStatusAll,undefined);
  assert.equal(abilities.get(ren,"passive").name,"Чувство тропы");
  assert.equal(abilities.get(ren,"leader"),null);
  const enemy=(id)=>({id,name:id,side:"enemy",hp:400,atk:0,speed:1,
@@ -118,8 +118,8 @@ test("permanent Ren uses upgraded basic, own physical combat and all active slot
  core.advanceToPlayerTurn(b);
  assert.equal(b.fighters[b.currentActor].id,"ren");
  assert.equal(core.performPlayerAbility(b,"powerful"),true);
- assert.equal(status.read(b.fighters[1],"debuff-resistance-down")?.remaining,2);
- assert.equal(status.read(b.fighters[2],"debuff-resistance-down")?.remaining,2);
+ assert.equal(status.read(b.fighters[1],"debuff-resistance-down"),null);
+ assert.equal(status.read(b.fighters[2],"debuff-resistance-down"),null);
  assert.equal(b.fighters[2].hp,400);
  assert.equal(core.performPlayerAbility(b,"basic"),true);
  assert.equal(status.read(b.fighters[1],"slowed")?.remaining,1);

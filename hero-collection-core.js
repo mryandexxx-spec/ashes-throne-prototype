@@ -3,8 +3,8 @@
  * No gacha, shards, or lore/canonical hero identity is introduced. */
 const HeroCollectionCore=(()=>{
  "use strict";
- const IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren","nada"]);
- const START=Object.freeze(["kael","lyra","darin","ren","nada"]);
+ const IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora"]);
+ const START=Object.freeze(["kael","lyra","darin","ren","nada","liora"]);
  const MISSION_UNLOCKS=Object.freeze({
   "black-pass-ambush":"medic-demo",
   "demo-mission-2":"test-area-damage"

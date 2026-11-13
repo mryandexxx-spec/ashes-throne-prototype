@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "source": "user-provided Mixamo animated GLB optimized for mobile",
+  "source": "user-provided Mixamo animated GLB optimized for mobile; NADAOPT001: WebP 2048 q90 + KHR_mesh_quantization",
   "assets": [
     {
       "id": "nada",
       "file": "nada-mobile-animated.glb",
-      "bytes": 3096808,
-      "sha256": "1ecd7859754191e296c68171c03a2c180859db52957629905a90cd8d7a61e87d",
+      "bytes": 1462284,
+      "sha256": "5bbd34c2db189d1831c213b02ac31f49342f8b7773cc283589ece8249a5a016d",
       "vertices": 16673,
       "triangles": 17381,
       "bones": 66,
@@ -15,7 +15,7 @@
         2048,
         2048
       ],
-      "textureMime": "image/jpeg",
+      "textureMime": "image/webp",
       "source": "../../assets-src/characters/nada/README.md"
     }
   ]

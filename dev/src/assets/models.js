@@ -6,8 +6,8 @@ const NadaModelAssets=Object.freeze({
  url:"dev/assets/models/nada-mobile-animated.glb",
  filename:"nada-mobile-animated.glb",
  source:"dev/assets-src/characters/nada/",
- bytes:3096808,
- sha256:"1ecd7859754191e296c68171c03a2c180859db52957629905a90cd8d7a61e87d",
+ bytes:1462284,
+ sha256:"5bbd34c2db189d1831c213b02ac31f49342f8b7773cc283589ece8249a5a016d",
  clips:Object.freeze({
   idle:"Idle_11",basic:"Archery_Shot_3",special:"Archery_Shot_3",
   powerful:"Archery_Shot_3",guard:"Idle_11",ward:"Hit_Reaction_1",

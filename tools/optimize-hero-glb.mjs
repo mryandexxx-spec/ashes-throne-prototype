@@ -2,7 +2,7 @@
 // Not part of the game runtime or `npm test`. Run manually:
 //   npm i --no-save @gltf-transform/core@4 @gltf-transform/extensions@4 @gltf-transform/functions@4 sharp
 //   node tools/optimize-hero-glb.mjs input.glb output.glb
-// Settings approved for Ren on 13.11.2026: base colour 2048 WebP q90, normal 1024 q95,
+// Settings approved for Ren (RENOPT001) and Nada (NADAOPT001, variant B) on 13.11.2026: base colour 2048 WebP q90, normal 1024 q95,
 // metallic-roughness 1024 q92, lossless-tolerance animation resampling, KHR_mesh_quantization
 // (decoded natively by Babylon.js, no extra decoder download). All animation clips are kept.
 import { NodeIO } from '@gltf-transform/core';

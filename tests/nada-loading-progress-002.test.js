@@ -37,5 +37,5 @@ test("NADA-LOAD-002: both card and combat forward real GLB progress events",()=>
  assert.match(nada,/tracker\?\.update\(event\)/);
  assert.match(game,/nadaGlbRuntime=NadaGlbRuntime\.create[\s\S]*?info\.dataset\.status=kind/);
  for(const name of ["ren-glb-runtime.js","ren-card-3d.js","nada-glb-runtime.js","game.js"])
-  assert.ok(html.includes(name+"?v=0.3.134"),name);
+  assert.ok(html.includes(name+"?v=0.3.135"),name);
 });

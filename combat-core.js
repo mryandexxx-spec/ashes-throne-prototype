@@ -45,10 +45,14 @@ const CombatCore = (() => {
       seen.add(owner.id);
       const rules=passiveCombatRules(owner);
       if(!rules)continue;
+      const marks=typeof CombatStatusCore!=="undefined"?
+       CombatStatusCore.read(target,"read-move")?.stacks??0:0;
+      // Exclusive Ren synergy: generic debuffs never grant this bonus.
+      if(owner.id===actor.id&&validPercent(rules.readMoveBonusPercentPerStack))
+       bonus+=marks*rules.readMoveBonusPercentPerStack;
+      // Preserve legacy trial-only combat rules, but not for production Ren/Nada.
       if(owner.id===actor.id&&validPercent(rules.bonusVsDebuffedPercent)&&
          hasNegativeStatus(target))bonus+=rules.bonusVsDebuffedPercent;
-      // Data-defined support aura (Nada): only while its owner is alive.
-      // Percent bonuses add before the single damage rounding step.
       if(owner.side===actor.side&&
          validPercent(rules.allyBonusVsDebuffedPercent)&&
          hasNegativeStatus(target))bonus+=rules.allyBonusVsDebuffedPercent;
@@ -56,6 +60,19 @@ const CombatCore = (() => {
          typeof rules.tagId==="string"&&rules.tagId.length>0&&
          Array.isArray(actor.tags)&&actor.tags.includes(rules.tagId)&&
          validPercent(rules.tagDamagePercent))bonus+=rules.tagDamagePercent;
+    }
+    return bonus;
+  }
+  function gardensCombatBonus(battle,fighter,key){
+    if(!battle?.active||!fighter||!Array.isArray(fighter.tags))return 0;
+    const seen=new Set();let bonus=0;
+    for(const owner of battle.fighters){
+      if(seen.has(owner.id))continue;
+      seen.add(owner.id);
+      const rules=passiveCombatRules(owner);
+      if(!rules||owner.side!==fighter.side||!rules.gardensTagId||
+         !fighter.tags.includes(rules.gardensTagId))continue;
+      if(validPercent(rules[key]))bonus+=rules[key];
     }
     return bonus;
   }
@@ -362,7 +379,8 @@ const CombatCore = (() => {
   }
   function rollToHit(battle,actor,target,type){
     if(!hitCheckEnabled(battle,type))return true;
-    const accuracy=actor.accuracy??0,evasion=target.evasion??0;
+    const accuracy=(actor.accuracy??0)+gardensCombatBonus(battle,actor,"gardensAccuracyBonus");
+    const evasion=(target.evasion??0)+gardensCombatBonus(battle,target,"gardensEvasionBonus");
     const chance=Math.max(5,Math.min(100,100+accuracy-evasion));
     const roll=BattleRng.roll(battle,chance);
     if(roll.hit)return true;
@@ -656,7 +674,9 @@ const CombatCore = (() => {
       ["enemy","all-enemies"].includes(ability.target)&&
       typeof CombatStatusCore!=="undefined"&&
       CombatStatusCore.KINDS.includes(x?.type)&&
-      Number.isFinite(x.amount)&&x.amount>=0&&x.amount<=100&&
+      (x.type==="read-move"?
+       Number.isSafeInteger(x.stacks)&&x.stacks>=1&&x.stacks<=4:
+       Number.isFinite(x.amount)&&x.amount>=0&&x.amount<=100)&&
       Number.isSafeInteger(x.turns)&&x.turns>0;
   }
   function applyOnHitStatus(battle,actor,target,ability){
@@ -671,9 +691,16 @@ const CombatCore = (() => {
         return;
       }
     }
-    if(CombatStatusCore.apply(target,x.type,x.amount,x.turns))
+    const applied=x.type==="read-move"?
+      CombatStatusCore.applyReadMove(target,x.stacks,x.turns):
+      CombatStatusCore.apply(target,x.type,x.amount,x.turns);
+    if(applied){
+      const result=CombatStatusCore.read(target,x.type);
       emit(battle,"effect",{actorId:actor.id,targetId:target.id,
-        effect:x.type,amount:x.amount,remaining:x.turns});
+        effect:x.type,
+        ...(x.type==="read-move"?{stacks:result.stacks}:{amount:x.amount}),
+        remaining:result.remaining});
+    }
   }
   // REN-COMBAT-D: powerful strike targets one foe, then independently tries
   // a non-damaging status on all living opposing fighters. An actual hit
@@ -839,6 +866,15 @@ const CombatCore = (() => {
     const actorIndex=battle?.currentActor;
     if(!actorAbilityReady(battle,actorIndex,abilityId))return false;
     const actor=battle.fighters[actorIndex];
+    const originalAbilityId=abilityId;
+    const disruption=actor.side==="enemy"&&abilityId!=="basic"&&
+     typeof CombatStatusCore!=="undefined"&&
+     (CombatStatusCore.read(actor,"read-move")?.stacks??0)>=3;
+    if(disruption){
+      abilityId="basic";
+      primaryIndex=firstLivingAlly(battle.fighters);
+      if(!actorAbilityReady(battle,actorIndex,abilityId))return false;
+    }
     const ability=AbilityData.get(actor,abilityId);
     // Invalid definitions must not consume an action or overwrite events.
     // Stats-001B: explicit typed attacks require a valid matching attack value.
@@ -868,6 +904,11 @@ const CombatCore = (() => {
     if(!validCombinedRngBudget(battle,ability,[target],type))return false;
     // Invalid commands leave the previous event batch untouched.
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
+    if(disruption){
+      if(!CombatStatusCore.spendReadMove(actor,3))return false;
+      emit(battle,"read-move-disrupted",{actorId:actor.id,requestedAbilityId:originalAbilityId,
+       resolvedAbilityId:"basic",remainingStacks:CombatStatusCore.read(actor,"read-move")?.stacks??0});
+    }
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
     if(ability.kind==="guard"){
       target.guardHits=ability.guardHits;

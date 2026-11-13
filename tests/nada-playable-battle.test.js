@@ -12,17 +12,17 @@ const nada=()=>({id:"nada",name:"Нада",side:"ally",classId:"support",hp:85,a
  protection:0,maxProtection:0,skillLevels:{basic:1,special:1,powerful:1}});
 const enemy=(hp=200)=>({id:"enemy",name:"Противник",side:"enemy",hp,atk:1,speed:1,
  physicalDefense:0,magicDefense:0,protection:0,maxProtection:0});
-test("Nada physical crossbow special and powerful apply actual weakening",()=>{
+test("Nada builds distinct read-move stacks with special and group powerful",()=>{
  const battle=C.createBattle([nada(),enemy()]);
  C.advanceToPlayerTurn(battle);
  assert.equal(battle.fighters[battle.currentActor].id,"nada");
  assert.equal(C.performPlayerAbility(battle,"special"),true);
  assert.ok(battle.fighters[1].hp<200);
- assert.equal(battle.fighters[1].weakenAttacks,2);
+ assert.equal(battle.fighters[1].renStatuses?.["read-move"]?.stacks,2);
  assert.ok(battle.fighters[0].specialCooldown>=1);
  assert.equal(C.performPlayerAbility(battle,"powerful"),true);
- assert.ok(battle.fighters[1].hp<200-18*.8);
- assert.equal(battle.fighters[1].renStatuses?.["debuff-resistance-down"]?.remaining,2);
+ assert.ok(battle.fighters[1].hp<200-18*.7);
+ assert.equal(battle.fighters[1].renStatuses?.["read-move"]?.stacks,4);
  assert.equal(A.get(nada(),"passive").name,"Внимание к деталям");
  assert.equal(A.get(nada(),"leader"),null);
 });

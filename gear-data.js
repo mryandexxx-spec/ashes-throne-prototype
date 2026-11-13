@@ -130,7 +130,13 @@ const GearData=(()=>{
    utility:{debuffResistance:Math.min(4,Math.ceil(tier/5)),
     [classId==="support"?"debuffPotency":"accuracy"]:Math.min(4,Math.ceil(tier/5))}
   };
-  return Object.freeze(specs[slotId]);
+  const result={...specs[slotId]};
+  if(slotId==="weapon"){
+   const distinct={melee:["critDamage",Math.ceil(tier/2)],ranged:["accuracy",1],
+    mage:["debuffPotency",1],support:["debuffResistance",1],tank:["magicDefense",1]}[classId];
+   result[distinct[0]]=(result[distinct[0]]||0)+distinct[1];
+  }
+  return Object.freeze(result);
  }
  function flatten(recipe){
   const out=Object.fromEntries(MATERIALS.map(id=>[id,0]));
@@ -169,11 +175,27 @@ const GearData=(()=>{
  return ITEMS.filter(item=>item.tier===tier&&item.slotId===slotId&&item.allowedClasses.includes(classId)&&
    (slotId!=="feet"||item.id===(BASE_FEET[classId]||(classId==="tank"?"g1-bootheavy":"g1-bootlight")).replace("g1-","g"+tier+"-")));
  }
+ // One press of the development resource tool can finance one complete
+ // six-item tier for any class. This is not a player reward.
+ function tierFloor(tier){
+  if(!Number.isInteger(tier)||tier<1||tier>MAX_TIER)return null;
+  const floor=Object.fromEntries(MATERIALS.map(id=>[id,0]));
+  for(const classId of CLASS_IDS){
+   const total=Object.fromEntries(MATERIALS.map(id=>[id,0]));
+   for(const slot of SLOTS){
+    const item=offered(classId,slot.id,tier)[0];
+    if(!item)continue;
+    for(const [id,n] of Object.entries(item.ingredients))total[id]+=n;
+   }
+   for(const id of MATERIALS)floor[id]=Math.max(floor[id],total[id]);
+  }
+  return Object.freeze(floor);
+ }
  function missing(item,materials){
   if(!item||!materials)return null;
   return Object.fromEntries(Object.entries(item.ingredients).filter(([id,n])=>
    !Number.isSafeInteger(materials[id])||materials[id]<n).map(([id,n])=>[id,Math.max(0,n-(materials[id]||0))]));
  }
- return Object.freeze({MAX_TIER,SLOTS,CLASS_IDS,MATERIALS,MATERIAL_LABELS,FUTURE_STAT_KEYS,STAT_LABELS,statOverview,FLOOR,G2_FLOOR,G3_FLOOR,COMPOSITES,ITEMS,get,offered,missing,flatten});
+ return Object.freeze({MAX_TIER,SLOTS,CLASS_IDS,MATERIALS,MATERIAL_LABELS,FUTURE_STAT_KEYS,STAT_LABELS,statOverview,FLOOR,G2_FLOOR,G3_FLOOR,COMPOSITES,ITEMS,get,offered,tierFloor,missing,flatten});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=GearData;

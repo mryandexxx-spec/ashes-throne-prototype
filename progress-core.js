@@ -90,7 +90,11 @@ const ProgressCore=(()=>{
      (typeof GearData==="undefined"||!progress.materials||
       GearData.MATERIALS.some(id=>!Number.isSafeInteger(progress.materials[id])||progress.materials[id]<0)))
    return null;
-  const currency=Math.max(0,TEST_RESOURCE_FLOOR.currency-progress.currency);
+  const maxTier=progress.saveVersion===3?Math.max(1,...Object.values(progress.gear||{})
+   .filter(g=>g?.mode==="itemized").map(g=>g.tier)):1;
+  const targetCurrency=maxTier>=4?Math.max(TEST_RESOURCE_FLOOR.currency,
+   maxTier*1000+maxTier*250):TEST_RESOURCE_FLOOR.currency;
+  const currency=Math.max(0,targetCurrency-progress.currency);
   const material=Math.max(0,TEST_RESOURCE_FLOOR.material-progress.gearMaterials);
   const energy=ENERGY_MAX-progress.energy.value;
   progress.currency+=currency;
@@ -100,8 +104,8 @@ const ProgressCore=(()=>{
   const materials={};
   if(progress.saveVersion===3&&typeof GearData!=="undefined"&&progress.materials){
    for(const id of GearData.MATERIALS){
-    const maxTier=Math.max(1,...Object.values(progress.gear||{}).filter(g=>g?.mode==="itemized").map(g=>g.tier));
-    const floor=maxTier>=3?GearData.G3_FLOOR:maxTier>=2?GearData.G2_FLOOR:GearData.FLOOR;
+    const floor=maxTier>=4?GearData.tierFloor(maxTier):
+     maxTier>=3?GearData.G3_FLOOR:maxTier>=2?GearData.G2_FLOOR:GearData.FLOOR;
     materials[id]=Math.max(0,floor[id]-progress.materials[id]);
     progress.materials[id]+=materials[id];
    }

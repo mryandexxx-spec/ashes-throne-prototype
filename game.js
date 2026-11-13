@@ -523,7 +523,8 @@ $("#devResourcesGrant")?.addEventListener("click",()=>{
  const status=$("#devResourcesNotice");
  if(status)status.textContent="Тестовый запас готов: энергия "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX+
   ", игровая валюта "+progress.currency+", материал C "+progress.gearMaterials+
-  (progress.saveVersion===3?" · G1: "+GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(", "):"")+
+  (progress.saveVersion===3?" · G"+Math.max(1,...Object.values(progress.gear||{}).map(g=>g.tier||1))+": "+
+   GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(", "):"")+
   (progress.saveVersion===3&&typeof SkillCore!=="undefined"&&progress.skillMaterials?" · Навыки: "+
    SkillCore.RESOURCE_IDS.map(id=>SkillCore.LABELS[id]+" "+
     progress.skillMaterials[id]).join(", "):"")+
@@ -1730,7 +1731,7 @@ function renderItemizedGear(base,gear){
  $("#gearMaterial").textContent=GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(" · ");
  $("#gearWallet").textContent=String(progress.currency);
  $("#gearPriceLabel").textContent=ready?"Стоимость перехода":"Выбранный предмет";
- $("#gearStatBonusLabel").textContent=ready?"Бонус повышения":"Фиксированный бонус";
+ $("#gearStatBonusLabel").textContent=ready?"Бонус повышения":"Бонус предмета";
  const chosen=installed?GearData.get(installed):item;
  $("#gearPrice").textContent=ready?(promotion?promotion.currency+" валюты · G"+promotion.from+" → G"+promotion.to:"G"+GearData.MAX_TIER+" · максимум"):
   chosen?chosen.name+" · "+Object.entries(chosen.ingredients).map(([id,n])=>

@@ -2926,7 +2926,9 @@ function renderBattleFrame(){
     if(visual.renPlan!==activity.plan){visual.renPlan=activity.plan;visual.renStartYaw=visual.body.rotation.y||0;}
     const turn=Math.atan2(Math.sin(yaw-visual.renStartYaw),Math.cos(yaw-visual.renStartYaw));
     const u=Math.min(1,activity.elapsedMs/120);
-    visual.body.rotation.y=visual.renStartYaw+turn*u*u*(3-2*u);
+    // RENRETREAT001: pivot away to run back, then face the enemy again.
+    const heading=typeof RenChoreography!=="undefined"?RenChoreography.sample(activity.plan,activity.elapsedMs).heading||0:0;
+    visual.body.rotation.y=visual.renStartYaw+turn*u*u*(3-2*u)+heading;
    }
    renGlbRuntime.update(activity);
   }

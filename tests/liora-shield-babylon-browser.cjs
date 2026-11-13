@@ -107,6 +107,10 @@ fs.mkdirSync(outDir,{recursive:true});
      await page.locator("#stage").screenshot({
       path:path.join(outDir,clip+".png"),timeout:30000});
     }
+    if(clip==="Liora_Shield_Death"&&percent===100){
+     await page.locator("#stage").screenshot({
+      path:path.join(outDir,"Liora_Shield_Death_LANDED.png"),timeout:30000});
+    }
    }
    const maxHipXZ=Math.max(...phases.map(p=>Math.hypot(
     p.hip.x-phases[0].hip.x,p.hip.z-phases[0].hip.z)));
@@ -133,6 +137,8 @@ fs.mkdirSync(outDir,{recursive:true});
    return {x:sock.position.x,y:sock.position.y,z:sock.position.z};
   });
   assert.ok(Math.abs(reset.x+.22055)<.01,"idle must restore calibrated grip");
+  await page.locator("#stage").screenshot({
+   path:path.join(outDir,"Idle_AFTER_DEATH.png"),timeout:30000});
   await page.click("#scan");
   const scanText=await page.locator("#checks").innerText();
   for(const clip of ordered){

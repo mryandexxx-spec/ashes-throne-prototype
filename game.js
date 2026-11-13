@@ -2820,7 +2820,8 @@ function renderBattleFrame(){
   const opponents=target?sides[target.side]:null;
   const targetSlot=target?opponents.findIndex(f=>f.id===target.id):-1;
   const targetPosition=targetSlot>=0?formationPosition(target.side,targetSlot,opponents.length):null;
-  const approach=BattleAnimation.approach(activity,origin,targetPosition);
+  // NADAANIM001: Nada is an archer — she shoots from her place, no melee lunge.
+  const approach=h.id==="nada"?{x:0,z:0}:BattleAnimation.approach(activity,origin,targetPosition);
   const offset=pose.x*(h.side==="ally"?1:-1);
   visual.body.position.x=visual.head.position.x=visual.base.position.x=origin.x+offset+approach.x;
   visual.body.position.z=visual.head.position.z=visual.base.position.z=origin.z+approach.z;
@@ -2830,7 +2831,12 @@ function renderBattleFrame(){
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
   // MOBILEQA001: GLB heroes rest three-quarter to the camera, facing the enemy lane.
   if((h.id==="ren"&&renGlbRuntime)||(h.id==="nada"&&nadaGlbRuntime)){
-   if(visual.body.rotation&&!(h.id==="ren"&&targetPosition&&activity.plan)&&typeof ArenaStageView!=="undefined"&&ArenaStageView.idleYaw){
+   const nadaAim=h.id==="nada"&&targetPosition&&["basic","special","powerful"].includes(activity.slot);
+   if(nadaAim&&visual.body.rotation){
+    // NADAANIM001: turn toward the target while shooting, same smoothing as the rest pose.
+    const aim=-Math.atan2(targetPosition.z-origin.z,targetPosition.x-origin.x),cur=visual.body.rotation.y||0;
+    visual.body.rotation.y=cur+Math.atan2(Math.sin(aim-cur),Math.cos(aim-cur))*.25;
+   }else if(visual.body.rotation&&!(h.id==="ren"&&targetPosition&&activity.plan)&&typeof ArenaStageView!=="undefined"&&ArenaStageView.idleYaw){
     const rest=ArenaStageView.idleYaw(h.side),cur=visual.body.rotation.y||0;
     const diff=Math.atan2(Math.sin(rest-cur),Math.cos(rest-cur));
     visual.body.rotation.y=Math.abs(diff)<.002?rest:cur+diff*.18;

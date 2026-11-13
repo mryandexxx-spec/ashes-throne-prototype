@@ -6,8 +6,8 @@ const HeroStatsCombatBridge=(()=>{
  "use strict";
  function apply(hero,progression,profile,core){
   if(!hero||!progression||!profile||!core||
-     hero.id!==profile.id||!["ren","nada"].includes(hero.id))
-   throw new TypeError("Only matching Ren/Nada hero profiles are supported");
+     hero.id!==profile.id||!["ren","nada","liora"].includes(hero.id))
+   throw new TypeError("Only matching Ren/Nada/Liora hero profiles are supported");
   if(typeof core.resolve!=="function")throw new TypeError("Stats core required");
   const level=progression.level,stars=progression.stars;
   const gear=progression.gearPercent??{};

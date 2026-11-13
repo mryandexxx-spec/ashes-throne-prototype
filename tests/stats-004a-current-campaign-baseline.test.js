@@ -17,7 +17,7 @@ const source=["gear-data.js","progress-core.js","save-core.js","progress-v3-core
 const {HEROES,GearData:G,ProgressCore:P,SaveCore:S,CombatCore:C,
  AutoDecision:A,MissionData:M,setProgress,progressedHero,progressedEnemy}=vm.runInNewContext(source);
 // Freeze the original five combatants for longitudinal baseline comparisons.
-const allies=HEROES.filter(f=>f.side==="ally"&&f.id!=="ren"&&f.id!=="nada");
+const allies=HEROES.filter(f=>f.side==="ally"&&f.id!=="ren"&&f.id!=="nada"&&f.id!=="liora");
 const foes=HEROES.filter(f=>f.side==="enemy");
 const ids=allies.map(f=>f.id);
 assert.deepEqual(Array.from(ids),["kael","lyra","darin","medic-demo","test-area-damage"]);

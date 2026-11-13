@@ -1,0 +1,50 @@
+name: LIORAPLAY001 card arena and cache browser
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'liora-glb-runtime.js'
+      - 'ren-card-3d.js'
+      - 'game.js'
+      - 'index.html'
+      - 'model-cache-sw.js'
+      - 'model-cache-client.js'
+      - 'progress-v3-core.js'
+      - 'tests/liora-playable*'
+      - '.github/workflows/liora-playable-browser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Liora save and integration contract
+        run: |
+          node --test tests/liora-playable-v3-cache.test.js
+          node --check game.js
+          node --check liora-glb-runtime.js
+      - name: Chromium and WebKit battle, card and caching
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/liora-play-server.log 2>&1 &
+          sleep 2
+          node tests/liora-playable-browser.cjs
+          LIORA_BROWSER=webkit node tests/liora-playable-browser.cjs
+
+      - name: Store Liora card and battle WebGL screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: liora-playable-webgl-review
+          path: artifacts/liora-playable/
+          if-no-files-found: warn
+          retention-days: 14

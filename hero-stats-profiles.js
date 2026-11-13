@@ -25,6 +25,20 @@ const HeroStatsProfiles=(()=>{
     star:{hp:12,protection:5,physicalAttack:3,physicalDefense:2,magicDefense:1}
    }
   }),
+  // LIORAPLAY001: temporary test values for unarmed Liora; not accepted balance.
+  liora:freezeProfile({
+   id:"liora",
+   combatStats:{
+    hp:135,protection:50,physicalAttack:20,magicAttack:0,
+    physicalDefense:24,magicDefense:14,speed:115,critChance:5,
+    critDamage:150,accuracy:5,evasion:4,defensePenetration:0,
+    debuffPotency:10,debuffResistance:25
+   },
+   growth:{
+    level:{hp:2.6,protection:0.8,physicalAttack:0.36,physicalDefense:0.3,magicDefense:0.17},
+    star:{hp:14,protection:8,physicalAttack:2,physicalDefense:3,magicDefense:1}
+   }
+  }),
   nada:freezeProfile({
    id:"nada",
    combatStats:{

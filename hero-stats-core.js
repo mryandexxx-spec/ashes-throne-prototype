@@ -35,8 +35,8 @@ const HeroStatsCore=(()=>{
  }
  function resolve(definition,options={}){
   if(!object(definition)||!object(options))throw new TypeError("Invalid resolver arguments");
-  if(!["ren","nada"].includes(definition.id))
-   throw new TypeError("STATS-001A is scoped to Ren and Nada");
+  if(!["ren","nada","liora"].includes(definition.id))
+   throw new TypeError("STATS-001A is scoped to Ren, Nada and Liora");
   const base=definition.combatStats;
   exactKeys(base,KEYS,"combatStats",true);
   for(const key of KEYS)validStat(key,base[key],"combatStats");

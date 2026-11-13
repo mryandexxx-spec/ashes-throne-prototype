@@ -10,6 +10,8 @@ const HEROES = [
   {id:"ren",name:"Рен Терен",classId:"melee",tags:["gardens-over-abyss"],role:"Боец ближнего боя",hp:91,atk:27,speed:150,side:"ally",glyph:"⌁"},
  // NADA-PLAYABLE-001: provisional gameplay role and combat numbers only.
  {id:"nada",name:"Нада",classId:"support",role:"Поддержка · игровой пилот",hp:85,atk:18,speed:120,side:"ally",glyph:"✎"},
+ // LIORAPLAY001: provisional unarmed pilot, no approved balance or recruitment canon.
+ {id:"liora",name:"Лиора Вель",classId:"tank",role:"Защита · тестовый герой без щита",hp:105,atk:20,speed:115,side:"ally",glyph:"♙"},
   {id:"ves",name:"Вестник Конклава",role:"Противник",hp:90,atk:18,speed:105,side:"enemy",glyph:"☠"},
   {id:"shade",name:"Теневой клинок",role:"Противник",hp:78,atk:22,speed:135,side:"enemy",glyph:"♟"},
   // Demo-only copies: no new combat stats or lore. First mission still uses two enemies.
@@ -26,6 +28,7 @@ let engine, scene, meshes={};
 let combatVisual007=null; // One optional visual layer per Babylon Scene.
 let renGlbRuntime=null; // Default Ren GLB visual, no gameplay ownership.
 let nadaGlbRuntime=null; // Optional Nada GLB only when she is in the party.
+let lioraGlbRuntime=null; // Optional Liora GLB (without shield), only in party.
 let arenaCamera=null;
 // Combat-008B: allies are near the viewer, enemies farther away.
 const ARENA_VIEW=typeof ArenaStageView!=="undefined"?ArenaStageView.view:Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
@@ -557,7 +560,7 @@ function heroOwned(id){
 }
 function heroUnlockLabel(id){
  const mission=typeof HeroCollectionCore!=="undefined"?HeroCollectionCore.unlockMission(id):null;
- return id==="ren"?"Доступен с начала":id==="nada"?"Доступен с начала":mission?(MissionData.get(mission)?.title||"миссия"):"сюжетное прохождение";
+ return ["ren","nada","liora"].includes(id)?"Доступен с начала (тест)":mission?(MissionData.get(mission)?.title||"миссия"):"сюжетное прохождение";
 }
 function defaultSquad(){
  const ids=ALLIES.filter(h=>heroOwned(h.id)).slice(0,MAX_SQUAD).map(h=>h.id);
@@ -626,7 +629,7 @@ function equippedPilotStats(hero,profile){
 // Other fighters remain test mannequins under their existing demo rules.
 function progressedHero(hero){
  let h;
- if((hero.id==="ren"||hero.id==="nada")&&
+ if((["ren","nada","liora"].includes(hero.id))&&
     typeof HeroStatsCore!=="undefined"&&
     typeof HeroStatsProfiles!=="undefined"&&
     typeof HeroStatsCombatBridge!=="undefined"){
@@ -962,6 +965,7 @@ function showScreen(id){
    stopBattleRendering();
    if(renGlbRuntime){renGlbRuntime.dispose();renGlbRuntime=null;}
    if(nadaGlbRuntime){nadaGlbRuntime.dispose();nadaGlbRuntime=null;}
+   if(lioraGlbRuntime){lioraGlbRuntime.dispose();lioraGlbRuntime=null;}
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
    scene=undefined;engine=undefined;arenaCamera=null;meshes={};indicatorNodes={};combatVisual007=null;renderLoopRunning=false;
@@ -1878,7 +1882,7 @@ function renderHeroDetail(){
  const hero=progressedHero(base);
  const cost=ProgressCore.upgradeCost(progress,base.id);
  const levelCap=ProgressCore.heroLevelCap(progress,base.id);
- const next=cost===null?null:((base.id==="ren"||base.id==="nada")?
+ const next=cost===null?null:((["ren","nada","liora"].includes(base.id))?
   HeroStatsCombatBridge.apply(base,{
    level:hero.level+1,
    stars:StarCore.rankOf(progress,base.id),
@@ -1886,11 +1890,12 @@ function renderHeroDetail(){
   },HeroStatsProfiles[base.id],HeroStatsCore):
   equippedPilotStats(ProgressCore.heroStats(progress,base,hero.level+1),PILOT_HERO_STATS[base.id]));
  $("#detailName").textContent=hero.name;
- $("#detailRole").textContent=hero.role+((hero.id==="ren"||hero.id==="nada")?" · Играбельный герой (баланс тестовый)":" · Демонстрационный персонаж");
+ $("#detailRole").textContent=hero.role+((["ren","nada","liora"].includes(hero.id))?" · Играбельный герой (баланс тестовый)":" · Демонстрационный персонаж");
  if($("#detailTags"))$("#detailTags").textContent=heroTagText(hero);
  $("#detailGlyph").textContent=hero.glyph;
  const showRenPortrait=hero.id==="ren";
  const showNadaPortrait=hero.id==="nada";
+ const showLiora3D=hero.id==="liora";
  const renPortrait=$("#detailRenPortrait"),heroStage=$("#detailHeroStage"),artworkLabel=$("#detailArtworkLabel");
  if(renPortrait){
   renPortrait.hidden=!showRenPortrait;
@@ -1901,10 +1906,10 @@ function renderHeroDetail(){
  if(heroStage){
   heroStage.classList.toggle("has-ren-portrait",showRenPortrait);
   if(showNadaPortrait)heroStage.classList.add("has-ren-portrait");
-  heroStage.setAttribute("aria-label",showNadaPortrait?"Нада — 3D-модель при загрузке, иначе портрет":
+  heroStage.setAttribute("aria-label",showLiora3D?"Лиора Вель — 3D без щита":showNadaPortrait?"Нада — 3D-модель при загрузке, иначе портрет":
    showRenPortrait?"Рен Терен: 3D-модель и портрет":"Схематичный силуэт героя, без 3D-модели");
  }
- if(artworkLabel)artworkLabel.textContent=showNadaPortrait?"ГЕРОЙ · 3D-ПРОСМОТР (ПИЛОТ)":
+ if(artworkLabel)artworkLabel.textContent=showLiora3D?"ЛИОРА · 3D БЕЗ ЩИТА (ТЕСТ)":showNadaPortrait?"ГЕРОЙ · 3D-ПРОСМОТР (ПИЛОТ)":
   showRenPortrait?"ГЕРОЙ · 3D-МОДЕЛЬ":"ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД";
  if(typeof RenCard3D!=="undefined" && $("#heroDetail")?.classList.contains("active"))
   void RenCard3D.activate(hero.id);
@@ -1916,8 +1921,8 @@ function renderHeroDetail(){
   '<div class="stat-catalog-row"><span>'+stat.label+'</span><strong>'+
    (stat.active?stat.value:'Не рассчитано')+'</strong></div>').join("");
  const activeStats=overview.filter(stat=>stat.active).length;
- const trueHero=hero.id==="ren"||hero.id==="nada";
- $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>${trueHero?"Физическая атака":"Атака (общая, тест)"}</span><strong>${trueHero?hero.physicalAttack:hero.atk+" ATK"}</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · ${activeStats} рассчитано</summary><p class="muted">${trueHero?"Параметры Рена и Нады рассчитываются из уровня, звёзд и снаряжения. Числа и формулы роста — рабочие, баланс ещё не утверждён.":"Учебный персонаж: часть характеристик ещё не рассчитывается."}</p>${statRows}</details>`;
+ const trueHero=["ren","nada","liora"].includes(hero.id);
+ $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>${trueHero?"Физическая атака":"Атака (общая, тест)"}</span><strong>${trueHero?hero.physicalAttack:hero.atk+" ATK"}</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · ${activeStats} рассчитано</summary><p class="muted">${trueHero?"Параметры Рена, Нады и Лиоры рассчитываются из уровня, звёзд и снаряжения. Числа и формулы роста — рабочие, баланс ещё не утверждён.":"Учебный персонаж: часть характеристик ещё не рассчитывается."}</p>${statRows}</details>`;
  $("#detailLevel").textContent="Уровень героя "+hero.level;
  if($("#heroCardCap"))$("#heroCardCap").textContent=saveBlocked?"Сохранение недоступно":
   hero.level>=levelCap?"Достигнут предел: "+levelCap:
@@ -2613,7 +2618,7 @@ function resetBattle(){
  const lineup=battleLineup();
  const allies=lineup.filter(f=>f.side==="ally");
  const realHeroFight=allies.length>0&&
-  allies.every(f=>f.id==="ren"||f.id==="nada");
+  allies.every(f=>["ren","nada","liora"].includes(f.id));
  state=CombatCore.createBattle(lineup,battleFutureWaves(),{
   leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId,
   ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{}),
@@ -2900,7 +2905,7 @@ function renderBattleFrame(){
   if(visual.body.rotation)visual.body.rotation.z=pose.tilt;
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
   // MOBILEQA001: GLB heroes rest three-quarter to the camera, facing the enemy lane.
-  if((h.id==="ren"&&renGlbRuntime)||(h.id==="nada"&&nadaGlbRuntime)){
+  if((h.id==="ren"&&renGlbRuntime)||(h.id==="nada"&&nadaGlbRuntime)||(h.id==="liora"&&lioraGlbRuntime)){
    const nadaAim=h.id==="nada"&&targetPosition&&["basic","special","powerful"].includes(activity.slot);
    if(nadaAim&&visual.body.rotation){
     // NADAANIM001: turn toward the target while shooting, same smoothing as the rest pose.
@@ -2914,6 +2919,7 @@ function renderBattleFrame(){
    }
   }
   if(h.id==="nada"&&nadaGlbRuntime)nadaGlbRuntime.update(activity);
+  if(h.id==="liora"&&lioraGlbRuntime)lioraGlbRuntime.update(activity);
   if(h.id==="ren"&&renGlbRuntime){
    if(visual.body.rotation&&targetPosition&&activity.plan){
     const yaw=-Math.atan2(targetPosition.z-origin.z,targetPosition.x-origin.x);
@@ -2996,6 +3002,21 @@ function installArenaPointerCamera(canvas,camera){
 }
 // Only load the skinned GLB when Nada participates. No additional Engine
 // or animation timer; the established arena frame loop drives it.
+function ensureLiora3D(){
+ if(!scene||!meshes.liora||typeof LioraGlbRuntime==="undefined")return;
+ const selected=presentationFighters().some(f=>f.id==="liora"&&f.side==="ally");
+ if(!selected){
+  if(lioraGlbRuntime){lioraGlbRuntime.dispose();lioraGlbRuntime=null;}
+  return;
+ }
+ if(lioraGlbRuntime)return;
+ lioraGlbRuntime=LioraGlbRuntime.create(BABYLON,scene,meshes.liora,(kind,message)=>{
+  const info=$("#renModelBattleStatus"),label=$("#renModelBattleStatusText");
+  if(label)label.textContent=message;
+  if(info){info.dataset.status=kind;info.hidden=false;}
+  if(kind==="error")console.warn("LIORAPLAY001: "+message);
+ });
+}
 function ensureNada3D(){
  if(!scene||!meshes.nada||typeof NadaGlbRuntime==="undefined")return;
  const selected=presentationFighters().some(f=>f.id==="nada"&&f.side==="ally");
@@ -3135,6 +3156,7 @@ function initBabylon(){
 function updateMeshes(){
  if(!scene)return;
  ensureNada3D();
+ ensureLiora3D();
  const roster=presentationFighters();
  const sideMembersBySide={ally:roster.filter(f=>f.side==="ally"),enemy:roster.filter(f=>f.side==="enemy")};
  for(const h of HEROES){

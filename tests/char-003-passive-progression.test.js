@@ -101,3 +101,31 @@ test("CHAR003 card and skill dialog expose only actual playable passives",()=>{
  assert.match(source,/SkillCore\.UPGRADABLE_IDS\.map\(id=>\[id,SkillCore\.level/);
  assert.match(source,/SkillCore\.level\(progress,selectedHeroId,id\)===null/);
 });
+
+test("CHAR003 real battle Ren passive scales only off read-move marks",()=>{
+ const src=["initiative-model.js","battle-rng.js","combat-status-core.js",
+  "skill-core.js","ability-data.js","ability-info.js","combat-core.js"].map(read).join("\n");
+ const core=vm.runInNewContext(src+"\n({CombatCore,CombatStatusCore})");
+ const fighter=(id,side,atk,passive)=>({
+  id,name:id,side,hp:1000,atk,physicalAttack:atk,speed:side==="ally"?150:20,
+  physicalDefense:0,magicDefense:0,protection:0,maxProtection:0,
+  accuracy:0,evasion:0,critChance:0,critDamage:150,defensePenetration:0,
+  debuffPotency:25,debuffResistance:0,combatProfile:"stats002c",
+  tags:id==="ren"?["gardens-over-abyss"]:[],
+  skillLevels:{basic:1,special:1,powerful:1,passive}
+ });
+ function damage(level,marks,generic=false){
+  const battle=core.CombatCore.createBattle([fighter("ren","ally",100,level),
+   fighter("dummy","enemy",0,1)]);
+  core.CombatCore.advanceToPlayerTurn(battle);
+  if(marks)core.CombatStatusCore.applyReadMove(battle.fighters[1],marks,2);
+  if(generic)battle.fighters[1].weakenAttacks=2;
+  assert.equal(core.CombatCore.performPlayerAbility(battle,"basic"),true);
+  return 1000-battle.fighters[1].hp;
+ }
+ assert.equal(damage(1,0),100);
+ assert.equal(damage(6,0,true),100);
+ assert.equal(damage(1,4),148);
+ assert.equal(damage(3,4),156);
+ assert.equal(damage(6,4),168);
+});

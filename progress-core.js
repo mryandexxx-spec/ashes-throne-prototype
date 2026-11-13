@@ -396,11 +396,19 @@ const ProgressCore=(()=>{
   if(level===null||level<1||level>maxLevelOf(hero.id))return null;
   // Gear-002: individual bonuses by slot; neither levels nor gear modify speed.
   const bonus=gearBonuses(progress,hero.id),baseFactor=1+(level-1)*0.04;
-  return {...hero,level,hp:Math.round(hero.hp*(baseFactor+bonus.hp)+(bonus.stats?.hp||0)),
-   atk:Math.round(hero.atk*(baseFactor+bonus.atk)+(bonus.stats?.physicalAttack||0)),
-   protection:(hero.protection||0)+(bonus.stats?.protection||0),
-   physicalDefense:(hero.physicalDefense||0)+(bonus.stats?.physicalDefense||0),
-   magicDefense:(hero.magicDefense||0)+(bonus.stats?.magicDefense||0)};
+  const stats=bonus.stats||{},extra={};
+  // Prototype fighters also receive their real equipped effects; the
+  // presentation bridge must not discard these values.
+  for(const [key,value] of Object.entries(stats)){
+   if(["hp","physicalAttack","protection","physicalDefense","magicDefense","speed"].includes(key))
+    continue;
+   extra[key]=(hero[key]??(key==="critDamage"?150:0))+value;
+  }
+  return {...hero,...extra,level,hp:Math.round(hero.hp*(baseFactor+bonus.hp)+(stats.hp||0)),
+   atk:Math.round(hero.atk*(baseFactor+bonus.atk)+(stats.physicalAttack||0)),
+   protection:(hero.protection||0)+(stats.protection||0),
+   physicalDefense:(hero.physicalDefense||0)+(stats.physicalDefense||0),
+   magicDefense:(hero.magicDefense||0)+(stats.magicDefense||0)};
  }
  function claimFirstClear(progress,missionId,battle){
   const reward=FIRST_CLEAR_REWARDS[missionId];

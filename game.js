@@ -622,9 +622,11 @@ const PILOT_HERO_STATS=Object.freeze({
 const PILOT_ENEMY_STATS=Object.freeze({physicalDefense:8,magicDefense:8,maxProtection:0});
 function equippedPilotStats(hero,profile){
  if(!hero||!profile)return hero;
- return {...hero,combatProfile:"stats002c",physicalAttack:hero.atk,physicalDefense:profile.physicalDefense,
-  magicDefense:profile.magicDefense,protection:profile.maxProtection,
-  maxProtection:profile.maxProtection};
+ const protection=profile.maxProtection+(hero.protection||0);
+ return {...hero,combatProfile:"stats002c",physicalAttack:hero.atk,
+  physicalDefense:profile.physicalDefense+(hero.physicalDefense||0),
+  magicDefense:profile.magicDefense+(hero.magicDefense||0),
+  protection,maxProtection:protection};
 }
 // STATS-001B: the two production heroes use one stat source, directly.
 // Other fighters remain test mannequins under their existing demo rules.

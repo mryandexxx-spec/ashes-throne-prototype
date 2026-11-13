@@ -183,7 +183,7 @@ const ProgressV3Core=(()=>{
   for(const id of ids){
    const hero=data.heroes[id],gear=hero?.gear;
    if(!object(hero)||hero.classId!==TEST_CLASSES[id]||
-      !Number.isInteger(hero.level)||hero.level<1||hero.level>ProgressCore.MAX_LEVEL||
+      !Number.isInteger(hero.level)||hero.level<1||hero.level>ProgressCore.maxLevelOf(id)||
       !object(gear)||![1,2,3].includes(gear.tier)||!object(gear.installedByTier))
     return null;
    const keys=Object.keys(gear.installedByTier).sort();

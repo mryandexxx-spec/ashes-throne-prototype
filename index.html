@@ -164,7 +164,9 @@
         <button type="button" id="startBattle">✦ Тестовый бой</button>
         <details class="hq-test-menu"><summary>Тестовые инструменты</summary>
           <p>Выдача тестовых ресурсов — не игровая награда.</p>
-          <button id="devResourcesGrant">Выдать тестовые ресурсы</button>
+          <button id="devResourcesGrant" type="button">Выдать тестовые ресурсы</button>
+          <button id="devLevel85Grant" type="button">Тест: открыть аккаунт 85</button>
+          <p id="devLevel85Notice" role="status" aria-live="polite"></p>
           <p id="devResourcesNotice" role="status" aria-live="polite"></p>
         </details>
       </div>
@@ -488,7 +490,7 @@
                       <p class="muted" id="gearNotice" role="status"></p>
                     </div>
 </div></dialog>
-    <dialog id="heroStatsDialog" class="hero-card-dialog" aria-labelledby="heroStatsDialogTitle"><div class="hero-card-dialog-heading"><h2 id="heroStatsDialogTitle">Характеристики и развитие</h2><button type="button" class="ghost" data-hero-dialog-close aria-label="Закрыть">×</button></div><div class="hero-card-dialog-body"><div id="detailStats" class="hero-detail-stats"></div><p class="muted" id="detailNotice" role="status"></p><p class="muted">Повышение уровня героя требует игровую валюту и не может превысить предел аккаунта. Экипировка оплачивается отдельно.</p><p id="detailHeroLevelCap" class="muted" role="status"></p><div class="detail-value"><span>Валюта</span><strong id="detailWallet">0</strong></div><div class="detail-value"><span>Стоимость</span><strong id="detailCost">—</strong></div><div class="detail-value"><span>После улучшения</span><strong id="detailPreview">—</strong></div><p id="starNotice" class="muted" role="status"></p><p id="progressSaveNote" class="muted" role="status"></p>          <div id="renCard3DControls" class="ren-card-3d-controls" hidden>
+    <dialog id="heroStatsDialog" class="hero-card-dialog" aria-labelledby="heroStatsDialogTitle"><div class="hero-card-dialog-heading"><h2 id="heroStatsDialogTitle">Характеристики и развитие</h2><button type="button" class="ghost" data-hero-dialog-close aria-label="Закрыть">×</button></div><div class="hero-card-dialog-body"><div id="detailStats" class="hero-detail-stats"></div><p class="muted" id="detailNotice" role="status"></p><p class="muted">Повышение уровня героя требует игровую валюту и не может превысить предел аккаунта. Экипировка оплачивается отдельно.</p><p id="detailHeroLevelCap" class="muted" role="status"></p><div class="detail-value"><span>Валюта</span><strong id="detailWallet">0</strong></div><div class="detail-value"><span>Стоимость</span><strong id="detailCost">—</strong></div><div class="detail-value"><span>После улучшения</span><strong id="detailPreview">—</strong></div><div class="hero-level-bulk-actions" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="ghost" id="detailUpgradeFive">Повысить на 5</button><button type="button" class="ghost" id="detailUpgradeMax">До доступного уровня</button></div><p id="starNotice" class="muted" role="status"></p><p id="progressSaveNote" class="muted" role="status"></p>          <div id="renCard3DControls" class="ren-card-3d-controls" hidden>
             <button type="button" id="renCardMode" class="ghost" aria-pressed="false">Портрет</button>
             <button type="button" id="renCardReset" class="ghost">Сбросить ракурс</button>
             <small id="renCard3DStatus" role="status" aria-live="polite">3D Рен</small>

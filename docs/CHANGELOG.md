@@ -6,6 +6,7 @@
 - Подробности этапа — в описании PR и в профильном документе `docs/<ЭТАП>.md`.
 - Полный прежний журнал решений и проверок, который до 13.11.2026 вёлся в `PROJECT_STATUS.md`, сохранён дословно: [archive/PROJECT_STATUS_JOURNAL_2026-11-13.md](archive/PROJECT_STATUS_JOURNAL_2026-11-13.md). Прежние разделы README по этапам TECH-001…Combat-003 — в [archive/README_HISTORY_2026-11-13.md](archive/README_HISTORY_2026-11-13.md).
 - Список ниже до 13.11.2026 восстановлен из истории `main` (`git log --first-parent`): заголовки PR и код сборки из футера `index.html` на каждом коммите. Версия показана только там, где она изменилась. Записи без номера PR — прямые коммиты в `main`.
+- Запись MOBILEQA001 в архивном журнале называет ARENA-ENGINE-003 прямым коммитом в `main` в обход PR. Это ошибка: по данным GitHub PR #283 слит squash-слиянием с аккаунта владельца, результат — коммит `7be7ffe`.
 - Код этапа в футере не всегда совпадает с названием PR: например, ARENA-ENGINE-003 сменил номер на `v0.3.132`, но оставил код `CACHE002`.
 
 ## Исправления к прежнему журналу
@@ -17,7 +18,7 @@
 | NADA3D001 — 3D Нада | #273 | `8daeee9` |
 | CACHE001 — постоянный кеш GLB | #279 | `07a0e89` |
 | CACHE002 — прогресс фоновой загрузки | #280 | `480699f` |
-| ARENA-ENGINE-003 — арена по образцу Dune (вкл. #281, #282) | ветка #283, но PR **не слит**: прямой коммит в `main` | `7be7ffe` |
+| ARENA-ENGINE-003 — арена по образцу Dune (вкл. #281, #282) | #283 (squash-слияние 13.11 00:20) | `7be7ffe` |
 | RENOPT001 — облегчённая модель Рена | #285 | `fd3c738` |
 
 
@@ -26,7 +27,7 @@
 - **`v0.3.134 · MOBILEQA001`** — MOBILEQA001: исправления по мобильной проверке арены и штаба (v0.3.133) ([#286](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/286)) · `e61172e`
 - **`v0.3.133 · RENOPT001`** — RENOPT001: модель Рена 14,2 → 2,86 МБ ([#285](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/285)) · `fd3c738`
 - DOCS: GDD 3.0 и TDD 1.0 в репозитории ([#284](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/284)) · `75cbf2d`
-- **`v0.3.132 · CACHE002`** — ARENA-ENGINE-003: арена по образцу Dune, World HUD и более крупный план. **Прямой коммит в `main`, не через PR:** содержимое ветки PR #283 (включает #281, #282), сам PR #283 не слит · `7be7ffe`
+- **`v0.3.132 · CACHE002`** — ARENA-ENGINE-003: арена по образцу Dune, World HUD и более крупный план ([#283](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/283), squash-слияние, поэтому номера нет в заголовке коммита; включает #281, #282) · `7be7ffe`
 
 ## 2026-11-12
 

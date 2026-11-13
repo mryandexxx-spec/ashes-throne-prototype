@@ -12,7 +12,7 @@ const LioraGlbRuntime=(()=>{
  });
  const clipFor=slot=>CLIPS[slot]||CLIPS.idle;
  // LIORAPLAY001: part of a clip shown for a slot, as fractions of the clip length.
- // Electrocuted_Fall shakes standing for 3.2s and lies still after 5.0s of 6.33s.
+ // The full falling movement plays without a separate shield prop.
  const WINDOWS=Object.freeze({death:Object.freeze([0,.98])});
  const windowFor=slot=>WINDOWS[slot]||[0,1];
  const sceneDisposed=scene=>typeof scene?.isDisposed==="function"
@@ -126,17 +126,17 @@ const LioraGlbRuntime=(()=>{
  function create(B,scene,visual,onStatus){
   let disposed=false,instance=null;
   const report=(state,message)=>{if(!disposed)onStatus?.(state,message);};
-  report("loading","Загружаю Наду · 3D…");
+  report("loading","Загружаю Лиору · 3D…");
   const tracker=typeof RenGlbRuntime!=="undefined"&&RenGlbRuntime.createDownloadTracker
    ?RenGlbRuntime.createDownloadTracker(message=>report("loading",message),"Лиоры"):null;
   if(tracker&&model()?.bytes)tracker.setTotal(model().bytes);
   const ready=load(B,scene,visual,event=>{if(!disposed)tracker?.update(event);}).then(value=>{
    tracker?.done();
    if(disposed||sceneDisposed(scene)){value.dispose();return false;}
-   instance=value;report("ready","3D Нада загружена");return true;
+   instance=value;report("ready","3D Лиора загружена");return true;
   }).catch(error=>{
    tracker?.done();
-   report("error","3D Нада недоступна — показана простая модель");
+   report("error","3D Лиора недоступна — показана простая модель");
    if(!disposed)console.warn("LIORAPLAY001: combat fallback",error);
    return false;
   });

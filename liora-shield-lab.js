@@ -32,8 +32,7 @@
    hip.position.x=hip.metadata.lioraBase.x;
    hip.position.z=hip.metadata.lioraBase.z;
   }
-  attachment.hand.computeWorldMatrix(true);
-  attachment.socket.computeWorldMatrix(true);
+  attachment.update(); // Recalculate upright shield facing from animated hand every sampled frame.
  }
  function setClip(name){
   active?.stop();
@@ -52,14 +51,17 @@
    v[input.dataset.key]=Number(input.value);
   try{
    attachment.pose({offset:{x:v.ox,y:v.oy,z:v.oz},
-    rotation:{x:v.rx,y:v.ry,z:v.rz},scale:v.s});
+    rotation:{x:v.rx,y:v.ry,z:v.rz},scale:v.s,
+    stabilize:el("stabilize").checked});
   }catch(error){status("Настройки щита: "+error.message);}
  }
  function setControls(){
   for(const input of el("sliders").querySelectorAll("input"))
    input.addEventListener("change",setPoseFromInputs);
+  el("stabilize").addEventListener("change",setPoseFromInputs);
   el("reset").addEventListener("click",()=>{
-   const values=["-.09",".03",".17","0","0","0","1"];
+   const values=["-.22055",".05394","-.01236","0","0","0","1"];
+   el("stabilize").checked=true;
    [...el("sliders").querySelectorAll("input")].forEach((input,i)=>input.value=values[i]);
    setPoseFromInputs();
   });
@@ -137,7 +139,7 @@
    if(hip)hip.metadata={...(hip.metadata||{}),lioraBase:{x:hip.position.x,z:hip.position.z}};
    status("Лиора загружена. Загружаю отдельный щит...");
    shield=await load(LioraShieldAssets.url);
-   attachment=LioraShieldAttachment.attach(BABYLON,scene,character,shield);
+   attachment=LioraShieldAttachment.attach(BABYLON,scene,character,shield,{referenceRoot:parent});
    groups=character.animationGroups.slice();
    const select=el("clip");
    for(const name of labels){

@@ -469,8 +469,27 @@
       </div>
     </section>
     <section id="campaign" class="screen">
-      <div class="section-heading"><div><div class="eyebrow">КАМПАНИЯ</div><h2>Путь к престолу</h2></div><button class="ghost" data-screen="home">← Назад</button></div>
+      <div class="section-heading"><div><div class="eyebrow">КАМПАНИИ</div><h2 id="campaignPageTitle">Выбор кампании</h2></div><button type="button" class="ghost" id="campaignBackButton">← В штаб</button></div>
+      <div id="campaignHub" class="campaign-hub" aria-label="Выбор направления кампании">
+        <button type="button" class="campaign-hub-card campaign-hub-training" data-campaign-path="training">
+          <span class="campaign-hub-illustration" aria-hidden="true">⚔</span><span class="campaign-hub-copy"><strong>Учебная кампания</strong><small>Тренировочные сражения и освоение боевой системы</small><span class="campaign-hub-progress" id="trainingCampaignProgress">3 миссии</span></span><span class="campaign-hub-chevron" aria-hidden="true">›</span>
+        </button>
+        <button type="button" class="campaign-hub-card campaign-hub-lore" data-campaign-path="lore">
+          <span class="campaign-hub-illustration" aria-hidden="true">✦</span><span class="campaign-hub-copy"><strong>Кампании лора</strong><small>Истории героев и события мира</small><span class="campaign-hub-progress">Скоро</span></span><span class="campaign-hub-chevron" aria-hidden="true">›</span>
+        </button>
+        <button type="button" class="campaign-hub-card campaign-hub-main" data-campaign-path="main">
+          <span class="campaign-hub-illustration" aria-hidden="true">♛</span><span class="campaign-hub-copy"><strong>Основная кампания</strong><small>Путь к престолу</small><span class="campaign-hub-progress">В разработке</span></span><span class="campaign-hub-chevron" aria-hidden="true">›</span>
+        </button>
+      </div>
+      <div id="campaignLoreContent" class="campaign-path-content" hidden><div class="campaign-empty-state"><div class="eyebrow">ИСТОРИИ МИРА</div><h3>Кампании лора</h3><p>Здесь появятся игровые истории по мотивам рассказов вселенной. Пока доступных миссий нет.</p></div></div>
+      <div id="campaignTrainingContent" class="campaign-path-content" hidden>
       <div class="energy-toolbar"><p class="muted" id="energyStatus">Энергия: 240/240 · 1 за 6 минут</p><button type="button" class="ghost" id="energyRefresh">Проверить восстановление</button></div><p id="energyRefreshStatus" class="muted" role="status" aria-live="polite"></p>
+      <div id="campaignMissions" aria-label="Главы и миссии кампании"></div>
+      <p class="muted" id="campaignSaveStatus" role="status">Статус прохождения хранится в этом браузере.</p>
+      <p class="muted">Стоимость энергии указана в каждой миссии для ручного боя и симуляции. После 3★ симуляция даёт повторные ресурсы и Account XP; награды первого прохождения повторно не выдаются.</p>
+      </div>
+      <div id="campaignMainContent" class="campaign-path-content" hidden>
+        <div class="campaign-empty-state"><div class="eyebrow">ОСНОВНАЯ КАМПАНИЯ</div><h3>Путь к престолу</h3><p>Основная сюжетная линия готовится. Пока доступна отдельная сюжетная проба ниже.</p></div>
       <aside class="story-demo-teaser" aria-label="Сюжетная проба — неканоническая">
         <div class="eyebrow">[ПРЕДЛОЖЕНИЕ] · СЮЖЕТНЫЙ ПРОТОТИП</div>
         <h3>Сады над пропастью · Дорога, которой нет</h3>
@@ -478,9 +497,7 @@
         <p class="muted">Отдельный пробный режим: без затрат энергии, выдачи героев, наград и записи сюжетных решений.</p>
         <button type="button" class="primary" id="storyDemoOpen">Попробовать сюжет</button>
       </aside>
-      <div id="campaignMissions" aria-label="Главы и миссии кампании"></div>
-      <p class="muted" id="campaignSaveStatus" role="status">Статус прохождения хранится в этом браузере.</p>
-      <p class="muted">Стоимость энергии указана в каждой миссии для ручного боя и симуляции. После 3★ симуляция даёт повторные ресурсы и Account XP; награды первого прохождения повторно не выдаются.</p>
+      </div>
     </section>
     <dialog id="heroGearDialog" class="hero-card-dialog" aria-labelledby="heroGearDialogTitle"><div class="hero-card-dialog-heading"><h2 id="heroGearDialogTitle">Экипировка героя</h2><button type="button" class="ghost" data-hero-dialog-close aria-label="Закрыть">×</button></div><div class="hero-card-dialog-body">          <div class="gear-panel" aria-label="Экипировка героев — тест G1–G3">
                       <div class="eyebrow">ЭКИПИРОВКА · ТЕСТ G1</div>

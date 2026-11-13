@@ -893,7 +893,7 @@ function showScreen(id){
   markLoginCalendarSeen();
   renderLoginCalendar();
  }
- if(id==="campaign")renderCampaign();
+ if(id==="campaign"){if(previousScreenId!=="campaign")showCampaignPath(null);renderCampaign();}
  if(id==="challenges")renderChallenges();
  if(id==="operations")renderOperations();
  if(id==="operationResult")renderOperationResult();
@@ -2145,6 +2145,28 @@ function missionRewardLabel(id){
     '<p class="muted">За первую победу: новый тестовый герой — '+
     (ALLIES.find(h=>h.id===HeroCollectionCore.reward(id))?.name||"герой")+".</p>":"");
 }
+// CAMPAIGN-HUB-001: presentation-only navigation; mission IDs and saves are unchanged.
+let selectedCampaignPath=null;
+const CAMPAIGN_PATH_TITLES=Object.freeze({training:"Учебная кампания",lore:"Кампании лора",main:"Путь к престолу"});
+function showCampaignPath(path){
+ selectedCampaignPath=Object.prototype.hasOwnProperty.call(CAMPAIGN_PATH_TITLES,path)?path:null;
+ const hub=$("#campaignHub"),title=$("#campaignPageTitle"),back=$("#campaignBackButton");
+ if(hub)hub.hidden=selectedCampaignPath!==null;
+ for(const key of Object.keys(CAMPAIGN_PATH_TITLES)){
+  const section=$("#campaign"+key[0].toUpperCase()+key.slice(1)+"Content");
+  if(section)section.hidden=selectedCampaignPath!==key;
+ }
+ if(title)title.textContent=selectedCampaignPath?CAMPAIGN_PATH_TITLES[selectedCampaignPath]:"Выбор кампании";
+ if(back)back.textContent=selectedCampaignPath?"← К выбору":"← В штаб";
+}
+document.querySelectorAll("[data-campaign-path]").forEach(button=>button.addEventListener("click",()=>{
+ showCampaignPath(button.dataset.campaignPath);
+ if(button.dataset.campaignPath==="training")renderCampaign();
+}));
+$("#campaignBackButton")?.addEventListener("click",()=>{
+ if(selectedCampaignPath)showCampaignPath(null);
+ else showScreen("home");
+});
 function renderCampaign(){
  ProgressCore.refreshEnergy(progress);
  renderAccountHeader();
@@ -2153,6 +2175,10 @@ function renderCampaign(){
   " · 1 за 6 минут · симуляция после 3★.";
  const list=$("#campaignMissions");
  const chapters=CampaignData.allChapters();
+ const allTrainingMissions=chapters.flatMap(ch=>CampaignData.missions(ch.id).map(e=>e.missionId));
+ const doneTraining=allTrainingMissions.filter(id=>campaignProgress.completed[id]===true).length;
+ const trainingCounter=$("#trainingCampaignProgress");
+ if(trainingCounter)trainingCounter.textContent="Пройдено "+doneTraining+" из "+allTrainingMissions.length;
  list.innerHTML=chapters.map(chapter=>{
   const stats=CampaignData.chapterProgress(chapter.id,campaignProgress);
   const routes=CampaignData.routes().filter(route=>route.chapterId===chapter.id);

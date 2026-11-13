@@ -4286,3 +4286,32 @@ body:has(#storyDemo.active)::before{
 @media(prefers-reduced-motion:reduce){
  .hq-screen .hq-model-cache[data-state="ready"]{animation-duration:.01s}
 }
+
+/* CAMPAIGN-HUB-001: compact three-path selector for mobile landscape. */
+#campaignHub[hidden],.campaign-path-content[hidden]{display:none!important}
+.campaign-hub{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,1.5vw,18px);margin:clamp(8px,2vh,20px) 0}
+.campaign-hub-card{appearance:none;min-width:0;min-height:clamp(150px,32vh,260px);position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:10px;padding:clamp(12px,2vw,22px);text-align:left;color:#f7ecd8;background:linear-gradient(145deg,#403327,#181b21);border:1px solid rgba(222,179,108,.45);border-radius:14px;box-shadow:inset 0 1px rgba(255,255,255,.13),0 12px 25px rgba(0,0,0,.22);cursor:pointer;touch-action:manipulation}
+.campaign-hub-card::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 70% 10%,rgba(239,196,123,.2),transparent 60%);pointer-events:none}
+.campaign-hub-lore{background:linear-gradient(145deg,#34394a,#191e27)}
+.campaign-hub-main{background:linear-gradient(145deg,#4a342b,#1e191b)}
+.campaign-hub-card:focus-visible{outline:3px solid #e8bd71;outline-offset:3px}
+.campaign-hub-card:active{transform:translateY(1px)}
+.campaign-hub-illustration{font-size:clamp(32px,5vw,62px);line-height:1;color:#e3ba77;opacity:.86}
+.campaign-hub-copy{display:grid;gap:6px;position:relative;z-index:1}
+.campaign-hub-copy strong{font:600 clamp(15px,2.15vw,24px) Cinzel,serif}
+.campaign-hub-copy small{font-size:clamp(11px,1.3vw,14px);color:#dacbbb;line-height:1.35}
+.campaign-hub-progress{font-size:11px;color:#eccb8c;font-weight:700;letter-spacing:.04em}
+.campaign-hub-chevron{position:absolute;right:12px;bottom:12px;font-size:25px;color:#e6be84}
+.campaign-path-content{min-width:0}
+.campaign-empty-state{max-width:760px;margin:12px auto;padding:clamp(18px,4vw,38px);border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.campaign-empty-state h3{font:600 clamp(20px,3vw,30px) Cinzel,serif;margin:8px 0}
+.campaign-empty-state p{color:var(--muted);line-height:1.5}
+@media (orientation:landscape) and (max-height:540px){
+ .campaign-hub{margin:6px 0;gap:8px}
+ .campaign-hub-card{min-height:0;height:clamp(132px,48vh,210px);padding:10px;gap:6px}
+ .campaign-hub-illustration{font-size:30px}
+ .campaign-hub-copy strong{font-size:clamp(13px,2vw,18px)}
+ .campaign-hub-copy small{font-size:11px}
+ .campaign-hub-chevron{font-size:18px;right:8px;bottom:6px}
+}
+@media (max-width:580px){.campaign-hub{grid-template-columns:1fr}.campaign-hub-card{min-height:110px}}

@@ -26,6 +26,13 @@ const HeroStatsCombatBridge=(()=>{
    hp:raw("hp")*(gear.hp??0),
    physicalAttack:raw("physicalAttack")*(gear.atk??0)
   };
+  const itemStats=progression.gearStats??{};
+  if(!itemStats||typeof itemStats!=="object"||Array.isArray(itemStats)||
+    Object.keys(itemStats).some(key=>!core.KEYS.includes(key)||key==="speed"||
+      !Number.isFinite(itemStats[key])||itemStats[key]<0))
+   throw new RangeError("Invalid item stat bonuses");
+  for(const [key,value] of Object.entries(itemStats))
+   bonuses[key]=(bonuses[key]||0)+value;
   const stats=core.resolve(profile,{level,stars,gearBonuses:bonuses});
   return Object.freeze({
    ...hero,

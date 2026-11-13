@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Лиора · просмотр модели и 15 анимаций</title>
+<title>Лиора · модель со щитом и 15 анимаций</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif}*{box-sizing:border-box}
 body{margin:0;background:#141b20;color:#f3e9d7}
@@ -25,18 +25,19 @@ details{margin-top:10px}summary{cursor:pointer;min-height:36px}
 <script src="dev/src/assets/models.js"></script>
 
 </head><body>
-<header><h1>Лиора · 15 анимаций [МАСТЕРСКАЯ]</h1><a href="./">В игру</a></header>
+<header><h1>Лиора · щит и 15 анимаций [МАСТЕРСКАЯ]</h1><a href="./">В игру</a></header>
 <main>
-<p>Изолированная мастерская Лиоры <strong>без щита</strong>: загружается только модель персонажа и её 15 анимаций. Не добавляет героя в коллекцию, бой или сохранения. Поворот камеры — одним пальцем, масштаб — двумя.</p>
-<div class="stage"><canvas id="stage" aria-label="Лиора без щита, интерактивный трёхмерный просмотр" tabindex="0"></canvas></div>
+<p>Изолированная мастерская Лиоры <strong>со щитом</strong>: один GLB, в котором щит закреплён на левом предплечье через скелет (LIORA-SHIELD-006) и повторяет все 15 анимаций. Ничего не привязывается в коде. Не меняет коллекцию, бой или сохранения. Поворот камеры — одним пальцем, масштаб — двумя.</p>
+<div class="stage"><canvas id="stage" aria-label="Лиора со щитом, интерактивный трёхмерный просмотр" tabindex="0"></canvas></div>
 <div class="controls">
 <label>Анимация <select id="clip" aria-label="Выбрать анимацию"></select></label>
 <button id="play" type="button">Пауза</button>
 <label>Кадр <input id="frame" type="range" min="0" max="100" value="0" aria-label="Положение анимации"></label>
 <button id="scan" type="button">Проверить 15 клипов</button>
+<label><input id="shield" type="checkbox" checked> Показывать щит</label>
 <p role="status" id="status">Загрузка 3D...</p>
 <pre id="checks" aria-label="Результаты проверки клипов"></pre>
-<p>Щит намеренно отключён по решению владельца. Анимации с названиями <code>Liora_Shield_*</code> оставлены в GLB только для просмотра и будущей переработки. На физическом iPhone Safari производительность и плавность ещё необходимо проверить.</p>
+<p>Щит — отдельный меш <code>Liora_Shield</code> внутри того же GLB, кость <code>mixamorig:LeftForeArm</code>, вес 100%. Переключатель выше только скрывает меш. Боевые клипы: <code>Liora_Shield_Bash</code> (обычный удар), <code>Liora_Shield_Block</code> (защитная стойка), <code>Liora_Shield_Death</code>. На физическом iPhone Safari производительность и плавность ещё необходимо проверить.</p>
 </main>
-<script src="liora-shield-lab.js"></script>
+<script src="liora-shield-lab.js?v=shield006"></script>
 </body></html>

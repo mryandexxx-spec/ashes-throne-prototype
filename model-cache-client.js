@@ -3,12 +3,12 @@
  */
 const ModelCache=(()=>{
  "use strict";
- const SW_URL="model-cache-sw.js?v=lioraplay001";
+ const SW_URL="model-cache-sw.js?v=liorashield006";
  const REFUSE_TYPES=new Set(["slow-2g","2g","3g"]);
  const HEROES=Object.freeze({
   "ren-meshy-mixamo-animated.glb":"ren",
   "nada-mobile-animated.glb":"nada",
-  "liora_vel_shield_aware_15clips.glb":"liora"
+  "liora-mobile-animated.glb":"liora"
  });
  function mayWarm({connection,visible=true}={}){
   return visible&&connection?.saveData!==true&&

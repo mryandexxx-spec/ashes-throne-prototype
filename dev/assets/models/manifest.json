@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "user-provided Mixamo animated GLB optimized for mobile; NADAOPT001: WebP 2048 q90 + KHR_mesh_quantization",
+  "source": "user-provided Mixamo animated GLB optimized for mobile; NADAOPT001: WebP 2048 q90 + KHR_mesh_quantization; LIORA-SHIELD-006: shield baked into the skin",
   "assets": [
     {
       "id": "nada",
@@ -20,9 +20,9 @@
     },
     {
       "id": "liora",
-      "file": "liora_vel_shield_aware_15clips.glb",
-      "bytes": 2850224,
-      "sha256": "a2cc310c71ae141d0197da73397d73251db93ae6b57288e2ab5b0eb7aebb46b8",
+      "file": "liora-mobile-animated.glb",
+      "bytes": 2117776,
+      "sha256": "6baf3cf93ca4e2e71be58b243616b6afdbd4cfdca81eb404ef6bd0dafae77a9c",
       "bones": 66,
       "animations": 15,
       "textureSize": [
@@ -30,23 +30,23 @@
         2048
       ],
       "textureMime": "image/webp",
-      "source": "../../assets-src/characters/liora/README.md"
-    },
-    {
-      "id": "liora-shield",
-      "file": "liora-shield-mobile.glb",
-      "bytes": 631488,
-      "sha256": "65676e1e43c1065aea4297a54eaa7e12dd7d644258f913bab8fa26f7505b7cce",
-      "vertices": 4445,
-      "triangles": 5056,
-      "bones": 0,
-      "animations": 0,
-      "textureSize": [
-        2048,
-        2048
+      "source": "../../assets-src/characters/liora/README.md",
+      "vertices": 17710,
+      "triangles": 19281,
+      "meshes": [
+        "geometry_0",
+        "Liora_Shield"
       ],
-      "textureMime": "image/webp",
-      "source": "../../assets-src/characters/liora/README.md"
+      "shield": {
+        "mesh": "Liora_Shield",
+        "joint": "mixamorig:LeftForeArm",
+        "vertices": 4445,
+        "triangles": 5056,
+        "textureSize": [
+          1024,
+          1024
+        ]
+      }
     }
   ]
 }

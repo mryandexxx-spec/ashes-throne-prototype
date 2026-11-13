@@ -147,7 +147,7 @@ const AbilityData=(()=>{
   if(abilityId==="basic"){
    if(actor?.id==="nada")return Object.freeze({...typedBasic,name:"Прицельное действие",multiplier:.8,
     onHitStatus:Object.freeze({type:"read-move",stacks:1,turns:2})});
-   if(actor?.id==="liora")return Object.freeze({...typedBasic,name:"Удар без оружия · тест"});
+   if(actor?.id==="liora")return Object.freeze({...typedBasic,name:"Удар щитом · тест"});
    // REN-COMBAT-B: story-only temporary skill level; no v3 progression.
    if(actor?.id==="trial-ren"||actor?.id==="ren"){
     const level=actor.skillLevels?.basic;

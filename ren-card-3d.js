@@ -58,7 +58,7 @@ const RenCard3D=(()=>{
   const controls=byId("renCard3DControls");
   const canvas=byId("renCard3DCanvas");
   if(controls)controls.hidden=!canDisplay3D;
-  if(canvas){canvas.hidden=!canDisplay3D;canvas.setAttribute("aria-label",isLiora?"Лиора Вель без щита, трёхмерная модель; вращение пальцем":isNada?"Нада, трёхмерная модель; вращение пальцем":"Рен Терен, трёхмерная модель; вращение пальцем");}
+  if(canvas){canvas.hidden=!canDisplay3D;canvas.setAttribute("aria-label",isLiora?"Лиора Вель со щитом, трёхмерная модель; вращение пальцем":isNada?"Нада, трёхмерная модель; вращение пальцем":"Рен Терен, трёхмерная модель; вращение пальцем");}
   const modeButton=byId("renCardMode");if(modeButton)modeButton.hidden=!canDisplay3D;
   if(!canDisplay3D){
    if(active)dispose();
@@ -128,6 +128,9 @@ const RenCard3D=(()=>{
    }
    const parts=result.meshes.filter(mesh=>mesh.getTotalVertices?.()>0);
    if(!parts.length)throw Error("В GLB нет геометрии");
+   // LIORA-SHIELD-006: the baked shield hangs on the extended arm in bind pose; frame the body only.
+   const framed=isLiora&&typeof LioraGlbRuntime!=="undefined"
+    ?parts.filter(mesh=>mesh.name!==LioraGlbRuntime.SHIELD_MESH):parts;
    holder=new BABYLON.TransformNode("renCardGlbRoot",scene);
    for(const node of [...result.meshes,...result.transformNodes]){
     if(!node.parent)node.parent=holder;
@@ -135,7 +138,7 @@ const RenCard3D=(()=>{
    // Frame the actual mesh rather than assuming its coordinate origin or height.
    let min=new BABYLON.Vector3(Infinity,Infinity,Infinity);
    let max=new BABYLON.Vector3(-Infinity,-Infinity,-Infinity);
-   for(const mesh of parts){
+   for(const mesh of (framed.length?framed:parts)){
     mesh.computeWorldMatrix(true);
     const bbox=mesh.getBoundingInfo().boundingBox;
     min=BABYLON.Vector3.Minimize(min,bbox.minimumWorld);
@@ -179,7 +182,7 @@ const RenCard3D=(()=>{
    setMode("model");
    engine.resize();
    endLoading();
-   report((isLiora?"3D Лиора без щита":isNada?"3D Нада":"3D Рен")+" загружен. Проведите пальцем для поворота; двумя пальцами меняйте масштаб.");
+   report((isLiora?"3D Лиора со щитом":isNada?"3D Нада":"3D Рен")+" загружен. Проведите пальцем для поворота; двумя пальцами меняйте масштаб.");
   }catch(error){
    console.warn(isLiora?"LIORAPLAY001 card fallback":isNada?"NADA3D001 card fallback":"REN-GLB-003 card model unavailable",error);
    report("Не удалось загрузить 3D: "+(error.message||String(error))+". Показан портрет.");

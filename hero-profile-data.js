@@ -22,7 +22,7 @@ const HeroProfileData=(()=>{
   "liora":Object.freeze({
    id:"liora",name:"Лиора Вель",tags:Object.freeze([]),
    biography:"Биография Лиоры Вель для игровой карточки ещё не утверждена. Игровые параметры и боевые действия демонстрационные.",
-   note:"Отдельная 3D-модель утверждена для показа без щита. Класс, стартовое получение и способности — временный игровой пилот, не канон."
+   note:"3D-модель с щитом, закреплённым на левом предплечье (LIORA-SHIELD-006). Класс, стартовое получение и способности — временный игровой пилот, не канон."
   }),
   // NADA-PLAYABLE-001: literature-grounded bio; gameplay role is an explicit pilot.
   // The recruitment timeline and class remain game proposals, not world canon.

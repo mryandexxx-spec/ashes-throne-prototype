@@ -1,9 +1,10 @@
-/* LIORA-UNARMED-001: character-only Babylon preview. No shield loaded or attached. */
+/* LIORA-SHIELD-006: single-GLB Babylon preview. The shield mesh is skinned inside the character file; nothing is attached here. */
 (function(){
  "use strict";
  const el=id=>document.getElementById(id);
  const status=text=>{el("status").textContent=text;};
- let engine=null,scene=null,character=null,groups=[],active=null;
+ let engine=null,scene=null,character=null,groups=[],active=null,shieldMesh=null;
+ const SHIELD_MESH=typeof LioraModelAssets!=="undefined"&&LioraModelAssets.shieldMesh||"Liora_Shield";
  let playing=true,clock=0,lastFrame=0,disposed=false;
  const labels=["Running","Walking","Alert","Block1","Catching_Breath","Dead",
   "Hit_Reaction","Idle_02","Shield_Push_Left","Squat_Stance",
@@ -15,6 +16,7 @@
   let count=0;
   for(const mesh of result.meshes){
    if(!mesh.getTotalVertices?.())continue;
+   if(mesh.name===SHIELD_MESH)continue; // bind pose puts the shield on the outstretched arm; frame the body
    mesh.computeWorldMatrix(true);
    const b=mesh.getBoundingInfo().boundingBox;
    min=BABYLON.Vector3.Minimize(min,b.minimumWorld);
@@ -60,6 +62,7 @@
    playing=!playing;el("play").textContent=playing?"Пауза":"Воспроизвести";
   });
   el("scan").addEventListener("click",scan);
+  el("shield")?.addEventListener("change",()=>{shieldMesh?.setEnabled(el("shield").checked);});
  }
  function scan(){
   if(!character||!groups.length)return;
@@ -83,7 +86,7 @@
   setClip(oldName);frameAt(active,oldProgress);el("frame").value=String(Math.round(oldProgress*100));
   playing=oldPlaying;el("play").textContent=playing?"Пауза":"Воспроизвести";
   el("checks").textContent=report.join("\n");
-  status("Проверка "+report.length+" клипов завершена (модель Лиоры без щита).");
+  status("Проверка "+report.length+" клипов завершена (Лиора со щитом на предплечье).");
  }
  async function init(){
   try{
@@ -117,7 +120,12 @@
     -.0-box.min.y*scale,-(box.min.z+box.max.z)*.5*scale);
    const hip=character.transformNodes.find(n=>n.name==="mixamorig:Hips");
    if(hip)hip.metadata={...(hip.metadata||{}),lioraBase:{x:hip.position.x,z:hip.position.z}};
+   shieldMesh=character.meshes.find(m=>m.name===SHIELD_MESH)||null;
+   if(!shieldMesh)throw Error("В GLB Лиоры нет меша щита "+SHIELD_MESH);
    groups=character.animationGroups.slice();
+   // LIORAANIM001: the glTF loader auto-plays the first clip (Running); without this stop it
+   // kept writing the hips under every clip chosen in the workshop.
+   for(const group of groups)group.stop();
    const select=el("clip");
    for(const name of labels){
     const option=document.createElement("option");
@@ -144,9 +152,9 @@
     scene.render();
    });
    window.addEventListener("resize",()=>engine?.resize(),{passive:true});
-   status("Готово: "+groups.length+" анимаций, Лиора без щита. Можно проверять движения.");
+   status("Готово: "+groups.length+" анимаций, Лиора со щитом ("+LioraModelAssets.bytes+" байт, один файл). Можно проверять движения.");
   }catch(error){
-   console.error("LIORA-SHIELD-002",error);
+   console.error("LIORA-SHIELD-006",error);
    status("Ошибка лаборатории: "+(error?.message||String(error)));
   }
  }

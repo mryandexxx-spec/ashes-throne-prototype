@@ -24,6 +24,8 @@
 
 ## 2026-11-13
 
+- **`v0.3.135 · NADAOPT001`** — NADAOPT001: модель Нады 3,1 → 1,46 МБ, вариант B ([#289](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/289)) · `b1149f6`
+- DOCS: PROJECT_STATUS — краткий снимок, история в CHANGELOG ([#287](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/287)) · `7efefea`
 - **`v0.3.134 · MOBILEQA001`** — MOBILEQA001: исправления по мобильной проверке арены и штаба (v0.3.133) ([#286](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/286)) · `e61172e`
 - **`v0.3.133 · RENOPT001`** — RENOPT001: модель Рена 14,2 → 2,86 МБ ([#285](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/285)) · `fd3c738`
 - DOCS: GDD 3.0 и TDD 1.0 в репозитории ([#284](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/284)) · `75cbf2d`

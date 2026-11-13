@@ -19,15 +19,17 @@ test("CACHE001: only the two current, versioned GLB URLs can be stored",()=>{
  const worker=read("model-cache-sw.js"),html=read("index.html");
  assert.match(worker,/assets\/ren-meshy-mixamo-animated\.glb/);
  assert.match(worker,/dev\/assets\/models\/nada-mobile-animated\.glb/);
- assert.match(worker,/CACHE_PREFIX\+"ren-59fd4a16_nada-49a695ad_v1"/);
+ // RENOPT001: the cache name must follow the actual GLB bytes, otherwise devices keep a stale model.
+ const blob=f=>{const b=fs.readFileSync(path.join(__dirname,"..",f));return require("node:crypto").createHash("sha1").update(Buffer.concat([Buffer.from("blob "+b.length+"\0"),b])).digest("hex").slice(0,8);};
+ assert.match(worker,new RegExp('CACHE_PREFIX\\+"ren-'+blob("assets/ren-meshy-mixamo-animated.glb")+"_nada-"+blob("dev/assets/models/nada-mobile-animated.glb")+'_v1"'));
  assert.match(worker,/event\.request\.method!=="GET"/);
  assert.match(worker,/event\.request\.headers\.has\("range"\)/);
  assert.match(worker,/cache\.put\(url,response\.clone\(\)\)/);
  assert.match(worker,/event\.waitUntil\(task\.then/);
  assert.match(worker,/response\.clone\(\),persisted/);
- assert.match(html,/model-cache-client\.js\?v=0\.3\.132/);
- assert.match(html,/v0\.3\.132 · CACHE002/);
- assert.equal(JSON.parse(read("package.json")).version,"0.3.132");
+ assert.match(html,/model-cache-client\.js\?v=0\.3\.133/);
+ assert.match(html,/v0\.3\.133 · RENOPT001/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.133");
 });
 test("CACHE001: never save documents, scripts, game state or third-party requests",()=>{
  const src=read("model-cache-sw.js");

@@ -83,7 +83,8 @@ async function run(browserName,driver){
   for(const item of offline){
    assert.ok(item.ok,"uncached GLB offline "+JSON.stringify(item));
    assert.equal(item.header,"glTF");
-   assert.ok(item.size>3000000);
+   // RENOPT001: compare with the real file so a truncated cache entry fails regardless of model size.
+   assert.equal(item.size,require("node:fs").statSync(require("node:path").join(__dirname,"..",item.path)).size);
   }
   assert.deepEqual(errors,[]);
   console.log("CACHE001_BROWSER="+JSON.stringify({browser:browserName,cached:cached.urls.length,

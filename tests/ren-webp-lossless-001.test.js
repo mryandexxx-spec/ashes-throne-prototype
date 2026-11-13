@@ -4,7 +4,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const file=path.join(__dirname,"../assets/ren-meshy-mixamo-animated.glb");
-test("RENWEBP001: production Ren textures use lossless WebP with unchanged rig contract",()=>{
+test("RENWEBP001: production Ren textures use WebP with unchanged rig contract (lossy since RENOPT001)",()=>{
  const bytes=fs.readFileSync(file);
  assert.equal(bytes.toString("ascii",0,4),"glTF");
  assert.equal(bytes.readUInt32LE(8),bytes.length);

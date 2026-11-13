@@ -43,6 +43,10 @@
   active.pause();
   clock=0;
   el("frame").value="0";
+  // Falling pose sits near ground; lower camera target to keep the body
+  // fully visible in the short landscape inspection canvas.
+  scene?.activeCamera?.setTarget?.(
+   new BABYLON.Vector3(0,name==="Dead"||name==="Liora_Shield_Death"?.48:1,0));
   frameAt(active,0);
  }
  function setPoseFromInputs(){

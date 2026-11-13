@@ -1,0 +1,49 @@
+name: LIORA-SHIELD-004 real Babylon WebGL 15 clips
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'liora-shield-attachment.js'
+      - 'liora-shield-combat-pose.js'
+      - 'liora-shield-lab.*'
+      - 'dev/assets/models/liora*.glb'
+      - 'dev/src/assets/models.js'
+      - 'dev/assets/models/manifest.json'
+      - 'tests/liora-*.test.js'
+      - 'tests/liora-shield-babylon-browser.cjs'
+      - '.github/workflows/liora-shield-babylon.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-webgl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install headless browser
+        run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Check GLB and shield logic
+        run: |
+          node --test tests/liora-glb-asset-contract.test.js tests/liora-shield-attachment.test.js tests/liora-shield-combat-pose.test.js
+          node --check liora-shield-lab.js
+      - name: Real Babylon Chromium, 15 clips and screenshots
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/liora-server.log 2>&1 &
+          sleep 2
+          node tests/liora-shield-babylon-browser.cjs
+          LIORA_BROWSER=webkit node tests/liora-shield-babylon-browser.cjs
+      - name: Upload 15-clip WebGL evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: liora-shield-babylon-15-clips
+          path: artifacts/liora-shield/
+          if-no-files-found: warn
+          retention-days: 14

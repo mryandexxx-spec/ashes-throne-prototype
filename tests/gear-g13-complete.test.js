@@ -6,7 +6,7 @@ const code=["gear-data.js","progress-core.js","progress-v3-core.js",
 const {G,P,V,C,Profiles,Bridge}=vm.runInNewContext(code+"\n({G:GearData,P:ProgressCore,V:ProgressV3Core,C:HeroStatsCore,Profiles:HeroStatsProfiles,Bridge:HeroStatsCombatBridge})");
 const ids=["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora"];
 const heroes=ids.map(id=>({id,side:"ally",hp:130,atk:25,speed:120}));
-const fresh=()=>V.toRuntime(V.fresh(heroes,100));
+const fresh=()=>V.toRuntime(V.fresh(heroes,100),heroes);
 const rich=p=>{p.currency=1000000;for(const key of G.MATERIALS)p.materials[key]=100000;return p;};
 test("GEAR013 catalog: 13 tiers, six slots, class-specific offers and stat effects",()=>{
  assert.equal(G.MAX_TIER,13);

@@ -12,7 +12,7 @@ const HeroStatsCombatBridge=(()=>{
   const level=progression.level,stars=progression.stars;
   const gear=progression.gearPercent??{};
   if(!gear||typeof gear!=="object"||Array.isArray(gear)||
-     Object.keys(gear).some(key=>!["hp","atk"].includes(key))||
+     Object.keys(gear).some(key=>!["hp","atk","stats"].includes(key))||
      ![gear.hp??0,gear.atk??0].every(value=>Number.isFinite(value)&&value>=0))
    throw new RangeError("Invalid equipment bonuses");
   // Current equipped G items provide percentages in ProgressCore. The

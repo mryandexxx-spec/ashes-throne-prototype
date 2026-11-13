@@ -223,8 +223,17 @@ const RenGlbRuntime=(()=>{
     samplePose(CLIPS.basic,RenChoreography.SOURCE.contactFrame/170,true);
     const hand=result.transformNodes.find(n=>n.name==="mixamorig:RightHand");
     if(hand){
-     hand.computeWorldMatrix(true);
-     const point=hand.getAbsolutePosition(),delta=RenChoreography.rootAt(RenChoreography.SOURCE.contactFrame/60*1000,scale);
+     // MOBILEQA001: the calibration is defined in the body's yaw-0 frame
+     // (forward = +X). The arena may already have turned the resting body
+     // three-quarter to the camera, so measure with yaw temporarily at 0 and
+     // refresh the whole parent chain top-down before reading the hand.
+     const savedYaw=visual.body.rotation?visual.body.rotation.y:0;
+     if(visual.body.rotation)visual.body.rotation.y=0;
+     const chain=[];for(let n=hand;n;n=n.parent)chain.unshift(n);
+     for(const n of chain)n.computeWorldMatrix?.(true);
+     const point=hand.getAbsolutePosition().clone?.()||hand.getAbsolutePosition(),delta=RenChoreography.rootAt(RenChoreography.SOURCE.contactFrame/60*1000,scale);
+     if(visual.body.rotation)visual.body.rotation.y=savedYaw;
+     for(const n of chain)n.computeWorldMatrix?.(true);
      RenChoreography.calibrate(scale,{forward:point.x-visual.body.position.x+delta.forward,lateral:point.z-visual.body.position.z+delta.lateral,y:point.y});
     }
     samplePose(CLIPS.idle,0,false);

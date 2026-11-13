@@ -36,7 +36,15 @@ const assert=require("node:assert/strict"),fs=require("node:fs");
       const a=r[i],b=r[j];
       if(a.x<b.x+b.w+4&&a.x+a.w+4>b.x&&a.y<b.y+b.h+4&&a.y+a.h+4>b.y)collisions.push([a.id,b.id]);
      }
-     return {count:state.fighters.length,visibleHud:r.length,collisions,renReady:renGlbRuntime?.isReady,
+     // MOBILEQA001: indicators must also stay clear of fixed HUD controls,
+     // and the battle message must not sit under the action panel.
+     const rect=e=>{const b=e.getBoundingClientRect();return {x:b.x,y:b.y,w:b.width,h:b.height};};
+     const hit=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
+     const controls=["#autoBattleBtn","#autoSpeedBtn","#turnChip","#targetFighterHud"].map(s=>document.querySelector(s)).filter(e=>e&&e.getBoundingClientRect().width>0);
+     const controlHits=[];
+     for(const a of r)for(const c of controls)if(hit(a,rect(c)))controlHits.push(a.id+"/"+c.id);
+     const messageUnderPanel=hit(rect(document.querySelector("#battleMessage")),rect(document.querySelector("#battle .action-panel")));
+     return {count:state.fighters.length,visibleHud:r.length,collisions,controlHits,messageUnderPanel,renReady:renGlbRuntime?.isReady,
       nadaReady:nadaGlbRuntime?.isReady,
       renMeshes:scene.meshes.filter(m=>m.metadata?.fighterId==="ren"&&m.getTotalVertices?.()>0).length,
       nadaMeshes:scene.meshes.filter(m=>m.metadata?.fighterId==="nada"&&m.getTotalVertices?.()>0).length,
@@ -49,6 +57,8 @@ const assert=require("node:assert/strict"),fs=require("node:fs");
    assert.equal(info.count,10);assert.equal(info.visibleHud,10);assert.equal(info.renReady,true);
    assert.equal(info.nadaReady,true);assert.ok(info.renMeshes>0);assert.ok(info.nadaMeshes>0);
    assert.deepEqual(info.collisions,[]);
+   assert.deepEqual(info.controlHits,[],"world HUD under fixed controls");
+   assert.equal(info.messageUnderPanel,false,"battle message hidden by action panel");
   }
   assert.deepEqual(errors,[]);
   fs.writeFileSync("artifacts/arena-stage-real-heroes/report.json",JSON.stringify({report,errors},null,2));

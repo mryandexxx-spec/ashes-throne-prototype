@@ -4245,3 +4245,35 @@ body:has(#storyDemo.active)::before{
  padding-left:env(safe-area-inset-left,0px);
  padding-right:env(safe-area-inset-right,0px);
 }
+
+/* MOBILEQA001 (Playwright iPhone landscape QA, 13.11.2026).
+   1) Battle status/toast sits in the free left corridor beside the 370px action
+      panel instead of being centred underneath it.
+   2) Battle top controls keep 44px touch targets (were 34-40px).
+   3) CACHE002 monitor moves under the lobby header and fades after "ready",
+      so it no longer covers the "Герои и отряд" station label. [ПРЕДЛОЖЕНИЕ] */
+@media (orientation:landscape) and (max-height:500px){
+ .battle-screen .battle-message,
+ .battle-screen .battle-reward{
+  left:max(12px,env(safe-area-inset-left,0px));right:auto;transform:none;
+  bottom:max(8px,env(safe-area-inset-bottom,0px));top:auto;
+  width:max-content;
+  max-width:calc(100vw - min(370px,61vw) - max(12px,env(safe-area-inset-left,0px)) - max(12px,env(safe-area-inset-right,0px)) - 12px);
+  text-align:left;
+ }
+ .battle-screen .battle-top>[data-screen],
+ .battle-screen .battle-top-controls.arena-hud .ghost,
+ .battle-screen .battle-top .auto-battle-btn{min-height:44px}
+ .battle-screen .battle-top-controls.arena-hud .auto-speed-btn{min-width:44px}
+ .battle-screen .turn-chip{min-height:44px}
+}
+.hq-screen .hq-model-cache{
+ top:calc(env(safe-area-inset-top,0px) + 50px);bottom:auto;
+ left:auto;right:max(9px,env(safe-area-inset-right,0px));
+ width:min(300px,calc(100vw - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px) - 20px));
+}
+.hq-screen .hq-model-cache[data-state="ready"]{animation:mobileqa001-cache-out .4s ease 4s forwards}
+@keyframes mobileqa001-cache-out{to{opacity:0;visibility:hidden}}
+@media(prefers-reduced-motion:reduce){
+ .hq-screen .hq-model-cache[data-state="ready"]{animation-duration:.01s}
+}

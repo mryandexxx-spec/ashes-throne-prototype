@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-label="Тренировочный двор с деревянными мишенями и оружием">
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#80684e"/><stop offset=".7" stop-color="#40382e"/><stop offset="1" stop-color="#161c20"/></linearGradient><linearGradient id="wall" x2="1" y2="1"><stop stop-color="#504838"/><stop offset="1" stop-color="#242b2a"/></linearGradient></defs>
+<rect width="960" height="600" fill="url(#sky)"/>
+<path d="M0 196 155 137 272 171 389 139 568 174 721 132 960 197V600H0Z" fill="#464239"/>
+<path d="M0 250Q490 188 960 245V490H0Z" fill="url(#wall)"/>
+<path d="M0 327 960 296V600H0Z" fill="#30332d"/>
+<path d="M0 445 960 388V600H0Z" fill="#3e3b2f"/>
+<path d="M0 501 960 421M0 568 960 479M145 420 195 600M410 404 439 600M703 393 704 600" stroke="#8c7956" stroke-width="5" opacity=".33"/>
+<g fill="#282f2b" stroke="#ad9872" stroke-width="7"><circle cx="581" cy="259" r="93"/><circle cx="581" cy="259" r="59"/><circle cx="581" cy="259" r="23"/></g>
+<path d="M580 354 579 480M518 479H646" stroke="#514234" stroke-width="24" stroke-linecap="round"/>
+<g stroke="#b9a787" stroke-linecap="round"><path d="M570 193 615 310" stroke-width="10"/><path d="M548 208 600 191" stroke-width="8"/></g>
+<path d="M249 398 365 115 382 121 273 406Z" fill="#d0c6aa"/><path d="M359 125 378 129 388 110 375 95Z" fill="#aaad9f"/>
+<path d="M271 354 330 376" stroke="#6b4b30" stroke-width="24"/><path d="M262 405 280 414" stroke="#b8a17a" stroke-width="16"/>
+<path d="M100 333 139 234 162 242 128 356Z" fill="#c7b9a1"/><path d="M90 340 154 363" stroke="#806f54" stroke-width="18"/>
+<path d="M718 377 800 188 828 200 754 398Z" fill="#9f9f8e"/><path d="M789 199 849 180 869 224 806 247Z" fill="#b4aaa0"/>
+<path d="M0 568 960 496V600H0Z" fill="#1d2325" opacity=".55"/>
+</svg>

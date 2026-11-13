@@ -1,4 +1,4 @@
-/* Progress-VS-001A: provisional account XP, currency and hero levels (1–15).
+/* PROG-085: Ren/Nada level 1–85; demo heroes remain limited to level 15.
    Economy values are TEST DATA, not approved GDD balance. */
 const ProgressCore=(()=>{
  "use strict";
@@ -165,7 +165,22 @@ const ProgressCore=(()=>{
  function createProgress(heroes){
   return {accountXp:0,currency:0,gearMaterials:0,energy:freshEnergy(),levels:Object.fromEntries(heroes.filter(h=>h.side==="ally").map(h=>[h.id,1])),gear:Object.fromEntries(heroes.filter(h=>h.side==="ally").map(h=>[h.id,freshGear()])),claimedMissions:[]};
  }
+ // Current XP prices are prototype test values, not an approved economy.
  const xpCost=l=>Math.round(40+7*l+0.28*l*l);
+ function xpThresholdForLevel(level){
+  if(!Number.isInteger(level)||level<1||level>MAX_ACCOUNT_LEVEL)return null;
+  let sum=0;
+  for(let i=1;i<level;i++)sum+=xpCost(i);
+  return sum;
+ }
+ // Explicit developer-only reachability aid; not a player reward.
+ function grantLevelTestResources(progress){
+  if(!progress||!Number.isSafeInteger(progress.accountXp)||progress.accountXp<0||
+     !Number.isSafeInteger(progress.currency)||progress.currency<0)return false;
+  progress.accountXp=Math.max(progress.accountXp,xpThresholdForLevel(MAX_ACCOUNT_LEVEL));
+  progress.currency=Math.max(progress.currency,250000);
+  return true;
+ }
  function accountLevel(progress){
   let xp=progress.accountXp,level=1;
   while(level<MAX_ACCOUNT_LEVEL&&xp>=xpCost(level)){xp-=xpCost(level);level++;}
@@ -388,7 +403,7 @@ const ProgressCore=(()=>{
   progress.gearMaterials+=material;
   return {...reward,material};
  }
- return Object.freeze({MAX_LEVEL,MAX_ACCOUNT_LEVEL,DEMO_HERO_MAX_LEVEL,FULL_LEVEL_HERO_IDS,maxLevelOf,FIRST_CLEAR_REWARDS,createProgress,xpCost,
+ return Object.freeze({MAX_LEVEL,MAX_ACCOUNT_LEVEL,DEMO_HERO_MAX_LEVEL,FULL_LEVEL_HERO_IDS,maxLevelOf,FIRST_CLEAR_REWARDS,createProgress,xpCost,xpThresholdForLevel,grantLevelTestResources,
   accountLevel,heroLevelCapForAccountLevel,nextHeroCapUnlock,heroLevelCap,upgradeBlockReason,levelOf,upgradeCost,upgradePlan,upgradeMany,canUpgrade,upgrade,heroStats,claimFirstClear,
   GEAR,SLOT_COUNT,SLOT_NAMES,gearItem,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,
   itemOffer,itemCost,itemBlockReason,canEquipItem,equipItem,gearBonuses,

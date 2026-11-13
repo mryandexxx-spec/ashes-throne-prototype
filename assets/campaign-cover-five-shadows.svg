@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-label="Пять теней: светлая стена с пятью узкими проёмами над ущельем">
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#506675"/><stop offset=".55" stop-color="#283846"/><stop offset="1" stop-color="#111a25"/></linearGradient><linearGradient id="wall" x2="1" y2=".2"><stop stop-color="#c0b39a"/><stop offset=".48" stop-color="#d4c9ad"/><stop offset="1" stop-color="#8f958e"/></linearGradient><linearGradient id="chasm" x2="0" y2="1"><stop stop-color="#172934"/><stop offset="1" stop-color="#070e15"/></linearGradient></defs>
+<rect width="960" height="600" fill="url(#sky)"/>
+<path d="M0 147 94 88 192 122 284 65 336 95 336 600H0Z" fill="#43505a"/><path d="M960 100 868 63 789 108 721 85 636 130 636 600H960Z" fill="#344650"/>
+<path d="M0 237 107 173 197 219 274 180 341 235 331 600H0Z" fill="#222e35"/><path d="M960 183 891 151 819 192 759 159 640 220 649 600H960Z" fill="#1e2d35"/>
+<path d="M298 188Q485 143 657 193L622 600H340Z" fill="url(#chasm)"/>
+<path d="M257 208 315 163 334 283 354 341 301 401 276 600H0V494L109 401 175 316Z" fill="#29333a"/>
+<path d="M690 176 752 219 780 349 840 410 960 441V600H698L641 407Z" fill="#2b363a"/>
+<path d="M344 180 607 145 646 352 373 394Z" fill="#a9a899" opacity=".45"/>
+<path d="M376 146 626 122 645 340 384 366Z" fill="url(#wall)" stroke="#c7c1ab" stroke-width="3"/>
+<path d="M387 161 411 150 419 361 392 365Z" fill="#8e958c" opacity=".38"/>
+<path d="M415 182 421 172 425 308 415 310ZM460 177 466 168 468 304 458 306ZM505 173 511 165 511 302 500 304ZM550 169 556 160 555 300 544 302ZM595 165 601 158 601 298 590 301Z" fill="#151d25"/>
+<path d="M420 310 415 313 425 338 428 308ZM467 305 460 310 466 334 471 305ZM510 305 502 310 506 328 514 303ZM554 301 546 305 548 323 558 301ZM600 297 592 301 594 320 606 296Z" fill="#546573" opacity=".7"/>
+<path d="M0 501 112 434 175 455 236 421 294 476 304 600H0Z" fill="#131c23"/><path d="M960 461 855 429 810 452 755 423 692 490 689 600H960Z" fill="#101b21"/>
+<path d="M101 436 106 381 119 374 122 431 144 429 145 454 86 464 84 440Z" fill="#66706b" opacity=".7"/>
+<path d="M826 429 827 381 841 373 846 429 861 434 860 454 811 449Z" fill="#637078" opacity=".55"/>
+<path d="M326 553Q478 497 636 560L648 600H316Z" fill="#071015" opacity=".8"/>
+<path d="M0 0H960V600H0Z" fill="#182a35" opacity=".07"/>
+</svg>

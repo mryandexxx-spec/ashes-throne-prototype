@@ -3027,16 +3027,16 @@ body:has(#campaign.active)::before{
  border:1px solid #e7c58b25;border-radius:7px;
  background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
 }
-#campaign .section-heading{
+#campaign.screen .section-heading{
  margin:0 0 10px;padding:0 0 10px;border-bottom:1px solid #d7b27c55;
 }
-#campaign .section-heading h2{
+#campaign.screen .section-heading h2{
  font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
  color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
 }
 #campaign .eyebrow{color:#e0b978;letter-spacing:.14em}
 #campaign .muted{color:#d9c5ab;line-height:1.45}
-#campaign .section-heading .ghost,#campaign #energyRefresh{
+#campaign.screen .section-heading .ghost,#campaign #energyRefresh{
  min-height:44px;border:1px solid #bd925b;border-radius:8px;
  background:linear-gradient(145deg,#4c3529,#272127);
  color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
@@ -3154,8 +3154,8 @@ body:has(#campaign.active)::before{
  #app:has(#campaign.active)>.topbar .brand strong{font-size:11px}
  #app:has(#campaign.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
  #campaign.screen.active{margin:7px auto 12px;padding:9px 10px 14px}
- #campaign .section-heading{margin-bottom:7px;padding-bottom:7px}
- #campaign .section-heading h2{font-size:21px}
+ #campaign.screen .section-heading{margin-bottom:7px;padding-bottom:7px}
+ #campaign.screen .section-heading h2{font-size:21px}
  #campaign .energy-toolbar{margin:6px 0 3px;padding:6px 9px}
  #campaign .energy-toolbar .muted{font-size:11px}
  #campaign #energyRefreshStatus{font-size:11px;margin:3px 0 5px}
@@ -4331,7 +4331,7 @@ body:has(#storyDemo.active)::before{
 
 /* CAMPAIGN-ART-002: accepted painterly cover crops; the existing SVG art remains as fallback.
    Never bake status or CTA text into raster images. Visual only, no battle/model runtime changes. */
-#campaign .section-heading{margin-bottom:clamp(8px,2vh,18px)}
+#campaign.screen .section-heading{margin-bottom:clamp(8px,2vh,18px)}
 #campaignHub.campaign-hub{max-width:1180px;margin-inline:auto}
 #campaignHub .campaign-hub-card{
  border:1px solid #ab8151;
@@ -4353,8 +4353,8 @@ body:has(#storyDemo.active)::before{
 #campaignHub .campaign-hub-copy strong{color:#ffe7b6}
 #campaignHub .campaign-hub-progress{display:inline-flex;align-items:center;min-height:20px;color:#f4d3a3}
 @media (orientation:landscape) and (max-height:540px){
- #campaign .section-heading{margin:4px 0 8px}
- #campaign .section-heading h2{font-size:clamp(19px,3vw,26px);margin:3px 0}
+ #campaign.screen .section-heading{margin:4px 0 8px}
+ #campaign.screen .section-heading h2{font-size:clamp(19px,3vw,26px);margin:3px 0}
  #campaignHub.campaign-hub{margin-block:5px;gap:clamp(7px,1.3vw,14px)}
  #campaignHub .campaign-hub-card{height:clamp(146px,52vh,230px);padding:clamp(9px,1.2vw,14px)}
  #campaignHub .campaign-hub-copy{gap:3px}

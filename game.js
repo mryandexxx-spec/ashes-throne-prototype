@@ -2530,7 +2530,7 @@ function renderArenaIndicators(){
    typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"debuff-resistance-down")?
      `<span class="arena-effect debuff" title="Пониженное сопротивление: −${CombatStatusCore.read(h,"debuff-resistance-down").amount} п.п.">⊖${CombatStatusCore.read(h,"debuff-resistance-down").remaining}</span>`:"",
    typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"read-move")?
-     `<span class="arena-effect debuff" title="Просчитанный ход: ${CombatStatusCore.read(h,"read-move").stacks} из 4 зацепок, ${CombatStatusCore.read(h,"read-move").remaining} ход(а). При 3+ особый или мощный приём срывается.">◎${CombatStatusCore.read(h,"read-move").stacks}</span>`:""].join("");
+     `<span class="arena-effect debuff" title="Просчитанный ход: ${CombatStatusCore.read(h,"read-move").stacks} из 4 зацепок, ${CombatStatusCore.read(h,"read-move").remaining} ход(а). При 3+ сильная атака теряет 20 п.п. точности и 30% урона; тратятся 3 зацепки.">◎${CombatStatusCore.read(h,"read-move").stacks}</span>`:""].join("");
   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
   const active=actor?.id===h.id;
   const support=!!actor&&!autoBattle&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
@@ -2697,7 +2697,7 @@ function showAbilityTooltip(abilityId){
   if(definition.onHitStatus?.type==="read-move")
    effects.push("При попадании +"+definition.onHitStatus.stacks+
     " зацепок «Просчитанного хода» (максимум 4, срок 2 собственных хода врага). "+
-    "При 3+ зацепках попытка мощного/особого приёма заменяется обычной атакой.");
+    "При 3+ зацепках мощная/особая атака сохраняется, но её точность снижается на 20 п.п., а урон на 30% (−3 зацепки).");
  }else if(definition.kind==="guard")
   effects.push("Защита от "+definition.guardHits+" ударов.");
  else if(definition.kind==="heal")
@@ -2792,7 +2792,7 @@ function renderFighterInspection(){
   if(resistance)effects.push("Пониженное сопротивление: -"+resistance.amount+" п.п., "+resistance.remaining+" ход(а)");
   const readMove=CombatStatusCore.read(fighter,"read-move");
   if(readMove)effects.push("Просчитанный ход: "+readMove.stacks+"/4 зацепки, "+readMove.remaining+
-   " ход(а). При 3+ подготовленный особый/мощный приём срывается в базовую атаку (−3 зацепки).");
+   " ход(а). При 3+ особая/мощная атака сохраняется, но имеет −20 п.п. точности и −30% урона (−3 зацепки).");
  }
  $("#inspectEffects").textContent=effects.length?effects.join(" · "):"Активных эффектов нет";
  dialog.hidden=false;

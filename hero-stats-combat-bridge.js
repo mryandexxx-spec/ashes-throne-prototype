@@ -14,8 +14,8 @@ const HeroStatsCombatBridge=(()=>{
   if(!Number.isSafeInteger(progressed.hp)||progressed.hp<1||
      !Number.isFinite(progressed.atk)||progressed.atk<0)
    throw new RangeError("Invalid legacy progression snapshot");
-  if(!Number.isFinite(hero.speed)||hero.speed<=0||hero.speed!==full.speed)
-   throw new RangeError("Speed mismatch: pilot must preserve existing initiative");
+  if(!Number.isFinite(hero.speed)||hero.speed<=0)
+   throw new RangeError("Invalid existing initiative speed");
   return Object.freeze({
    ...progressed,
    ...full,

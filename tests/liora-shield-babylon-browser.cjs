@@ -120,7 +120,9 @@ fs.mkdirSync(outDir,{recursive:true});
   const distEnd=death.phases[4].dist;
   console.log("LIORA death",JSON.stringify({yStart,yEnd,distEnd}));
   assert.ok(Number.isFinite(yEnd),"shield must have finite floor coordinate");
-  assert.ok(distEnd>death.phases[0].dist+.05,"shield must move away from the wrist");
+  assert.ok(yEnd>=-.04&&yEnd<=.08,
+   "shield must land near ground, not clip through it: "+yEnd);
+  assert.ok(distEnd>.15,"shield must remain visibly separate from wrist pivot");
   await page.selectOption("#clip","Idle_02");
   await page.locator("#frame").evaluate(element=>{
    element.value="50";element.dispatchEvent(new Event("input",{bubbles:true}));

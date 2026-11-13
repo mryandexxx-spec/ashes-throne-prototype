@@ -11,7 +11,7 @@ class Quaternion{
 class TransformNode{
  constructor(name){this.name=name;this.position=new Vector();this.scaling={setAll(value){this.value=value;}};this.disposeCount=0;}
  computeWorldMatrix(){}
- getAbsoluteRotationQuaternion(){return new Quaternion();}
+ getWorldMatrix(){return {decompose(_scale,rotation){rotation.x=0;rotation.y=0;rotation.z=0;rotation.w=1;return true;}}}
  dispose(){this.disposeCount++;}
 }
 const B={Vector3:Vector,Quaternion,TransformNode};

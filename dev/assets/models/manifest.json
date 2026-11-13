@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "user-provided Mixamo animated GLB optimized for mobile",
+  "source": "User-provided animated GLB and independent shield optimized for mobile; Nada retained",
   "assets": [
     {
       "id": "nada",
@@ -17,6 +17,36 @@
       ],
       "textureMime": "image/jpeg",
       "source": "../../assets-src/characters/nada/README.md"
+    },
+    {
+      "id": "liora",
+      "file": "liora-mobile-animated.glb",
+      "bytes": 2777056,
+      "sha256": "cb5bb8c1f0bb403458f2faff0a7fcdfcd57737fc7fd1b5b8676c9fd1a5f85772",
+      "bones": 66,
+      "animations": 12,
+      "textureSize": [
+        2048,
+        2048
+      ],
+      "textureMime": "image/webp",
+      "source": "../../assets-src/characters/liora/README.md"
+    },
+    {
+      "id": "liora-shield",
+      "file": "liora-shield-mobile.glb",
+      "bytes": 631488,
+      "sha256": "65676e1e43c1065aea4297a54eaa7e12dd7d644258f913bab8fa26f7505b7cce",
+      "vertices": 4445,
+      "triangles": 5056,
+      "bones": 0,
+      "animations": 0,
+      "textureSize": [
+        2048,
+        2048
+      ],
+      "textureMime": "image/webp",
+      "source": "../../assets-src/characters/liora/README.md"
     }
   ]
 }

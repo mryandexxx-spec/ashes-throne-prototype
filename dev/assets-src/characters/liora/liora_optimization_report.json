@@ -1,0 +1,104 @@
+{
+  "source": "Meshy_AI_model_20261113_animated_mixamo_All_animation.glb",
+  "optimized": "liora_vel_mobile_optimized.glb",
+  "source_bytes": 8463980,
+  "optimized_bytes": 2777056,
+  "reduction_percent": 67.19,
+  "texture": {
+    "from": "PNG 2048x2048",
+    "to": "WebP 2048x2048 quality 92",
+    "png_bytes": 4024724,
+    "webp_bytes": 608202,
+    "psnr_db": 39.57
+  },
+  "original_animation_output_bytes": 2803200,
+  "preserved_moving_channel_bytes": 878100,
+  "unique_constant_values": 532,
+  "animations": [
+    {
+      "name": "Running",
+      "constant": 137,
+      "moving": 55,
+      "original_output_bytes": 51200,
+      "moving_bytes": 17520
+    },
+    {
+      "name": "Walking",
+      "constant": 139,
+      "moving": 53,
+      "original_output_bytes": 81920,
+      "moving_bytes": 27008
+    },
+    {
+      "name": "Alert",
+      "constant": 152,
+      "moving": 40,
+      "original_output_bytes": 309760,
+      "moving_bytes": 76956
+    },
+    {
+      "name": "Block1",
+      "constant": 138,
+      "moving": 54,
+      "original_output_bytes": 268800,
+      "moving_bytes": 90300
+    },
+    {
+      "name": "Catching_Breath",
+      "constant": 138,
+      "moving": 54,
+      "original_output_bytes": 540160,
+      "moving_bytes": 181460
+    },
+    {
+      "name": "Dead",
+      "constant": 138,
+      "moving": 54,
+      "original_output_bytes": 230400,
+      "moving_bytes": 77400
+    },
+    {
+      "name": "Hit_Reaction",
+      "constant": 138,
+      "moving": 54,
+      "original_output_bytes": 128000,
+      "moving_bytes": 43000
+    },
+    {
+      "name": "Idle_02",
+      "constant": 155,
+      "moving": 37,
+      "original_output_bytes": 145920,
+      "moving_bytes": 33516
+    },
+    {
+      "name": "Shield_Push_Left",
+      "constant": 138,
+      "moving": 54,
+      "original_output_bytes": 184320,
+      "moving_bytes": 61920
+    },
+    {
+      "name": "Squat_Stance",
+      "constant": 138,
+      "moving": 54,
+      "original_output_bytes": 366080,
+      "moving_bytes": 122980
+    },
+    {
+      "name": "Step_Forward_and_Push",
+      "constant": 138,
+      "moving": 54,
+      "original_output_bytes": 363520,
+      "moving_bytes": 122120
+    },
+    {
+      "name": "Walk_Fight_Forward",
+      "constant": 163,
+      "moving": 29,
+      "original_output_bytes": 133120,
+      "moving_bytes": 23920
+    }
+  ],
+  "checks": "structure; vertex and skin buffers byte-identical; all 12 animation names/192 channels intact; moving keyframes byte-identical; constant channels compressed to 1 sample; all accessor references and buffer offsets validated"
+}

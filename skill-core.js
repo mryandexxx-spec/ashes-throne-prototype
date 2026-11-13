@@ -1,4 +1,4 @@
-/* Skills-001 [TEST PILOT]: six levels for active abilities only.
+/* CHAR-003 [TEST PILOT]: active skills L1–L6 plus Ren/Nada passives L1–L6.
    Temporary currency names, rewards and numbers are NOT canonical balance. */
 const SkillCore=(()=>{
  "use strict";

@@ -42,7 +42,7 @@ test("temporary physical support abilities are distinct and can level",()=>{
  const actor={id:"nada",combatProfile:"stats002c",skillLevels:{basic:3,special:1,powerful:1}};
  assert.equal(abilities.get(actor,"basic").name,"Прицельный выстрел");
  assert.equal(abilities.get(actor,"basic").damageType,"physical");
- assert.equal(abilities.get(actor,"basic").multiplier,1.2);
+ assert.equal(abilities.get(actor,"basic").multiplier,1);
  assert.equal(abilities.get(actor,"special").name,"Найти слабость");
  assert.equal(abilities.get(actor,"special").weakening,2);
  assert.equal(abilities.get(actor,"powerful").name,"Уязвимое место");

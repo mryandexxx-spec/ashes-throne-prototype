@@ -111,8 +111,14 @@ const GearData=(()=>{
  for(let tier=4;tier<=MAX_TIER;tier++){
   for(const classId of CLASS_IDS)for(const {id:slotId} of SLOTS){
    const metal=classId==="mage"||classId==="support"?"Cl":"Fe";
-   const recipe={[metal]:Math.ceil(tier/2)+1,Fa:Math.ceil(tier/3),
-    [slotId==="weapon"?"Wo":slotId==="utility"?"Gl":"Le"]:Math.ceil(tier/4)+1};
+   const recipe={};
+   const add=(id,n)=>{recipe[id]=(recipe[id]||0)+n;};
+   const pairs={weapon:["Wo","Th"],torso:["Le","Cl"],head:["Le","Gl"],
+    hands:["Th","Le"],feet:["Le","Th"],utility:["Gl","Cl"]};
+   add(metal,Math.ceil(tier/2)+1);
+   add("Fa",Math.ceil(tier/3));
+   add(pairs[slotId][0],Math.ceil(tier/4)+1);
+   add(pairs[slotId][1],Math.ceil(tier/5)+1);
    specs.push([`g${tier}-${classId}-${slotId}`,
     RANK_NAMES[tier]+" "+SLOT_NAMES[slotId]+" "+CLASS_NAMES[classId],
     slotId,classId,recipe]);

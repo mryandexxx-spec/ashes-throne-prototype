@@ -120,3 +120,55 @@ test("GEAR013 demo hero stats receive real item defense and critical bonuses",()
  assert.ok(after.accuracy>0);
  assert.equal(after.speed,original.speed);
 });
+
+
+test("GEAR014: G4-G13 require distinct material recipes for all five classes in every slot",()=>{
+ for(let tier=4;tier<=G.MAX_TIER;tier++){
+  for(const slot of G.SLOTS){
+   const items=G.CLASS_IDS.map(classId=>G.offered(classId,slot.id,tier)[0]);
+   assert.equal(items.every(Boolean),true,"missing item G"+tier+" "+slot.id);
+   const signatures=items.map(item=>JSON.stringify(item.ingredients));
+   assert.equal(new Set(signatures).size,G.CLASS_IDS.length,
+    "shared class recipe at G"+tier+" "+slot.id);
+   for(let i=0;i<items.length;i++){
+    const item=items[i];
+    assert.equal(item.allowedClasses.length,1);
+    assert.equal(item.allowedClasses[0],G.CLASS_IDS[i]);
+    assert.equal(G.get(item.id),item);
+    assert.equal(Object.keys(item.ingredients).every(material=>G.MATERIALS.includes(material)),true);
+    assert.equal(Object.values(item.ingredients).every(n=>Number.isSafeInteger(n)&&n>0),true);
+   }
+  }
+ }
+ const blades=G.CLASS_IDS.map(c=>G.offered(c,"weapon",8)[0]);
+ assert.equal(blades[0].ingredients.Fe>0,true,"melee forged metal");
+ assert.equal(blades[1].ingredients.Wo>blades[0].ingredients.Wo,true,"ranged timber");
+ assert.equal(blades[2].ingredients.Gl>0,true,"mage uses glass");
+ assert.equal(blades[3].ingredients.Le>0,true,"support uses leather fittings");
+ assert.equal(blades[4].ingredients.Cl>0,true,"tank uses protective padding");
+});
+test("GEAR014: real G8 crafting spends the class recipe and survives v3 validation",()=>{
+ for(const hero of heroes.slice(0,5)){
+  const p=rich(fresh());
+  for(let tier=1;tier<=7;tier++){
+   for(const slot of G.SLOTS)assert.equal(P.equipItem(p,hero.id,P.itemOffer(p,hero.id,slot.id)[0].id),true);
+   assert.ok(P.promoteGear(p,hero.id));
+  }
+  const offer=P.itemOffer(p,hero.id,"weapon")[0];
+  const before={...p.materials},wallet=p.currency;
+  assert.equal(P.equipItem(p,hero.id,offer.id),true);
+  assert.equal(p.currency,wallet-offer.currency);
+  for(const material of G.MATERIALS)
+   assert.equal(p.materials[material],before[material]-(offer.ingredients[material]||0));
+  assert.equal(P.equipItem(p,hero.id,offer.id),false,"cannot double-buy");
+  const saved=V.fromRuntime(p);
+  assert.ok(saved,"class-specific G8 item must be persisted");
+  const loaded=V.toRuntime(saved,heroes);
+  assert.equal(loaded.gear[hero.id].slots[0],offer.id);
+  const other=G.CLASS_IDS.find(cls=>cls!==p.classes[hero.id]);
+  const invalid=JSON.parse(JSON.stringify(saved));
+  invalid.heroes[hero.id].gear.installedByTier["8"][0].itemId=
+   G.offered(other,"weapon",8)[0].id;
+  assert.equal(V.validateActive(invalid,heroes),null,"reject cross-class items");
+ }
+});

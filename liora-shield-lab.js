@@ -7,7 +7,8 @@
  let playing=true,clock=0,lastFrame=0,disposed=false;
  const labels=["Running","Walking","Alert","Block1","Catching_Breath","Dead",
   "Hit_Reaction","Idle_02","Shield_Push_Left","Squat_Stance",
-  "Step_Forward_and_Push","Walk_Fight_Forward"];
+  "Step_Forward_and_Push","Walk_Fight_Forward",
+  "Liora_Shield_Block","Liora_Shield_Bash","Liora_Shield_Death"];
  function bounds(result){
   let min=new BABYLON.Vector3(Infinity,Infinity,Infinity);
   let max=new BABYLON.Vector3(-Infinity,-Infinity,-Infinity);
@@ -32,7 +33,7 @@
    hip.position.x=hip.metadata.lioraBase.x;
    hip.position.z=hip.metadata.lioraBase.z;
   }
-  attachment.update(); // Recalculate upright shield facing from animated hand every sampled frame.
+  attachment.setClipProgress(group.name,p); // Frame-aware shield, including grounded death drop.
  }
  function setClip(name){
   active?.stop();
@@ -81,9 +82,8 @@
   const oldName=active.name,oldProgress=Number(el("frame").value)/100,oldPlaying=playing;
   playing=false;
   const report=[];
-  for(const name of labels){
+  for(const name of labels.filter(name=>groups.some(g=>g.name===name))){
    const group=groups.find(g=>g.name===name);
-   if(!group){report.push(name+": НЕТ КЛИПА");continue;}
    try{
     setClip(name);
     let valid=true,maxDistance=0;
@@ -102,7 +102,7 @@
   setClip(oldName);frameAt(active,oldProgress);el("frame").value=String(Math.round(oldProgress*100));
   playing=oldPlaying;el("play").textContent=playing?"Пауза":"Воспроизвести";
   el("checks").textContent=report.join("\n");
-  status("Проверка 12 клипов завершена: контроль соединения и чисел. Визуальное отсутствие пересечений и корректность захвата щита проверяйте вручную.");
+  status("Проверка "+report.length+" клипов завершена. Структурный тест не заменяет проверку пересечений и хвата.");
  }
  async function init(){
   try{

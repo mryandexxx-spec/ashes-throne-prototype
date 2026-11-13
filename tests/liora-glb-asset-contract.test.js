@@ -15,7 +15,7 @@ function parse(file){
  assert.equal(b.toString("ascii",16,20),"JSON","JSON chunk");
  return {buffer:b,json:JSON.parse(b.subarray(20,20+b.readUInt32LE(12)).toString("utf8"))};
 }
-for(const [id,file] of [["liora","liora-mobile-animated.glb"],["liora-shield","liora-shield-mobile.glb"]]){
+for(const [id,file] of [["liora","liora_vel_shield_aware_15clips.glb"],["liora-shield","liora-shield-mobile.glb"]]){
  test("GLB integrity, hash, manifest and WebP: "+id,()=>{
   const {buffer,json}=parse(file);
   const m=manifest.assets.find(x=>x.id===id);
@@ -27,15 +27,16 @@ for(const [id,file] of [["liora","liora-mobile-animated.glb"],["liora-shield","l
   assert.equal(json.meshes?.length,1);
  });
 }
-test("Liora has animated left-hand attachment joint and all 12 source clips",()=>{
- const {json}=parse("liora-mobile-animated.glb");
+test("Liora has animated left-hand attachment joint, 12 source clips and 3 shield-aware clips",()=>{
+ const {json}=parse("liora_vel_shield_aware_15clips.glb");
  assert.equal(json.skins?.length,1);
  assert.equal(json.skins[0].joints.length,66);
  assert.ok(json.nodes.some(x=>x.name==="mixamorig:LeftHand"));
  assert.deepEqual(new Set((json.animations||[]).map(a=>a.name)),new Set([
   "Running","Walking","Alert","Block1","Catching_Breath","Dead",
   "Hit_Reaction","Idle_02","Shield_Push_Left","Squat_Stance",
-  "Step_Forward_and_Push","Walk_Fight_Forward"
+  "Step_Forward_and_Push","Walk_Fight_Forward",
+  "Liora_Shield_Block","Liora_Shield_Bash","Liora_Shield_Death"
  ]));
  const left=json.nodes.findIndex(x=>x.name==="mixamorig:LeftHand");
  assert.ok(json.animations.every(a=>a.channels.some(c=>c.target.node===left)));

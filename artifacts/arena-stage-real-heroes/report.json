@@ -1,0 +1,41 @@
+{
+  "report": [
+    {
+      "viewport": "844x390",
+      "count": 10,
+      "visibleHud": 10,
+      "collisions": [],
+      "controlHits": [],
+      "messageUnderPanel": false,
+      "renReady": true,
+      "nadaReady": true,
+      "renMeshes": 2,
+      "nadaMeshes": 4,
+      "camera": {
+        "alpha": 2.2862227237613664,
+        "radius": 15.5,
+        "fov": 0.5934119456780721
+      },
+      "webglFrames": 22
+    },
+    {
+      "viewport": "667x375",
+      "count": 10,
+      "visibleHud": 10,
+      "collisions": [],
+      "controlHits": [],
+      "messageUnderPanel": false,
+      "renReady": true,
+      "nadaReady": true,
+      "renMeshes": 2,
+      "nadaMeshes": 4,
+      "camera": {
+        "alpha": 2.2862227237613664,
+        "radius": 15.5,
+        "fov": 0.5934119456780721
+      },
+      "webglFrames": 41
+    }
+  ],
+  "errors": []
+}

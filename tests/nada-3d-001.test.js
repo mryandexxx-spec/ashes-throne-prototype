@@ -7,8 +7,8 @@ const runtime=require("../nada-glb-runtime.js");
 const manifest=JSON.parse(read("dev/assets/models/manifest.json"));
 test("NADA3D001: Dune dev layout and mobile GLB contract",t=>{
  assert.equal(map.url,"dev/assets/models/nada-mobile-animated.glb");
- assert.equal(map.bytes,3096808);
- assert.equal(map.sha256,"1ecd7859754191e296c68171c03a2c180859db52957629905a90cd8d7a61e87d");
+ assert.equal(map.bytes,1462284);
+ assert.equal(map.sha256,"5bbd34c2db189d1831c213b02ac31f49342f8b7773cc283589ece8249a5a016d");
  assert.equal(manifest.assets[0].file,map.filename);
  assert.equal(runtime.assetUrl(),map.url);
  assert.equal(runtime.clipFor("idle"),"Idle_11");
@@ -35,12 +35,12 @@ test("NADA3D001: Dune dev layout and mobile GLB contract",t=>{
  assert.equal(gltf.skins[0].joints.length,66);
  const clips=gltf.animations.map(a=>a.name);
  for(const name of [map.clips.idle,map.clips.basic,map.clips.hit,map.clips.death])assert.ok(clips.includes(name));
- assert.equal(gltf.images[0].mimeType,"image/jpeg");
+ assert.equal(gltf.images[0].mimeType,"image/webp"); // NADAOPT001
 });
 test("NADA3D001: game and card load the same asset without new engine in combat",()=>{
  const page=read("index.html"),game=read("game.js"),card=read("ren-card-3d.js");
- assert.match(page,/dev\/src\/assets\/models\.js\?v=0\.3\.134/);
- assert.match(page,/nada-glb-runtime\.js\?v=0\.3\.134/);
+ assert.match(page,/dev\/src\/assets\/models\.js\?v=0\.3\.135/);
+ assert.match(page,/nada-glb-runtime\.js\?v=0\.3\.135/);
  assert.match(game,/function ensureNada3D\(\)/);
  // The scene may exist before the chosen squad is materialized.
  // Never inject Nada's Mixamo rig into a Ren-only fight at initBabylon().
@@ -79,8 +79,8 @@ test("NADA3D001: failed load retains a simple fighter and reports fallback",asyn
 });
 test("NADA3D001: short footer and versioned scripts",()=>{
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.134");
- assert.match(html,/id="buildVersion">Прототип · v0\.3\.134 · MOBILEQA001/);
- assert.match(html,/ren-card-3d\.js\?v=0\.3\.134/);
+ assert.equal(pkg.version,"0.3.135");
+ assert.match(html,/id="buildVersion">Прототип · v0\.3\.135 · NADAOPT001/);
+ assert.match(html,/ren-card-3d\.js\?v=0\.3\.135/);
  assert.ok(read("dev/assets-src/characters/nada/README.md").includes("Meshy_AI_model_20261112"));
 });

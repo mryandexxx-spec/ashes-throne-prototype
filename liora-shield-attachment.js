@@ -89,6 +89,25 @@ const LioraShieldAttachment=(()=>{
       rad(state.rotation.y),rad(state.rotation.z)));
    }
    socket.computeWorldMatrix(true);
+   // On death, keep the lowest shield vertex just above the battlefield floor.
+   // A fixed pivot-height target alone is insufficient: a kite shield rotated
+   // by 80° can otherwise sink far below the floor.
+   if(drop>0&&Number.isFinite(options.groundY)&&
+    B.Matrix?.Invert&&B.Vector3?.TransformNormal){
+    const visible=(shield.meshes||[]).filter(m=>m.getTotalVertices?.()>0);
+    let bottom=Infinity;
+    for(const mesh of visible){
+     mesh.computeWorldMatrix(true);
+     bottom=Math.min(bottom,mesh.getBoundingInfo().boundingBox.minimumWorld.y);
+    }
+    if(Number.isFinite(bottom)&&bottom<options.groundY+.01){
+     const lift=options.groundY+.01-bottom;
+     const upInHand=B.Vector3.TransformNormal(new B.Vector3(0,lift,0),
+      B.Matrix.Invert(hand.getWorldMatrix()));
+     socket.position.addInPlace(upInHand);
+     socket.computeWorldMatrix(true);
+    }
+   }
   }
   function pose(config={}){
    if(disposed)throw Error("Shield socket already disposed");

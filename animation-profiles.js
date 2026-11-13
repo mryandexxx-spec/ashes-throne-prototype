@@ -40,6 +40,24 @@ const AnimationProfiles=(()=>{
   hit:Object.freeze({kind:"hit",durationMs:650,amplitude:.18}),
   death:Object.freeze({kind:"death",durationMs:2000,amplitude:.85})
  }));
+ // LIORAANIM001: Liora had no profile either, so her shield clips were squeezed into the
+ // capsule templates (bash 2.37s in 200ms, hit 1.63s in 120ms, death 2.9s in 400ms — 7-17x).
+ // Both of her active abilities are self-guards, so BattleAnimation resolves them to the
+ // "guard" slot followed by a "ward" cue on herself; those two slots are the ones that
+ // actually play in battle (Liora_Shield_Block raise 0-55%, then the held block 55-100%).
+ // Clip sources: Liora_Shield_Bash 2.37s, Liora_Shield_Block 3.47s, Squat_Stance 4.73s,
+ // Hit_Reaction 1.63s, Liora_Shield_Death 2.97s (window 0-98%), Idle_02 1.87s.
+ // Guard/ward amplitude 0: the skinned body must not hop or tilt under the clip.
+ overrides.set("liora",Object.freeze({
+  idle:Object.freeze({kind:"idle",durationMs:1867,amplitude:0}),
+  basic:Object.freeze({kind:"lunge",durationMs:1500,amplitude:.55}),
+  special:Object.freeze({kind:"lunge",durationMs:1750,amplitude:.55}),
+  powerful:Object.freeze({kind:"lunge",durationMs:2400,amplitude:.55}),
+  guard:Object.freeze({kind:"guard",durationMs:1300,amplitude:0}),
+  ward:Object.freeze({kind:"ward",durationMs:900,amplitude:0}),
+  hit:Object.freeze({kind:"hit",durationMs:850,amplitude:.18}),
+  death:Object.freeze({kind:"death",durationMs:2000,amplitude:.85})
+ }));
  function register(heroId,slots){
   if(typeof heroId!=="string"||!heroId.trim()||!slots||typeof slots!=="object"||Array.isArray(slots))
    throw Error("Invalid character animation profile");

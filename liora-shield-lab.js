@@ -123,6 +123,9 @@
    shieldMesh=character.meshes.find(m=>m.name===SHIELD_MESH)||null;
    if(!shieldMesh)throw Error("В GLB Лиоры нет меша щита "+SHIELD_MESH);
    groups=character.animationGroups.slice();
+   // LIORAANIM001: the glTF loader auto-plays the first clip (Running); without this stop it
+   // kept writing the hips under every clip chosen in the workshop.
+   for(const group of groups)group.stop();
    const select=el("clip");
    for(const name of labels){
     const option=document.createElement("option");

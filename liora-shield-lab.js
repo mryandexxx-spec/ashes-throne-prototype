@@ -140,7 +140,7 @@
    status("Лиора загружена. Загружаю отдельный щит...");
    shield=await load(LioraShieldAssets.url);
    attachment=LioraShieldAttachment.attach(BABYLON,scene,character,shield,{
-    referenceRoot:[...character.meshes,...character.transformNodes].find(n=>n.name==="__root__")||parent
+    referenceRoot:[...character.meshes,...character.transformNodes].find(n=>n.name==="__root__")||parent,groundY:0
    });
    groups=character.animationGroups.slice();
    const select=el("clip");

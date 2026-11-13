@@ -179,3 +179,37 @@ test("CHAR002B both permanent heroes have regional Gardens tags, not a claim of 
  const game=read("game.js");
  assert.match(game,/id:"nada",name:"Нада",classId:"support",tags:\["gardens-over-abyss"\]/);
 });
+
+test("CHAR002B prediction additionally reduces debuff application potency by 20pp",()=>{
+ const source=["initiative-model.js","battle-rng.js","combat-status-core.js",
+  "skill-core.js","ability-data.js","ability-info.js",
+  "const EnemyDecision={chooseAction:()=>({abilityId:\"special\",targetIndex:0})};",
+  "combat-core.js"].map(name=>name.startsWith("const ")?name:read(name)).join("\n");
+ const forced=vm.runInNewContext(source+"\n({CombatCore,CombatStatusCore})");
+ const ally=fighter("ren","ally",120,500,4);
+ ally.debuffResistance=35;
+ const enemy=fighter("test-area-weaken","enemy",180,1000,10);
+ enemy.debuffPotency=0;
+ const run=stacks=>{
+  const battle=forced.CombatCore.createBattle([ally,enemy],[],{
+   rngSeed:682,statusChecks:true,legacyStatusChecks:true
+  });
+  if(stacks)forced.CombatStatusCore.applyReadMove(battle.fighters[1],stacks,2);
+  forced.CombatCore.advanceToPlayerTurn(battle);
+  return battle;
+ };
+ const plain=run(0),two=run(2),marked=run(3);
+ assert.equal(plain.events.find(e=>e.type==="ability").abilityId,"special");
+ assert.equal(marked.events.find(e=>e.type==="ability").abilityId,"special");
+ assert.equal(plain.fighters[0].weakenAttacks,2);
+ assert.equal(two.fighters[0].weakenAttacks,2);
+ assert.equal(marked.fighters[0].weakenAttacks,0);
+ const resisted=marked.events.find(e=>e.type==="status-resisted");
+ assert.equal(resisted.effect,"weaken");
+ assert.equal(resisted.chance,45);
+ const prediction=marked.events.find(e=>e.type==="read-move-predicted");
+ assert.equal(prediction.accuracyPenalty,20);
+ assert.equal(prediction.statusPotencyPenalty,20);
+ assert.equal(prediction.damageReduction,30);
+ assert.equal(forced.CombatStatusCore.read(marked.fighters[1],"read-move"),null);
+});

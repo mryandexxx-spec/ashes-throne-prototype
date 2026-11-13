@@ -4296,7 +4296,7 @@ body:has(#storyDemo.active)::before{
 .campaign-hub-lore::before{background-image:linear-gradient(0deg,rgba(12,18,24,.99),rgba(12,18,24,.83) 27%,rgba(12,18,24,.14) 78%),url("assets/campaign-cover-five-shadows.svg")}
 .campaign-hub-main::before{background-image:linear-gradient(0deg,rgba(23,17,20,.99),rgba(23,17,20,.84) 27%,rgba(23,17,20,.18) 78%),url("assets/campaign-cover-throne.svg")}
 .campaign-hub-card:hover{border-color:#f1cb87;box-shadow:inset 0 1px rgba(255,255,255,.2),0 16px 35px rgba(0,0,0,.34)}
-.campaign-hub-card:hover::before{transform:scale(1.025)}
+
 .campaign-hub-card:focus-visible{outline:3px solid #f1cc8b;outline-offset:3px}
 .campaign-hub-card:active{transform:translateY(1px)}
 .campaign-hub-copy{position:relative;z-index:1;display:grid;align-content:end;gap:clamp(3px,.7vh,8px);width:100%;min-width:0;padding-right:13px;text-shadow:0 2px 5px rgba(0,0,0,.8)}

@@ -120,8 +120,7 @@ const GearData=(()=>{
  // All values are flat stat points, except percent-point combat stats.
  function individualStats(tier,slotId,classId){
   const n=Math.max(1,Math.ceil(tier/2));
-  const primary=classId==="mage"?"magicAttack":
-   classId==="support"?"debuffPotency":classId==="tank"?"protection":"physicalAttack";
+  const primary=classId==="tank"?"protection":"physicalAttack";
   const specs={
    weapon:{[primary]:n+1,accuracy:Math.min(4,Math.ceil(tier/5))},
    torso:{hp:3*n,protection:2*n},

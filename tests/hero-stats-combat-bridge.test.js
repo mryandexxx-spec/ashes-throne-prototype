@@ -47,8 +47,8 @@ test("level and stars now change actual hero stats; speed stays constant",()=>{
 test("equipped legacy G bonuses now scale the new profile, not demo atk",()=>{
  const without=Bridge.apply({id:"nada"},{level:6,stars:2},Profiles.nada,Core);
  const withGear=Bridge.apply({id:"nada"},{level:6,stars:2,gearPercent:{hp:.06,atk:.06}},Profiles.nada,Core);
- assert.equal(withGear.hp,Math.round(without.hp*1.06));
- assert.equal(withGear.physicalAttack,Math.round(without.physicalAttack*1.06));
+ assert.equal(withGear.hp,Math.round((110+5*2.1+10)*1.06));
+ assert.equal(withGear.physicalAttack,Math.round((19+5*.35+2)*1.06));
  assert.equal(withGear.atk,withGear.physicalAttack);
  assert.equal(withGear.speed,without.speed);
  assert.equal(withGear.protection,without.protection);

@@ -123,10 +123,10 @@ test("permanent Ren uses upgraded basic, own physical combat and all active slot
  assert.equal(b.fighters[2].hp,400);
  assert.equal(core.performPlayerAbility(b,"basic"),true);
  assert.equal(status.read(b.fighters[1],"slowed")?.remaining,1);
- assert.equal(b.fighters[0].powerfulCooldown,1);
+ assert.equal(b.fighters[0].powerfulCooldown,2);
  assert.equal(core.performPlayerAbility(b,"special"),true);
  assert.equal(b.fighters[1].weakenAttacks,2);
- assert.equal(b.fighters[0].powerfulCooldown,0);
+ assert.equal(b.fighters[0].powerfulCooldown,1);
  assert.equal(b.allyActions,3);
  const fight=v3.fresh(newHeroes,1730000000000);
  const runtime=v3.toRuntime(fight,newHeroes);

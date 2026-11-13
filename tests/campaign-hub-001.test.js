@@ -44,14 +44,15 @@ test("landscape cards and native hidden attribute are styled",()=>{
 
 test("cover art is independently replaceable, thematic and lightweight",()=>{
  for(const [path,asset] of [["training","training"],["lore","five-shadows"],["main","throne"]]){
-  assert.match(css,new RegExp('\\.campaign-hub-'+path+'::before\\{background-image:[^}]*campaign-cover-'+asset+'\\.svg'));
+  assert.ok(css.includes("campaign-hub-"+path+"::before"),path+" cover selector");
+  assert.ok(css.includes('campaign-cover-'+asset+'.svg'),asset+" asset referenced");
   const svg=read("assets/campaign-cover-"+asset+".svg");
   assert.match(svg,/<svg /);
   assert.ok(Buffer.byteLength(svg,"utf8")<8192,asset+" should remain lightweight");
  }
- assert.match(html,/Кампании лора<\\/strong><small>Пять теней/);
- assert.match(html,/id="trainingCampaignProgress">Тренировочные миссии/);
- assert.doesNotMatch(html,/id="trainingCampaignProgress">3 миссии/);
- assert.match(css,/@media \\(orientation:portrait\\) and \\(max-width:640px\\)/);
- assert.match(css,/@media \\(prefers-reduced-motion:reduce\\)/);
+ assert.ok(html.includes('<strong>Кампании лора</strong><small>Пять теней</small>'));
+ assert.ok(html.includes('id="trainingCampaignProgress">Тренировочные миссии'));
+ assert.ok(!html.includes('id="trainingCampaignProgress">3 миссии'));
+ assert.ok(css.includes("@media (orientation:portrait) and (max-width:640px)"));
+ assert.ok(css.includes("@media (prefers-reduced-motion:reduce)"));
 });

@@ -91,8 +91,13 @@ fs.mkdirSync(out,{recursive:true});
   assert.ok(combat.meshCount>0);
   await page.waitForTimeout(250);
   await page.locator("#renderCanvas").screenshot({path:path.join(out,"liora-arena.png")});
-  const shield=await page.evaluate(()=>scene.meshes.some(m=>m.name==="lioraShieldSocket"||m.metadata?.lioraShield===true));
-  assert.equal(shield,false,"no shield allowed in arena");
+  // LIORA-SHIELD-006: the shield is a skinned mesh inside the same GLB, enabled and following the rig.
+  const shield=await page.evaluate(()=>{
+   const m=scene.meshes.find(x=>x.metadata?.lioraShield===true);
+   return {present:!!m,enabled:!!m?.isEnabled(),skinned:!!m?.skeleton,socket:!!scene.getTransformNodeByName("lioraShieldSocket"),
+    name:m?.name,vertices:m?.getTotalVertices()};
+  });
+  assert.deepEqual(shield,{present:true,enabled:true,skinned:true,socket:false,name:"Liora_Shield",vertices:4445});
   assert.deepEqual(errors,[]);
   console.log("LIORAPLAY001 browser smoke PASS",useWebkit?"WebKit":"Chromium");
  }finally{await browser.close();}

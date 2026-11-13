@@ -11,7 +11,7 @@ const HEROES = [
  // NADA-PLAYABLE-001: provisional gameplay role and combat numbers only.
  {id:"nada",name:"Нада",classId:"support",tags:["gardens-over-abyss"],role:"Поддержка · игровой пилот",hp:85,atk:18,speed:120,side:"ally",glyph:"✎"},
  // LIORAPLAY001: provisional unarmed pilot, no approved balance or recruitment canon.
- {id:"liora",name:"Лиора Вель",classId:"tank",role:"Защита · тестовый герой без щита",hp:105,atk:20,speed:115,side:"ally",glyph:"♙"},
+ {id:"liora",name:"Лиора Вель",classId:"tank",role:"Защита · тестовый герой со щитом",hp:105,atk:20,speed:115,side:"ally",glyph:"♙"},
   {id:"ves",name:"Вестник Конклава",role:"Противник",hp:90,atk:18,speed:105,side:"enemy",glyph:"☠"},
   {id:"shade",name:"Теневой клинок",role:"Противник",hp:78,atk:22,speed:135,side:"enemy",glyph:"♟"},
   // Demo-only copies: no new combat stats or lore. First mission still uses two enemies.
@@ -28,7 +28,7 @@ let engine, scene, meshes={};
 let combatVisual007=null; // One optional visual layer per Babylon Scene.
 let renGlbRuntime=null; // Default Ren GLB visual, no gameplay ownership.
 let nadaGlbRuntime=null; // Optional Nada GLB only when she is in the party.
-let lioraGlbRuntime=null; // Optional Liora GLB (without shield), only in party.
+let lioraGlbRuntime=null; // Optional Liora GLB (shield baked into the rig), only in party.
 let arenaCamera=null;
 // Combat-008B: allies are near the viewer, enemies farther away.
 const ARENA_VIEW=typeof ArenaStageView!=="undefined"?ArenaStageView.view:Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
@@ -820,7 +820,7 @@ function showHeroBiography(hero){
  // Preserve Ren's established biography visibility; Nada is an independent preview.
  if(sketch&&hero.id==="liora"){
   sketch.src="assets/liora-portrait-ui.webp?v=1";
-  sketch.alt="Лиора Вель — портрет без щита";
+  sketch.alt="Лиора Вель — портрет";
  }else if(sketch&&hero.id==="nada"){
   sketch.src="assets/nada-portrait-ui.webp?v=2";
   sketch.alt="Нада — утверждённый живописный портрет";
@@ -1906,15 +1906,15 @@ function renderHeroDetail(){
  if(renPortrait){
   renPortrait.hidden=!(showRenPortrait||showNadaPortrait||showLioraPortrait);
   renPortrait.src=showLioraPortrait?"assets/liora-portrait-ui.webp?v=1":showNadaPortrait?"assets/nada-portrait-ui.webp?v=2":"assets/ren-portrait-ui.webp";
-  renPortrait.alt=showLioraPortrait?"Лиора Вель — портрет без щита":showNadaPortrait?"Нада — утверждённый портрет исследовательницы":"Рен Терен — портрет проводника Садов над пропастью";
+  renPortrait.alt=showLioraPortrait?"Лиора Вель — портрет":showNadaPortrait?"Нада — утверждённый портрет исследовательницы":"Рен Терен — портрет проводника Садов над пропастью";
  }
  if(heroStage){
   heroStage.classList.toggle("has-ren-portrait",showRenPortrait);
   if(showNadaPortrait||showLioraPortrait)heroStage.classList.add("has-ren-portrait");
-  heroStage.setAttribute("aria-label",showLiora3D?"Лиора Вель — 3D без щита":showNadaPortrait?"Нада — 3D-модель при загрузке, иначе портрет":
+  heroStage.setAttribute("aria-label",showLiora3D?"Лиора Вель — 3D со щитом":showNadaPortrait?"Нада — 3D-модель при загрузке, иначе портрет":
    showRenPortrait?"Рен Терен: 3D-модель и портрет":"Схематичный силуэт героя, без 3D-модели");
  }
- if(artworkLabel)artworkLabel.textContent=showLiora3D?"ЛИОРА · 3D БЕЗ ЩИТА (ТЕСТ)":showNadaPortrait?"ГЕРОЙ · 3D-ПРОСМОТР (ПИЛОТ)":
+ if(artworkLabel)artworkLabel.textContent=showLiora3D?"ЛИОРА · 3D СО ЩИТОМ (ТЕСТ)":showNadaPortrait?"ГЕРОЙ · 3D-ПРОСМОТР (ПИЛОТ)":
   showRenPortrait?"ГЕРОЙ · 3D-МОДЕЛЬ":"ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД";
  if(typeof RenCard3D!=="undefined" && $("#heroDetail")?.classList.contains("active"))
   void RenCard3D.activate(hero.id);

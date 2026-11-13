@@ -26,3 +26,9 @@
 - 15-клипный игровой файл: `dev/assets/models/liora_vel_shield_aware_15clips.glb`, 2 850 224 байта; SHA-256 `a2cc310c71ae141d0197da73397d73251db93ae6b57288e2ab5b0eb7aebb46b8`, Git blob `b49bd249d7724bcedc31ec8716004332462c5cf7`.
 - Дополнительные клипы: `Liora_Shield_Block`, `Liora_Shield_Bash`, `Liora_Shield_Death`. Первоначальные 12 клипов остаются внутри нового файла; отдельная 12-клипная копия удалена после WebGL-проверки, исходные анимации внутри v2 сохранены.
 - Манифест и URL-реестр направлены на новый GLB; связка щита остаётся внешней. Не проверено в Safari/Babylon на устройстве.
+
+## LIORA-SHIELD-006 — один файл, щит в скелете [В РАЗРАБОТКЕ]
+- Игровой файл: `dev/assets/models/liora-mobile-animated.glb`, 2 117 776 байт; SHA-256 `6baf3cf93ca4e2e71be58b243616b6afdbd4cfdca81eb404ef6bd0dafae77a9c`, Git blob `aeb64b8dbf8ee09da0c52c27789f65c6662857a7`.
+- Внутри: персонаж (`geometry_0`, 13 265 вершин, WebP 2048 q92 без перекодирования) и щит (`Liora_Shield`, 4 445 вершин, WebP 1024 q90), один скин на 66 костей, 15 клипов. Щит привязан 100 % к `mixamorig:LeftForeArm`; калибровка посадки — `shield_attachment.json`.
+- Сборка: `node tools/bake-liora-shield.mjs <15clips.glb> <shield.glb> <out.glb>` из прежних файлов `liora_vel_shield_aware_15clips.glb` и `liora-shield-mobile.glb` (удалены из дерева, есть в истории git на `main` `9e72e44`). Результат детерминирован.
+- Прежние абзацы выше про отдельный щит и «не склеивать геометрию» — история решений LIORA-ASSETS-001…SHIELD-005, не действующее состояние. Подробности: `docs/LIORA_SHIELD_006_BAKED_RIG.md`.

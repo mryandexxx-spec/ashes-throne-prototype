@@ -1,25 +1,31 @@
 /* LIORAPLAY001 — on-demand skinned Liora in combat. No gameplay ownership.
  * Model path follows the Dune dev/assets/models + dev/src/assets convention.
  * Never throw into battle flow: keep the existing capsule fallback.
+ * LIORA-SHIELD-006: the kite shield is baked into the same GLB as mesh "Liora_Shield",
+ * skinned to mixamorig:LeftForeArm. Nothing is attached at runtime; the shield follows
+ * every clip through the skeleton. Hide that mesh to show Liora unarmed.
  */
 const LioraGlbRuntime=(()=>{
  "use strict";
  const CLIPS=Object.freeze({
-  idle:"Idle_02",basic:"Step_Forward_and_Push",
-  special:"Squat_Stance",powerful:"Step_Forward_and_Push",
+  idle:"Idle_02",basic:"Liora_Shield_Bash",
+  special:"Liora_Shield_Block",powerful:"Squat_Stance",
   passive:"Idle_02",leader:"Idle_02",guard:"Alert",ward:"Hit_Reaction",
-  hit:"Hit_Reaction",death:"Dead",run:"Running",walk:"Walking"
+  hit:"Hit_Reaction",death:"Liora_Shield_Death",run:"Running",walk:"Walking"
  });
  const clipFor=slot=>CLIPS[slot]||CLIPS.idle;
  // LIORAPLAY001: part of a clip shown for a slot, as fractions of the clip length.
- // The full falling movement plays without a separate shield prop.
+ // Liora_Shield_Death ends lying on the ground with the shield over the arm; stop just before the end.
  const WINDOWS=Object.freeze({death:Object.freeze([0,.98])});
+ const SHIELD_MESH="Liora_Shield";
+ // The baked shield sits on the extended arm in bind pose; frame the body only.
+ const isBody=mesh=>mesh.name!==SHIELD_MESH;
  const windowFor=slot=>WINDOWS[slot]||[0,1];
  const sceneDisposed=scene=>typeof scene?.isDisposed==="function"
   ?scene.isDisposed():scene?.isDisposed===true;
  const clamp=p=>Math.max(0,Math.min(1,Number.isFinite(p)?p:0));
  const model=()=>typeof LioraModelAssets!=="undefined"?LioraModelAssets:null;
- const assetUrl=()=>model()?.url||"dev/assets/models/liora_vel_shield_aware_15clips.glb";
+ const assetUrl=()=>model()?.url||"dev/assets/models/liora-mobile-animated.glb";
  async function ensureLoader(){
   if(typeof RenGlbRuntime==="undefined"||!RenGlbRuntime.ensureLoader)
    throw Error("Babylon GLB loader unavailable");
@@ -46,6 +52,7 @@ const LioraGlbRuntime=(()=>{
    if(sceneDisposed(scene))throw Error("Scene disposed during Liora import");
    const visible=result.meshes.filter(mesh=>mesh.getTotalVertices?.()>0);
    if(visible.length<1)throw Error("Liora GLB has no mesh");
+   const shield=visible.find(mesh=>mesh.name===SHIELD_MESH)||null;
    const groups=new Map(result.animationGroups.map(group=>[group.name,group]));
    for(const required of [CLIPS.idle,CLIPS.basic,CLIPS.powerful,CLIPS.hit,CLIPS.death]){
     if(!groups.has(required))throw Error("Liora GLB missing clip: "+required);
@@ -55,7 +62,7 @@ const LioraGlbRuntime=(()=>{
     if(!node.parent)node.parent=root;
    let min=new B.Vector3(Infinity,Infinity,Infinity);
    let max=new B.Vector3(-Infinity,-Infinity,-Infinity);
-   for(const mesh of visible){
+   for(const mesh of visible.filter(isBody)){
     mesh.computeWorldMatrix(true);
     const box=mesh.getBoundingInfo().boundingBox;
     min=B.Vector3.Minimize(min,box.minimumWorld);
@@ -72,7 +79,7 @@ const LioraGlbRuntime=(()=>{
    root.parent=visual.body;
    root.metadata={fighterId:"liora"};
    for(const mesh of result.meshes){
-    mesh.metadata={...(mesh.metadata||{}),fighterId:"liora"};
+    mesh.metadata={...(mesh.metadata||{}),fighterId:"liora",lioraShield:mesh.name===SHIELD_MESH};
     mesh.isPickable=true;
    }
    const oldBodyVisible=visual.body.isVisible,oldHeadVisible=visual.head.isVisible;
@@ -109,6 +116,8 @@ const LioraGlbRuntime=(()=>{
    sample({slot:"idle",progress:0});
    return Object.freeze({
     update:sample,
+    get shield(){return shield;},
+    setShieldVisible(flag){shield?.setEnabled(flag!==false);},
     dispose(){
      if(disposed)return;
      disposed=true;
@@ -143,10 +152,12 @@ const LioraGlbRuntime=(()=>{
   return Object.freeze({
    ready,
    get isReady(){return !disposed&&!!instance;},
+   get shield(){return instance?.shield||null;},
+   setShieldVisible(flag){instance?.setShieldVisible(flag);},
    update(activity){instance?.update(activity);},
    dispose(){disposed=true;instance?.dispose();instance=null;}
   });
  }
- return Object.freeze({assetUrl,clipFor,windowFor,CLIPS,WINDOWS,ensureLoader,create});
+ return Object.freeze({assetUrl,clipFor,windowFor,CLIPS,WINDOWS,SHIELD_MESH,ensureLoader,create});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=LioraGlbRuntime;

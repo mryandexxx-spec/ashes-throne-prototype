@@ -1,0 +1,50 @@
+{
+ "stage": "LIORA-SHIELD-006",
+ "joint": "mixamorig:LeftForeArm",
+ "jointIndex": 10,
+ "calibration": {
+  "clip": "Idle_02",
+  "progress": 0.5,
+  "alongForearm": 0.55,
+  "outward": 0.12,
+  "shieldUp": "toward elbow",
+  "shieldFace": "away from the arm (her left side)"
+ },
+ "socketLocalToForearm_babylonRowMajor": [
+  -0.766393244,
+  5.02e-07,
+  0.642372191,
+  0,
+  -2.05e-07,
+  -1,
+  4e-08,
+  0,
+  -0.642372131,
+  1.4e-08,
+  -0.766393244,
+  0,
+  -0.077084601,
+  0.124794349,
+  -0.091967195,
+  1
+ ],
+ "bakeMatrix_gltfColumnMajor": [
+  -0.682457626,
+  -0.613126755,
+  -0.397903949,
+  0,
+  -0.643221617,
+  0.762337148,
+  -0.071469143,
+  0,
+  0.347156256,
+  0.207165986,
+  -0.914639235,
+  0,
+  0.382435799,
+  1.062852502,
+  -0.077057503,
+  1
+ ],
+ "note": "bakeMatrix maps shield GLB vertex positions (liora-shield-mobile.glb, root space) into Liora skin bind space for a rigid 100% weight on the forearm joint. Derived in a real Babylon 9.33.2 scene: world shield frame built from the Idle_02 forearm->hand axis, then expressed in the forearm joint frame and multiplied by the joint's bind matrix."
+}

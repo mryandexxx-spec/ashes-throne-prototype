@@ -26,6 +26,9 @@ const AbilityInfo=(()=>{
    const hasEffects=!!(a.triggers?.length||a.modifiers?.length||hasCombatRules);
    const rules=a.combatRules;
    const detail=hasCombatRules?
+    Number.isFinite(rules.allyBonusVsDebuffedPercent)?
+    "Пока герой жив, союзники наносят +"+rules.allyBonusVsDebuffedPercent+
+     "% урона врагам с действующими негативными эффектами. Бонус суммируется с другими процентами. Числа тестовые.":
     "Проба: +"+rules.bonusVsDebuffedPercent+"% урона по цели с ослаблением, "+
     "+"+rules.statusPotencyWithoutResistanceDown+" п.п. эффективности наложения "+
     "без пониженного сопротивления у цели и +"+rules.tagDamagePercent+
@@ -49,6 +52,7 @@ const AbilityInfo=(()=>{
    if(a.weakening>0)effects.push("Ослабляет противника на "+a.weakening+" атаки.");
     if(a.onHitStatus?.type==="slowed")effects.push("Замедление: -"+a.onHitStatus.amount+"% скорости на "+a.onHitStatus.turns+" собственных хода цели (тестовый баланс).");
     if(a.followUpStatusAll?.type==="debuff-resistance-down")effects.push("После попадания по основной цели снижает сопротивление всех оставшихся противников на "+a.followUpStatusAll.amount+" п.п. на "+a.followUpStatusAll.turns+" их собственных хода. Тестовый баланс.");
+    if(a.onHitStatus?.type==="debuff-resistance-down")effects.push("При попадании снижает сопротивление основной цели негативным эффектам на "+a.onHitStatus.amount+" п.п. на "+a.onHitStatus.turns+" её собственных хода. Тестовый баланс.");
   }else if(a.kind==="guard"){
    if(Number.isFinite(a.guardHits))effects.push("Даёт защиту от "+a.guardHits+" ударов.");
    else effects.push("Даёт защиту.");

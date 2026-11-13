@@ -1877,6 +1877,7 @@ function renderHeroDetail(){
  $("#detailGlyph").textContent=hero.glyph;
  const showRenPortrait=hero.id==="ren";
  const showNadaPortrait=hero.id==="nada";
+ const showLiora3D=hero.id==="liora";
  const renPortrait=$("#detailRenPortrait"),heroStage=$("#detailHeroStage"),artworkLabel=$("#detailArtworkLabel");
  if(renPortrait){
   renPortrait.hidden=!showRenPortrait;
@@ -2583,7 +2584,7 @@ function resetBattle(){
  const lineup=battleLineup();
  const allies=lineup.filter(f=>f.side==="ally");
  const realHeroFight=allies.length>0&&
-  allies.every(f=>f.id==="ren"||f.id==="nada");
+  allies.every(f=>["ren","nada","liora"].includes(f.id));
  state=CombatCore.createBattle(lineup,battleFutureWaves(),{
   leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId,
   ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{}),
@@ -2884,6 +2885,7 @@ function renderBattleFrame(){
    }
   }
   if(h.id==="nada"&&nadaGlbRuntime)nadaGlbRuntime.update(activity);
+  if(h.id==="liora"&&lioraGlbRuntime)lioraGlbRuntime.update(activity);
   if(h.id==="ren"&&renGlbRuntime){
    if(visual.body.rotation&&targetPosition&&activity.plan){
     const yaw=-Math.atan2(targetPosition.z-origin.z,targetPosition.x-origin.x);

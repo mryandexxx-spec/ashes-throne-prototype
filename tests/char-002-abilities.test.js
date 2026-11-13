@@ -127,3 +127,12 @@ test("CHAR002B enemy special attempt is replaced with basic, consuming 3 marks",
  forced.CombatCore.advanceToPlayerTurn(reset);
  assert.equal(reset.events.some(e=>e.type==="read-move-disrupted"),false);
 });
+
+test("CHAR002B both permanent heroes have regional Gardens tags, not a claim of birthplace",()=>{
+ const profiles=vm.runInNewContext(read("hero-profile-data.js")+"\nHeroProfileData");
+ assert.ok(profiles.get("ren").tags.includes("gardens-over-abyss"));
+ assert.ok(profiles.get("nada").tags.includes("gardens-over-abyss"));
+ assert.equal(profiles.tag("gardens-over-abyss").kind,"region");
+ const game=read("game.js");
+ assert.match(game,/id:"nada",name:"Нада",classId:"support",tags:\["gardens-over-abyss"\]/);
+});

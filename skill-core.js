@@ -75,12 +75,53 @@ const SkillCore=(()=>{
   progress.skillMaterials=materials;
   return true;
  }
+ // CHAR-002: experimental hero-specific six-step skill progression.
+ // Every array index is current skill level minus one. This table, not the
+ // general +0.1 demo scaling, owns Ren/Nada's real active ability effects.
+ const HERO_KITS=Object.freeze({
+  ren:Object.freeze({
+   basic:Object.freeze({damage:[1,1.1,1.2,1.2,1.3,1.4]}),
+   special:Object.freeze({damage:[1.05,1.15,1.15,1.25,1.25,1.35],
+    weaken:[2,2,3,3,3,3],cooldown:[2,2,2,2,1,1]}),
+   powerful:Object.freeze({damage:[1.6,1.75,1.75,1.9,1.9,2.05],
+    resistanceDown:[15,15,20,20,20,20],statusTurns:[2,2,2,2,3,3]})
+  }),
+  nada:Object.freeze({
+   basic:Object.freeze({damage:[.8,.9,1,1.1,1.2,1.3]}),
+   special:Object.freeze({damage:[.7,.8,.8,.9,.9,1],
+    weaken:[2,2,3,3,3,3],cooldown:[2,2,2,2,1,1]}),
+   powerful:Object.freeze({damage:[1,1.1,1.1,1.2,1.2,1.3],
+    resistanceDown:[20,20,25,25,25,25],statusTurns:[2,2,2,2,3,3]})
+  })
+ });
+ function heroAbility(base,heroId,id,level){
+  const kit=HERO_KITS[heroId]?.[id];
+  if(!kit||base?.kind!=="damage")return base;
+  const index=level-1;
+  const ability={...base,multiplier:kit.damage[index]};
+  if(kit.weaken)ability.weakening=kit.weaken[index];
+  if(kit.cooldown)ability.cooldown=kit.cooldown[index];
+  if(heroId==="ren"&&id==="basic"){
+   if(level>=4)ability.onHitStatus=Object.freeze({
+    type:"slowed",amount:20,turns:level>=6?2:1});
+   else delete ability.onHitStatus;
+  }
+  if(id==="powerful"){
+   const effect={type:"debuff-resistance-down",
+    amount:kit.resistanceDown[index],turns:kit.statusTurns[index]};
+   if(heroId==="ren")ability.followUpStatusAll=Object.freeze(effect);
+   else ability.onHitStatus=Object.freeze(effect);
+  }
+  return ability;
+ }
  // Only explicitly leveled playable abilities are scaled. Fixtures and
- // existing unupgraded combat behavior remain byte-for-byte equivalent.
+ // existing unupgraded combat behavior remain unchanged.
  function apply(base,actor,id){
   if(!base||!actor||!HERO_IDS.includes(actor.id)||!IDS.includes(id))return base;
   const lvl=actor.skillLevels?.[id];
-  if(!Number.isInteger(lvl)||lvl<=1||lvl>MAX)return base;
+  if(!Number.isInteger(lvl)||lvl<1||lvl>MAX)return base;
+  if(HERO_KITS[actor.id])return heroAbility(base,actor.id,id,lvl);
+  if(lvl===1)return base;
   const delta=lvl-1;
   if(base.kind==="damage"&&Number.isFinite(base.multiplier))
    return {...base,multiplier:Math.round((base.multiplier+delta*.1)*100)/100};

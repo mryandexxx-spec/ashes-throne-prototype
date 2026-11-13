@@ -26,7 +26,7 @@ fs.mkdirSync(out,{recursive:true});
   page.on("pageerror",e=>errors.push(e.message));
   page.on("request",r=>{if(/\.glb(?:$|\?)/i.test(r.url()))glbRequests.push(r.url());});
   page.on("console",m=>{if(m.type()==="error")errors.push(m.text());});
-  const resp=await page.goto("http://127.0.0.1:8765/liora-shield-lab.html",
+  const resp=await page.goto("http://127.0.0.1:8765/liora-lab.html",
    {waitUntil:"load",timeout:90000});
   assert.equal(resp.status(),200);
   await page.waitForFunction(()=>{

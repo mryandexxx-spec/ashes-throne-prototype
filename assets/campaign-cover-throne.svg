@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-label="Пустой престол в тёмном каменном зале">
+<defs><linearGradient id="hall" x2="0" y2="1"><stop stop-color="#5f3d3c"/><stop offset=".52" stop-color="#33262b"/><stop offset="1" stop-color="#11151b"/></linearGradient><radialGradient id="light"><stop stop-color="#bd8963" stop-opacity=".5"/><stop offset="1" stop-color="#bd8963" stop-opacity="0"/></radialGradient></defs>
+<rect width="960" height="600" fill="url(#hall)"/><ellipse cx="476" cy="260" rx="360" ry="350" fill="url(#light)"/>
+<path d="M0 0H160V600H0Z" fill="#27262b"/><path d="M800 0H960V600H800Z" fill="#27262b"/>
+<path d="M160 0 246 0 230 600H170ZM710 0H800L790 600H734Z" fill="#191d25"/>
+<path d="M282 0 334 0 292 485H271ZM630 0 684 0 684 485H650Z" fill="#474044" opacity=".75"/>
+<path d="M302 420 660 420 715 600H246Z" fill="#171a20"/>
+<path d="M361 476 609 476 674 538H305Z" fill="#4f3530"/><path d="M325 538H657L687 600H296Z" fill="#292428"/>
+<path d="M397 204 418 143 450 178 480 109 520 178 546 137 571 204 564 445H396Z" fill="#211d24" stroke="#977054" stroke-width="7"/>
+<path d="M421 222 544 222 538 384H426Z" fill="#44312f"/><path d="M445 245 521 245 520 372H446Z" fill="#2a2228"/>
+<path d="M407 365 555 365 564 426H396Z" fill="#6a4435" stroke="#9d7754" stroke-width="7"/>
+<path d="M390 346 409 342 415 462 391 462ZM554 339 578 345 572 461 550 461Z" fill="#977052"/>
+<path d="M366 469 592 469 607 498H354Z" fill="#161b20"/>
+<path d="M480 116V54M437 169 425 112M529 169 540 112" stroke="#b99265" stroke-width="5"/>
+<path d="M0 551 960 551V600H0Z" fill="#0c1117" opacity=".55"/>
+</svg>

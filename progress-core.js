@@ -404,9 +404,15 @@ const ProgressCore=(()=>{
     continue;
    extra[key]=(hero[key]??(key==="critDamage"?150:0))+value;
   }
-  return {...hero,...extra,level,hp:Math.round(hero.hp*(baseFactor+bonus.hp)+(stats.hp||0)),
+  // CombatCore requires protection and maxProtection as an inseparable pair.
+  // An unequipped training hero may legitimately have neither field.
+  const itemProtection=stats.protection||0;
+  const hasPool=hero.protection!==undefined||hero.maxProtection!==undefined||itemProtection>0;
+  const basePool=hero.protection??hero.maxProtection??0;
+  const pool=hasPool?{protection:basePool+itemProtection,
+   maxProtection:(hero.maxProtection??basePool)+itemProtection}:{};
+  return {...hero,...extra,...pool,level,hp:Math.round(hero.hp*(baseFactor+bonus.hp)+(stats.hp||0)),
    atk:Math.round(hero.atk*(baseFactor+bonus.atk)+(stats.physicalAttack||0)),
-   protection:(hero.protection||0)+(stats.protection||0),
    physicalDefense:(hero.physicalDefense||0)+(stats.physicalDefense||0),
    magicDefense:(hero.magicDefense||0)+(stats.magicDefense||0)};
  }

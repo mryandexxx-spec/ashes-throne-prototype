@@ -31,8 +31,23 @@ fs.mkdirSync(outDir,{recursive:true});
   });
   const response=await page.goto("http://127.0.0.1:8765/liora-shield-lab.html",{waitUntil:"load",timeout:90000});
   assert.equal(response.status(),200);
-  await page.waitForFunction(()=>document.querySelector("#status")?.textContent?.includes("Готово: 15 анимаций"),
-   null,{timeout:90000});
+  try {
+   await page.waitForFunction(()=>{
+    const msg=document.querySelector("#status")?.textContent||"";
+    return msg.includes("Готово: 15 анимаций")||msg.startsWith("Ошибка лаборатории:");
+   },null,{timeout:35000});
+  }catch(error){
+   const msg=await page.locator("#status").innerText().catch(()=>"(no status)");
+   console.error("LIORA init timeout",JSON.stringify({msg,pageErrors,consoleErrors,assetFailures}));
+   await page.screenshot({path:path.join(outDir,"startup-failure.png")}).catch(()=>{});
+   throw error;
+  }
+  const readyMessage=await page.locator("#status").innerText();
+  if(!readyMessage.includes("Готово: 15 анимаций")){
+   console.error("LIORA init error",JSON.stringify({readyMessage,pageErrors,consoleErrors,assetFailures}));
+   await page.screenshot({path:path.join(outDir,"startup-failure.png")}).catch(()=>{});
+   throw Error("Liora lab initialization failed: "+readyMessage);
+  }
   // Pause autoplay to make each frame deterministic.
   await page.click("#play");
   assert.equal(await page.locator("#play").innerText(),"Воспроизвести");

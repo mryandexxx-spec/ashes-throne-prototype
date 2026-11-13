@@ -34,10 +34,24 @@ test("existing battles remain in training and story trial in main",()=>{
  assert.match(main,/id="storyDemoOpen"/);
  assert.doesNotMatch(main,/id="campaignMissions"/);
  assert.doesNotMatch(lore,/data-campaign-mission/);
- assert.match(lore,/Пока доступных миссий нет/);
+ assert.match(lore,/Игровые миссии по мотивам историй мира пока не доступны/);
 });
 test("landscape cards and native hidden attribute are styled",()=>{
  assert.match(css,/#campaignHub\[hidden\],\.campaign-path-content\[hidden\]\{display:none!important\}/);
  assert.match(css,/@media \(orientation:landscape\) and \(max-height:540px\)/);
  assert.match(css,/\.campaign-hub-card:focus-visible/);
+});
+
+test("cover art is independently replaceable, thematic and lightweight",()=>{
+ for(const [path,asset] of [["training","training"],["lore","five-shadows"],["main","throne"]]){
+  assert.match(css,new RegExp('\\.campaign-hub-'+path+'::before\\{background-image:[^}]*campaign-cover-'+asset+'\\.svg'));
+  const svg=read("assets/campaign-cover-"+asset+".svg");
+  assert.match(svg,/<svg /);
+  assert.ok(Buffer.byteLength(svg,"utf8")<8192,asset+" should remain lightweight");
+ }
+ assert.match(html,/Кампании лора<\\/strong><small>Пять теней/);
+ assert.match(html,/id="trainingCampaignProgress">Тренировочные миссии/);
+ assert.doesNotMatch(html,/id="trainingCampaignProgress">3 миссии/);
+ assert.match(css,/@media \\(orientation:portrait\\) and \\(max-width:640px\\)/);
+ assert.match(css,/@media \\(prefers-reduced-motion:reduce\\)/);
 });

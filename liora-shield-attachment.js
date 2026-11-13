@@ -67,7 +67,7 @@ const LioraShieldAttachment=(()=>{
    const poseBias=activity.clip==="Liora_Shield_Block"
     ?new B.Vector3(.06,.13,0)
     :activity.clip==="Liora_Shield_Bash"
-     ?new B.Vector3(.06,.07,0):null;
+     ?new B.Vector3(-.18,.15,0):null;
    if(poseBias){
     const envelope=Math.sin(Math.PI*activity.progress)**2;
     if(envelope>0){

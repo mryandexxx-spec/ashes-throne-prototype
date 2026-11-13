@@ -3,7 +3,7 @@
  "use strict";
  const el=id=>document.getElementById(id);
  const status=text=>{el("status").textContent=text;};
- let engine=null,scene=null,character=null,shield=null,attachment=null,groups=[],active=null;
+ let engine=null,scene=null,character=null,shield=null,attachment=null,combatPose=null,groups=[],active=null;
  let playing=true,clock=0,lastFrame=0,disposed=false;
  const labels=["Running","Walking","Alert","Block1","Catching_Breath","Dead",
   "Hit_Reaction","Idle_02","Shield_Push_Left","Squat_Stance",
@@ -33,7 +33,8 @@
    hip.position.x=hip.metadata.lioraBase.x;
    hip.position.z=hip.metadata.lioraBase.z;
   }
-  attachment.setClipProgress(group.name,p); // Frame-aware shield, including grounded death drop.
+  combatPose?.apply(group.name,p); // Correct ONLY block/bash left-arm joints.
+  attachment.setClipProgress(group.name,p); // Follow the corrected hand in world space.
  }
  function setClip(name){
   active?.stop();
@@ -111,7 +112,8 @@
  async function init(){
   try{
    if(!window.BABYLON||!BABYLON.SceneLoader||typeof LioraShieldAttachment==="undefined"||
-    typeof LioraModelAssets==="undefined"||typeof LioraShieldAssets==="undefined")throw Error("Babylon/реестр ассетов не загружены");
+    typeof LioraModelAssets==="undefined"||typeof LioraShieldAssets==="undefined"||
+    typeof LioraShieldCombatPose==="undefined")throw Error("Babylon/реестр ассетов не загружены");
    const canvas=el("stage");
    engine=new BABYLON.Engine(canvas,true,{stencil:true,alpha:true});
    scene=new BABYLON.Scene(engine);
@@ -147,6 +149,8 @@
     referenceRoot:[...character.meshes,...character.transformNodes].find(n=>n.name==="__root__")||parent,groundY:0
    });
    groups=character.animationGroups.slice();
+   combatPose=LioraShieldCombatPose.create(BABYLON,character,
+    groups.find(g=>g.name==="Idle_02"));
    const select=el("clip");
    for(const name of labels){
     const option=document.createElement("option");

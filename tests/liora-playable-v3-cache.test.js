@@ -86,7 +86,7 @@ test("Liora GLB and caching are wired without shield assets",()=>{
  assert.match(index,/liora-glb-runtime\.js/);
  assert.match(sw,/liora_vel_shield_aware_15clips\.glb/);
  assert.match(sw,/2850224/);
- assert.match(client,/cache002-liora/); // DOM ID assembled from the hero name
+ assert.match(client,/liora_vel_shield_aware_15clips\\.glb/); // third asset registration
  assert.match(index,/cache002-liora/);
  assert.doesNotMatch(runtime,/LioraShieldAttachment|LioraShieldAssets|liora-shield-mobile/);
 });

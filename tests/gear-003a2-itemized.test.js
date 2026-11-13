@@ -65,7 +65,7 @@ assert.equal(G.SLOTS.length,6);
 assert.equal(G.FUTURE_STAT_KEYS.length,14,"14-stat schema is reserved but inert");
 assert.equal(G.ITEMS.filter(item=>item.tier===1).length,12);
 assert.equal(G.ITEMS.filter(item=>item.tier===2).length,12);
-assert.equal(new Set(G.ITEMS.map(x=>x.id)).size,36);
+assert.equal(new Set(G.ITEMS.map(x=>x.id)).size,336);
 for(const item of G.ITEMS){
  assert.ok(G.SLOTS.some(slot=>slot.id===item.slotId));
  assert.ok(Object.keys(item.ingredients).length);

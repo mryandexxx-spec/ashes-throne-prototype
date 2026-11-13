@@ -56,3 +56,32 @@ test("cover art is independently replaceable, thematic and lightweight",()=>{
  assert.ok(css.includes("@media (orientation:portrait) and (max-width:640px)"));
  assert.ok(css.includes("@media (prefers-reduced-motion:reduce)"));
 });
+
+test("CAMPAIGN-ART-002: approved artwork crops are WebP, independent and small",()=>{
+ const files=["training","five-shadows","throne"];
+ let total=0;
+ for(const name of files){
+  const asset="assets/campaign-cover-"+name+".webp";
+  const bytes=fs.readFileSync(require("node:path").join(__dirname,"..",asset));
+  assert.equal(bytes.toString("ascii",0,4),"RIFF");
+  assert.equal(bytes.toString("ascii",8,12),"WEBP");
+  assert.ok(bytes.length>3000&&bytes.length<60000,asset+" budget");
+  total+=bytes.length;
+  assert.ok(css.includes('url("'+asset+'")'),asset+" referenced from CSS");
+ }
+ assert.ok(total<100000,"total campaign artwork exceeds 100 KB");
+ assert.match(css,/#campaignHub \.campaign-hub-card::before\{/);
+ assert.match(css,/background-position:center,center 27%,center/);
+ assert.match(css,/@media \(orientation:landscape\) and \(max-height:540px\)/);
+ assert.match(css,/#campaignHub \.campaign-hub-card:focus-visible|\.campaign-hub-card:focus-visible/);
+});
+test("CAMPAIGN-ART-002: cover treatment preserves all three working paths",()=>{
+ for(const type of ["training","lore","main"]){
+  assert.ok(html.includes('data-campaign-path="'+type+'"'));
+ }
+ assert.ok(game.includes("showCampaignPath(button.dataset.campaignPath)"));
+ assert.ok(html.includes('id="trainingCampaignProgress">Тренировочные миссии'));
+ assert.ok(html.includes('<strong>Кампании лора</strong><small>Пять теней</small>'));
+ assert.ok(html.includes('id="campaignLoreContent"'));
+ assert.doesNotMatch(html,/data-campaign-path="lore"[^>]*disabled/);
+});

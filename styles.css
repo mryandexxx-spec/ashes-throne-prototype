@@ -3027,16 +3027,16 @@ body:has(#campaign.active)::before{
  border:1px solid #e7c58b25;border-radius:7px;
  background:linear-gradient(90deg,#dcad6b48,transparent 12%,transparent 88%,#dcad6b48) top / 100% 1px no-repeat;
 }
-#campaign .section-heading{
+#campaign.screen .section-heading{
  margin:0 0 10px;padding:0 0 10px;border-bottom:1px solid #d7b27c55;
 }
-#campaign .section-heading h2{
+#campaign.screen .section-heading h2{
  font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
  color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
 }
 #campaign .eyebrow{color:#e0b978;letter-spacing:.14em}
 #campaign .muted{color:#d9c5ab;line-height:1.45}
-#campaign .section-heading .ghost,#campaign #energyRefresh{
+#campaign.screen .section-heading .ghost,#campaign #energyRefresh{
  min-height:44px;border:1px solid #bd925b;border-radius:8px;
  background:linear-gradient(145deg,#4c3529,#272127);
  color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
@@ -3154,8 +3154,8 @@ body:has(#campaign.active)::before{
  #app:has(#campaign.active)>.topbar .brand strong{font-size:11px}
  #app:has(#campaign.active)>.topbar #accountStatus{font-size:10px;padding:4px 6px}
  #campaign.screen.active{margin:7px auto 12px;padding:9px 10px 14px}
- #campaign .section-heading{margin-bottom:7px;padding-bottom:7px}
- #campaign .section-heading h2{font-size:21px}
+ #campaign.screen .section-heading{margin-bottom:7px;padding-bottom:7px}
+ #campaign.screen .section-heading h2{font-size:21px}
  #campaign .energy-toolbar{margin:6px 0 3px;padding:6px 9px}
  #campaign .energy-toolbar .muted{font-size:11px}
  #campaign #energyRefreshStatus{font-size:11px;margin:3px 0 5px}
@@ -4292,9 +4292,9 @@ body:has(#storyDemo.active)::before{
 .campaign-hub{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,1.4vw,16px);margin:clamp(8px,2vh,18px) 0}
 .campaign-hub-card{appearance:none;isolation:isolate;min-width:0;min-height:clamp(210px,42vh,330px);position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:stretch;padding:clamp(12px,1.8vw,22px);text-align:left;color:#f8efdd;background:#202023;border:1px solid rgba(197,160,102,.62);border-radius:12px;box-shadow:inset 0 1px rgba(255,255,255,.14),0 14px 30px rgba(0,0,0,.26);cursor:pointer;touch-action:manipulation;transition:transform .15s,border-color .15s,box-shadow .15s}
 .campaign-hub-card::before{content:"";position:absolute;z-index:-1;inset:0;background-size:cover;background-position:center;pointer-events:none;transition:transform .25s}
-.campaign-hub-training::before{background-image:linear-gradient(0deg,rgba(16,18,19,.99),rgba(16,18,19,.83) 27%,rgba(21,22,22,.2) 78%),url("assets/campaign-cover-training.svg")}
-.campaign-hub-lore::before{background-image:linear-gradient(0deg,rgba(12,18,24,.99),rgba(12,18,24,.83) 27%,rgba(12,18,24,.14) 78%),url("assets/campaign-cover-five-shadows.svg")}
-.campaign-hub-main::before{background-image:linear-gradient(0deg,rgba(23,17,20,.99),rgba(23,17,20,.84) 27%,rgba(23,17,20,.18) 78%),url("assets/campaign-cover-throne.svg")}
+.campaign-hub-training::before{background-image:linear-gradient(0deg,rgba(16,18,19,.99),rgba(16,18,19,.84) 30%,rgba(16,18,19,.08) 83%),url("assets/campaign-cover-training.webp"),url("assets/campaign-cover-training.svg")}
+.campaign-hub-lore::before{background-image:linear-gradient(0deg,rgba(12,18,24,.99),rgba(12,18,24,.84) 30%,rgba(12,18,24,.1) 83%),url("assets/campaign-cover-five-shadows.webp"),url("assets/campaign-cover-five-shadows.svg")}
+.campaign-hub-main::before{background-image:linear-gradient(0deg,rgba(23,17,20,.99),rgba(23,17,20,.84) 30%,rgba(23,17,20,.12) 83%),url("assets/campaign-cover-throne.webp"),url("assets/campaign-cover-throne.svg")}
 .campaign-hub-card:hover{border-color:#f1cb87;box-shadow:inset 0 1px rgba(255,255,255,.2),0 16px 35px rgba(0,0,0,.34)}
 
 .campaign-hub-card:focus-visible{outline:3px solid #f1cc8b;outline-offset:3px}
@@ -4327,4 +4327,47 @@ body:has(#storyDemo.active)::before{
 @media (prefers-reduced-motion:reduce){
  .campaign-hub-card,.campaign-hub-card::before{transition:none}
  .campaign-hub-card:hover::before{transform:none}
+}
+
+/* CAMPAIGN-ART-002: accepted painterly cover crops; the existing SVG art remains as fallback.
+   Never bake status or CTA text into raster images. Visual only, no battle/model runtime changes. */
+#campaign.screen .section-heading{margin-bottom:clamp(8px,2vh,18px)}
+#campaignHub.campaign-hub{max-width:1180px;margin-inline:auto}
+#campaignHub .campaign-hub-card{
+ border:1px solid #ab8151;
+ border-radius:12px;
+ background-color:#101318;
+ box-shadow:inset 0 0 0 2px #1c1717,inset 0 0 0 3px rgba(229,180,105,.24),0 14px 30px rgba(0,0,0,.28)
+}
+#campaignHub .campaign-hub-card::before{
+ background-size:cover,cover,cover;
+ background-position:center,center 27%,center;
+}
+#campaignHub .campaign-hub-card::after{
+ content:"";position:absolute;inset:6px;z-index:-1;border:1px solid rgba(219,166,94,.27);
+ border-radius:7px;pointer-events:none
+}
+#campaignHub .campaign-hub-card:hover{border-color:#ecc286}
+#campaignHub .campaign-hub-copy{gap:clamp(3px,.6vw,7px)}
+#campaignHub .campaign-hub-kicker{color:#efce9d}
+#campaignHub .campaign-hub-copy strong{color:#ffe7b6}
+#campaignHub .campaign-hub-progress{display:inline-flex;align-items:center;min-height:20px;color:#f4d3a3}
+@media (orientation:landscape) and (max-height:540px){
+ #campaign.screen .section-heading{margin:4px 0 8px}
+ #campaign.screen .section-heading h2{font-size:clamp(19px,3vw,26px);margin:3px 0}
+ #campaignHub.campaign-hub{margin-block:5px;gap:clamp(7px,1.3vw,14px)}
+ #campaignHub .campaign-hub-card{height:clamp(146px,52vh,230px);padding:clamp(9px,1.2vw,14px)}
+ #campaignHub .campaign-hub-copy{gap:3px}
+ #campaignHub .campaign-hub-kicker{font-size:9px}
+ #campaignHub .campaign-hub-copy strong{font-size:clamp(13px,1.75vw,18px);line-height:1.12}
+ #campaignHub .campaign-hub-copy small{font-size:clamp(10px,1.19vw,12px)}
+ #campaignHub .campaign-hub-progress{font-size:10px;min-height:16px}
+}
+@media (orientation:portrait) and (max-width:640px){
+ #campaignHub .campaign-hub-card{min-height:170px}
+ #campaignHub .campaign-hub-card::before{background-position:center,center 42%,center}
+}
+@media (prefers-reduced-motion:reduce){
+ #campaignHub .campaign-hub-card{transition:none}
+ #campaignHub .campaign-hub-card::before{transition:none}
 }

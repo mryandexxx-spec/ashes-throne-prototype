@@ -92,12 +92,15 @@ fs.mkdirSync(outDir,{recursive:true});
      const h=hand.getAbsolutePosition(),s=socket.getAbsolutePosition();
      const shield=scene.meshes.find(m=>m.getTotalVertices?.()===4445);
      if(shield){shield.computeWorldMatrix(true);}
+     const worldSocket=new BABYLON.Quaternion();socket.getWorldMatrix().decompose(null,worldSocket);
+     const worldShield=new BABYLON.Quaternion();shield?.getWorldMatrix().decompose(null,worldShield);
      return {hand:point(h),socket:point(s),
       hip:hips?point(hips.position):null,
       dist:BABYLON.Vector3.Distance(h,s),
       shieldMinY:shield?.getBoundingInfo().boundingBox.minimumWorld.y||null,
       // Uses actual Babylon values, not GLB key interpolation in Python.
-      rotation:socket.rotationQuaternion?.asArray()};
+      rotation:socket.rotationQuaternion?.asArray(),
+      worldSocket:worldSocket.asArray(),worldShield:worldShield.asArray()};
     });
     assert.ok(Object.values(pose.socket).every(Number.isFinite),clip+" socket NaN");
     assert.ok(Object.values(pose.hand).every(Number.isFinite),clip+" hand NaN");
@@ -117,6 +120,16 @@ fs.mkdirSync(outDir,{recursive:true});
    assert.ok(maxHipXZ<.03,clip+" unexpected root-motion: "+maxHipXZ);
    results.push({clip,maxHipXZ,phases});
   }
+  // Compare real Babylon world orientations: stabilization must avoid a
+  // large unintentional flip across stationary and defensive animations.
+  const baseline=results.find(x=>x.clip==="Idle_02").phases[2].worldShield;
+  const difference=q=>{
+   const dot=Math.abs(baseline.reduce((sum,v,i)=>sum+v*q[i],0));
+   return (2*Math.acos(Math.min(1,Math.max(0,dot))))*180/Math.PI;
+  };
+  console.log("LIORA shield world-facing",JSON.stringify(results.map(x=>({
+   clip:x.clip,midAngleDegrees:+difference(x.phases[2].worldShield).toFixed(2)
+  }))));
   // During death the shield must detach visually from the hand and descend
   // toward the model-space floor, then return on a new idle clip.
   const death=results.find(x=>x.clip==="Liora_Shield_Death");

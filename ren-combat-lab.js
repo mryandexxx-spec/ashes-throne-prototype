@@ -48,6 +48,8 @@
   const raw=$('mode').value!=='choreography',phase=RenChoreography.sample(plan,time);
   const offset=raw?{x:0,z:0}:RenChoreography.offset(plan,time,origin,enemy);
   body.position.set(origin.x+offset.x,.8,offset.z);
+  if(draw.baseYaw===undefined)draw.baseYaw=body.rotation.y||0;
+  body.rotation.y=draw.baseYaw+(raw?0:phase.heading||0); // RENRETREAT001
   if(raw)actor.sampleRaw($('mode').value,time/plan.durationMs);
   else if(time===0&&!playing)actor.update({slot:'idle',progress:(idleMs%13966.667)/13966.667});
   else actor.update({slot:'basic',plan,elapsedMs:time,progress:time/plan.durationMs});

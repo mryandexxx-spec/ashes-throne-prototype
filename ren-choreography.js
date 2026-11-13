@@ -1,10 +1,13 @@
-/* RENCHOR021: presentation only. Source frames are Babylon 60fps frames.
+/* RENRETREAT001: after the strike Ren pivots, runs back and pivots to face the enemy
+ * again (was: a 4-5 s backwards walk). `heading` is a yaw offset for the body anchor.
+ * RENCHOR021: presentation only. Source frames are Babylon 60fps frames.
  * First slash 0..60 of Double_Combo_Attack, measured from the real GLB.
  * Root curve is extracted to the anchor, never discarded or applied twice.
  */
 const RenChoreography=(()=>{
  "use strict";
  const ROOT=[[0.0,0.0,0.0],[33.33333,-0.00025704,0.00485814],[66.66667,-0.00207348,0.01217616],[100.0,-0.00462442,0.02179861],[133.33333,-0.00755734,0.03363061],[166.66666,-0.01100961,0.04765725],[200.00002,-0.01573567,0.06268841],[233.33335,-0.02016575,0.07705772],[266.66668,-0.02428869,0.09006917],[300.00001,-0.02811859,0.10144454],[333.33334,-0.0317331,0.11132336],[366.66667,-0.03513082,0.11945611],[400.00001,-0.03975413,0.12748599],[433.33334,-0.04555387,0.13581735],[466.6667,-0.05196732,0.14454585],[500.0,-0.0580711,0.1530506],[533.33336,-0.0610682,0.15820181],[566.66666,-0.0627835,0.16183764],[600.00002,-0.0651592,0.16427982],[633.33333,-0.06932061,0.1660856],[666.66669,-0.07558867,0.16771066],[699.99999,-0.08159651,0.17580104],[733.33335,-0.08560837,0.18761182],[766.66665,-0.08879833,0.20249629],[800.00001,-0.0915693,0.2200259],[833.33331,-0.09341441,0.23981309],[866.66667,-0.0940056,0.26195377],[899.99998,-0.09327966,0.2845034],[933.33334,-0.09203122,0.30644405],[966.66664,-0.090551,0.32682282],[1000.0,-0.0885254,0.34470099]];
+ const PIVOT_MS=220;
  const SOURCE=Object.freeze({attackEndFrame:60,contactFrame:37,attackMs:1000,runMs:633.333333,walkMs:1033.333333,runStrideSpeed:4.665,walkStrideSpeed:1.35});
  const clamp=v=>Math.max(0,Math.min(1,v));
  const smooth=v=>{v=clamp(v);return v*v*(3-2*v);};
@@ -40,13 +43,17 @@ const RenChoreography=(()=>{
   const approachMs=travel?travel/runSpeed*1000+160:0;
   const attackStart=approachMs+120;
   const attackEnd=attackStart+SOURCE.attackMs;
-  const retreatStart=attackEnd+200;
   const endRoot=rootAt(1000,scale);
   const retreatDistance=Math.hypot(travel+endRoot.forward,endRoot.lateral);
-  const retreatMs=retreatDistance?retreatDistance/walkSpeed*1000+160:0;
+  // No travel (target already in reach): keep the old short recover, no pivot.
+  const pivotMs=travel?PIVOT_MS:0;
+  const retreatStart=attackEnd+(travel?pivotMs:200);
+  const retreatMs=travel?retreatDistance/runSpeed*1000+160:retreatDistance?retreatDistance/walkSpeed*1000+160:0;
   const settleStart=retreatStart+retreatMs;
+  // Yaw offset that points the body from the strike spot back to the origin.
+  const retreatHeading=travel?-Math.atan2(-endRoot.lateral,-(travel+endRoot.forward)):0;
   return Object.freeze({scale,spacing,distance,travel,retreatDistance,approachMs,attackStart,attackEnd,retreatStart,retreatMs,settleStart,
-   contactMs:attackStart+SOURCE.contactFrame/60*1000,durationMs:settleStart+140,endRoot});
+   pivotMs,retreatHeading,contactMs:attackStart+SOURCE.contactFrame/60*1000,durationMs:settleStart+(travel?pivotMs:140),endRoot});
  }
  // Acceleration/deceleration ramps; full speed is determined by the distance,
  // not by a fixed percentage of an unrelated action duration.
@@ -60,7 +67,7 @@ const RenChoreography=(()=>{
  const clip=(name,ms)=>({name,progress:name==='Double_Combo_Attack'?clamp(ms/2833.333492):((ms%(name==='Running'?SOURCE.runMs:SOURCE.walkMs))+(name==='Running'?SOURCE.runMs:SOURCE.walkMs))%(name==='Running'?SOURCE.runMs:SOURCE.walkMs)/(name==='Running'?SOURCE.runMs:SOURCE.walkMs)});
  function sample(p,time){
   const t=Math.max(0,Math.min(p.durationMs,time));
-  let forward=0,lateral=0,a={name:'Idle_4',progress:0},b=a,weight=0,phase='idle';
+  let forward=0,lateral=0,a={name:'Idle_4',progress:0},b=a,weight=0,phase='idle',heading=0;
   if(t<p.approachMs){
    phase='approach';forward=p.travel*travelAt(t,p.approachMs);
    a={name:'Idle_4',progress:0};b=clip('Running',p.travel*travelAt(t,p.approachMs)/(SOURCE.runStrideSpeed*p.scale)*1000);weight=smooth(t/120);
@@ -74,13 +81,20 @@ const RenChoreography=(()=>{
    a=b=clip('Double_Combo_Attack',ms);
   }else if(t<p.retreatStart){
    phase='recover';forward=p.travel+p.endRoot.forward;lateral=p.endRoot.lateral;
-   a=clip('Double_Combo_Attack',1000);b={name:'Idle_4',progress:0};weight=smooth((t-p.attackEnd)/200);
+   a=clip('Double_Combo_Attack',1000);
+   if(p.pivotMs){const u=smooth((t-p.attackEnd)/p.pivotMs);b=clip('Running',0);weight=u;heading=p.retreatHeading*u;}
+   else{b={name:'Idle_4',progress:0};weight=smooth((t-p.attackEnd)/200);}
   }else if(t<p.settleStart){
    phase='retreat';const ms=t-p.retreatStart,f=1-travelAt(ms,p.retreatMs);
    forward=(p.travel+p.endRoot.forward)*f;lateral=p.endRoot.lateral*f;
-   a={name:'Idle_4',progress:0};b=clip('Walking',-p.retreatDistance*(1-f)/(SOURCE.walkStrideSpeed*p.scale)*1000);weight=smooth(ms/140)*smooth((p.settleStart-t)/140);
-  }else{phase='settle';}
-  return {phase,forward,lateral,a,b,weight,contact:Math.abs(t-p.contactMs)<35};
+   if(p.pivotMs){a=b=clip('Running',p.retreatDistance*(1-f)/(SOURCE.runStrideSpeed*p.scale)*1000);heading=p.retreatHeading;}
+   else{a={name:'Idle_4',progress:0};b=clip('Walking',-p.retreatDistance*(1-f)/(SOURCE.walkStrideSpeed*p.scale)*1000);weight=smooth(ms/140)*smooth((p.settleStart-t)/140);}
+  }else{
+   phase='settle';
+   if(p.pivotMs){const u=smooth((t-p.settleStart)/p.pivotMs);
+    a=clip('Running',p.retreatDistance/(SOURCE.runStrideSpeed*p.scale)*1000);b={name:'Idle_4',progress:0};weight=u;heading=u<1?p.retreatHeading*(1-u):0;}
+  }
+  return {phase,forward,lateral,a,b,weight,heading,contact:Math.abs(t-p.contactMs)<35};
  }
  function offset(p,time,origin,target){
   const dx=target.x-origin.x,dz=target.z-origin.z,d=Math.hypot(dx,dz)||1,s=sample(p,time);

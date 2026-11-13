@@ -377,9 +377,10 @@ const CombatCore = (() => {
       (Number.isFinite(value)&&value>=0&&value<=100);
     return valid(actor.accuracy)&&recipients.every(target=>valid(target.evasion));
   }
-  function rollToHit(battle,actor,target,type){
+  function rollToHit(battle,actor,target,type,readMovePenalty=false){
     if(!hitCheckEnabled(battle,type))return true;
-    const accuracy=(actor.accuracy??0)+gardensCombatBonus(battle,actor,"gardensAccuracyBonus");
+    const accuracy=(actor.accuracy??0)+gardensCombatBonus(battle,actor,"gardensAccuracyBonus")-
+      (readMovePenalty?20:0);
     const evasion=(target.evasion??0)+gardensCombatBonus(battle,target,"gardensEvasionBonus");
     const chance=Math.max(5,Math.min(100,100+accuracy-evasion));
     const roll=BattleRng.roll(battle,chance);
@@ -781,7 +782,24 @@ const CombatCore = (() => {
   // Combat-011B: atomic resolution of one self/group command. The acting
   // unit spends exactly one turn and one cooldown. Dead targets are filtered
   // before the command; wave/victory transitions happen after all targets.
-  function performMultiTargetAbility(battle, actor, ability, targets, chosenPrimaryIndex) {
+  function readMoveMitigation(actor,ability){
+    return actor.side==="enemy"&&ability.kind==="damage"&&
+      (ability.id==="special"||ability.id==="powerful")&&
+      typeof CombatStatusCore!=="undefined"&&
+      (CombatStatusCore.read(actor,"read-move")?.stacks??0)>=3;
+  }
+  const READ_MOVE_DAMAGE_REDUCTION_PERCENT=30;
+  const reducedReadMoveDamage=(raw,mitigated)=>mitigated?
+    Math.round(raw*(100-READ_MOVE_DAMAGE_REDUCTION_PERCENT)/100):raw;
+  function consumeReadMoveMitigation(battle,actor,mitigated){
+    if(!mitigated)return true;
+    if(!CombatStatusCore.spendReadMove(actor,3))return false;
+    emit(battle,"read-move-predicted",{actorId:actor.id,remainingStacks:
+      CombatStatusCore.read(actor,"read-move")?.stacks??0,
+      accuracyPenalty:20,damageReduction:READ_MOVE_DAMAGE_REDUCTION_PERCENT});
+    return true;
+  }
+  function performMultiTargetAbility(battle, actor, ability, targets, chosenPrimaryIndex,readMovePenalty=false) {
     if(!["self","all-enemies","all-allies"].includes(ability.target))return false;
     if(!["damage","heal","guard"].includes(ability.kind))return false;
     if(ability.target==="all-enemies"&&ability.kind!=="damage")return false;
@@ -805,6 +823,7 @@ const CombatCore = (() => {
       targets.includes(chosenPrimaryIndex)?chosenPrimaryIndex:targets[0];
     const primaryTargetId=battle.fighters[primaryIndex].id;
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
+    if(!consumeReadMoveMitigation(battle,actor,readMovePenalty))return false;
     emit(battle,"ability",{
       actorId:actor.id,targetId:primaryTargetId,primaryTargetId,
       targetIds:recipients.map(f=>f.id),abilityId:ability.id
@@ -812,13 +831,13 @@ const CombatCore = (() => {
     const weakened=actor.weakenAttacks>0;
     for(const target of recipients){
       if(ability.kind==="damage"){
-        if(!rollToHit(battle,actor,target,type))continue;
+        if(!rollToHit(battle,actor,target,type,readMovePenalty))continue;
         const oldHp=target.hp,oldProtection=target.protection??null;
         const baseDamage=bonusDamage(battle,actor,target,
           Math.round(effectiveStat(battle,actor,
             AbilityData.damageStat(ability))*ability.multiplier));
         const damage=dealDamage(actor,target,
-          rollCriticalDamage(battle,actor,target,baseDamage,type),false,type,
+          reducedReadMoveDamage(rollCriticalDamage(battle,actor,target,baseDamage,type),readMovePenalty),false,type,
           penetrationEnabled(battle,type)?actor.defensePenetration:0);
         emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
           ...typedDamageFields(target,type,oldHp,oldProtection)});
@@ -866,16 +885,8 @@ const CombatCore = (() => {
     const actorIndex=battle?.currentActor;
     if(!actorAbilityReady(battle,actorIndex,abilityId))return false;
     const actor=battle.fighters[actorIndex];
-    const originalAbilityId=abilityId;
-    const disruption=actor.side==="enemy"&&abilityId!=="basic"&&
-     typeof CombatStatusCore!=="undefined"&&
-     (CombatStatusCore.read(actor,"read-move")?.stacks??0)>=3;
-    if(disruption){
-      abilityId="basic";
-      primaryIndex=firstLivingAlly(battle.fighters);
-      if(!actorAbilityReady(battle,actorIndex,abilityId))return false;
-    }
     const ability=AbilityData.get(actor,abilityId);
+    const readMovePenalty=readMoveMitigation(actor,ability);
     // Invalid definitions must not consume an action or overwrite events.
     // Stats-001B: explicit typed attacks require a valid matching attack value.
     // Legacy abilities keep using the historical general atk without reclassification.
@@ -890,7 +901,7 @@ const CombatCore = (() => {
     if(ability.kind==="guard"&&(!Number.isInteger(ability.guardHits)||ability.guardHits<0))return false;
     const targets=actorTargetIndices(battle,actorIndex,ability.target,primaryIndex);
     if(["self","all-enemies","all-allies"].includes(ability.target))
-      return performMultiTargetAbility(battle,actor,ability,targets,primaryIndex);
+      return performMultiTargetAbility(battle,actor,ability,targets,primaryIndex,readMovePenalty);
     if(ability.target!=="ally" && ability.target!=="enemy")return false;
     if(targets.length!==1)return false;
     const targetIndex=targets[0];
@@ -904,11 +915,7 @@ const CombatCore = (() => {
     if(!validCombinedRngBudget(battle,ability,[target],type))return false;
     // Invalid commands leave the previous event batch untouched.
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
-    if(disruption){
-      if(!CombatStatusCore.spendReadMove(actor,3))return false;
-      emit(battle,"read-move-disrupted",{actorId:actor.id,requestedAbilityId:originalAbilityId,
-       resolvedAbilityId:"basic",remainingStacks:CombatStatusCore.read(actor,"read-move")?.stacks??0});
-    }
+    if(!consumeReadMoveMitigation(battle,actor,readMovePenalty))return false;
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
     if(ability.kind==="guard"){
       target.guardHits=ability.guardHits;
@@ -919,7 +926,7 @@ const CombatCore = (() => {
       target.hp+=restored;
       emit(battle,"heal",{actorId:actor.id,targetId:target.id,amount:restored,remainingHp:target.hp});
       battle.message=actor.name+" лечит "+target.name+": +"+restored+" HP.";
-    }else if(!rollToHit(battle,actor,target,type)){
+    }else if(!rollToHit(battle,actor,target,type,readMovePenalty)){
       if(actor.weakenAttacks>0)actor.weakenAttacks--;
       battle.message=actor.name+" промахивается по "+target.name+".";
     }else{
@@ -927,7 +934,7 @@ const CombatCore = (() => {
       const baseDamage=bonusDamage(battle,actor,target,
         Math.round(effectiveStat(battle,actor,damageStat)*ability.multiplier));
       const damage=dealDamage(actor,target,
-        rollCriticalDamage(battle,actor,target,baseDamage,type),true,type,
+        reducedReadMoveDamage(rollCriticalDamage(battle,actor,target,baseDamage,type),readMovePenalty),true,type,
         penetrationEnabled(battle,type)?actor.defensePenetration:0);
       emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
         ...typedDamageFields(target,type,oldHp,oldProtection)});

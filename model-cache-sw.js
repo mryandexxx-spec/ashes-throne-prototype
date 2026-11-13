@@ -1,13 +1,14 @@
 /* CACHE001 — persistent, versioned model-only cache for the browser RPG.
  * Never cache HTML, JS, player data or partial HTTP responses.
- * Bump CACHE_NAME whenever either GLB changes (RENOPT001, NADAOPT001).
+ * Bump CACHE_NAME when any GLB changes (RENOPT001, NADAOPT001, LIORAPLAY001).
  */
 "use strict";
 const CACHE_PREFIX="ashes-models-";
-const CACHE_NAME=CACHE_PREFIX+"ren-a15fd00f_nada-4c8b29b8_v1";
+const CACHE_NAME=CACHE_PREFIX+"ren-a15fd00f_nada-4c8b29b8_liora-a2cc310c_v1";
 const MODEL_PATHS=[
  "assets/ren-meshy-mixamo-animated.glb",
- "dev/assets/models/nada-mobile-animated.glb"
+ "dev/assets/models/nada-mobile-animated.glb",
+ "dev/assets/models/liora_vel_shield_aware_15clips.glb"
 ];
 const MODEL_URLS=MODEL_PATHS.map(path=>new URL(path,self.registration.scope).href);
 const inflight=new Map();
@@ -45,8 +46,19 @@ async function getOrFetch(url){
 self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
  const names=await caches.keys();
- await Promise.all(names.filter(name=>name.startsWith(CACHE_PREFIX)&&name!==CACHE_NAME)
-  .map(name=>caches.delete(name)));
+ // Reuse matching Ren/Nada cached bytes, avoiding re-download on new SW.
+ const previous=names.filter(name=>name.startsWith(CACHE_PREFIX)&&name!==CACHE_NAME);
+ const current=await openCache();
+ for(const name of previous){
+  const old=await caches.open(name);
+  for(const url of MODEL_URLS){
+   if(!(await current.match(url))){
+    const hit=await old.match(url);
+    if(hit)await current.put(url,hit.clone());
+   }
+  }
+ }
+ await Promise.all(previous.map(name=>caches.delete(name)));
  await self.clients.claim();
 })()));
 self.addEventListener("fetch",event=>{
@@ -59,7 +71,7 @@ self.addEventListener("fetch",event=>{
 });
 // CACHE002: exact downloadable GLB sizes; progress is based on bytes actually
 // consumed from the response stream, not a timer or a simulated percentage.
-const MODEL_BYTES=[2862860,1462284];
+const MODEL_BYTES=[2862860,1462284,2850224];
 async function reportCacheStatus(port){
  const cache=await openCache();
  const results=[];

@@ -825,8 +825,15 @@ function showScreen(id){
  if(document.body&&document.body.classList)document.body.classList.toggle("battle-mode",id==="battle");
  if(id!=="collection")closeRosterSortMenu();
  const rosterWasInDossier=$("#heroDetail")?.classList.contains("active");
+ const previousScreenId=document.querySelector(".screen.active")?.id||null;
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  $("#"+id).classList.add("active");
+ // MOBILEQA001: a new screen opens at its top, not at the previous screen's
+ // scroll offset (e.g. squad header hidden after the long campaign list).
+ // The roster keeps its own return-to-position behaviour below.
+ const restoresRoster=id==="collection"&&!!(rosterRestoreOnReturn&&rosterWasInDossier);
+ if(previousScreenId!==id&&!restoresRoster&&typeof window!=="undefined"&&typeof window.scrollTo==="function")
+  window.scrollTo(0,0);
  if(id==="collection"){
   const restore=rosterRestoreOnReturn&&rosterWasInDossier;
   renderHeroes();
@@ -1657,6 +1664,9 @@ function openHeroDetail(id){
  showScreen("heroDetail");
  return true;
 }
+// MOBILEQA001: the 48px card slot cannot fit "Снаряжение" on one 8px line;
+// a soft hyphen lets it wrap as "Снаря-/жение" without changing the label data.
+function gearSlotCaption(label){return label==="Снаряжение"?"Снаря&shy;жение":label;}
 function renderItemizedGear(base,gear){
  const completed=gear.slots.filter(Boolean).length;
  const ready=completed===ProgressCore.SLOT_COUNT;
@@ -1671,7 +1681,7 @@ function renderItemizedGear(base,gear){
   return '<button type="button" class="gear-slot '+(filled?'filled ':'')+
    (selected?'selected':'')+'" data-gear-slot="'+i+'" aria-pressed="'+selected+
    '" aria-label="'+entry.label+' · '+(filled?'установлен':'пустой')+'">'+
-   '<span aria-hidden="true">'+(filled?'◆':'◇')+'</span><small>'+entry.label+'</small></button>';
+   '<span aria-hidden="true">'+(filled?'◆':'◇')+'</span><small>'+gearSlotCaption(entry.label)+'</small></button>';
  }).join("");
  const label=$("#gearMaterialLabel");if(label)label.textContent="Компоненты G"+gear.tier;
  $("#gearMaterial").textContent=GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(" · ");
@@ -2490,8 +2500,12 @@ function positionArenaIndicators(){
  // Render pixels can differ from CSS pixels on retina/HiDPI iPhones.
  // Avoid per-frame DOM reads: the ported observer caches overlay CSS dimensions.
  // Legacy measurements remain only as a compatibility fallback for old fixtures.
- if(!arenaHudLayout && typeof ArenaWorldHud!=="undefined")
+ if(!arenaHudLayout && typeof ArenaWorldHud!=="undefined"){
   arenaHudLayout=new ArenaWorldHud.Layout(overlay);
+  // MOBILEQA001: keep health/initiative indicators clear of fixed HUD controls.
+  arenaHudLayout.avoid?.(document.querySelectorAll(
+   "#battle .battle-top>[data-screen], #targetFighterHud, #autoBattleBtn, #autoSpeedBtn, #turnChip, #renModelBattleStatus, #battleMessage, #battle .arena-utility, #battle .action-panel"));
+ }
  const cssWidth=arenaHudLayout?arenaHudLayout.width:(overlay.clientWidth||width);
  const cssHeight=arenaHudLayout?arenaHudLayout.height:(overlay.clientHeight||height);
  if(!cssWidth||!cssHeight)return;
@@ -2814,6 +2828,15 @@ function renderBattleFrame(){
   visual.head.position.y=1.8+pose.y;
   if(visual.body.rotation)visual.body.rotation.z=pose.tilt;
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
+  // MOBILEQA001: GLB heroes rest three-quarter to the camera, facing the enemy lane.
+  if((h.id==="ren"&&renGlbRuntime)||(h.id==="nada"&&nadaGlbRuntime)){
+   if(visual.body.rotation&&!(h.id==="ren"&&targetPosition&&activity.plan)&&typeof ArenaStageView!=="undefined"&&ArenaStageView.idleYaw){
+    const rest=ArenaStageView.idleYaw(h.side),cur=visual.body.rotation.y||0;
+    const diff=Math.atan2(Math.sin(rest-cur),Math.cos(rest-cur));
+    visual.body.rotation.y=Math.abs(diff)<.002?rest:cur+diff*.18;
+    if(h.id==="ren")visual.renPlan=null;
+   }
+  }
   if(h.id==="nada"&&nadaGlbRuntime)nadaGlbRuntime.update(activity);
   if(h.id==="ren"&&renGlbRuntime){
    if(visual.body.rotation&&targetPosition&&activity.plan){

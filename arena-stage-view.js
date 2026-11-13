@@ -33,6 +33,20 @@ const ArenaStageView=(()=>{
    const lateral=(side==="ally"?3.45:-3.45)+(rank-(rowSize-1)/2)*2.35;
    return {x:near.x*depth+tangent.x*lateral,z:near.z*depth+tangent.z*lateral};
  }
- return Object.freeze({view:VIEW,formation});
+ // MOBILEQA001 [ПРЕДЛОЖЕНИЕ]: resting GLB heroes stand three-quarter to the
+ // viewer, turned toward the opposing lane, instead of world +X (which under the
+ // ARENA-ENGINE-003 camera shows their backs). Body-local +X is the model front,
+ // matching the existing attack yaw -atan2(dz,dx) in game.js.
+ const IDLE_TURN=radians(70);
+ const toCamera=Object.freeze({x:Math.cos(VIEW.alpha),z:Math.sin(VIEW.alpha)});
+ const screenRight=Object.freeze({x:-toCamera.z,z:toCamera.x});
+ function idleFacing(side){
+   if(side!=="ally"&&side!=="enemy")throw Error("arena: invalid team side");
+   const sign=side==="ally"?1:-1;
+   return {x:Math.cos(IDLE_TURN)*toCamera.x+sign*Math.sin(IDLE_TURN)*screenRight.x,
+    z:Math.cos(IDLE_TURN)*toCamera.z+sign*Math.sin(IDLE_TURN)*screenRight.z};
+ }
+ function idleYaw(side){const d=idleFacing(side);return -Math.atan2(d.z,d.x);}
+ return Object.freeze({view:VIEW,formation,idleFacing,idleYaw,screenRight,toCamera});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=ArenaStageView;

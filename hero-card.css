@@ -40,7 +40,7 @@ body.hero-card-mode #app>footer{margin:0;padding:0;border:0;font-size:9px;line-h
 #heroDetail #gearSlots .gear-slot:nth-child(5){grid-row:2}
 #heroDetail #gearSlots .gear-slot:nth-child(6){grid-row:3}
 #heroDetail #gearSlots .gear-slot span{font-size:16px;line-height:1}
-#heroDetail #gearSlots .gear-slot small{font-size:8px;line-height:1.05;white-space:normal}
+#heroDetail #gearSlots .gear-slot small{font-size:8px;line-height:1.05;white-space:normal;max-width:100%;overflow-wrap:break-word;-webkit-hyphens:manual;hyphens:manual}
 #heroDetail #gearSlots .gear-slot.selected{border-color:#f0c879}
 #heroDetail #gearSlots .gear-slot.filled{background:linear-gradient(145deg,#625039,#272222)}
 #heroDetail .hero-card-gear-footer{position:absolute;bottom:0;left:0;right:0;display:grid;justify-items:center;gap:2px}

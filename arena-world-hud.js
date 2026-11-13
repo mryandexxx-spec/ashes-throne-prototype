@@ -8,13 +8,16 @@ const ArenaWorldHud = (() => {
   const intersects = (a,b)=>a.x < b.x+b.w+GAP && a.x+a.w+GAP > b.x &&
     a.y < b.y+b.h+GAP && a.y+a.h+GAP > b.y;
 
-  function pack(rows,width,height,insets={left:8,right:8,top:8,bottom:8}) {
+  // MOBILEQA001: obstacles are fixed HUD controls (Автобой, 1×, target card...)
+  // in overlay coordinates; indicators must not hide under them.
+  function pack(rows,width,height,insets={left:8,right:8,top:8,bottom:8},obstacles=[]) {
     if(!rows.length || width<=0 || height<=0)return rows;
     const left=insets.left,right=width-insets.right;
     // Reserve the fixed battle title above and action bar below (Dune v94).
     // Scale the reserve down on unusually short embedded arena viewports.
     const top=Math.max(insets.top,Math.min(60,Math.floor(height*.16)));
     const bottom=height-Math.max(insets.bottom,Math.min(100,Math.floor(height*.25)));
+    const blocks=(obstacles||[]).filter(o=>o&&o.w>0&&o.h>0);
     const placed=[];
     let crowded=false;
     const ordered=[...rows].sort((a,b)=>b.ay-a.ay||String(a.id).localeCompare(String(b.id)));
@@ -22,7 +25,7 @@ const ArenaWorldHud = (() => {
       const nx=clamp(r.ax-r.w/2,left,Math.max(left,right-r.w));
       const ny=clamp(r.ay-r.h-8,top,Math.max(top,bottom-r.h));
       const xs=[nx],ys=[ny,top];
-      for(const p of placed){
+      for(const p of [...placed,...blocks]){
         xs.push(clamp(p.x-r.w-GAP,left,Math.max(left,right-r.w)),
           clamp(p.x+p.w+GAP,left,Math.max(left,right-r.w)));
         ys.push(p.y-r.h-GAP,p.y+p.h+GAP);
@@ -31,7 +34,7 @@ const ArenaWorldHud = (() => {
       for(const x of xs)for(const y of ys){
         if(y<top||y+r.h>bottom)continue;
         const box={x,y,w:r.w,h:r.h};
-        if(placed.some(p=>intersects(box,p)))continue;
+        if(placed.some(p=>intersects(box,p))||blocks.some(p=>intersects(box,p)))continue;
         const dx=x-nx,dy=y-ny;
         const score=dx*dx*2+dy*dy*(dy>0?8:1);
         if(score<cost){best=box;cost=score;}
@@ -51,14 +54,24 @@ const ArenaWorldHud = (() => {
     const heights=groups.map(g=>Math.max(...g.map(r=>r.h)));
     const total=heights.reduce((sum,h)=>sum+h+GAP,-GAP);
     if(total>bottom-top)return rows; // Not enough space: no false zero-overlap claim.
-    let y=clamp(rows.reduce((sum,r)=>sum+r.ay,0)/rows.length-total/2,top,bottom-total);
-    for(let i=0;i<groups.length;i++){
-      const group=groups[i].sort((a,b)=>a.ax-b.ax||String(a.id).localeCompare(String(b.id)));
-      const span=group.length*cellW-GAP;
-      const x0=left+(right-left-span)/2;
-      group.forEach((r,n)=>{r.x=x0+n*cellW+(cellW-GAP-r.w)/2;r.y=y;});
-      y+=heights[i]+GAP;
-    }
+    const shelf=y0=>{
+      let y=y0;
+      for(let i=0;i<groups.length;i++){
+        const group=groups[i].sort((a,b)=>a.ax-b.ax||String(a.id).localeCompare(String(b.id)));
+        const span=group.length*cellW-GAP;
+        const x0=left+(right-left-span)/2;
+        group.forEach((r,n)=>{r.x=x0+n*cellW+(cellW-GAP-r.w)/2;r.y=y;});
+        y+=heights[i]+GAP;
+      }
+      return rows.every(r=>!blocks.some(b=>intersects(r,b)));
+    };
+    const preferred=clamp(rows.reduce((sum,r)=>sum+r.ay,0)/rows.length-total/2,top,bottom-total);
+    if(shelf(preferred))return rows;
+    // Slide the shelf vertically until it clears the fixed controls, if possible.
+    for(let step=4;step<=bottom-top;step+=4)
+      for(const y of [preferred+step,preferred-step])
+        if(y>=top&&y<=bottom-total&&shelf(y))return rows;
+    shelf(preferred);
     return rows;
   }
 
@@ -69,12 +82,15 @@ const ArenaWorldHud = (() => {
       this.nodes=new WeakMap();
       this.width=0;this.height=0;this.dirty=true;
       this.insets={left:8,right:8,top:8,bottom:8};
+      this.obstacleEls=[];this.obstacles=[];this.obstaclesDirty=false;
       this.observer=typeof ResizeObserver==="function"?new ResizeObserver(entries=>{
         for(const entry of entries){
           const size=entry.borderBoxSize && (Array.isArray(entry.borderBoxSize)?entry.borderBoxSize[0]:entry.borderBoxSize);
           const w=Math.ceil(size?size.inlineSize:entry.contentRect.width);
           const h=Math.ceil(size?size.blockSize:entry.contentRect.height);
+          if(this.obstacleEls.includes(entry.target)){this.obstaclesDirty=true;this.dirty=true;continue;}
           if(entry.target===overlay){
+            this.obstaclesDirty=true;
             if(w!==this.width||h!==this.height){this.width=w;this.height=h;this.dirty=true;}
             // Read notch/safe-area padding only on resize, never each WebGL frame.
             if(typeof getComputedStyle==="function"){
@@ -92,6 +108,23 @@ const ArenaWorldHud = (() => {
       }):null;
       if(this.observer)this.observer.observe(overlay);
       else if(overlay){this.width=overlay.clientWidth||0;this.height=overlay.clientHeight||0;}
+    }
+    // Fixed HUD controls to avoid. Measured only after a resize notification,
+    // never inside the WebGL frame loop.
+    avoid(elements){
+      for(const el of this.obstacleEls)if(this.observer)this.observer.unobserve(el);
+      this.obstacleEls=[...elements].filter(Boolean);
+      for(const el of this.obstacleEls)if(this.observer)this.observer.observe(el);
+      this.obstaclesDirty=true;this.dirty=true;
+    }
+    measureObstacles(){
+      this.obstaclesDirty=false;
+      if(!this.overlay||typeof this.overlay.getBoundingClientRect!=="function"){this.obstacles=[];return;}
+      const base=this.overlay.getBoundingClientRect();
+      this.obstacles=this.obstacleEls.map(el=>{
+        const r=el.getBoundingClientRect();
+        return {x:r.left-base.left,y:r.top-base.top,w:r.width,h:r.height};
+      }).filter(o=>o.w>0&&o.h>0);
     }
     begin(){for(const row of this.rows.values())row.seen=false;}
     track(id,el,ax,ay){
@@ -117,7 +150,8 @@ const ArenaWorldHud = (() => {
       if(!this.dirty||!this.width||!this.height)return;
       this.dirty=false;
       const rows=[...this.rows.values()];
-      pack(rows,this.width,this.height,this.insets);
+      if(this.obstaclesDirty)this.measureObstacles();
+      pack(rows,this.width,this.height,this.insets,this.obstacles);
       for(const row of rows){
         const dx=row.x+row.w/2-row.ax,dy=row.y+row.h-row.ay;
         if(Math.abs(dx-row.dx)<.05&&Math.abs(dy-row.dy)<.05)continue;

@@ -53,8 +53,14 @@ test("rigid shield follows LEFT hand position without inheriting bone-chain twis
  a.pose({stabilize:true});
  a.setClipProgress("Liora_Shield_Death",.9);
  assert.ok(Math.abs(a.socket.position.x-.26)<1e-7);
- a.setClipProgress("Liora_Shield_Block",.3);
+ a.setClipProgress("Idle_02",.3);
  assert.equal(a.socket.position.x,f.hand.position.x-.22055);
+ a.setClipProgress("Liora_Shield_Block",.5);
+ assert.ok(a.socket.position.y>.2,"block must raise shield above neutral hand offset");
+ a.setClipProgress("Liora_Shield_Bash",.5);
+ assert.ok(a.socket.position.y>.2,"bash must have a small nonzero offset");
+ a.setClipProgress("Running",.5);
+ assert.equal(a.socket.position.x,f.hand.position.x-.22055,"running preserves baseline socket");
  a.dispose();a.dispose();
  assert.equal(a.socket.disposeCount,1);
 });

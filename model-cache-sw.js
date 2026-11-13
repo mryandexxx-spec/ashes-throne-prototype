@@ -4,7 +4,7 @@
  */
 "use strict";
 const CACHE_PREFIX="ashes-models-";
-const CACHE_NAME=CACHE_PREFIX+"ren-a15fd00f_nada-4c8b29b8_liora-a2cc310c_v1";
+const CACHE_NAME=CACHE_PREFIX+"ren-a15fd00f_nada-4c8b29b8_liora-b49bd249_v1";
 const MODEL_PATHS=[
  "assets/ren-meshy-mixamo-animated.glb",
  "dev/assets/models/nada-mobile-animated.glb",

@@ -32,7 +32,7 @@ test("CACHE002: worker reports actual chunk bytes and cache status, scoped to mo
  const worker=read("model-cache-sw.js");
  // NADAOPT001: progress totals must equal the real GLB sizes.
  const size=f=>fs.statSync(path.join(__dirname,"..",f)).size;
- assert.ok(worker.includes("const MODEL_BYTES=["+size("assets/ren-meshy-mixamo-animated.glb")+","+size("dev/assets/models/nada-mobile-animated.glb")+"]"));
+ assert.ok(worker.includes("const MODEL_BYTES=["+size("assets/ren-meshy-mixamo-animated.glb")+","+size("dev/assets/models/nada-mobile-animated.glb")+","+size("dev/assets/models/liora_vel_shield_aware_15clips.glb")+"]"));
  assert.match(worker,/const \{done,value\}=await reader\.read\(\)/);
  assert.match(worker,/loaded\+=value\.byteLength/);
  assert.match(worker,/CACHE002_ASSET/);

@@ -24,6 +24,7 @@
 
 ## 2026-11-13
 
+- **`v0.3.136 · NADAANIM001`** — NADAANIM001: читаемые анимации Нады в бою, мощная атака — `mage_soell_cast` ([#291](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/291)) · `0f83066`
 - **`v0.3.135 · NADAOPT001`** — NADAOPT001: модель Нады 3,1 → 1,46 МБ, вариант B ([#289](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/289)) · `b1149f6`
 - DOCS: PROJECT_STATUS — краткий снимок, история в CHANGELOG ([#287](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/287)) · `7efefea`
 - **`v0.3.134 · MOBILEQA001`** — MOBILEQA001: исправления по мобильной проверке арены и штаба (v0.3.133) ([#286](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/286)) · `e61172e`

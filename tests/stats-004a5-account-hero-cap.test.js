@@ -46,7 +46,7 @@ progress.accountXp=238;
 while(P.canUpgrade(progress,"kael"))assert.equal(P.upgrade(progress,"kael"),true);
 assert.equal(P.levelOf(progress,"kael"),15);
 assert.equal(P.upgrade(progress,"kael"),false);
-assert.match(P.upgradeBlockReason(progress,"kael"),/тестового максимума/);
+assert.match(P.upgradeBlockReason(progress,"kael"),/максимального уровня 15/);
 // Existing saves must not lose hero levels, HP, gear or currency when a new cap starts.
 progress.accountXp=0;
 const snap=JSON.stringify(progress);
@@ -68,9 +68,9 @@ for(const id of ["playerHeroLevelCap","playerHeroCapNext","detailHeroLevelCap"])
 assert.match(html,/Повышение уровня героя требует игровую валюту/);
 assert.doesNotMatch(html,/Ограничение уровня героев уровнем аккаунта пока не включено/);
 const game=read("game.js");
-assert.match(game,/ProgressCore\.heroLevelCap\(progress\)/);
+assert.match(game,/ProgressCore\.heroLevelCap\(progress,base\.id\)/);
 assert.match(game,/ProgressCore\.upgradeBlockReason\(progress,base\.id\)/);
-assert.match(game,/const before=progress\.saveVersion===3\?JSON\.stringify\(progress\):null/);
+assert.match(game,/const before=JSON\.stringify\(progress\)/);
 assert.match(game,/Доступный максимум героя сейчас/);
 assert.ok(game.includes("ProgressCore.nextHeroCapUnlock(level)"));
 console.log("Stats-004A5: account levels, hard cap, currency safety, existing hero levels and UI messaging passed");

@@ -72,8 +72,9 @@ test("MOBILEQA001: long gear caption gets a soft hyphen only in display",()=>{
  assert.match(read("gear-data.js"),/\["utility","Снаряжение"/);
 });
 test("MOBILEQA001: build marker",()=>{
- assert.equal(JSON.parse(read("package.json")).version,"0.3.137");
- assert.ok(read("index.html").includes("Прототип · v0.3.137 · RENRETREAT001"));
+ const version=JSON.parse(read("package.json")).version;
+ assert.match(version,/^\d+\.\d+\.\d+$/);
+ assert.ok(read("index.html").includes(`Прототип · v${version} · RENRETREAT001`));
 });
 test("MOBILEQA001: Ren choreography calibration is measured in the yaw-0 body frame",()=>{
  const r=read("ren-glb-runtime.js");

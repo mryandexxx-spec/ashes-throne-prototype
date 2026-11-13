@@ -1,0 +1,49 @@
+name: LIORA-UNARMED-001 real Babylon WebGL 15 clips
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'liora-shield-lab.*'
+      - 'liora-lab.html'
+      - 'dev/assets/models/liora*.glb'
+      - 'dev/src/assets/models.js'
+      - 'dev/assets/models/manifest.json'
+      - 'tests/liora-unarmed-*.test.js'
+      - 'tests/liora-glb-asset-contract.test.js'
+      - 'tests/liora-shield-babylon-browser.cjs'
+      - '.github/workflows/liora-shield-babylon.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-webgl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install headless browser
+        run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Check character GLB and no-shield contract
+        run: |
+          node --test tests/liora-glb-asset-contract.test.js tests/liora-unarmed-preview.test.js
+          node --check liora-shield-lab.js
+      - name: Real Babylon Chromium, 15 clips and screenshots
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/liora-server.log 2>&1 &
+          sleep 2
+          node tests/liora-shield-babylon-browser.cjs
+          LIORA_BROWSER=webkit node tests/liora-shield-babylon-browser.cjs
+      - name: Upload unarmed WebGL evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: liora-unarmed-babylon-15-clips
+          path: artifacts/liora-unarmed/
+          if-no-files-found: warn
+          retention-days: 14

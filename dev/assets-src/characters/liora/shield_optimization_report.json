@@ -1,0 +1,48 @@
+{
+  "original_file": "Meshy_AI__1113100438_image-to-3d-texture.glb",
+  "original_bytes": 3883524,
+  "optimized_file": "liora_shield_mobile_optimized.glb",
+  "optimized_bytes": 631488,
+  "reduction_percent": 83.74,
+  "compatibility_alternative": "liora_shield_compatible_jpeg.glb",
+  "compatibility_bytes": 1238408,
+  "original_texture": {
+    "format": "PNG",
+    "resolution": [
+      2048,
+      2048
+    ],
+    "bytes": 3679088,
+    "channels": "RGB"
+  },
+  "optimized_texture": {
+    "format": "WebP lossy",
+    "resolution": [
+      2048,
+      2048
+    ],
+    "quality": 90,
+    "bytes": 426940,
+    "psnr_db": 40.67,
+    "mean_absolute_channel_error": 1.23
+  },
+  "compatibility_texture": {
+    "format": "JPEG",
+    "resolution": [
+      2048,
+      2048
+    ],
+    "quality": 92,
+    "bytes": 1033972,
+    "psnr_db": 42.69
+  },
+  "geometry": {
+    "vertex_count": 4445,
+    "triangle_count": 5056,
+    "mesh_count": 1
+  },
+  "animations": 0,
+  "geometry_bytes_unchanged": true,
+  "structure_validation": "GLB parsed, buffers verified, Trimesh loaded",
+  "visual_testing": "not rendered or compared in Babylon/iPhone; texture lossy"
+}

@@ -41,9 +41,12 @@ const GearData=(()=>{
   return FUTURE_STAT_KEYS.map(id=>{
    // Stats-002C: show real pilot stats only if explicitly present on this hero.
    // Unimplemented stats stay null, including magicAttack for the core trio.
+   const realHero=(hero?.id==="ren"||hero?.id==="nada")&&
+     Object.prototype.hasOwnProperty.call(hero,"magicAttack")&&
+     Object.prototype.hasOwnProperty.call(hero,"debuffResistance");
    const supported=Number.isFinite(hero?.[id])&&
-     ["hp","protection","physicalAttack","physicalDefense",
-      "magicDefense","speed"].includes(id);
+     (realHero||["hp","protection","physicalAttack","physicalDefense",
+      "magicDefense","speed"].includes(id));
    return Object.freeze({id,label:STAT_LABELS[id],
     value:supported?hero[id]:null,
     active:supported});

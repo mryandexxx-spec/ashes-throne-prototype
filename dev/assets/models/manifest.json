@@ -17,6 +17,36 @@
       ],
       "textureMime": "image/webp",
       "source": "../../assets-src/characters/nada/README.md"
+    },
+    {
+      "id": "liora",
+      "file": "liora_vel_shield_aware_15clips.glb",
+      "bytes": 2850224,
+      "sha256": "a2cc310c71ae141d0197da73397d73251db93ae6b57288e2ab5b0eb7aebb46b8",
+      "bones": 66,
+      "animations": 15,
+      "textureSize": [
+        2048,
+        2048
+      ],
+      "textureMime": "image/webp",
+      "source": "../../assets-src/characters/liora/README.md"
+    },
+    {
+      "id": "liora-shield",
+      "file": "liora-shield-mobile.glb",
+      "bytes": 631488,
+      "sha256": "65676e1e43c1065aea4297a54eaa7e12dd7d644258f913bab8fa26f7505b7cce",
+      "vertices": 4445,
+      "triangles": 5056,
+      "bones": 0,
+      "animations": 0,
+      "textureSize": [
+        2048,
+        2048
+      ],
+      "textureMime": "image/webp",
+      "source": "../../assets-src/characters/liora/README.md"
     }
   ]
 }

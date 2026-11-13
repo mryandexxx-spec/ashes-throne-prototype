@@ -48,9 +48,13 @@ const LioraShieldAttachment=(()=>{
    if(state.stabilize){
     const worldHand=hand.getAbsoluteRotationQuaternion();
     socket.rotationQuaternion=B.Quaternion.Inverse(worldHand).multiply(stableWorld);
-   }else if(!socket.rotationQuaternion){
-    socket.rotationQuaternion=B.Quaternion.Inverse(
-     hand.getAbsoluteRotationQuaternion()).multiply(stableWorld);
+   }else{
+    // A-pose/idle-derived wrist-local orientation: comparison only. The large
+    // shield rotates awkwardly with some bare-hand Meshy clips.
+    const wristLocal=new B.Quaternion(-0.40649856,0.08648918,0.90246163,0.11332059);
+    socket.rotationQuaternion=wristLocal.multiply(importCorrection).multiply(
+     B.Quaternion.FromEulerAngles(rad(state.rotation.x),
+      rad(state.rotation.y),rad(state.rotation.z)));
    }
    socket.computeWorldMatrix(true);
   }

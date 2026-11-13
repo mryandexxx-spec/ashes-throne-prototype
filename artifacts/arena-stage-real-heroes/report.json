@@ -16,7 +16,7 @@
         "radius": 15.5,
         "fov": 0.5934119456780721
       },
-      "webglFrames": 22
+      "webglFrames": 19
     },
     {
       "viewport": "667x375",
@@ -34,7 +34,7 @@
         "radius": 15.5,
         "fov": 0.5934119456780721
       },
-      "webglFrames": 41
+      "webglFrames": 38
     }
   ],
   "errors": []

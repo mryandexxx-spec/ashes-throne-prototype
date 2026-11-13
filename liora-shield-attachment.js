@@ -34,7 +34,13 @@ const LioraShieldAttachment=(()=>{
     roots[0].rotation?.y||0,roots[0].rotation?.z||0);
   const importCorrection=B.Quaternion.Inverse(rootRotation);
   for(const root of roots)root.parent=socket;
-  let state=DEFAULT,disposed=false;
+  let state=DEFAULT,disposed=false,activity={clip:"",progress:0};
+  const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
+  function setClipProgress(clip,progress){
+   if(disposed)return;
+   activity={clip:String(clip||""),progress:Math.max(0,Math.min(1,Number(progress)||0))};
+   update();
+  }
   function update(){
    if(disposed)return;
    // Preserve the GLTF character's facing while preventing wrist-spin from
@@ -45,9 +51,26 @@ const LioraShieldAttachment=(()=>{
    const stableWorld=modelRotation.multiply(importCorrection).multiply(
     B.Quaternion.FromEulerAngles(rad(state.rotation.x),
      rad(state.rotation.y),rad(state.rotation.z)));
-   if(state.stabilize){
+   // The shield falls away from the wrist during the death animation.
+   // The model remains a separate GLB; calculate a floor target in model space.
+   const falling=activity.clip==="Liora_Shield_Death"||activity.clip==="Dead";
+   const drop=falling?smooth((activity.progress-.4)/.4):0;
+   socket.position.set(state.offset.x,state.offset.y,state.offset.z);
+   if(drop>0&&reference?.getWorldMatrix&&B.Matrix?.Invert&&B.Vector3?.TransformCoordinates){
+    const targetWorld=B.Vector3.TransformCoordinates(
+     new B.Vector3(.26,.12,.20),reference.getWorldMatrix());
+    const wristLocal=B.Vector3.TransformCoordinates(targetWorld,
+     B.Matrix.Invert(hand.getWorldMatrix()));
+    socket.position.set(
+     state.offset.x+(wristLocal.x-state.offset.x)*drop,
+     state.offset.y+(wristLocal.y-state.offset.y)*drop,
+     state.offset.z+(wristLocal.z-state.offset.z)*drop);
+   }
+   const fallenWorld=drop?stableWorld.multiply(
+    B.Quaternion.FromEulerAngles(rad(-80*drop),0,0)):stableWorld;
+   if(state.stabilize||drop>0){
     const worldHand=hand.getAbsoluteRotationQuaternion();
-    socket.rotationQuaternion=B.Quaternion.Inverse(worldHand).multiply(stableWorld);
+    socket.rotationQuaternion=B.Quaternion.Inverse(worldHand).multiply(fallenWorld);
    }else{
     // A-pose/idle-derived wrist-local orientation: comparison only. The large
     // shield rotates awkwardly with some bare-hand Meshy clips.
@@ -73,7 +96,7 @@ const LioraShieldAttachment=(()=>{
   }
   pose();
   return Object.freeze({
-   jointName:HAND,hand,socket,pose,update,
+   jointName:HAND,hand,socket,pose,update,setClipProgress,
    dispose(){
     if(disposed)return;
     disposed=true;

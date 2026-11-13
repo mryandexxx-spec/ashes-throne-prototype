@@ -3983,6 +3983,8 @@ body:has(#storyDemo.active)::before{
 #heroDetail .ren-card-3d-canvas[hidden]{display:none!important}
 #heroDetail .hero-detail-stage.has-ren-3d .ren-card-3d-canvas{opacity:1;pointer-events:auto}
 #heroDetail .hero-detail-stage.has-ren-3d .ren-detail-portrait{display:none!important}
+/* LIORAPLAY001: hide the legacy blue silhouette beneath the transparent Babylon canvas. */
+#heroDetail .hero-detail-stage.has-ren-3d .hero-detail-silhouette{display:none!important}
 #heroDetail .hero-detail-stage.has-ren-3d .hero-detail-stage-emblem{display:none!important}
 #heroDetail .ren-card-3d-controls{
  display:flex;align-items:center;gap:8px;flex-wrap:wrap;

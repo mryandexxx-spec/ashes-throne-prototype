@@ -6,7 +6,6 @@ const fs=require("node:fs");
 const vm=require("node:vm");
 const read=name=>fs.readFileSync(require("node:path").join(__dirname,"..",name),"utf8");
 const html=read("index.html"),game=read("game.js"),css=read("styles.css");
-function panel(id){const begin=html.indexOf('<div id="'+id+'"');assert.ok(begin>=0,id+" exists");const next=html.indexOf('<div id="campaign',begin+6);return html.slice(begin,next>=0?next:html.indexOf("</section>",begin));}
 test("campaign hub has three unique actionable cards and a back button",()=>{
  for(const path of ["training","lore","main"])assert.equal((html.match(new RegExp('data-campaign-path="'+path+'"',"g"))||[]).length,1);
  for(const id of ["campaignHub","campaignTrainingContent","campaignLoreContent","campaignMainContent","campaignBackButton"])assert.equal((html.match(new RegExp('id="'+id+'"',"g"))||[]).length,1);
@@ -16,12 +15,12 @@ test("campaign hub has three unique actionable cards and a back button",()=>{
 });
 test("existing mission identifiers, state and rewards stay stable",()=>{
  const context=vm.createContext({});
- vm.runInContext(read("mission-data.js")+"\n"+read("campaign-data.js")+"\n"+read("campaign-core.js"),context);
- const ids=Array.from(context.MissionData.all(),item=>item.id);
+ const modules=vm.runInContext(read("mission-data.js")+"\n"+read("campaign-data.js")+"\n"+read("campaign-core.js")+"\n;({MissionData,CampaignData,CampaignCore})",context);
+ const ids=Array.from(modules.MissionData.all(),item=>item.id);
  assert.deepEqual(ids,["black-pass-ambush","demo-mission-2","demo-mission-3"]);
- assert.equal(context.CampaignData.catalogIsValid(),true);
- assert.equal(context.CampaignCore.VERSION,2);
- assert.equal(context.CampaignCore.KEY,"ashes-throne.campaign.v1");
+ assert.equal(modules.CampaignData.catalogIsValid(),true);
+ assert.equal(modules.CampaignCore.VERSION,2);
+ assert.equal(modules.CampaignCore.KEY,"ashes-throne.campaign.v1");
  assert.match(html,/id="campaignMissions"/);
  assert.match(game,/CampaignCore\.recordResult/);
 });

@@ -92,3 +92,29 @@ test("GEAR013 G10+ history validates numerically and incomplete earlier ranks ar
  bad.heroes.ren.gear.installedByTier["10"][0]=null;
  assert.equal(V.validateActive(bad,heroes),null);
 });
+
+test("GEAR013 development resources refill a complete G10 tier without free purchases",()=>{
+ const p=rich(fresh());
+ for(let tier=1;tier<=9;tier++){
+  for(const slot of G.SLOTS)assert.equal(P.equipItem(p,"ren",P.itemOffer(p,"ren",slot.id)[0].id),true);
+  assert.ok(P.promoteGear(p,"ren"));
+ }
+ p.currency=0;for(const id of G.MATERIALS)p.materials[id]=0;
+ const grant=P.grantTestResources(p);
+ assert.ok(grant&&grant.currency>0);
+ assert.equal(p.gear.ren.tier,10);
+ for(const slot of G.SLOTS)assert.equal(P.equipItem(p,"ren",P.itemOffer(p,"ren",slot.id)[0].id),true);
+ assert.equal(P.gearPromotionCost(p,"ren").to,11);
+ assert.ok(P.canPromoteGear(p,"ren"));
+});
+test("GEAR013 demo hero stats receive real item defense and critical bonuses",()=>{
+ const p=rich(fresh()),base=heroes[0];
+ const original=P.heroStats(p,base);
+ for(const slot of G.SLOTS)assert.equal(P.equipItem(p,"kael",P.itemOffer(p,"kael",slot.id)[0].id),true);
+ const after=P.heroStats(p,base);
+ assert.ok(after.hp>original.hp);
+ assert.ok(after.physicalDefense>original.physicalDefense);
+ assert.ok(after.protection>original.protection);
+ assert.ok(after.accuracy>0);
+ assert.equal(after.speed,original.speed);
+});

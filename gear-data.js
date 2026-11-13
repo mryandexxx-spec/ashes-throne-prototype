@@ -47,7 +47,9 @@ const GearData=(()=>{
      Object.prototype.hasOwnProperty.call(hero,"debuffResistance");
    const supported=Number.isFinite(hero?.[id])&&
      (realHero||["hp","protection","physicalAttack","physicalDefense",
-      "magicDefense","speed"].includes(id));
+      "magicDefense","speed"].includes(id)||
+      (hero[id]>0&&["critChance","critDamage","accuracy","evasion",
+       "defensePenetration","debuffPotency","debuffResistance"].includes(id)));
    return Object.freeze({id,label:STAT_LABELS[id],
     value:supported?hero[id]:null,
     active:supported});

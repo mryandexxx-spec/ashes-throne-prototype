@@ -61,7 +61,7 @@
    input.addEventListener("change",setPoseFromInputs);
   el("stabilize").addEventListener("change",setPoseFromInputs);
   el("reset").addEventListener("click",()=>{
-   const values=["-.22055",".05394","-.01236","0","0","0","1"];
+   const values=["-.22055",".05394","-.01236","0","180","0","1"];
    el("stabilize").checked=true;
    [...el("sliders").querySelectorAll("input")].forEach((input,i)=>input.value=values[i]);
    setPoseFromInputs();

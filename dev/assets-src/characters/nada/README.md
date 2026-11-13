@@ -9,6 +9,8 @@
 **Оптимизированная версия:** `Nada_Mobile_Optimized_Animated_v1.glb`
 - 3 096 808 байт; SHA-256 `1ecd7859754191e296c68171c03a2c180859db52957629905a90cd8d7a61e87d`.
 - Оригинальная топология и скелет сохранены, 2048×2048 baseColor PNG перекодирована в JPEG, избыточные анимационные каналы удалены.
+**Игровая версия после NADAOPT001 (13.11.2026):** 1 462 284 байта; SHA-256 `5bbd34c2db189d1831c213b02ac31f49342f8b7773cc283589ece8249a5a016d`. Из файла выше: цвет WebP 2048 q90, `KHR_mesh_quantization`, прореживание ключей анимации; риг и все 8 клипов сохранены. Подробно — `docs/NADA_GLB_OPTIMIZE_001.md`.
+
 - Контракт анимаций: `Running`, `Walking`, `Archery_Shot_3`, `Electrocuted_Fall`, `Hit_Reaction_1`, `Idle_11`, `Lean_Forward_Sprint_inplace`, `mage_soell_cast`.
 
 Как в Дюне: `dev/assets-src/characters/nada/` содержит исходники и объяснения, `dev/assets/models/` — только игровой экспорт, `dev/src/assets/models.js` — регистр URL. Сборщик Дюны не переносится.

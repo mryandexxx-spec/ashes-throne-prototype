@@ -1,10 +1,10 @@
 /* CACHE001 — persistent, versioned model-only cache for the browser RPG.
  * Never cache HTML, JS, player data or partial HTTP responses.
- * Bump CACHE_NAME whenever either GLB changes.
+ * Bump CACHE_NAME whenever either GLB changes (RENOPT001, NADAOPT001).
  */
 "use strict";
 const CACHE_PREFIX="ashes-models-";
-const CACHE_NAME=CACHE_PREFIX+"ren-a15fd00f_nada-49a695ad_v1";
+const CACHE_NAME=CACHE_PREFIX+"ren-a15fd00f_nada-4c8b29b8_v1";
 const MODEL_PATHS=[
  "assets/ren-meshy-mixamo-animated.glb",
  "dev/assets/models/nada-mobile-animated.glb"
@@ -59,7 +59,7 @@ self.addEventListener("fetch",event=>{
 });
 // CACHE002: exact downloadable GLB sizes; progress is based on bytes actually
 // consumed from the response stream, not a timer or a simulated percentage.
-const MODEL_BYTES=[2862860,3096808];
+const MODEL_BYTES=[2862860,1462284];
 async function reportCacheStatus(port){
  const cache=await openCache();
  const results=[];

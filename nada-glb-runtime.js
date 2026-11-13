@@ -6,11 +6,15 @@ const NadaGlbRuntime=(()=>{
  "use strict";
  const CLIPS=Object.freeze({
   idle:"Idle_11",basic:"Archery_Shot_3",special:"Archery_Shot_3",
-  powerful:"Archery_Shot_3",passive:"Idle_11",leader:"Idle_11",
+  powerful:"mage_soell_cast",passive:"Idle_11",leader:"Idle_11",
   guard:"Idle_11",ward:"Hit_Reaction_1",hit:"Hit_Reaction_1",
   death:"Electrocuted_Fall",run:"Running",walk:"Walking"
  });
  const clipFor=slot=>CLIPS[slot]||CLIPS.idle;
+ // NADAANIM001: part of a clip shown for a slot, as fractions of the clip length.
+ // Electrocuted_Fall shakes standing for 3.2s and lies still after 5.0s of 6.33s.
+ const WINDOWS=Object.freeze({death:Object.freeze([.41,.82])});
+ const windowFor=slot=>WINDOWS[slot]||[0,1];
  const sceneDisposed=scene=>typeof scene?.isDisposed==="function"
   ?scene.isDisposed():scene?.isDisposed===true;
  const clamp=p=>Math.max(0,Math.min(1,Number.isFinite(p)?p:0));
@@ -43,7 +47,7 @@ const NadaGlbRuntime=(()=>{
    const visible=result.meshes.filter(mesh=>mesh.getTotalVertices?.()>0);
    if(visible.length<1)throw Error("Nada GLB has no mesh");
    const groups=new Map(result.animationGroups.map(group=>[group.name,group]));
-   for(const required of [CLIPS.idle,CLIPS.basic,CLIPS.hit,CLIPS.death]){
+   for(const required of [CLIPS.idle,CLIPS.basic,CLIPS.powerful,CLIPS.hit,CLIPS.death]){
     if(!groups.has(required))throw Error("Nada GLB missing clip: "+required);
    }
    root=new B.TransformNode("nada_mobile_glb",scene);
@@ -96,7 +100,8 @@ const NadaGlbRuntime=(()=>{
     }
     // One pose at a time. Match existing CombatAnimation normalized clock.
     // Idle is driven by the clock; never start an independent render loop.
-    group.goToFrame(group.from+(group.to-group.from)*p);
+    const [w0,w1]=windowFor(slot);
+    group.goToFrame(group.from+(group.to-group.from)*(w0+(w1-w0)*p));
     // Mixamo clips carry translation; combat approach is owned by BattleAnimation.
     // Prevent duplicate horizontal root motion and drifting outside the fighter base.
     if(hips){hips.position.x=hipX;hips.position.z=hipZ;}
@@ -142,6 +147,6 @@ const NadaGlbRuntime=(()=>{
    dispose(){disposed=true;instance?.dispose();instance=null;}
   });
  }
- return Object.freeze({assetUrl,clipFor,CLIPS,ensureLoader,create});
+ return Object.freeze({assetUrl,clipFor,windowFor,CLIPS,WINDOWS,ensureLoader,create});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=NadaGlbRuntime;

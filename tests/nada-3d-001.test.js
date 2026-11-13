@@ -79,8 +79,8 @@ test("NADA3D001: failed load retains a simple fighter and reports fallback",asyn
 });
 test("NADA3D001: short footer and versioned scripts",()=>{
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.142");
- assert.match(html,/id="buildVersion">Прототип · v0\.3\.142 · CHAR003/);
+ assert.equal(pkg.version,"0.3.143");
+ assert.match(html,/id="buildVersion">Прототип · v0\.3\.142 · GEAR013/);
  assert.match(html,/ren-card-3d\.js\?v=0\.3\.142/);
  assert.ok(read("dev/assets-src/characters/nada/README.md").includes("Meshy_AI_model_20261112"));
 });

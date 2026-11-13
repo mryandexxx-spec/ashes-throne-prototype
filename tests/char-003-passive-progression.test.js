@@ -15,7 +15,7 @@ function profile(){
  assert.ok(p);
  return {fresh,p};
 }
-test("CHAR003 previous v3 saves have implicit L1 passives without rewriting old fields",()=>{
+test("GEAR013 previous v3 saves have implicit L1 passives without rewriting old fields",()=>{
  const {fresh,p}=profile();
  assert.equal(fresh.passiveLevels,undefined);
  assert.equal(p.passiveLevels,undefined);
@@ -24,7 +24,7 @@ test("CHAR003 previous v3 saves have implicit L1 passives without rewriting old 
  assert.equal(a.SkillCore.level(p,"kael","passive"),null);
  assert.equal(a.ProgressV3Core.fromRuntime(p).passiveLevels,undefined);
 });
-test("CHAR003 upgrades both passive skills with existing costs and unlock levels",()=>{
+test("GEAR013 upgrades both passive skills with existing costs and unlock levels",()=>{
  const {p}=profile();
  p.currency=10000;p.levels.ren=85;p.levels.nada=85;
  a.SkillCore.grantTest(p);
@@ -43,7 +43,7 @@ test("CHAR003 upgrades both passive skills with existing costs and unlock levels
  }
  assert.equal(a.SkillCore.level(p,"liora","passive"),null);
 });
-test("CHAR003 refuses wrong hero level, insufficient materials and invalid upgrades atomically",()=>{
+test("GEAR013 refuses wrong hero level, insufficient materials and invalid upgrades atomically",()=>{
  const {p}=profile();
  p.currency=10000;
  const old=JSON.stringify(p);
@@ -60,7 +60,7 @@ test("CHAR003 refuses wrong hero level, insufficient materials and invalid upgra
  assert.match(a.SkillCore.blocked(p,"ren","passive"),/повреждены/);
  assert.equal(a.SkillCore.upgrade(p,"ren","passive"),null);
 });
-test("CHAR003 real passive descriptions and combat rules scale at levels 1–6",()=>{
+test("GEAR013 real passive descriptions and combat rules scale at levels 1–6",()=>{
  for(let level=1;level<=6;level++){
   const ren={id:"ren",skillLevels:{passive:level}},nada={id:"nada",skillLevels:{passive:level}};
   const r=a.AbilityData.get(ren,"passive"),n=a.AbilityData.get(nada,"passive");
@@ -73,7 +73,7 @@ test("CHAR003 real passive descriptions and combat rules scale at levels 1–6",
  const story=a.AbilityData.get({id:"trial-ren",skillLevels:{passive:6}},"passive");
  assert.equal(story.combatRules.bonusVsDebuffedPercent,15);
 });
-test("CHAR003 v3 saves and reloads both passive levels, rejects corrupt and preserves active levels",()=>{
+test("GEAR013 v3 saves and reloads both passive levels, rejects corrupt and preserves active levels",()=>{
  const {fresh,p}=profile();p.currency=5000;p.levels.ren=85;p.levels.nada=85;
  a.SkillCore.grantTest(p);
  for(let i=0;i<5;i++)a.SkillCore.upgrade(p,"ren","passive");
@@ -95,14 +95,14 @@ test("CHAR003 v3 saves and reloads both passive levels, rejects corrupt and pres
  assert.equal(a.SkillCore.level(loaded,"ren","passive"),6);
  assert.equal(a.SkillCore.level(loaded,"nada","passive"),3);
 });
-test("CHAR003 card and skill dialog expose only actual playable passives",()=>{
+test("GEAR013 card and skill dialog expose only actual playable passives",()=>{
  const source=read("game.js");
  assert.match(source,/SkillCore\.UPGRADABLE_IDS\.includes\(info\.id\)/);
  assert.match(source,/SkillCore\.UPGRADABLE_IDS\.map\(id=>\[id,SkillCore\.level/);
  assert.match(source,/SkillCore\.level\(progress,selectedHeroId,id\)===null/);
 });
 
-test("CHAR003 real battle Ren passive scales only off read-move marks",()=>{
+test("GEAR013 real battle Ren passive scales only off read-move marks",()=>{
  const src=["initiative-model.js","battle-rng.js","combat-status-core.js",
   "skill-core.js","ability-data.js","ability-info.js","combat-core.js"].map(read).join("\n");
  const core=vm.runInNewContext(src+"\n({CombatCore,CombatStatusCore})");

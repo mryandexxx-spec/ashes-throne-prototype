@@ -18,7 +18,7 @@ test("CACHE002: UI reports both characters and cache states without stealing tou
  const html=read("index.html"),css=read("styles.css"),source=read("model-cache-client.js");
  for(const id of ["cache002-indicator","cache002-caption","cache002-ren","cache002-nada","cache002-ren-bar","cache002-nada-bar"])
   assert.ok(html.includes('id="'+id+'"'),id);
- assert.match(html,/v0\.3\.142 · CHAR003/);
+ assert.match(html,/v0\.3\.142 · GEAR013/);
  assert.match(html,/model-cache-client\.js\?v=0\.3\.142/);
  assert.match(css,/\.hq-screen \.hq-model-cache\{[^}]*pointer-events:none/);
  assert.match(css,/safe-area-inset-left/);

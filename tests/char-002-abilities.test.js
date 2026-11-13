@@ -104,30 +104,48 @@ test("CHAR002B Gardens tags and passives are independent, trial actors unchanged
  assert.match(api.AbilityInfo.format(actor("ren"),"passive").description,/зацепку/);
 });
 
-test("CHAR002B enemy special attempt is replaced with basic, consuming 3 marks",()=>{
+test("CHAR002B predicted enemy special still executes, but loses 30% damage",()=>{
  const source=["initiative-model.js","battle-rng.js","combat-status-core.js",
   "skill-core.js","ability-data.js","ability-info.js",
   "const EnemyDecision={chooseAction:()=>({abilityId:\"special\",targetIndex:0})};",
   "combat-core.js","combat-log.js"].map(name=>name.startsWith("const ")?name:read(name)).join("\n");
  const forced=vm.runInNewContext(source+"\n({CombatCore,CombatStatusCore})");
  const ally=fighter("ren","ally",120,500,4,["gardens-over-abyss"]);
- const enemy=fighter("enemy","enemy",180,1000,10);
- const battle=forced.CombatCore.createBattle([ally,enemy]);
- assert.equal(forced.CombatStatusCore.applyReadMove(battle.fighters[1],4,2),true);
- forced.CombatCore.advanceToPlayerTurn(battle);
- const interrupted=battle.events.filter(e=>e.type==="read-move-disrupted");
- assert.equal(interrupted.length,1);
- assert.equal(interrupted[0].requestedAbilityId,"special");
- assert.equal(interrupted[0].remainingStacks,1);
- assert.equal(battle.events.find(e=>e.type==="ability").abilityId,"basic");
- assert.equal(forced.CombatStatusCore.read(battle.fighters[1],"read-move").stacks,1);
- // A new battle starts clean, without leaking accumulated marks.
- const reset=forced.CombatCore.createBattle([ally,enemy]);
- assert.equal(forced.CombatStatusCore.read(reset.fighters[1],"read-move"),null);
- forced.CombatCore.advanceToPlayerTurn(reset);
- assert.equal(reset.events.some(e=>e.type==="read-move-disrupted"),false);
+ const enemy=fighter("test-physical-strike","enemy",180,1000,100);
+ const fight=stacks=>{
+  const battle=forced.CombatCore.createBattle([ally,enemy]);
+  if(stacks)assert.equal(forced.CombatStatusCore.applyReadMove(battle.fighters[1],stacks,2),true);
+  forced.CombatCore.advanceToPlayerTurn(battle);
+  return battle;
+ };
+ const plain=fight(0),predicted=fight(4);
+ assert.equal(500-plain.fighters[0].hp,100);
+ assert.equal(500-predicted.fighters[0].hp,70);
+ assert.equal(predicted.events.find(e=>e.type==="ability").abilityId,"special");
+ assert.equal(predicted.events.filter(e=>e.type==="read-move-predicted").length,1);
+ assert.equal(predicted.events.find(e=>e.type==="read-move-predicted").damageReduction,30);
+ assert.equal(forced.CombatStatusCore.read(predicted.fighters[1],"read-move").stacks,1);
+ assert.equal(predicted.fighters[1].specialCooldown,2);
+ assert.equal(fight(2).events.some(e=>e.type==="read-move-predicted"),false);
+ assert.equal(fight(0).events.some(e=>e.type==="read-move-predicted"),false);
 });
-
+test("CHAR002B mitigation covers group special, all original targets still attacked",()=>{
+ const source=["initiative-model.js","battle-rng.js","combat-status-core.js",
+  "skill-core.js","ability-data.js","ability-info.js",
+  "const EnemyDecision={chooseAction:()=>({abilityId:\"special\",targetIndex:0})};",
+  "combat-core.js"].map(name=>name.startsWith("const ")?name:read(name)).join("\n");
+ const forced=vm.runInNewContext(source+"\n({CombatCore,CombatStatusCore})");
+ const party=[fighter("ren","ally",120,500,4),fighter("nada","ally",119,500,4),
+  fighter("test-area-damage","enemy",180,1000,100)];
+ const battle=forced.CombatCore.createBattle(party);
+ assert.equal(forced.CombatStatusCore.applyReadMove(battle.fighters[2],3,2),true);
+ forced.CombatCore.advanceToPlayerTurn(battle);
+ assert.equal(battle.events.find(e=>e.type==="ability").abilityId,"special");
+ assert.equal(battle.events.filter(e=>e.type==="damage").length,2);
+ assert.equal(battle.fighters[0].hp,430);
+ assert.equal(battle.fighters[1].hp,430);
+ assert.equal(forced.CombatStatusCore.read(battle.fighters[2],"read-move"),null);
+});
 test("CHAR002B both permanent heroes have regional Gardens tags, not a claim of birthplace",()=>{
  const profiles=vm.runInNewContext(read("hero-profile-data.js")+"\nHeroProfileData");
  assert.ok(profiles.get("ren").tags.includes("gardens-over-abyss"));

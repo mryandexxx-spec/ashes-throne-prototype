@@ -1,9 +1,22 @@
-/* Skills-001 [TEST PILOT]: six levels for active abilities only.
+/* CHAR-003 [TEST PILOT]: active skills L1–L6 plus Ren/Nada passives L1–L6.
    Temporary currency names, rewards and numbers are NOT canonical balance. */
 const SkillCore=(()=>{
  "use strict";
  const HERO_IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora"]);
  const IDS=Object.freeze(["basic","special","powerful"]);
+ const PASSIVE_IDS=Object.freeze(["ren","nada"]);
+ const UPGRADABLE_IDS=Object.freeze([...IDS,"passive"]);
+ // Optional v3 field. All pre-CHAR003 saves imply L1 without mutation.
+ const freshPassiveLevels=()=>Object.fromEntries(PASSIVE_IDS.map(id=>[id,1]));
+ function validPassiveLevels(value){
+  return object(value)&&Object.keys(value).length===PASSIVE_IDS.length&&
+   PASSIVE_IDS.every(id=>own(value,id)&&Number.isInteger(value[id])&&value[id]>=1&&value[id]<=MAX);
+ }
+ function passiveLevel(progress,id){
+  if(!PASSIVE_IDS.includes(id))return null;
+  const n=progress?.passiveLevels?.[id];
+  return Number.isInteger(n)&&n>=1&&n<=MAX?n:1;
+ }
  const RESOURCE_IDS=Object.freeze(["manual1","manual2","seal"]);
  const LABELS=Object.freeze({manual1:"Учебник I",manual2:"Учебник II",seal:"Печать мастерства"});
  const FLOORS=Object.freeze({manual1:60,manual2:40,seal:20});
@@ -34,6 +47,7 @@ const SkillCore=(()=>{
    RESOURCE_IDS.every(id=>own(value,id)&&validInt(value[id]));
  }
  function level(progress,id,abilityId){
+  if(abilityId==="passive")return passiveLevel(progress,id);
   if(!HERO_IDS.includes(id)||!IDS.includes(abilityId))return null;
   const x=progress?.skillLevels?.[id]?.[abilityId];
   return Number.isInteger(x)&&x>=1&&x<=MAX?x:1;
@@ -44,7 +58,11 @@ const SkillCore=(()=>{
   return STEPS[cur];
  }
  function blocked(progress,id,abilityId){
-  if(!progress||progress.saveVersion!==3||!HERO_IDS.includes(id)||!IDS.includes(abilityId))return "Навык недоступен.";
+  if(!progress||progress.saveVersion!==3||!HERO_IDS.includes(id)||
+    !(IDS.includes(abilityId)||(abilityId==="passive"&&PASSIVE_IDS.includes(id))))
+   return "Навык недоступен.";
+  if(progress.passiveLevels!==undefined&&!validPassiveLevels(progress.passiveLevels))
+   return "Данные пассивных навыков повреждены.";
   if(progress.skillLevels!==undefined&&!validLevels(progress.skillLevels))return "Данные навыков повреждены.";
   if(progress.skillMaterials!==undefined&&!validMaterials(progress.skillMaterials))return "Данные материалов повреждены.";
   const c=cost(progress,id,abilityId);
@@ -61,10 +79,15 @@ const SkillCore=(()=>{
   const c=cost(progress,id,abilityId);
   const levels=progress.skillLevels??freshLevels();
   const materials=progress.skillMaterials??freshMaterials();
-  levels[id][abilityId]++;
+  const passives=abilityId==="passive"?
+   {...freshPassiveLevels(),...(progress.passiveLevels??{})}:null;
+  if(passives)passives[id]++;
+  else levels[id][abilityId]++;
   progress.currency-=c.currency;
   for(const [key,n] of Object.entries(c.materials))materials[key]-=n;
-  progress.skillLevels=levels;progress.skillMaterials=materials;
+  if(!passives)progress.skillLevels=levels;
+  progress.skillMaterials=materials;
+  if(passives)progress.passiveLevels=passives;
   return {level:c.to,currency:c.currency,materials:c.materials};
  }
  function grantTest(progress){
@@ -74,6 +97,20 @@ const SkillCore=(()=>{
   for(const id of RESOURCE_IDS)materials[id]=Math.max(materials[id],FLOORS[id]);
   progress.skillMaterials=materials;
   return true;
+ }
+ // CHAR-003 [PROPOSAL]: progressive passive synergy. Test balance, not canon.
+ const PASSIVE_KITS=Object.freeze({
+  ren:Object.freeze({readMoveBonusPercentPerStack:Object.freeze([12,13,14,15,16,17]),
+   gardensEvasionBonus:Object.freeze([8,8,9,10,11,12])}),
+  nada:Object.freeze({gardensAccuracyBonus:Object.freeze([8,9,10,11,12,13])})
+ });
+ function applyPassive(base,actor){
+  const kit=PASSIVE_KITS[actor.id];
+  const n=actor.skillLevels?.passive;
+  if(!kit||!base?.combatRules||!Number.isInteger(n)||n<1||n>MAX)return base;
+  const rules={...base.combatRules};
+  for(const [name,curve] of Object.entries(kit))rules[name]=curve[n-1];
+  return {...base,combatRules:Object.freeze(rules)};
  }
  // CHAR-002: experimental hero-specific six-step skill progression.
  // Every array index is current skill level minus one. This table, not the
@@ -113,7 +150,9 @@ const SkillCore=(()=>{
  // Only explicitly leveled playable abilities are scaled. Fixtures and
  // existing unupgraded combat behavior remain unchanged.
  function apply(base,actor,id){
-  if(!base||!actor||!HERO_IDS.includes(actor.id)||!IDS.includes(id))return base;
+  if(!base||!actor||!HERO_IDS.includes(actor.id))return base;
+  if(id==="passive")return applyPassive(base,actor);
+  if(!IDS.includes(id))return base;
   const lvl=actor.skillLevels?.[id];
   if(!Number.isInteger(lvl)||lvl<1||lvl>MAX)return base;
   if(HERO_KITS[actor.id])return heroAbility(base,actor.id,id,lvl);
@@ -127,7 +166,8 @@ const SkillCore=(()=>{
    return {...base,guardHits:base.guardHits+delta};
   return base;
  }
- return Object.freeze({HERO_IDS,IDS,RESOURCE_IDS,LABELS,FLOORS,MAX,STEPS,
-  freshLevels,freshMaterials,validLevels,validMaterials,level,cost,blocked,upgrade,grantTest,apply});
+ return Object.freeze({HERO_IDS,IDS,PASSIVE_IDS,UPGRADABLE_IDS,RESOURCE_IDS,LABELS,FLOORS,MAX,STEPS,
+  freshLevels,freshPassiveLevels,freshMaterials,validLevels,validPassiveLevels,validMaterials,
+  passiveLevel,level,cost,blocked,upgrade,grantTest,apply});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=SkillCore;

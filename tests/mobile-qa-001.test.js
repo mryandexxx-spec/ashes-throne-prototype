@@ -74,7 +74,7 @@ test("MOBILEQA001: long gear caption gets a soft hyphen only in display",()=>{
 test("MOBILEQA001: build marker",()=>{
  const version=JSON.parse(read("package.json")).version;
  assert.match(version,/^\d+\.\d+\.\d+$/);
- assert.ok(read("index.html").includes(`Прототип · v${version} · CHAR002B`));
+ assert.ok(read("index.html").includes(`Прототип · v${version} · CHAR003`));
 });
 test("MOBILEQA001: Ren choreography calibration is measured in the yaw-0 body frame",()=>{
  const r=read("ren-glb-runtime.js");

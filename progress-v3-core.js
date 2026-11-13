@@ -217,6 +217,8 @@ const ProgressV3Core=(()=>{
     (typeof SkillCore==="undefined"||!SkillCore.validLevels(data.skillLevels)))return null;
   if(data.skillMaterials!==undefined&&
     (typeof SkillCore==="undefined"||!SkillCore.validMaterials(data.skillMaterials)))return null;
+  if(data.passiveLevels!==undefined&&
+    (typeof SkillCore==="undefined"||!SkillCore.validPassiveLevels(data.passiveLevels)))return null;
   if(data.heroStars!==undefined){
    if(typeof StarCore==="undefined"||!StarCore.valid(data.heroStars))return null;
    // The old unlock list is a compatible mirror while previous profiles/tests
@@ -245,6 +247,7 @@ const ProgressV3Core=(()=>{
     (source.heroStars??StarCore.fromLegacy(source.unlockedHeroes)):source.heroStars,
    skillLevels:source.skillLevels,
    skillMaterials:source.skillMaterials,
+   passiveLevels:source.passiveLevels,
    classes:Object.fromEntries(ids.map(id=>[id,source.heroes[id].classId])),
    levels:Object.fromEntries(ids.map(id=>[id,source.heroes[id].level])),
    gear:Object.fromEntries(ids.map(id=>{
@@ -283,6 +286,7 @@ const ProgressV3Core=(()=>{
    ...(p.heroStars!==undefined?{heroStars:p.heroStars}:{}),
    ...(p.skillLevels!==undefined?{skillLevels:p.skillLevels}:{}),
    ...(p.skillMaterials!==undefined?{skillMaterials:p.skillMaterials}:{}),
+   ...(p.passiveLevels!==undefined?{passiveLevels:p.passiveLevels}:{}),
    migration:p.migration??{strategy:"clean-heroes-v1",sourceVersion:null},
    heroes:Object.fromEntries(ids.map(id=>[id,{
     classId:p.classes[id],level:p.levels[id],

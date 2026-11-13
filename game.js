@@ -645,7 +645,7 @@ function progressedHero(hero){
   h=equippedPilotStats(calculated,PILOT_HERO_STATS[hero.id]);
  }
  return typeof SkillCore==="undefined"?h:
-  {...h,skillLevels:Object.fromEntries(SkillCore.IDS.map(id=>[id,SkillCore.level(progress,hero.id,id)]))};
+  {...h,skillLevels:Object.fromEntries(SkillCore.UPGRADABLE_IDS.map(id=>[id,SkillCore.level(progress,hero.id,id)]))};
 }
 function progressedEnemy(enemy){
  const h=equippedPilotStats({...enemy},PILOT_ENEMY_STATS);
@@ -1763,7 +1763,7 @@ function renderHeroAbilities(hero){
   card.setAttribute("aria-label",info.name+" · "+info.label+" · Открыть подробности");
   const heading=document.createElement("div");
   heading.className="hero-ability-heading";
-  const label=document.createElement("span");label.className="hero-ability-kind";label.textContent=info.label+(typeof SkillCore!=="undefined"&&SkillCore.IDS.includes(info.id)?" · ур. "+SkillCore.level(progress,hero.id,info.id):"");
+  const label=document.createElement("span");label.className="hero-ability-kind";label.textContent=info.label+(typeof SkillCore!=="undefined"&&SkillCore.UPGRADABLE_IDS.includes(info.id)&&SkillCore.level(progress,hero.id,info.id)!==null?" · ур. "+SkillCore.level(progress,hero.id,info.id):"");
   const name=document.createElement("strong");name.textContent=info.name;
   heading.append(label,name);
   const details=document.createElement("details");details.className="hero-ability-more";
@@ -1775,7 +1775,8 @@ function renderHeroAbilities(hero){
    meta.textContent=info.meta.join(" · ");details.append(meta);
   }
   card.append(heading,details);
-  if(info.status==="available"&&typeof SkillCore!=="undefined"&&SkillCore.IDS.includes(info.id)){
+  if(info.status==="available"&&typeof SkillCore!=="undefined"&&
+   SkillCore.UPGRADABLE_IDS.includes(info.id)&&SkillCore.level(progress,hero.id,info.id)!==null){
    const button=document.createElement("button");button.type="button";
    button.className="ghost skill-open-button";
    button.dataset.skillOpen=info.id;
@@ -1788,7 +1789,8 @@ function renderHeroAbilities(hero){
 // Skills-001: skill levels are per-hero, persist with the same v3 wallet.
 let openedSkillId=null,skillPreviewLevel=1;
 function openSkillUpgrade(id){
- if(!SkillCore.IDS.includes(id)||!ALLIES.some(h=>h.id===selectedHeroId))return;
+ if(!SkillCore.UPGRADABLE_IDS.includes(id)||SkillCore.level(progress,selectedHeroId,id)===null||
+   !ALLIES.some(h=>h.id===selectedHeroId))return;
  openedSkillId=id;
  skillPreviewLevel=Math.min(SkillCore.MAX,(SkillCore.level(progress,selectedHeroId,id)||1)+1);
  renderSkillUpgrade();

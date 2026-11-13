@@ -47,6 +47,11 @@ const CombatCore = (() => {
       if(!rules)continue;
       if(owner.id===actor.id&&validPercent(rules.bonusVsDebuffedPercent)&&
          hasNegativeStatus(target))bonus+=rules.bonusVsDebuffedPercent;
+      // Data-defined support aura (Nada): only while its owner is alive.
+      // Percent bonuses add before the single damage rounding step.
+      if(owner.side===actor.side&&
+         validPercent(rules.allyBonusVsDebuffedPercent)&&
+         hasNegativeStatus(target))bonus+=rules.allyBonusVsDebuffedPercent;
       if(owner.side===actor.side&&
          typeof rules.tagId==="string"&&rules.tagId.length>0&&
          Array.isArray(actor.tags)&&actor.tags.includes(rules.tagId)&&

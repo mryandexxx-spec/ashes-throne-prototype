@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Лиора · привязка щита и проверка анимаций</title>
+<title>Лиора · просмотр модели и 15 анимаций</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif}*{box-sizing:border-box}
 body{margin:0;background:#141b20;color:#f3e9d7}
@@ -23,35 +23,20 @@ details{margin-top:10px}summary{cursor:pointer;min-height:36px}
 <script src="https://cdn.babylonjs.com/v9.33.2/babylon.js"></script>
 <script src="https://cdn.babylonjs.com/v9.33.2/loaders/babylonjs.loaders.min.js"></script>
 <script src="dev/src/assets/models.js"></script>
-<script src="liora-shield-attachment.js"></script>
-<script src="liora-shield-combat-pose.js"></script>
+
 </head><body>
-<header><h1>Лиора · щит и 12 анимаций [МАСТЕРСКАЯ]</h1><a href="./">В игру</a></header>
+<header><h1>Лиора · 15 анимаций [МАСТЕРСКАЯ]</h1><a href="./">В игру</a></header>
 <main>
-<p>Изолированная мастерская: две модели загружаются из рабочей структуры assets, щит прикрепляется к анимированному суставу <code>mixamorig:LeftHand</code>. Не добавляет героя в коллекцию, бой или сохранения. Поворот — пальцем, масштаб — двумя пальцами.</p>
-<div class="stage"><canvas id="stage" aria-label="Лиора со щитом, интерактивный трёхмерный просмотр" tabindex="0"></canvas></div>
+<p>Изолированная мастерская Лиоры <strong>без щита</strong>: загружается только модель персонажа и её 15 анимаций. Не добавляет героя в коллекцию, бой или сохранения. Поворот камеры — одним пальцем, масштаб — двумя.</p>
+<div class="stage"><canvas id="stage" aria-label="Лиора без щита, интерактивный трёхмерный просмотр" tabindex="0"></canvas></div>
 <div class="controls">
 <label>Анимация <select id="clip" aria-label="Выбрать анимацию"></select></label>
 <button id="play" type="button">Пауза</button>
 <label>Кадр <input id="frame" type="range" min="0" max="100" value="0" aria-label="Положение анимации"></label>
-<button id="reset" type="button">Сбросить положение щита</button>
 <button id="scan" type="button">Проверить 15 клипов</button>
-<label><input id="combatCorrection" type="checkbox" checked> Улучшенная стойка (только Block/Bash)</label>
-</div>
-<details open><summary>Настроить крепление щита (координаты в системе кисти)</summary>
-<label style="display:inline-flex;margin:10px 4px;gap:10px;align-items:center"><input id="stabilize" type="checkbox" checked> Стабилизация лицевой стороны щита (рекомендовано; без неё некоторые движения переворачивают щит)</label>
-<div class="grid" id="sliders">
-<label>Смещение X <input data-key="ox" type="number" step=".01" value="-.22055"></label>
-<label>Смещение Y <input data-key="oy" type="number" step=".01" value=".05394"></label>
-<label>Смещение Z <input data-key="oz" type="number" step=".01" value="-.01236"></label>
-<label>Вращение X, ° <input data-key="rx" type="number" step="5" value="0"></label>
-<label>Вращение Y, ° <input data-key="ry" type="number" step="5" value="180"></label>
-<label>Вращение Z, ° <input data-key="rz" type="number" step="5" value="0"></label>
-<label>Масштаб <input data-key="s" type="number" min=".1" max="3" step=".05" value="1"></label>
-</div></details>
 <p role="status" id="status">Загрузка 3D...</p>
 <pre id="checks" aria-label="Результаты проверки клипов"></pre>
-<p>Базовая ориентация откалибрована на 36 офлайн-рендерах: золотое солнце обращено наружу, щит расположен ближе к левому предплечью. В движениях Block1 и Shield_Push_Left остаются артефакты исходных движений рук: требуется отдельная доработка анимаций. Визуальная проверка именно в Babylon/Safari ещё не выполнена. Запросы GLB требуют WebP в Babylon Loader. В реальном iPhone Safari эта сцена ещё не проверена.</p>
+<p>Щит намеренно отключён по решению владельца. Анимации с названиями <code>Liora_Shield_*</code> оставлены в GLB только для просмотра и будущей переработки. На физическом iPhone Safari производительность и плавность ещё необходимо проверить.</p>
 </main>
 <script src="liora-shield-lab.js"></script>
 </body></html>

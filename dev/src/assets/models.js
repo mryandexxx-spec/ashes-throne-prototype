@@ -1,9 +1,19 @@
-/* Game-model URL registry. Nada kept unchanged; Liora and shield staged, NOT yet wired into battle. */
+/* NADA3D001 — static model manifest, Dune-style dev/src/assets/.
+ * Classic script because the existing Ashes prototype is not an ES-module build.
+ */
 const NadaModelAssets=Object.freeze({
- id:"nada",url:"dev/assets/models/nada-mobile-animated.glb",filename:"nada-mobile-animated.glb",
- source:"dev/assets-src/characters/nada/",bytes:3096808,
- sha256:"1ecd7859754191e296c68171c03a2c180859db52957629905a90cd8d7a61e87d",
- clips:Object.freeze({idle:"Idle_11",basic:"Archery_Shot_3",special:"Archery_Shot_3",powerful:"Archery_Shot_3",guard:"Idle_11",ward:"Hit_Reaction_1",hit:"Hit_Reaction_1",death:"Electrocuted_Fall",run:"Running",walk:"Walking"})
+ id:"nada",
+ url:"dev/assets/models/nada-mobile-animated.glb",
+ filename:"nada-mobile-animated.glb",
+ source:"dev/assets-src/characters/nada/",
+ bytes:1462284,
+ sha256:"5bbd34c2db189d1831c213b02ac31f49342f8b7773cc283589ece8249a5a016d",
+ clips:Object.freeze({
+  idle:"Idle_11",basic:"Archery_Shot_3",special:"Archery_Shot_3",
+  powerful:"mage_soell_cast",guard:"Idle_11",ward:"Hit_Reaction_1",
+  hit:"Hit_Reaction_1",death:"Electrocuted_Fall",
+  run:"Running",walk:"Walking"
+ })
 });
 const LioraModelAssets=Object.freeze({
  id:"liora",url:"dev/assets/models/liora_vel_shield_aware_15clips.glb",filename:"liora_vel_shield_aware_15clips.glb",
@@ -14,4 +24,4 @@ const LioraShieldAssets=Object.freeze({
  id:"liora-shield",url:"dev/assets/models/liora-shield-mobile.glb",filename:"liora-shield-mobile.glb",
  source:"dev/assets-src/characters/liora/",bytes:631488,sha256:"65676e1e43c1065aea4297a54eaa7e12dd7d644258f913bab8fa26f7505b7cce"
 });
-if(typeof module!=="undefined"&&module.exports)module.exports=NadaModelAssets; // preserve existing CommonJS contract
+if(typeof module!=="undefined"&&module.exports)module.exports=NadaModelAssets;

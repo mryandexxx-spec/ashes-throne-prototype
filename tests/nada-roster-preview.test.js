@@ -33,7 +33,7 @@ test("approved artwork is now a real owned roster card and 2D hero dossier",()=>
  assert.match(roster,/h\.id==="nada"/);
  assert.match(roster,/nada-collection-portrait/);
  assert.match(game,/showNadaPortrait=hero\.id==="nada"/);
- assert.match(game,/renPortrait\.src=showNadaPortrait\?"assets\/nada-portrait-ui\.webp\?v=2"/);
+ assert.match(game,/renPortrait\.src=showLioraPortrait\?"assets\/liora-portrait-ui\.webp\?v=1":showNadaPortrait\?"assets\/nada-portrait-ui\.webp\?v=2"/);
  assert.match(root("ren-card-3d.js"),/portrait\.hidden=heroId!=="nada"/);
  assert.equal(fs.existsSync(path.join(__dirname,"..","assets","nada-portrait-ui.webp")),true);
  assert.equal(profiles.get("ren")?.name,"Рен Терен");
@@ -53,7 +53,7 @@ test("temporary physical support abilities are distinct and can level",()=>{
 });
 test("new build still preserves the original UIHUD version prefix",()=>{
  const html=root("index.html"),pkg=JSON.parse(root("package.json"));
- assert.equal(pkg.version,"0.3.142");
- assert.match(html,/v0\.3\.142 · CHAR003/);
+ assert.equal(pkg.version,"0.3.143");
+ assert.match(html,/v0\.3\.143 · LIORAPORTRAIT001/);
  assert.match(root("docs/BUILD_HISTORY.md"),/NADAART001 \+ NADAPLAY001 \+ NADAPORTRAIT002 \+ NADAROSTER001/);
 });

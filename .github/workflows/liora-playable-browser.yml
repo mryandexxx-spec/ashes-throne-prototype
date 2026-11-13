@@ -11,6 +11,9 @@ on:
       - 'model-cache-client.js'
       - 'progress-v3-core.js'
       - 'tests/liora-playable*'
+      - 'tests/liora-portrait*'
+      - 'assets/liora-portrait-*.webp'
+      - 'styles.css'
       - '.github/workflows/liora-playable-browser.yml'
   workflow_dispatch:
 permissions:
@@ -30,7 +33,7 @@ jobs:
       - run: npm install --no-save --ignore-scripts playwright@1.56.1
       - name: Liora save and integration contract
         run: |
-          node --test tests/liora-playable-v3-cache.test.js
+          node --test tests/liora-playable-v3-cache.test.js tests/liora-portrait-001.test.js
           node --check game.js
           node --check liora-glb-runtime.js
       - name: Chromium and WebKit battle, card and caching
@@ -39,12 +42,16 @@ jobs:
           sleep 2
           node tests/liora-playable-browser.cjs
           LIORA_BROWSER=webkit node tests/liora-playable-browser.cjs
+          node tests/liora-portrait-browser.cjs
+          LIORA_PORTRAIT_BROWSER=webkit node tests/liora-portrait-browser.cjs
 
       - name: Store Liora card and battle WebGL screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: liora-playable-webgl-review
-          path: artifacts/liora-playable/
+          path: |
+            artifacts/liora-playable/
+            artifacts/liora-portrait/
           if-no-files-found: warn
           retention-days: 14

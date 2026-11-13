@@ -57,7 +57,7 @@ assert.equal((html.match(/src="assets\/ren-portrait-ui\.webp"/g)||[]).length,3,"
 assert.match(html,/class="ren-sketch-mini"/);
 assert.match(html,/id="heroBiographyPortrait"/);
 assert.match(css,/ren-biography-sketch\[hidden\]\{display:none\}/);
-assert.match(game,/sketch\.hidden=hero\.id!=="trial-ren"/);
+assert.match(game,/sketch\.hidden=!\["trial-ren","ren","nada","liora"\]\.includes\(hero\.id\)/);
 assert.ok(!read("hero-collection-core.js").includes("trial-ren"),"Ren remains outside permanent collection");
 assert.ok(!read("progress-v3-core.js").includes("trial-ren"),"no v3 migration without approval");
 assert.ok(!read("index.html").includes('src="design/ren-gear-plan.js"'),"future recipes must not load in live UI");

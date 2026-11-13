@@ -30,7 +30,7 @@ test("Ren is selectable, owned from start, has biography and class-independent t
  const g=read("game.js");
  assert.match(g,/\{id:"ren",name:"Рен Терен"/);
  assert.ok(g.includes('["ren","nada","liora"].includes(id)'));
- assert.match(g,/hero.id!=="trial-ren"&&hero.id!=="ren"/);
+ assert.match(g,/sketch\.hidden=!\["trial-ren","ren","nada","liora"\]\.includes\(hero\.id\)/);
  assert.ok(read("index.html").includes("OPSHELP + RENPLAY"));
  assert.ok(g.includes('ren:Object.freeze({physicalDefense:14,magicDefense:9,maxProtection:0})'));
  const fresh=v3.fresh(newHeroes,1730000000000);

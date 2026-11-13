@@ -17,18 +17,18 @@ test("Collection, permanent hero card, biography and story preview use one Ren p
  assert.equal((html.match(/src="assets\/ren-portrait-ui\.webp"/g)||[]).length,3,"detail, story and biography");
  assert.match(game,/owned&&h\.id==="ren"\?'<img class="ren-collection-portrait"/);
  assert.match(game,/const showRenPortrait=hero\.id==="ren"/);
- assert.match(game,/renPortrait\.hidden=!showRenPortrait/);
+ assert.match(game,/renPortrait\.hidden=!\(showRenPortrait\|\|showNadaPortrait\|\|showLioraPortrait\)/);
  assert.match(game,/heroStage\.classList\.toggle\("has-ren-portrait",showRenPortrait\)/);
  assert.match(html,/id="detailRenPortrait"[^>]*hidden>/);
  assert.match(html,/id="heroBiographyPortrait"[^>]*ren-portrait-ui\.webp/);
  assert.match(css,/\.ren-detail-portrait\[hidden\]\{display:none!important\}/);
  assert.match(css,/\.hero-detail-stage\.has-ren-portrait \.hero-detail-silhouette/);
- assert.match(game,/sketch\.hidden=hero\.id!=="trial-ren"&&hero\.id!=="ren"/,"both biography IDs");
+ assert.match(game,/sketch\.hidden=!\["trial-ren","ren","nada","liora"\]\.includes\(hero\.id\)/,"both biography IDs");
  assert.ok(!read("hero-collection-core.js").includes("trial-ren"),"trial Ren remains separate");
 });
 test("Version bump and scope: no Babylon mesh edits or combat configuration in portrait patch",()=>{
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
  assert.equal(pkg.version,__BUILD_VERSION_FOR_TESTS);
- assert.ok(html.includes(("v"+__BUILD_VERSION_FOR_TESTS+" · CHAR003")));
+ assert.ok(html.includes(("v"+__BUILD_VERSION_FOR_TESTS+" · LIORAPORTRAIT001")));
  assert.ok(read("game.js").includes('id:"ren",name:"Рен Терен",classId:"melee"'));
 });

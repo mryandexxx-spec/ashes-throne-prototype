@@ -39,6 +39,10 @@ test("shield is parented to the animated LEFT hand joint, independently of chara
  assert.ok(attachment.socket.rotationQuaternion,"wrist-follow orientation set");
  attachment.pose({stabilize:true});
  attachment.update();
+ attachment.setClipProgress("Liora_Shield_Death",.9);
+ assert.ok(attachment.socket.rotationQuaternion,"shield falls and tilts with death clip");
+ attachment.setClipProgress("Liora_Shield_Block",.3);
+ assert.equal(attachment.socket.position.x,-.22055,"non-death clip restores hand-local grip");
  attachment.dispose();
  attachment.dispose();
  assert.equal(attachment.socket.disposeCount,1);

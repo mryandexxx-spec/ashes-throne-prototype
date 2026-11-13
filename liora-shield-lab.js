@@ -1,9 +1,9 @@
-/* LIORA-SHIELD-002: visual workshop. NOT a playable hero or a battle runtime. */
+/* LIORA-UNARMED-001: character-only Babylon preview. No shield loaded or attached. */
 (function(){
  "use strict";
  const el=id=>document.getElementById(id);
  const status=text=>{el("status").textContent=text;};
- let engine=null,scene=null,character=null,shield=null,attachment=null,combatPose=null,groups=[],active=null;
+ let engine=null,scene=null,character=null,groups=[],active=null;
  let playing=true,clock=0,lastFrame=0,disposed=false;
  const labels=["Running","Walking","Alert","Block1","Catching_Breath","Dead",
   "Hit_Reaction","Idle_02","Shield_Push_Left","Squat_Stance",
@@ -33,8 +33,7 @@
    hip.position.x=hip.metadata.lioraBase.x;
    hip.position.z=hip.metadata.lioraBase.z;
   }
-  if(el("combatCorrection")?.checked)combatPose?.apply(group.name,p); // Only two clips.
-  attachment.setClipProgress(group.name,p); // Follow the corrected hand in world space.
+
  }
  function setClip(name){
   active?.stop();
@@ -50,28 +49,7 @@
    new BABYLON.Vector3(0,(name==="Dead"||name==="Liora_Shield_Death")?0.48:1,0));
   frameAt(active,0);
  }
- function setPoseFromInputs(){
-  if(!attachment)return;
-  const v={};
-  for(const input of el("sliders").querySelectorAll("input"))
-   v[input.dataset.key]=Number(input.value);
-  try{
-   attachment.pose({offset:{x:v.ox,y:v.oy,z:v.oz},
-    rotation:{x:v.rx,y:v.ry,z:v.rz},scale:v.s,
-    stabilize:el("stabilize").checked});
-  }catch(error){status("Настройки щита: "+error.message);}
- }
  function setControls(){
-  for(const input of el("sliders").querySelectorAll("input"))
-   input.addEventListener("change",setPoseFromInputs);
-  el("stabilize").addEventListener("change",setPoseFromInputs);
-  el("combatCorrection").addEventListener("change",()=>frameAt(active,Number(el("frame").value)/100));
-  el("reset").addEventListener("click",()=>{
-   const values=["-.22055",".05394","-.01236","0","180","0","1"];
-   el("stabilize").checked=true;
-   [...el("sliders").querySelectorAll("input")].forEach((input,i)=>input.value=values[i]);
-   setPoseFromInputs();
-  });
   el("clip").addEventListener("change",()=>{setClip(el("clip").value);status("Клип: "+active.name);});
   el("frame").addEventListener("input",()=>{
    playing=false;el("play").textContent="Воспроизвести";
@@ -84,7 +62,7 @@
   el("scan").addEventListener("click",scan);
  }
  function scan(){
-  if(!attachment||!groups.length)return;
+  if(!character||!groups.length)return;
   const oldName=active.name,oldProgress=Number(el("frame").value)/100,oldPlaying=playing;
   playing=false;
   const report=[];
@@ -92,29 +70,24 @@
    const group=groups.find(g=>g.name===name);
    try{
     setClip(name);
-    let valid=true,maxDistance=0;
+    let valid=true;
     for(const p of [0,.25,.5,.75,1]){
      frameAt(group,p);
-     const hand=attachment.hand.getAbsolutePosition();
-     const socket=attachment.socket.getAbsolutePosition();
-     const delta=BABYLON.Vector3.Distance(hand,socket);
-     if(!Number.isFinite(delta)||delta>1.5)valid=false;
-     maxDistance=Math.max(maxDistance,delta);
+     const hip=character.transformNodes.find(n=>n.name==="mixamorig:Hips");
+     const pos=hip?.position;
+     if(!pos||![pos.x,pos.y,pos.z].every(Number.isFinite))valid=false;
     }
-    report.push(name+": "+(valid?"OK":"ОШИБКА")+
-     " · расстояние от кисти до крепления до "+maxDistance.toFixed(3)+" м");
+    report.push(name+": "+(valid?"OK":"ОШИБКА"));
    }catch(error){report.push(name+": ОШИБКА "+error.message);}
   }
   setClip(oldName);frameAt(active,oldProgress);el("frame").value=String(Math.round(oldProgress*100));
   playing=oldPlaying;el("play").textContent=playing?"Пауза":"Воспроизвести";
   el("checks").textContent=report.join("\n");
-  status("Проверка "+report.length+" клипов завершена. Структурный тест не заменяет проверку пересечений и хвата.");
+  status("Проверка "+report.length+" клипов завершена (модель Лиоры без щита).");
  }
  async function init(){
   try{
-   if(!window.BABYLON||!BABYLON.SceneLoader||typeof LioraShieldAttachment==="undefined"||
-    typeof LioraModelAssets==="undefined"||typeof LioraShieldAssets==="undefined"||
-    typeof LioraShieldCombatPose==="undefined")throw Error("Babylon/реестр ассетов не загружены");
+   if(!window.BABYLON||!BABYLON.SceneLoader||typeof LioraModelAssets==="undefined")throw Error("Babylon/реестр Лиоры не загружены");
    const canvas=el("stage");
    engine=new BABYLON.Engine(canvas,true,{stencil:true,alpha:true});
    scene=new BABYLON.Scene(engine);
@@ -144,14 +117,7 @@
     -.0-box.min.y*scale,-(box.min.z+box.max.z)*.5*scale);
    const hip=character.transformNodes.find(n=>n.name==="mixamorig:Hips");
    if(hip)hip.metadata={...(hip.metadata||{}),lioraBase:{x:hip.position.x,z:hip.position.z}};
-   status("Лиора загружена. Загружаю отдельный щит...");
-   shield=await load(LioraShieldAssets.url);
-   attachment=LioraShieldAttachment.attach(BABYLON,scene,character,shield,{
-    referenceRoot:[...character.meshes,...character.transformNodes].find(n=>n.name==="__root__")||parent,groundY:0
-   });
    groups=character.animationGroups.slice();
-   combatPose=LioraShieldCombatPose.create(BABYLON,character,
-    groups.find(g=>g.name==="Idle_02"));
    const select=el("clip");
    for(const name of labels){
     const option=document.createElement("option");
@@ -178,8 +144,7 @@
     scene.render();
    });
    window.addEventListener("resize",()=>engine?.resize(),{passive:true});
-   status("Готово: "+groups.length+" анимаций, левая кисть "+attachment.jointName+
-    ", щит на отдельном узле. Проверь посадку на всех клипах.");
+   status("Готово: "+groups.length+" анимаций, Лиора без щита. Можно проверять движения.");
   }catch(error){
    console.error("LIORA-SHIELD-002",error);
    status("Ошибка лаборатории: "+(error?.message||String(error)));

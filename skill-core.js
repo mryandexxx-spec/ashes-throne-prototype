@@ -83,15 +83,14 @@ const SkillCore=(()=>{
    basic:Object.freeze({damage:[1,1.1,1.2,1.2,1.3,1.4]}),
    special:Object.freeze({damage:[1.05,1.15,1.15,1.25,1.25,1.35],
     weaken:[2,2,3,3,3,3],cooldown:[2,2,2,2,1,1]}),
-   powerful:Object.freeze({damage:[1.6,1.75,1.75,1.9,1.9,2.05],
-    resistanceDown:[15,15,20,20,20,20],statusTurns:[2,2,2,2,3,3]})
+   powerful:Object.freeze({damage:[1.6,1.75,1.75,1.9,1.9,2.05]})
   }),
   nada:Object.freeze({
    basic:Object.freeze({damage:[.8,.9,1,1.1,1.2,1.3]}),
    special:Object.freeze({damage:[.7,.8,.8,.9,.9,1],
-    weaken:[2,2,3,3,3,3],cooldown:[2,2,2,2,1,1]}),
-   powerful:Object.freeze({damage:[1,1.1,1.1,1.2,1.2,1.3],
-    resistanceDown:[20,20,25,25,25,25],statusTurns:[2,2,2,2,3,3]})
+    readMove:[2,2,3,3,3,3],cooldown:[2,2,2,2,1,1]}),
+   powerful:Object.freeze({damage:[.6,.65,.65,.7,.7,.75],
+    readMove:[2,2,2,2,3,3]})
   })
  });
  function heroAbility(base,heroId,id,level){
@@ -106,12 +105,9 @@ const SkillCore=(()=>{
     type:"slowed",amount:20,turns:level>=6?2:1});
    else delete ability.onHitStatus;
   }
-  if(id==="powerful"){
-   const effect={type:"debuff-resistance-down",
-    amount:kit.resistanceDown[index],turns:kit.statusTurns[index]};
-   if(heroId==="ren")ability.followUpStatusAll=Object.freeze(effect);
-   else ability.onHitStatus=Object.freeze(effect);
-  }
+  if(kit.readMove)ability.onHitStatus=Object.freeze({
+   type:"read-move",stacks:kit.readMove[index],turns:2});
+  if(heroId==="ren"&&id==="powerful")delete ability.followUpStatusAll;
   return ability;
  }
  // Only explicitly leveled playable abilities are scaled. Fixtures and

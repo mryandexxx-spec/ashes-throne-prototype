@@ -59,7 +59,7 @@ const RenCard3D=(()=>{
   const canvas=byId("renCard3DCanvas");
   if(controls)controls.hidden=!canDisplay3D;
   if(canvas){canvas.hidden=!canDisplay3D;canvas.setAttribute("aria-label",isLiora?"Лиора Вель без щита, трёхмерная модель; вращение пальцем":isNada?"Нада, трёхмерная модель; вращение пальцем":"Рен Терен, трёхмерная модель; вращение пальцем");}
-  const modeButton=byId("renCardMode");if(modeButton)modeButton.hidden=isLiora;
+  const modeButton=byId("renCardMode");if(modeButton)modeButton.hidden=!canDisplay3D;
   if(!canDisplay3D){
    if(active)dispose();
    const portrait=byId("detailRenPortrait");

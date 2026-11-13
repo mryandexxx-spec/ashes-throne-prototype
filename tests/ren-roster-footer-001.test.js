@@ -22,7 +22,7 @@ test("RENROSTER001: roster uses wide Ren, biography and detail keep original Ren
  assert.match(roster,/width="384" height="192"/);
  assert.equal((js.match(/assets\/ren-portrait-roster\.webp\?v=1/g)||[]).length,1);
  assert.match(js,/sketch\.src="assets\/ren-portrait-ui\.webp"/);
- assert.match(js,/renPortrait\.src=showNadaPortrait\?"assets\/nada-portrait-ui\.webp\?v=2":"assets\/ren-portrait-ui\.webp"/);
+ assert.match(js,/renPortrait\.src=showLioraPortrait\?"assets\/liora-portrait-ui\.webp\?v=1":showNadaPortrait\?"assets\/nada-portrait-ui\.webp\?v=2":"assets\/ren-portrait-ui\.webp"/);
  assert.equal((js.match(/assets\/nada-portrait-roster\.webp\?v=1/g)||[]).length,1);
 });
 test("RENROSTER001: wide artwork stays in collection and footer is compact",()=>{
@@ -31,9 +31,9 @@ test("RENROSTER001: wide artwork stays in collection and footer is compact",()=>
  assert.match(rule,/width:100%;height:100%;[^}]*object-fit:cover;object-position:center 42%/);
  assert.match(rule,/#app>footer\{gap:4px 12px;flex-wrap:wrap;min-width:0\}/);
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.143");
+ assert.equal(pkg.version,"0.3.144");
  const footer=html.match(/id="buildVersion">([^<]*)<\/span>/)?.[1];
- assert.equal(footer,"Прототип · v0.3.143 · GEAR013");
+ assert.equal(footer,"Прототип · v0.3.144 · GEAR013");
  assert.ok(footer.length<50);
  assert.match(read("docs/BUILD_HISTORY.md"),/NADAROSTER001/);
 });

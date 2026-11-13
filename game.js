@@ -820,10 +820,12 @@ function showHeroBiography(hero){
   "Биография персонажа пока не подготовлена. Демонстрационные герои не являются утверждёнными персонажами вселенной.";
  $("#heroBiographyNote").textContent=data?.note||"История персонажа будет добавлена после согласования.";
  const sketch=$("#heroBiographyPortrait");
- if(sketch)sketch.hidden=hero.id!=="trial-ren"&&hero.id!=="ren";
+ if(sketch)sketch.hidden=!["trial-ren","ren","nada","liora"].includes(hero.id);
  // Preserve Ren's established biography visibility; Nada is an independent preview.
- if(sketch&&hero.id==="nada"){
-  sketch.hidden=false;
+ if(sketch&&hero.id==="liora"){
+  sketch.src="assets/liora-portrait-ui.webp?v=1";
+  sketch.alt="Лиора Вель — портрет без щита";
+ }else if(sketch&&hero.id==="nada"){
   sketch.src="assets/nada-portrait-ui.webp?v=2";
   sketch.alt="Нада — утверждённый живописный портрет";
  }else if(sketch&&(hero.id==="ren"||hero.id==="trial-ren")){
@@ -1648,7 +1650,8 @@ function renderHeroes(){
   const safeAmount=Math.max(0,Number(amount)||0),safeCost=Math.max(1,Number(cost)||10);
   const progressPercent=Math.min(100,Math.round(safeAmount/safeCost*100));
   const portraitAvatar=owned&&h.id==="ren"?'<img class="ren-collection-portrait" src="assets/ren-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':
-   owned&&h.id==="nada"?'<img class="nada-collection-portrait" src="assets/nada-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
+   owned&&h.id==="nada"?'<img class="nada-collection-portrait" src="assets/nada-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':
+   owned&&h.id==="liora"?'<img class="liora-collection-portrait" src="assets/liora-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
   const starInfo=owned&&rank!==null?'<span class="hero-star-summary" aria-label="Ранг '+rank+' из 7">'+starGlyphs(rank)+'</span>':"";
   const name=owned?h.name:"Неизвестный герой";
   const levelLine=owned?"Ур. "+h.level+" · "+h.role:"Условия получения";
@@ -1661,7 +1664,7 @@ function renderHeroes(){
   const tags=labels.length?'<span class="roster-identity-tags">'+labels.map(label=>'<span class="roster-identity-tag">'+safeTag(label)+'</span>').join("")+'</span>':"";
   const isLeader=owned&&selectedLeaderId===h.id;
   const leaderBadge=isLeader?'<span class="roster-leader-indicator">★ Лидер</span>':"";
-  return `<button type="button" class="hero-card hero-open roster-card ${owned?"":"hero-locked"}" data-open-hero="${h.id}" aria-label="${name}${isLeader?". Лидер отряда":""}. ${owned?"Открыть досье":"Условия получения"}${labels.length?". "+labels.join(", "):""}"><span class="roster-card-art hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":owned&&h.id==="nada"?"hero-avatar-nada":""}">${portraitAvatar}${leaderBadge}</span><span class="roster-card-name">${name}</span>${tags}${starInfo}<span class="roster-card-subtitle">${levelLine}</span>${owned?'<span class="roster-card-gear">'+gearLabel+'</span>':progressLine}<span class="hero-open-hint">${owned?"Открыть досье ›":"Как получить ›"}</span></button>`;
+  return `<button type="button" class="hero-card hero-open roster-card ${owned?"":"hero-locked"}" data-open-hero="${h.id}" aria-label="${name}${isLeader?". Лидер отряда":""}. ${owned?"Открыть досье":"Условия получения"}${labels.length?". "+labels.join(", "):""}"><span class="roster-card-art hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":owned&&h.id==="nada"?"hero-avatar-nada":owned&&h.id==="liora"?"hero-avatar-liora":""}">${portraitAvatar}${leaderBadge}</span><span class="roster-card-name">${name}</span>${tags}${starInfo}<span class="roster-card-subtitle">${levelLine}</span>${owned?'<span class="roster-card-gear">'+gearLabel+'</span>':progressLine}<span class="hero-open-hint">${owned?"Открыть досье ›":"Как получить ›"}</span></button>`;
  }).join("");
  if(!visible.length)$("#heroList").innerHTML='<p class="roster-empty">В этой категории героев пока нет.</p>';
  document.querySelectorAll("[data-open-hero]").forEach(node=>node.addEventListener("click",()=>{
@@ -1905,17 +1908,17 @@ function renderHeroDetail(){
  $("#detailGlyph").textContent=hero.glyph;
  const showRenPortrait=hero.id==="ren";
  const showNadaPortrait=hero.id==="nada";
- const showLiora3D=hero.id==="liora";
+ const showLioraPortrait=hero.id==="liora";
+ const showLiora3D=showLioraPortrait;
  const renPortrait=$("#detailRenPortrait"),heroStage=$("#detailHeroStage"),artworkLabel=$("#detailArtworkLabel");
  if(renPortrait){
-  renPortrait.hidden=!showRenPortrait;
-  if(showNadaPortrait)renPortrait.hidden=false;
-  renPortrait.src=showNadaPortrait?"assets/nada-portrait-ui.webp?v=2":"assets/ren-portrait-ui.webp";
-  renPortrait.alt=showNadaPortrait?"Нада — утверждённый портрет исследовательницы":"Рен Терен — портрет проводника Садов над пропастью";
+  renPortrait.hidden=!(showRenPortrait||showNadaPortrait||showLioraPortrait);
+  renPortrait.src=showLioraPortrait?"assets/liora-portrait-ui.webp?v=1":showNadaPortrait?"assets/nada-portrait-ui.webp?v=2":"assets/ren-portrait-ui.webp";
+  renPortrait.alt=showLioraPortrait?"Лиора Вель — портрет без щита":showNadaPortrait?"Нада — утверждённый портрет исследовательницы":"Рен Терен — портрет проводника Садов над пропастью";
  }
  if(heroStage){
   heroStage.classList.toggle("has-ren-portrait",showRenPortrait);
-  if(showNadaPortrait)heroStage.classList.add("has-ren-portrait");
+  if(showNadaPortrait||showLioraPortrait)heroStage.classList.add("has-ren-portrait");
   heroStage.setAttribute("aria-label",showLiora3D?"Лиора Вель — 3D без щита":showNadaPortrait?"Нада — 3D-модель при загрузке, иначе портрет":
    showRenPortrait?"Рен Терен: 3D-модель и портрет":"Схематичный силуэт героя, без 3D-модели");
  }

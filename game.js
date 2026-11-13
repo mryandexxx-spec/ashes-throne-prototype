@@ -627,7 +627,11 @@ function progressedHero(hero){
   {...h,skillLevels:Object.fromEntries(SkillCore.IDS.map(id=>[id,SkillCore.level(progress,hero.id,id)]))};
 }
 function progressedEnemy(enemy){
- return equippedPilotStats({...enemy},PILOT_ENEMY_STATS);
+ const h=equippedPilotStats({...enemy},PILOT_ENEMY_STATS);
+ // Training targets get neutral, valid RNG fields. This does not change their
+ // legacy skills or stats in battles involving only demo characters.
+ return {...h,accuracy:0,evasion:0,critChance:0,critDamage:150,
+  defensePenetration:0,debuffPotency:0,debuffResistance:0};
 }
 function hasLeaderSkill(id){
  const hero=ALLIES.find(h=>h.id===id);
@@ -2572,9 +2576,19 @@ function resetBattle(){
  challengeTracker=battleIsChallenge?ChallengeCore.start(activeChallengeId):null;
  lastMissionStars=0;
  selectedAbility="basic";
- state=CombatCore.createBattle(battleLineup(),battleFutureWaves(),{
+ const lineup=battleLineup();
+ const allies=lineup.filter(f=>f.side==="ally");
+ const realHeroFight=allies.length>0&&
+  allies.every(f=>f.id==="ren"||f.id==="nada");
+ state=CombatCore.createBattle(lineup,battleFutureWaves(),{
   leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId,
-  ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{})
+  ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{}),
+  // RNG combat formulas are active only for parties of the two real heroes.
+  // Mannequin-based demos preserve their historical combat behavior.
+  ...(realHeroFight?{
+   rngSeed:Date.now()>>>0,hitChecks:true,critChecks:true,
+   penetrationChecks:true,statusChecks:true
+  }:{})
  });
  CombatCore.advanceToPlayerTurn(state);
  syncBattleUI();

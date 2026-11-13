@@ -1953,7 +1953,7 @@ function renderHeroDetail(){
 
  $("#detailNotice").textContent=saveBlocked?"Сохранение недоступно. Повышение заблокировано.":
   (ProgressCore.upgradeBlockReason(progress,base.id)||
-   "Повышение уровня за игровую валюту.");
+   "Улучшение доступно: повышение за игровую валюту.");
  if($("#gearTier")){
  const gear=ProgressCore.gearState(progress,base.id);
  if(gear.mode==="itemized")renderItemizedGear(base,gear);

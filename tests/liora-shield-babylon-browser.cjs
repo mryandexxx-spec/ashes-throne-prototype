@@ -1,194 +1,97 @@
 "use strict";
-/* LIORA-SHIELD-004: real Babylon.js + actual GLB playback in Chromium/WebKit.
- * This test deliberately depends on CDN Babylon.js; it is NOT a mock renderer.
+/* LIORA-UNARMED-001: actual Babylon WebGL unarmed-model regression.
+ * Keep the legacy filename while CI workflow is transitioned.
  */
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const {chromium,webkit}=require("playwright");
-const engineName=process.env.LIORA_BROWSER==="webkit"?"webkit":"chromium";
-const ordered=["Running","Walking","Alert","Block1","Catching_Breath","Dead",
+const browserName=process.env.LIORA_BROWSER==="webkit"?"webkit":"chromium";
+const clips=["Running","Walking","Alert","Block1","Catching_Breath","Dead",
  "Hit_Reaction","Idle_02","Shield_Push_Left","Squat_Stance",
  "Step_Forward_and_Push","Walk_Fight_Forward",
  "Liora_Shield_Block","Liora_Shield_Bash","Liora_Shield_Death"];
-const outDir=path.join(process.cwd(),"artifacts/liora-shield",engineName);
-fs.mkdirSync(outDir,{recursive:true});
+const out=path.join(process.cwd(),"artifacts/liora-unarmed",browserName);
+fs.mkdirSync(out,{recursive:true});
 (async()=>{
- const browser=await (engineName==="webkit"?webkit:chromium).launch(
-  engineName==="webkit"?{headless:true}:{headless:true,args:[
-   "--no-sandbox","--use-gl=angle","--use-angle=swiftshader",
-   "--enable-webgl","--disable-dev-shm-usage"
-  ]});
+ const browser=await (browserName==="webkit"?webkit:chromium).launch(
+  browserName==="webkit"?{headless:true}:{headless:true,args:[
+   "--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl",
+   "--disable-dev-shm-usage"]});
  try{
-  const page=await browser.newPage({viewport:{width:844,height:390},
-   deviceScaleFactor:1,hasTouch:true,isMobile:true});
-  const pageErrors=[],consoleErrors=[],assetFailures=[];
-  page.on("pageerror",error=>pageErrors.push(error.message));
-  page.on("console",message=>{if(message.type()==="error")consoleErrors.push(message.text());});
-  page.on("response",response=>{
-   if(!response.ok()&&/babylon|\.glb($|\?)/i.test(response.url()))
-    assetFailures.push(response.status()+" "+response.url());
-  });
-  const response=await page.goto("http://127.0.0.1:8765/liora-shield-lab.html",{waitUntil:"load",timeout:90000});
-  assert.equal(response.status(),200);
-  try {
-   await page.waitForFunction(()=>{
-    const msg=document.querySelector("#status")?.textContent||"";
-    return msg.includes("Готово: 15 анимаций")||msg.startsWith("Ошибка лаборатории:");
-   },null,{timeout:35000});
-  }catch(error){
-   const msg=await page.locator("#status").innerText().catch(()=>"(no status)");
-   console.error("LIORA init timeout",JSON.stringify({msg,pageErrors,consoleErrors,assetFailures}));
-   await page.screenshot({path:path.join(outDir,"startup-failure.png")}).catch(()=>{});
-   throw error;
-  }
-  const readyMessage=await page.locator("#status").innerText();
-  if(!readyMessage.includes("Готово: 15 анимаций")){
-   console.error("LIORA init error",JSON.stringify({readyMessage,pageErrors,consoleErrors,assetFailures}));
-   await page.screenshot({path:path.join(outDir,"startup-failure.png")}).catch(()=>{});
-   throw Error("Liora lab initialization failed: "+readyMessage);
-  }
-  // Pause autoplay to make each frame deterministic.
-  await page.click("#play");
-  assert.equal(await page.locator("#play").innerText(),"Воспроизвести");
+  const page=await browser.newPage({viewport:{width:844,height:390},deviceScaleFactor:1,
+   isMobile:true,hasTouch:true});
+  const errors=[],glbRequests=[];
+  page.on("pageerror",e=>errors.push(e.message));
+  page.on("request",r=>{if(/\\.glb(?:$|\\?)/i.test(r.url()))glbRequests.push(r.url());});
+  page.on("console",m=>{if(m.type()==="error")errors.push(m.text());});
+  const resp=await page.goto("http://127.0.0.1:8765/liora-shield-lab.html",
+   {waitUntil:"load",timeout:90000});
+  assert.equal(resp.status(),200);
+  await page.waitForFunction(()=>{
+   const status=document.getElementById("status")?.textContent||"";
+   return status.includes("Готово: 15 анимаций")||status.startsWith("Ошибка");
+  },null,{timeout:45000});
+  const msg=await page.locator("#status").innerText();
+  assert.match(msg,/Готово: 15 анимаций/,"viewer should load all clips: "+msg);
+  assert.equal(glbRequests.length,1,"must request exactly one GLB (Liora, no shield)");
+  assert.match(glbRequests[0],/liora_vel_shield_aware_15clips\\.glb/);
   const state=await page.evaluate(()=>{
-   const engines=BABYLON.EngineStore.Instances, engine=engines.at(-1),
-    scene=engine?.scenes?.[0];
-   if(!scene)throw Error("No real Babylon Scene");
-   const hand=scene.getTransformNodeByName("mixamorig:LeftHand");
-   const socket=scene.getTransformNodeByName("lioraShieldSocket");
-   const model=scene.meshes.filter(m=>m.getTotalVertices?.()>0);
-   return {engineName:engine.getClassName?.()||engine.constructor.name,
-    gl:!!engine._gl,hand:!!hand,socket:!!socket,
-    attached:socket?.metadata?.lioraJoint===hand?.name,clipNames:scene.animationGroups.map(a=>a.name),
-    meshCount:model.length,
-    shieldVertices:model.find(m=>m.getTotalVertices()===4445)?.getTotalVertices()||0,
-    sceneReady:scene.isReady(),webglVersion:engine.webGLVersion};
+   const engine=BABYLON.EngineStore.Instances.at(-1);
+   const scene=engine.scenes[0];
+   const meshes=scene.meshes.filter(m=>m.getTotalVertices?.()>0);
+   return {webgl:engine.webGLVersion,clips:scene.animationGroups.map(g=>g.name),
+    meshes:meshes.length,vertices:meshes.map(m=>m.getTotalVertices()),
+    shieldSocket:!!scene.getTransformNodeByName("lioraShieldSocket"),
+    shieldMesh:meshes.some(m=>m.getTotalVertices()===4445)};
   });
-  console.log("LIORA Babylon asset load",JSON.stringify(state));
-  assert.ok(state.gl,"Must use real WebGL engine");
-  assert.ok(state.webglVersion>=1);
-  assert.ok(state.meshCount>=2);
-  assert.equal(state.hand,true);
-  assert.equal(state.socket,true);
-  assert.equal(state.attached,true);
-  assert.deepEqual(new Set(state.clipNames),new Set(ordered));
-  const results=[];
-  for(const clip of ordered){
+  assert.ok(state.webgl>=1);
+  assert.deepEqual(new Set(state.clips),new Set(clips));
+  assert.equal(state.meshes,1,"only Liora's mesh should render");
+  assert.equal(state.shieldSocket,false);
+  assert.equal(state.shieldMesh,false);
+  assert.equal(await page.locator("#sliders,#stabilize,#combatCorrection").count(),0);
+  await page.click("#play");
+  const poses=[];
+  for(const clip of clips){
    await page.selectOption("#clip",clip);
    const phases=[];
    for(const percent of [0,25,50,75,100]){
-    await page.locator("#frame").evaluate((element,percent)=>{
-     element.value=String(percent);element.dispatchEvent(new Event("input",{bubbles:true}));
+    await page.locator("#frame").evaluate((el,p)=>{
+     el.value=String(p);el.dispatchEvent(new Event("input",{bubbles:true}));
     },percent);
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(35);
     const pose=await page.evaluate(()=>{
      const scene=BABYLON.EngineStore.Instances.at(-1).scenes[0];
      scene.render();
-     const socket=scene.getTransformNodeByName("lioraShieldSocket");
-     const hand=scene.getTransformNodeByName("mixamorig:LeftHand");
-     const hips=scene.getTransformNodeByName("mixamorig:Hips");
-     const point=v=>({x:v.x,y:v.y,z:v.z});
-     const h=hand.getAbsolutePosition(),s=socket.getAbsolutePosition();
-     const shield=scene.meshes.find(m=>m.getTotalVertices?.()===4445);
-     if(shield){shield.computeWorldMatrix(true);}
-     const worldSocket=new BABYLON.Quaternion();socket.getWorldMatrix().decompose(null,worldSocket);
-     const worldShield=new BABYLON.Quaternion();shield?.getWorldMatrix().decompose(null,worldShield);
-     return {hand:point(h),socket:point(s),
-      hip:hips?point(hips.position):null,
-      dist:BABYLON.Vector3.Distance(h,s),
-      shieldMinY:shield?.getBoundingInfo().boundingBox.minimumWorld.y||null,
-      // Uses actual Babylon values, not GLB key interpolation in Python.
-      rotation:socket.rotationQuaternion?.asArray(),
-      worldSocket:worldSocket.asArray(),worldShield:worldShield.asArray()};
+     const hip=scene.getTransformNodeByName("mixamorig:Hips");
+     return {x:hip.position.x,y:hip.position.y,z:hip.position.z,
+      meshCount:scene.meshes.filter(m=>m.getTotalVertices?.()>0).length};
     });
-    assert.ok(Object.values(pose.socket).every(Number.isFinite),clip+" socket NaN");
-    assert.ok(Object.values(pose.hand).every(Number.isFinite),clip+" hand NaN");
-    assert.ok(pose.dist<1.5,clip+" socket disconnected from hand at "+percent+"%");
-    phases.push({...pose,percent});
-    if(percent===50){
-     await page.locator("#stage").screenshot({
-      path:path.join(outDir,clip+".png"),timeout:30000});
-    }
-    if(clip==="Liora_Shield_Death"&&percent===100){
-     await page.locator("#stage").screenshot({
-      path:path.join(outDir,"Liora_Shield_Death_LANDED.png"),timeout:30000});
-    }
+    assert.ok([pose.x,pose.y,pose.z].every(Number.isFinite),clip+" nonfinite hips");
+    assert.equal(pose.meshCount,1,clip+" shield mesh unexpectedly appeared");
+    phases.push({percent,...pose});
    }
-   const maxHipXZ=Math.max(...phases.map(p=>Math.hypot(
-    p.hip.x-phases[0].hip.x,p.hip.z-phases[0].hip.z)));
-   assert.ok(maxHipXZ<.03,clip+" unexpected root-motion: "+maxHipXZ);
-   results.push({clip,maxHipXZ,phases});
+   const drift=Math.max(...phases.map(p=>Math.hypot(p.x-phases[0].x,
+    p.z-phases[0].z)));
+   assert.ok(drift<.03,clip+" unwanted horizontal root motion "+drift);
+   if(["Idle_02","Liora_Shield_Block","Liora_Shield_Bash","Liora_Shield_Death"].includes(clip))
+    await page.locator("#stage").screenshot({path:path.join(out,clip+".png")});
+   poses.push({clip,drift});
   }
-  // Capture direct before/after screenshots for just the two edited clips.
-  for(const name of ["Liora_Shield_Block","Liora_Shield_Bash"]){
-   await page.selectOption("#clip",name);
-   await page.locator("#frame").evaluate(el=>{
-    el.value="50";el.dispatchEvent(new Event("input",{bubbles:true}));
-   });
-   await page.waitForTimeout(120);
-   await page.locator("#stage").screenshot({
-    path:path.join(outDir,name+"_AFTER.png")});
-   await page.uncheck("#combatCorrection");
-   await page.waitForTimeout(120);
-   await page.locator("#stage").screenshot({
-    path:path.join(outDir,name+"_BEFORE.png")});
-   await page.check("#combatCorrection");
-  }
-  // Compare real Babylon world orientations: stabilization must avoid a
-  // large unintentional flip across stationary and defensive animations.
-  const baseline=results.find(x=>x.clip==="Idle_02").phases[2].worldShield;
-  const difference=q=>{
-   const dot=Math.abs(baseline.reduce((sum,v,i)=>sum+v*q[i],0));
-   return (2*Math.acos(Math.min(1,Math.max(0,dot))))*180/Math.PI;
-  };
-  const facing=results.map(x=>({
-   clip:x.clip,midAngleDegrees:+difference(x.phases[2].worldShield).toFixed(2)
-  }));
-  console.log("LIORA shield world-facing",JSON.stringify(facing));
-  for(const item of facing){
-   if(item.clip==="Dead"||item.clip==="Liora_Shield_Death")continue;
-   assert.ok(item.midAngleDegrees<3,
-    item.clip+" shield rotates unexpectedly despite stabilization: "+item.midAngleDegrees);
-  }
-  // During death the shield must detach visually from the hand and descend
-  // toward the model-space floor, then return on a new idle clip.
-  const death=results.find(x=>x.clip==="Liora_Shield_Death");
-  const yStart=death.phases[0].shieldMinY,yEnd=death.phases[4].shieldMinY;
-  const distEnd=death.phases[4].dist;
-  console.log("LIORA death",JSON.stringify({yStart,yEnd,distEnd}));
-  assert.ok(Number.isFinite(yEnd),"shield must have finite floor coordinate");
-  assert.ok(yEnd>=-.04&&yEnd<=.08,
-   "shield must land near ground, not clip through it: "+yEnd);
-  assert.ok(distEnd>.15,"shield must remain visibly separate from wrist pivot");
   await page.selectOption("#clip","Idle_02");
-  await page.locator("#frame").evaluate(element=>{
-   element.value="50";element.dispatchEvent(new Event("input",{bubbles:true}));
-  });
-  const reset=await page.evaluate(()=>{
-   const s=BABYLON.EngineStore.Instances.at(-1).scenes[0],
-    sock=s.getTransformNodeByName("lioraShieldSocket");
-   return {x:sock.position.x,y:sock.position.y,z:sock.position.z};
-  });
-  const idle=results.find(x=>x.clip==="Idle_02").phases[2].socket;
-  assert.ok(Math.abs(reset.x-idle.x)<.02&&
-   Math.abs(reset.y-idle.y)<.02&&Math.abs(reset.z-idle.z)<.02,
-   "idle must restore pre-death world grip position");
-  await page.locator("#stage").screenshot({
-   path:path.join(outDir,"Idle_AFTER_DEATH.png"),timeout:30000});
   await page.click("#scan");
-  const scanText=await page.locator("#checks").innerText();
-  for(const clip of ordered){
-   assert.ok(scanText.includes(clip+": OK"),clip+" scan failure "+scanText);
-  }
-  assert.deepEqual(pageErrors,[],"page exceptions");
-  assert.deepEqual(assetFailures,[],"asset HTTP errors");
-  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2);
-  assert.equal(overflow,false,"landscape horizontal overflow");
-  fs.writeFileSync(path.join(outDir,"results.json"),JSON.stringify({
-   engineName,state,results,death:{yStart,yEnd,distEnd},scanText,pageErrors,
-   consoleErrors,assetFailures,overflow},null,2));
-  console.log("LIORA-SHIELD-004 PASS",engineName,"clips",results.length,
-   "screenshots",results.length,"death end shield Y",yEnd);
+  const scan=await page.locator("#checks").innerText();
+  for(const clip of clips)assert.ok(scan.includes(clip+": OK"),clip+" scan failed");
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false);
+  assert.deepEqual(errors,[],"no page errors");
+  const report={browserName,state,glbRequests,poses,errors};
+  fs.writeFileSync(path.join(out,"results.json"),JSON.stringify(report,null,2));
+  console.log("LIORA-UNARMED-001 PASS",browserName,"clips",poses.length,
+   "single GLB, no shield, no root-motion drift");
+ }catch(error){
+  console.error("LIORA-UNARMED-001 FAIL",error);
+  await page?.screenshot?.({path:path.join(out,"error.png")}).catch(()=>{});
+  throw error;
  }finally{await browser.close();}
-})().catch(error=>{console.error("LIORA-SHIELD-004 FAIL",error);process.exitCode=1;});
+})().catch(e=>{console.error(e);process.exitCode=1;});

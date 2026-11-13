@@ -604,10 +604,19 @@ function equippedPilotStats(hero,profile){
   magicDefense:profile.magicDefense,protection:profile.maxProtection,
   maxProtection:profile.maxProtection};
 }
+// STATS-001B: explicit developer opt-in. No default gameplay/save migration.
+const STATS001B_PILOT=typeof location!=="undefined"&&
+ /(?:^|[?&])stats001b=1(?:&|$)/.test(location.search);
 function progressedHero(hero){
  const calculated=ProgressCore.heroStats(progress,hero);
  if(!calculated)return null;
- const h=equippedPilotStats(calculated,PILOT_HERO_STATS[hero.id]);
+ let h=equippedPilotStats(calculated,PILOT_HERO_STATS[hero.id]);
+ if(STATS001B_PILOT&&(hero.id==="ren"||hero.id==="nada")&&
+    typeof HeroStatsCore!=="undefined"&&
+    typeof HeroStatsProfiles!=="undefined"&&
+    typeof HeroStatsCombatBridge!=="undefined"){
+  h=HeroStatsCombatBridge.apply(hero,calculated,HeroStatsProfiles[hero.id],HeroStatsCore);
+ }
  return typeof SkillCore==="undefined"?h:
   {...h,skillLevels:Object.fromEntries(SkillCore.IDS.map(id=>[id,SkillCore.level(progress,hero.id,id)]))};
 }

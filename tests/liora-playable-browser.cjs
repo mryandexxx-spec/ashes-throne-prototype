@@ -1,6 +1,9 @@
 "use strict";
 const assert=require("node:assert/strict");
 const {chromium,webkit}=require("playwright");
+const fs=require("node:fs"),path=require("node:path");
+const out=path.join(process.cwd(),"artifacts/liora-playable",process.env.LIORA_BROWSER==="webkit"?"webkit":"chromium");
+fs.mkdirSync(out,{recursive:true});
 (async()=>{
  const useWebkit=process.env.LIORA_BROWSER==="webkit";
  const browser=await (useWebkit?webkit:chromium).launch(
@@ -61,6 +64,7 @@ const {chromium,webkit}=require("playwright");
   assert.equal(card.viewer,true);
   assert.equal(card.loadingHidden,true);
   assert.equal(card.overflow,false);
+  await page.locator("#renCard3DCanvas").screenshot({path:path.join(out,"liora-card.png")});
   await page.evaluate(()=>showScreen("collection"));
   assert.equal(await page.locator("#renCard3DCanvas").isHidden(),true);
   await page.evaluate(()=>{selectedHeroId="liora";showScreen("heroDetail");});
@@ -83,6 +87,10 @@ const {chromium,webkit}=require("playwright");
   assert.equal(combat.ready,true,"Liora must load in the real combat arena");
   assert.equal(combat.loaded,true);
   assert.ok(combat.meshCount>0);
+  await page.waitForTimeout(250);
+  await page.locator("#renderCanvas").screenshot({path:path.join(out,"liora-arena.png")});
+  const shield=await page.evaluate(()=>scene.meshes.some(m=>m.name==="lioraShieldSocket"||m.metadata?.lioraShield===true));
+  assert.equal(shield,false,"no shield allowed in arena");
   assert.deepEqual(errors,[]);
   console.log("LIORAPLAY001 browser smoke PASS",useWebkit?"WebKit":"Chromium");
  }finally{await browser.close();}

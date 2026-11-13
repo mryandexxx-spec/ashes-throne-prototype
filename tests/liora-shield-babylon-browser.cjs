@@ -120,6 +120,21 @@ fs.mkdirSync(outDir,{recursive:true});
    assert.ok(maxHipXZ<.03,clip+" unexpected root-motion: "+maxHipXZ);
    results.push({clip,maxHipXZ,phases});
   }
+  // Capture direct before/after screenshots for just the two edited clips.
+  for(const name of ["Liora_Shield_Block","Liora_Shield_Bash"]){
+   await page.selectOption("#clip",name);
+   await page.locator("#frame").evaluate(el=>{
+    el.value="50";el.dispatchEvent(new Event("input",{bubbles:true}));
+   });
+   await page.waitForTimeout(120);
+   await page.locator("#stage").screenshot({
+    path:path.join(outDir,name+"_AFTER.png")});
+   await page.uncheck("#combatCorrection");
+   await page.waitForTimeout(120);
+   await page.locator("#stage").screenshot({
+    path:path.join(outDir,name+"_BEFORE.png")});
+   await page.check("#combatCorrection");
+  }
   // Compare real Babylon world orientations: stabilization must avoid a
   // large unintentional flip across stationary and defensive animations.
   const baseline=results.find(x=>x.clip==="Idle_02").phases[2].worldShield;

@@ -146,6 +146,31 @@ test("CHAR002B mitigation covers group special, all original targets still attac
  assert.equal(battle.fighters[1].hp,430);
  assert.equal(forced.CombatStatusCore.read(battle.fighters[2],"read-move"),null);
 });
+test("CHAR002B prediction lowers seeded hit chance, not the action ID",()=>{
+ const source=["initiative-model.js","battle-rng.js","combat-status-core.js",
+  "skill-core.js","ability-data.js","ability-info.js",
+  "const EnemyDecision={chooseAction:()=>({abilityId:\"special\",targetIndex:0})};",
+  "combat-core.js"].map(name=>name.startsWith("const ")?name:read(name)).join("\n");
+ const forced=vm.runInNewContext(source+"\n({CombatCore,CombatStatusCore})");
+ const ally=fighter("ren","ally",120,500,4);
+ const enemy=fighter("test-physical-strike","enemy",180,1000,100);
+ const run=stacks=>{
+  const battle=forced.CombatCore.createBattle([ally,enemy],[],{
+   rngSeed:1456,hitChecks:true
+  });
+  if(stacks)forced.CombatStatusCore.applyReadMove(battle.fighters[1],stacks,2);
+  forced.CombatCore.advanceToPlayerTurn(battle);
+  return battle;
+ };
+ const normal=run(0),marked=run(3);
+ assert.equal(normal.events.find(e=>e.type==="ability").abilityId,"special");
+ assert.equal(marked.events.find(e=>e.type==="ability").abilityId,"special");
+ assert.equal(500-normal.fighters[0].hp,100);
+ assert.equal(marked.events.find(e=>e.type==="miss").hitChance,80);
+ assert.equal(marked.fighters[0].hp,500);
+ assert.equal(marked.events.find(e=>e.type==="read-move-predicted").damageReduction,30);
+ assert.equal(forced.CombatStatusCore.read(marked.fighters[1],"read-move"),null);
+});
 test("CHAR002B both permanent heroes have regional Gardens tags, not a claim of birthplace",()=>{
  const profiles=vm.runInNewContext(read("hero-profile-data.js")+"\nHeroProfileData");
  assert.ok(profiles.get("ren").tags.includes("gardens-over-abyss"));

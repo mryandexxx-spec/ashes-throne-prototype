@@ -25,12 +25,25 @@ const AbilityInfo=(()=>{
    const hasCombatRules=!!a.combatRules;
    const hasEffects=!!(a.triggers?.length||a.modifiers?.length||hasCombatRules);
    const rules=a.combatRules;
-   const detail=hasCombatRules?
-    "Проба: +"+rules.bonusVsDebuffedPercent+"% урона по цели с ослаблением, "+
-    "+"+rules.statusPotencyWithoutResistanceDown+" п.п. эффективности наложения "+
-    "без пониженного сопротивления у цели и +"+rules.tagDamagePercent+
-    "% урона союзникам с подходящим тегом. Числа тестовые.":
-    "Автоматическая способность. Подробное действие уточняется.";
+   const detail=!hasCombatRules?
+    "Автоматическая способность. Подробное действие уточняется.":
+    Number.isFinite(rules.readMoveBonusPercentPerStack)?
+     "Рен наносит +"+rules.readMoveBonusPercentPerStack+
+      "% урона за каждую зацепку «Просчитанного хода» на цели (до 4). "+
+      "Пока Рен жив, союзники с тегом Садов получают +"+rules.gardensEvasionBonus+
+      " п.п. уклонения. Прочие дебаффы не дают Рену бонусного урона.":
+    Number.isFinite(rules.gardensAccuracyBonus)?
+     "Пока Нада жива, союзники с тегом Садов получают +"+
+      rules.gardensAccuracyBonus+" п.п. точности. "+
+      "«Просчитанный ход» накапливается до 4 зацепок; от 3 зацепок "+
+      "особая или мощная атака врага сохраняется, но получает −20 п.п. точности, −20 п.п. эффективности наложения эффектов и −30% урона; расходует 3 зацепки.":
+    Number.isFinite(rules.allyBonusVsDebuffedPercent)?
+     "Пока герой жив, союзники наносят +"+rules.allyBonusVsDebuffedPercent+
+      "% урона врагам с действующими негативными эффектами. Числа тестовые.":
+     "Проба: +"+rules.bonusVsDebuffedPercent+"% урона по цели с ослаблением, "+
+      "+"+rules.statusPotencyWithoutResistanceDown+" п.п. эффективности наложения "+
+      "без пониженного сопротивления у цели и +"+rules.tagDamagePercent+
+      "% урона союзникам с подходящим тегом. Числа тестовые.";
    return {id:slot.id,label:slot.label,name:hasEffects?a.name:"Не определена",
     status:hasEffects?"available":"not-defined",
     description:hasEffects?detail:
@@ -49,6 +62,12 @@ const AbilityInfo=(()=>{
    if(a.weakening>0)effects.push("Ослабляет противника на "+a.weakening+" атаки.");
     if(a.onHitStatus?.type==="slowed")effects.push("Замедление: -"+a.onHitStatus.amount+"% скорости на "+a.onHitStatus.turns+" собственных хода цели (тестовый баланс).");
     if(a.followUpStatusAll?.type==="debuff-resistance-down")effects.push("После попадания по основной цели снижает сопротивление всех оставшихся противников на "+a.followUpStatusAll.amount+" п.п. на "+a.followUpStatusAll.turns+" их собственных хода. Тестовый баланс.");
+    if(a.onHitStatus?.type==="debuff-resistance-down")effects.push("При попадании снижает сопротивление основной цели негативным эффектам на "+a.onHitStatus.amount+" п.п. на "+a.onHitStatus.turns+" её собственных хода. Тестовый баланс.");
+    if(a.onHitStatus?.type==="read-move")effects.push(
+      "При попадании добавляет "+a.onHitStatus.stacks+
+      " зацепок «Просчитанного хода» (всего до 4; "+a.onHitStatus.turns+
+      " собственных хода цели). При 3+ зацепках попытка особой/мощной атаки врага превращается в базовую и расходует 3 зацепки.");
+
   }else if(a.kind==="guard"){
    if(Number.isFinite(a.guardHits))effects.push("Даёт защиту от "+a.guardHits+" ударов.");
    else effects.push("Даёт защиту.");

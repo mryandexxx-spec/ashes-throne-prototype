@@ -11,7 +11,7 @@ assert.ok(hero);
 assert.equal(hero.classId,"melee","class stays independent of origin");
 assert.equal(HeroProfileData.hasTag(hero,"gardens-over-abyss"),true);
 assert.equal(HeroProfileData.hasTag(hero,"unknown"),false);
-assert.equal(HeroProfileData.tag("gardens-over-abyss").kind,"origin","not an invented faction");
+assert.equal(HeroProfileData.tag("gardens-over-abyss").kind,"region","regional connection is not an invented faction or guaranteed birthplace");
 assert.deepEqual(Array.from(HeroProfileData.tagLabels(hero.tags)),["Сады над пропастью"]);
 const profile=HeroProfileData.get("trial-ren");
 assert.ok(profile);

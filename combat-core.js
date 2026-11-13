@@ -45,12 +45,34 @@ const CombatCore = (() => {
       seen.add(owner.id);
       const rules=passiveCombatRules(owner);
       if(!rules)continue;
+      const marks=typeof CombatStatusCore!=="undefined"?
+       CombatStatusCore.read(target,"read-move")?.stacks??0:0;
+      // Exclusive Ren synergy: generic debuffs never grant this bonus.
+      if(owner.id===actor.id&&validPercent(rules.readMoveBonusPercentPerStack))
+       bonus+=marks*rules.readMoveBonusPercentPerStack;
+      // Preserve legacy trial-only combat rules, but not for production Ren/Nada.
       if(owner.id===actor.id&&validPercent(rules.bonusVsDebuffedPercent)&&
          hasNegativeStatus(target))bonus+=rules.bonusVsDebuffedPercent;
+      if(owner.side===actor.side&&
+         validPercent(rules.allyBonusVsDebuffedPercent)&&
+         hasNegativeStatus(target))bonus+=rules.allyBonusVsDebuffedPercent;
       if(owner.side===actor.side&&
          typeof rules.tagId==="string"&&rules.tagId.length>0&&
          Array.isArray(actor.tags)&&actor.tags.includes(rules.tagId)&&
          validPercent(rules.tagDamagePercent))bonus+=rules.tagDamagePercent;
+    }
+    return bonus;
+  }
+  function gardensCombatBonus(battle,fighter,key){
+    if(!battle?.active||!fighter||!Array.isArray(fighter.tags))return 0;
+    const seen=new Set();let bonus=0;
+    for(const owner of battle.fighters){
+      if(seen.has(owner.id))continue;
+      seen.add(owner.id);
+      const rules=passiveCombatRules(owner);
+      if(!rules||owner.side!==fighter.side||!rules.gardensTagId||
+         !fighter.tags.includes(rules.gardensTagId))continue;
+      if(validPercent(rules[key]))bonus+=rules[key];
     }
     return bonus;
   }
@@ -61,12 +83,13 @@ const CombatCore = (() => {
        CombatStatusCore.read(target,"debuff-resistance-down"))return 0;
     return rules.statusPotencyWithoutResistanceDown;
   }
-  function statusChance(actor,target){
+  function statusChance(actor,target,readMovePenalty=false){
     const effectiveResistance=typeof CombatStatusCore!=="undefined"
       ?CombatStatusCore.effectiveDebuffResistance(target,target.debuffResistance)
       :target.debuffResistance;
     return Math.max(5,Math.min(100,
-      100+actor.debuffPotency+passiveStatusPotencyBonus(actor,target)-effectiveResistance));
+      100+actor.debuffPotency+passiveStatusPotencyBonus(actor,target)-
+      effectiveResistance-(readMovePenalty?20:0)));
   }
   function bonusDamage(battle,actor,target,raw){
     const percent=passiveDamageBonusPercent(battle,actor,target);
@@ -355,9 +378,11 @@ const CombatCore = (() => {
       (Number.isFinite(value)&&value>=0&&value<=100);
     return valid(actor.accuracy)&&recipients.every(target=>valid(target.evasion));
   }
-  function rollToHit(battle,actor,target,type){
+  function rollToHit(battle,actor,target,type,readMovePenalty=false){
     if(!hitCheckEnabled(battle,type))return true;
-    const accuracy=actor.accuracy??0,evasion=target.evasion??0;
+    const accuracy=(actor.accuracy??0)+gardensCombatBonus(battle,actor,"gardensAccuracyBonus")-
+      (readMovePenalty?20:0);
+    const evasion=(target.evasion??0)+gardensCombatBonus(battle,target,"gardensEvasionBonus");
     const chance=Math.max(5,Math.min(100,100+accuracy-evasion));
     const roll=BattleRng.roll(battle,chance);
     if(roll.hit)return true;
@@ -623,14 +648,14 @@ const CombatCore = (() => {
     const reserve=direct+followUps;
     return snapshot.draws<=Number.MAX_SAFE_INTEGER-reserve;
   }
-  function applyNegativeStatus(battle,actor,target,stacks,type){
+  function applyNegativeStatus(battle,actor,target,stacks,type,readMovePenalty=false){
     if(!statusCheckEnabled(battle,type)){
       target.weakenAttacks=stacks;
       emit(battle,"effect",{actorId:actor.id,targetId:target.id,
         effect:"weaken",stacks});
       return;
     }
-    const chance=statusChance(actor,target);
+    const chance=statusChance(actor,target,readMovePenalty);
     const roll=BattleRng.roll(battle,chance);
     if(!roll.hit){
       emit(battle,"status-resisted",{actorId:actor.id,targetId:target.id,
@@ -651,14 +676,16 @@ const CombatCore = (() => {
       ["enemy","all-enemies"].includes(ability.target)&&
       typeof CombatStatusCore!=="undefined"&&
       CombatStatusCore.KINDS.includes(x?.type)&&
-      Number.isFinite(x.amount)&&x.amount>=0&&x.amount<=100&&
+      (x.type==="read-move"?
+       Number.isSafeInteger(x.stacks)&&x.stacks>=1&&x.stacks<=4:
+       Number.isFinite(x.amount)&&x.amount>=0&&x.amount<=100)&&
       Number.isSafeInteger(x.turns)&&x.turns>0;
   }
-  function applyOnHitStatus(battle,actor,target,ability){
+  function applyOnHitStatus(battle,actor,target,ability,readMovePenalty=false){
     const x=ability.onHitStatus;
     if(!x||target.hp<=0)return;
     if(battle.statusChecks===true){
-      const chance=statusChance(actor,target);
+      const chance=statusChance(actor,target,readMovePenalty);
       const roll=BattleRng.roll(battle,chance);
       if(!roll.hit){
         emit(battle,"status-resisted",{actorId:actor.id,targetId:target.id,
@@ -666,9 +693,16 @@ const CombatCore = (() => {
         return;
       }
     }
-    if(CombatStatusCore.apply(target,x.type,x.amount,x.turns))
+    const applied=x.type==="read-move"?
+      CombatStatusCore.applyReadMove(target,x.stacks,x.turns):
+      CombatStatusCore.apply(target,x.type,x.amount,x.turns);
+    if(applied){
+      const result=CombatStatusCore.read(target,x.type);
       emit(battle,"effect",{actorId:actor.id,targetId:target.id,
-        effect:x.type,amount:x.amount,remaining:x.turns});
+        effect:x.type,
+        ...(x.type==="read-move"?{stacks:result.stacks}:{amount:x.amount}),
+        remaining:result.remaining});
+    }
   }
   // REN-COMBAT-D: powerful strike targets one foe, then independently tries
   // a non-damaging status on all living opposing fighters. An actual hit
@@ -691,13 +725,13 @@ const CombatCore = (() => {
     return valid(actor.debuffPotency)&&
       areaStatusTargets(battle,actor).every(t=>valid(t.debuffResistance));
   }
-  function applyAreaStatusAfterHit(battle,actor,ability){
+  function applyAreaStatusAfterHit(battle,actor,ability,readMovePenalty=false){
     const x=ability.followUpStatusAll;
     if(!x)return;
     // Each surviving opponent gets its own optional RNG check.
     for(const target of areaStatusTargets(battle,actor)){
       if(battle.statusChecks===true){
-        const chance=statusChance(actor,target);
+        const chance=statusChance(actor,target,readMovePenalty);
         const roll=BattleRng.roll(battle,chance);
         if(!roll.hit){
           emit(battle,"status-resisted",{actorId:actor.id,targetId:target.id,
@@ -728,7 +762,7 @@ const CombatCore = (() => {
   }
   // Recipients were selected before the primary action. Bonus effects resolve
   // afterwards, but only on survivors; a fallen primary is never replaced.
-  function applyFollowUpEffects(battle,actor,ability,recipients,primary,type="legacy"){
+  function applyFollowUpEffects(battle,actor,ability,recipients,primary,type="legacy",readMovePenalty=false){
     for(const effect of ability.followUpEffects||[]){
       const affected=effect.scope==="self"?[actor]:
         effect.scope==="primary"?[primary]:recipients;
@@ -736,7 +770,7 @@ const CombatCore = (() => {
         if(!target||target.hp<=0)continue;
         const remaining=Math.max(effectCount(target,effect.status),effect.stacks);
         if(effect.status==="weaken"&&statusCheckEnabled(battle,type)){
-          applyNegativeStatus(battle,actor,target,remaining,type);
+          applyNegativeStatus(battle,actor,target,remaining,type,readMovePenalty);
         }else{
           setEffect(target,effect.status,remaining);
           emit(battle,"effect",{actorId:actor.id,targetId:target.id,
@@ -749,7 +783,25 @@ const CombatCore = (() => {
   // Combat-011B: atomic resolution of one self/group command. The acting
   // unit spends exactly one turn and one cooldown. Dead targets are filtered
   // before the command; wave/victory transitions happen after all targets.
-  function performMultiTargetAbility(battle, actor, ability, targets, chosenPrimaryIndex) {
+  function readMoveMitigation(actor,ability){
+    return actor.side==="enemy"&&ability.kind==="damage"&&
+      (ability.id==="special"||ability.id==="powerful")&&
+      typeof CombatStatusCore!=="undefined"&&
+      (CombatStatusCore.read(actor,"read-move")?.stacks??0)>=3;
+  }
+  const READ_MOVE_DAMAGE_REDUCTION_PERCENT=30;
+  const reducedReadMoveDamage=(raw,mitigated)=>mitigated?
+    Math.round(raw*(100-READ_MOVE_DAMAGE_REDUCTION_PERCENT)/100):raw;
+  function consumeReadMoveMitigation(battle,actor,mitigated){
+    if(!mitigated)return true;
+    if(!CombatStatusCore.spendReadMove(actor,3))return false;
+    emit(battle,"read-move-predicted",{actorId:actor.id,remainingStacks:
+      CombatStatusCore.read(actor,"read-move")?.stacks??0,
+      accuracyPenalty:20,statusPotencyPenalty:20,
+      damageReduction:READ_MOVE_DAMAGE_REDUCTION_PERCENT});
+    return true;
+  }
+  function performMultiTargetAbility(battle, actor, ability, targets, chosenPrimaryIndex,readMovePenalty=false) {
     if(!["self","all-enemies","all-allies"].includes(ability.target))return false;
     if(!["damage","heal","guard"].includes(ability.kind))return false;
     if(ability.target==="all-enemies"&&ability.kind!=="damage")return false;
@@ -773,6 +825,7 @@ const CombatCore = (() => {
       targets.includes(chosenPrimaryIndex)?chosenPrimaryIndex:targets[0];
     const primaryTargetId=battle.fighters[primaryIndex].id;
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
+    if(!consumeReadMoveMitigation(battle,actor,readMovePenalty))return false;
     emit(battle,"ability",{
       actorId:actor.id,targetId:primaryTargetId,primaryTargetId,
       targetIds:recipients.map(f=>f.id),abilityId:ability.id
@@ -780,20 +833,20 @@ const CombatCore = (() => {
     const weakened=actor.weakenAttacks>0;
     for(const target of recipients){
       if(ability.kind==="damage"){
-        if(!rollToHit(battle,actor,target,type))continue;
+        if(!rollToHit(battle,actor,target,type,readMovePenalty))continue;
         const oldHp=target.hp,oldProtection=target.protection??null;
         const baseDamage=bonusDamage(battle,actor,target,
           Math.round(effectiveStat(battle,actor,
             AbilityData.damageStat(ability))*ability.multiplier));
         const damage=dealDamage(actor,target,
-          rollCriticalDamage(battle,actor,target,baseDamage,type),false,type,
+          reducedReadMoveDamage(rollCriticalDamage(battle,actor,target,baseDamage,type),readMovePenalty),false,type,
           penetrationEnabled(battle,type)?actor.defensePenetration:0);
         emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
           ...typedDamageFields(target,type,oldHp,oldProtection)});
         if(target.hp===0)emit(battle,"death",{targetId:target.id});
         if(ability.weakening>0&&target.hp>0)
-          applyNegativeStatus(battle,actor,target,ability.weakening,type);
-        applyOnHitStatus(battle,actor,target,ability);
+          applyNegativeStatus(battle,actor,target,ability.weakening,type,readMovePenalty);
+        applyOnHitStatus(battle,actor,target,ability,readMovePenalty);
       }else if(ability.kind==="heal"){
         const restored=Math.min(ability.healAmount,Math.max(0,target.maxHp-target.hp));
         target.hp+=restored;
@@ -810,7 +863,7 @@ const CombatCore = (() => {
       recipients;
     const primary=battle.fighters[primaryIndex];
     applyFollowUpEffects(battle,actor,ability,hitRecipients,
-      hitRecipients.includes(primary)?primary:null,type);
+      hitRecipients.includes(primary)?primary:null,type,readMovePenalty);
     // Weakening counts attacks (commands), not recipients. All group targets
     // get the same weakened damage; one use is consumed at the end.
     if(ability.kind==="damage"&&weakened)actor.weakenAttacks--;
@@ -835,6 +888,7 @@ const CombatCore = (() => {
     if(!actorAbilityReady(battle,actorIndex,abilityId))return false;
     const actor=battle.fighters[actorIndex];
     const ability=AbilityData.get(actor,abilityId);
+    const readMovePenalty=readMoveMitigation(actor,ability);
     // Invalid definitions must not consume an action or overwrite events.
     // Stats-001B: explicit typed attacks require a valid matching attack value.
     // Legacy abilities keep using the historical general atk without reclassification.
@@ -849,7 +903,7 @@ const CombatCore = (() => {
     if(ability.kind==="guard"&&(!Number.isInteger(ability.guardHits)||ability.guardHits<0))return false;
     const targets=actorTargetIndices(battle,actorIndex,ability.target,primaryIndex);
     if(["self","all-enemies","all-allies"].includes(ability.target))
-      return performMultiTargetAbility(battle,actor,ability,targets,primaryIndex);
+      return performMultiTargetAbility(battle,actor,ability,targets,primaryIndex,readMovePenalty);
     if(ability.target!=="ally" && ability.target!=="enemy")return false;
     if(targets.length!==1)return false;
     const targetIndex=targets[0];
@@ -863,6 +917,7 @@ const CombatCore = (() => {
     if(!validCombinedRngBudget(battle,ability,[target],type))return false;
     // Invalid commands leave the previous event batch untouched.
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
+    if(!consumeReadMoveMitigation(battle,actor,readMovePenalty))return false;
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
     if(ability.kind==="guard"){
       target.guardHits=ability.guardHits;
@@ -873,7 +928,7 @@ const CombatCore = (() => {
       target.hp+=restored;
       emit(battle,"heal",{actorId:actor.id,targetId:target.id,amount:restored,remainingHp:target.hp});
       battle.message=actor.name+" лечит "+target.name+": +"+restored+" HP.";
-    }else if(!rollToHit(battle,actor,target,type)){
+    }else if(!rollToHit(battle,actor,target,type,readMovePenalty)){
       if(actor.weakenAttacks>0)actor.weakenAttacks--;
       battle.message=actor.name+" промахивается по "+target.name+".";
     }else{
@@ -881,15 +936,15 @@ const CombatCore = (() => {
       const baseDamage=bonusDamage(battle,actor,target,
         Math.round(effectiveStat(battle,actor,damageStat)*ability.multiplier));
       const damage=dealDamage(actor,target,
-        rollCriticalDamage(battle,actor,target,baseDamage,type),true,type,
+        reducedReadMoveDamage(rollCriticalDamage(battle,actor,target,baseDamage,type),readMovePenalty),true,type,
         penetrationEnabled(battle,type)?actor.defensePenetration:0);
       emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
         ...typedDamageFields(target,type,oldHp,oldProtection)});
       if(target.hp===0)emit(battle,"death",{targetId:target.id});
       if(ability.weakening>0&&target.hp>0)
-        applyNegativeStatus(battle,actor,target,ability.weakening,type);
-      applyOnHitStatus(battle,actor,target,ability);
-      applyAreaStatusAfterHit(battle,actor,ability);
+        applyNegativeStatus(battle,actor,target,ability.weakening,type,readMovePenalty);
+      applyOnHitStatus(battle,actor,target,ability,readMovePenalty);
+      applyAreaStatusAfterHit(battle,actor,ability,readMovePenalty);
       battle.message=actor.side==="enemy"&&ability.id==="basic"
         ? actor.name+" атакует "+target.name+": "+damage+" урона."
         : actor.name+(ability.id!=="basic"?" применяет "+ability.name+": ":" атакует: ")+
@@ -902,7 +957,7 @@ const CombatCore = (() => {
     }
     if(ability.kind!=="damage"||!hitCheckEnabled(battle,type)||
       !battle.events.some(event=>event.type==="miss"&&event.actorId===actor.id&&event.targetId===target.id))
-      applyFollowUpEffects(battle,actor,ability,[target],target,type);
+      applyFollowUpEffects(battle,actor,ability,[target],target,type,readMovePenalty);
     finishAbilityCooldowns(actor,ability);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
     tickActorStatuses(actor);

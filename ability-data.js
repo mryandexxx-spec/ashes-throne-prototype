@@ -9,10 +9,11 @@ const AbilityData=(()=>{
   darin:Object.freeze({id:"special",name:"Сокрушительный удар",target:"enemy",kind:"damage",multiplier:1.5,weakening:0,cooldown:2}),
   "medic-demo":Object.freeze({id:"special",name:"Перевязка",target:"ally",kind:"heal",healAmount:30,cooldown:2}),
   // STORY-002: noncanonical test skills, NOT a claim of combat competence in stories.
-  ren:Object.freeze({id:"special",name:"Найти брешь",target:"enemy",kind:"damage",multiplier:1,weakening:2,cooldown:2}),
+  ren:Object.freeze({id:"special",name:"Найти брешь",target:"enemy",kind:"damage",damageType:"physical",multiplier:1.05,weakening:2,cooldown:2}),
   "trial-ren":Object.freeze({id:"special",name:"Найти брешь · проба",target:"enemy",kind:"damage",multiplier:1,weakening:2,cooldown:2}),
   // NADA-PLAYABLE-001: provisional physical support abilities, not literary canon.
-  nada:Object.freeze({id:"special",name:"Найти слабость",target:"enemy",kind:"damage",damageType:"physical",multiplier:.8,weakening:2,cooldown:2}),
+  nada:Object.freeze({id:"special",name:"Найти закономерность",target:"enemy",kind:"damage",damageType:"physical",multiplier:.7,weakening:0,cooldown:2,
+   onHitStatus:Object.freeze({type:"read-move",stacks:2,turns:2})}),
   // LIORAPLAY001: unarmed test pilot; not canonical combat techniques.
   liora:Object.freeze({id:"special",name:"Защитная стойка · тест",target:"self",kind:"guard",guardHits:2,cooldown:2}),
   "trial-nada":Object.freeze({id:"special",name:"Выверенное действие · проба",target:"enemy",kind:"damage",multiplier:.8,weakening:2,cooldown:2}),
@@ -54,12 +55,12 @@ const AbilityData=(()=>{
   "test-powerful-damage":Object.freeze({id:"powerful",name:"Тест мощного удара",target:"enemy",
    kind:"damage",multiplier:1.5,weakening:0,cooldown:2}),
   // STORY-002: experimental powerful actions, not canon.
-  ren:Object.freeze({id:"powerful",name:"Сорвать построение",target:"enemy",kind:"damage",multiplier:1.6,weakening:0,cooldown:2,
-   followUpStatusAll:Object.freeze({type:"debuff-resistance-down",amount:15,turns:2})}),
+  ren:Object.freeze({id:"powerful",name:"Сорвать построение",target:"enemy",kind:"damage",damageType:"physical",multiplier:1.6,weakening:0,cooldown:3}),
   "trial-ren":Object.freeze({id:"powerful",name:"Сорвать построение · проба",target:"enemy",kind:"damage",multiplier:1.6,weakening:0,cooldown:2,
    // Temporary REN-COMBAT-D pilot numbers, NOT approved balance or canon.
    followUpStatusAll:Object.freeze({type:"debuff-resistance-down",amount:15,turns:2})}),
-  nada:Object.freeze({id:"powerful",name:"Уязвимое место",target:"enemy",kind:"damage",damageType:"physical",multiplier:1.25,weakening:2,cooldown:2}),
+  nada:Object.freeze({id:"powerful",name:"Разгадать замысел",target:"all-enemies",kind:"damage",damageType:"physical",multiplier:.6,weakening:0,cooldown:3,
+   onHitStatus:Object.freeze({type:"read-move",stacks:2,turns:2})}),
   liora:Object.freeze({id:"powerful",name:"Удержать позицию · тест",target:"self",kind:"guard",guardHits:3,cooldown:2}),
   "trial-nada":Object.freeze({id:"powerful",name:"Слабое место · проба",target:"enemy",kind:"damage",multiplier:1.25,weakening:2,cooldown:2}),
   "trial-liora":Object.freeze({id:"powerful",name:"Удержать позицию · проба",target:"self",kind:"guard",guardHits:3,cooldown:2}),
@@ -76,9 +77,8 @@ const AbilityData=(()=>{
   "medic-demo":passiveEmpty,"test-area-damage":passiveEmpty,
   ren:Object.freeze({id:"passive",name:"Чувство тропы",
    triggers:Object.freeze([]),modifiers:Object.freeze([]),
-   combatRules:Object.freeze({bonusVsDebuffedPercent:15,
-    tagId:"gardens-over-abyss",tagDamagePercent:5,
-    statusPotencyWithoutResistanceDown:10})}),
+   combatRules:Object.freeze({readMoveBonusPercentPerStack:12,
+    gardensTagId:"gardens-over-abyss",gardensEvasionBonus:8})}),
   "trial-ren":Object.freeze({id:"passive",name:"Чувство тропы · проба",
    triggers:Object.freeze([]),modifiers:Object.freeze([]),
    // REN-COMBAT-C: technical percentages from REN-001; NOT approved balance.
@@ -87,7 +87,8 @@ const AbilityData=(()=>{
     tagId:"gardens-over-abyss",tagDamagePercent:5,
     statusPotencyWithoutResistanceDown:10
    })}),
-  nada:Object.freeze({id:"passive",name:"Внимание к деталям",triggers:Object.freeze([]),modifiers:Object.freeze([])}),
+  nada:Object.freeze({id:"passive",name:"Внимание к деталям",triggers:Object.freeze([]),modifiers:Object.freeze([]),
+   combatRules:Object.freeze({gardensTagId:"gardens-over-abyss",gardensAccuracyBonus:8})}),
   liora:passiveEmpty,
   "trial-nada":passiveEmpty,"trial-liora":passiveEmpty,
   // Nonplayable fixtures verify automatic trigger registration and ownership.
@@ -144,14 +145,15 @@ const AbilityData=(()=>{
  function rawGet(actor,abilityId){
   // Stats-002C pilot: only explicitly outfitted fighters use typed basic attacks.
   if(abilityId==="basic"){
-   if(actor?.id==="nada")return Object.freeze({...typedBasic,name:"Прицельный выстрел"});
+   if(actor?.id==="nada")return Object.freeze({...typedBasic,name:"Прицельное действие",multiplier:.8,
+    onHitStatus:Object.freeze({type:"read-move",stacks:1,turns:2})});
    if(actor?.id==="liora")return Object.freeze({...typedBasic,name:"Удар без оружия · тест"});
    // REN-COMBAT-B: story-only temporary skill level; no v3 progression.
    if(actor?.id==="trial-ren"||actor?.id==="ren"){
     const level=actor.skillLevels?.basic;
     return Object.freeze({...basic,...(actor.id==="ren"?{damageType:"physical"}:{}),
      name:actor.id==="ren"?"Точный удар":"Точный удар · проба",
-     ...(Number.isInteger(level)&&level>=4&&level<=6?
+     ...(actor.id==="trial-ren"&&Number.isInteger(level)&&level>=4&&level<=6?
       {onHitStatus:Object.freeze({type:"slowed",amount:20,turns:2})}:{})});
    }
    return actor?.combatProfile==="stats002c"?typedBasic:basic;

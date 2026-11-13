@@ -40,12 +40,12 @@ test("approved artwork is now a real owned roster card and 2D hero dossier",()=>
 });
 test("temporary physical support abilities are distinct and can level",()=>{
  const actor={id:"nada",combatProfile:"stats002c",skillLevels:{basic:3,special:1,powerful:1}};
- assert.equal(abilities.get(actor,"basic").name,"Прицельный выстрел");
+ assert.equal(abilities.get(actor,"basic").name,"Прицельное действие");
  assert.equal(abilities.get(actor,"basic").damageType,"physical");
- assert.equal(abilities.get(actor,"basic").multiplier,1.2);
- assert.equal(abilities.get(actor,"special").name,"Найти слабость");
- assert.equal(abilities.get(actor,"special").weakening,2);
- assert.equal(abilities.get(actor,"powerful").name,"Уязвимое место");
+ assert.equal(abilities.get(actor,"basic").multiplier,1);
+ assert.equal(abilities.get(actor,"special").name,"Найти закономерность");
+ assert.equal(abilities.get(actor,"special").onHitStatus.stacks,2);
+ assert.equal(abilities.get(actor,"powerful").name,"Разгадать замысел");
  assert.equal(abilities.get(actor,"passive").name,"Внимание к деталям");
  assert.equal(abilities.get(actor,"leader"),null);
  assert.notEqual(abilities.get(actor,"special").name,
@@ -53,7 +53,7 @@ test("temporary physical support abilities are distinct and can level",()=>{
 });
 test("new build still preserves the original UIHUD version prefix",()=>{
  const html=root("index.html"),pkg=JSON.parse(root("package.json"));
- assert.equal(pkg.version,"0.3.140");
- assert.match(html,/v0\.3\.140 · LIORAPLAY001/);
+ assert.equal(pkg.version,"0.3.141");
+ assert.match(html,/v0\.3\.141 · CHAR002B/);
  assert.match(root("docs/BUILD_HISTORY.md"),/NADAART001 \+ NADAPLAY001 \+ NADAPORTRAIT002 \+ NADAROSTER001/);
 });

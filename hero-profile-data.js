@@ -6,7 +6,7 @@
 const HeroProfileData=(()=>{
  "use strict";
  const TAGS=Object.freeze({
-  "gardens-over-abyss":Object.freeze({id:"gardens-over-abyss",label:"Сады над пропастью",kind:"origin"})
+  "gardens-over-abyss":Object.freeze({id:"gardens-over-abyss",label:"Сады над пропастью",kind:"region"})
  });
  const PROFILES=Object.freeze({
   "ren":Object.freeze({
@@ -27,7 +27,7 @@ const HeroProfileData=(()=>{
   // NADA-PLAYABLE-001: literature-grounded bio; gameplay role is an explicit pilot.
   // The recruitment timeline and class remain game proposals, not world canon.
   "nada":Object.freeze({
-   id:"nada",name:"Нада",tags:Object.freeze([]),
+   id:"nada",name:"Нада",tags:Object.freeze(["gardens-over-abyss"]),
    biography:[
     "Нада исследует старые документы и свидетельства. Она тщательно различает подлинники и копии, сверяет даты и почерки, требует указывать источник выводов и не готова отдавать важные находки без фиксации их происхождения.",
     "Однажды её работу недооценили и не оплатили полностью. Поэтому она особенно настойчива, когда речь заходит о праве исследователя на собственные результаты и ответственности за сохранность свидетельств.",

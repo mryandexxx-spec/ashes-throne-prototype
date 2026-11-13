@@ -3,11 +3,12 @@
  */
 const ModelCache=(()=>{
  "use strict";
- const SW_URL="model-cache-sw.js?v=0.3.131";
+ const SW_URL="model-cache-sw.js?v=lioraplay001";
  const REFUSE_TYPES=new Set(["slow-2g","2g","3g"]);
  const HEROES=Object.freeze({
   "ren-meshy-mixamo-animated.glb":"ren",
-  "nada-mobile-animated.glb":"nada"
+  "nada-mobile-animated.glb":"nada",
+  "liora_vel_shield_aware_15clips.glb":"liora"
  });
  function mayWarm({connection,visible=true}={}){
   return visible&&connection?.saveData!==true&&
@@ -18,7 +19,7 @@ const ModelCache=(()=>{
    ?Math.max(0,Math.min(100,Math.floor(100*loaded/total))):0;
  }
  let started=false,warmStarted=false,cacheReady=false;
- const current={ren:"pending",nada:"pending"};
+ const current={ren:"pending",nada:"pending",liora:"pending"};
  function update(asset,status,loaded,total){
   const hero=HEROES[asset];
   if(!hero)return;
@@ -29,7 +30,7 @@ const ModelCache=(()=>{
    status==="saving"?"сохраняем…":status==="missing"?"ожидает":
    status==="not-persisted"?"без кеша":status==="unavailable"?"недоступно":"ожидает";
   current[hero]=status;
-  if(label)label.textContent=(hero==="ren"?"Рен":"Нада")+": "+state;
+  if(label)label.textContent=(hero==="ren"?"Рен":hero==="nada"?"Нада":"Лиора")+": "+state;
   if(bar)bar.style.width=(["cached","stored","saving"].includes(status)?100:status==="downloading"?percent(loaded,total):0)+"%";
   const dock=typeof document!=="undefined"?document.getElementById("cache002-indicator"):null;
   if(dock)dock.dataset.state=Object.values(current).every(s=>s==="cached"||s==="stored")?"ready":"active";
@@ -68,7 +69,7 @@ const ModelCache=(()=>{
      if(!controller)return;
      talk(controller,"CACHE002_STATUS",results=>{
       const cached=results?.filter(item=>item.status==="cached").length||0;
-      cacheReady=cached===2;
+      cacheReady=cached===Object.keys(HEROES).length;
       setMessage(cacheReady?"3D готовы · в кеше":"3D · фоновая подготовка");
      });
      const warm=()=>{
@@ -82,7 +83,7 @@ const ModelCache=(()=>{
       setMessage("Фоновая загрузка 3D");
       talk(controller,"CACHE001_WARM",results=>{
        const success=results?.filter(item=>["cached","stored"].includes(item.status)).length||0;
-       setMessage(success===2?"3D готовы · сохранены в кеше":
+       setMessage(success===Object.keys(HEROES).length?"3D готовы · сохранены в кеше":
         "3D · часть файлов не сохранена");
       });
      };

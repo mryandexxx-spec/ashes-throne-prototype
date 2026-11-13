@@ -19,9 +19,10 @@ test("CACHE001: only the three current, versioned GLB URLs can be stored",()=>{
  const worker=read("model-cache-sw.js"),html=read("index.html");
  assert.match(worker,/assets\/ren-meshy-mixamo-animated\.glb/);
  assert.match(worker,/dev\/assets\/models\/nada-mobile-animated\.glb/);
+ assert.match(worker,/dev\/assets\/models\/liora_vel_shield_aware_15clips\.glb/);
  // RENOPT001: the cache name must follow the actual GLB bytes, otherwise devices keep a stale model.
  const blob=f=>{const b=fs.readFileSync(path.join(__dirname,"..",f));return require("node:crypto").createHash("sha1").update(Buffer.concat([Buffer.from("blob "+b.length+"\0"),b])).digest("hex").slice(0,8);};
- assert.match(worker,new RegExp('CACHE_PREFIX\\+"ren-'+blob("assets/ren-meshy-mixamo-animated.glb")+"_nada-"+blob("dev/assets/models/nada-mobile-animated.glb")+'_v1"'));
+ assert.match(worker,new RegExp('CACHE_PREFIX\\+"ren-'+blob("assets/ren-meshy-mixamo-animated.glb")+"_nada-"+blob("dev/assets/models/nada-mobile-animated.glb")+"_liora-"+blob("dev/assets/models/liora_vel_shield_aware_15clips.glb")+'_v1"'));
  assert.match(worker,/event\.request\.method!=="GET"/);
  assert.match(worker,/event\.request\.headers\.has\("range"\)/);
  assert.match(worker,/cache\.put\(url,response\.clone\(\)\)/);

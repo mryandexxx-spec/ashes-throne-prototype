@@ -42,6 +42,7 @@ const LioraShieldAttachment=(()=>{
   const importCorrection=B.Quaternion.Inverse(imported);
   // Scene-rooted to prevent bone-chain shears and twists rotating the shield.
   const socket=new B.TransformNode("lioraShieldSocket",scene);
+  socket.metadata={lioraJoint:HAND,trackingMode:"world-position"};
   for(const root of roots)root.parent=socket;
   let state=DEFAULT,activity={clip:"",progress:0},disposed=false;
   const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};

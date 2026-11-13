@@ -244,7 +244,9 @@ const scenarios=[
 ];
 const report=scenarios.map(s=>beamSearch(s.party,s.level,s.gear));
 assert.equal(report.length,scenarios.length);
-assert.equal(report[0].firstZeroCasualtyWin?.actions,7);
+// GEAR013 individual G3 bonuses improve the fastest legal no-casualty
+// solution from 7 actions to 6; replayed seven-action witness above still wins.
+assert.equal(report[0].firstZeroCasualtyWin?.actions,6);
 assert.equal(report[0].firstZeroCasualtyWin?.stars,3);
 for(const row of report)assert.ok(row.created>0);
 console.log("STATS004A2_TACTICAL_JSON="+JSON.stringify({version:JSON.parse(read("package.json")).version,

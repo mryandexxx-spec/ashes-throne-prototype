@@ -13,6 +13,15 @@ const LioraShieldAttachment=(()=>{
   scale:1,stabilize:true
  });
  const rad=deg=>deg*Math.PI/180;
+ // Babylon TransformNode does not expose getAbsoluteRotationQuaternion().
+ // Matrix.decompose yields world orientation for both regular and glTF joints.
+ function worldRotation(B,node){
+  node.computeWorldMatrix(true);
+  const rotation=new B.Quaternion();
+  if(!node.getWorldMatrix().decompose(undefined,rotation))
+   throw Error("Cannot decompose animated joint world matrix");
+  return rotation;
+ }
  function findHand(result){
   return (result?.transformNodes||[]).find(node=>node.name===HAND)||null;
  }
@@ -46,7 +55,7 @@ const LioraShieldAttachment=(()=>{
    // Preserve the GLTF character's facing while preventing wrist-spin from
    // turning the kite shield flat or backwards during attack/block animations.
    hand.computeWorldMatrix(true);
-   const modelRotation=reference?.getAbsoluteRotationQuaternion?.()||
+   const modelRotation=reference?worldRotation(B,reference):
     new B.Quaternion(0,0,0,1);
    const stableWorld=modelRotation.multiply(importCorrection).multiply(
     B.Quaternion.FromEulerAngles(rad(state.rotation.x),
@@ -69,7 +78,7 @@ const LioraShieldAttachment=(()=>{
    const fallenWorld=drop?stableWorld.multiply(
     B.Quaternion.FromEulerAngles(rad(-80*drop),0,0)):stableWorld;
    if(state.stabilize||drop>0){
-    const worldHand=hand.getAbsoluteRotationQuaternion();
+    const worldHand=worldRotation(B,hand);
     socket.rotationQuaternion=B.Quaternion.Inverse(worldHand).multiply(fallenWorld);
    }else{
     // A-pose/idle-derived wrist-local orientation: comparison only. The large

@@ -17,10 +17,14 @@ const HeroStatsCombatBridge=(()=>{
    throw new RangeError("Invalid equipment bonuses");
   // Current equipped G items provide percentages in ProgressCore. The
   // percentage is applied to the newly resolved hero stats, never to demo atk.
-  const natural=core.resolve(profile,{level,stars});
+  core.resolve(profile,{level,stars}); // validate level and rank
+  // Apply equipped percent bonuses before Core rounds once.
+  const raw=key=>profile.combatStats[key]+
+   (level-1)*(profile.growth?.level?.[key]??0)+
+   (stars-1)*(profile.growth?.star?.[key]??0);
   const bonuses={
-   hp:natural.hp*(gear.hp??0),
-   physicalAttack:natural.physicalAttack*(gear.atk??0)
+   hp:raw("hp")*(gear.hp??0),
+   physicalAttack:raw("physicalAttack")*(gear.atk??0)
   };
   const stats=core.resolve(profile,{level,stars,gearBonuses:bonuses});
   return Object.freeze({

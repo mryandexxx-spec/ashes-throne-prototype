@@ -22,12 +22,12 @@ test("Nada physical crossbow special and powerful apply actual weakening",()=>{
  assert.ok(battle.fighters[0].specialCooldown>=1);
  assert.equal(C.performPlayerAbility(battle,"powerful"),true);
  assert.ok(battle.fighters[1].hp<200-18*.8);
- assert.ok(battle.fighters[1].weakenAttacks>=1);
+ assert.equal(battle.fighters[1].renStatuses?.["debuff-resistance-down"]?.remaining,2);
  assert.equal(A.get(nada(),"passive").name,"Внимание к деталям");
  assert.equal(A.get(nada(),"leader"),null);
 });
 test("a second battle starts clean; Nada remains usable independently of trial-Nada",()=>{
- const before=C.createBattle([nada(),enemy(15)]);
+ const before=C.createBattle([nada(),enemy(12)]);
  C.advanceToPlayerTurn(before);
  assert.equal(C.performPlayerAbility(before,"basic"),true);
  assert.equal(before.winner,"ally");

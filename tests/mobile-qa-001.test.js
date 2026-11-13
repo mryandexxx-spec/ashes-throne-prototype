@@ -75,3 +75,8 @@ test("MOBILEQA001: build marker",()=>{
  assert.equal(JSON.parse(read("package.json")).version,"0.3.134");
  assert.ok(read("index.html").includes("Прототип · v0.3.134 · MOBILEQA001"));
 });
+test("MOBILEQA001: Ren choreography calibration is measured in the yaw-0 body frame",()=>{
+ const r=read("ren-glb-runtime.js");
+ assert.match(r,/const savedYaw=visual\.body\.rotation\?visual\.body\.rotation\.y:0;\s*if\(visual\.body\.rotation\)visual\.body\.rotation\.y=0;/);
+ assert.ok(r.indexOf("visual.body.rotation.y=savedYaw")>r.indexOf("getAbsolutePosition()"));
+});

@@ -1899,7 +1899,7 @@ function renderHeroDetail(){
    (stat.active?stat.value:'Не рассчитано')+'</strong></div>').join("");
  const activeStats=overview.filter(stat=>stat.active).length;
  const trueHero=hero.id==="ren"||hero.id==="nada";
- $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>${trueHero?"Физическая атака":"Атака (тест)"}</span><strong>${trueHero?hero.physicalAttack:hero.atk}</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · ${activeStats} рассчитано</summary><p class="muted">${trueHero?"Параметры Рена и Нады рассчитываются из уровня, звёзд и снаряжения. Числа и формулы роста — рабочие, баланс ещё не утверждён.":"Учебный персонаж: часть характеристик ещё не рассчитывается."}</p>${statRows}</details>`;
+ $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>${trueHero?"Физическая атака":"Атака (тест)"}</span><strong>${trueHero?hero.physicalAttack:hero.atk+" ATK"}</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · ${activeStats} рассчитано</summary><p class="muted">${trueHero?"Параметры Рена и Нады рассчитываются из уровня, звёзд и снаряжения. Числа и формулы роста — рабочие, баланс ещё не утверждён.":"Учебный персонаж: часть характеристик ещё не рассчитывается."}</p>${statRows}</details>`;
  $("#detailLevel").textContent="Уровень героя "+hero.level;
  if($("#heroCardCap"))$("#heroCardCap").textContent=saveBlocked?"Сохранение недоступно":
   hero.level>=levelCap?"Достигнут предел: "+levelCap:

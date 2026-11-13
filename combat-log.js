@@ -23,8 +23,9 @@ const CombatLog=(()=>{
        (e.remainingProtection!==null?", "+e.remainingProtection+" Protection":"")+")";
      return name(e.targetId)+": −"+e.amount+" HP (осталось "+e.remainingHp+")";
     case "heal":return name(e.targetId)+": +"+e.amount+" HP (теперь "+e.remainingHp+")";
-    case "status-resisted":return name(e.targetId)+": сопротивление эффекту «"+(e.effect==="slowed"?"Замедление":e.effect==="debuff-resistance-down"?"Пониженное сопротивление":"Ослабление")+"»";
-    case "effect":return name(e.targetId)+": "+(e.effect==="guard"?"Защита":e.effect==="weaken"?"Ослабление":e.effect==="slowed"?"Замедление":e.effect==="debuff-resistance-down"?"Пониженное сопротивление":e.effect)+
+    case "status-resisted":return name(e.targetId)+": сопротивление эффекту «"+(e.effect==="read-move"?"Просчитанный ход":e.effect==="slowed"?"Замедление":e.effect==="debuff-resistance-down"?"Пониженное сопротивление":"Ослабление")+"»";
+    case "read-move-disrupted":return name(e.actorId)+": подготовленный приём сорван (−3 зацепки, обычная атака)";
+    case "effect":return e.effect==="read-move"?name(e.targetId)+": Просчитанный ход · "+e.stacks+"/4 зацепки, "+e.remaining+" ход(а)":name(e.targetId)+": "+(e.effect==="guard"?"Защита":e.effect==="weaken"?"Ослабление":e.effect==="slowed"?"Замедление":e.effect==="debuff-resistance-down"?"Пониженное сопротивление":e.effect)+
       (Number.isFinite(e.amount)?" −"+e.amount+(e.effect==="debuff-resistance-down"?" п.п.":"%")+" на "+e.remaining+" ход(а)":" ×"+e.stacks);
     case "death":return name(e.targetId)+": повержен";
     case "wave-start":return "Волна " + e.wave + "/" + e.total + ": новые противники";

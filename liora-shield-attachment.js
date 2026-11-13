@@ -1,125 +1,107 @@
-/* LIORA-SHIELD-002: independent shield GLB socket, with orientation stabilization.
- * Calibrated against all 12 GLB clips in an OFFLINE textured 3D renderer.
- * Browser/WebGL/Safari hand grip and geometry overlap still require visual QA.
+/* LIORA-SHIELD-004: hand-position tracking with rigid shield world orientation.
+ * The Mixamo hierarchy contains non-rigid parent transforms: parenting
+ * the shield mesh to LeftHand and "undoing" its quaternion causes a 170°
+ * visual flip across clips in real Babylon WebGL. Instead sample LeftHand's
+ * world transform each frame and keep the shield rigid in scene coordinates.
  */
 const LioraShieldAttachment=(()=>{
  "use strict";
  const HAND="mixamorig:LeftHand";
- // Wrist-relative grip adjusted from 36 image samples. Shield's vertex centroid
- // (0,0.092,0.026)m is compensated so its visible face is near the forearm.
  const DEFAULT=Object.freeze({
   offset:Object.freeze({x:-0.22055,y:0.05394,z:-0.01236}),
-  rotation:Object.freeze({x:0,y:0,z:0}),
+  rotation:Object.freeze({x:0,y:180,z:0}),
   scale:1,stabilize:true
  });
  const rad=deg=>deg*Math.PI/180;
- // Babylon TransformNode does not expose getAbsoluteRotationQuaternion().
- // Matrix.decompose yields world orientation for both regular and glTF joints.
- function worldRotation(B,node){
-  node.computeWorldMatrix(true);
-  const rotation=new B.Quaternion();
-  if(!node.getWorldMatrix().decompose(undefined,rotation))
-   throw Error("Cannot decompose animated joint world matrix");
-  return rotation;
- }
  function findHand(result){
-  return (result?.transformNodes||[]).find(node=>node.name===HAND)||null;
+  return (result?.transformNodes||[]).find(n=>n.name===HAND)||null;
+ }
+ function worldRotation(B,node){
+  if(!node)return new B.Quaternion(0,0,0,1);
+  node.computeWorldMatrix(true);
+  const quaternion=new B.Quaternion();
+  if(!node.getWorldMatrix().decompose(undefined,quaternion))
+   throw Error("Cannot decompose Liora model root");
+  return quaternion;
  }
  function attach(B,scene,character,shield,options={}){
-  if(!B?.TransformNode||!B?.Quaternion||!B?.Vector3||!scene)throw Error("Babylon scene missing");
+  if(!B?.TransformNode||!B?.Quaternion||!B?.Vector3||!scene)
+   throw Error("Babylon scene missing");
   const hand=findHand(character);
-  if(!hand)throw Error("Liora GLB has no animated "+HAND+" node");
+  if(!hand)throw Error("Liora GLB has no animated "+HAND+" joint");
   const roots=[...(shield?.meshes||[]),...(shield?.transformNodes||[])]
-   .filter(node=>node&&!node.parent);
-  if(!roots.length||!(shield?.meshes||[]).some(mesh=>mesh.getTotalVertices?.()>0))
-   throw Error("Shield GLB has no renderable geometry");
+   .filter(n=>n&&!n.parent);
+  const visible=(shield?.meshes||[]).filter(m=>m.getTotalVertices?.()>0);
+  if(!roots.length||!visible.length)throw Error("Shield GLB has no renderable geometry");
   const reference=options.referenceRoot||
    [...(character?.meshes||[]),...(character?.transformNodes||[])]
-    .find(node=>node.name==="__root__")||null;
-  const socket=new B.TransformNode("lioraShieldSocket",scene);
-  socket.parent=hand;
-  const rootRotation=roots[0].rotationQuaternion?.clone?.()||
+    .find(n=>n.name==="__root__")||null;
+  const imported=roots[0].rotationQuaternion?.clone?.()||
    B.Quaternion.FromEulerAngles(roots[0].rotation?.x||0,
     roots[0].rotation?.y||0,roots[0].rotation?.z||0);
-  const importCorrection=B.Quaternion.Inverse(rootRotation);
+  const importCorrection=B.Quaternion.Inverse(imported);
+  // Scene-rooted to prevent bone-chain shears and twists rotating the shield.
+  const socket=new B.TransformNode("lioraShieldSocket",scene);
   for(const root of roots)root.parent=socket;
-  let state=DEFAULT,disposed=false,activity={clip:"",progress:0};
+  let state=DEFAULT,activity={clip:"",progress:0},disposed=false;
   const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
-  function setClipProgress(clip,progress){
-   if(disposed)return;
-   activity={clip:String(clip||""),progress:Math.max(0,Math.min(1,Number(progress)||0))};
-   update();
-  }
   function update(){
    if(disposed)return;
-   // Preserve the GLTF character's facing while preventing wrist-spin from
-   // turning the kite shield flat or backwards during attack/block animations.
    hand.computeWorldMatrix(true);
-   const modelRotation=reference?worldRotation(B,reference):
-    new B.Quaternion(0,0,0,1);
-   const stableWorld=modelRotation.multiply(importCorrection).multiply(
-    B.Quaternion.FromEulerAngles(rad(state.rotation.x),
-     rad(state.rotation.y),rad(state.rotation.z)));
-   // The shield falls away from the wrist during the death animation.
-   // The model remains a separate GLB; calculate a floor target in model space.
+   const baseWorld=B.Vector3.TransformCoordinates(
+    new B.Vector3(state.offset.x,state.offset.y,state.offset.z),
+    hand.getWorldMatrix());
    const falling=activity.clip==="Liora_Shield_Death"||activity.clip==="Dead";
    const drop=falling?smooth((activity.progress-.4)/.4):0;
-   socket.position.set(state.offset.x,state.offset.y,state.offset.z);
-   if(drop>0&&reference?.getWorldMatrix&&B.Matrix?.Invert&&B.Vector3?.TransformCoordinates){
-    const targetWorld=B.Vector3.TransformCoordinates(
-     new B.Vector3(.26,.12,.20),reference.getWorldMatrix());
-    const wristLocal=B.Vector3.TransformCoordinates(targetWorld,
-     B.Matrix.Invert(hand.getWorldMatrix()));
-    socket.position.set(
-     state.offset.x+(wristLocal.x-state.offset.x)*drop,
-     state.offset.y+(wristLocal.y-state.offset.y)*drop,
-     state.offset.z+(wristLocal.z-state.offset.z)*drop);
+   let point=baseWorld;
+   if(drop>0&&reference?.getWorldMatrix){
+    reference.computeWorldMatrix(true);
+    const landing=B.Vector3.TransformCoordinates(new B.Vector3(.26,.12,.20),
+     reference.getWorldMatrix());
+    point=B.Vector3.Lerp(baseWorld,landing,drop);
    }
-   const fallenWorld=drop?stableWorld.multiply(
-    B.Quaternion.FromEulerAngles(rad(-80*drop),0,0)):stableWorld;
-   if(state.stabilize||drop>0){
-    const worldHand=worldRotation(B,hand);
-    socket.rotationQuaternion=B.Quaternion.Inverse(worldHand).multiply(fallenWorld);
-   }else{
-    // A-pose/idle-derived wrist-local orientation: comparison only. The large
-    // shield rotates awkwardly with some bare-hand Meshy clips.
-    const wristLocal=new B.Quaternion(-0.40649856,0.08648918,0.90246163,0.11332059);
-    socket.rotationQuaternion=wristLocal.multiply(importCorrection).multiply(
-     B.Quaternion.FromEulerAngles(rad(state.rotation.x),
-      rad(state.rotation.y),rad(state.rotation.z)));
+   socket.position.copyFrom(point);
+   const modelRotation=worldRotation(B,reference);
+   const userRotation=B.Quaternion.FromEulerAngles(
+    rad(state.rotation.x),rad(state.rotation.y),rad(state.rotation.z));
+   let rotation=modelRotation.multiply(importCorrection).multiply(userRotation);
+   if(!state.stabilize&&!drop){
+    // Diagnostic comparison: preserve original hand rotation when requested.
+    rotation=worldRotation(B,hand).multiply(importCorrection).multiply(userRotation);
    }
+   if(drop)rotation=rotation.multiply(
+    B.Quaternion.FromEulerAngles(rad(-80*drop),0,0));
+   socket.rotationQuaternion=rotation;
+   socket.scaling.setAll(state.scale);
    socket.computeWorldMatrix(true);
-   // On death, keep the lowest shield vertex just above the battlefield floor.
-   // A fixed pivot-height target alone is insufficient: a kite shield rotated
-   // by 80° can otherwise sink far below the floor.
-   if(drop>0&&Number.isFinite(options.groundY)&&
-    B.Matrix?.Invert&&B.Vector3?.TransformNormal){
-    const visible=(shield.meshes||[]).filter(m=>m.getTotalVertices?.()>0);
+   if(drop>0&&Number.isFinite(options.groundY)){
     let bottom=Infinity;
     for(const mesh of visible){
      mesh.computeWorldMatrix(true);
      bottom=Math.min(bottom,mesh.getBoundingInfo().boundingBox.minimumWorld.y);
     }
     if(Number.isFinite(bottom)&&bottom<options.groundY+.01){
-     const lift=options.groundY+.01-bottom;
-     const upInHand=B.Vector3.TransformNormal(new B.Vector3(0,lift,0),
-      B.Matrix.Invert(hand.getWorldMatrix()));
-     socket.position.addInPlace(upInHand);
+     socket.position.y+=options.groundY+.01-bottom;
      socket.computeWorldMatrix(true);
     }
    }
+  }
+  function setClipProgress(clip,progress){
+   if(disposed)return;
+   activity={clip:String(clip||""),
+    progress:Math.max(0,Math.min(1,Number(progress)||0))};
+   update();
   }
   function pose(config={}){
    if(disposed)throw Error("Shield socket already disposed");
    const offset={...DEFAULT.offset,...(config.offset||{})};
    const rotation={...DEFAULT.rotation,...(config.rotation||{})};
-   const scale=config.scale??DEFAULT.scale,stabilize=config.stabilize??DEFAULT.stabilize;
-   const nums=[offset.x,offset.y,offset.z,rotation.x,rotation.y,rotation.z,scale];
-   if(!nums.every(Number.isFinite)||scale<=0||scale>3||
-    typeof stabilize!=="boolean")throw Error("Invalid shield transform");
+   const scale=config.scale??DEFAULT.scale;
+   const stabilize=config.stabilize??DEFAULT.stabilize;
+   const values=[offset.x,offset.y,offset.z,rotation.x,rotation.y,rotation.z,scale];
+   if(!values.every(Number.isFinite)||scale<=0||scale>3||typeof stabilize!=="boolean")
+    throw Error("Invalid shield transform");
    state={offset,rotation,scale,stabilize};
-   socket.position.set(offset.x,offset.y,offset.z);
-   socket.scaling.setAll(scale);
    update();
   }
   pose();
@@ -128,7 +110,7 @@ const LioraShieldAttachment=(()=>{
    dispose(){
     if(disposed)return;
     disposed=true;
-    socket.dispose(false,true); // includes independently imported shield subtree
+    socket.dispose(false,true);
    }
   });
  }

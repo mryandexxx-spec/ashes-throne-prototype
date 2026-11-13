@@ -1,123 +1,105 @@
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
-const load=files=>{
- const script=files.map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
- return vm.runInNewContext(script+"\n({AbilityData,SkillCore,AbilityInfo,CombatCore})");
-};
-const api=load(["initiative-model.js","battle-rng.js","combat-status-core.js",
- "skill-core.js","ability-data.js","ability-info.js","combat-core.js"]);
-const ability=(id,slot,level)=>api.AbilityData.get({
- id,combatProfile:"stats002c",skillLevels:{basic:level,special:level,powerful:level}
-},slot);
-const number=(a)=>JSON.parse(JSON.stringify(a));
-test("CHAR002 Ren has six custom active levels, not generic +0.1 increments",()=>{
- const basics=[1,1.1,1.2,1.2,1.3,1.4],specials=[1.05,1.15,1.15,1.25,1.25,1.35],
- powers=[1.6,1.75,1.75,1.9,1.9,2.05];
- for(let level=1;level<=6;level++){
-  const b=ability("ren","basic",level),s=ability("ren","special",level),
-   p=ability("ren","powerful",level);
-  assert.equal(b.multiplier,basics[level-1]);
-  assert.equal(s.multiplier,specials[level-1]);
-  assert.equal(p.multiplier,powers[level-1]);
-  assert.equal(b.damageType,"physical");
-  assert.equal(s.damageType,"physical");
-  assert.equal(p.damageType,"physical");
-  assert.equal(s.weakening,level>=3?3:2);
-  assert.equal(s.cooldown,level>=5?1:2);
-  assert.equal(p.cooldown,3);
-  assert.equal(p.followUpStatusAll.amount,level>=3?20:15);
-  assert.equal(p.followUpStatusAll.turns,level>=5?3:2);
-  assert.equal(b.onHitStatus?.turns,level<4?undefined:level>=6?2:1);
+const read=file=>fs.readFileSync(path.join(__dirname,"..",file),"utf8");
+const scripts=["initiative-model.js","battle-rng.js","combat-status-core.js",
+ "skill-core.js","ability-data.js","ability-info.js","combat-core.js","combat-log.js"];
+const api=vm.runInNewContext(scripts.map(read).join("\n")+
+ "\n({AbilityData,SkillCore,AbilityInfo,CombatCore,CombatStatusCore,CombatLog})");
+const {CombatCore:Combat,CombatStatusCore:Status}=api;
+const actor=(id,level=1)=>({id,combatProfile:"stats002c",
+ skillLevels:{basic:level,special:level,powerful:level}});
+function fighter(id,side,speed,hp,atk,tags=[]){
+ return {id,name:id,side,speed,hp,atk,physicalAttack:atk,physicalDefense:0,
+ magicDefense:0,protection:0,maxProtection:0,accuracy:0,evasion:0,
+ critChance:0,critDamage:150,defensePenetration:0,debuffPotency:25,
+ debuffResistance:0,combatProfile:"stats002c",tags,
+ skillLevels:{basic:1,special:1,powerful:1}};
+}
+test("CHAR002B skill curves have exact six Ren and Nada multipliers",()=>{
+ const r=[[1,1.1,1.2,1.2,1.3,1.4],[1.05,1.15,1.15,1.25,1.25,1.35],[1.6,1.75,1.75,1.9,1.9,2.05]];
+ const n=[[.8,.9,1,1.1,1.2,1.3],[.7,.8,.8,.9,.9,1],[.6,.65,.65,.7,.7,.75]];
+ for(let l=1;l<=6;l++){
+  for(const [id,arrays] of [["ren",r],["nada",n]]){
+   for(const [i,slot] of ["basic","special","powerful"].entries()){
+    const a=api.AbilityData.get(actor(id,l),slot);
+    assert.equal(a.multiplier,arrays[i][l-1],id+" "+slot+" "+l);
+    assert.equal(a.damageType,"physical");
+   }
+  }
+  const basic=api.AbilityData.get(actor("nada",l),"basic");
+  const special=api.AbilityData.get(actor("nada",l),"special");
+  const powerful=api.AbilityData.get(actor("nada",l),"powerful");
+  assert.equal(basic.onHitStatus.stacks,1);
+  assert.equal(special.onHitStatus.stacks,l>=3?3:2);
+  assert.equal(powerful.onHitStatus.stacks,l>=5?3:2);
+  assert.equal(special.cooldown,l>=5?1:2);
+  assert.equal(powerful.target,"all-enemies");
+  assert.equal(api.AbilityData.get(actor("ren",l),"powerful").followUpStatusAll,undefined);
  }
 });
-test("CHAR002 Nada has physical single-target skills, not Ren area status",()=>{
- const basics=[.8,.9,1,1.1,1.2,1.3],specials=[.7,.8,.8,.9,.9,1],
- powers=[1,1.1,1.1,1.2,1.2,1.3];
- for(let level=1;level<=6;level++){
-  const b=ability("nada","basic",level),s=ability("nada","special",level),
-   p=ability("nada","powerful",level);
-  assert.equal(b.multiplier,basics[level-1]);
-  assert.equal(s.multiplier,specials[level-1]);
-  assert.equal(p.multiplier,powers[level-1]);
-  assert.equal(b.damageType,"physical");
-  assert.equal(s.damageType,"physical");
-  assert.equal(p.damageType,"physical");
-  assert.equal(s.weakening,level>=3?3:2);
-  assert.equal(s.cooldown,level>=5?1:2);
-  assert.equal(p.cooldown,3);
-  assert.equal(p.followUpStatusAll,undefined);
-  assert.equal(p.onHitStatus.type,"debuff-resistance-down");
-  assert.equal(p.onHitStatus.amount,level>=3?25:20);
-  assert.equal(p.onHitStatus.turns,level>=5?3:2);
- }
+test("CHAR002B stacks are capped, refresh and decay on own turns, and consume exactly 3",()=>{
+ const f={};
+ assert.equal(Status.applyReadMove(f,1,2),true);
+ assert.equal(Status.applyReadMove(f,2,2),true);
+ assert.equal(Status.read(f,"read-move").stacks,3);
+ assert.equal(Status.applyReadMove(f,4,1),true);
+ assert.equal(Status.read(f,"read-move").stacks,4);
+ assert.equal(Status.spendReadMove(f,3),true);
+ assert.equal(Status.read(f,"read-move").stacks,1);
+ Status.tickOwnTurn(f);
+ assert.equal(Status.read(f,"read-move").remaining,1);
+ Status.tickOwnTurn(f);
+ assert.equal(Status.read(f,"read-move"),null);
+ assert.equal(Status.applyReadMove(f,0,2),false);
+ assert.equal(Status.apply(f,"read-move",50,2),false);
 });
-test("CHAR002 Nada passive is live for allies and accurately explained",()=>{
- const passive=api.AbilityData.get({id:"nada",side:"ally"},"passive");
- assert.equal(passive.combatRules.allyBonusVsDebuffedPercent,10);
- const info=api.AbilityInfo.format({id:"nada",side:"ally"},"passive");
- assert.equal(info.status,"available");
- assert.match(info.description,/союзники/);
- assert.match(info.description,/10%/);
- assert.match(api.AbilityInfo.format({id:"nada",skillLevels:{powerful:1}},"powerful").description,/основной цели/);
+test("CHAR002B Ren bonuses rely exclusively on marks, not generic weaken/slow",()=>{
+ const r=fighter("ren","ally",150,120,28,["gardens-over-abyss"]);
+ const d=fighter("target","enemy",1,1000,0);
+ const b=Combat.createBattle([r,d]);
+ Combat.advanceToPlayerTurn(b);
+ d.weakenAttacks=2;
+ assert.equal(Combat.performPlayerAbility(b,"basic"),true);
+ const generic=1000-d.hp;
+ const b2=Combat.createBattle([r,d]);
+ Combat.advanceToPlayerTurn(b2);
+ assert.equal(Status.applyReadMove(b2.fighters[1],4,2),true);
+ assert.equal(Combat.performPlayerAbility(b2,"basic"),true);
+ assert.equal(1000-b2.fighters[1].hp,Math.round(28*1.48));
+ assert.equal(generic,28);
 });
-test("CHAR002 untouched trial actors, mannequin and missing leaders",()=>{
- assert.equal(api.AbilityData.get({id:"nada"},"leader"),null);
- assert.equal(api.AbilityData.get({id:"ren"},"leader"),null);
- assert.equal(api.AbilityData.get({id:"trial-nada"},"special").multiplier,.8);
- assert.equal(api.AbilityData.get({id:"kael"},"special").kind,"guard");
- assert.equal(api.AbilityData.get({id:"trial-ren",skillLevels:{basic:4}},"basic").onHitStatus.turns,2);
+test("CHAR002B Nada adds marks in live combat on every enemy hit",()=>{
+ const n=fighter("nada","ally",125,110,19,["gardens-over-abyss"]);
+ const e=fighter("target","enemy",1,1000,0);
+ const b=Combat.createBattle([n,e]);
+ Combat.advanceToPlayerTurn(b);
+ assert.equal(Combat.performPlayerAbility(b,"special"),true);
+ assert.equal(Status.read(b.fighters[1],"read-move").stacks,2);
+ assert.equal(Combat.performPlayerAbility(b,"basic"),true);
+ assert.equal(Status.read(b.fighters[1],"read-move").stacks,3);
+ const logs=api.CombatLog.lines(b.events,b.fighters).join(" ");
+ assert.match(logs,/Просчитанный ход/);
 });
-function fighter(id,side,speed,hp,physicalAttack){
- return {id,name:id,side,speed,hp,atk:physicalAttack,physicalAttack,
-  physicalDefense:0,magicDefense:0,protection:0,maxProtection:0,
-  accuracy:0,evasion:0,critChance:0,critDamage:150,
-  defensePenetration:0,debuffPotency:0,debuffResistance:0,
-  combatProfile:"stats002c",
-  skillLevels:{basic:1,special:1,powerful:1}};
-}
-function battleWithNada(includeNada){
- const ren=fighter("ren","ally",150,120,28);
- const nada=fighter("nada","ally",125,110,19);
- const dummy=fighter("dummy","enemy",10,500,0);
- const fighters=includeNada?[ren,nada,dummy]:[ren,dummy];
- const battle=api.CombatCore.createBattle(fighters);
- api.CombatCore.advanceToPlayerTurn(battle);
- const target=battle.fighters.find(f=>f.id==="dummy");
- target.weakenAttacks=2; // real active negative status
- assert.equal(battle.fighters[battle.currentActor].id,"ren");
- assert.equal(api.CombatCore.performPlayerAbility(battle,"basic"),true);
- return 500-target.hp;
-}
-test("CHAR002 live Nada aura adds 10 percentage points to Ren 15% passive",()=>{
- const damageAlone=battleWithNada(false);
- const damageTogether=battleWithNada(true);
- assert.equal(damageAlone,Math.round(28*1.15));
- assert.equal(damageTogether,Math.round(28*1.25));
+test("CHAR002B Nada's powerful attacks groups, adding independent marks",()=>{
+ const n=fighter("nada","ally",125,110,19,["gardens-over-abyss"]);
+ n.skillLevels={basic:6,special:6,powerful:6};
+ const b=Combat.createBattle([n,fighter("a","enemy",1,1000,1),fighter("b","enemy",1,1000,1)]);
+ Combat.advanceToPlayerTurn(b);
+ assert.equal(Combat.performPlayerAbility(b,"powerful"),true);
+ assert.equal(Status.read(b.fighters[1],"read-move").stacks,3);
+ assert.equal(Status.read(b.fighters[2],"read-move").stacks,3);
+ assert.equal(b.fighters[0].powerfulCooldown,3);
 });
-
-test("CHAR002 Ren powerful affects surviving enemies, never friendly units",()=>{
- const ren=fighter("ren","ally",150,120,28);
- ren.skillLevels={basic:6,special:6,powerful:6};
- const a=fighter("dummy-a","enemy",2,500,1);
- const b=fighter("dummy-b","enemy",2,500,1);
- const battle=api.CombatCore.createBattle([ren,a,b]);
- api.CombatCore.advanceToPlayerTurn(battle);
- assert.equal(api.CombatCore.performPlayerAbility(battle,"powerful"),true);
- assert.equal(battle.fighters[1].renStatuses?.["debuff-resistance-down"]?.amount,20);
- assert.equal(battle.fighters[2].renStatuses?.["debuff-resistance-down"]?.amount,20);
- assert.equal(battle.fighters[0].renStatuses,undefined);
- assert.equal(battle.fighters[0].powerfulCooldown,3);
-});
-test("CHAR002 Nada powerful only marks its chosen target and respects cooldown",()=>{
- const nada=fighter("nada","ally",125,110,19);
- nada.skillLevels={basic:6,special:6,powerful:6};
- const a=fighter("dummy-a","enemy",2,500,1);
- const b=fighter("dummy-b","enemy",2,500,1);
- const battle=api.CombatCore.createBattle([nada,a,b]);
- api.CombatCore.advanceToPlayerTurn(battle);
- assert.equal(api.CombatCore.performPlayerAbility(battle,"powerful"),true);
- assert.equal(battle.fighters[1].renStatuses?.["debuff-resistance-down"]?.amount,25);
- assert.equal(battle.fighters[2].renStatuses?.["debuff-resistance-down"],undefined);
- assert.equal(battle.fighters[0].powerfulCooldown,3);
+test("CHAR002B Gardens tags and passives are independent, trial actors unchanged",()=>{
+ const ren=api.AbilityData.get(actor("ren"),"passive").combatRules;
+ const nada=api.AbilityData.get(actor("nada"),"passive").combatRules;
+ assert.equal(ren.readMoveBonusPercentPerStack,12);
+ assert.equal(ren.gardensEvasionBonus,8);
+ assert.equal(nada.gardensAccuracyBonus,8);
+ assert.equal(api.AbilityData.get({id:"trial-nada"},"special").name,"Выверенное действие · проба");
+ assert.equal(api.AbilityData.get({id:"trial-ren"},"powerful").followUpStatusAll.amount,15);
+ for(const id of ["ren","nada"])assert.equal(api.AbilityData.get(actor(id),"leader"),null);
+ assert.match(api.AbilityInfo.format(actor("nada"),"passive").description,/Садов/);
+ assert.match(api.AbilityInfo.format(actor("ren"),"passive").description,/зацепку/);
 });

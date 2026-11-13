@@ -28,6 +28,18 @@ const AnimationProfiles=(()=>{
   hit:Object.freeze({kind:"hit",durationMs:650,amplitude:.18}),
   death:Object.freeze({kind:"death",durationMs:1850,amplitude:.85})
  }));
+ // NADAANIM001: Nada had no profile and used capsule templates, so her Meshy clips
+ // ran 3-16x faster than authored (hit 1.2s in 120ms, death 6.3s in 400ms).
+ // Clip sources: Archery_Shot_3 0.67s, mage_soell_cast 2.27s, Hit_Reaction_1 1.2s,
+ // Idle_11 1.87s, Electrocuted_Fall window 2.6-5.2s (see NadaGlbRuntime.WINDOWS).
+ overrides.set("nada",Object.freeze({
+  idle:Object.freeze({kind:"idle",durationMs:1867,amplitude:0}),
+  basic:Object.freeze({kind:"lunge",durationMs:900,amplitude:0}),
+  special:Object.freeze({kind:"lunge",durationMs:900,amplitude:0}),
+  powerful:Object.freeze({kind:"lunge",durationMs:1900,amplitude:0}),
+  hit:Object.freeze({kind:"hit",durationMs:650,amplitude:.18}),
+  death:Object.freeze({kind:"death",durationMs:2000,amplitude:.85})
+ }));
  function register(heroId,slots){
   if(typeof heroId!=="string"||!heroId.trim()||!slots||typeof slots!=="object"||Array.isArray(slots))
    throw Error("Invalid character animation profile");
@@ -54,3 +66,4 @@ const AnimationProfiles=(()=>{
  function isCustom(heroId,slot){return !!overrides.get(heroId)?.[slot];}
  return Object.freeze({slots:SLOTS,register,resolve,isCustom});
 })();
+if(typeof module!=="undefined"&&module.exports)module.exports=AnimationProfiles;

@@ -16,7 +16,7 @@ class Quaternion{
 }
 class TransformNode{
  constructor(name){
-  this.name=name;this.position=new Vector();
+  this.name=name;this.parent=null;this.position=new Vector();
   this.scaling={setAll(value){this.value=value;}};this.disposeCount=0;
  }
  computeWorldMatrix(){}

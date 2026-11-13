@@ -1,14 +1,14 @@
 /* CACHE001 — persistent, versioned model-only cache for the browser RPG.
  * Never cache HTML, JS, player data or partial HTTP responses.
- * Bump CACHE_NAME when any GLB changes (RENOPT001, NADAOPT001, LIORAPLAY001).
+ * Bump CACHE_NAME when any GLB changes (RENOPT001, NADAOPT001, LIORAPLAY001, LIORA-SHIELD-006).
  */
 "use strict";
 const CACHE_PREFIX="ashes-models-";
-const CACHE_NAME=CACHE_PREFIX+"ren-a15fd00f_nada-4c8b29b8_liora-b49bd249_v1";
+const CACHE_NAME=CACHE_PREFIX+"ren-a15fd00f_nada-4c8b29b8_liora-aeb64b8d_v1";
 const MODEL_PATHS=[
  "assets/ren-meshy-mixamo-animated.glb",
  "dev/assets/models/nada-mobile-animated.glb",
- "dev/assets/models/liora_vel_shield_aware_15clips.glb"
+ "dev/assets/models/liora-mobile-animated.glb"
 ];
 const MODEL_URLS=MODEL_PATHS.map(path=>new URL(path,self.registration.scope).href);
 const inflight=new Map();
@@ -71,7 +71,7 @@ self.addEventListener("fetch",event=>{
 });
 // CACHE002: exact downloadable GLB sizes; progress is based on bytes actually
 // consumed from the response stream, not a timer or a simulated percentage.
-const MODEL_BYTES=[2862860,1462284,2850224];
+const MODEL_BYTES=[2862860,1462284,2117776];
 async function reportCacheStatus(port){
  const cache=await openCache();
  const results=[];

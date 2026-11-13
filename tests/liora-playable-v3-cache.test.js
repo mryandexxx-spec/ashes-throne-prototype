@@ -30,7 +30,8 @@ test("Liora playable pilot has a real persistent ID but no approved backstory",(
  assert.equal(v3.TEST_CLASSES.liora,"tank");
  assert.equal(api.HeroStatsProfiles.liora.combatStats.speed,115);
  assert.equal(api.HeroProfileData.get("liora").tags.length,0);
- assert.equal(api.LioraModelAssets.bytes,2850224);
+ assert.equal(api.LioraModelAssets.bytes,2117776);
+ assert.equal(api.LioraModelAssets.shieldMesh,"Liora_Shield");
  assert.equal(api.AbilityData.get({id:"liora"},"special").kind,"guard");
  assert.equal(api.AbilityData.get({id:"liora"},"powerful").kind,"guard");
 });
@@ -84,9 +85,22 @@ test("Liora GLB and caching are wired without shield assets",()=>{
  assert.match(main,/lioraGlbRuntime\.update\(activity\)/);
  assert.match(card,/liora-native-idle/);
  assert.match(index,/liora-glb-runtime\.js/);
- assert.match(sw,/liora_vel_shield_aware_15clips\.glb/);
- assert.match(sw,/2850224/);
- assert.ok(client.includes('"liora_vel_shield_aware_15clips.glb":"liora"')); // third asset registration
+ assert.match(sw,/liora-mobile-animated\.glb/);
+ assert.match(sw,/2117776/);
+ assert.match(sw,/liora-aeb64b8d/);
+ assert.ok(client.includes('"liora-mobile-animated.glb":"liora"')); // third asset registration
+ assert.match(client,/model-cache-sw\.js\?v=liorashield006/);
  assert.match(index,/cache002-liora/);
  assert.doesNotMatch(runtime,/LioraShieldAttachment|LioraShieldAssets|liora-shield-mobile/);
+ // LIORA-SHIELD-006: shield clips drive the combat slots; the shield mesh is part of the GLB.
+ const LioraGlbRuntime=require("../liora-glb-runtime.js");
+ assert.equal(LioraGlbRuntime.SHIELD_MESH,"Liora_Shield");
+ assert.deepEqual([LioraGlbRuntime.clipFor("basic"),LioraGlbRuntime.clipFor("special"),LioraGlbRuntime.clipFor("death")],
+  ["Liora_Shield_Bash","Liora_Shield_Block","Liora_Shield_Death"]);
+ assert.equal(LioraGlbRuntime.clipFor("idle"),"Idle_02");
+ assert.match(runtime,/visible\.filter\(isBody\)/,"frame the body without the bind-pose shield");
+ assert.match(card,/LioraGlbRuntime\.SHIELD_MESH/,"card framing ignores the shield mesh");
+ assert.match(main,/тестовый герой со щитом/);
+ assert.doesNotMatch(main,/без щита/);
+ assert.match(read("ability-data.js"),/Удар щитом · тест/);
 });

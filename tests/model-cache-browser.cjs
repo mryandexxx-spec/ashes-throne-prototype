@@ -2,7 +2,7 @@
 const assert=require("node:assert/strict");
 const {chromium,webkit}=require("playwright");
 const HOST="http://127.0.0.1:8765/";
-const MODEL_PATHS=["assets/ren-meshy-mixamo-animated.glb","dev/assets/models/nada-mobile-animated.glb","dev/assets/models/liora_vel_shield_aware_15clips.glb"];
+const MODEL_PATHS=["assets/ren-meshy-mixamo-animated.glb","dev/assets/models/nada-mobile-animated.glb","dev/assets/models/liora-mobile-animated.glb"];
 async function run(browserName,driver){
  const browser=await driver.launch(browserName==="chromium"
   ?{headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage"]}
@@ -51,7 +51,7 @@ async function run(browserName,driver){
   assert.ok(cached.progress.length>=3,"SW must send per-character progress/cache reports");
   assert.ok(cached.progress.some(x=>x.asset==="ren-meshy-mixamo-animated.glb"));
   assert.ok(cached.progress.some(x=>x.asset==="nada-mobile-animated.glb"));
-  assert.ok(cached.progress.some(x=>x.asset==="liora_vel_shield_aware_15clips.glb"));
+  assert.ok(cached.progress.some(x=>x.asset==="liora-mobile-animated.glb"));
   assert.ok(cached.progress.every(x=>x.type==="CACHE002_ASSET"));
   assert.ok(cached.progress.some(x=>x.status==="cached"||x.status==="stored"),
    "SW must confirm persistent cache when warmup completes");

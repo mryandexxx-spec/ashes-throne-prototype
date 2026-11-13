@@ -85,7 +85,8 @@ const SkillCore=(()=>{
   else levels[id][abilityId]++;
   progress.currency-=c.currency;
   for(const [key,n] of Object.entries(c.materials))materials[key]-=n;
-  progress.skillLevels=levels;progress.skillMaterials=materials;
+  if(!passives)progress.skillLevels=levels;
+  progress.skillMaterials=materials;
   if(passives)progress.passiveLevels=passives;
   return {level:c.to,currency:c.currency,materials:c.materials};
  }

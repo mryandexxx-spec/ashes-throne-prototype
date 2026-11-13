@@ -22,6 +22,6 @@ const LioraModelAssets=Object.freeze({
  id:"liora",url:"dev/assets/models/liora-mobile-animated.glb",filename:"liora-mobile-animated.glb",
  source:"dev/assets-src/characters/liora/",bytes:2117776,sha256:"6baf3cf93ca4e2e71be58b243616b6afdbd4cfdca81eb404ef6bd0dafae77a9c",
  shieldMesh:"Liora_Shield",shieldJoint:"mixamorig:LeftForeArm",
- clips:Object.freeze({idle:"Idle_02",basic:"Liora_Shield_Bash",special:"Liora_Shield_Block",powerful:"Squat_Stance",hit:"Hit_Reaction",death:"Liora_Shield_Death",run:"Running",walk:"Walking",alert:"Alert",breath:"Catching_Breath",push:"Step_Forward_and_Push",approach:"Walk_Fight_Forward"})
+ clips:Object.freeze({idle:"Idle_02",basic:"Liora_Shield_Bash",special:"Liora_Shield_Block",powerful:"Squat_Stance",guard:"Liora_Shield_Block",ward:"Liora_Shield_Block",hit:"Hit_Reaction",death:"Liora_Shield_Death",run:"Running",walk:"Walking",alert:"Alert",breath:"Catching_Breath",push:"Step_Forward_and_Push",approach:"Walk_Fight_Forward"})
 });
 if(typeof module!=="undefined"&&module.exports)module.exports=NadaModelAssets;

@@ -39,8 +39,8 @@ test("NADA3D001: Dune dev layout and mobile GLB contract",t=>{
 });
 test("NADA3D001: game and card load the same asset without new engine in combat",()=>{
  const page=read("index.html"),game=read("game.js"),card=read("ren-card-3d.js");
- assert.match(page,/dev\/src\/assets\/models\.js\?v=0\.3\.144/);
- assert.match(page,/nada-glb-runtime\.js\?v=0\.3\.144/);
+ assert.match(page,/dev\/src\/assets\/models\.js\?v=0\.3\.145/);
+ assert.match(page,/nada-glb-runtime\.js\?v=0\.3\.145/);
  assert.match(game,/function ensureNada3D\(\)/);
  // The scene may exist before the chosen squad is materialized.
  // Never inject Nada's Mixamo rig into a Ren-only fight at initBabylon().
@@ -79,8 +79,8 @@ test("NADA3D001: failed load retains a simple fighter and reports fallback",asyn
 });
 test("NADA3D001: short footer and versioned scripts",()=>{
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.144");
- assert.match(html,/id="buildVersion">Прототип · v0\.3\.144 · LIORASHIELD006/);
- assert.match(html,/ren-card-3d\.js\?v=0\.3\.144/);
+ assert.equal(pkg.version,"0.3.145");
+ assert.match(html,/id="buildVersion">Прототип · v0\.3\.145 · LIORAANIM001/);
+ assert.match(html,/ren-card-3d\.js\?v=0\.3\.145/);
  assert.ok(read("dev/assets-src/characters/nada/README.md").includes("Meshy_AI_model_20261112"));
 });

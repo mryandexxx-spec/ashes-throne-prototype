@@ -1,0 +1,38 @@
+{
+ "result": {
+  "log": [
+   {
+    "slot": "basic",
+    "ms": 1628
+   },
+   {
+    "slot": "idle",
+    "ms": 142
+   },
+   {
+    "slot": "guard",
+    "ms": 1591
+   },
+   {
+    "slot": "ward",
+    "ms": 1214
+   },
+   {
+    "slot": "hit",
+    "ms": 1135
+   },
+   {
+    "slot": "death",
+    "ms": 2467
+   },
+   {
+    "slot": "idle",
+    "ms": null
+   }
+  ],
+  "speed": 1
+ },
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

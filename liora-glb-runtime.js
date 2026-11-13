@@ -10,13 +10,19 @@ const LioraGlbRuntime=(()=>{
  const CLIPS=Object.freeze({
   idle:"Idle_02",basic:"Liora_Shield_Bash",
   special:"Liora_Shield_Block",powerful:"Squat_Stance",
-  passive:"Idle_02",leader:"Idle_02",guard:"Alert",ward:"Hit_Reaction",
+  passive:"Idle_02",leader:"Idle_02",
+  // LIORAANIM001: her self-guard abilities resolve to guard + ward (see BattleAnimation.enqueue),
+  // so the block clip lives on those slots: raise the shield, then hold it.
+  guard:"Liora_Shield_Block",ward:"Liora_Shield_Block",
   hit:"Hit_Reaction",death:"Liora_Shield_Death",run:"Running",walk:"Walking"
  });
  const clipFor=slot=>CLIPS[slot]||CLIPS.idle;
  // LIORAPLAY001: part of a clip shown for a slot, as fractions of the clip length.
  // Liora_Shield_Death ends lying on the ground with the shield over the arm; stop just before the end.
- const WINDOWS=Object.freeze({death:Object.freeze([0,.98])});
+ // LIORAANIM001: Liora_Shield_Block raises the shield during the first 55% and holds it after.
+ const BLOCK_RAISE=.55;
+ const WINDOWS=Object.freeze({death:Object.freeze([0,.98]),
+  guard:Object.freeze([0,BLOCK_RAISE]),ward:Object.freeze([BLOCK_RAISE,1])});
  const SHIELD_MESH="Liora_Shield";
  // The baked shield sits on the extended arm in bind pose; frame the body only.
  const isBody=mesh=>mesh.name!==SHIELD_MESH;

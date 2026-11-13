@@ -28,9 +28,9 @@ test("CACHE001: only the three current, versioned GLB URLs can be stored",()=>{
  assert.match(worker,/cache\.put\(url,response\.clone\(\)\)/);
  assert.match(worker,/event\.waitUntil\(task\.then/);
  assert.match(worker,/response\.clone\(\),persisted/);
- assert.match(html,/model-cache-client\.js\?v=0\.3\.144/);
- assert.match(html,/v0\.3\.144 · LIORASHIELD006/);
- assert.equal(JSON.parse(read("package.json")).version,"0.3.144");
+ assert.match(html,/model-cache-client\.js\?v=0\.3\.145/);
+ assert.match(html,/v0\.3\.145 · LIORAANIM001/);
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.145");
 });
 test("CACHE001: never save documents, scripts, game state or third-party requests",()=>{
  const src=read("model-cache-sw.js");

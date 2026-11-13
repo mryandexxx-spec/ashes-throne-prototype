@@ -61,7 +61,7 @@ test("CHAR002B Ren bonuses rely exclusively on marks, not generic weaken/slow",(
  Combat.advanceToPlayerTurn(b);
  b.fighters[1].weakenAttacks=2;
  assert.equal(Combat.performPlayerAbility(b,"basic"),true);
- const generic=1000-d.hp;
+ const generic=1000-b.fighters[1].hp;
  const b2=Combat.createBattle([fighter("ren","ally",150,120,28,["gardens-over-abyss"]),fighter("target","enemy",1,1000,0)]);
  Combat.advanceToPlayerTurn(b2);
  assert.equal(Status.applyReadMove(b2.fighters[1],4,2),true);

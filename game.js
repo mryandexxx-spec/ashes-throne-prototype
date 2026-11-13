@@ -9,7 +9,7 @@ const HEROES = [
   // REN-PLAYABLE: permanent roster entry; combat numbers are still a test pilot.
   {id:"ren",name:"Рен Терен",classId:"melee",tags:["gardens-over-abyss"],role:"Боец ближнего боя",hp:91,atk:27,speed:150,side:"ally",glyph:"⌁"},
  // NADA-PLAYABLE-001: provisional gameplay role and combat numbers only.
- {id:"nada",name:"Нада",classId:"support",role:"Поддержка · игровой пилот",hp:85,atk:18,speed:120,side:"ally",glyph:"✎"},
+ {id:"nada",name:"Нада",classId:"support",tags:["gardens-over-abyss"],role:"Поддержка · игровой пилот",hp:85,atk:18,speed:120,side:"ally",glyph:"✎"},
   {id:"ves",name:"Вестник Конклава",role:"Противник",hp:90,atk:18,speed:105,side:"enemy",glyph:"☠"},
   {id:"shade",name:"Теневой клинок",role:"Противник",hp:78,atk:22,speed:135,side:"enemy",glyph:"♟"},
   // Demo-only copies: no new combat stats or lore. First mission still uses two enemies.

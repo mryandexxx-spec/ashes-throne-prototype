@@ -29,10 +29,16 @@ test("shield is parented to the animated LEFT hand joint, independently of chara
  assert.equal(attachment.socket.parent,f.hand);
  assert.equal(f.prop.parent,attachment.socket);
  assert.equal(attachment.jointName,"mixamorig:LeftHand");
- assert.equal(attachment.socket.position.z,.17);
+ assert.equal(attachment.socket.position.z,-.01236);
+ assert.equal(attachment.socket.position.x,-.22055);
+ attachment.update();
  attachment.pose({offset:{x:0,y:.2,z:.1},rotation:{x:10,y:0,z:20},scale:.9});
  assert.equal(attachment.socket.position.y,.2);
  assert.equal(attachment.socket.scaling.value,.9);
+ attachment.pose({stabilize:false});
+ assert.ok(attachment.socket.rotationQuaternion,"wrist-follow orientation set");
+ attachment.pose({stabilize:true});
+ attachment.update();
  attachment.dispose();
  attachment.dispose();
  assert.equal(attachment.socket.disposeCount,1);

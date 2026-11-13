@@ -7,7 +7,7 @@ const ProgressV3Core=(()=>{
  const MATERIALS=Object.freeze(["Fe","Le","Cl","Wo","Fa","Th","Gl"]);
  // TEST-ONLY roles, explicitly approved for the vertical slice; not lore.
  const TEST_CLASSES=Object.freeze({
-  kael:"tank",lyra:"ranged",darin:"melee","medic-demo":"support","test-area-damage":"mage",ren:"melee",nada:"support"
+  kael:"tank",lyra:"ranged",darin:"melee","medic-demo":"support","test-area-damage":"mage",ren:"melee",nada:"support",liora:"tank"
  });
  const own=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
  const object=x=>!!x&&typeof x==="object"&&!Array.isArray(x);
@@ -99,12 +99,14 @@ const ProgressV3Core=(()=>{
    const actualIds=allyIds(heroes);
    const currentIds=object(parsed?.heroes)?Object.keys(parsed.heroes):[];
    const missing=actualIds?.filter(id=>!currentIds.includes(id))||[];
+   // LIORAPLAY001: recognize only exact historical roster prefixes.
+   // Never migrate an unknown hero set or a malformed current profile.
+   const historic=[oldIds,oldIds.concat("ren"),oldIds.concat("ren","nada")];
    const expandable=actualIds&&missing.length>0&&
-    missing.every(id=>id==="ren"||id==="nada")&&
-    currentIds.every(id=>actualIds.includes(id))&&
-    oldIds.every(id=>currentIds.includes(id))&&
-    (missing.includes("ren")?currentIds.length===oldIds.length:
-     missing.includes("nada")?currentIds.length===oldIds.length+1:false);
+    missing.every(id=>["ren","nada","liora"].includes(id))&&
+    historic.some(ids=>currentIds.length===ids.length&&
+     ids.every(id=>currentIds.includes(id)))&&
+    currentIds.every(id=>actualIds.includes(id));
    if(expandable){
     const candidate=JSON.parse(JSON.stringify(parsed));
     // The temporary playable pilot joins at 1 star. Existing owner data
@@ -127,7 +129,8 @@ const ProgressV3Core=(()=>{
     const validUpgrade=validateActive(candidate,heroes);
     if(!validUpgrade)return {status:"blocked",reason:"invalid-v3"};
     try{
-     const backupKey=KEY+(missing.includes("ren")?".before-ren":".before-nada");
+     const backupKey=KEY+(missing.includes("liora")?".before-liora":
+      missing.includes("ren")?".before-ren":".before-nada");
      if(storage.getItem(backupKey)===null){
       storage.setItem(backupKey,raw3);
       if(storage.getItem(backupKey)!==raw3)throw Error("backup verification failed");
@@ -261,10 +264,10 @@ const ProgressV3Core=(()=>{
   if(!object(p)||p.saveVersion!==3||!object(p.levels)||!object(p.gear)||
      !object(p.materials)||!object(p.classes)||!object(p.energy))return null;
   // Old five-hero fixtures are still valid for standalone migration tests.
-  // The live game passes all six IDs after stage() expands the saved roster.
+  // The live game passes all eight IDs after stage() expands prior saved rosters.
   const ids=Object.keys(p.classes);
   const legacyIds=["kael","lyra","darin","medic-demo","test-area-damage"];
-  if(![5,6,7].includes(ids.length)||
+  if(![5,6,7,8].includes(ids.length)||
      !legacyIds.every(id=>ids.includes(id))||
      ids.some(id=>!own(TEST_CLASSES,id))||
      ids.some(id=>!own(p.levels,id)||!own(p.gear,id)||p.classes[id]!==TEST_CLASSES[id]))

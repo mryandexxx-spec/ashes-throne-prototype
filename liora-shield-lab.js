@@ -112,7 +112,7 @@
    engine=new BABYLON.Engine(canvas,true,{stencil:true,alpha:true});
    scene=new BABYLON.Scene(engine);
    scene.clearColor=new BABYLON.Color4(.10,.14,.16,1);
-   const camera=new BABYLON.ArcRotateCamera("lioraCam",-Math.PI/2,1.3,3.7,
+   const camera=new BABYLON.ArcRotateCamera("lioraCam",Math.PI/2,1.25,2.65,
     new BABYLON.Vector3(0,1,0),scene);
    camera.lowerRadiusLimit=1.4;camera.upperRadiusLimit=8;
    camera.attachControl(canvas,true);

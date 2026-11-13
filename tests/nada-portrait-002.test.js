@@ -21,7 +21,7 @@ test("all three Nada UI paths cache-bust the image without changing Ren's",()=>{
 test("versioned page shell and portrait documentation stay paired",()=>{
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
  assert.equal(pkg.version,"0.3.146");
- assert.match(html,/v0\.3\.146 · LIORAANIM001/);
+ assert.match(html,/v0\.3\.146 · GEAR013/);
  assert.match(read("docs/BUILD_HISTORY.md"),/NADAART001 \+ NADAPLAY001 \+ NADAPORTRAIT002/);
  assert.match(read("docs/NADA_PORTRAIT_002.md"),/Оригинал PNG пока НЕ загружен/);
 });

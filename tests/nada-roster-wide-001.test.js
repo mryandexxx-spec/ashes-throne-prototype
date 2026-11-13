@@ -33,6 +33,6 @@ test("NADAROSTER001: no legacy cover crop or viewport width overflows",()=>{
  assert.doesNotMatch(rule,/\bmin-width:600px\b|\btransform:scale\(/);
  const pkg=JSON.parse(read("package.json")),html=read("index.html");
  assert.equal(pkg.version,"0.3.146");
- assert.match(html,/v0\.3\.146 · LIORAANIM001/);
+ assert.match(html,/v0\.3\.146 · GEAR013/);
  assert.match(read("docs/BUILD_HISTORY.md"),/NADAPORTRAIT002 \+ NADAROSTER001/);
 });

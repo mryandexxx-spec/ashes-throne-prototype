@@ -20,11 +20,11 @@
     },
     {
       "id": "liora",
-      "file": "liora-mobile-animated.glb",
-      "bytes": 2777056,
-      "sha256": "cb5bb8c1f0bb403458f2faff0a7fcdfcd57737fc7fd1b5b8676c9fd1a5f85772",
+      "file": "liora_vel_shield_aware_15clips.glb",
+      "bytes": 2850224,
+      "sha256": "a2cc310c71ae141d0197da73397d73251db93ae6b57288e2ab5b0eb7aebb46b8",
       "bones": 66,
-      "animations": 12,
+      "animations": 15,
       "textureSize": [
         2048,
         2048

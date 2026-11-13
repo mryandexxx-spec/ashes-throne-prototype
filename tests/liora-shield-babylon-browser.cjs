@@ -18,12 +18,13 @@ fs.mkdirSync(out,{recursive:true});
   browserName==="webkit"?{headless:true}:{headless:true,args:[
    "--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl",
    "--disable-dev-shm-usage"]});
+ let page=null;
  try{
-  const page=await browser.newPage({viewport:{width:844,height:390},deviceScaleFactor:1,
+  page=await browser.newPage({viewport:{width:844,height:390},deviceScaleFactor:1,
    isMobile:true,hasTouch:true});
   const errors=[],glbRequests=[];
   page.on("pageerror",e=>errors.push(e.message));
-  page.on("request",r=>{if(/\\.glb(?:$|\\?)/i.test(r.url()))glbRequests.push(r.url());});
+  page.on("request",r=>{if(/\.glb(?:$|\?)/i.test(r.url()))glbRequests.push(r.url());});
   page.on("console",m=>{if(m.type()==="error")errors.push(m.text());});
   const resp=await page.goto("http://127.0.0.1:8765/liora-shield-lab.html",
    {waitUntil:"load",timeout:90000});
@@ -35,7 +36,7 @@ fs.mkdirSync(out,{recursive:true});
   const msg=await page.locator("#status").innerText();
   assert.match(msg,/Готово: 15 анимаций/,"viewer should load all clips: "+msg);
   assert.equal(glbRequests.length,1,"must request exactly one GLB (Liora, no shield)");
-  assert.match(glbRequests[0],/liora_vel_shield_aware_15clips\\.glb/);
+  assert.match(glbRequests[0],/liora_vel_shield_aware_15clips\.glb/);
   const state=await page.evaluate(()=>{
    const engine=BABYLON.EngineStore.Instances.at(-1);
    const scene=engine.scenes[0];

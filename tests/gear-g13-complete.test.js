@@ -114,7 +114,9 @@ test("GEAR013 demo hero stats receive real item defense and critical bonuses",()
  const after=P.heroStats(p,base);
  assert.ok(after.hp>original.hp);
  assert.ok(after.physicalDefense>original.physicalDefense);
- assert.ok(after.protection>original.protection);
+ // An unequipped demo hero has no Protection pool (undefined), not zero.
+ assert.ok(after.protection>(original.protection??0));
+ assert.equal(after.maxProtection,after.protection,"valid typed combat pool");
  assert.ok(after.accuracy>0);
  assert.equal(after.speed,original.speed);
 });

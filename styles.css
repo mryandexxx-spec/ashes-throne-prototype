@@ -4199,6 +4199,13 @@ body:has(#storyDemo.active)::before{
  width:100%;height:100%;max-width:none;max-height:none;
  object-fit:cover;object-position:center 42%;filter:none;
 }
+/* LIORAPORTRAIT001: pre-cropped 2:1 artwork fits the roster frame without overscaling. */
+#collection .roster-card-art.hero-avatar-liora{padding:0;background:#39373a;overflow:hidden}
+#collection .hero-avatar-liora .liora-collection-portrait{
+ position:absolute;inset:0;z-index:1;display:block;
+ width:100%;height:100%;max-width:none;max-height:none;
+ object-fit:cover;object-position:center 50%;filter:none;
+}
 /* Compact visible build ID; release history lives in docs/BUILD_HISTORY.md.
    Keep the footer within safe-area widths on narrow landscape screens. */
 #app>footer{gap:4px 12px;flex-wrap:wrap;min-width:0}

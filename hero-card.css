@@ -123,3 +123,26 @@ body.hero-card-mode #buildVersion::before{content:attr(data-short-build);font-si
  #heroDetail #heroAbilitiesTitle{display:none}
  #heroDetail .hero-abilities-list{grid-template-rows:repeat(5,minmax(44px,1fr))}
 }
+
+/* LIORAPORTRAIT001: render the 3D/portrait controls on the hero-first card, not
+   inside the closed level dialog. Stay below gear slots and above the footer. */
+#heroDetail .hero-detail-identity>.ren-card-3d-controls{
+ position:absolute;left:50%;bottom:60px;transform:translateX(-50%);
+ z-index:4;display:flex;align-items:center;justify-content:center;
+ flex-wrap:nowrap;gap:6px;max-width:calc(100% - 100px);
+ padding:0;margin:0;background:none;
+}
+#heroDetail .hero-detail-identity>.ren-card-3d-controls[hidden]{display:none!important}
+#heroDetail .hero-detail-identity>.ren-card-3d-controls button{
+ min-width:0;min-height:44px;padding:5px 9px;white-space:nowrap;
+ font-size:clamp(10px,1.2vw,12px);background:#211e24e8;
+ border:1px solid #b69460;border-radius:7px;
+}
+#heroDetail .hero-detail-identity>.ren-card-3d-controls #renCard3DStatus{
+ position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+ overflow:hidden;clip-path:inset(50%);white-space:nowrap;
+}
+@media(orientation:landscape) and (max-width:700px){
+ #heroDetail .hero-detail-identity>.ren-card-3d-controls{max-width:calc(100% - 78px);gap:3px}
+ #heroDetail .hero-detail-identity>.ren-card-3d-controls button{padding:4px 6px;font-size:10px}
+}

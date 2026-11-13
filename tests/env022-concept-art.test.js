@@ -59,5 +59,5 @@ test("public build label matches package version and unique ENV022 code",()=>{
   const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
   const html=fs.readFileSync("index.html","utf8");
   assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
-  assert.match(html,/id="buildVersion"[^>]*>[^<]*v\d+\.\d+\.\d+ · CHAR003/);
+  assert.match(html,/id="buildVersion"[^>]*>[^<]*v\d+\.\d+\.\d+ · LIORAPORTRAIT001/);
 });

@@ -22,7 +22,7 @@ test("NADAROSTER001: only collection uses wide WebP; details retain v2 square",(
  assert.equal((js.match(/assets\/nada-portrait-roster\.webp\?v=1/g)||[]).length,1);
  assert.equal((js.match(/assets\/nada-portrait-ui\.webp\?v=2/g)||[]).length,2);
  assert.match(js,/sketch\.src="assets\/nada-portrait-ui\.webp\?v=2"/);
- assert.match(js,/renPortrait\.src=showNadaPortrait\?"assets\/nada-portrait-ui\.webp\?v=2"/);
+ assert.match(js,/renPortrait\.src=showLioraPortrait\?"assets\/liora-portrait-ui\.webp\?v=1":showNadaPortrait\?"assets\/nada-portrait-ui\.webp\?v=2"/);
  assert.match(roster,/owned&&h\.id==="ren"\?'<img class="ren-collection-portrait"/);
 });
 test("NADAROSTER001: no legacy cover crop or viewport width overflows",()=>{
@@ -32,7 +32,7 @@ test("NADAROSTER001: no legacy cover crop or viewport width overflows",()=>{
  assert.match(rule,/#collection \.hero-avatar-nada \.nada-collection-portrait\{[^}]*width:100%;height:100%;[^}]*object-fit:cover;object-position:center 42%/);
  assert.doesNotMatch(rule,/\bmin-width:600px\b|\btransform:scale\(/);
  const pkg=JSON.parse(read("package.json")),html=read("index.html");
- assert.equal(pkg.version,"0.3.142");
- assert.match(html,/v0\.3\.142 · CHAR003/);
+ assert.equal(pkg.version,"0.3.143");
+ assert.match(html,/v0\.3\.143 · LIORAPORTRAIT001/);
  assert.match(read("docs/BUILD_HISTORY.md"),/NADAPORTRAIT002 \+ NADAROSTER001/);
 });

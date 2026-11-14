@@ -81,6 +81,22 @@ async function check(name,browserType,width,height){
   await page.evaluate(({key,value})=>localStorage.setItem(key,value),{key:Core.KEY,value:seed()});
   await page.reload({waitUntil:"load"});
   await enter(page);
+  // A pre-trials save completed FS-03 narration, but not its new combat.
+  // FS-04 remains locked until that verified win is recorded.
+  assert.equal(await page.locator('[data-lore-layer="city-response"][aria-pressed="true"]').count(),0);
+  await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-03"]').click();
+  assert.equal(await page.locator('.lore-node-detail [data-lore-action="required-battle"]').count(),1);
+  await page.locator('[data-lore-layer="city-response"]').click();
+  assert.equal(await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-04"]').evaluate(
+   el=>el.classList.contains("lore-state-locked")),true);
+  // Narrative-only migration fixture: other WebGL tests exercise real fights.
+  await page.evaluate(()=>{
+   const key="ashes-throne.lore-campaign.v1",data=JSON.parse(localStorage.getItem(key));
+   data.stories["five-shadows"].battleClearedNodeIds.push("five-shadows:fs-03");
+   localStorage.setItem(key,JSON.stringify(data));
+  });
+  await page.reload({waitUntil:"load"});
+  await enter(page);
   assert.equal(await page.locator('[data-lore-layer="city-response"][aria-pressed="true"]').count(),1);
   assert.match(await page.locator(".lore-map-heading").innerText(),/Акт II/);
   assert.equal(await page.locator(".lore-map-marker").count(),3);
@@ -97,30 +113,32 @@ async function check(name,browserType,width,height){
     assert.match(await page.locator(".lore-scene-text").innerText(),/Спустя три дня Рен/);
    }
    await finish(page);
-   if(i===1){
-    // This test covers narrative navigation; tactical combat has separate tests.
-    assert.equal(await page.locator('[data-lore-action="required-battle"]').count(),1);
-    await page.locator('[data-lore-action="leave-result"]').click();
-    await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-06"]').click();
-    assert.match(await page.locator(".lore-node-detail").innerText(),/обязательный бой/i);
-    await page.evaluate(()=>{
-      const key="ashes-throne.lore-campaign.v1",data=JSON.parse(localStorage.getItem(key));
-      data.stories["five-shadows"].battleClearedNodeIds.push("five-shadows:fs-05");
-      localStorage.setItem(key,JSON.stringify(data));
-    });
-    await page.reload({waitUntil:"load"});
-    await enter(page);
-   }else{
-    await page.locator('[data-lore-action="leave-result"]').click();
-   }
+   assert.equal(await page.locator('[data-lore-action="required-battle"]').count(),1,
+    "each Act II scene must require a battle, including terminal FS-06");
+   await page.locator('[data-lore-action="leave-result"]').click();
+   const currentId="five-shadows:fs-0"+(i+4);
+   await page.locator('.lore-list-node[data-lore-node="'+currentId+'"]').click();
+   assert.match(await page.locator(".lore-node-detail").innerText(),/Ожидает бой/);
+   // Checked narrative E2E fixture only; production cannot write receipts here.
+   await page.evaluate(id=>{
+    const key="ashes-throne.lore-campaign.v1",data=JSON.parse(localStorage.getItem(key));
+    data.stories["five-shadows"].battleClearedNodeIds.push(id);
+    localStorage.setItem(key,JSON.stringify(data));
+   },currentId);
+   await page.reload({waitUntil:"load"});
+   await enter(page);
    if(i<2)assert.match(await page.locator(".lore-node-detail").innerText(),/Доступно/);
+   else {
+    await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-06"]').click();
+    assert.match(await page.locator(".lore-node-detail").innerText(),/Пройдено/);
+   }
   }
   const result=await page.evaluate(()=>({
    p:JSON.parse(localStorage.getItem("ashes-throne.lore-campaign.v1")).stories["five-shadows"],
    width:innerWidth,scroll:document.documentElement.scrollWidth
   }));
   assert.deepEqual(result.p.completedNodeIds,Array.from({length:6},(_,i)=>"five-shadows:fs-0"+(i+1)));
-  assert.deepEqual(result.p.battleClearedNodeIds,["five-shadows:fs-01","five-shadows:fs-02","five-shadows:fs-05"]);
+  assert.deepEqual(result.p.battleClearedNodeIds,Array.from({length:6},(_,i)=>"five-shadows:fs-0"+(i+1)));
   assert.ok(result.scroll<=result.width+1,"horizontal overflow "+result.scroll+"/"+result.width);
   await page.locator('[data-lore-layer="gardens-route"]').click();
   assert.equal(await page.locator(".lore-map-marker").count(),3);

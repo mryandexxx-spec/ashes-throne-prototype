@@ -100,3 +100,32 @@ test("LIORA001: tank gear offers all six slots at every G1-G13 rank",()=>{
   }
  }
 });
+
+test("LIORA001: old two-hero passive saves remain valid; new Liora level is optional",()=>{
+ assert.equal(SkillCore.validPassiveLevels({ren:2,nada:3}),true);
+ assert.equal(SkillCore.validPassiveLevels({ren:2,nada:3,liora:4}),true);
+ assert.equal(SkillCore.validPassiveLevels({ren:2,nada:3,liora:0}),false);
+ assert.equal(SkillCore.validPassiveLevels({ren:2,nada:3,liora:undefined}),false);
+ const owner=fighter("liora","ally");
+ owner.skillLevels.passive=6;
+ const p=AbilityData.get(owner,"passive");
+ assert.equal(p.combatRules.protectAllyBelowHpPercent,45);
+ assert.equal(p.combatRules.protectAllyGuardHits,2);
+ assert.equal(p.combatRules.protectAllyCooldownOwnTurns,2);
+});
+test("LIORA001: Liora shields a wounded teammate, not herself, with a real cooldown",()=>{
+ const leader=fighter("liora","ally");
+ const ally=fighter("ren","ally");ally.hp=100;
+ const enemy=fighter("shade","enemy");enemy.physicalAttack=80;enemy.atk=80;
+ const battle=Combat.createBattle([leader,ally,enemy]);
+ battle.currentActor=2;battle.fighters[2].meter=1000;
+ assert.equal(Combat.performActorAbility(battle,"basic",1),true);
+ assert.equal(battle.fighters[1].hp,20);
+ assert.equal(battle.fighters[1].guardHits,1);
+ assert.equal(battle.fighters[0].emergencyGuardCooldown,3);
+ assert.equal(battle.events.some(x=>x.type==="passive-trigger"&&x.ownerId==="liora"),true);
+ // Another action while the cooldown is active cannot grant a second shield.
+ battle.fighters[1].guardHits=0;battle.fighters[2].meter=1000;
+ assert.equal(Combat.performActorAbility(battle,"basic",1),true);
+ assert.equal(battle.fighters[1].guardHits,0);
+});

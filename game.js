@@ -2276,7 +2276,7 @@ function renderLoreRequiredBattleResult(){
    const outcome=state?.tacticalOutcome==="held"?"Отход прикрыт до завершения эвакуации.":
     state?.tacticalOutcome==="defeated-attackers"?"Нападавшие оттеснены раньше окончания эвакуации.":
     state?.tacticalOutcome==="protected-fallen"?"Рен выбыл из боя: прикрытие сорвалось.":"";
-   body.textContent=summary+(outcome?"\\n\\n"+outcome:"")+(consequence?"\\n\\n"+consequence:"");
+   body.textContent=summary+(outcome?"\n\n"+outcome:"")+(consequence?"\n\n"+consequence:"");
  }
  const next=$("#loreRequiredResultContinue"),retry=$("#loreRequiredResultRetry");
  if(next)next.hidden=!saved;

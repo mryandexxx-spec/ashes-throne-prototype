@@ -86,7 +86,7 @@ async function run(name,browserType,width,height){
   assert.equal(await page.locator("#squadRoster [data-squad-required=true]").count(),2);
   assert.equal(await page.locator("#squadTacticalBrief").isVisible(),true);
   assert.match(await page.locator("#squadTacticalBrief").innerText(),/12 действий союзников/);
-  assert.match(await page.locator("#squadTacticalBrief").innerText(),/автобой доступен/);
+  assert.match(await page.locator("#squadTacticalBrief").innerText(),/Автобой доступен/);
   const squadBounds=await page.locator("#squadStart").boundingBox();
   assert.ok(squadBounds&&squadBounds.y>=0&&squadBounds.y+squadBounds.height<=height+1,
    "Squad start should fit without vertical scrolling: "+JSON.stringify(squadBounds));

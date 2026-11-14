@@ -47,7 +47,7 @@ const LoreCampaignScenes=(()=>{
    }
    for(const beat of scene.beats){
     if(beat.choiceIds.length&&
-      !distinct(beat.choiceIds.map(id=>choices.get(id).decisionId)))return false;
+      new Set(beat.choiceIds.map(id=>choices.get(id).decisionId)).size!==1)return false;
    }
    // A decision can offer multiple choices, but cannot be independently repeated in unrelated beats.
    const location=new Map();

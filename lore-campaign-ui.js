@@ -1,10 +1,10 @@
-/* LC-002: presentation-only lore campaign map. No rewards, combat or saved progress. */
+/* LC-003: generic scene runtime and safe lore-only saves; no authored story yet. */
 const LoreCampaignUI=(()=>{
  "use strict";
  const escMap={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"};
  const escapeHtml=value=>String(value).replace(/[&<>"']/g,ch=>escMap[ch]);
- let root=null,data=null,core=null,catalog=null,progress=null;
- let view="stories",storyId=null,nodeId=null,layerId=null;
+ let root=null,data=null,core=null,catalog=null,progress=null,sceneRuntime=null,scenePack=null,notice="";
+ let view="stories",storyId=null,nodeId=null,layerId=null,globalKeyRegistered=false;
  const hasOwn=(x,k)=>Object.prototype.hasOwnProperty.call(x,k);
  function nodeStatus(node,c= catalog,p=progress,engine=core){
   const completed=p?.stories?.[node.storyId]?.completedNodeIds;
@@ -17,35 +17,80 @@ const LoreCampaignUI=(()=>{
  function visibleTitle(node,status){
   return status.code==="locked"?"Неизвестный узел":node.title;
  }
- function safeProgress(){
-  // LC-003 implements actual storage, schema validation and primary decisions.
-  return core.fresh(catalog);
+ function initializeScenes(options={}){
+  const scripts=options.scripts||(typeof LoreCampaignScenes!=="undefined"?LoreCampaignScenes:null);
+  const engine=options.engine||(typeof LoreCampaignSceneCore!=="undefined"?LoreCampaignSceneCore:null);
+  const save=options.save||(typeof LoreCampaignSceneSave!=="undefined"?LoreCampaignSceneSave:null);
+  const runtime=options.runtime||(typeof LoreCampaignSceneRuntime!=="undefined"?LoreCampaignSceneRuntime:null);
+  if(!scripts||!engine||!save||!runtime)return null;
+  let storage=null;
+  if(Object.prototype.hasOwnProperty.call(options,"storage"))storage=options.storage;
+  else try{storage=window.localStorage;}catch{storage=null;}
+  scenePack=options.pack||scripts.catalog();
+  return runtime.create({graph:catalog,graphCore:core,pack:scenePack,
+    scriptData:scripts,sceneCore:engine,saveModule:save,storage});
  }
- function mount(element,d,c){
+ function syncProgress(){progress=sceneRuntime?sceneRuntime.progress():core.fresh(catalog);}
+ function saveMessage(){
+  const status=sceneRuntime?.storageStatus();
+  if(status==="corrupt")return "Сохранение истории повреждено или несовместимо. Исходные данные не перезаписаны. Игровые сцены временно заблокированы.";
+  if(status==="volatile")return "Прогресс истории не сохраняется в этом браузере. После закрытия вкладки прохождение может исчезнуть.";
+  return "История сохраняется отдельно от коллекции героев и учебной кампании.";
+ }
+ function actionMessage(code){
+  return ({
+   CONTENT_NOT_READY:"Текст этой сцены ещё не утверждён.",
+   LOCKED:"Сначала завершите предыдущий сюжетный узел.",
+   CORRUPT_SAVE_PROTECTED:"Запись истории повреждена; данные сохранены без изменений.",
+   SAVE_WRITE_FAILED:"Не удалось записать прогресс. Действие не выполнено.",
+   SAVE_VERIFY_FAILED:"Не удалось подтвердить сохранение. Действие не выполнено.",
+   SAVE_CONFLICT:"История изменилась в другой вкладке. Перезагрузите страницу, чтобы не потерять данные.",
+   INVALID_CHOICE:"Этот вариант здесь недоступен.",
+   PRIMARY_CHOICE_IMMUTABLE:"Первый сюжетный выбор уже сохранён и не изменяется.",
+   OBJECTIVE_INCOMPLETE:"Сначала выполните обязательные задачи сцены.",
+   SKIP_UNAVAILABLE:"Пропустить можно только уже просмотренные безопасные кадры.",
+   NOT_AT_END:"Сцена ещё не завершена."
+  })[code]||"Действие недоступно: "+String(code);
+ }
+ function mount(element,d,c,options={}){
   if(!element||!d||!c||!d.catalogIsValid(d.catalog()))
    return false;
   if(root===element)return true;
   if(root){root.removeEventListener("click",onClick);root.removeEventListener("keydown",onKeydown);}
-  root=element;data=d;core=c;catalog=d.catalog();progress=safeProgress();
+  root=element;data=d;core=c;catalog=d.catalog();
+  try{sceneRuntime=initializeScenes(options);}
+  catch(error){sceneRuntime=null;notice="Не удалось открыть сценарный модуль: "+String(error?.message||error);}
+  syncProgress();
   view="stories";storyId=null;nodeId=null;layerId=null;
   root.addEventListener("click",onClick);
   root.addEventListener("keydown",onKeydown);
+  // Rerendering a beat removes the focused button. Keep Escape working when
+  // focus temporarily falls back to <body>, but only while lore is visible.
+  if(!globalKeyRegistered&&typeof document!=="undefined"){
+   document.addEventListener("keydown",onGlobalKeydown);
+   globalKeyRegistered=true;
+  }
   render();
   return true;
  }
  function open(){
   if(!root)return false;
-  view="stories";storyId=null;nodeId=null;layerId=null;
+  sceneRuntime?.leave();
+  view="stories";storyId=null;nodeId=null;layerId=null;notice="";
   render();
   return true;
  }
  function close(){
   if(!root)return false;
-  view="stories";storyId=null;nodeId=null;layerId=null;
+  sceneRuntime?.leave();
+  view="stories";storyId=null;nodeId=null;layerId=null;notice="";
   return true;
  }
  function back(){
-  if(!root||view!=="map")return false;
+  if(!root)return false;
+  if(view==="scene"){sceneRuntime?.leave();view="map";notice="";syncProgress();render();return true;}
+  if(view==="result"){view="map";syncProgress();render();return true;}
+  if(view!=="map")return false;
   const previousStory=storyId;
   view="stories";storyId=null;nodeId=null;layerId=null;
   render();
@@ -59,7 +104,8 @@ const LoreCampaignUI=(()=>{
   view="map";storyId=id;
   layerId=story.mapLayers[0].id;
   const nodes=data.nodesForStory(id,catalog).filter(n=>n.mapLayerId===layerId);
-  nodeId=(nodes.find(n=>nodeStatus(n).code==="available")||nodes[0])?.id||null;
+  const active=sceneRuntime?.stateFor(id)?.activeNodeId;
+  nodeId=(nodes.find(n=>n.id===active)||nodes.find(n=>nodeStatus(n).code==="available")||nodes[0])?.id||null;
   render();
   return true;
  }
@@ -79,6 +125,65 @@ const LoreCampaignUI=(()=>{
   render();
   return true;
  }
+ function actInScene(action,choiceId){
+  if(!sceneRuntime)return false;
+  const result=action==="next"?sceneRuntime.next():
+   action==="choose"?sceneRuntime.choose(choiceId):
+   action==="skip"?sceneRuntime.skipSeen():
+   action==="finish"?sceneRuntime.finish():{ok:false,code:"UNKNOWN_ACTION"};
+  if(!result.ok){notice=actionMessage(result.code);render();return false;}
+  notice="";syncProgress();
+  if(action==="finish")view="result";
+  render();return true;
+ }
+ function startScene(){
+  const node=data.getNode(nodeId,catalog);
+  if(!node||node.storyId!==storyId||nodeStatus(node).code==="locked"||
+    !sceneRuntime?.hasContent(nodeId))return false;
+  const result=sceneRuntime.start(nodeId);
+  if(!result.ok){notice=actionMessage(result.code);render();return false;}
+  notice="";syncProgress();view="scene";render();return true;
+ }
+ function renderScene(){
+  const current=sceneRuntime?.current();
+  if(!current)return '<section class="lore-scene"><p>Сцена недоступна.</p>'+
+    '<button type="button" data-lore-action="leave-scene" class="ghost">← К карте</button></section>';
+  const node=data.getNode(current.nodeId,catalog);
+  const choiceButtons=current.choices.map(choice=>
+   '<button type="button" class="lore-scene-choice" data-lore-action="scene-choose"'+
+   ' data-lore-choice="'+escapeHtml(choice.id)+'">'+escapeHtml(choice.label)+'</button>').join("");
+  const actions=choiceButtons||(current.canContinue?
+   '<button type="button" class="primary" data-lore-action="scene-next">Продолжить</button>':
+   current.canFinish?
+    '<button type="button" class="primary" data-lore-action="scene-finish">Завершить узел</button>':'');
+  const objectives=current.objectives.length?
+   '<div class="lore-scene-objectives"><strong>ЗАДАЧИ СЦЕНЫ</strong>'+
+    current.objectives.map(o=>'<div class="'+(o.done?'is-done':'')+'">'+
+      (o.done?'✓ ':'◌ ')+escapeHtml(o.hint)+(o.required?'':' · дополнительно')+'</div>').join("")+'</div>':"";
+  return '<section class="lore-scene" aria-label="Сюжетная сцена">'+
+   '<div class="lore-scene-header"><button type="button" class="ghost" data-lore-action="leave-scene">← К карте</button>'+
+    '<div><small>ЛОРНАЯ ИСТОРИЯ · '+(current.mode==="replay"?"ПОВТОР":"ОСНОВНОЙ ПРОХОД")+'</small>'+
+    '<h3>'+escapeHtml(node.title)+'</h3></div></div>'+
+   '<article class="lore-scene-card" aria-live="polite">'+
+    (current.speakerId?'<div class="lore-scene-speaker">'+escapeHtml(current.speakerId)+'</div>':'')+
+    '<p class="lore-scene-text">'+escapeHtml(current.text)+'</p>'+
+    '<div class="lore-scene-choices">'+actions+'</div>'+
+    '<button type="button" class="lore-scene-skip ghost" data-lore-action="scene-skip"'+
+      (!current.canContinue||!current.skipSafe?' disabled':'')+
+      '>Пропустить просмотренное</button></article>'+
+   objectives+
+   '<p class="lore-scene-storage" role="status">'+escapeHtml(saveMessage())+'</p>'+
+   (notice?'<p class="lore-scene-notice" role="alert">'+escapeHtml(notice)+'</p>':'')+
+   '</section>';
+ }
+ function renderResult(){
+  const title=data.getNode(nodeId,catalog)?.title||"Узел";
+  return '<section class="lore-scene lore-scene-result"><div class="lore-scene-card">'+
+   '<span class="lore-detail-eyebrow">РЕЗУЛЬТАТ · БЕЗ НАГРАД</span>'+
+   '<h3>'+escapeHtml(title)+'</h3><p>Просмотр сцены завершён. '+
+   'Первичные решения сохраняются только в основном прохождении.</p>'+
+   '<button type="button" class="primary" data-lore-action="leave-result">Вернуться к карте</button></div></section>';
+ }
  function onClick(event){
   const button=event.target.closest?.("button[data-lore-action]");
   if(!button||!root.contains(button))return;
@@ -87,9 +192,21 @@ const LoreCampaignUI=(()=>{
   else if(action==="choose-node")selectNode(button.dataset.loreNode);
   else if(action==="choose-layer")changeLayer(button.dataset.loreLayer);
   else if(action==="back")back();
+  else if(action==="start-node")startScene();
+  else if(action==="leave-scene"||action==="leave-result")back();
+  else if(action==="scene-next")actInScene("next");
+  else if(action==="scene-choose")actInScene("choose",button.dataset.loreChoice);
+  else if(action==="scene-skip")actInScene("skip");
+  else if(action==="scene-finish")actInScene("finish");
+ }
+ function onGlobalKeydown(event){
+  if(!root?.isConnected||typeof document==="undefined"||
+     document.querySelector("#campaignLoreContent")?.hidden||
+     !document.querySelector("#campaign")?.classList.contains("active"))return;
+  onKeydown(event);
  }
  function onKeydown(event){
-  if(event.key==="Escape"&&view==="map"){
+  if(event.key==="Escape"&&["map","scene","result"].includes(view)){
    event.preventDefault();event.stopPropagation();back();
   }
  }
@@ -108,7 +225,7 @@ const LoreCampaignUI=(()=>{
    '<div class="lore-chronicle-heading"><span>ИСТОРИИ МИРА</span><h3>Кампании лора</h3>'+
    '<p>Исследуйте истории мира на интерактивных схемах. Первые сцены ещё готовятся.</p></div>'+
    '<div class="lore-story-grid">'+cards+'</div>'+
-   '<p class="lore-stage-note">LC-002 · Доступен просмотр карты. Игровые сцены и сохранение прогресса появятся позже.</p></section>';
+   '<p class="lore-stage-note">LC-003 · Механизм сцен и сохранения готов. Авторские тексты «Пяти теней» добавляются на следующем этапе.</p></section>';
  }
  function edgeSvg(nodes){
   const availableIds=new Set(nodes.map(n=>n.id));
@@ -158,9 +275,27 @@ const LoreCampaignUI=(()=>{
    '<p class="lore-detail-reason">'+escapeHtml(status.reason)+'</p>'+
    deps+
    '<div class="lore-detail-actions">'+
-   '<button type="button" class="primary" disabled aria-disabled="true">Сюжетная сцена готовится</button>'+
-   '<small>Запуск, решения и повтор — этап LC-003/004. Награды пока не определены.</small></div>'+
+   (known&&sceneRuntime?.hasContent(node.id)&&sceneRuntime?.storageStatus()!=="corrupt"?
+    '<button type="button" class="primary" data-lore-action="start-node">'+
+       (sceneRuntime.hasCheckpoint(node.id)?"Продолжить":status.code==="completed"?"Перепройти":"Начать сцену")+
+    '</button>':
+    '<button type="button" class="primary" disabled aria-disabled="true">'+
+      (sceneRuntime?.storageStatus()==="corrupt"?"Сохранение повреждено":"Сюжетная сцена готовится")+'</button>')+
+   '<small>Реплики и задачи будут добавлены после сценарного утверждения. Награды пока не определены.</small></div>'+
    '</aside>';
+ }
+ function renderJournal(){
+  const rows=sceneRuntime?.journal(storyId)||[];
+  if(!rows.length)return "";
+  const items=rows.map(row=>{
+   const node=data.getNode(row.nodeId,catalog);
+   const scene=scenePack?.scenes?.find(s=>s.nodeId===row.nodeId);
+   const choice=scene?.choices?.find(c=>c.id===row.choiceId);
+   return '<li><strong>'+escapeHtml(node?.title||"Сюжетный узел")+'</strong>: '+
+     escapeHtml(choice?.label||"Решение сохранено")+'</li>';
+  }).join("");
+  return '<details class="lore-decision-log"><summary>Журнал первичных решений ('+
+   rows.length+')</summary><ul>'+items+'</ul></details>';
  }
  function renderMap(){
   const story=data.getStory(storyId,catalog);
@@ -189,17 +324,18 @@ const LoreCampaignUI=(()=>{
    renderDetail(chosen)+'</div>'+
    '<div class="lore-legend" aria-label="Условные обозначения"><span class="lore-state-completed">● Пройдено</span><span class="lore-state-available">● Доступно</span><span class="lore-state-locked">● Закрыто</span></div>'+
    '<div class="lore-node-list" role="group" aria-label="Список сюжетных узлов">'+list+'</div>'+
-   '<p class="lore-stage-note">Это предварительная схема. До LC-003 прогресс не сохраняется, главы и награды не запускаются.</p>'+
+   renderJournal()+
+   '<p class="lore-stage-note">'+escapeHtml(saveMessage())+' Игровые сцены включаются после утверждения текста.</p>'+
    '</section>';
  }
  function render(){
   if(!root)return;
-  root.innerHTML=view==="map"?renderMap():renderStories();
+  root.innerHTML=view==="scene"?renderScene():view==="result"?renderResult():view==="map"?renderMap():renderStories();
  }
  function snapshot(){
   return Object.freeze({view,storyId,nodeId,layerId,hasRoot:!!root});
  }
  return Object.freeze({mount,open,close,back,openStory,changeLayer,selectNode,
-  render,nodeStatus,snapshot});
+  render,nodeStatus,snapshot,startScene,actInScene,saveMessage});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=LoreCampaignUI;

@@ -154,8 +154,10 @@ const LoreCampaignUI=(()=>{
   if(view==="scene"){sceneRuntime?.leave();view="map";notice="";syncProgress();render();return true;}
   if(view==="result"){
    view="map";syncProgress();
-   const available=data.nodesForStory(storyId,catalog).find(n=>nodeStatus(n).code==="available");
-   if(available){layerId=available.mapLayerId;nodeId=available.id;}
+   if(data.getStory(storyId,catalog)?.mapLayers.length>1){
+    const available=data.nodesForStory(storyId,catalog).find(n=>nodeStatus(n).code==="available");
+    if(available){layerId=available.mapLayerId;nodeId=available.id;}
+   }
    render();return true;
   }
   if(view!=="map")return false;
@@ -170,15 +172,22 @@ const LoreCampaignUI=(()=>{
   const story=data.getStory(id,catalog);
   if(!story)return false;
   view="map";storyId=id;
-  const nodes=data.nodesForStory(id,catalog);
   const active=sceneRuntime?.stateFor(id)?.activeNodeId;
-  // An existing checkpoint takes priority; otherwise pick first unplayed episode
-  // across both layers, then the most recently completed one for replay.
-  const target=nodes.find(n=>n.id===active)||
-   nodes.find(n=>nodeStatus(n).code==="available")||
-   [...nodes].reverse().find(n=>nodeStatus(n).code==="completed")||nodes[0];
-  layerId=target?.mapLayerId||story.mapLayers[0].id;
-  nodeId=target?.id||null;
+  if(story.mapLayers.length===1){
+   // Keep the original navigation contract for older single-layer fixtures
+   // and other stories. Only multi-act campaigns need cross-layer discovery.
+   layerId=story.mapLayers[0].id;
+   const nodes=data.nodesForStory(id,catalog).filter(n=>n.mapLayerId===layerId);
+   nodeId=(nodes.find(n=>n.id===active)||
+    nodes.find(n=>nodeStatus(n).code==="available")||nodes[0])?.id||null;
+  }else{
+   const nodes=data.nodesForStory(id,catalog);
+   const target=nodes.find(n=>n.id===active)||
+    nodes.find(n=>nodeStatus(n).code==="available")||
+    [...nodes].reverse().find(n=>nodeStatus(n).code==="completed")||nodes[0];
+   layerId=target?.mapLayerId||story.mapLayers[0].id;
+   nodeId=target?.id||null;
+  }
   render();
   return true;
  }

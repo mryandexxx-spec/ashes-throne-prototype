@@ -74,18 +74,20 @@ const LoreCampaignUI=(()=>{
  }
  function open(){
   if(!root)return false;
-  view="stories";storyId=null;nodeId=null;layerId=null;
+  sceneRuntime?.leave();
+  view="stories";storyId=null;nodeId=null;layerId=null;notice="";
   render();
   return true;
  }
  function close(){
   if(!root)return false;
-  view="stories";storyId=null;nodeId=null;layerId=null;
+  sceneRuntime?.leave();
+  view="stories";storyId=null;nodeId=null;layerId=null;notice="";
   return true;
  }
  function back(){
   if(!root)return false;
-  if(view==="scene"){sceneRuntime?.leave();view="map";syncProgress();render();return true;}
+  if(view==="scene"){sceneRuntime?.leave();view="map";notice="";syncProgress();render();return true;}
   if(view==="result"){view="map";syncProgress();render();return true;}
   if(view!=="map")return false;
   const previousStory=storyId;

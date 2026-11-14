@@ -47,7 +47,7 @@ async function finishManually(page){
    return result?.classList.contains("active")||
     (document.querySelector("#battle")?.classList.contains("active")&&
       !document.querySelector("#basicAbilityBtn")?.disabled);
-  },{timeout:25000});
+  },null,{timeout:25000});
   if(await page.locator("#loreRequiredBattleResult").isVisible())return;
   await page.locator("#basicAbilityBtn").click({timeout:12000});
  }
@@ -76,6 +76,9 @@ async function run(name,browserType,width,height){
   assert.equal(await page.locator("#squadTacticalBrief").isVisible(),true);
   assert.match(await page.locator("#squadTacticalBrief").innerText(),/12 действий союзников/);
   assert.match(await page.locator("#squadTacticalBrief").innerText(),/Автобой отключён/);
+  const squadBounds=await page.locator("#squadStart").boundingBox();
+  assert.ok(squadBounds&&squadBounds.y>=0&&squadBounds.y+squadBounds.height<=height+1,
+   "Squad start should fit without vertical scrolling: "+JSON.stringify(squadBounds));
   await page.locator("#squadDisband").click();
   const available=page.locator('#squadRoster .squad-choice:not(.chosen):not([disabled])');
   let count=0;while(await available.count()&&count++<3)await available.first().click();

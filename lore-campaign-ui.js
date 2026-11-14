@@ -4,7 +4,7 @@ const LoreCampaignUI=(()=>{
  const escMap={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"};
  const escapeHtml=value=>String(value).replace(/[&<>"']/g,ch=>escMap[ch]);
  let root=null,data=null,core=null,catalog=null,progress=null,sceneRuntime=null,notice="";
- let view="stories",storyId=null,nodeId=null,layerId=null;
+ let view="stories",storyId=null,nodeId=null,layerId=null,globalKeyRegistered=false;
  const hasOwn=(x,k)=>Object.prototype.hasOwnProperty.call(x,k);
  function nodeStatus(node,c= catalog,p=progress,engine=core){
   const completed=p?.stories?.[node.storyId]?.completedNodeIds;
@@ -63,6 +63,12 @@ const LoreCampaignUI=(()=>{
   view="stories";storyId=null;nodeId=null;layerId=null;
   root.addEventListener("click",onClick);
   root.addEventListener("keydown",onKeydown);
+  // Rerendering a beat removes the focused button. Keep Escape working when
+  // focus temporarily falls back to <body>, but only while lore is visible.
+  if(!globalKeyRegistered&&typeof document!=="undefined"){
+   document.addEventListener("keydown",onGlobalKeydown);
+   globalKeyRegistered=true;
+  }
   render();
   return true;
  }
@@ -189,6 +195,12 @@ const LoreCampaignUI=(()=>{
   else if(action==="scene-choose")actInScene("choose",button.dataset.loreChoice);
   else if(action==="scene-skip")actInScene("skip");
   else if(action==="scene-finish")actInScene("finish");
+ }
+ function onGlobalKeydown(event){
+  if(!root?.isConnected||typeof document==="undefined"||
+     document.querySelector("#campaignLoreContent")?.hidden||
+     !document.querySelector("#campaign")?.classList.contains("active"))return;
+  onKeydown(event);
  }
  function onKeydown(event){
   if(event.key==="Escape"&&["map","scene","result"].includes(view)){

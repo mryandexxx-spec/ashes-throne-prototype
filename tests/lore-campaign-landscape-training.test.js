@@ -28,7 +28,7 @@ test("LC-004 UX: one callback routes optional training from lore map, even after
  UI.mount(r,Data,Core,{onStartTraining:()=>launched++});
  UI.openStory("five-shadows");
  assert.match(r.innerHTML,/data-lore-action="training-battle"/);
- assert.match(r.innerHTML,/ВНЕ СОБЫТИЙ ГЛАВЫ/);
+ assert.match(r.innerHTML,/Вне канона · без энергии/);
  click(r,"training-battle");
  assert.equal(launched,1);
  assert.equal(UI.snapshot().view,"map","training cannot complete or skip a story node");

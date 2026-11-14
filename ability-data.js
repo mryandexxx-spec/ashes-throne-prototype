@@ -131,6 +131,10 @@ const AbilityData=(()=>{
  // Combat-014A: only nonplayable fixtures can be leaders until the owner
  // approves actual hero eligibility and leader effects.
  const leaderByHero=Object.freeze({
+  // LIORA001: [PROPOSAL] 10% of each ally's Protection while Liora leads and lives.
+  liora:Object.freeze({id:"leader",name:"Опора отряда",
+   modifiers:Object.freeze([Object.freeze({stat:"protection",operation:"percent",value:10,
+    scope:"all-allies",when:Object.freeze({kind:"always"})})])}),
   "test-leader-aura":Object.freeze({id:"leader",name:"Тест ауры лидера",
    modifiers:Object.freeze([
     Object.freeze({stat:"atk",operation:"flat",value:4,scope:"all-allies",when:Object.freeze({kind:"always"})}),

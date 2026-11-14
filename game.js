@@ -248,6 +248,7 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
  if(typeof renderHeadquarters==="function")renderHeadquarters();
 });
 let battleIsCampaign=false;
+let battleIsLoreTraining=false; // Noncanonical combat, no costs or rewards.
 // STORY-001 is an opt-in sandbox, independent of campaign rewards and saves.
 let battleIsStoryDemo=false;
 let battleIsChallenge=false;
@@ -694,6 +695,9 @@ function battleLineup(){
   if(enemies.some(x=>!x))throw Error("Unknown challenge enemy");
   return [...selectedParty(),...enemies.map(progressedEnemy)];
  }
+ // LC-004: use existing combat with generic noncanonical training enemies.
+ if(battleIsLoreTraining)return [...selectedParty(),...ENEMIES.slice(0,2).map((e,i)=>
+  progressedEnemy({...e,name:"Учебный противник "+(i+1)}))];
  // STORY-002 uses temporary hero IDs outside v3 save validation.
  if(battleIsStoryDemo&&storyTrialParty)
   return [...StoryTrialData.heroes(),...ENEMIES.slice(0,2).map((e,i)=>
@@ -905,6 +909,7 @@ function showScreen(id){
  if(id==="signalOperations")renderSignalOperations();
  if(id==="signalOperationResult")renderSignalOperationResult();
  if(id==="storyDemo")renderStoryDemo();
+ if(id==="loreTrainingResult")renderLoreTrainingResult();
  if(id==="heroDetail")renderHeroDetail();
  if(id==="battle"){
   lastMissionReward=null;
@@ -914,6 +919,7 @@ function showScreen(id){
   missionEntryPaid=false;
   missionResultSaveFailed=false;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
+  battleIsLoreTraining=squadReturnScreen==="loreTraining";
   battleIsStoryDemo=squadReturnScreen==="storyDemo"&&storyDemoState?.phase==="battle";
   battleIsChallenge=squadReturnScreen==="challenges"&&!!ChallengeCore.get(activeChallengeId);
   battleIsOperation=squadReturnScreen==="operations"&&operationProgress.active?.phase==="battle";
@@ -923,15 +929,16 @@ function showScreen(id){
   const label=$("#battleMissionLabel");
   if(label)label.textContent=battleIsSignal?"РАЗВЕДОПЕРАЦИЯ · ТРЕВОЖНЫЙ СИГНАЛ":
    battleIsOperation?"РАЗВЕДОПЕРАЦИЯ · ДВА КУРЬЕРА":
-   battleIsChallenge?"ИСПЫТАНИЕ · "+ChallengeCore.get(activeChallengeId).title:
+   battleIsLoreTraining?"ПЯТЬ ТЕНЕЙ · ТРЕНИРОВКА (ВНЕ КАНОНА)":
+    battleIsChallenge?"ИСПЫТАНИЕ · "+ChallengeCore.get(activeChallengeId).title:
    battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
    battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
   const objective=$("#battleChallengeGoal");
   if(objective){
-   objective.hidden=!battleIsChallenge&&!battleIsOperation&&!battleIsSignal;
+   objective.hidden=!battleIsLoreTraining&&!battleIsChallenge&&!battleIsOperation&&!battleIsSignal;
    const def=battleIsChallenge?ChallengeCore.get(activeChallengeId):null;
    const priority=def?.kind==="tactical"?ENEMIES.find(e=>e.id===def.priorityId):null;
-   objective.textContent=battleIsSignal?signalProgress.active?.assault==="quiet"?
+   objective.textContent=battleIsLoreTraining?"Учебные противники. Без наград, энергии и влияния на хронику.":battleIsSignal?signalProgress.active?.assault==="quiet"?
      "Тихий штурм: первым обезвредь связного. Два стража одним действием — сигнал подавлен.":
      "Окружение: две волны, сигнал подавлен после победы, но скрытность потеряна.":
     battleIsOperation?"Перехватить подлинный пакет.":!def?"":def.kind==="tactical"?
@@ -1026,7 +1033,8 @@ function animateHQSelectionFx(button){
 document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click",()=>{
  if(b.matches?.("#home .hq-station")){animateHQSelectionFx(b);return;}
  resetHQSelectionFx();
- if(b.dataset.screen==="battle")openSquad("home");
+ if(b.dataset.screen==="home"&&battleIsLoreTraining&&$("#battle")?.classList.contains("active"))returnToLoreMap();
+ else if(b.dataset.screen==="battle")openSquad("home");
  else showScreen(b.dataset.screen);
 }));
 $("#startBattle").addEventListener("click",()=>openSquad("home"));
@@ -1512,6 +1520,7 @@ $("#campaignMissions").addEventListener("click",event=>{
  if(button&&$("#campaignMissions").contains(button))openCampaignMission(button.dataset.campaignMission);
 });
 $("#squadBack").addEventListener("click",()=>{
+ if(squadReturnScreen==="loreTraining"){returnToLoreMap();return;}
  if(squadReturnScreen==="storyDemo"&&storyDemoState&&typeof StoryDemoCore!=="undefined")
   StoryDemoCore.cancelBattle(storyDemoState);
  showScreen(squadReturnScreen);
@@ -2154,6 +2163,24 @@ function missionRewardLabel(id){
     '<p class="muted">За первую победу: новый тестовый герой — '+
     (ALLIES.find(h=>h.id===HeroCollectionCore.reward(id))?.name||"герой")+".</p>":"");
 }
+// LC-004: optional 3D tactical exercise with no chapter-one consequences.
+function openLoreTraining(){activeMissionId=null;openSquad("loreTraining");}
+function returnToLoreMap(){
+ showScreen("campaign");
+ showCampaignPath("lore");
+ if(typeof LoreCampaignUI!=="undefined")LoreCampaignUI.openStory("five-shadows");
+}
+function renderLoreTrainingResult(){
+ const won=state?.winner==="ally";
+ const title=$("#loreTrainingResultTitle"),body=$("#loreTrainingResultText");
+ if(title)title.textContent=won?"Учебная победа":"Учебное поражение";
+ if(body)body.textContent=(won?
+  "Отряд справился с учебными противниками.":"Отряд не справился; попробуйте другую тактику или состав.")+
+  " Это бой вне событий «Пяти теней»: без наград, энергии и изменений сюжета.";
+}
+$("#loreTrainingResultBack")?.addEventListener("click",returnToLoreMap);
+$("#loreTrainingResultRetry")?.addEventListener("click",openLoreTraining);
+$("#loreTrainingResultHome")?.addEventListener("click",()=>showScreen("home"));
 // CAMPAIGN-HUB-001: presentation-only navigation; mission IDs and saves are unchanged.
 let selectedCampaignPath=null;
 const CAMPAIGN_PATH_TITLES=Object.freeze({training:"Учебная кампания",lore:"Кампании лора",main:"Путь к престолу"});
@@ -2171,7 +2198,9 @@ function showCampaignPath(path){
  if(selectedCampaignPath==="lore"&&typeof LoreCampaignUI!=="undefined"&&
    typeof LoreCampaignData!=="undefined"&&typeof LoreCampaignCore!=="undefined"){
   const loreRoot=$("#loreCampaignRoot");
-  if(loreRoot&&LoreCampaignUI.mount(loreRoot,LoreCampaignData,LoreCampaignCore))LoreCampaignUI.open();
+  if(loreRoot&&LoreCampaignUI.mount(loreRoot,LoreCampaignData,LoreCampaignCore,{
+   onStartTraining:openLoreTraining
+  }))LoreCampaignUI.open();
  }
 }
 document.querySelectorAll("[data-campaign-path]").forEach(button=>button.addEventListener("click",()=>{
@@ -2502,6 +2531,9 @@ function syncBattleUI(){
   showScreen("challengeResult");
   return;
  }
+ if(battleIsLoreTraining&&!state.active&&!missionResultShown){
+  missionResultShown=true;showScreen("loreTrainingResult");return;
+ }
  if(battleIsStoryDemo&&!state.active&&!missionResultShown){
   missionResultShown=true;
   showScreen("storyDemo");
@@ -2720,7 +2752,7 @@ $("#basicAbilityBtn").addEventListener("click",()=>pressAbility("basic"));
 $("#specialAbilityBtn").addEventListener("click",()=>pressAbility("special"));
 $("#powerfulAbilityBtn")?.addEventListener("click",()=>pressAbility("powerful"));
 $("#battleRetryBtn").addEventListener("click",()=>{
- if(!state.active&&!isVisualTransition())openSquad(battleIsSignal?"signalOperations":battleIsOperation?"operations":battleIsChallenge?"challenges":"home");
+ if(!state.active&&!isVisualTransition())openSquad(battleIsLoreTraining?"loreTraining":battleIsSignal?"signalOperations":battleIsOperation?"operations":battleIsChallenge?"challenges":"home");
 });
 const autoBattleControl=$("#autoBattleBtn");
 if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.active)setAutoBattle(!autoBattle);});

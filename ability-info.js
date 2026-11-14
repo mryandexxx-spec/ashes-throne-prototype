@@ -37,6 +37,11 @@ const AbilityInfo=(()=>{
       rules.gardensAccuracyBonus+" п.п. точности. "+
       "«Просчитанный ход» накапливается до 4 зацепок; от 3 зацепок "+
       "особая или мощная атака врага сохраняется, но получает −20 п.п. точности, −20 п.п. эффективности наложения эффектов и −30% урона; расходует 3 зацепки.":
+    Number.isFinite(rules.protectAllyBelowHpPercent)?
+     "Когда здоровье другого союзника после получения урона падает до "+
+      rules.protectAllyBelowHpPercent+"% или ниже, Лиора даёт защиту от "+
+      rules.protectAllyGuardHits+" следующего удара (или ударов). Перезарядка: "+
+      rules.protectAllyCooldownOwnTurns+" собственных хода Лиоры. Тестовые значения.":
     Number.isFinite(rules.allyBonusVsDebuffedPercent)?
      "Пока герой жив, союзники наносят +"+rules.allyBonusVsDebuffedPercent+
       "% урона врагам с действующими негативными эффектами. Числа тестовые.":

@@ -214,6 +214,22 @@ const LoreCampaignAct2=(()=>{
   node.canonicalRef=source;node.canonClass="adaptation";
   graph.nodes.push(node);
  }
+ // [ПРЕДЛОЖЕНИЕ] Added only to the game adaptation, not the book.
+ const rescue=graph.nodes.find(n=>n.id==="five-shadows:fs-05");
+ rescue.requiredBattleId="fs05-cover-evacuation";
+ rescue.requiredBattleObjective={
+  kind:"hold-or-defeat",protectAllyId:"ren",allyActionsToHold:12
+ };
+ rescue.requiredBattleNarrative={
+  title:"Прикрыть отход",
+  intro:"Игровая адаптация: пока Лиора и Арт выводят двух людей с опасной полки, к подходу выходят трое вооружённых искателей входа. Сохраните Рена и либо победите нападающих, либо продержитесь 12 действий союзников до завершения эвакуации.",
+  lines:[
+   {speakerId:"Рен Терен",text:"— Лиора, веди их. Мы здесь задержим людей."},
+   {speakerId:"Нада",text:"— Рен, справа осыпь. Не отходи дальше."}
+  ],
+  victory:"Спасатели вывели двоих на широкую площадку. Проход свободен. Бой относится только к игровой адаптации.",
+  defeat:"Рен выбыл из боя либо отряд не удержал подход. Испытание можно повторить, не перепроходя сюжетные диалоги."
+ };
  pack.scenes.push(...scenes);
  if(!Data.catalogIsValid(graph)||!Scripts.valid(pack,graph))
   throw Error("LORE_ACT2_INVALID_GRAPH_OR_SCRIPT");

@@ -179,6 +179,22 @@ test("LC-003: denied storage permits explicitly volatile progress; failed commit
  failWrite=false;
  assert.equal(p.runtime.start("five-shadows:fs-01").ok,true);
 });
+test("LC-003: failure on a later beat leaves previous checkpoint and UI unchanged",()=>{
+ const real=memory();let writes=0;
+ const storage={
+  getItem:k=>real.getItem(k),
+  setItem(k,v){if(++writes===2)throw Error("QuotaExceeded");real.setItem(k,v);}
+ };
+ const p=setup(storage);
+ assert.equal(p.runtime.start("five-shadows:fs-01").ok,true);
+ const before=real.getItem(Save.KEY);
+ assert.equal(p.runtime.current().beatId,"intro");
+ assert.equal(p.runtime.next().code,"SAVE_WRITE_FAILED");
+ assert.equal(p.runtime.current().beatId,"intro");
+ assert.equal(real.getItem(Save.KEY),before);
+ assert.equal(p.runtime.next().ok,true,"player can retry after a transient storage error");
+ assert.equal(p.runtime.current().beatId,"notes");
+});
 test("LC-003: concurrent tab changes trigger save conflict, never overwrite another tab",()=>{
  const storage=memory();
  const tabA=setup(storage),tabB=setup(storage);

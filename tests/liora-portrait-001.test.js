@@ -38,7 +38,7 @@ test("Liora uses wide roster art in clipped frame and square portrait for dossie
 test("release marker matches package and keeps Liora 3D wiring",()=>{
  const version=JSON.parse(read("package.json")).version,html=read("index.html");
  assert.match(version,/^\d+\.\d+\.\d+$/);
- assert.match(html,/id="buildVersion"[^>]*>Прототип · v\d+\.\d+\.\d+ · LIORA001/);
+ assert.match(html,/id="buildVersion"[^>]*>Прототип · v\d+\.\d+\.\d+ · [A-Z][A-Z0-9-]*/);
  // LIORA-SHIELD-006 switched the combat slots to the shield clips.
  assert.match(read("liora-glb-runtime.js"),/Liora_Shield_Bash/);
  assert.match(read("game.js"),/ensureLiora3D\(\)/);

@@ -33,7 +33,8 @@ test("LC-002: separate lore scripts and responsive CSS are loaded before app run
  assert.match(html,/id="loreCampaignRoot"/);
  assert.match(html,/id="campaignLoreContent"/);
  assert.match(html,/Игровые миссии по мотивам историй мира пока не доступны/);
- assert.match(game,/LoreCampaignUI\.mount\(loreRoot,LoreCampaignData,LoreCampaignCore\)/);
+ assert.match(game,/LoreCampaignUI\.mount\(loreRoot,LoreCampaignData,LoreCampaignCore,/);
+ assert.match(game,/onStartTraining:openLoreTraining/);
  assert.match(game,/LoreCampaignUI\.back\(\)/);
  assert.match(css,/\.lore-map-layout/);
  assert.match(css,/@media \(orientation:landscape\) and \(max-height:540px\)/);

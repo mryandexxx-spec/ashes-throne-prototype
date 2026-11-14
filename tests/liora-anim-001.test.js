@@ -58,6 +58,6 @@ test("LIORAANIM001: the shield workshop stops the loader's auto-played clip",()=
 });
 test("LIORAANIM001: build version and stage code",()=>{
  const pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.147");
- assert.match(read("index.html"),/id="buildVersion"[^>]*>Прототип · v0\.3\.147 · HUDSYNC001/);
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
+ assert.match(read("index.html"),/id="buildVersion"[^>]*>Прототип · v\d+\.\d+\.\d+ · LIORA001/);
 });

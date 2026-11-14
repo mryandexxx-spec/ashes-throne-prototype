@@ -8,7 +8,7 @@ const ids=["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","l
 const heroes=ids.map(id=>({id,side:"ally",hp:130,atk:25,speed:120}));
 const fresh=()=>V.toRuntime(V.fresh(heroes,100),heroes);
 const rich=p=>{p.currency=1000000;for(const key of G.MATERIALS)p.materials[key]=100000;return p;};
-test("GEAR013 catalog: 13 tiers, six slots, class-specific offers and stat effects",()=>{
+test("HUDSYNC001 catalog: 13 tiers, six slots, class-specific offers and stat effects",()=>{
  assert.equal(G.MAX_TIER,13);
  assert.equal(G.ITEMS.length,336);
  for(let tier=1;tier<=13;tier++){
@@ -24,7 +24,7 @@ test("GEAR013 catalog: 13 tiers, six slots, class-specific offers and stat effec
   }
  }
 });
-test("GEAR013 all five classes complete G1-G13 without duplicate items or skipping",()=>{
+test("HUDSYNC001 all five classes complete G1-G13 without duplicate items or skipping",()=>{
  for(const hero of heroes.slice(0,5)){
   const p=rich(fresh());
   for(let tier=1;tier<=13;tier++){
@@ -49,7 +49,7 @@ test("GEAR013 all five classes complete G1-G13 without duplicate items or skippi
   assert.equal(V.toRuntime(saved,heroes).gear[hero.id].slots.filter(Boolean).length,6);
  }
 });
-test("GEAR013 individual stat bonuses affect Ren, Nada, Liora and survive v3 roundtrip",()=>{
+test("HUDSYNC001 individual stat bonuses affect Ren, Nada, Liora and survive v3 roundtrip",()=>{
  const p=rich(fresh());
  const baseline={};
  for(const id of ["ren","nada","liora"]){
@@ -79,7 +79,7 @@ test("GEAR013 individual stat bonuses affect Ren, Nada, Liora and survive v3 rou
  damaged.heroes.ren.gear.installedByTier["1"][0].itemId="g13-mage-weapon";
  assert.equal(V.validateActive(damaged,heroes),null,"invalid cross-tier item must be rejected");
 });
-test("GEAR013 G10+ history validates numerically and incomplete earlier ranks are rejected",()=>{
+test("HUDSYNC001 G10+ history validates numerically and incomplete earlier ranks are rejected",()=>{
  const p=rich(fresh());
  for(let tier=1;tier<=13;tier++){
   for(const slot of G.SLOTS)assert.equal(P.equipItem(p,"ren",P.itemOffer(p,"ren",slot.id)[0].id),true);
@@ -93,7 +93,7 @@ test("GEAR013 G10+ history validates numerically and incomplete earlier ranks ar
  assert.equal(V.validateActive(bad,heroes),null);
 });
 
-test("GEAR013 development resources refill a complete G10 tier without free purchases",()=>{
+test("HUDSYNC001 development resources refill a complete G10 tier without free purchases",()=>{
  const p=rich(fresh());
  for(let tier=1;tier<=9;tier++){
   for(const slot of G.SLOTS)assert.equal(P.equipItem(p,"ren",P.itemOffer(p,"ren",slot.id)[0].id),true);
@@ -107,7 +107,7 @@ test("GEAR013 development resources refill a complete G10 tier without free purc
  assert.equal(P.gearPromotionCost(p,"ren").to,11);
  assert.ok(P.canPromoteGear(p,"ren"));
 });
-test("GEAR013 demo hero stats receive real item defense and critical bonuses",()=>{
+test("HUDSYNC001 demo hero stats receive real item defense and critical bonuses",()=>{
  const p=rich(fresh()),base=heroes[0];
  const original=P.heroStats(p,base);
  for(const slot of G.SLOTS)assert.equal(P.equipItem(p,"kael",P.itemOffer(p,"kael",slot.id)[0].id),true);

@@ -1,0 +1,70 @@
+{
+ "ok": true,
+ "why": {
+  "auto": false,
+  "vt": false,
+  "pend": false,
+  "ready": true,
+  "active": true,
+  "actorSide": "ally",
+  "cur": 1
+ },
+ "msg": "Нада атакует: Вестник Конклава получает 14 урона.",
+ "evs": "ability,damage:14/pr0,effect",
+ "prBefore": 0,
+ "pr": 0,
+ "targetId": "ves",
+ "hpBefore": 45,
+ "real": 31,
+ "samples": [
+  {
+   "t": 2,
+   "hud": "HP 45/90",
+   "bar": "50%",
+   "actor": "idle@0.84",
+   "target": "idle"
+  },
+  {
+   "t": 344,
+   "hud": "HP 45/90",
+   "bar": "50%",
+   "actor": "basic@0.22",
+   "target": "idle"
+  },
+  {
+   "t": 681,
+   "hud": "HP 45/90",
+   "bar": "50%",
+   "actor": "basic@0.44",
+   "target": "idle"
+  },
+  {
+   "t": 855,
+   "hud": "HP 45/90",
+   "bar": "50%",
+   "actor": "basic@0.56",
+   "target": "idle"
+  },
+  {
+   "t": 1212,
+   "hud": "HP 45/90",
+   "bar": "50%",
+   "actor": "basic@0.78",
+   "target": "idle"
+  },
+  {
+   "t": 1594,
+   "hud": "HP 31/90",
+   "bar": "34.4444%",
+   "actor": "idle@0.32",
+   "target": "hit"
+  },
+  {
+   "t": 1939,
+   "hud": "HP 31/90",
+   "bar": "34.4444%",
+   "actor": "idle@0.43",
+   "target": "idle"
+  }
+ ]
+}

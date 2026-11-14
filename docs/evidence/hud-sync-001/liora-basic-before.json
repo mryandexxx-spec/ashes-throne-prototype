@@ -1,0 +1,91 @@
+{
+ "ok": true,
+ "why": {
+  "auto": false,
+  "vt": false,
+  "pend": false,
+  "ready": true,
+  "active": true,
+  "actorSide": "ally",
+  "cur": 2
+ },
+ "msg": "Лиора Вель атакует: Вестник Конклава получает 19 урона.",
+ "evs": "ability,damage:19/pr0",
+ "prBefore": 0,
+ "pr": 0,
+ "targetId": "ves",
+ "hpBefore": 90,
+ "real": 71,
+ "samples": [
+  {
+   "t": 4,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "idle@0.64",
+   "target": "idle"
+  },
+  {
+   "t": 321,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.07",
+   "target": "idle"
+  },
+  {
+   "t": 677,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.20",
+   "target": "idle"
+  },
+  {
+   "t": 1017,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.33",
+   "target": "idle"
+  },
+  {
+   "t": 1354,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.47",
+   "target": "idle"
+  },
+  {
+   "t": 1668,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.60",
+   "target": "idle"
+  },
+  {
+   "t": 1999,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.73",
+   "target": "idle"
+  },
+  {
+   "t": 2334,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.87",
+   "target": "idle"
+  },
+  {
+   "t": 2713,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "idle@0.44",
+   "target": "hit"
+  },
+  {
+   "t": 3055,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "idle@0.55",
+   "target": "idle"
+  }
+ ]
+}

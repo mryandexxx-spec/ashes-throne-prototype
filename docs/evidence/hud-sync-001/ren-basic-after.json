@@ -1,0 +1,112 @@
+{
+ "ok": true,
+ "why": {
+  "auto": false,
+  "vt": false,
+  "pend": false,
+  "ready": true,
+  "active": true,
+  "actorSide": "ally",
+  "cur": 0
+ },
+ "msg": "Рен Терен атакует: Вестник Конклава получает 26 урона.",
+ "evs": "ability,damage:26/pr0",
+ "prBefore": 0,
+ "pr": 0,
+ "targetId": "ves",
+ "hpBefore": 71,
+ "real": 45,
+ "samples": [
+  {
+   "t": 2,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "idle@0.22",
+   "target": "idle"
+  },
+  {
+   "t": 382,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.05",
+   "target": "idle"
+  },
+  {
+   "t": 722,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.10",
+   "target": "idle"
+  },
+  {
+   "t": 1081,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.15",
+   "target": "idle"
+  },
+  {
+   "t": 1423,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.20",
+   "target": "idle"
+  },
+  {
+   "t": 1773,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.25",
+   "target": "idle"
+  },
+  {
+   "t": 2119,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.30",
+   "target": "idle"
+  },
+  {
+   "t": 2460,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.35",
+   "target": "idle"
+  },
+  {
+   "t": 2649,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.38",
+   "target": "idle"
+  },
+  {
+   "t": 2822,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.40",
+   "target": "idle"
+  },
+  {
+   "t": 3153,
+   "hud": "HP 71/90",
+   "bar": "78.8889%",
+   "actor": "basic@0.45",
+   "target": "idle"
+  },
+  {
+   "t": 3474,
+   "hud": "HP 45/90",
+   "bar": "50%",
+   "actor": "basic@0.50",
+   "target": "hit"
+  },
+  {
+   "t": 3811,
+   "hud": "HP 45/90",
+   "bar": "50%",
+   "actor": "basic@0.55",
+   "target": "idle"
+  }
+ ]
+}

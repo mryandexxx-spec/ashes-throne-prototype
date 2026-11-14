@@ -77,7 +77,8 @@ function captureResolvedVisuals(beforeFighters){
   const team=fighters.filter(f=>f.side===side);
   team.forEach((f,i)=>{positions[f.id]={...formationPosition(side,i,team.length),choreographyReady:f.id!=="ren"||renGlbRuntime?.isReady===true};});
  }
- BattleAnimation.enqueue(state.events,positions);
+ // HUDSYNC001: the pre-action snapshot lets the HUD hold HP until each blow is drawn.
+ BattleAnimation.enqueue(state.events,positions,beforeFighters||null);
  const events=state.events||[];
  const waveChanged=events.some(event=>event.type==="wave-start");
  const ended=events.some(event=>event.type==="battle-end");
@@ -2367,11 +2368,13 @@ function renderTargetFighterHud(){
  side.textContent=target.side==="ally"?"ЦЕЛЬ: СОЮЗНИК":"ЦЕЛЬ: ПРОТИВНИК";
  level.textContent=Number.isInteger(target.level)&&target.level>0?"Ур. "+target.level:"";
  name.textContent=target.name;
- hp.textContent="HP "+Math.max(0,target.hp)+"/"+target.maxHp;
+ // HUDSYNC001: numbers follow the drawn blows, not the already-resolved CombatCore state.
+ const view=BattleAnimation.displayed(target);
+ hp.textContent="HP "+Math.max(0,view.hp)+"/"+target.maxHp;
  stats.textContent="АТК "+target.atk+" · СКР "+target.speed+
   (Number.isFinite(target.maxProtection)&&target.maxProtection>0?
-    " · PR "+target.protection+"/"+target.maxProtection:"");
- fill.style.width=Math.max(0,Math.min(100,target.hp/Math.max(1,target.maxHp)*100))+"%";
+    " · PR "+view.protection+"/"+target.maxProtection:"");
+ fill.style.width=Math.max(0,Math.min(100,view.hp/Math.max(1,target.maxHp)*100))+"%";
 }
 function syncBattleUI(){
  if(inspectionId)renderFighterInspection();
@@ -2561,12 +2564,14 @@ function renderArenaIndicators(){
  if(!overlay)return;
  const roster=presentationFighters();
  overlay.innerHTML=roster.filter(h=>h.hp>0||BattleAnimation.isDying(h.id)).map(h=>{
-  const health=Math.min(100,Math.max(0,h.hp/Math.max(1,h.maxHp)*100));
+  // HUDSYNC001: bars show the value as of the last drawn blow; CombatCore is ahead of them.
+  const view=BattleAnimation.displayed(h);
+  const health=Math.min(100,Math.max(0,view.hp/Math.max(1,h.maxHp)*100));
   const initiative=Math.min(100,Math.max(0,(h.meter||0)/10));
   const protectionPercent=Math.min(100,Math.max(0,
-    (h.protection||0)/Math.max(1,h.maxProtection||0)*100));
+    (view.protection||0)/Math.max(1,h.maxProtection||0)*100));
   const protectionLine=Number.isFinite(h.maxProtection)&&h.maxProtection>0?
-    `<div class="arena-protection" title="Protection ${h.protection} / ${h.maxProtection}"><span style="width:${protectionPercent}%"></span></div>`:"";
+    `<div class="arena-protection" title="Protection ${view.protection} / ${h.maxProtection}"><span style="width:${protectionPercent}%"></span></div>`:"";
   const effects=[h.guardHits>0?`<span class="arena-effect" title="Защита: ${h.guardHits} ударов">◆${h.guardHits}</span>`:"",
    h.weakenAttacks>0?`<span class="arena-effect debuff" title="Ослабление: ${h.weakenAttacks} атак">↓${h.weakenAttacks}</span>`:"",
    typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"slowed")?
@@ -2581,11 +2586,11 @@ function renderArenaIndicators(){
   // A group ability does not change focus on turn start: exactly one
   // primary enemy remains selected until the player taps a different one.
   const focused=!!actor&&!autoBattle&&h.hp>0&&(support?h.side==="ally":h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
-  return `<div class="arena-indicator ${h.side} ${active?"acting":""}" data-fighter-id="${h.id}" aria-label="${h.name}: здоровье ${Math.max(0,h.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
+  return `<div class="arena-indicator ${h.side} ${active?"acting":""}" data-fighter-id="${h.id}" aria-label="${h.name}: здоровье ${Math.max(0,view.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
    ${focused?`<div class="arena-focus-cursor ${support?"available":"locked"}" aria-hidden="true">▼</div>`:""}
    <div class="arena-indicator-name">${h.name}</div>
    ${protectionLine}
-   <div class="arena-health" title="HP ${Math.max(0,h.hp)} / ${h.maxHp}"><span style="width:${health}%"></span></div>
+   <div class="arena-health" title="HP ${Math.max(0,view.hp)} / ${h.maxHp}"><span style="width:${health}%"></span></div>
    <div class="arena-initiative" title="Инициатива ${Math.round(h.meter||0)} / 1000"><span style="width:${initiative}%"></span></div>
    ${effects?`<div class="arena-effects">${effects}</div>`:""}
   </div>`;
@@ -2817,7 +2822,7 @@ function renderFighterInspection(){
  $("#inspectSide").textContent=fighter.side==="ally"?"СОЮЗНИК":"ПРОТИВНИК";
  $("#inspectName").textContent=fighter.name;
  $("#inspectRole").textContent=fighter.role+(Number.isInteger(fighter.level)?" · Уровень "+fighter.level:"");
- $("#inspectStats").textContent="Здоровье: "+fighter.hp+" / "+fighter.maxHp+
+ $("#inspectStats").textContent="Здоровье: "+BattleAnimation.displayed(fighter).hp+" / "+fighter.maxHp+
   " · Атака: "+fighter.atk+
   (Number.isFinite(fighter.physicalAttack)?" · Физ. атака: "+fighter.physicalAttack:"")+
   (Number.isFinite(fighter.physicalDefense)?" · Физ. оборона: "+fighter.physicalDefense:"")+
@@ -2906,6 +2911,7 @@ function selectArenaTarget(pickedMesh){
  return picked;
 }
 // A single render callback and a single Engine/Scene for the lifetime of this prototype.
+let hudDisplayRevision=0;
 function renderBattleFrame(){
  if(!scene)return;
  // Animation speed is shared with the auto scheduler, never alters combat state.
@@ -2920,10 +2926,14 @@ function renderBattleFrame(){
  }
  // Death animation may end without a new combat action. Retire stale
  // indicators immediately instead of waiting for the following turn.
- if(Object.keys(indicatorNodes).some(id=>{
+ // HUDSYNC001: a blow or heal was just drawn — bars and the target panel may advance now.
+ const landed=BattleAnimation.displayRevision()!==hudDisplayRevision;
+ hudDisplayRevision=BattleAnimation.displayRevision();
+ if(landed||Object.keys(indicatorNodes).some(id=>{
   const fighter=presentationFighters().find(f=>f.id===id);
   return !fighter||fighter.hp<=0&&!BattleAnimation.isDying(id);
  }))renderArenaIndicators();
+ if(landed)renderTargetFighterHud();
  const roster=presentationFighters();
  const sides={ally:roster.filter(f=>f.side==="ally"),enemy:roster.filter(f=>f.side==="enemy")};
  for(const h of roster){

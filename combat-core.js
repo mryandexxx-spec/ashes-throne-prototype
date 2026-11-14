@@ -226,16 +226,28 @@ const CombatCore = (() => {
       throw Error("legacyStatusChecks must be a boolean");
     if(options.legacyStatusChecks===true&&options.statusChecks!==true)
       throw Error("legacyStatusChecks requires statusChecks");
-    // Opt-in tactical objective. No changes to legacy battles.
+    // Opt-in, mission-only tactical objectives. Legacy encounters are untouched.
     const tactic=options.tacticalObjective;
-    if(tactic!==undefined&&(
-       !tactic||typeof tactic!=="object"||Array.isArray(tactic)||
-       tactic.kind!=="hold-or-defeat"||
-       !Number.isSafeInteger(tactic.allyActionsToHold)||tactic.allyActionsToHold<2||
-       tactic.allyActionsToHold>40||typeof tactic.protectAllyId!=="string"||
-       !heroes.some(hero=>hero.side==="ally"&&hero.id===tactic.protectAllyId)||
-       futureWaves.length>0))
-      throw Error("invalid tactical objective");
+    if(tactic!==undefined){
+      const plain=tactic&&typeof tactic==="object"&&!Array.isArray(tactic);
+      const keys=plain?Object.keys(tactic):[];
+      const protectedAlly=plain&&typeof tactic.protectAllyId==="string"&&
+        heroes.some(hero=>hero.side==="ally"&&hero.id===tactic.protectAllyId);
+      const noWaves=futureWaves.length===0;
+      const valid=plain&&noWaves&&(
+        tactic.kind==="hold-or-defeat"&&protectedAlly&&
+        Number.isSafeInteger(tactic.allyActionsToHold)&&
+        tactic.allyActionsToHold>=2&&tactic.allyActionsToHold<=40&&
+        keys.every(k=>["kind","protectAllyId","allyActionsToHold"].includes(k))||
+        tactic.kind==="protect-and-defeat"&&protectedAlly&&
+        keys.every(k=>["kind","protectAllyId"].includes(k))||
+        tactic.kind==="priority-first"&&
+        typeof tactic.priorityEnemyId==="string"&&
+        heroes.some(hero=>hero.side==="enemy"&&hero.id===tactic.priorityEnemyId)&&
+        keys.every(k=>["kind","priorityEnemyId"].includes(k))
+      );
+      if(!valid)throw Error("invalid tactical objective");
+    }
     const seededRng=options.rngSeed===undefined?null:
       (typeof BattleRng!=="undefined"?BattleRng.create(options.rngSeed):
        (()=>{throw Error("BattleRng script is required for seeded battles");})());
@@ -261,10 +273,8 @@ const CombatCore = (() => {
       ...(options.statusChecks===true?{statusChecks:true}:{}),
       ...(options.legacyStatusChecks===true?{legacyStatusChecks:true}:{}),
       leaderId,
-      ...(tactic===undefined?{}:{tacticalObjective:Object.freeze({
-        kind:tactic.kind,protectAllyId:tactic.protectAllyId,
-        allyActionsToHold:tactic.allyActionsToHold
-      })}),
+      ...(tactic===undefined?{}:{tacticalObjective:Object.freeze({...tactic})}),
+      ...(tactic?.kind==="priority-first"?{priorityCleared:false}:{}),
       tacticalOutcome:null,
       wave: 1,
       totalWaves: 1 + futureWaves.length,
@@ -372,26 +382,47 @@ const CombatCore = (() => {
 
   function finishIfOver(battle) {
     syncLeaderProtection(battle);
-    // Protecting an ally takes precedence over either victory route.
+    // Wrong first kill is an immediate failure, not a victory at 0 enemy HP.
     const tactic=battle.tacticalObjective;
-    if(tactic){
+    if(tactic?.kind==="priority-first"&&!battle.priorityCleared){
+      const priority=battle.fighters.find(f=>f.id===tactic.priorityEnemyId&&f.side==="enemy");
+      const otherFallen=battle.fighters.some(f=>f.side==="enemy"&&
+        f.id!==tactic.priorityEnemyId&&f.hp<=0);
+      if(!priority||otherFallen){
+        battle.active=false;battle.winner="enemy";
+        battle.currentActor=-1;battle.selectedEnemy=-1;battle.selectedAlly=-1;
+        battle.tacticalOutcome="wrong-order";
+        battle.message="Поражение: отмеченного противника нужно победить первым.";
+        emit(battle,"battle-end",{winner:"enemy",reason:"wrong-order"});
+        return true;
+      }
+      if(priority.hp<=0){
+        battle.priorityCleared=true;
+        emit(battle,"priority-cleared",{enemyId:tactic.priorityEnemyId});
+      }
+    }
+    // A protected ally's defeat overrides either route to victory.
+    if(tactic?.protectAllyId){
       const protectedHero=battle.fighters.find(h=>h.id===tactic.protectAllyId&&h.side==="ally");
       if(!protectedHero||protectedHero.hp<=0){
         battle.active=false;battle.winner="enemy";
         battle.currentActor=-1;battle.selectedEnemy=-1;battle.selectedAlly=-1;
         battle.tacticalOutcome="protected-fallen";
-        battle.message="Поражение: проводник выведен из строя. Эвакуация прервана.";
+        battle.message=tactic.kind==="hold-or-defeat"?
+          "Поражение: проводник выведен из строя. Эвакуация прервана.":
+          "Поражение: защищаемый союзник выведен из строя.";
         emit(battle,"battle-end",{winner:"enemy",reason:"protected-fallen"});
         return true;
       }
-      if(battle.allyActions>=tactic.allyActionsToHold&&firstLivingAlly(battle.fighters)>=0){
-        battle.active=false;battle.winner="ally";
-        battle.currentActor=-1;battle.selectedEnemy=-1;battle.selectedAlly=-1;
-        battle.tacticalOutcome="held";
-        battle.message="Эвакуация завершена. Проход удержан.";
-        emit(battle,"battle-end",{winner:"ally",reason:"held"});
-        return true;
-      }
+    }
+    if(tactic?.kind==="hold-or-defeat"&&
+       battle.allyActions>=tactic.allyActionsToHold&&firstLivingAlly(battle.fighters)>=0){
+      battle.active=false;battle.winner="ally";
+      battle.currentActor=-1;battle.selectedEnemy=-1;battle.selectedAlly=-1;
+      battle.tacticalOutcome="held";
+      battle.message="Эвакуация завершена. Проход удержан.";
+      emit(battle,"battle-end",{winner:"ally",reason:"held"});
+      return true;
     }
     if (firstLivingEnemy(battle.fighters) < 0) {
       // A wave is not a mission victory. Keep surviving allies (HP, initiative,
@@ -418,10 +449,13 @@ const CombatCore = (() => {
       battle.currentActor = -1;
       battle.selectedEnemy = -1;
       battle.selectedAlly = -1;
-      battle.tacticalOutcome=tactic?"defeated-attackers":null;
-      battle.message = tactic?"Нападавшие оттеснены. Путь свободен.":"Победа! Отряд одержал верх.";
+      battle.tacticalOutcome=tactic?.kind==="hold-or-defeat"?"defeated-attackers":
+        tactic?.kind==="priority-first"?"priority-victory":
+        tactic?.kind==="protect-and-defeat"?"protected-victory":null;
+      battle.message = tactic?.kind==="hold-or-defeat"?"Нападавшие оттеснены. Путь свободен.":
+        tactic?"Задача выполнена. Все противники побеждены.":"Победа! Отряд одержал верх.";
       emit(battle, "battle-end", {winner: "ally",
-       ...(tactic?{reason:"defeated-attackers"}:{})});
+       ...(battle.tacticalOutcome?{reason:battle.tacticalOutcome}:{})});
       return true;
     }
     if (firstLivingAlly(battle.fighters) < 0) {

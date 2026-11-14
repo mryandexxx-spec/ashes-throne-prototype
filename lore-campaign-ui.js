@@ -116,6 +116,65 @@ const LoreCampaignUI=(()=>{
   render();
   return true;
  }
+ function actInScene(action,choiceId){
+  if(!sceneRuntime)return false;
+  const result=action==="next"?sceneRuntime.next():
+   action==="choose"?sceneRuntime.choose(choiceId):
+   action==="skip"?sceneRuntime.skipSeen():
+   action==="finish"?sceneRuntime.finish():{ok:false,code:"UNKNOWN_ACTION"};
+  if(!result.ok){notice=actionMessage(result.code);render();return false;}
+  notice="";syncProgress();
+  if(action==="finish")view="result";
+  render();return true;
+ }
+ function startScene(){
+  const node=data.getNode(nodeId,catalog);
+  if(!node||node.storyId!==storyId||nodeStatus(node).code==="locked"||
+    !sceneRuntime?.hasContent(nodeId))return false;
+  const result=sceneRuntime.start(nodeId);
+  if(!result.ok){notice=actionMessage(result.code);render();return false;}
+  notice="";syncProgress();view="scene";render();return true;
+ }
+ function renderScene(){
+  const current=sceneRuntime?.current();
+  if(!current)return '<section class="lore-scene"><p>Сцена недоступна.</p>'+
+    '<button type="button" data-lore-action="leave-scene" class="ghost">← К карте</button></section>';
+  const node=data.getNode(current.nodeId,catalog);
+  const choiceButtons=current.choices.map(choice=>
+   '<button type="button" class="lore-scene-choice" data-lore-action="scene-choose"'+
+   ' data-lore-choice="'+escapeHtml(choice.id)+'">'+escapeHtml(choice.label)+'</button>').join("");
+  const actions=choiceButtons||(current.canContinue?
+   '<button type="button" class="primary" data-lore-action="scene-next">Продолжить</button>':
+   current.canFinish?
+    '<button type="button" class="primary" data-lore-action="scene-finish">Завершить узел</button>':'');
+  const objectives=current.objectives.length?
+   '<div class="lore-scene-objectives"><strong>ЗАДАЧИ СЦЕНЫ</strong>'+
+    current.objectives.map(o=>'<div class="'+(o.done?'is-done':'')+'">'+
+      (o.done?'✓ ':'◌ ')+escapeHtml(o.hint)+(o.required?'':' · дополнительно')+'</div>').join("")+'</div>':"";
+  return '<section class="lore-scene" aria-label="Сюжетная сцена">'+
+   '<div class="lore-scene-header"><button type="button" class="ghost" data-lore-action="leave-scene">← К карте</button>'+
+    '<div><small>ЛОРНАЯ ИСТОРИЯ · '+(current.mode==="replay"?"ПОВТОР":"ОСНОВНОЙ ПРОХОД")+'</small>'+
+    '<h3>'+escapeHtml(node.title)+'</h3></div></div>'+
+   '<article class="lore-scene-card" aria-live="polite">'+
+    (current.speakerId?'<div class="lore-scene-speaker">'+escapeHtml(current.speakerId)+'</div>':'')+
+    '<p class="lore-scene-text">'+escapeHtml(current.text)+'</p>'+
+    '<div class="lore-scene-choices">'+actions+'</div>'+
+    '<button type="button" class="lore-scene-skip ghost" data-lore-action="scene-skip"'+
+      (!current.canContinue||!current.skipSafe?' disabled':'')+
+      '>Пропустить просмотренное</button></article>'+
+   objectives+
+   '<p class="lore-scene-storage" role="status">'+escapeHtml(saveMessage())+'</p>'+
+   (notice?'<p class="lore-scene-notice" role="alert">'+escapeHtml(notice)+'</p>':'')+
+   '</section>';
+ }
+ function renderResult(){
+  const title=data.getNode(nodeId,catalog)?.title||"Узел";
+  return '<section class="lore-scene lore-scene-result"><div class="lore-scene-card">'+
+   '<span class="lore-detail-eyebrow">РЕЗУЛЬТАТ · БЕЗ НАГРАД</span>'+
+   '<h3>'+escapeHtml(title)+'</h3><p>Просмотр сцены завершён. '+
+   'Первичные решения сохраняются только в основном прохождении.</p>'+
+   '<button type="button" class="primary" data-lore-action="leave-result">Вернуться к карте</button></div></section>';
+ }
  function onClick(event){
   const button=event.target.closest?.("button[data-lore-action]");
   if(!button||!root.contains(button))return;
@@ -124,9 +183,15 @@ const LoreCampaignUI=(()=>{
   else if(action==="choose-node")selectNode(button.dataset.loreNode);
   else if(action==="choose-layer")changeLayer(button.dataset.loreLayer);
   else if(action==="back")back();
+  else if(action==="start-node")startScene();
+  else if(action==="leave-scene"||action==="leave-result")back();
+  else if(action==="scene-next")actInScene("next");
+  else if(action==="scene-choose")actInScene("choose",button.dataset.loreChoice);
+  else if(action==="scene-skip")actInScene("skip");
+  else if(action==="scene-finish")actInScene("finish");
  }
  function onKeydown(event){
-  if(event.key==="Escape"&&view==="map"){
+  if(event.key==="Escape"&&["map","scene","result"].includes(view)){
    event.preventDefault();event.stopPropagation();back();
   }
  }
@@ -231,12 +296,12 @@ const LoreCampaignUI=(()=>{
  }
  function render(){
   if(!root)return;
-  root.innerHTML=view==="map"?renderMap():renderStories();
+  root.innerHTML=view==="scene"?renderScene():view==="result"?renderResult():view==="map"?renderMap():renderStories();
  }
  function snapshot(){
   return Object.freeze({view,storyId,nodeId,layerId,hasRoot:!!root});
  }
  return Object.freeze({mount,open,close,back,openStory,changeLayer,selectNode,
-  render,nodeStatus,snapshot});
+  render,nodeStatus,snapshot,startScene,actInScene,saveMessage});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=LoreCampaignUI;

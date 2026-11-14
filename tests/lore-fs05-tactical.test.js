@@ -4,8 +4,8 @@ const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const root=path.join(__dirname,".."),read=n=>fs.readFileSync(path.join(root,n),"utf8");
 const Combat=vm.runInNewContext(
  ["initiative-model.js","ability-data.js","combat-core.js"].map(read).join("\n")+"\nCombatCore");
-const ally=(id,hp=700,atk=5,speed=240)=>({id,name:id,side:"ally",hp,atk,speed});
-const foe=(hp=1000,atk=1,speed=75)=>({id:"foe",name:"Противник",side:"enemy",hp,atk,speed});
+const ally=(id,hp=700,atk=5,speed=240)=>({id,name:id,side:"ally",hp,atk,physicalAttack:atk,magicAttack:atk,speed});
+const foe=(hp=1000,atk=1,speed=75)=>({id:"foe",name:"Противник",side:"enemy",hp,atk,physicalAttack:atk,magicAttack:atk,speed});
 const objective=()=>({kind:"hold-or-defeat",protectAllyId:"ren",allyActionsToHold:8});
 
 test("LORETACTIC001: validate objective contract before combat",()=>{

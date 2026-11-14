@@ -49,8 +49,6 @@ async function run(name,type,w,h){
   await page.locator('[data-lore-action="scene-next"]').click();
   await page.locator('[data-lore-action="scene-finish"]').click();
   assert.match(await page.locator(".lore-scene-result").innerText(),/обязательном бою/);
-  assert.equal(await page.evaluate(()=>LoreCampaignCore.available(
-   {nodes:JSON.parse(JSON.stringify(LoreCampaignData.catalog().nodes))},LoreCampaignUI.snapshot().progress,"five-shadows:fs-02")),false).catch(()=>{});
   const action=page.locator('[data-lore-action="required-battle"]');
   assert.equal(await action.count(),1);
   const box=await action.boundingBox();

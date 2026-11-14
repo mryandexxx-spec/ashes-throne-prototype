@@ -861,6 +861,11 @@ function renderStoryDemo(){
  $("#storyDemoAgain").hidden=view.kind!=="defeat"&&view.kind!=="ending";
 }
 function showScreen(id){
+ // A non-lore navigation can occur while the visual-novel overlay owns the
+ // viewport. Dispose that transient view before switching screens, so the
+ // body scroll lock never leaks into the roster or squad.
+ if(id!=="campaign"&&typeof LoreCampaignUI!=="undefined"&&
+    document.body?.classList?.contains("lore-scene-open"))LoreCampaignUI.close();
  if(typeof HeroCardUI!=="undefined")HeroCardUI.leave(id);
  // Re-entering from home opens the two-mode chooser, not a stale mission list.
  if(id==="challenges"&&$("#home")?.classList.contains("active"))selectedChallengeKind=null;

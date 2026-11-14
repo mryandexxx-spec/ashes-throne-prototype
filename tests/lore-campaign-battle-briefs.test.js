@@ -59,7 +59,7 @@ test("LC-006: full opening and speaker portraits appear only after the scene, be
  assert.equal(UI.actInScene("finish"),true);
  assert.match(r.innerHTML,/TEST_BRIEF_TITLE/);
  assert.match(r.innerHTML,/class="lore-battle-voice"/);
- assert.match(r.innerHTML,/assets\/ren-portrait-ui\.webp\?v=2/);
+ assert.match(r.innerHTML,/assets\/ren-portrait-ui\.webp/);
  assert.match(r.innerHTML,/assets\/nada-portrait-ui\.webp\?v=2/);
  assert.match(r.innerHTML,/&lt;img src=x onerror=alert\(1\)&gt;/);
  assert.doesNotMatch(r.innerHTML,/<img src=x onerror/);

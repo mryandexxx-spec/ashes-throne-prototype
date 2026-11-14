@@ -60,3 +60,19 @@ test("LOREPLAY001: scenes require genuine gate victories; progress survives relo
  assert.equal(loaded.start(a).ok,true,"replay allowed");
  assert.equal(loaded.current().mode,"replay");
 });
+
+test("LOREPLAY001: real map exposes first scene and keeps optional practice separate",()=>{
+ const UI=require("../lore-campaign-ui.js");
+ const root={innerHTML:"",addEventListener(){},removeEventListener(){},contains(){return true;},querySelector(){return null;}};
+ assert.equal(UI.mount(root,Pilot.data,Core,{pack:Pilot.pack,storage:storage(),
+  onStartTraining:()=>{},onStartRequiredBattle:()=>true}),true);
+ assert.equal(UI.openStory("five-shadows"),true);
+ assert.match(root.innerHTML,/data-lore-action="start-node"/);
+ assert.match(root.innerHTML,/Начать сцену/);
+ assert.match(root.innerHTML,/data-lore-action="training-battle"/);
+ assert.equal(UI.startScene(),true);
+ assert.equal(UI.snapshot().view,"scene");
+ assert.match(root.innerHTML,/Третий день пути/);
+ assert.equal(UI.back(),true);
+ assert.equal(UI.snapshot().view,"map");
+});

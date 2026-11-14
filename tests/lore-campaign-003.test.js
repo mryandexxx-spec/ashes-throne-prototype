@@ -266,7 +266,7 @@ test("LC-003: build, cache and legacy campaign boundaries remain independent",()
  assert.match(html,/id="buildVersion">Прототип · v0\.3\.153 · LOREBRIDGE001/);
  for(const f of ["lore-campaign-scenes.js","lore-campaign-scene-core.js",
   "lore-campaign-scene-save.js","lore-campaign-scene-runtime.js"]){
-  assert.match(html,new RegExp('src="'+f.replace(/\./g,"\\.")+'\\?v=0\\.3\\.152"'));
+  assert.match(html,new RegExp('src="'+f.replace(/\./g,"\\.")+'\\?v=0\\.3\\.153"'));
   assert.ok(pkg.scripts.test.includes("node --check "+f));
  }
  assert.ok(html.indexOf("lore-campaign-scene-runtime.js")<html.indexOf("lore-campaign-ui.js"));

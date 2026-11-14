@@ -101,6 +101,8 @@ async function run(name,browserType,width,height){
    objective:state.tacticalObjective,
    protectedHp:state.fighters.find(x=>x.id==="ren")?.hp,
    enemyCount:state.fighters.filter(x=>x.side==="enemy").length,
+   hunter:(()=>{const h=state.fighters.find(x=>x.id==="shade");return {
+     name:h?.name,focus:h?.assaultFocus,hp:h?.hp,atk:h?.atk};})(),
    goal:document.querySelector("#tacticalGoalCard").textContent,
    goalBounds:(()=>{const r=document.querySelector("#tacticalGoalCard").getBoundingClientRect();return {top:r.top,left:r.left,bottom:r.bottom,right:r.right}})(),
    goalStyle:getComputedStyle(document.querySelector("#tacticalGoalCard")).backgroundColor,
@@ -112,6 +114,7 @@ async function run(name,browserType,width,height){
   assert.equal(setup.objective.protectAllyId,"ren");
   assert.equal(setup.objective.allyActionsToHold,12);
   assert.equal(setup.enemyCount,3);assert.equal(setup.gpu,true);
+  assert.deepEqual(setup.hunter,{name:"Преследователь",focus:true,hp:225,atk:60});
   assert.match(setup.goal,/РЕНА/);
   assert.equal(setup.topGoalHidden,true);
   assert.equal(setup.autoHidden,false,"autoplay remains available to test the tactical mission");

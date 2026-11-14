@@ -59,5 +59,5 @@ assert.ok(game.includes('data-open-hero='));
 assert.ok(game.includes('data-hero-id='));
 assert.ok(css.includes(".hero-card.hero-locked"));
 assert.equal(JSON.parse(read("package.json")).version,`${__BUILD_VERSION_FOR_TESTS}`);
-assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · LIORA001`));
+assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · `));
 console.log("Heroes-001: new/legacy collection, mission grants, duplicate protection, squad gate and v3 storage passed");

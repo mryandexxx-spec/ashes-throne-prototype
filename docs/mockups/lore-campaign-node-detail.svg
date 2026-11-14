@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Лорная кампания — карточка выбранного узла"><title>Лорная кампания — карточка выбранного узла</title><desc>Эскиз интерфейса Пепельного престола, не реализованный игровой экран.</desc><defs>
+ <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#201d20"/><stop offset=".6" stop-color="#0d0f17"/><stop offset="1" stop-color="#2d231d"/></linearGradient>
+ <linearGradient id="gold" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f3d18a"/><stop offset="1" stop-color="#a67a43"/></linearGradient>
+ <linearGradient id="panel" x1="0" x2="1"><stop stop-color="#232124"/><stop offset="1" stop-color="#15181f"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#976b37" stop-opacity=".2"/><stop offset="1" stop-color="#976b37" stop-opacity="0"/></radialGradient>
+ <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M44 0H0V44" fill="none" stroke="#bd925b" stroke-opacity=".07"/></pattern>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="13" flood-color="#000000" flood-opacity=".55"/></filter>
+ </defs>
+ <rect width="1280" height="720" fill="url(#bg)"/><rect width="1280" height="720" fill="url(#grid)"/>
+ <g font-family="Arial, Helvetica, sans-serif">
+ <rect width="1280" height="86" fill="#0b0d12" fill-opacity=".85"/>
+ <text x="40" y="38" fill="#e5bd79" font-size="18" font-weight="700" >ПЕПЕЛЬНЫЙ ПРЕСТОЛ</text>
+ <text x="40" y="64" fill="#c6b199" font-size="13" font-weight="400" >ЛОРНЫЕ ИСТОРИИ / ПЯТЬ ТЕНЕЙ / ПОДРОБНОСТИ УЗЛА</text>
+ <rect x="33" y="105" width="520" height="558" rx="14" fill="#151820" stroke="#6a5338" />
+ <circle cx="266" cy="335" r="244" fill="url(#glow)"/>
+ <path d="M 64 545 Q 196 482 267 386 T 497 212" stroke="#5f4a2c" stroke-width="9" fill="none" opacity=".65"/>
+ <path d="M 64 545 Q 196 482 267 386 T 497 212" stroke="#d4a966" stroke-width="3" stroke-dasharray="8 9" fill="none"/>
+ <circle cx="95" cy="531" r="25" fill="#3a5242" stroke="#dfbc7a" stroke-width="3"/><text x="95" y="539" fill="#f7ead4" font-size="22" font-weight="700" text-anchor="middle">1</text>
+ <circle cx="273" cy="385" r="34" fill="#785632" stroke="#f1ca84" stroke-width="3"/><text x="273" y="395" fill="#fff1d1" font-size="27" font-weight="700" text-anchor="middle">2</text>
+ <circle cx="494" cy="216" r="25" fill="#24272c" stroke="#847a67" stroke-width="3"/><text x="494" y="224" fill="#c7c1b4" font-size="22" font-weight="700" text-anchor="middle">3</text>
+ <text x="64" y="144" fill="#d8b37b" font-size="14" font-weight="700" >КАРТА / ОБЗОР</text>
+ <text x="72" y="610" fill="#e8d4b4" font-size="18" font-weight="700" >Выбран FS-02</text>
+ <rect x="584" y="105" width="662" height="558" rx="14" fill="url(#panel)" stroke="#a78348" filter="url(#shadow)"/>
+ <text x="619" y="153" fill="#e2b873" font-size="16" font-weight="700" >ГЛАВА I  ·  УЗЕЛ FS-02</text>
+ <text x="619" y="201" fill="#f7ecd9" font-size="32" font-weight="700" >Осмотр записей</text>
+ <rect x="619" y="223" width="136" height="30" rx="15" fill="#705530" stroke="#d0a870" /><text x="687" y="244" fill="#fff2d5" font-size="13" font-weight="700" text-anchor="middle">ДОСТУПНО</text>
+ <rect x="765" y="223" width="165" height="30" rx="15" fill="#2e292a" stroke="#544a41" /><text x="847.5" y="244" fill="#d0bb9c" font-size="13" font-weight="700" text-anchor="middle">ИССЛЕДОВАНИЕ</text>
+ <path d="M619 274 L1215 274" stroke="#9f8058" opacity=".55" stroke-width="1" fill="none"/>
+ <text x="619" y="316" fill="#d4b589" font-size="14" font-weight="700" >ЦЕЛЬ УЗЛА</text>
+ <text x="619" y="345" fill="#efe3d3" font-size="18" font-weight="400" >Сопоставить два источника и отметить</text>
+ <text x="619" y="373" fill="#efe3d3" font-size="18" font-weight="400" >заметное расхождение.</text>
+ <text x="619" y="424" fill="#d4b589" font-size="14" font-weight="700" >ДОСТУП</text>
+ <text x="619" y="453" fill="#d2c4b0" font-size="16" font-weight="400" >FS-01 пройден. Повторить сюжет можно позже.</text>
+ <text x="619" y="503" fill="#d4b589" font-size="14" font-weight="700" >ПОСЛЕ ПРОХОЖДЕНИЯ</text>
+ <text x="619" y="531" fill="#d2c4b0" font-size="16" font-weight="400" >История останется доступна для повтора.</text>
+ <rect x="619" y="576" width="368" height="50" rx="8" fill="url(#gold)" stroke="#f0cb8a" /><text x="803" y="608" fill="#251e16" font-size="17" font-weight="700" text-anchor="middle">НАЧАТЬ</text>
+ <rect x="999" y="576" width="211" height="50" rx="8" fill="#26242a" stroke="#7d6550" /><text x="1104.5" y="608" fill="#ead8c0" font-size="17" font-weight="700" text-anchor="middle">К КАРТЕ</text>
+ <text x="40" y="702" fill="#baa58a" font-size="12" font-weight="400" >ЭСКИЗ · КАРТОЧКА УЗЛА · ФОРМУЛИРОВКИ ЗАДАЧ ЧЕРНОВЫЕ · НЕ РЕАЛИЗОВАНО</text>
+</g></svg>

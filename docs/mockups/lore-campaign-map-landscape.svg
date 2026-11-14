@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Лорная кампания — карта узлов для landscape"><title>Лорная кампания — карта узлов для landscape</title><desc>Эскиз интерфейса Пепельного престола, не реализованный игровой экран.</desc><defs>
+ <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#201d20"/><stop offset=".6" stop-color="#0d0f17"/><stop offset="1" stop-color="#2d231d"/></linearGradient>
+ <linearGradient id="gold" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f3d18a"/><stop offset="1" stop-color="#a67a43"/></linearGradient>
+ <linearGradient id="panel" x1="0" x2="1"><stop stop-color="#232124"/><stop offset="1" stop-color="#15181f"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#976b37" stop-opacity=".2"/><stop offset="1" stop-color="#976b37" stop-opacity="0"/></radialGradient>
+ <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M44 0H0V44" fill="none" stroke="#bd925b" stroke-opacity=".07"/></pattern>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="13" flood-color="#000000" flood-opacity=".55"/></filter>
+ </defs>
+ <rect width="1280" height="720" fill="url(#bg)"/><rect width="1280" height="720" fill="url(#grid)"/>
+ <g font-family="Arial, Helvetica, sans-serif">
+ <rect x="0" y="0" width="1280" height="93" fill="#0a0c11" fill-opacity=".83"/>
+ <path d="M0 93 L1280 93" stroke="#a78250" opacity=".6" stroke-width="1" fill="none"/>
+ <text x="36" y="35" fill="#f0c879" font-size="18" font-weight="700" >ПЕПЕЛЬНЫЙ ПРЕСТОЛ</text>
+ <text x="36" y="63" fill="#c1a98a" font-size="14" font-weight="500" >КАМПАНИИ / ЛОРНЫЕ ИСТОРИИ / ПЯТЬ ТЕНЕЙ</text>
+ <rect x="723" y="27" width="119" height="30" rx="15" fill="#705530" stroke="#d0a870" /><text x="782.5" y="48" fill="#fff2d5" font-size="13" font-weight="700" text-anchor="middle">Глава I</text>
+ <rect x="852" y="27" width="93" height="30" rx="15" fill="#705530" stroke="#d0a870" /><text x="898.5" y="48" fill="#fff2d5" font-size="13" font-weight="700" text-anchor="middle">Город</text>
+ <rect x="952" y="27" width="93" height="30" rx="15" fill="#2e292a" stroke="#544a41" /><text x="998.5" y="48" fill="#d0bb9c" font-size="13" font-weight="700" text-anchor="middle">Путь</text>
+ <rect x="1052" y="27" width="145" height="30" rx="15" fill="#2e292a" stroke="#544a41" /><text x="1124.5" y="48" fill="#d0bb9c" font-size="13" font-weight="700" text-anchor="middle">Сооружение</text>
+ <rect x="24" y="117" width="834" height="562" rx="13" fill="#18171b" stroke="#806447" filter="url(#shadow)"/>
+ <rect x="26" y="119" width="830" height="558" rx="12" fill="url(#grid)"/>
+ <circle cx="434" cy="372" r="260" fill="url(#glow)"/>
+ 
+ <path d="M 244 135 C 354 180 336 273 442 307 C 512 328 478 405 576 445 C 653 472 603 579 792 661" fill="none" stroke="#090c11" stroke-width="138" stroke-opacity=".8"/>
+ <path d="M 244 135 C 354 180 336 273 442 307 C 512 328 478 405 576 445 C 653 472 603 579 792 661" fill="none" stroke="#836444" stroke-width="2.5" stroke-opacity=".45" stroke-dasharray="5 12"/>
+ <path d="M232 133 C353 179 327 278 418 312 C487 346 465 412 559 456 C629 490 598 581 780 659" fill="none" stroke="#7b6756" stroke-width="1" stroke-opacity=".3"/>
+ <path d="M256 134 C384 181 345 264 466 297 C538 328 493 405 600 434 C680 461 625 581 816 655" fill="none" stroke="#7b6756" stroke-width="1" stroke-opacity=".3"/>
+ <text x="50" y="153" fill="#f4ebd8" font-size="17" font-weight="700" >ХРОНИКА ПЯТИ ТЕНЕЙ</text>
+ <text x="50" y="175" fill="#d2bb9b" font-size="13" font-weight="400" >Схематическая карта · расположение условное</text>
+ <text x="64" y="221" fill="#ad926a" font-size="12" font-weight="700" >ГОРОД</text>
+ <text x="622" y="201" fill="#a68c6b" font-size="12" font-weight="700" >ОБРАТНЫЙ СКЛОН</text>
+ <path d="M188 520 Q285 486 384 464 T564 372 T719 283" fill="none" stroke="#221c17" stroke-width="13" stroke-linecap="round"/>
+ <path d="M188 520 Q285 486 384 464 T564 372 T719 283" fill="none" stroke="#cc9c5c" stroke-width="3.5" stroke-dasharray="10 11" stroke-linecap="round"/>
+ <circle cx="188" cy="520" r="26" fill="#273629" stroke="#e8c77f" stroke-width="3"/><circle cx="188" cy="520" r="18" fill="#45634b" stroke="#ead09d" stroke-width="1.5"/>
+ <text x="188" y="527" fill="#fff2da" font-size="23" font-weight="700" text-anchor="middle">1</text>
+ <text x="116" y="573" fill="#d7d0ba" font-size="15" font-weight="700" >FS-01 · Пройдено</text>
+ <circle cx="564" cy="372" r="32" fill="#574228" stroke="#f4cb7f" stroke-width="4"/><circle cx="564" cy="372" r="22" fill="#846039" stroke="#ffdf9a" stroke-width="1"/>
+ <text x="564" y="381" fill="#ffefd3" font-size="25" font-weight="700" text-anchor="middle">2</text>
+ <text x="505" y="425" fill="#f3d495" font-size="16" font-weight="700" >FS-02 · Доступно</text>
+ <circle cx="719" cy="283" r="25" fill="#25262b" stroke="#79746c" stroke-width="3"/>
+ <text x="719" y="291" fill="#b7aea0" font-size="23" font-weight="700" text-anchor="middle">3</text>
+ <text x="686" y="331" fill="#aca393" font-size="14" font-weight="700" >FS-03 · Закрыто</text>
+ <path d="M383 464 Q408 543 476 575" stroke="#89714f" stroke-width="2" stroke-dasharray="6 9" fill="none"/>
+ <circle cx="476" cy="575" r="15" fill="#1d2027" stroke="#675a4a" stroke-width="2"/>
+ <text x="476" y="581" fill="#b8a484" font-size="16" font-weight="700" text-anchor="middle">?</text>
+ <text x="378" y="619" fill="#a99a84" font-size="13" font-weight="400" >Боковой путь · идея</text>
+ <rect x="42" y="636" width="786" height="28" rx="6" fill="#111317" stroke="#443a33" />
+ <text x="58" y="655" fill="#bba789" font-size="12" font-weight="700" >ПОЛЬЗОВАТЕЛЬСКИЕ СОСТОЯНИЯ:  ПРОЙДЕНО  /  ДОСТУПНО  /  ЗАКРЫТО</text>
+ <rect x="876" y="117" width="378" height="562" rx="12" fill="url(#panel)" stroke="#a78348" filter="url(#shadow)"/>
+ <text x="900" y="153" fill="#e0b978" font-size="14" font-weight="700" >УЗЕЛ FS-02</text>
+ <text x="900" y="194" fill="#f4ebd8" font-size="28" font-weight="700" >Осмотр записей</text>
+ <path d="M900 212 L1228 212" stroke="#90734f" opacity=".56" stroke-width="1" fill="none"/>
+ <rect x="900" y="233" width="131" height="30" rx="15" fill="#705530" stroke="#d0a870" /><text x="965.5" y="254" fill="#fff2d5" font-size="13" font-weight="700" text-anchor="middle">ДОСТУПНО</text>
+ <text x="900" y="299" fill="#c1a787" font-size="13" font-weight="700" >Задача</text>
+ <text x="900" y="329" fill="#f4ebd8" font-size="18" font-weight="400" >Изучить материалы и</text>
+ <text x="900" y="356" fill="#f4ebd8" font-size="18" font-weight="400" >сопоставить сведения.</text>
+ <text x="900" y="410" fill="#b69b76" font-size="12" font-weight="700" >ПРЕДЫДУЩИЙ УЗЕЛ</text>
+ <text x="900" y="437" fill="#d4c3a9" font-size="16" font-weight="400" >FS-01 · Завершён</text>
+ <path d="M900 476 L1228 476" stroke="#846848" opacity=".5" stroke-width="1" fill="none"/>
+ <text x="900" y="509" fill="#bdad95" font-size="14" font-weight="400" >Награды: ещё не определены</text>
+ <rect x="900" y="546" width="328" height="50" rx="8" fill="url(#gold)" stroke="#f0cb8a" /><text x="1064" y="578" fill="#251e16" font-size="17" font-weight="700" text-anchor="middle">НАЧАТЬ</text>
+ <rect x="900" y="606" width="328" height="50" rx="8" fill="#26242a" stroke="#7d6550" /><text x="1064" y="638" fill="#ead8c0" font-size="17" font-weight="700" text-anchor="middle">НАЗАД К ИСТОРИЯМ</text>
+ <text x="36" y="705" fill="#b6a286" font-size="12" font-weight="400" >ЭСКИЗ UX / LC-002 · НЕ РЕАЛИЗОВАНО · НЕ УТВЕРЖДЁННЫЙ ЭКРАН</text>
+</g></svg>

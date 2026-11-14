@@ -42,8 +42,10 @@ async function fight(page,tag,index){
  const bridge=page.locator(".lore-battle-result-brief");
  assert.equal(await bridge.count(),1,"Narrated story bridges must appear before every fight");
  const full=await bridge.innerText();
- assert.ok(full.includes(index===1?"Чужой маршрут":"Право на свидетельство"),"Bridge title identifies encounter");
- assert.equal(await bridge.locator(".lore-battle-voice img").count(),2,"Both existing portraits shown");
+ assert.ok(full.includes(["Чужой маршрут","Право на свидетельство","Два свидетельства"][index-1]),
+   "Bridge title identifies encounter");
+ assert.equal(await bridge.locator(".lore-battle-voice img").count(),index<3?2:0,
+   "Narrated portraits appear only on established character dialogue");
  const viewport=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,
   overlay:document.body.classList.contains("lore-scene-open")}));
  assert.ok(viewport.scroll<=viewport.width+1,"No horizontal overflow in narrated landscape");
@@ -84,14 +86,16 @@ async function fight(page,tag,index){
  assert.equal(combat.campaign,false);
  assert.equal(combat.gpu,true);
  assert.match(combat.label,/ОБЯЗАТЕЛЬНЫЙ БОЙ/);
- assert.ok(combat.fighters.some(name=>name.startsWith("Игровой противник")));
+ assert.ok(combat.fighters.includes(["Искатель дороги","Удерживающий тропу",
+   "Первая проверка"][index-1]),"Correct stage-specific enemy must appear");
  await page.screenshot({path:path.join(out,tag+"-arena-"+index+".png"),fullPage:true});
  await page.locator("#autoBattleBtn").click();
  await page.locator("#loreRequiredBattleResult").waitFor({state:"visible",timeout:145000});
  assert.equal(await page.locator("#loreRequiredResultTitle").innerText(),"Бой выигран",
   tag+" must win and save real battle before next node");
  const aftermath=await page.locator("#loreRequiredResultText").innerText();
- assert.ok(aftermath.includes(index===1?"Люди с фонарём отошли":"Под вечер Рен и Нада добрались"),
+ assert.ok(aftermath.includes(["Люди с фонарём отошли",
+   "Под вечер Рен и Нада добрались","Обе волны побеждены"][index-1]),
   "Win has a distinct causal consequence in the game version");
  assert.equal(await page.locator("#loreRequiredResultRetry").isVisible(),true,
   "A cleared story battle can now be replayed for practice");
@@ -127,8 +131,7 @@ async function run(name,type){
    if(i>0)assert.ok((await page.locator(".lore-node-detail").innerText()).includes("Доступно"));
    await page.locator('[data-lore-action="start-node"]').click();
    steps.push(await playScene(page));
-   if(i<2)battles.push(await fight(page,name,i+1));
-   else await page.locator('[data-lore-action="leave-result"]').click();
+   battles.push(await fight(page,name,i+1));
   }
   const after=await page.evaluate(()=>({
    wallet:JSON.stringify(progress),training:JSON.stringify(campaignProgress),
@@ -144,9 +147,9 @@ async function run(name,type){
   assert.deepEqual(after.lore.completedNodeIds,
    ["five-shadows:fs-01","five-shadows:fs-02","five-shadows:fs-03"]);
   assert.deepEqual(after.lore.battleClearedNodeIds,
-   ["five-shadows:fs-01","five-shadows:fs-02"]);
+   ["five-shadows:fs-01","five-shadows:fs-02","five-shadows:fs-03"]);
   assert.ok(after.scroll<=after.width+1);
-  await page.screenshot({path:path.join(out,name+"-three-scenes-two-victories.png"),fullPage:true});
+  await page.screenshot({path:path.join(out,name+"-three-scenes-three-victories.png"),fullPage:true});
   assert.deepEqual(errors.filter(e=>/LoreCampaign|TypeError|ReferenceError/.test(e)),[]);
   console.log("LOREPLAY001 PUBLIC FULL QUEST",name,"PASS",JSON.stringify({steps,battles,cleared:after.lore.battleClearedNodeIds}));
  }catch(e){

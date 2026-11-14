@@ -2579,7 +2579,9 @@ function renderArenaIndicators(){
    typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"debuff-resistance-down")?
      `<span class="arena-effect debuff" title="Пониженное сопротивление: −${CombatStatusCore.read(h,"debuff-resistance-down").amount} п.п.">⊖${CombatStatusCore.read(h,"debuff-resistance-down").remaining}</span>`:"",
    typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"read-move")?
-     `<span class="arena-effect debuff" title="Просчитанный ход: ${CombatStatusCore.read(h,"read-move").stacks} из 4 зацепок, ${CombatStatusCore.read(h,"read-move").remaining} ход(а). При 3+ сильная атака теряет 20 п.п. точности, 20 п.п. эффективности наложения эффектов и 30% урона; тратятся 3 зацепки.">◎${CombatStatusCore.read(h,"read-move").stacks}</span>`:""].join("");
+     `<span class="arena-effect debuff" title="Просчитанный ход: ${CombatStatusCore.read(h,"read-move").stacks} из 4 зацепок, ${CombatStatusCore.read(h,"read-move").remaining} ход(а). При 3+ сильная атака теряет 20 п.п. точности, 20 п.п. эффективности наложения эффектов и 30% урона; тратятся 3 зацепки.">◎${CombatStatusCore.read(h,"read-move").stacks}</span>`:"",
+   typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"taunt")?
+     `<span class="arena-effect" title="Провокация: одиночные враги атакуют этого героя. Осталось ${CombatStatusCore.read(h,"taunt").remaining} хода(ов).">⚑${CombatStatusCore.read(h,"taunt").remaining}</span>`:""].join("");
   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
   const active=actor?.id===h.id;
   const support=!!actor&&!autoBattle&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
@@ -2749,6 +2751,7 @@ function showAbilityTooltip(abilityId){
     "При 3+ зацепках мощная/особая атака сохраняется, но её точность и эффективность наложения эффектов снижаются на 20 п.п., а урон на 30% (−3 зацепки).");
  }else if(definition.kind==="guard")
   effects.push("Защита от "+definition.guardHits+" ударов.");
+ if(Number.isSafeInteger(definition.tauntTurns))effects.push("Провокация на "+definition.tauntTurns+" последующих собственных хода: одиночные вражеские атаки направляются только на героя.");
  else if(definition.kind==="heal")
   effects.push("Восстанавливает до "+definition.healAmount+" HP.");
  effects.push("Цель: "+({ally:"союзник",enemy:"противник",self:"сам герой","all-allies":"все живые союзники","all-enemies":"все живые противники"}[definition.target]||"неизвестная")+".");
@@ -2839,6 +2842,8 @@ function renderFighterInspection(){
   if(slowed)effects.push("Замедление: -"+slowed.amount+"% скорости, "+slowed.remaining+" ход(а)");
   const resistance=CombatStatusCore.read(fighter,"debuff-resistance-down");
   if(resistance)effects.push("Пониженное сопротивление: -"+resistance.amount+" п.п., "+resistance.remaining+" ход(а)");
+  const taunt=CombatStatusCore.read(fighter,"taunt");
+  if(taunt)effects.push("Провокация: враги выбирают героя целью одиночной атаки, осталось "+taunt.remaining+" ход(а).");
   const readMove=CombatStatusCore.read(fighter,"read-move");
   if(readMove)effects.push("Просчитанный ход: "+readMove.stacks+"/4 зацепки, "+readMove.remaining+
    " ход(а). При 3+ особая/мощная атака сохраняется, но имеет −20 п.п. точности, −20 п.п. эффективности наложения эффектов и −30% урона (−3 зацепки).");

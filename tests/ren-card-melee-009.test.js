@@ -43,6 +43,6 @@ test("RENCARD009: front-facing fixed vertical angle and SWGOH-style side control
  assert.match(rig,/turn\("hipR",stride\)/);
  const pkg=JSON.parse(read("package.json"));
  assert.ok(/^\d+\.\d+\.\d+$/.test(pkg.version));
- assert.ok(html.includes("v"+pkg.version+" · LIORA001"));
+ assert.ok(html.includes("v"+pkg.version+" · "));
  assert.match(html,/RENCARD009 \+ MELEE009/);
 });

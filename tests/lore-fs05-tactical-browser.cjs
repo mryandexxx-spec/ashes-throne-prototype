@@ -52,10 +52,10 @@ async function run(name,browserType,width,height){
   await page.locator('#home .hq-bottom button[data-screen="campaign"]').evaluate(el=>el.click());
   await page.locator('[data-campaign-path="lore"]').click();
   await page.locator(".lore-story-cover").click();
-  await page.locator('[data-lore-node="five-shadows:fs-05"]').click();
+  await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-05"]').click();
   assert.equal(await page.locator('[data-lore-action="required-battle"]').count(),1);
   assert.match(await page.locator(".lore-node-detail").innerText(),/Обязательный бой/);
-  assert.equal(await page.locator('[data-lore-node="five-shadows:fs-06"]').getAttribute("aria-disabled"),"true");
+  assert.equal(await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-06"]').evaluate(el=>el.classList.contains("lore-state-locked")),true);
   await page.locator('[data-lore-action="required-battle"]').click();
   await page.locator("#squad").waitFor({state:"visible",timeout:15000});
   assert.equal(await page.locator("#squadRoster [data-squad-required=true]").count(),2);
@@ -91,12 +91,12 @@ async function run(name,browserType,width,height){
   assert.ok(["held","defeated-attackers"].includes(battle.outcome));
   assert.deepEqual(battle.cleared,["five-shadows:fs-01","five-shadows:fs-02","five-shadows:fs-05"]);
   await page.locator("#loreRequiredResultContinue").click();
-  assert.equal(await page.locator('[data-lore-node="five-shadows:fs-06"]').getAttribute("aria-disabled"),"false");
+  assert.equal(await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-06"]').evaluate(el=>el.classList.contains("lore-state-available")),true);
   await page.reload({waitUntil:"load"});
   await page.locator('#home .hq-bottom button[data-screen="campaign"]').evaluate(el=>el.click());
   await page.locator('[data-campaign-path="lore"]').click();
   await page.locator(".lore-story-cover").click();
-  assert.equal(await page.locator('[data-lore-node="five-shadows:fs-06"]').getAttribute("aria-disabled"),"false");
+  assert.equal(await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-06"]').evaluate(el=>el.classList.contains("lore-state-available")),true);
   const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
   assert.ok(size.scroll<=size.width+1);
   assert.deepEqual(errors.filter(e=>/LoreCampaign|TypeError|ReferenceError/.test(e)),[]);

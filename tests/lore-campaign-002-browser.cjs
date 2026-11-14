@@ -19,6 +19,8 @@ async function check(engineName,browserType,width,height){
   // The HQ bottom nav is intentionally hidden in short landscape. Dispatch the
   // real HQ station click to focus this test on lore-map UI, not panorama scrolling.
   await page.locator("#home .hq-station-campaign").evaluate(el=>el.click());
+  // HQ station intentionally waits for a 500ms selection animation before navigation.
+  await page.locator("#campaignHub").waitFor({state:"visible",timeout:15000});
   assert.equal(await page.locator("#campaignHub").isVisible(),true,tag+" hub visible");
   await page.locator('[data-campaign-path="lore"]').click();
   assert.equal(await page.locator("#campaignLoreContent").isVisible(),true,tag+" lore content visible");

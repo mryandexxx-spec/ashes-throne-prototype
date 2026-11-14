@@ -152,7 +152,14 @@ const LoreCampaignUI=(()=>{
  function back(){
   if(!root)return false;
   if(view==="scene"){sceneRuntime?.leave();view="map";notice="";syncProgress();render();return true;}
-  if(view==="result"){view="map";syncProgress();render();return true;}
+  if(view==="result"){
+   view="map";syncProgress();
+   if(data.getStory(storyId,catalog)?.mapLayers.length>1){
+    const available=data.nodesForStory(storyId,catalog).find(n=>nodeStatus(n).code==="available");
+    if(available){layerId=available.mapLayerId;nodeId=available.id;}
+   }
+   render();return true;
+  }
   if(view!=="map")return false;
   const previousStory=storyId;
   view="stories";storyId=null;nodeId=null;layerId=null;
@@ -165,10 +172,22 @@ const LoreCampaignUI=(()=>{
   const story=data.getStory(id,catalog);
   if(!story)return false;
   view="map";storyId=id;
-  layerId=story.mapLayers[0].id;
-  const nodes=data.nodesForStory(id,catalog).filter(n=>n.mapLayerId===layerId);
   const active=sceneRuntime?.stateFor(id)?.activeNodeId;
-  nodeId=(nodes.find(n=>n.id===active)||nodes.find(n=>nodeStatus(n).code==="available")||nodes[0])?.id||null;
+  if(story.mapLayers.length===1){
+   // Keep the original navigation contract for older single-layer fixtures
+   // and other stories. Only multi-act campaigns need cross-layer discovery.
+   layerId=story.mapLayers[0].id;
+   const nodes=data.nodesForStory(id,catalog).filter(n=>n.mapLayerId===layerId);
+   nodeId=(nodes.find(n=>n.id===active)||
+    nodes.find(n=>nodeStatus(n).code==="available")||nodes[0])?.id||null;
+  }else{
+   const nodes=data.nodesForStory(id,catalog);
+   const target=nodes.find(n=>n.id===active)||
+    nodes.find(n=>nodeStatus(n).code==="available")||
+    [...nodes].reverse().find(n=>nodeStatus(n).code==="completed")||nodes[0];
+   layerId=target?.mapLayerId||story.mapLayers[0].id;
+   nodeId=target?.id||null;
+  }
   render();
   return true;
  }
@@ -380,14 +399,14 @@ const LoreCampaignUI=(()=>{
     '<span class="lore-cover-eyebrow">ЛОРНАЯ ИСТОРИЯ · КАРТА</span>'+
     '<strong>'+escapeHtml(story.title)+'</strong>'+
     '<span>'+escapeHtml(story.subtitle)+'</span>'+
-    '<small>Открыть схему · '+total+' сюжетных узла</small>'+
+    '<small>Открыть схему · '+total+' '+(total===1?'сюжетный узел':total<=4?'сюжетных узла':'сюжетных узлов')+'</small>'+
     '<span class="lore-cover-chevron" aria-hidden="true">›</span></button>';
   }).join("");
   return '<section class="lore-chronicle">'+
    '<div class="lore-chronicle-heading"><span>ИСТОРИИ МИРА</span><h3>Кампании лора</h3>'+
-   '<p>Пройдите пилот «Пяти теней»: три сцены, расследование и два обязательных боя. Это тестовая игровая адаптация, не литературный канон.</p></div>'+
+   '<p>Пройдите два акта «Пяти теней»: шесть сцен, расследования и два обязательных боя первого акта. Это игровая адаптация [ПРЕДЛОЖЕНИЕ], не литературный канон.</p></div>'+
    '<div class="lore-story-grid">'+cards+'</div>'+
-   '<p class="lore-stage-note">LOREPLAY001 · [ПРЕДЛОЖЕНИЕ] · Сюжетные сцены и боевые обстоятельства пилота не являются утверждённым литературным каноном.</p></section>';
+   '<p class="lore-stage-note">LOREACT2001 · [ПРЕДЛОЖЕНИЕ] · Сюжетные сцены и боевые обстоятельства не являются литературным каноном.</p></section>';
  }
  function edgeSvg(nodes){
   const availableIds=new Set(nodes.map(n=>n.id));
@@ -480,7 +499,7 @@ const LoreCampaignUI=(()=>{
    '<div class="lore-map-heading">'+
    '<button type="button" class="ghost lore-map-return" data-lore-action="back">← К историям</button>'+
    '<div><span class="lore-map-eyebrow">ХРОНИКА / ИНТЕРАКТИВНАЯ СХЕМА</span>'+
-   '<h3>'+escapeHtml(story.title)+'</h3><small>'+escapeHtml(chapters[0]?.title||story.subtitle)+'</small></div>'+
+   '<h3>'+escapeHtml(story.title)+'</h3><small>'+escapeHtml(chapters.find(ch=>ch.mapLayerId===layerId)?.title||story.subtitle)+'</small></div>'+
    (onStartTraining?
      '<button type="button" class="ghost lore-map-training-action" data-lore-action="training-battle">'+
      '⚔ Тактический бой <small>Вне канона · без энергии</small></button>':'')+'</div>'+
@@ -494,7 +513,7 @@ const LoreCampaignUI=(()=>{
    '<div class="lore-legend" aria-label="Условные обозначения"><span class="lore-state-completed">● Пройдено</span><span class="lore-state-available">● Доступно</span><span class="lore-state-locked">● Закрыто</span></div>'+
    '<div class="lore-node-list" role="group" aria-label="Список сюжетных узлов">'+list+'</div>'+
    renderJournal()+
-   '<p class="lore-stage-note">'+escapeHtml(saveMessage())+' FS-01—FS-03 доступны в тестовой игровой адаптации [ПРЕДЛОЖЕНИЕ].</p>'+
+   '<p class="lore-stage-note">'+escapeHtml(saveMessage())+' FS-01—FS-06 доступны как игровая адаптация [ПРЕДЛОЖЕНИЕ].</p>'+
    '</section>';
  }
  function render(){

@@ -3796,6 +3796,25 @@ body:has(#operationResult.active)::before,body:has(#signalOperationResult.active
 @media(prefers-reduced-motion:reduce){
  .battle-screen .tactical-goal-track span{transition:none}
 }
+@media(orientation:landscape) and (max-height:410px) and (max-width:900px){
+ /* Only the story tactical squad: keep the 44px start button fully visible. */
+ #squad:has(.squad-tactical-brief:not([hidden])) .squad-panel{padding:7px 8px}
+ #squad:has(.squad-tactical-brief:not([hidden])) .squad-tactical-brief{
+  padding:3px 7px;margin:2px 0 4px;
+ }
+ #squad:has(.squad-tactical-brief:not([hidden])) .squad-slots{
+  margin-top:4px;gap:3px;
+ }
+ #squad:has(.squad-tactical-brief:not([hidden])) .squad-slot{
+  min-height:56px;padding:3px 2px;
+ }
+ #squad:has(.squad-tactical-brief:not([hidden])) #squadHint{
+  margin:4px 0;line-height:1.3;
+ }
+ #squad:has(.squad-tactical-brief:not([hidden])) .squad-actions{
+  margin-top:4px;
+ }
+}
 
 /* UI-STORY-001 — literary reading scene and native character biographies.
    Visual-only layer: story choices, provisional lore labels, save and combat untouched. */

@@ -220,6 +220,28 @@ test("LC-003: independent UI renders safe literal text and scene navigation with
  assert.match(r.innerHTML,/data-lore-action="start-node"/);
  assert.equal(storage.map.size,1);
 });
+test("LC-003: leaving for another screen keeps checkpoint and permits continuing",()=>{
+ const p=Fixture.create(Data),storage=memory(),r={
+  innerHTML:"",handlers:{},
+  addEventListener(type,fn){(this.handlers[type]??=[]).push(fn);},
+  removeEventListener(type,fn){this.handlers[type]=(this.handlers[type]||[]).filter(x=>x!==fn);},
+  contains(){return true;},querySelector(){return {focus(){}}}
+ };
+ UI.mount(r,p.data,Core,{scripts:Scripts,engine:Engine,save:Save,runtime:Runtime,
+   storage,pack:p.pack});
+ assert.equal(UI.openStory("five-shadows"),true);
+ assert.equal(UI.startScene(),true);
+ assert.equal(UI.actInScene("next"),true);
+ assert.equal(UI.snapshot().view,"scene");
+ assert.equal(UI.open(),true,"external campaign navigation reopens story covers");
+ assert.equal(UI.openStory("five-shadows"),true);
+ assert.equal(UI.startScene(),true,"the old session lock is released");
+ assert.match(r.innerHTML,/второй источник/);
+ UI.close();
+ const state=JSON.parse(storage.getItem(Save.KEY)).stories["five-shadows"];
+ assert.equal(state.activeNodeId,"five-shadows:fs-01");
+ assert.equal(state.checkpointBeatId,"notes");
+});
 test("LC-003: build, cache and legacy campaign boundaries remain independent",()=>{
  const html=file("index.html"),pkg=JSON.parse(file("package.json"));
  assert.equal(pkg.version,"0.3.150");

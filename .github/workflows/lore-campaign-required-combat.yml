@@ -1,7 +1,7 @@
 name: LC-005 mandatory lore combat gates
 on:
   pull_request:
-    branches: [main, feat/lore-campaign-inspection-lc004]
+    branches: [main, feat/lore-campaign-inspection-lc004, feat/lore-campaign-required-battles-lc005]
     paths:
       - 'game.js'
       - 'index.html'
@@ -9,6 +9,7 @@ on:
       - 'lore-campaign-*.js'
       - 'lore-campaign.css'
       - 'tests/lore-campaign-required-combat.test.js'
+      - 'tests/lore-campaign-battle-briefs.test.js'
       - 'tests/lore-campaign-required-combat-browser.cjs'
       - '.github/workflows/lore-campaign-required-combat.yml'
 permissions:

@@ -116,6 +116,12 @@ const SkillCore=(()=>{
  // Every array index is current skill level minus one. This table, not the
  // general +0.1 demo scaling, owns Ren/Nada's real active ability effects.
  const HERO_KITS=Object.freeze({
+  // LIORA001: [PROPOSAL] separate tank curves instead of generic +1 guard hit per rank.
+  liora:Object.freeze({
+   basic:Object.freeze({damage:[1,1.05,1.1,1.15,1.2,1.25]}),
+   special:Object.freeze({guard:[2,2,3,3,4,4],cooldown:[3,3,3,2,2,2]}),
+   powerful:Object.freeze({guard:[1,1,2,2,3,3],cooldown:[3,3,3,3,3,3]})
+  }),
   ren:Object.freeze({
    basic:Object.freeze({damage:[1,1.1,1.2,1.2,1.3,1.4]}),
    special:Object.freeze({damage:[1.05,1.15,1.15,1.25,1.25,1.35],
@@ -132,8 +138,11 @@ const SkillCore=(()=>{
  });
  function heroAbility(base,heroId,id,level){
   const kit=HERO_KITS[heroId]?.[id];
-  if(!kit||base?.kind!=="damage")return base;
+  if(!kit)return base;
   const index=level-1;
+  if(heroId==="liora"&&base?.kind==="guard")
+   return {...base,guardHits:kit.guard[index],cooldown:kit.cooldown[index]};
+  if(base?.kind!=="damage")return base;
   const ability={...base,multiplier:kit.damage[index]};
   if(kit.weaken)ability.weakening=kit.weaken[index];
   if(kit.cooldown)ability.cooldown=kit.cooldown[index];

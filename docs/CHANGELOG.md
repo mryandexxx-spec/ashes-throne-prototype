@@ -24,6 +24,9 @@
 
 ## 2026-11-14
 
+- **`v0.3.150 · LORESCENE001` / LC-003:** универсальный исполнитель кадров, заданий и развилок, отдельное версионированное сохранение с чекпойнтом, первичный write-once выбор, безопасный повтор без изменения журнала, интерфейс сцены. **Сюжетный пакет пуст, авторские сцены пока не включены**. На PR: 517/517 Node, 12/12 CI, Chromium/WebKit 4/4 ([#320](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/320)) · `d3d5abdb`
+- **Статус проекта:** после утверждённого слияния LC-001/002 актуализированы `PROJECT_STATUS`, `LORE_CAMPAIGN_PROGRESS`, roadmap и Changelog ([#319](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/319)) · `4daa961e`
+
 - **`v0.3.149 · LOREMAP001`** — LC-002: 2D-карта истории «Пять теней» в существующем хабе, маркеры и статусы, доступная навигация, компактный landscape, Chromium/WebKit CI 844×390 и 932×430. Сцены/сохранения/награды пока не подключены ([#318](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/318)) · `fcaaf255`
 - **LC-001** — независимые `LoreCampaignData` / `LoreCampaignCore`, валидатор графа, отказ в начислениях до согласования экономики, Node-тесты ([#317](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/317)) · `b2c8277c`
 - **LORE-CAMPAIGN документы** — спецификация, roadmap, AI Playbook, текущий прогресс, журнал решений, четыре SVG-макета-предложения ([#316](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/316)) · `c81ad4b5`

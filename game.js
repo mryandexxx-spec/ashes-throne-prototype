@@ -2318,7 +2318,9 @@ function renderLoreRequiredBattleResult(){
  if(body){
   const summary=won?(saved?
    (loreRequiredResult?.replay?"Повтор пройден. Прежний результат сохранён, новых наград нет.":
-    "Победа записана в истории. Следующий эпизод открыт."):
+    LoreCampaignTrials.data.getNode(loreRequiredContext?.nodeId)?.nextNodeIds.length?
+     "Победа записана в истории. Следующий эпизод открыт.":
+     "Победа записана. Финальное испытание завершено."):
    "Победа не сохранилась. Проверьте хранилище и повторите бой."):
    (loreRequiredContext?.replay?
      "Повтор проигран. Прежняя победа и доступ к истории сохранены. Можно попробовать ещё раз.":
@@ -2326,9 +2328,19 @@ function renderLoreRequiredBattleResult(){
   const n=loreRequiredContext?.battleNarrative;
   const consequence=won?(saved?n?.victory:null):n?.defeat;
   // Never turn private authored prose into HTML or a canonical game reward.
-   const outcome=state?.tacticalOutcome==="held"?"Отход прикрыт до завершения эвакуации.":
-    state?.tacticalOutcome==="defeated-attackers"?"Нападавшие оттеснены раньше окончания эвакуации.":
-    state?.tacticalOutcome==="protected-fallen"?"Рен выбыл из боя: прикрытие сорвалось.":"";
+   const obj=loreRequiredContext?.battleObjective;
+   const protectedName=obj?.protectAllyId==="nada"?"Нада":"Рен";
+   const outcome=state?.tacticalOutcome==="held"?
+    (obj?.protectAllyId==="nada"?"Сигнал удержан до завершения наблюдения.":
+     "Отход прикрыт до завершения эвакуации."):
+    state?.tacticalOutcome==="defeated-attackers"?
+     (obj?.protectAllyId==="nada"?"Помехи устранены до окончания наблюдения.":
+      "Нападавшие оттеснены раньше окончания эвакуации."):
+    state?.tacticalOutcome==="protected-fallen"?protectedName+
+      (protectedName==="Нада"?" выбыла":" выбыл")+" из боя: задача сорвалась.":
+    state?.tacticalOutcome==="wrong-order"?"Зачинщик должен выбыть раньше остальных.":
+    state?.tacticalOutcome==="priority-victory"?"Приоритетная цель устранена первой.":
+    state?.tacticalOutcome==="protected-victory"?"Защищаемый герой остался в строю.":"";
    body.textContent=summary+(outcome?"\n\n"+outcome:"")+(consequence?"\n\n"+consequence:"");
  }
  const next=$("#loreRequiredResultContinue"),retry=$("#loreRequiredResultRetry");

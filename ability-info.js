@@ -70,6 +70,7 @@ const AbilityInfo=(()=>{
 
   }else if(a.kind==="guard"){
    if(Number.isFinite(a.guardHits))effects.push("Даёт защиту от "+a.guardHits+" ударов.");
+   if(Number.isSafeInteger(a.tauntTurns))effects.push("Провокация на "+a.tauntTurns+" последующих собственных хода: одиночные атаки врагов направляются только на героя. Массовые атаки не перенаправляются.");
    else effects.push("Даёт защиту.");
   }else if(a.kind==="heal"){
    if(Number.isFinite(a.healAmount))effects.push("Восстанавливает до "+a.healAmount+" HP.");

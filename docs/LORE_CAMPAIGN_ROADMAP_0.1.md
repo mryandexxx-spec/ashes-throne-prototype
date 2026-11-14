@@ -1,10 +1,15 @@
 # LORE-CAMPAIGN — дорожная карта реализации
 
-**Редакция 0.1 · 14 ноября 2026 · [ПРЕДЛОЖЕНИЕ]**  
+**Редакция 0.1 · 14 ноября 2026 · [УТВЕРЖДЕНО КАК ОСНОВА РАЗРАБОТКИ; детали и контент — [ПРЕДЛОЖЕНИЕ]]**  
 **Цель:** завершённый, устойчивый на iPhone Safari вертикальный срез лорной кампании «Пять теней» с возможностью наращивать истории и награды. Не создавать всю RPG и весь рассказ одним PR.  
-**Техническое ТЗ:** [LORE_CAMPAIGN_SPEC_0.1.md](LORE_CAMPAIGN_SPEC_0.1.md).  
+**Техническое ТЗ:** [LORE_CAMPAIGN_SPEC_0.1.md](LORE_CAMPAIGN_SPEC_0.1.md).
+**Состояние этапов и открытых PR:** [LORE_CAMPAIGN_PROGRESS.md](LORE_CAMPAIGN_PROGRESS.md).  
+**Протокол принятых решений:** [LORE_CAMPAIGN_DECISIONS.md](LORE_CAMPAIGN_DECISIONS.md).  
+**UX-макеты (4 редактируемых SVG, не приняты как UI):** [LORE_CAMPAIGN_UX_MOCKUPS.md](LORE_CAMPAIGN_UX_MOCKUPS.md).    
 **Обязательные инструкции будущему AI:** [LORE_CAMPAIGN_AI_PLAYBOOK_0.1.md](LORE_CAMPAIGN_AI_PLAYBOOK_0.1.md).  
 **Приватная литературная адаптация:** мировой репозиторий, `game-design/campaigns/FIVE_SHADOWS_CAMPAIGN_ADAPTATION_0.1.md`. Не копировать спойлеры в публичный технический PR.
+
+> **Решение владельца 14.11.2026:** на запрос утвердить концепцию и дорожную карту как основу разработки ответил «Ок». **LC-000 принято как направление.** LC-001 — рабочий код в [PR #317](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/317), GitHub Actions `node-tests` success на head `30321cf`, **не слито**. LC-002…LC-009 не реализованы. Приватная адаптация — [PR #62](https://github.com/mryandexxx-spec/ashes-throne-worldbuilding/pull/62). Текущая документация — [PR #316](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/316). Ни одно «Ок» не было разрешением на merge. Версию статусов проверять в [живом журнале](LORE_CAMPAIGN_PROGRESS.md).
 
 ## Общий принцип исполнения
 

@@ -47,7 +47,7 @@ const LoreCampaignUI=(()=>{
       "Исследование пройдено. Победите в обязательном бою, чтобы открыть следующий эпизод.":
       "Узел пройден. Повтор не изменяет первоначальные решения."});
   if(engine.available(c,p,node.id))
-   return Object.freeze({code:"available",label:"Доступно",reason:"Условия открытия выполнены. Игровая сцена находится в разработке."});
+   return Object.freeze({code:"available",label:"Доступно",reason:"Условия открытия выполнены. Этот сюжетный эпизод доступен для прохождения."});
   const gated=node.prerequisites.some(id=>{
    const prior=c.nodes.find(n=>n.id===id);
    return !!prior?.requiredBattleId&&Array.isArray(completed)&&completed.includes(id)&&
@@ -385,9 +385,9 @@ const LoreCampaignUI=(()=>{
   }).join("");
   return '<section class="lore-chronicle">'+
    '<div class="lore-chronicle-heading"><span>ИСТОРИИ МИРА</span><h3>Кампании лора</h3>'+
-   '<p>Исследуйте истории мира на интерактивных схемах. Первые сцены ещё готовятся.</p></div>'+
+   '<p>Пройдите пилот «Пяти теней»: три сцены, расследование и два обязательных боя. Это тестовая игровая адаптация, не литературный канон.</p></div>'+
    '<div class="lore-story-grid">'+cards+'</div>'+
-   '<p class="lore-stage-note">LC-003 · Механизм сцен и сохранения готов. Авторские тексты «Пяти теней» добавляются на следующем этапе.</p></section>';
+   '<p class="lore-stage-note">LOREPLAY001 · [ПРЕДЛОЖЕНИЕ] · Сюжетные сцены и боевые обстоятельства пилота не являются утверждённым литературным каноном.</p></section>';
  }
  function edgeSvg(nodes){
   const availableIds=new Set(nodes.map(n=>n.id));
@@ -494,7 +494,7 @@ const LoreCampaignUI=(()=>{
    '<div class="lore-legend" aria-label="Условные обозначения"><span class="lore-state-completed">● Пройдено</span><span class="lore-state-available">● Доступно</span><span class="lore-state-locked">● Закрыто</span></div>'+
    '<div class="lore-node-list" role="group" aria-label="Список сюжетных узлов">'+list+'</div>'+
    renderJournal()+
-   '<p class="lore-stage-note">'+escapeHtml(saveMessage())+' Игровые сцены включаются после утверждения текста.</p>'+
+   '<p class="lore-stage-note">'+escapeHtml(saveMessage())+' FS-01—FS-03 доступны в тестовой игровой адаптации [ПРЕДЛОЖЕНИЕ].</p>'+
    '</section>';
  }
  function render(){

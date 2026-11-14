@@ -49,7 +49,18 @@ async function finishManually(page){
       !document.querySelector("#basicAbilityBtn")?.disabled);
   },null,{timeout:25000});
   if(await page.locator("#loreRequiredBattleResult").isVisible())return;
-  await page.locator("#basicAbilityBtn").click({timeout:12000});
+  const action=await page.evaluate(()=>{
+   const proposal=AutoDecision.chooseAction(state);
+   const actor=state.fighters[state.currentActor];
+   const ability=AbilityData.get(actor,proposal?.abilityId||"basic");
+   const pursuer=state.fighters.findIndex(f=>f.id==="shade"&&f.hp>0);
+   if(pursuer>=0&&["enemy","all-enemies"].includes(ability?.target))
+    CombatCore.chooseEnemy(state,pursuer);
+   return proposal?.abilityId||"basic";
+  });
+  const abilityButton=action==="special"?"#specialAbilityBtn":
+   action==="powerful"?"#powerfulAbilityBtn":"#basicAbilityBtn";
+  await page.locator(abilityButton).click({timeout:12000});
  }
  throw Error("TACTICAL_MANUAL_BATTLE_DID_NOT_END");
 }
@@ -109,6 +120,10 @@ async function run(name,browserType,width,height){
   assert.ok(setup.goalBounds.top>=0&&setup.goalBounds.bottom<=height+1);
   await page.screenshot({path:path.join(out,tag+"-battle.png"),fullPage:true});
   await page.locator("#autoBattleBtn").click();
+  assert.equal(await page.locator("#autoBattleBtn").getAttribute("aria-pressed"),"true");
+  await page.locator("#autoBattleBtn").click();
+  assert.equal(await page.locator("#autoBattleBtn").getAttribute("aria-pressed"),"false");
+  await finishManually(page);
   await page.locator("#loreRequiredBattleResult").waitFor({state:"visible",timeout:145000});
   assert.equal(await page.locator("#loreRequiredResultTitle").innerText(),"Бой выигран");
   const battle=await page.evaluate(()=>({

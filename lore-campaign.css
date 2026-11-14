@@ -152,7 +152,7 @@
 #campaignLoreContent .lore-scene-evidence{display:grid;gap:7px;min-width:0;border:1px solid #766044;border-radius:9px;background:linear-gradient(120deg,#141c21,#201e1d);padding:10px}
 #campaignLoreContent .lore-scene-evidence>strong{font-size:10px;letter-spacing:.09em;color:#f3c486}
 #campaignLoreContent .lore-scene-inspect-item{display:grid;gap:4px;min-width:0}
-#campaignLoreContent .lore-scene-inspect-btn{min-width:0;min-height:44px;width:100%;padding:8px 12px;text-align:left;white-space:normal;overflow-wrap:anywhere;color:#efddc0;background:#2b3031;border:1px solid #b99562;border-radius:7px;font-size:13px}
+#campaignLoreContent .lore-scene-inspect-btn{min-width:0;min-height:48px;width:100%;padding:8px 12px;text-align:left;white-space:normal;overflow-wrap:anywhere;color:#efddc0;background:#2b3031;border:1px solid #b99562;border-radius:7px;font-size:13px}
 #campaignLoreContent .lore-scene-inspect-btn:not(:disabled):hover{background:#484033;border-color:#f4cd91}
 #campaignLoreContent .lore-scene-inspect-btn:focus-visible{outline:3px solid #ffe2a4;outline-offset:2px}
 #campaignLoreContent .lore-scene-compare-btn{border-style:dashed;background:#343026}
@@ -161,6 +161,6 @@
 #campaignLoreContent .lore-scene-evidence>small{font-size:11px;color:#c7ad88;line-height:1.4}
 @media (orientation:landscape) and (max-height:540px){
  #campaignLoreContent .lore-scene-evidence{padding:7px;gap:5px}
- #campaignLoreContent .lore-scene-inspect-btn{min-height:44px;padding:7px 10px;font-size:12px}
+ #campaignLoreContent .lore-scene-inspect-btn{min-height:48px;padding:7px 10px;font-size:12px}
  #campaignLoreContent .lore-scene-evidence-text{font-size:11px;padding:7px 9px}
 }

@@ -4,13 +4,18 @@ const SkillCore=(()=>{
  "use strict";
  const HERO_IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora"]);
  const IDS=Object.freeze(["basic","special","powerful"]);
- const PASSIVE_IDS=Object.freeze(["ren","nada"]);
+ const PASSIVE_IDS=Object.freeze(["ren","nada","liora"]);
  const UPGRADABLE_IDS=Object.freeze([...IDS,"passive"]);
  // Optional v3 field. All pre-CHAR003 saves imply L1 without mutation.
  const freshPassiveLevels=()=>Object.fromEntries(PASSIVE_IDS.map(id=>[id,1]));
  function validPassiveLevels(value){
-  return object(value)&&Object.keys(value).length===PASSIVE_IDS.length&&
-   PASSIVE_IDS.every(id=>own(value,id)&&Number.isInteger(value[id])&&value[id]>=1&&value[id]<=MAX);
+  // Historical CHAR003 saves legitimately contain only Ren and Nada.
+  // The optional Liora entry defaults to L1 without rewriting those saves.
+  return object(value)&&Object.keys(value).every(id=>PASSIVE_IDS.includes(id))&&
+   Object.keys(value).length>=(PASSIVE_IDS.length-1)&&
+   PASSIVE_IDS.filter(id=>id!=="liora").every(id=>
+    own(value,id)&&Number.isInteger(value[id])&&value[id]>=1&&value[id]<=MAX)&&
+   (value.liora===undefined||(Number.isInteger(value.liora)&&value.liora>=1&&value.liora<=MAX));
  }
  function passiveLevel(progress,id){
   if(!PASSIVE_IDS.includes(id))return null;
@@ -102,7 +107,12 @@ const SkillCore=(()=>{
  const PASSIVE_KITS=Object.freeze({
   ren:Object.freeze({readMoveBonusPercentPerStack:Object.freeze([12,13,14,15,16,17]),
    gardensEvasionBonus:Object.freeze([8,8,9,10,11,12])}),
-  nada:Object.freeze({gardensAccuracyBonus:Object.freeze([8,9,10,11,12,13])})
+  nada:Object.freeze({gardensAccuracyBonus:Object.freeze([8,9,10,11,12,13])}),
+  liora:Object.freeze({
+   protectAllyBelowHpPercent:Object.freeze([35,35,40,40,45,45]),
+   protectAllyGuardHits:Object.freeze([1,1,1,2,2,2]),
+   protectAllyCooldownOwnTurns:Object.freeze([3,3,3,3,2,2])
+  })
  });
  function applyPassive(base,actor){
   const kit=PASSIVE_KITS[actor.id];

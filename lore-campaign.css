@@ -139,3 +139,11 @@
 @media (prefers-reduced-motion:reduce){
  #campaignLoreContent .lore-scene-card,#campaignLoreContent .lore-scene-choice{transition:none}
 }
+
+/* LC-003: decision log shows only a player's recorded primary choices. */
+#campaignLoreContent .lore-decision-log{margin:8px 0;border:1px solid #716047;border-radius:8px;background:#1a1d23;color:#e9d3b5;font-size:12px;min-width:0}
+#campaignLoreContent .lore-decision-log summary{cursor:pointer;min-height:44px;display:flex;align-items:center;padding:9px 12px;color:#f2cb91;font-weight:700;touch-action:manipulation}
+#campaignLoreContent .lore-decision-log summary:focus-visible{outline:3px solid #f8d18a;outline-offset:2px}
+#campaignLoreContent .lore-decision-log ul{margin:0;padding:0 12px 9px 30px}
+#campaignLoreContent .lore-decision-log li{margin:5px 0;line-height:1.4;overflow-wrap:anywhere}
+#campaignLoreContent .lore-decision-log strong{color:#f2ddb9}

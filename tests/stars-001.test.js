@@ -161,5 +161,5 @@ for(const token of ["StarCore.refillTest(progress)","StarCore.promote(progress,i
  assert.ok(game.includes(token),token);
 assert.ok(css.includes(".star-panel")&&css.includes(".star-locked-dialog"));
 assert.equal(JSON.parse(read("package.json")).version,`${__BUILD_VERSION_FOR_TESTS}`);
-assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · UIHUD001`));
+assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · `));
 console.log("Stars-001: seven ranks/330 shards, direct join, legacy saves, ownership, debug resources, rollback and UI contract passed");

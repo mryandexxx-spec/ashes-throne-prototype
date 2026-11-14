@@ -148,6 +148,32 @@ const CombatCore = (() => {
       ?CombatStatusCore.effectiveSpeed(fighter,effective):effective;
   }
 
+  // LIORA001: leader Protection is a temporary pool, not a permanent edit
+  // to the roster or a multiplier applied repeatedly each turn. Removal on
+  // leader death clamps the remaining pool without retroactive HP damage.
+  function syncLeaderProtection(battle){
+    const leader=battle.leaderId&&battle.fighters.find(f=>f.id===battle.leaderId);
+    const mods=leader&&leader.side==="ally"&&leader.hp>0?
+      AbilityData.get(leader,"leader")?.modifiers||[]:[];
+    const percent=mods.filter(m=>m&&m.stat==="protection"&&
+      m.operation==="percent"&&m.scope==="all-allies"&&
+      m.when?.kind==="always"&&Number.isFinite(m.value)&&m.value>=0&&m.value<=100)
+      .reduce((total,m)=>total+m.value,0);
+    for(const recipient of battle.fighters){
+      if(recipient.side!=="ally"||!Number.isSafeInteger(recipient.maxProtection)||
+        !Number.isSafeInteger(recipient.protection))continue;
+      const old=recipient.leaderProtectionBonus??0;
+      const base=Math.max(0,recipient.maxProtection-old);
+      const next=Math.round(base*percent/100);
+      const diff=next-old;
+      if(diff){
+        recipient.maxProtection+=diff;
+        recipient.protection=Math.max(0,Math.min(recipient.maxProtection,recipient.protection+diff));
+      }
+      recipient.leaderProtectionBonus=next;
+    }
+  }
+
   function makeFighter(hero,index,meter) {
     const fighter = {...hero,maxHp:hero.hp,specialCooldown:0,powerfulCooldown:0,
       meter,index,effects:Object.create(null)};
@@ -216,7 +242,7 @@ const CombatCore = (() => {
          leader.hp<=0||fighters.findIndex(f=>f.id===leaderId)!==0)
         throw Error("leader must be the first living ally in the roster");
     }
-    return {
+    const battle = {
       fighters,
       ...(seededRng===null?{}:{rng:seededRng}),
       ...(options.hitChecks===true?{hitChecks:true}:{}),
@@ -239,6 +265,8 @@ const CombatCore = (() => {
       events: [],
       message: "Отряд готов к бою"
     };
+    syncLeaderProtection(battle);
+    return battle;
   }
 
   function livingEnemies(fighters) {
@@ -273,6 +301,33 @@ const CombatCore = (() => {
     "wave-start","battle-end"]);
   function emit(battle, type, properties) {
     battle.events.push({type, ...properties});
+    // LIORA001: an emergency guard is a bounded reaction to damage,
+    // not a new recursive action. Derived effects never emit again.
+    if(type==="damage"){
+      const wounded=battle.fighters.find(f=>f.id===properties.targetId);
+      if(wounded&&wounded.side==="ally"&&wounded.hp>0&&wounded.maxHp>0&&
+        wounded.guardHits===0){
+        for(const owner of battle.fighters){
+          if(owner.id===wounded.id||owner.side!=="ally"||owner.hp<=0||
+            (owner.emergencyGuardCooldown??0)>0)continue;
+          const rules=passiveCombatRules(owner);
+          if(!rules||!Number.isFinite(rules.protectAllyBelowHpPercent)||
+            !Number.isSafeInteger(rules.protectAllyGuardHits)||
+            !Number.isSafeInteger(rules.protectAllyCooldownOwnTurns)||
+            rules.protectAllyBelowHpPercent<=0||rules.protectAllyBelowHpPercent>100||
+            rules.protectAllyGuardHits<1||rules.protectAllyCooldownOwnTurns<1||
+            wounded.hp*100>wounded.maxHp*rules.protectAllyBelowHpPercent)continue;
+          wounded.guardHits=rules.protectAllyGuardHits;
+          owner.emergencyGuardCooldown=rules.protectAllyCooldownOwnTurns;
+          battle.events.push({type:"passive-trigger",ownerId:owner.id,
+            passiveId:"passive",sourceEventType:"damage",
+            sourceActorId:properties.actorId,sourceTargetId:wounded.id});
+          battle.events.push({type:"effect",actorId:owner.id,targetId:wounded.id,
+            effect:"guard",stacks:wounded.guardHits,passiveId:"passive"});
+          break; // one emergency defender per hit
+        }
+      }
+    }
     if(!PASSIVE_EVENTS.includes(type))return;
     for(const owner of battle.fighters){
       if(owner.side!=="ally"||owner.hp<=0)continue;
@@ -301,6 +356,7 @@ const CombatCore = (() => {
   }
 
   function finishIfOver(battle) {
+    syncLeaderProtection(battle);
     if (firstLivingEnemy(battle.fighters) < 0) {
       // A wave is not a mission victory. Keep surviving allies (HP, initiative,
       // cooldowns and effects) and replace defeated enemies with the next wave.
@@ -534,6 +590,12 @@ const CombatCore = (() => {
       ? actor.side==="ally"?"enemy":"ally"
       : mode==="ally"||mode==="all-allies"?actor.side:null;
     if(!targetSide)return [];
+    // LIORA001: single-target enemy actions cannot bypass a living taunter.
+    if(mode==="enemy"&&actor.side==="enemy"&&typeof CombatStatusCore!=="undefined"){
+      const taunter=battle.fighters.findIndex(f=>f.side===targetSide&&f.hp>0&&
+        CombatStatusCore.read(f,"taunt")!==null);
+      if(taunter>=0)return [taunter];
+    }
     if(mode==="enemy"||mode==="ally")
       return Number.isInteger(primaryIndex)&&battle.fighters[primaryIndex]&&
         battle.fighters[primaryIndex].side===targetSide&&
@@ -746,6 +808,8 @@ const CombatCore = (() => {
   }
   function tickActorStatuses(actor){
     if(typeof CombatStatusCore!=="undefined")CombatStatusCore.tickOwnTurn(actor);
+    if(Number.isSafeInteger(actor.emergencyGuardCooldown)&&actor.emergencyGuardCooldown>0)
+      actor.emergencyGuardCooldown--;
   }
 
   // Combat-012C: optional data-defined follow-up statuses, not hero-specific
@@ -869,6 +933,13 @@ const CombatCore = (() => {
     if(ability.kind==="damage"&&weakened)actor.weakenAttacks--;
     battle.message=actor.name+" применяет "+ability.name+
       ": целей "+recipients.length+".";
+    // Apply before the ordinary end-of-action tick; +1 keeps two subsequent
+    // own turns of provocation after the casting turn.
+    if(ability.tauntTurns!==undefined&&typeof CombatStatusCore!=="undefined"){
+      CombatStatusCore.apply(actor,"taunt",0,ability.tauntTurns+1);
+      emit(battle,"effect",{actorId:actor.id,targetId:actor.id,
+        effect:"taunt",remaining:ability.tauntTurns});
+    }
     finishAbilityCooldowns(actor,ability);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
     tickActorStatuses(actor);
@@ -898,6 +969,9 @@ const CombatCore = (() => {
        !validFollowUpEffects(ability)||!validOnHitStatus(battle,ability)||
        !validAreaStatus(ability)||!validAreaStatusProfile(battle,actor,ability))return false;
     if(!["damage","heal","guard"].includes(ability.kind))return false;
+    if(ability.tauntTurns!==undefined&&
+      (ability.kind!=="guard"||ability.target!=="self"||
+       !Number.isSafeInteger(ability.tauntTurns)||ability.tauntTurns<1))return false;
     if(ability.kind==="damage"&&(!Number.isFinite(ability.multiplier)||ability.multiplier<0))return false;
     if(ability.kind==="heal"&&(!Number.isFinite(ability.healAmount)||ability.healAmount<0))return false;
     if(ability.kind==="guard"&&(!Number.isInteger(ability.guardHits)||ability.guardHits<0))return false;
@@ -958,6 +1032,13 @@ const CombatCore = (() => {
     if(ability.kind!=="damage"||!hitCheckEnabled(battle,type)||
       !battle.events.some(event=>event.type==="miss"&&event.actorId===actor.id&&event.targetId===target.id))
       applyFollowUpEffects(battle,actor,ability,[target],target,type,readMovePenalty);
+    // Apply before the ordinary end-of-action tick; +1 keeps two subsequent
+    // own turns of provocation after the casting turn.
+    if(ability.tauntTurns!==undefined&&typeof CombatStatusCore!=="undefined"){
+      CombatStatusCore.apply(actor,"taunt",0,ability.tauntTurns+1);
+      emit(battle,"effect",{actorId:actor.id,targetId:actor.id,
+        effect:"taunt",remaining:ability.tauntTurns});
+    }
     finishAbilityCooldowns(actor,ability);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
     tickActorStatuses(actor);

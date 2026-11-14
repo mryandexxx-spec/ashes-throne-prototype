@@ -4,13 +4,18 @@ const SkillCore=(()=>{
  "use strict";
  const HERO_IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora"]);
  const IDS=Object.freeze(["basic","special","powerful"]);
- const PASSIVE_IDS=Object.freeze(["ren","nada"]);
+ const PASSIVE_IDS=Object.freeze(["ren","nada","liora"]);
  const UPGRADABLE_IDS=Object.freeze([...IDS,"passive"]);
  // Optional v3 field. All pre-CHAR003 saves imply L1 without mutation.
  const freshPassiveLevels=()=>Object.fromEntries(PASSIVE_IDS.map(id=>[id,1]));
  function validPassiveLevels(value){
-  return object(value)&&Object.keys(value).length===PASSIVE_IDS.length&&
-   PASSIVE_IDS.every(id=>own(value,id)&&Number.isInteger(value[id])&&value[id]>=1&&value[id]<=MAX);
+  // Historical CHAR003 saves legitimately contain only Ren and Nada.
+  // The optional Liora entry defaults to L1 without rewriting those saves.
+  return object(value)&&Object.keys(value).every(id=>PASSIVE_IDS.includes(id))&&
+   Object.keys(value).length>=(PASSIVE_IDS.length-1)&&
+   PASSIVE_IDS.filter(id=>id!=="liora").every(id=>
+    own(value,id)&&Number.isInteger(value[id])&&value[id]>=1&&value[id]<=MAX)&&
+   (!own(value,"liora")||(Number.isInteger(value.liora)&&value.liora>=1&&value.liora<=MAX));
  }
  function passiveLevel(progress,id){
   if(!PASSIVE_IDS.includes(id))return null;
@@ -102,7 +107,12 @@ const SkillCore=(()=>{
  const PASSIVE_KITS=Object.freeze({
   ren:Object.freeze({readMoveBonusPercentPerStack:Object.freeze([12,13,14,15,16,17]),
    gardensEvasionBonus:Object.freeze([8,8,9,10,11,12])}),
-  nada:Object.freeze({gardensAccuracyBonus:Object.freeze([8,9,10,11,12,13])})
+  nada:Object.freeze({gardensAccuracyBonus:Object.freeze([8,9,10,11,12,13])}),
+  liora:Object.freeze({
+   protectAllyBelowHpPercent:Object.freeze([35,35,40,40,45,45]),
+   protectAllyGuardHits:Object.freeze([1,1,1,2,2,2]),
+   protectAllyCooldownOwnTurns:Object.freeze([3,3,3,3,2,2])
+  })
  });
  function applyPassive(base,actor){
   const kit=PASSIVE_KITS[actor.id];
@@ -116,6 +126,12 @@ const SkillCore=(()=>{
  // Every array index is current skill level minus one. This table, not the
  // general +0.1 demo scaling, owns Ren/Nada's real active ability effects.
  const HERO_KITS=Object.freeze({
+  // LIORA001: [PROPOSAL] separate tank curves instead of generic +1 guard hit per rank.
+  liora:Object.freeze({
+   basic:Object.freeze({damage:[1,1.05,1.1,1.15,1.2,1.25]}),
+   special:Object.freeze({guard:[2,2,3,3,4,4],cooldown:[3,3,3,2,2,2]}),
+   powerful:Object.freeze({guard:[2,2,2,3,3,3],cooldown:[3,3,3,3,3,3]})
+  }),
   ren:Object.freeze({
    basic:Object.freeze({damage:[1,1.1,1.2,1.2,1.3,1.4]}),
    special:Object.freeze({damage:[1.05,1.15,1.15,1.25,1.25,1.35],
@@ -132,8 +148,11 @@ const SkillCore=(()=>{
  });
  function heroAbility(base,heroId,id,level){
   const kit=HERO_KITS[heroId]?.[id];
-  if(!kit||base?.kind!=="damage")return base;
+  if(!kit)return base;
   const index=level-1;
+  if(heroId==="liora"&&base?.kind==="guard")
+   return {...base,guardHits:kit.guard[index],cooldown:kit.cooldown[index]};
+  if(base?.kind!=="damage")return base;
   const ability={...base,multiplier:kit.damage[index]};
   if(kit.weaken)ability.weakening=kit.weaken[index];
   if(kit.cooldown)ability.cooldown=kit.cooldown[index];

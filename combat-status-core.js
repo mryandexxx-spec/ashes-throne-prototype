@@ -3,7 +3,7 @@
  * Does not mutate base fighter speed/resistance or existing combat.effects. */
 const CombatStatusCore=(()=>{
  "use strict";
- const KINDS=Object.freeze(["slowed","debuff-resistance-down","read-move"]);
+ const KINDS=Object.freeze(["slowed","debuff-resistance-down","read-move","taunt"]);
  const TYPES=new Set(KINDS);
  const validFighter=f=>f&&typeof f==="object"&&!Array.isArray(f);
  const validStatus=f=>validFighter(f)&&validFighter(f.renStatuses);

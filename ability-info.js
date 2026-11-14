@@ -37,6 +37,11 @@ const AbilityInfo=(()=>{
       rules.gardensAccuracyBonus+" п.п. точности. "+
       "«Просчитанный ход» накапливается до 4 зацепок; от 3 зацепок "+
       "особая или мощная атака врага сохраняется, но получает −20 п.п. точности, −20 п.п. эффективности наложения эффектов и −30% урона; расходует 3 зацепки.":
+    Number.isFinite(rules.protectAllyBelowHpPercent)?
+     "Когда здоровье другого союзника после получения урона падает до "+
+      rules.protectAllyBelowHpPercent+"% или ниже, Лиора даёт защиту от "+
+      rules.protectAllyGuardHits+" следующего удара (или ударов). Перезарядка: "+
+      rules.protectAllyCooldownOwnTurns+" собственных хода Лиоры. Тестовые значения.":
     Number.isFinite(rules.allyBonusVsDebuffedPercent)?
      "Пока герой жив, союзники наносят +"+rules.allyBonusVsDebuffedPercent+
       "% урона врагам с действующими негативными эффектами. Числа тестовые.":
@@ -51,8 +56,11 @@ const AbilityInfo=(()=>{
     meta:[]};
   }
   if(slotId==="leader"){
+   const protection=a.modifiers?.find(x=>x.stat==="protection"&&x.operation==="percent");
    return {id:slot.id,label:slot.label,name:a.name,status:"available",
-    description:"Автоматический лидерский эффект. Подробное действие уточняется.",meta:[]};
+    description:protection?"Пока герой жив и назначен лидером, каждый союзник получает +"+
+     protection.value+"% к запасу Protection. Значение тестовое.":
+     "Автоматический лидерский эффект. Подробное действие уточняется.",meta:[]};
   }
   const effects=[];
   if(a.kind==="damage"){
@@ -70,6 +78,7 @@ const AbilityInfo=(()=>{
 
   }else if(a.kind==="guard"){
    if(Number.isFinite(a.guardHits))effects.push("Даёт защиту от "+a.guardHits+" ударов.");
+   if(Number.isSafeInteger(a.tauntTurns))effects.push("Провокация на "+a.tauntTurns+" последующих собственных хода: одиночные атаки врагов направляются только на героя. Массовые атаки не перенаправляются.");
    else effects.push("Даёт защиту.");
   }else if(a.kind==="heal"){
    if(Number.isFinite(a.healAmount))effects.push("Восстанавливает до "+a.healAmount+" HP.");

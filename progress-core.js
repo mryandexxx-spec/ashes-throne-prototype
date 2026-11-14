@@ -7,7 +7,7 @@ const ProgressCore=(()=>{
  const MAX_LEVEL=85;
  const MAX_ACCOUNT_LEVEL=85;
  const DEMO_HERO_MAX_LEVEL=15;
- const FULL_LEVEL_HERO_IDS=Object.freeze(["ren","nada"]);
+ const FULL_LEVEL_HERO_IDS=Object.freeze(["ren","nada","liora"]);
  const maxLevelOf=id=>FULL_LEVEL_HERO_IDS.includes(id)?MAX_LEVEL:DEMO_HERO_MAX_LEVEL;
  const FIRST_CLEAR_REWARDS=Object.freeze({
   "black-pass-ambush":Object.freeze({xp:80,currency:500,material:12}),

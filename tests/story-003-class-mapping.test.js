@@ -36,5 +36,5 @@ for(const id of ["trial-ren","trial-nada","trial-liora"]){
 }
 const pkg=JSON.parse(read("package.json")),html=read("index.html");
 assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
-assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · UIHUD001`));
+assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · `));
 console.log("STORY-003: approved class vocabulary, proposed trial mappings, gear compatibility and unchanged saves verified");

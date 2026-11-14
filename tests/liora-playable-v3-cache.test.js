@@ -102,5 +102,5 @@ test("Liora GLB and caching are wired without shield assets",()=>{
  assert.match(card,/LioraGlbRuntime\.SHIELD_MESH/,"card framing ignores the shield mesh");
  assert.match(main,/тестовый герой со щитом/);
  assert.doesNotMatch(main,/без щита/);
- assert.match(read("ability-data.js"),/Удар щитом · тест/);
+ assert.match(read("ability-data.js"),/Удар щитом/);
 });

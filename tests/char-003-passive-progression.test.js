@@ -41,7 +41,7 @@ test("CHAR003 upgrades both passive skills with existing costs and unlock levels
   assert.equal(a.SkillCore.cost(p,id,"passive"),null);
   assert.equal(a.SkillCore.upgrade(p,id,"passive"),null);
  }
- assert.equal(a.SkillCore.level(p,"liora","passive"),null);
+ assert.equal(a.SkillCore.level(p,"liora","passive"),1); // LIORA001: newly playable passive, old saves imply L1.
 });
 test("CHAR003 refuses wrong hero level, insufficient materials and invalid upgrades atomically",()=>{
  const {p}=profile();

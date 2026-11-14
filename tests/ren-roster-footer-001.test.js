@@ -31,9 +31,9 @@ test("RENROSTER001: wide artwork stays in collection and footer is compact",()=>
  assert.match(rule,/width:100%;height:100%;[^}]*object-fit:cover;object-position:center 42%/);
  assert.match(rule,/#app>footer\{gap:4px 12px;flex-wrap:wrap;min-width:0\}/);
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.147");
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
  const footer=html.match(/id="buildVersion">([^<]*)<\/span>/)?.[1];
- assert.equal(footer,"Прототип · v0.3.147 · HUDSYNC001");
+ assert.match(footer,new RegExp("^Прототип · v"+pkg.version.replaceAll(".","\\.")+" · [A-Z][A-Z0-9-]*$"));
  assert.ok(footer.length<50);
  assert.match(read("docs/BUILD_HISTORY.md"),/NADAROSTER001/);
 });

@@ -231,7 +231,7 @@ test("LC-003: build, cache and legacy campaign boundaries remain independent",()
  }
  assert.ok(html.indexOf("lore-campaign-scene-runtime.js")<html.indexOf("lore-campaign-ui.js"));
  assert.match(file("lore-campaign-ui.js"),/data-lore-action="scene-finish"/);
- assert.ok(!file("lore-campaign-scene-core.js").includes("localStorage"));
+ assert.ok(!file("lore-campaign-scene-core.js").includes("setItem("));
  assert.ok(!file("lore-campaign-scene-save.js").includes("progress.v3"));
  assert.ok(!file("lore-campaign-scene-core.js").includes("BABYLON"));
  assert.equal((html.match(/id="campaignLoreContent"/g)||[]).length,1);

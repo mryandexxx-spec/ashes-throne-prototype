@@ -213,7 +213,8 @@ const LoreCampaignUI=(()=>{
   const result=sceneRuntime.beginRequiredBattle(node.id);
   if(!result.ok){notice=actionMessage(result.code);render();return false;}
   try {
-   const entered=onStartRequiredBattle({nodeId:node.id,battleId:result.battleId,storyId:node.storyId});
+   const entered=onStartRequiredBattle({nodeId:node.id,battleId:result.battleId,storyId:node.storyId,
+    battleNarrative:node.requiredBattleNarrative||null});
    if(entered===false){sceneRuntime.cancelRequiredBattle();return false;}
    return true;
   }catch(error){sceneRuntime.cancelRequiredBattle();throw error;}
@@ -318,16 +319,26 @@ const LoreCampaignUI=(()=>{
  }
  function renderResult(){
   const node=data.getNode(nodeId,catalog),title=node?.title||"Узел";
-  const pending=pendingBattle(node);
-  return '<section class="lore-scene lore-scene-result"><div class="lore-scene-card">'+
-   '<span class="lore-detail-eyebrow">РЕЗУЛЬТАТ · БЕЗ НАГРАД</span>'+
-   '<h3>'+escapeHtml(title)+'</h3><p>'+
-   (pending?"Исследование завершено. Для продолжения кампании требуется победа в обязательном бою игровой адаптации.":
-    "Просмотр сцены завершён. Первичные решения сохраняются только в основном прохождении.")+
-   '</p>'+
+  const pending=pendingBattle(node),n=pending?node?.requiredBattleNarrative:null;
+  const lines=n?n.lines.map(line=>{
+   const portrait=portraitFor(line.speakerId);
+   return '<div class="lore-battle-voice">'+
+    (portrait?'<img src="'+escapeHtml(portrait)+'" alt="Портрет: '+escapeHtml(line.speakerId)+'" loading="lazy">':
+     '<span class="lore-battle-portrait-placeholder" aria-hidden="true"></span>')+
+    '<div><strong>'+escapeHtml(line.speakerId)+'</strong><p>'+escapeHtml(line.text)+'</p></div></div>';
+  }).join(""):"";
+  return '<section class="lore-scene lore-scene-result'+(n?' lore-battle-result-brief':'')+'"><div class="lore-scene-card">'+
+   '<div class="lore-battle-result-copy">'+
+   '<span class="lore-detail-eyebrow">'+(n?"ИГРОВАЯ АДАПТАЦИЯ · ОБЯЗАТЕЛЬНЫЙ БОЙ":"РЕЗУЛЬТАТ · БЕЗ НАГРАД")+'</span>'+
+   '<h3>'+escapeHtml(n?.title||title)+'</h3>'+
+   (n?'<p class="lore-battle-intro">'+escapeHtml(n.intro)+'</p>'+lines:
+    '<p>'+(pending?"Исследование завершено. Для продолжения кампании требуется победа в обязательном бою игровой адаптации.":
+    "Просмотр сцены завершён. Первичные решения сохраняются только в основном прохождении.")+'</p>')+
+   '</div><div class="lore-battle-result-actions">'+
    (pending&&onStartRequiredBattle?
      '<button type="button" class="primary" data-lore-action="required-battle">⚔ Вступить в обязательный бой</button>':"")+
-   '<button type="button" class="ghost" data-lore-action="leave-result">Вернуться к карте</button></div></section>';
+   '<button type="button" class="ghost" data-lore-action="leave-result">Вернуться к карте</button>'+
+   '</div></div></section>';
  }
  function onClick(event){
   const button=event.target.closest?.("button[data-lore-action]");
@@ -489,7 +500,9 @@ const LoreCampaignUI=(()=>{
  function render(){
   if(!root)return;
   if(typeof document!=="undefined"&&document.body?.classList)
-   document.body.classList.toggle("lore-scene-open",view==="scene");
+   document.body.classList.toggle("lore-scene-open",view==="scene"||
+    view==="result"&&pendingBattle(data.getNode(nodeId,catalog))&&
+    !!data.getNode(nodeId,catalog)?.requiredBattleNarrative);
   root.innerHTML=view==="scene"?renderScene():view==="result"?renderResult():view==="map"?renderMap():renderStories();
  }
  function snapshot(){

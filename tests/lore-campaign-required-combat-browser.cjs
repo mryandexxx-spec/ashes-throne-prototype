@@ -12,6 +12,16 @@ async function inject(page){
  await page.evaluate(()=>{
   const x=LoreCampaign003Fixture.create(LoreCampaignData);
   x.graph.nodes[0].requiredBattleId="fs01-approach-combat";
+  x.graph.nodes[0].requiredBattleNarrative={
+   title:"Тестовое столкновение",
+   intro:"Слышны чужие шаги у поворота. Ничего канонического здесь не утверждается.",
+   lines:[
+    {speakerId:"Рен Терен",text:"— С прохода сойди."},
+    {speakerId:"Нада",text:"— Сумку не трогай."}
+   ],
+   victory:"Победа на арене записана.",
+   defeat:"Без победы следующий узел не откроется."
+  };
   x.graph.nodes[1].requiredBattleId="fs02-evidence-combat";
   const old=document.querySelector("#loreCampaignRoot"),root=document.createElement("div");
   root.id="loreCampaignRoot";root.className="lore-map-app";old.replaceWith(root);
@@ -48,7 +58,20 @@ async function run(name,type,w,h){
   await page.locator('[data-lore-choice="left"]').click();
   await page.locator('[data-lore-action="scene-next"]').click();
   await page.locator('[data-lore-action="scene-finish"]').click();
-  assert.match(await page.locator(".lore-scene-result").innerText(),/обязательном бою/);
+  assert.match(await page.locator(".lore-scene-result").innerText(),/Тестовое столкновение/);
+  assert.equal(await page.locator(".lore-battle-voice img").count(),2);
+  const layout=await page.evaluate(()=>{
+   const root=document.querySelector("#campaignLoreContent");
+   const rect=document.querySelector(".lore-scene-result").getBoundingClientRect();
+   return {lock:document.body.classList.contains("lore-scene-open"),
+    fixed:getComputedStyle(root).position,
+    width:document.documentElement.scrollWidth,viewport:innerWidth,
+    height:rect.height,bottom:rect.bottom};
+  });
+  assert.equal(layout.lock,true,"Narrated briefing should lock page scrolling");
+  assert.equal(layout.fixed,"fixed","Narrated briefing should cover the landscape viewport");
+  assert.ok(layout.width<=layout.viewport+1,"No horizontal overflow: "+JSON.stringify(layout));
+  assert.ok(layout.bottom<=h+1,"Briefing fits height: "+JSON.stringify(layout));
   const action=page.locator('[data-lore-action="required-battle"]');
   assert.equal(await action.count(),1);
   const box=await action.boundingBox();

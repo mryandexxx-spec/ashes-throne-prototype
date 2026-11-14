@@ -99,6 +99,19 @@ const LoreCampaignData=(function buildLoreCampaignData(){
     !(node.dailyLimitId===null||string(node.dailyLimitId)))return false;
    if(node.requiredBattleId!==undefined&&
       (!string(node.requiredBattleId)||node.kind==="battle"||node.nextNodeIds.length===0))return false;
+   // Optional written battle bridges are content only; they must not define
+   // combat rules, effects, rewards or hidden script execution.
+   if(node.requiredBattleNarrative!==undefined){
+    const n=node.requiredBattleNarrative;
+    if(!string(node.requiredBattleId)||!obj(n)||
+       !string(n.title)||n.title.length>100||
+       !string(n.intro)||n.intro.length>600||
+       !string(n.victory)||n.victory.length>700||
+       !string(n.defeat)||n.defeat.length>450||
+       !Array.isArray(n.lines)||n.lines.length>3||
+       n.lines.some(line=>!obj(line)||!string(line.speakerId)||
+         !string(line.text)||line.text.length>250))return false;
+   }
    if(node.prerequisites.includes(node.id)||node.nextNodeIds.includes(node.id)||
     [...node.prerequisites,...node.nextNodeIds].some(id=>nodes.get(id)?.storyId!==node.storyId))return false;
    if(node.kind==="battle"){

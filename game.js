@@ -744,12 +744,16 @@ function battleLineup(){
   if(!requiredLoreSquadReady())throw Error("MISSING_REQUIRED_LORE_HERO");
   const isRescue=loreRequiredContext.nodeId==="five-shadows:fs-05";
   const count=["five-shadows:fs-02","five-shadows:fs-05"].includes(loreRequiredContext.nodeId)?3:2;
-  // FS-05 only. Prototype pressure: attackers cannot be swept away before
-  // the evacuation condition matters; combat does NOT alter other rosters.
-  const attackers=ENEMIES.slice(0,count).map((e,i)=>progressedEnemy({
-   ...e,name:"Игровой противник "+(i+1),
-   ...(isRescue?{hp:Math.round(e.hp*2),atk:Math.round(e.atk*1.2)}:{})
-  }));
+  // FS-05 only: one dangerous pursuer hunts Ren; the two guards delay
+  // the party. These game-only numbers never modify global enemy templates.
+  const rescueOpponents=[
+   {name:"Дозорный 1",hp:150,atk:22},
+   {name:"Преследователь",hp:225,atk:60,assaultFocus:true},
+   {name:"Дозорный 2",hp:150,atk:22}
+  ];
+  const attackers=ENEMIES.slice(0,count).map((e,i)=>
+   progressedEnemy({...e,...(isRescue?rescueOpponents[i]:{
+    name:"Игровой противник "+(i+1)})}));
   return [...selectedParty(),...attackers];
  }
  // STORY-002 uses temporary hero IDs outside v3 save validation.

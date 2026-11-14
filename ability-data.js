@@ -89,7 +89,11 @@ const AbilityData=(()=>{
    })}),
   nada:Object.freeze({id:"passive",name:"Внимание к деталям",triggers:Object.freeze([]),modifiers:Object.freeze([]),
    combatRules:Object.freeze({gardensTagId:"gardens-over-abyss",gardensAccuracyBonus:8})}),
-  liora:passiveEmpty,
+  // LIORA001: [PROPOSAL] reaction guard for a wounded ally (not Liora herself).
+  liora:Object.freeze({id:"passive",name:"Ответственность за своих",
+   triggers:Object.freeze([]),modifiers:Object.freeze([]),
+   combatRules:Object.freeze({protectAllyBelowHpPercent:35,
+    protectAllyGuardHits:1,protectAllyCooldownOwnTurns:3})}),
   "trial-nada":passiveEmpty,"trial-liora":passiveEmpty,
   // Nonplayable fixtures verify automatic trigger registration and ownership.
   "test-passive-attacker":Object.freeze({id:"passive",name:"Тест реакции атакующего",

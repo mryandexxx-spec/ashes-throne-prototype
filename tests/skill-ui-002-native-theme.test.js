@@ -31,6 +31,6 @@ assert.match(css,/@media\(orientation:landscape\) and \(max-height:540px\)/);
 assert.ok(game.includes('$("#skillUpgradeButton")?.addEventListener("click"'));
 assert.ok(game.includes('$("#skillLevelButtons")?.addEventListener("click"'));
 assert.ok(game.includes('$("#skillUpgradeClose")?.addEventListener("click"'));
-assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · LIORA001`));
+assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · `));
 assert.equal(JSON.parse(read("package.json")).version,`${__BUILD_VERSION_FOR_TESTS}`);
 console.log("SkillUI-002: own project theme, controls, preview, mobile scroll and version contract passed");

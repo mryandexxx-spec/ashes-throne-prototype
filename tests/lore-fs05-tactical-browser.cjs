@@ -75,7 +75,7 @@ async function run(name,browserType,width,height){
   assert.equal(await page.locator("#squadRoster [data-squad-required=true]").count(),2);
   assert.equal(await page.locator("#squadTacticalBrief").isVisible(),true);
   assert.match(await page.locator("#squadTacticalBrief").innerText(),/12 действий союзников/);
-  assert.match(await page.locator("#squadTacticalBrief").innerText(),/Автобой отключён/);
+  assert.match(await page.locator("#squadTacticalBrief").innerText(),/автобой доступен/);
   const squadBounds=await page.locator("#squadStart").boundingBox();
   assert.ok(squadBounds&&squadBounds.y>=0&&squadBounds.y+squadBounds.height<=height+1,
    "Squad start should fit without vertical scrolling: "+JSON.stringify(squadBounds));
@@ -103,12 +103,12 @@ async function run(name,browserType,width,height){
   assert.equal(setup.enemyCount,3);assert.equal(setup.gpu,true);
   assert.match(setup.goal,/РЕНА/);
   assert.equal(setup.topGoalHidden,true);
-  assert.equal(setup.autoHidden,true,"manual tactical mission, autoplay not available");
+  assert.equal(setup.autoHidden,false,"autoplay remains available to test the tactical mission");
   assert.notEqual(setup.goalStyle,"rgba(0, 0, 0, 0)");
   assert.ok(setup.goalBounds.left>=0&&setup.goalBounds.right<=width+1);
   assert.ok(setup.goalBounds.top>=0&&setup.goalBounds.bottom<=height+1);
   await page.screenshot({path:path.join(out,tag+"-battle.png"),fullPage:true});
-  await finishManually(page);
+  await page.locator("#autoBattleBtn").click();
   await page.locator("#loreRequiredBattleResult").waitFor({state:"visible",timeout:145000});
   assert.equal(await page.locator("#loreRequiredResultTitle").innerText(),"Бой выигран");
   const battle=await page.evaluate(()=>({
@@ -117,6 +117,8 @@ async function run(name,browserType,width,height){
     cleared:JSON.parse(localStorage.getItem("ashes-throne.lore-campaign.v1")).stories["five-shadows"].battleClearedNodeIds
   }));
   assert.equal(battle.winner,"ally");assert.ok(battle.protectedHp>0);
+  assert.ok(battle.protectedHp<setup.protectedHp,
+   "The objective must expose Ren to actual enemy attacks, not a decorative win condition");
   assert.ok(["held","defeated-attackers"].includes(battle.outcome));
   assert.deepEqual(battle.cleared,["five-shadows:fs-01","five-shadows:fs-02","five-shadows:fs-05"]);
   // A victory must leave a repeat action, and replay must use the real squad.

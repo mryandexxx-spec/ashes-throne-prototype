@@ -99,6 +99,13 @@ async function check(browserName,browserType,width,height){
   await page.locator('[data-lore-action="scene-finish"]').click();
   assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.lore-campaign.v1")),
     primary,tag+" replay never changes primary decision or inspection data");
+  await page.locator('[data-lore-action="leave-result"]').click();
+  await page.locator('[data-lore-action="start-node"]').click();
+  assert.equal(await page.evaluate(()=>document.body.classList.contains("lore-scene-open")),true);
+  await page.evaluate(()=>showScreen("home"));
+  assert.equal(await page.evaluate(()=>document.body.classList.contains("lore-scene-open")),false,
+    tag+" global navigation releases full-screen scroll lock");
+  assert.equal(await page.locator("#home").isVisible(),true);
   assert.deepEqual(errors.filter(e=>/LoreCampaign|lore-campaign|FIXTURE/.test(e)),[],
    tag+" no lore runtime errors");
   console.log("LC-004 browser",tag,"PASS",JSON.stringify(geometry));

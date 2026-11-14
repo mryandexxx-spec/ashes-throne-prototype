@@ -98,16 +98,23 @@ const LoreCampaignData=(function buildLoreCampaignData(){
     !(node.energyCostId===null||string(node.energyCostId))||
     !(node.dailyLimitId===null||string(node.dailyLimitId)))return false;
    if(node.requiredBattleId!==undefined&&
-      (!string(node.requiredBattleId)||node.kind==="battle"||node.nextNodeIds.length===0))return false;
+      (!string(node.requiredBattleId)||node.kind==="battle"))return false;
    // Validated data only: no scripted callbacks or economy operations.
    if(node.requiredBattleObjective!==undefined){
     const o=node.requiredBattleObjective;
-    if(!string(node.requiredBattleId)||!obj(o)||
-       o.kind!=="hold-or-defeat"||!string(o.protectAllyId)||
-       !Number.isSafeInteger(o.allyActionsToHold)||
-       o.allyActionsToHold<2||o.allyActionsToHold>40||
-       Object.keys(o).some(k=>!["kind","protectAllyId","allyActionsToHold"].includes(k)))
-     return false;
+    if(!string(node.requiredBattleId)||!obj(o))return false;
+    const keys=Object.keys(o);
+    if(o.kind==="hold-or-defeat"){
+     if(!string(o.protectAllyId)||!Number.isSafeInteger(o.allyActionsToHold)||
+        o.allyActionsToHold<2||o.allyActionsToHold>40||
+        keys.some(k=>!["kind","protectAllyId","allyActionsToHold"].includes(k)))return false;
+    }else if(o.kind==="protect-and-defeat"){
+     if(!string(o.protectAllyId)||
+        keys.some(k=>!["kind","protectAllyId"].includes(k)))return false;
+    }else if(o.kind==="priority-first"){
+     if(!string(o.priorityEnemyId)||
+        keys.some(k=>!["kind","priorityEnemyId"].includes(k)))return false;
+    }else return false;
    }
    // Optional written battle bridges are content only; they must not define
    // combat rules, effects, rewards or hidden script execution.

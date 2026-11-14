@@ -301,6 +301,33 @@ const CombatCore = (() => {
     "wave-start","battle-end"]);
   function emit(battle, type, properties) {
     battle.events.push({type, ...properties});
+    // LIORA001: an emergency guard is a bounded reaction to damage,
+    // not a new recursive action. Derived effects never emit again.
+    if(type==="damage"){
+      const wounded=battle.fighters.find(f=>f.id===properties.targetId);
+      if(wounded&&wounded.side==="ally"&&wounded.hp>0&&wounded.maxHp>0&&
+        wounded.guardHits===0){
+        for(const owner of battle.fighters){
+          if(owner.id===wounded.id||owner.side!=="ally"||owner.hp<=0||
+            (owner.emergencyGuardCooldown??0)>0)continue;
+          const rules=passiveCombatRules(owner);
+          if(!rules||!Number.isFinite(rules.protectAllyBelowHpPercent)||
+            !Number.isSafeInteger(rules.protectAllyGuardHits)||
+            !Number.isSafeInteger(rules.protectAllyCooldownOwnTurns)||
+            rules.protectAllyBelowHpPercent<=0||rules.protectAllyBelowHpPercent>100||
+            rules.protectAllyGuardHits<1||rules.protectAllyCooldownOwnTurns<1||
+            wounded.hp*100>wounded.maxHp*rules.protectAllyBelowHpPercent)continue;
+          wounded.guardHits=rules.protectAllyGuardHits;
+          owner.emergencyGuardCooldown=rules.protectAllyCooldownOwnTurns;
+          battle.events.push({type:"passive-trigger",ownerId:owner.id,
+            passiveId:"passive",sourceEventType:"damage",
+            sourceActorId:properties.actorId,sourceTargetId:wounded.id});
+          battle.events.push({type:"effect",actorId:owner.id,targetId:wounded.id,
+            effect:"guard",stacks:wounded.guardHits,passiveId:"passive"});
+          break; // one emergency defender per hit
+        }
+      }
+    }
     if(!PASSIVE_EVENTS.includes(type))return;
     for(const owner of battle.fighters){
       if(owner.side!=="ally"||owner.hp<=0)continue;
@@ -781,6 +808,8 @@ const CombatCore = (() => {
   }
   function tickActorStatuses(actor){
     if(typeof CombatStatusCore!=="undefined")CombatStatusCore.tickOwnTurn(actor);
+    if(Number.isSafeInteger(actor.emergencyGuardCooldown)&&actor.emergencyGuardCooldown>0)
+      actor.emergencyGuardCooldown--;
   }
 
   // Combat-012C: optional data-defined follow-up statuses, not hero-specific

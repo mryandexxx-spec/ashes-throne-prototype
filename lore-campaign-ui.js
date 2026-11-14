@@ -226,15 +226,24 @@ const LoreCampaignUI=(()=>{
   return !!record?.completedNodeIds.includes(node.id)&&
     !core.battleCleared(progress,node.storyId,node.id);
  }
+ function replayableBattle(node){
+  if(!node?.requiredBattleId||!core?.battleCleared||!sceneRuntime||
+     sceneRuntime.storageStatus()==="corrupt")return false;
+  const record=sceneRuntime.stateFor(node.storyId);
+  return !!record?.completedNodeIds.includes(node.id)&&
+   core.battleCleared(progress,node.storyId,node.id);
+ }
  function startRequiredBattle(){
   const node=data.getNode(nodeId,catalog);
-  if(!node||!pendingBattle(node)||!onStartRequiredBattle)return false;
-  const result=sceneRuntime.beginRequiredBattle(node.id);
+  if(!node||!onStartRequiredBattle)return false;
+  const replay=replayableBattle(node);
+  if(!replay&&!pendingBattle(node))return false;
+  const result=sceneRuntime.beginRequiredBattle(node.id,replay);
   if(!result.ok){notice=actionMessage(result.code);render();return false;}
   try {
    const entered=onStartRequiredBattle({nodeId:node.id,battleId:result.battleId,storyId:node.storyId,
     battleNarrative:node.requiredBattleNarrative||null,
-    battleObjective:node.requiredBattleObjective||null});
+    battleObjective:node.requiredBattleObjective||null,replay:result.replay===true});
    if(entered===false){sceneRuntime.cancelRequiredBattle();return false;}
    return true;
   }catch(error){sceneRuntime.cancelRequiredBattle();throw error;}
@@ -370,7 +379,7 @@ const LoreCampaignUI=(()=>{
   else if(action==="back")back();
   else if(action==="start-node")startScene();
   else if(action==="training-battle"&&onStartTraining)onStartTraining();
-  else if(action==="required-battle")startRequiredBattle();
+  else if(action==="required-battle"||action==="replay-battle")startRequiredBattle();
   else if(action==="leave-scene"||action==="leave-result")back();
   else if(action==="scene-page-next"){narrativePage++;render();}
   else if(action==="scene-page-prev"){narrativePage=Math.max(0,narrativePage-1);render();}
@@ -458,7 +467,9 @@ const LoreCampaignUI=(()=>{
    deps+
    '<div class="lore-detail-actions">'+
    (pendingBattle(node)&&onStartRequiredBattle?
-    '<button type="button" class="primary" data-lore-action="required-battle">⚔ Обязательный бой</button>':"")+
+    '<button type="button" class="primary" data-lore-action="required-battle">⚔ Обязательный бой</button>':
+    replayableBattle(node)&&onStartRequiredBattle?
+    '<button type="button" class="primary" data-lore-action="replay-battle">↻ Повторить бой</button>':"")+
    (known&&sceneRuntime?.hasContent(node.id)&&sceneRuntime?.storageStatus()!=="corrupt"?
     '<button type="button" class="primary" data-lore-action="start-node">'+
        (sceneRuntime.hasCheckpoint(node.id)?"Продолжить":status.code==="completed"?"Перепройти":"Начать сцену")+
@@ -530,6 +541,6 @@ const LoreCampaignUI=(()=>{
  }
  return Object.freeze({mount,open,close,back,openStory,changeLayer,selectNode,
   render,nodeStatus,snapshot,startScene,actInScene,saveMessage,
-  pendingBattle,startRequiredBattle,recordBattleVictory,cancelRequiredBattle});
+  pendingBattle,replayableBattle,startRequiredBattle,recordBattleVictory,cancelRequiredBattle});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=LoreCampaignUI;

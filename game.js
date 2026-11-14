@@ -2318,9 +2318,10 @@ function showCampaignPath(path){
  if(back)back.textContent=selectedCampaignPath?"← К выбору":"← В штаб";
  // LOREMAP001: open the non-combat lore map through the existing hub.
  if(selectedCampaignPath==="lore"&&typeof LoreCampaignUI!=="undefined"&&
-   typeof LoreCampaignData!=="undefined"&&typeof LoreCampaignCore!=="undefined"){
+   typeof LoreCampaignPilot!=="undefined"&&typeof LoreCampaignCore!=="undefined"){
   const loreRoot=$("#loreCampaignRoot");
-  if(loreRoot&&LoreCampaignUI.mount(loreRoot,LoreCampaignData,LoreCampaignCore,{
+  if(loreRoot&&LoreCampaignUI.mount(loreRoot,LoreCampaignPilot.data,LoreCampaignCore,{
+   pack:LoreCampaignPilot.pack,
    onStartRequiredBattle:openLoreRequiredBattle,
    onStartTraining:openLoreTraining
   }))LoreCampaignUI.open();

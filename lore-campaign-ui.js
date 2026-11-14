@@ -210,7 +210,7 @@ const LoreCampaignUI=(()=>{
    '<div class="lore-chronicle-heading"><span>ИСТОРИИ МИРА</span><h3>Кампании лора</h3>'+
    '<p>Исследуйте истории мира на интерактивных схемах. Первые сцены ещё готовятся.</p></div>'+
    '<div class="lore-story-grid">'+cards+'</div>'+
-   '<p class="lore-stage-note">LC-002 · Доступен просмотр карты. Игровые сцены и сохранение прогресса появятся позже.</p></section>';
+   '<p class="lore-stage-note">LC-003 · Механизм сцен и сохранения готов. Авторские тексты «Пяти теней» добавляются на следующем этапе.</p></section>';
  }
  function edgeSvg(nodes){
   const availableIds=new Set(nodes.map(n=>n.id));
@@ -260,8 +260,13 @@ const LoreCampaignUI=(()=>{
    '<p class="lore-detail-reason">'+escapeHtml(status.reason)+'</p>'+
    deps+
    '<div class="lore-detail-actions">'+
-   '<button type="button" class="primary" disabled aria-disabled="true">Сюжетная сцена готовится</button>'+
-   '<small>Запуск, решения и повтор — этап LC-003/004. Награды пока не определены.</small></div>'+
+   (known&&sceneRuntime?.hasContent(node.id)&&sceneRuntime?.storageStatus()!=="corrupt"?
+    '<button type="button" class="primary" data-lore-action="start-node">'+
+       (sceneRuntime.hasCheckpoint(node.id)?"Продолжить":status.code==="completed"?"Перепройти":"Начать сцену")+
+    '</button>':
+    '<button type="button" class="primary" disabled aria-disabled="true">'+
+      (sceneRuntime?.storageStatus()==="corrupt"?"Сохранение повреждено":"Сюжетная сцена готовится")+'</button>')+
+   '<small>Реплики и задачи будут добавлены после сценарного утверждения. Награды пока не определены.</small></div>'+
    '</aside>';
  }
  function renderMap(){
@@ -291,7 +296,7 @@ const LoreCampaignUI=(()=>{
    renderDetail(chosen)+'</div>'+
    '<div class="lore-legend" aria-label="Условные обозначения"><span class="lore-state-completed">● Пройдено</span><span class="lore-state-available">● Доступно</span><span class="lore-state-locked">● Закрыто</span></div>'+
    '<div class="lore-node-list" role="group" aria-label="Список сюжетных узлов">'+list+'</div>'+
-   '<p class="lore-stage-note">Это предварительная схема. До LC-003 прогресс не сохраняется, главы и награды не запускаются.</p>'+
+   '<p class="lore-stage-note">'+escapeHtml(saveMessage())+' Игровые сцены включаются после утверждения текста.</p>'+
    '</section>';
  }
  function render(){

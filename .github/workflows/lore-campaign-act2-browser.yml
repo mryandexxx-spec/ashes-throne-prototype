@@ -1,0 +1,38 @@
+name: LOREACT2001 act II live browser
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'game.js'
+      - 'index.html'
+      - 'lore-campaign-*.js'
+      - 'lore-campaign.css'
+      - 'tests/lore-campaign-act2-browser.cjs'
+      - '.github/workflows/lore-campaign-act2-browser.yml'
+permissions:
+  contents: read
+jobs:
+  act2-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Existing saved campaign through entire act II in Chromium and WebKit
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/lore-act2.log 2>&1 &
+          sleep 2
+          node tests/lore-campaign-act2-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lore-act2-mobile-e2e
+          path: artifacts/lore-act2/
+          retention-days: 14
+          if-no-files-found: warn

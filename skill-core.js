@@ -120,7 +120,7 @@ const SkillCore=(()=>{
   liora:Object.freeze({
    basic:Object.freeze({damage:[1,1.05,1.1,1.15,1.2,1.25]}),
    special:Object.freeze({guard:[2,2,3,3,4,4],cooldown:[3,3,3,2,2,2]}),
-   powerful:Object.freeze({guard:[1,1,2,2,3,3],cooldown:[3,3,3,3,3,3]})
+   powerful:Object.freeze({guard:[2,2,2,3,3,3],cooldown:[3,3,3,3,3,3]})
   }),
   ren:Object.freeze({
    basic:Object.freeze({damage:[1,1.1,1.2,1.2,1.3,1.4]}),

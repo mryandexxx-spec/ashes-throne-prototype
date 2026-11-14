@@ -317,12 +317,17 @@ const LoreCampaignUI=(()=>{
    '</section>';
  }
  function renderResult(){
-  const title=data.getNode(nodeId,catalog)?.title||"Узел";
+  const node=data.getNode(nodeId,catalog),title=node?.title||"Узел";
+  const pending=pendingBattle(node);
   return '<section class="lore-scene lore-scene-result"><div class="lore-scene-card">'+
    '<span class="lore-detail-eyebrow">РЕЗУЛЬТАТ · БЕЗ НАГРАД</span>'+
-   '<h3>'+escapeHtml(title)+'</h3><p>Просмотр сцены завершён. '+
-   'Первичные решения сохраняются только в основном прохождении.</p>'+
-   '<button type="button" class="primary" data-lore-action="leave-result">Вернуться к карте</button></div></section>';
+   '<h3>'+escapeHtml(title)+'</h3><p>'+
+   (pending?"Исследование завершено. Для продолжения кампании требуется победа в обязательном бою игровой адаптации.":
+    "Просмотр сцены завершён. Первичные решения сохраняются только в основном прохождении.")+
+   '</p>'+
+   (pending&&onStartRequiredBattle?
+     '<button type="button" class="primary" data-lore-action="required-battle">⚔ Вступить в обязательный бой</button>':"")+
+   '<button type="button" class="ghost" data-lore-action="leave-result">Вернуться к карте</button></div></section>';
  }
  function onClick(event){
   const button=event.target.closest?.("button[data-lore-action]");
@@ -334,6 +339,7 @@ const LoreCampaignUI=(()=>{
   else if(action==="back")back();
   else if(action==="start-node")startScene();
   else if(action==="training-battle"&&onStartTraining)onStartTraining();
+  else if(action==="required-battle")startRequiredBattle();
   else if(action==="leave-scene"||action==="leave-result")back();
   else if(action==="scene-page-next"){narrativePage++;render();}
   else if(action==="scene-page-prev"){narrativePage=Math.max(0,narrativePage-1);render();}
@@ -420,13 +426,17 @@ const LoreCampaignUI=(()=>{
    '<p class="lore-detail-reason">'+escapeHtml(status.reason)+'</p>'+
    deps+
    '<div class="lore-detail-actions">'+
+   (pendingBattle(node)&&onStartRequiredBattle?
+    '<button type="button" class="primary" data-lore-action="required-battle">⚔ Обязательный бой</button>':"")+
    (known&&sceneRuntime?.hasContent(node.id)&&sceneRuntime?.storageStatus()!=="corrupt"?
     '<button type="button" class="primary" data-lore-action="start-node">'+
        (sceneRuntime.hasCheckpoint(node.id)?"Продолжить":status.code==="completed"?"Перепройти":"Начать сцену")+
     '</button>':
     '<button type="button" class="primary" disabled aria-disabled="true">'+
       (sceneRuntime?.storageStatus()==="corrupt"?"Сохранение повреждено":"Сюжетная сцена готовится")+'</button>')+
-   '<small>Сюжетное прохождение без затрат энергии. Тренировочный бой расположен на карте отдельно от канона.</small></div>'+
+   '<small>'+(node.requiredBattleId?
+    'Продолжение открывается только после победы в бою. Бой — игровая адаптация, не событие литературного канона.':
+    'Сюжетное прохождение без затрат энергии и наград.')+'</small></div>'+
    '</aside>';
  }
  function renderJournal(){
@@ -460,7 +470,8 @@ const LoreCampaignUI=(()=>{
    '<button type="button" class="ghost lore-map-return" data-lore-action="back">← К историям</button>'+
    '<div><span class="lore-map-eyebrow">ХРОНИКА / ИНТЕРАКТИВНАЯ СХЕМА</span>'+
    '<h3>'+escapeHtml(story.title)+'</h3><small>'+escapeHtml(chapters[0]?.title||story.subtitle)+'</small></div>'+
-   (onStartTraining?'<button type="button" class="ghost lore-map-training-action" data-lore-action="training-battle">'+
+   (onStartTraining&&!catalog.nodes.some(n=>n.storyId===storyId&&n.requiredBattleId)?
+     '<button type="button" class="ghost lore-map-training-action" data-lore-action="training-battle">'+
      '⚔ Тактический бой <small>Вне канона · без энергии</small></button>':'')+'</div>'+
    '<nav class="lore-layer-list" aria-label="Слои карты">'+layers+'</nav>'+
    '<div class="lore-map-layout">'+
@@ -485,6 +496,7 @@ const LoreCampaignUI=(()=>{
   return Object.freeze({view,storyId,nodeId,layerId,hasRoot:!!root});
  }
  return Object.freeze({mount,open,close,back,openStory,changeLayer,selectNode,
-  render,nodeStatus,snapshot,startScene,actInScene,saveMessage});
+  render,nodeStatus,snapshot,startScene,actInScene,saveMessage,
+  pendingBattle,startRequiredBattle,recordBattleVictory,cancelRequiredBattle});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=LoreCampaignUI;

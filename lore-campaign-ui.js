@@ -233,7 +233,8 @@ const LoreCampaignUI=(()=>{
   if(!result.ok){notice=actionMessage(result.code);render();return false;}
   try {
    const entered=onStartRequiredBattle({nodeId:node.id,battleId:result.battleId,storyId:node.storyId,
-    battleNarrative:node.requiredBattleNarrative||null});
+    battleNarrative:node.requiredBattleNarrative||null,
+    battleObjective:node.requiredBattleObjective||null});
    if(entered===false){sceneRuntime.cancelRequiredBattle();return false;}
    return true;
   }catch(error){sceneRuntime.cancelRequiredBattle();throw error;}

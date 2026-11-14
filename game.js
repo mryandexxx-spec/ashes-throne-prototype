@@ -741,7 +741,7 @@ function battleLineup(){
  if(battleIsLoreRequired){
   if(!loreRequiredContext?.nodeId)throw Error("MISSING_LORE_BATTLE_CONTEXT");
   if(!requiredLoreSquadReady())throw Error("MISSING_REQUIRED_LORE_HERO");
-  const count=loreRequiredContext.nodeId==="five-shadows:fs-02"?3:2;
+  const count=["five-shadows:fs-02","five-shadows:fs-05"].includes(loreRequiredContext.nodeId)?3:2;
   return [...selectedParty(),...ENEMIES.slice(0,count).map((e,i)=>
    progressedEnemy({...e,name:"Игровой противник "+(i+1)}))];
  }
@@ -1010,7 +1010,9 @@ function showScreen(id){
    objective.hidden=!battleIsLoreRequired&&!battleIsLoreTraining&&!battleIsChallenge&&!battleIsOperation&&!battleIsSignal;
    const def=battleIsChallenge?ChallengeCore.get(activeChallengeId):null;
    const priority=def?.kind==="tactical"?ENEMIES.find(e=>e.id===def.priorityId):null;
-   objective.textContent=battleIsLoreRequired?"Победите, чтобы открыть следующий эпизод. Бой относится к игровой адаптации.":battleIsLoreTraining?"Учебные противники. Без наград, энергии и влияния на хронику.":battleIsSignal?signalProgress.active?.assault==="quiet"?
+   objective.textContent=battleIsLoreRequired&&loreRequiredContext?.battleObjective?
+     "Прикрытие: сохраните Рена. Победите всех врагов или продержитесь 12 действий союзников.":
+     battleIsLoreRequired?"Победите, чтобы открыть следующий эпизод. Бой относится к игровой адаптации.":battleIsLoreTraining?"Учебные противники. Без наград, энергии и влияния на хронику.":battleIsSignal?signalProgress.active?.assault==="quiet"?
      "Тихий штурм: первым обезвредь связного. Два стража одним действием — сигнал подавлен.":
      "Окружение: две волны, сигнал подавлен после победы, но скрытность потеряна.":
     battleIsOperation?"Перехватить подлинный пакет.":!def?"":def.kind==="tactical"?
@@ -2253,7 +2255,8 @@ function missionRewardLabel(id){
 function openLoreRequiredBattle(context){
  if(!context?.nodeId||!context.battleId)return false;
  loreRequiredContext={nodeId:context.nodeId,battleId:context.battleId,
-  storyId:context.storyId,battleNarrative:context.battleNarrative||null};
+  storyId:context.storyId,battleNarrative:context.battleNarrative||null,
+  battleObjective:context.battleObjective||null};
  loreRequiredResult=null;activeMissionId=null;
  loreSquadSlots=null; // New story encounter: copy global formation, then lock Ren and Nada.
  openSquad("loreRequired");return true;
@@ -2270,7 +2273,10 @@ function renderLoreRequiredBattleResult(){
   const n=loreRequiredContext?.battleNarrative;
   const consequence=won?(saved?n?.victory:null):n?.defeat;
   // Never turn private authored prose into HTML or a canonical game reward.
-  body.textContent=summary+(consequence?"\n\n"+consequence:"");
+   const outcome=state?.tacticalOutcome==="held"?"Отход прикрыт до завершения эвакуации.":
+    state?.tacticalOutcome==="defeated-attackers"?"Нападавшие оттеснены раньше окончания эвакуации.":
+    state?.tacticalOutcome==="protected-fallen"?"Рен выбыл из боя: прикрытие сорвалось.":"";
+   body.textContent=summary+(outcome?"\n\n"+outcome:"")+(consequence?"\n\n"+consequence:"");
  }
  const next=$("#loreRequiredResultContinue"),retry=$("#loreRequiredResultRetry");
  if(next)next.hidden=!saved;
@@ -2538,6 +2544,12 @@ function renderTargetFighterHud(){
 }
 function syncBattleUI(){
  if(inspectionId)renderFighterInspection();
+ if(battleIsLoreRequired&&state.tacticalObjective){
+  const o=state.tacticalObjective,goal=$("#battleChallengeGoal");
+  if(goal)goal.textContent="Прикрыть отход · сохранить Рена · "+
+   Math.min(state.allyActions,o.allyActionsToHold)+"/"+o.allyActionsToHold+
+   " действий союзников. Или победить всех нападающих.";
+ }
  if(!state.active||isVisualTransition())hideAbilityTooltip();
  if(!state.active){cancelAutoTimer();autoBattle=false;}
  // Commit battle outcome immediately as before, even if the player leaves
@@ -2840,6 +2852,8 @@ function resetBattle(){
  state=CombatCore.createBattle(lineup,battleFutureWaves(),{
   leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId,
   ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{}),
+  ...(battleIsLoreRequired&&loreRequiredContext?.battleObjective?
+   {tacticalObjective:loreRequiredContext.battleObjective}:{}),
   // RNG combat formulas are active only for parties of the two real heroes.
   // Mannequin-based demos preserve their historical combat behavior.
   ...(realHeroFight?{

@@ -35,7 +35,7 @@ function oldProgress(storage){
  play(r,c);
  return r.progress();
 }
-test("LOREACT2001: six chapters' nodes in two map layers with valid content and no new battles",()=>{
+test("LOREACT2001: six episodes in two layers with FS-05 tactical rescue",()=>{
  const g=Act2.data.catalog();
  assert.equal(Base.catalogIsValid(g),true);
  assert.equal(Scripts.valid(Act2.pack,g),true);
@@ -44,7 +44,7 @@ test("LOREACT2001: six chapters' nodes in two map layers with valid content and 
  assert.deepEqual(g.stories[0].mapLayers.map(x=>x.id),["gardens-route","city-response"]);
  assert.deepEqual(g.nodes.slice(3).map(n=>n.contentId),[
   "fs04-the-returned","fs05-upper-door","fs06-fire-in-fifth-shadow"]);
- assert.deepEqual(g.nodes.slice(3).map(n=>n.requiredBattleId||null),[null,null,null]);
+ assert.deepEqual(g.nodes.slice(3).map(n=>n.requiredBattleId||null),[null,"fs05-cover-evacuation",null]);
  assert.deepEqual(g.nodes[2].nextNodeIds,["five-shadows:fs-04"]);
  assert.equal(g.nodes[5].nextNodeIds.length,0);
  assert.ok(g.nodes.every(n=>n.rewardPoolId===null&&n.energyCostId===null));
@@ -59,9 +59,13 @@ test("LOREACT2001: old three-scene save loads and new act completes without losi
  assert.equal(Core.available(g,r.progress(),id[4]),false);
  assert.deepEqual(r.stateFor("five-shadows").completedNodeIds,id.slice(0,3));
  assert.deepEqual(r.stateFor("five-shadows").battleClearedNodeIds,id.slice(0,2));
- for(const node of g.nodes.slice(3))play(r,node.id);
+ play(r,id[3]);play(r,id[4]);
+ assert.equal(Core.available(g,r.progress(),id[5]),false);
+ assert.equal(r.beginRequiredBattle(id[4]).ok,true);
+ assert.equal(r.recordBattleVictory(id[4],"fs05-cover-evacuation").ok,true);
+ play(r,id[5]);
  assert.deepEqual(r.stateFor("five-shadows").completedNodeIds,id);
- assert.deepEqual(r.stateFor("five-shadows").battleClearedNodeIds,id.slice(0,2));
+ assert.deepEqual(r.stateFor("five-shadows").battleClearedNodeIds,[id[0],id[1],id[4]]);
  assert.deepEqual([...store.map.keys()],[Core.KEY]);
  assert.deepEqual(
   Object.entries(before.stories["five-shadows"].primaryChoicesById).sort(),
@@ -107,9 +111,9 @@ test("LOREACT2001: fresh play cannot jump into new act and UI scripts load in sa
  for(const node of graph.nodes.slice(1))
   assert.equal(Core.available(graph,progress,node.id),false,"fresh save cannot skip "+node.id);
  assert.equal(Core.available(graph,progress,graph.nodes[0].id),true);
- const pilotScript='src="lore-campaign-pilot.js?v=0.3.156"';
- const actScript='src="lore-campaign-act2.js?v=0.3.156"';
- const gameScript='src="game.js?v=0.3.156"';
+ const pilotScript='src="lore-campaign-pilot.js?v=0.3.157"';
+ const actScript='src="lore-campaign-act2.js?v=0.3.157"';
+ const gameScript='src="game.js?v=0.3.157"';
  assert.ok(html.includes(pilotScript)&&html.includes(actScript)&&html.includes(gameScript));
  assert.ok(html.indexOf(pilotScript)<html.indexOf(actScript));
  assert.ok(html.indexOf(actScript)<html.indexOf(gameScript));

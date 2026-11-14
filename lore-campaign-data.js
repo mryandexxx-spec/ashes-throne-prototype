@@ -99,6 +99,16 @@ const LoreCampaignData=(function buildLoreCampaignData(){
     !(node.dailyLimitId===null||string(node.dailyLimitId)))return false;
    if(node.requiredBattleId!==undefined&&
       (!string(node.requiredBattleId)||node.kind==="battle"||node.nextNodeIds.length===0))return false;
+   // Validated data only: no scripted callbacks or economy operations.
+   if(node.requiredBattleObjective!==undefined){
+    const o=node.requiredBattleObjective;
+    if(!string(node.requiredBattleId)||!obj(o)||
+       o.kind!=="hold-or-defeat"||!string(o.protectAllyId)||
+       !Number.isSafeInteger(o.allyActionsToHold)||
+       o.allyActionsToHold<2||o.allyActionsToHold>40||
+       Object.keys(o).some(k=>!["kind","protectAllyId","allyActionsToHold"].includes(k)))
+     return false;
+   }
    // Optional written battle bridges are content only; they must not define
    // combat rules, effects, rewards or hidden script execution.
    if(node.requiredBattleNarrative!==undefined){

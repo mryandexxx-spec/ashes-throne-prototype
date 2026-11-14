@@ -1,0 +1,38 @@
+name: LORETACTIC001 FS-05 real tactical battle
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'game.js'
+      - 'combat-core.js'
+      - 'lore-campaign-*.js'
+      - 'index.html'
+      - 'tests/lore-fs05-tactical-browser.cjs'
+      - '.github/workflows/lore-fs05-tactical-browser.yml'
+permissions:
+  contents: read
+jobs:
+  fs05-real-battle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Real FS-05 gate through Babylon battle, victory and reload
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/lore-fs05.log 2>&1 &
+          sleep 2
+          node tests/lore-fs05-tactical-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lore-fs05-tactical-e2e
+          path: artifacts/lore-fs05-tactical/
+          retention-days: 14
+          if-no-files-found: warn

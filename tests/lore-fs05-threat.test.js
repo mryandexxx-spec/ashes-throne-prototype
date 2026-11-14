@@ -80,3 +80,25 @@ test("LOREUX001: mission tuning stays scoped to FS-05, old arena contracts uncha
  const old=CombatCore.createBattle([...team(),enemy("ves",90,18,105)],[],{});
  assert.equal(old.tacticalObjective,undefined);
 });
+
+
+test("LOREUX001: activating Liora's taunt provides a different successful route",()=>{
+ const teamWithGuard=[
+  ally("ren",120,27,150),ally("nada",100,18,120),ally("liora",105,20,115),
+  ally("lyra",88,31,155),ally("darin",105,27,125)
+ ];
+ const b=CombatCore.createBattle([...teamWithGuard,...foes()],[],{tacticalObjective:objective});
+ CombatCore.advanceToPlayerTurn(b);
+ let taunts=0;
+ for(let steps=0;b.active&&steps<45;steps++){
+  const plan=AutoDecision.chooseAction(b),actor=b.fighters[b.currentActor];
+  if(actor.id==="liora"&&taunts===0){
+    plan.abilityId="special";plan.targetIndex=b.currentActor;taunts++;
+  }
+  assert.equal(CombatCore.performAutoAction(b,plan),true);
+ }
+ assert.equal(taunts,1);
+ assert.equal(b.winner,"ally");
+ assert.equal(b.tacticalOutcome,"held");
+ assert.ok(b.fighters.find(f=>f.id==="ren").hp>0);
+});

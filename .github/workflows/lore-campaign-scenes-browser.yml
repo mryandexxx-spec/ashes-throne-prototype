@@ -1,0 +1,38 @@
+name: LC-003 lore scene persistence browser
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'lore-campaign-*.js'
+      - 'lore-campaign.css'
+      - 'tests/lore-campaign-003-browser.cjs'
+      - 'tests/lore-campaign-003-fixture.js'
+      - '.github/workflows/lore-campaign-scenes-browser.yml'
+permissions:
+  contents: read
+jobs:
+  scene-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Test scene checkpoints, choices, replay and overflow in Chromium/WebKit
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/lore003-server.log 2>&1 &
+          sleep 2
+          node tests/lore-campaign-003-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lore-campaign-003-scene-browser
+          path: artifacts/lore-campaign-003/
+          retention-days: 14
+          if-no-files-found: warn

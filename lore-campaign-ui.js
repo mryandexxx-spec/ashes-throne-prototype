@@ -287,6 +287,7 @@ const LoreCampaignUI=(()=>{
   else if(action==="choose-layer")changeLayer(button.dataset.loreLayer);
   else if(action==="back")back();
   else if(action==="start-node")startScene();
+  else if(action==="training-battle"&&onStartTraining)onStartTraining();
   else if(action==="leave-scene"||action==="leave-result")back();
   else if(action==="scene-page-next"){narrativePage++;render();}
   else if(action==="scene-page-prev"){narrativePage=Math.max(0,narrativePage-1);render();}
@@ -379,7 +380,7 @@ const LoreCampaignUI=(()=>{
     '</button>':
     '<button type="button" class="primary" disabled aria-disabled="true">'+
       (sceneRuntime?.storageStatus()==="corrupt"?"Сохранение повреждено":"Сюжетная сцена готовится")+'</button>')+
-   '<small>Реплики и задачи будут добавлены после сценарного утверждения. Награды пока не определены.</small></div>'+
+   '<small>Сюжетное прохождение без затрат энергии. Тренировочный бой расположен на карте отдельно от канона.</small></div>'+
    '</aside>';
  }
  function renderJournal(){
@@ -422,6 +423,14 @@ const LoreCampaignUI=(()=>{
    renderDetail(chosen)+'</div>'+
    '<div class="lore-legend" aria-label="Условные обозначения"><span class="lore-state-completed">● Пройдено</span><span class="lore-state-available">● Доступно</span><span class="lore-state-locked">● Закрыто</span></div>'+
    '<div class="lore-node-list" role="group" aria-label="Список сюжетных узлов">'+list+'</div>'+
+   '<section class="lore-training-card" aria-label="Тактическая тренировка">'+
+     '<div><span class="lore-detail-eyebrow">ИГРОВОЙ БОЙ · ВНЕ СОБЫТИЙ ГЛАВЫ</span>'+
+       '<strong>Тренировка отряда</strong>'+
+       '<small>Отдельная тактическая схватка на существующей 3D-арене. Не меняет сюжетные решения и не расходует энергию.</small></div>'+
+     (onStartTraining?
+      '<button type="button" class="primary" data-lore-action="training-battle">К бою</button>':
+      '<span class="lore-training-inactive">Доступно в полной игре</span>')+
+    '</section>'+
    renderJournal()+
    '<p class="lore-stage-note">'+escapeHtml(saveMessage())+' Игровые сцены включаются после утверждения текста.</p>'+
    '</section>';

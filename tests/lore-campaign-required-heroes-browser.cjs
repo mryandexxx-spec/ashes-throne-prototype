@@ -69,9 +69,11 @@ async function run(name,type,w,h){
    assert.equal(await button.getAttribute("aria-disabled"),"true");
    assert.equal(await button.getAttribute("aria-pressed"),"true");
    assert.match(await button.innerText(),/ОБЯЗАТЕЛЬНЫЙ/);
-   await button.click();
+   // Playwright honours aria-disabled and correctly refuses a pointer click.
+   // The domain handler must also refuse direct attempts to remove the hero.
+   assert.equal(await page.evaluate(heroId=>toggleSquadHero(heroId),id),false);
    assert.equal(await button.getAttribute("aria-pressed"),"true",
-    "Click cannot deselect mandatory hero "+id);
+    "Mandatory character cannot be deselected "+id);
   }
   assert.deepEqual((await state(page)).normal,baseline.normal);
   // Clearing all optional slots must never remove the two mandatory heroes.

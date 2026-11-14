@@ -148,6 +148,32 @@ const CombatCore = (() => {
       ?CombatStatusCore.effectiveSpeed(fighter,effective):effective;
   }
 
+  // LIORA001: leader Protection is a temporary pool, not a permanent edit
+  // to the roster or a multiplier applied repeatedly each turn. Removal on
+  // leader death clamps the remaining pool without retroactive HP damage.
+  function syncLeaderProtection(battle){
+    const leader=battle.leaderId&&battle.fighters.find(f=>f.id===battle.leaderId);
+    const mods=leader&&leader.side==="ally"&&leader.hp>0?
+      AbilityData.get(leader,"leader")?.modifiers||[]:[];
+    const percent=mods.filter(m=>m&&m.stat==="protection"&&
+      m.operation==="percent"&&m.scope==="all-allies"&&
+      m.when?.kind==="always"&&Number.isFinite(m.value)&&m.value>=0&&m.value<=100)
+      .reduce((total,m)=>total+m.value,0);
+    for(const recipient of battle.fighters){
+      if(recipient.side!=="ally"||!Number.isSafeInteger(recipient.maxProtection)||
+        !Number.isSafeInteger(recipient.protection))continue;
+      const old=recipient.leaderProtectionBonus??0;
+      const base=Math.max(0,recipient.maxProtection-old);
+      const next=Math.round(base*percent/100);
+      const diff=next-old;
+      if(diff){
+        recipient.maxProtection+=diff;
+        recipient.protection=Math.max(0,Math.min(recipient.maxProtection,recipient.protection+diff));
+      }
+      recipient.leaderProtectionBonus=next;
+    }
+  }
+
   function makeFighter(hero,index,meter) {
     const fighter = {...hero,maxHp:hero.hp,specialCooldown:0,powerfulCooldown:0,
       meter,index,effects:Object.create(null)};
@@ -216,7 +242,7 @@ const CombatCore = (() => {
          leader.hp<=0||fighters.findIndex(f=>f.id===leaderId)!==0)
         throw Error("leader must be the first living ally in the roster");
     }
-    return {
+    const battle = {
       fighters,
       ...(seededRng===null?{}:{rng:seededRng}),
       ...(options.hitChecks===true?{hitChecks:true}:{}),
@@ -239,6 +265,8 @@ const CombatCore = (() => {
       events: [],
       message: "Отряд готов к бою"
     };
+    syncLeaderProtection(battle);
+    return battle;
   }
 
   function livingEnemies(fighters) {
@@ -301,6 +329,7 @@ const CombatCore = (() => {
   }
 
   function finishIfOver(battle) {
+    syncLeaderProtection(battle);
     if (firstLivingEnemy(battle.fighters) < 0) {
       // A wave is not a mission victory. Keep surviving allies (HP, initiative,
       // cooldowns and effects) and replace defeated enemies with the next wave.

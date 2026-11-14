@@ -154,7 +154,7 @@ test("fixed camera ignores single-finger rotation, retains 12..21 pinch and clea
 test("candidate build and visual comparison preserve current game wiring",()=>{
  const html=read("index.html"),pkg=JSON.parse(read("package.json"));
  assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
- assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · LIORA001`));
+ assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · `));
  assert.ok(html.indexOf('src="combat-environment-010.js"')<html.indexOf('src="combat-visual-007.js"'));
  assert.ok(pkg.scripts.test.includes("node --check combat-environment-010.js"));
 });

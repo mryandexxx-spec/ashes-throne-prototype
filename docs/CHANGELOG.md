@@ -22,8 +22,13 @@
 | RENOPT001 — облегчённая модель Рена | #285 | `fd3c738` |
 
 
+## 2026-11-14
+
+- **`v0.3.147 · HUDSYNC001`** — HUDSYNC001: HP в HUD меняется в момент удара, а не в момент расчёта; `contactFraction` у удара Лиоры ([#312](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/312)) · `99bec35`
+
 ## 2026-11-13
 
+- **`v0.3.145 · LIORAANIM001`** — LIORAANIM001: анимации Лиоры в бою на читаемой скорости; слоты guard/ward → `Liora_Shield_Block` ([#307](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/307)) · `52c50c8`
 - **`v0.3.134 · MOBILEQA001`** — MOBILEQA001: исправления по мобильной проверке арены и штаба (v0.3.133) ([#286](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/286)) · `e61172e`
 - **`v0.3.133 · RENOPT001`** — RENOPT001: модель Рена 14,2 → 2,86 МБ ([#285](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/285)) · `fd3c738`
 - DOCS: GDD 3.0 и TDD 1.0 в репозитории ([#284](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/284)) · `75cbf2d`

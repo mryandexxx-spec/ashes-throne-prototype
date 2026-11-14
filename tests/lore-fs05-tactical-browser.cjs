@@ -39,6 +39,20 @@ function seed(){
  assert.equal(Core.available(Act2.data.catalog(),r.progress(),ids[5]),false);
  return map.get(Core.KEY);
 }
+async function finishManually(page){
+ for(let i=0;i<35;i++){
+  if(await page.locator("#loreRequiredBattleResult").isVisible())return;
+  await page.waitForFunction(()=>{
+   const result=document.querySelector("#loreRequiredBattleResult");
+   return result?.classList.contains("active")||
+    (document.querySelector("#battle")?.classList.contains("active")&&
+      !document.querySelector("#basicAbilityBtn")?.disabled);
+  },{timeout:25000});
+  if(await page.locator("#loreRequiredBattleResult").isVisible())return;
+  await page.locator("#basicAbilityBtn").click({timeout:12000});
+ }
+ throw Error("TACTICAL_MANUAL_BATTLE_DID_NOT_END");
+}
 async function run(name,browserType,width,height){
  const browser=await browserType.launch(name==="chromium"?
   {headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage"]}:{headless:true});
@@ -59,6 +73,9 @@ async function run(name,browserType,width,height){
   await page.locator('[data-lore-action="required-battle"]').click();
   await page.locator("#squad").waitFor({state:"visible",timeout:15000});
   assert.equal(await page.locator("#squadRoster [data-squad-required=true]").count(),2);
+  assert.equal(await page.locator("#squadTacticalBrief").isVisible(),true);
+  assert.match(await page.locator("#squadTacticalBrief").innerText(),/12 действий союзников/);
+  assert.match(await page.locator("#squadTacticalBrief").innerText(),/Автобой отключён/);
   await page.locator("#squadDisband").click();
   const available=page.locator('#squadRoster .squad-choice:not(.chosen):not([disabled])');
   let count=0;while(await available.count()&&count++<3)await available.first().click();
@@ -70,16 +87,25 @@ async function run(name,browserType,width,height){
    objective:state.tacticalObjective,
    protectedHp:state.fighters.find(x=>x.id==="ren")?.hp,
    enemyCount:state.fighters.filter(x=>x.side==="enemy").length,
-   goal:document.querySelector("#battleChallengeGoal").textContent,
+   goal:document.querySelector("#tacticalGoalCard").textContent,
+   goalBounds:(()=>{const r=document.querySelector("#tacticalGoalCard").getBoundingClientRect();return {top:r.top,left:r.left,bottom:r.bottom,right:r.right}})(),
+   goalStyle:getComputedStyle(document.querySelector("#tacticalGoalCard")).backgroundColor,
+   topGoalHidden:document.querySelector("#battleChallengeGoal").hidden,
+   autoHidden:document.querySelector("#autoBattleBtn").hidden,
    gpu:!!engine&&!!scene
   }));
   assert.equal(setup.objective.kind,"hold-or-defeat");
   assert.equal(setup.objective.protectAllyId,"ren");
   assert.equal(setup.objective.allyActionsToHold,12);
   assert.equal(setup.enemyCount,3);assert.equal(setup.gpu,true);
-  assert.match(setup.goal,/Рена/);
+  assert.match(setup.goal,/РЕНА/);
+  assert.equal(setup.topGoalHidden,true);
+  assert.equal(setup.autoHidden,true,"manual tactical mission, autoplay not available");
+  assert.notEqual(setup.goalStyle,"rgba(0, 0, 0, 0)");
+  assert.ok(setup.goalBounds.left>=0&&setup.goalBounds.right<=width+1);
+  assert.ok(setup.goalBounds.top>=0&&setup.goalBounds.bottom<=height+1);
   await page.screenshot({path:path.join(out,tag+"-battle.png"),fullPage:true});
-  await page.locator("#autoBattleBtn").click();
+  await finishManually(page);
   await page.locator("#loreRequiredBattleResult").waitFor({state:"visible",timeout:145000});
   assert.equal(await page.locator("#loreRequiredResultTitle").innerText(),"Бой выигран");
   const battle=await page.evaluate(()=>({
@@ -90,13 +116,25 @@ async function run(name,browserType,width,height){
   assert.equal(battle.winner,"ally");assert.ok(battle.protectedHp>0);
   assert.ok(["held","defeated-attackers"].includes(battle.outcome));
   assert.deepEqual(battle.cleared,["five-shadows:fs-01","five-shadows:fs-02","five-shadows:fs-05"]);
-  await page.locator("#loreRequiredResultContinue").click();
+  // A victory must leave a repeat action, and replay must use the real squad.
+  assert.equal(await page.locator("#loreRequiredResultRetry").isVisible(),true);
+  const storedBeforeRepeat=await page.evaluate(()=>localStorage.getItem("ashes-throne.lore-campaign.v1"));
+  await page.locator("#loreRequiredResultRetry").click();
+  await page.locator("#squad").waitFor({state:"visible",timeout:15000});
+  assert.equal(await page.locator("#squadTacticalBrief").isVisible(),true);
+  await page.locator("#squadBack").click();
+  await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-05"]').click();
+  assert.equal(await page.locator('.lore-node-detail [data-lore-action="replay-battle"]').count(),1);
+  assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.lore-campaign.v1")),storedBeforeRepeat,
+   "Replay cancel must not touch the lore save");
   assert.equal(await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-06"]').evaluate(el=>el.classList.contains("lore-state-available")),true);
   await page.reload({waitUntil:"load"});
   await page.locator('#home .hq-bottom button[data-screen="campaign"]').evaluate(el=>el.click());
   await page.locator('[data-campaign-path="lore"]').click();
   await page.locator(".lore-story-cover").click();
   assert.equal(await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-06"]').evaluate(el=>el.classList.contains("lore-state-available")),true);
+  await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-05"]').click();
+  assert.equal(await page.locator('.lore-node-detail [data-lore-action="replay-battle"]').count(),1);
   const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
   assert.ok(size.scroll<=size.width+1);
   assert.deepEqual(errors.filter(e=>/LoreCampaign|TypeError|ReferenceError/.test(e)),[]);

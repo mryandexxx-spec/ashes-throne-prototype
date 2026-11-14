@@ -53,7 +53,7 @@ test("temporary physical support abilities are distinct and can level",()=>{
 });
 test("new build still preserves the original UIHUD version prefix",()=>{
  const html=root("index.html"),pkg=JSON.parse(root("package.json"));
- assert.equal(pkg.version,"0.3.146");
- assert.match(html,/v0\.3\.146 · GEAR013/);
+ assert.equal(pkg.version,"0.3.147");
+ assert.match(html,/v0\.3\.147 · HUDSYNC001/);
  assert.match(root("docs/BUILD_HISTORY.md"),/NADAART001 \+ NADAPLAY001 \+ NADAPORTRAIT002 \+ NADAROSTER001/);
 });

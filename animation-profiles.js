@@ -50,7 +50,9 @@ const AnimationProfiles=(()=>{
  // Guard/ward amplitude 0: the skinned body must not hop or tilt under the clip.
  overrides.set("liora",Object.freeze({
   idle:Object.freeze({kind:"idle",durationMs:1867,amplitude:0}),
-  basic:Object.freeze({kind:"lunge",durationMs:1500,amplitude:.55}),
+  // HUDSYNC001: the shield thrust lands around the middle of Liora_Shield_Bash;
+  // target reactions and HUD numbers wait for that moment instead of the clip end.
+  basic:Object.freeze({kind:"lunge",durationMs:1500,amplitude:.55,contactFraction:.5}),
   special:Object.freeze({kind:"lunge",durationMs:1750,amplitude:.55}),
   powerful:Object.freeze({kind:"lunge",durationMs:2400,amplitude:.55}),
   guard:Object.freeze({kind:"guard",durationMs:1300,amplitude:0}),

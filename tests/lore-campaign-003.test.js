@@ -262,8 +262,8 @@ test("LC-003: leaving for another screen keeps checkpoint and permits continuing
 });
 test("LC-003: build, cache and legacy campaign boundaries remain independent",()=>{
  const html=file("index.html"),pkg=JSON.parse(file("package.json"));
- assert.equal(pkg.version,"0.3.155");
- assert.match(html,/id="buildVersion">Прототип · v0\.3\.155 · LOREPLAY001/);
+ assert.equal(pkg.version,"0.3.156");
+ assert.match(html,/id="buildVersion">Прототип · v0\.3\.155 · LOREACT2001/);
  for(const f of ["lore-campaign-scenes.js","lore-campaign-scene-core.js",
   "lore-campaign-scene-save.js","lore-campaign-scene-runtime.js"]){
   assert.match(html,new RegExp('src="'+f.replace(/\./g,"\\.")+'\\?v=0\\.3\\.155"'));

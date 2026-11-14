@@ -33,15 +33,15 @@ test("LC-002: separate lore scripts and responsive CSS are loaded before app run
  assert.match(html,/id="loreCampaignRoot"/);
  assert.match(html,/id="campaignLoreContent"/);
  assert.match(html,/Загрузка игрового пилота «Пять теней»/);
- assert.match(game,/LoreCampaignUI\.mount\(loreRoot,LoreCampaignPilot\.data,LoreCampaignCore,/);
+ assert.match(game,/LoreCampaignUI\.mount\(loreRoot,LoreCampaignAct2\.data,LoreCampaignCore,/);
  assert.match(game,/onStartTraining:openLoreTraining/);
  assert.match(game,/LoreCampaignUI\.back\(\)/);
  assert.match(css,/\.lore-map-layout/);
  assert.match(css,/@media \(orientation:landscape\) and \(max-height:540px\)/);
  assert.match(css,/\.lore-map-marker\{[^}]*width:46px;height:46px/);
  assert.match(css,/@media \(max-width:690px\)/);
- assert.equal(pkg.version,"0.3.155");
- assert.match(html,/id="buildVersion">Прототип · v0\.3\.155 · LOREPLAY001/);
+ assert.equal(pkg.version,"0.3.156");
+ assert.match(html,/id="buildVersion">Прототип · v0\.3\.155 · LOREACT2001/);
 });
 test("LC-002: cover, map, node details and accessible list work with one event binding",()=>{
  const r=root();

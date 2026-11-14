@@ -1,0 +1,99 @@
+/* LOREMAP001 / LC-002. Scoped, mobile-first map UI. Does not change legacy campaign/battle. */
+#campaignLoreContent{min-width:0}
+#campaignLoreContent .lore-chronicle{min-width:0;max-width:1180px;margin:0 auto;color:#f4ebd8}
+#campaignLoreContent .lore-chronicle button{touch-action:manipulation}
+#campaignLoreContent .lore-chronicle button:focus-visible{outline:3px solid #f6d394;outline-offset:3px}
+#campaignLoreContent .lore-chronicle button:disabled{cursor:not-allowed;opacity:.7;filter:none;transform:none}
+#campaignLoreContent .lore-chronicle-heading{margin:0 0 12px}
+#campaignLoreContent .lore-chronicle-heading>span,#campaignLoreContent .lore-map-eyebrow{font-size:10px;color:#dcb87f;font-weight:700;letter-spacing:.11em}
+#campaignLoreContent .lore-chronicle-heading h3,#campaignLoreContent .lore-map-heading h3{font:600 clamp(19px,3.3vw,29px) Cinzel,Georgia,serif;color:#f7ebd2;margin:5px 0}
+#campaignLoreContent .lore-chronicle-heading p{font-size:13px;line-height:1.5;color:#d7c5a9;margin:6px 0}
+#campaignLoreContent .lore-story-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px}
+#campaignLoreContent .lore-story-cover{position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;overflow:hidden;isolation:isolate;min-width:0;min-height:clamp(180px,40vh,290px);padding:clamp(14px,2.8vw,26px);color:#f7e7c7;background:#172026;border:1px solid #ba905c;border-radius:13px;text-align:left;box-shadow:inset 0 0 0 4px #131619,0 9px 20px #05060966}
+#campaignLoreContent .lore-story-cover::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#0c1119 5%,#0d111aaa 52%,#15212a44),linear-gradient(90deg,#17202b55,#0000),url("assets/campaign-cover-five-shadows.webp") center 30%/cover no-repeat;opacity:.95;pointer-events:none}
+#campaignLoreContent .lore-story-cover:hover{border-color:#f2d09a}
+#campaignLoreContent .lore-cover-eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;color:#f3d198}
+#campaignLoreContent .lore-story-cover strong{font:600 clamp(21px,3.4vw,34px) Cinzel,Georgia,serif;margin:8px 0}
+#campaignLoreContent .lore-story-cover>span:not(.lore-cover-eyebrow):not(.lore-cover-chevron){font-size:14px;color:#e1d2bf}
+#campaignLoreContent .lore-story-cover small{font-size:12px;line-height:1.4;color:#f3c78e;margin-top:10px}
+#campaignLoreContent .lore-cover-chevron{position:absolute;right:19px;bottom:15px;color:#f2cf8c;font-size:29px}
+#campaignLoreContent .lore-stage-note{font-size:11px;line-height:1.4;color:#baa990;margin:9px 0 0}
+#campaignLoreContent .lore-map-heading{display:flex;align-items:center;gap:14px;min-width:0;margin-bottom:9px}
+#campaignLoreContent .lore-map-heading>div{min-width:0}
+#campaignLoreContent .lore-map-heading h3{margin:1px 0 0}
+#campaignLoreContent .lore-map-heading small{display:block;line-height:1.25;font-size:12px;color:#c7b194}
+#campaignLoreContent .lore-map-return{min-height:44px;flex-shrink:0;border-color:#92734c;color:#f1d7af;background:#242029}
+#campaignLoreContent .lore-layer-list{display:flex;gap:7px;min-width:0;overflow-x:auto;max-width:100%;padding:0 0 7px;scrollbar-width:thin}
+#campaignLoreContent .lore-layer-list button{flex:0 0 auto;min-height:34px;border:1px solid #675845;border-radius:7px;background:#201f21;color:#dcc5a3;padding:6px 12px;font-size:12px}
+#campaignLoreContent .lore-layer-list button.is-active{border-color:#e0b978;background:#52402b;color:#ffe9c4}
+#campaignLoreContent .lore-map-layout{display:grid;grid-template-columns:minmax(0,1.64fr) minmax(210px,1fr);gap:10px;height:clamp(210px,49vh,390px);min-width:0;min-height:0}
+#campaignLoreContent .lore-map-surface{position:relative;min-width:0;min-height:0;overflow:hidden;border:1px solid #997649;border-radius:12px;isolation:isolate;background:radial-gradient(ellipse at 75% 18%,#ae835b3d,transparent 42%),linear-gradient(135deg,#201e21,#111a22 65%,#24211e);box-shadow:inset 0 0 0 4px #0005,0 8px 24px #0005}
+#campaignLoreContent .lore-map-surface::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#141921d4,#10171b99),url("assets/campaign-cover-five-shadows.webp") center 43%/cover no-repeat;opacity:.47;pointer-events:none}
+#campaignLoreContent .lore-map-surface::after{content:"";position:absolute;inset:8px;border:1px solid #d3ae7040;border-radius:7px;pointer-events:none}
+#campaignLoreContent .lore-map-edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#campaignLoreContent .lore-map-mark{position:absolute;left:50%;top:15px;transform:translateX(-50%);pointer-events:none;white-space:nowrap;font:600 clamp(12px,2.4vw,19px) Cinzel,Georgia,serif;letter-spacing:.12em;color:#efcb8b9c;text-shadow:0 2px 12px #000}
+#campaignLoreContent .lore-map-caption{position:absolute;left:13px;bottom:10px;right:12px;text-align:left;pointer-events:none;font-size:10px;line-height:1.2;color:#d8bf96;text-shadow:0 2px 5px #080a10}
+#campaignLoreContent .lore-map-marker{position:absolute;z-index:1;display:grid;place-items:center;width:46px;height:46px;border:2px solid #83735f;border-radius:50%;transform:translate(-50%,-50%);background:#25272d;color:#e8dac4;box-shadow:0 4px 13px #07090cc9;font:700 17px Cinzel,Georgia,serif}
+#campaignLoreContent .lore-map-marker:hover{filter:brightness(1.16)}
+#campaignLoreContent .lore-map-marker.is-selected{outline:2px solid #ffe2a1;outline-offset:3px}
+#campaignLoreContent .lore-map-marker.lore-state-available{border-color:#f4cf86;background:#705032;color:#fff0d1}
+#campaignLoreContent .lore-map-marker.lore-state-completed{border-color:#d6c68f;background:#3a5145;color:#f5edd8}
+#campaignLoreContent .lore-map-marker.lore-state-locked{border-color:#8f8580;color:#e1d9cd}
+#campaignLoreContent .lore-node-detail{display:flex;flex-direction:column;min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border:1px solid #987449;border-radius:12px;padding:clamp(11px,1.55vw,19px);background:linear-gradient(120deg,#2b2626ee,#14191ded);box-shadow:inset 0 1px #fff1,0 8px 24px #0004}
+#campaignLoreContent .lore-detail-eyebrow{color:#edc28b;font-size:10px;font-weight:700;letter-spacing:.09em}
+#campaignLoreContent .lore-node-detail h4{font:600 clamp(16px,2.3vw,25px) Cinzel,Georgia,serif;line-height:1.15;overflow-wrap:anywhere;color:#f7ead5;margin:6px 0 8px}
+#campaignLoreContent .lore-detail-status{display:inline-block;align-self:flex-start;padding:4px 9px;border:1px solid #a68b62;border-radius:7px;font-size:11px;font-weight:700}
+#campaignLoreContent .lore-detail-status.lore-state-available{color:#f4d69b;background:#4b3a25}
+#campaignLoreContent .lore-detail-status.lore-state-completed{color:#d4f3df;background:#253d32}
+#campaignLoreContent .lore-detail-status.lore-state-locked{color:#d6d0ca;background:#343334}
+#campaignLoreContent .lore-detail-reason{font-size:12px;line-height:1.4;color:#ddcdb6;margin:8px 0 3px}
+#campaignLoreContent .lore-detail-prereq{font-size:11px;line-height:1.35;color:#bda98b;margin:3px 0 9px}
+#campaignLoreContent .lore-detail-actions{margin-top:auto;display:grid;gap:4px}
+#campaignLoreContent .lore-detail-actions .primary{width:100%;min-height:42px;padding:10px;font-size:12px}
+#campaignLoreContent .lore-detail-actions small{color:#bea88b;font-size:10px;line-height:1.3}
+#campaignLoreContent .lore-legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:9px 2px 6px;font-size:11px;color:#d0bfa3}
+#campaignLoreContent .lore-legend .lore-state-completed{color:#a9d5b0}
+#campaignLoreContent .lore-legend .lore-state-available{color:#f6d08d}
+#campaignLoreContent .lore-legend .lore-state-locked{color:#bcb4aa}
+#campaignLoreContent .lore-node-list{display:flex;flex-wrap:wrap;gap:7px;min-width:0}
+#campaignLoreContent .lore-list-node{display:flex;align-items:center;justify-content:flex-start;gap:8px;min-width:0;min-height:44px;max-width:100%;text-align:left;border:1px solid #5d5044;border-radius:8px;background:#222126;color:#e5d7c4;padding:6px 10px;font-size:11px}
+#campaignLoreContent .lore-list-node b{color:#e2be84}
+#campaignLoreContent .lore-list-node span{overflow-wrap:anywhere}
+#campaignLoreContent .lore-list-node small{margin-left:auto;padding-left:6px;color:#ccb89c}
+#campaignLoreContent .lore-list-node.is-selected{border-color:#e8bf80;background:#453629}
+#campaignLoreContent .lore-list-node.lore-state-locked{color:#bcb3a6}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1100px){
+ #campaignLoreContent .lore-chronicle-heading{margin:0 0 6px}
+ #campaignLoreContent .lore-chronicle-heading h3{font-size:19px;margin:2px 0}
+ #campaignLoreContent .lore-chronicle-heading p{font-size:11px;margin:3px 0}
+ #campaignLoreContent .lore-story-cover{min-height:clamp(155px,44vh,220px);padding:15px}
+ #campaignLoreContent .lore-map-heading{gap:9px;margin-bottom:5px}
+ #campaignLoreContent .lore-map-return{padding:7px 10px;min-height:40px;font-size:11px}
+ #campaignLoreContent .lore-map-heading h3{font-size:17px;margin:0}
+ #campaignLoreContent .lore-map-heading small{font-size:10px}
+ #campaignLoreContent .lore-map-eyebrow{font-size:9px}
+ #campaignLoreContent .lore-layer-list{padding-bottom:4px}
+ #campaignLoreContent .lore-layer-list button{min-height:31px;padding:4px 10px}
+ #campaignLoreContent .lore-map-layout{height:clamp(164px,calc(100dvh - 223px),286px);gap:7px;grid-template-columns:minmax(0,1.64fr) minmax(195px,1fr)}
+ #campaignLoreContent .lore-map-marker{width:44px;height:44px;font-size:14px}
+ #campaignLoreContent .lore-map-mark{top:9px;font-size:13px}
+ #campaignLoreContent .lore-node-detail{padding:9px}
+ #campaignLoreContent .lore-node-detail h4{font-size:16px;margin:3px 0 5px}
+ #campaignLoreContent .lore-detail-reason{font-size:11px;line-height:1.25;margin:4px 0 2px}
+ #campaignLoreContent .lore-detail-prereq{font-size:10px;margin:1px 0 4px}
+ #campaignLoreContent .lore-detail-actions .primary{min-height:39px;padding:6px;font-size:11px}
+ #campaignLoreContent .lore-detail-actions small{font-size:9px}
+ #campaignLoreContent .lore-legend{font-size:10px;padding:5px 0 4px;gap:8px}
+ #campaignLoreContent .lore-node-list{gap:5px}
+ #campaignLoreContent .lore-list-node{min-height:40px;padding:4px 8px;font-size:10px}
+ #campaignLoreContent .lore-stage-note{display:none}
+}
+@media (max-width:690px){
+ #campaignLoreContent .lore-map-layout{grid-template-columns:minmax(0,1fr);height:auto}
+ #campaignLoreContent .lore-map-surface{min-height:210px;height:210px}
+ #campaignLoreContent .lore-node-detail{min-height:165px;max-height:210px}
+ #campaignLoreContent .lore-node-list{display:grid;grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+ #campaignLoreContent .lore-story-cover,#campaignLoreContent .lore-map-marker{transition:none}
+}

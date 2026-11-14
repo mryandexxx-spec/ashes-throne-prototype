@@ -24,6 +24,10 @@
 
 ## 2026-11-14
 
+- **`v0.3.149 · LOREMAP001`** — LC-002: 2D-карта истории «Пять теней» в существующем хабе, маркеры и статусы, доступная навигация, компактный landscape, Chromium/WebKit CI 844×390 и 932×430. Сцены/сохранения/награды пока не подключены ([#318](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/318)) · `fcaaf255`
+- **LC-001** — независимые `LoreCampaignData` / `LoreCampaignCore`, валидатор графа, отказ в начислениях до согласования экономики, Node-тесты ([#317](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/317)) · `b2c8277c`
+- **LORE-CAMPAIGN документы** — спецификация, roadmap, AI Playbook, текущий прогресс, журнал решений, четыре SVG-макета-предложения ([#316](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/316)) · `c81ad4b5`
+
 - **`v0.3.147 · HUDSYNC001`** — HUDSYNC001: HP в HUD меняется в момент удара, а не в момент расчёта; `contactFraction` у удара Лиоры ([#312](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/312)) · `99bec35`
 
 ## 2026-11-13

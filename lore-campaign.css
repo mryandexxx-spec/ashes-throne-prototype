@@ -147,3 +147,126 @@
 #campaignLoreContent .lore-decision-log ul{margin:0;padding:0 12px 9px 30px}
 #campaignLoreContent .lore-decision-log li{margin:5px 0;line-height:1.4;overflow-wrap:anywhere}
 #campaignLoreContent .lore-decision-log strong{color:#f2ddb9}
+
+/* LC-004: genuine inspect/compare actions inside the scene, landscape touch targets. */
+#campaignLoreContent .lore-scene-evidence{display:grid;gap:7px;min-width:0;border:1px solid #766044;border-radius:9px;background:linear-gradient(120deg,#141c21,#201e1d);padding:10px}
+#campaignLoreContent .lore-scene-evidence>strong{font-size:10px;letter-spacing:.09em;color:#f3c486}
+#campaignLoreContent .lore-scene-inspect-item{display:grid;gap:4px;min-width:0}
+#campaignLoreContent .lore-scene-inspect-btn{min-width:0;min-height:48px;width:100%;padding:8px 12px;text-align:left;white-space:normal;overflow-wrap:anywhere;color:#efddc0;background:#2b3031;border:1px solid #b99562;border-radius:7px;font-size:13px}
+#campaignLoreContent .lore-scene-inspect-btn:not(:disabled):hover{background:#484033;border-color:#f4cd91}
+#campaignLoreContent .lore-scene-inspect-btn:focus-visible{outline:3px solid #ffe2a4;outline-offset:2px}
+#campaignLoreContent .lore-scene-compare-btn{border-style:dashed;background:#343026}
+#campaignLoreContent .lore-scene-inspect-btn:disabled{opacity:.5;cursor:not-allowed}
+#campaignLoreContent .lore-scene-evidence-text{font-size:12px;line-height:1.48;white-space:pre-wrap;color:#e9dfca;padding:9px 11px;background:#15191d;border-left:3px solid #e4bc7c;border-radius:4px;margin:0}
+#campaignLoreContent .lore-scene-evidence>small{font-size:11px;color:#c7ad88;line-height:1.4}
+@media (orientation:landscape) and (max-height:540px){
+ #campaignLoreContent .lore-scene-evidence{padding:7px;gap:5px}
+ #campaignLoreContent .lore-scene-inspect-btn{min-height:48px;padding:7px 10px;font-size:12px}
+ #campaignLoreContent .lore-scene-evidence-text{font-size:11px;padding:7px 9px}
+}
+
+
+/* LC-004 UX: immersive fixed-height landscape dialogue, portrait and one action rail.
+   Unlike the old stacked screen, the page itself never scrolls in scene mode. */
+#campaignLoreContent .lore-scene-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr);gap:10px;min-height:0;min-width:0}
+#campaignLoreContent .lore-scene-speaker-row{display:flex;align-items:center;gap:11px;min-height:58px;min-width:0}
+#campaignLoreContent .lore-scene-portrait{width:76px;height:76px;flex:0 0 auto;display:block;object-fit:cover;object-position:center 22%;border:1px solid #bd9b72;border-radius:9px;background:#292a2c;box-shadow:0 0 0 3px #0d1013}
+#campaignLoreContent .lore-scene-portrait--narrator{background:linear-gradient(#14192344,#131a20ac),url("assets/campaign-cover-five-shadows.webp") center/cover,#161c23}
+#campaignLoreContent .lore-scene-speaker-info{min-width:0}
+#campaignLoreContent .lore-scene-speaker{display:block;font:700 15px Cinzel,Georgia,serif;line-height:1.2;overflow-wrap:anywhere}
+#campaignLoreContent .lore-scene-card{min-width:0;min-height:0}
+#campaignLoreContent .lore-scene-tools{display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0;padding:12px;background:linear-gradient(125deg,#26232a,#151b21);border:1px solid #846d4c;border-radius:11px}
+#campaignLoreContent .lore-scene-tools-hint{font-size:12px;line-height:1.45;color:#d4bfa1;margin:0;flex:1}
+#campaignLoreContent .lore-scene-tools>.lore-scene-evidence{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+#campaignLoreContent .lore-scene-tools>.lore-scene-choices{flex:0 0 auto}
+#campaignLoreContent .lore-scene-tools>.lore-scene-skip{flex:0 0 auto;min-height:36px}
+#campaignLoreContent .lore-scene-goals{flex:0 0 auto;max-height:35%;overflow-y:auto;min-height:0;font-size:11px;color:#d5bd95;border:1px solid #56493d;border-radius:6px}
+#campaignLoreContent .lore-scene-goals summary{min-height:32px;display:flex;align-items:center;padding:4px 9px;cursor:pointer;font-size:11px;color:#d9be91}
+#campaignLoreContent .lore-scene-goals .lore-scene-objectives{border:0;background:transparent;margin:0;padding:6px 9px;font-size:10px}
+#campaignLoreContent .lore-scene-pager{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:9px;font-size:12px;color:#d7c49f}
+#campaignLoreContent .lore-scene-pager button{min-width:44px;min-height:39px;padding:4px 10px;font-size:20px}
+#campaignLoreContent .lore-scene-choices .lore-scene-read-next{width:100%;text-align:center}
+#campaignLoreContent .lore-scene-pager button:disabled{opacity:.3}
+#campaignLoreContent .lore-scene-speaker-row img{max-width:none}
+@media (max-width:690px) and (orientation:portrait){
+ #campaignLoreContent .lore-scene-layout{grid-template-columns:minmax(0,1fr)}
+ #campaignLoreContent .lore-scene-portrait{width:64px;height:64px}
+ #campaignLoreContent .lore-scene-goals{max-height:none}
+}
+@media (orientation:landscape) and (max-height:540px){
+ body.lore-scene-open{overflow:hidden;overscroll-behavior:none}
+ body.lore-scene-open #campaignLoreContent{
+  position:fixed!important;inset:0!important;z-index:200;
+  height:100dvh;max-height:100dvh;overflow:hidden!important;
+  padding:max(6px,env(safe-area-inset-top)) max(9px,env(safe-area-inset-right))
+          max(6px,env(safe-area-inset-bottom)) max(9px,env(safe-area-inset-left));
+  background:radial-gradient(ellipse at 25% 0%,#33343b,#10141a 68%);min-width:0
+ }
+ body.lore-scene-open #loreCampaignRoot{height:100%;min-height:0;min-width:0}
+ #campaignLoreContent .lore-scene{height:100%;width:100%;max-width:none;display:grid;
+  grid-template-rows:auto minmax(0,1fr);gap:7px;margin:0;min-width:0;min-height:0}
+ #campaignLoreContent .lore-scene-header{margin:0;gap:9px;min-height:42px}
+ #campaignLoreContent .lore-scene-header h3{font-size:17px;line-height:1.15}
+ #campaignLoreContent .lore-scene-header small{font-size:9px}
+ #campaignLoreContent .lore-scene-header button{min-height:42px}
+ #campaignLoreContent .lore-scene-layout{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:8px;height:100%}
+ #campaignLoreContent .lore-scene-card{height:100%;max-height:none;overflow:hidden;
+  display:flex;flex-direction:column;gap:6px;padding:9px 11px}
+ #campaignLoreContent .lore-scene-speaker-row{min-height:60px;gap:10px}
+ #campaignLoreContent .lore-scene-portrait{width:59px;height:59px;border-radius:7px}
+ #campaignLoreContent .lore-scene-speaker{font-size:13px}
+ #campaignLoreContent .lore-scene-text{font-size:clamp(13px,1.65vw,15px);line-height:1.42;
+  margin:0;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;scrollbar-width:thin;white-space:pre-wrap}
+ #campaignLoreContent .lore-scene-pager{flex:0 0 auto;gap:9px;margin:0}
+ #campaignLoreContent .lore-scene-pager button{min-height:36px}
+ #campaignLoreContent .lore-scene-tools{height:100%;max-height:none;overflow:hidden;
+  gap:6px;padding:8px}
+ #campaignLoreContent .lore-scene-tools>.lore-scene-evidence{gap:5px;padding:7px;min-height:0}
+ #campaignLoreContent .lore-scene-evidence>strong{font-size:9px}
+ #campaignLoreContent .lore-scene-evidence-text{font-size:11px;line-height:1.32;padding:6px 9px}
+ #campaignLoreContent .lore-scene-goals{max-height:34%;font-size:10px}
+ #campaignLoreContent .lore-scene-goals summary{min-height:29px}
+ #campaignLoreContent .lore-scene-choices{gap:5px}
+ #campaignLoreContent .lore-scene-choices button{min-height:44px;padding:8px 10px;font-size:12px}
+ #campaignLoreContent .lore-scene-skip{display:none}
+ #campaignLoreContent .lore-scene-storage,#campaignLoreContent .lore-scene-notice{display:none}
+}
+@media (orientation:landscape) and (max-height:350px){
+ #campaignLoreContent .lore-scene-portrait{width:45px;height:45px}
+ #campaignLoreContent .lore-scene-speaker-row{min-height:46px}
+ #campaignLoreContent .lore-scene-tools>.lore-scene-goals{display:none}
+}
+
+
+/* Tactical training is intentionally separate from the literary chronicle. */
+#campaignLoreContent .lore-training-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;min-width:0;margin:8px 0;padding:12px 14px;background:linear-gradient(115deg,#322b24,#1b2229);border:1px solid #c39659;border-radius:11px}
+#campaignLoreContent .lore-training-card>div{min-width:0;display:flex;flex-direction:column;gap:3px}
+#campaignLoreContent .lore-training-card strong{font:600 17px Cinzel,Georgia,serif;color:#f5d4a3}
+#campaignLoreContent .lore-training-card small{font-size:11px;color:#e1c6a8;line-height:1.35}
+#campaignLoreContent .lore-training-card button{min-height:44px;min-width:100px;padding:10px 18px}
+#campaignLoreContent .lore-training-inactive{font-size:11px;color:#bfb3a3}
+.lore-training-result{max-width:640px;margin:clamp(10px,4vh,40px) auto;padding:24px;display:grid;gap:13px;min-width:0;border:1px solid #b88f5d;border-radius:12px;background:linear-gradient(145deg,#29272c,#141a21);color:#f1e1c6;box-shadow:0 10px 30px #08090e8a}
+.lore-training-result h2{font:600 clamp(21px,4vw,30px) Cinzel,Georgia,serif;margin:0;color:#f7d6a2}
+.lore-training-result p{font-size:14px;line-height:1.5;margin:0}
+.lore-training-result-actions{display:flex;gap:9px;flex-wrap:wrap}
+.lore-training-result-actions button{min-height:44px}
+@media (orientation:landscape) and (max-height:540px){
+ #campaignLoreContent .lore-training-card{margin:6px 0;padding:7px 11px;gap:7px}
+ #campaignLoreContent .lore-training-card strong{font-size:14px}
+ #campaignLoreContent .lore-training-card small{font-size:10px}
+ .lore-training-result{margin:0 auto;padding:13px 17px;gap:9px}
+}
+@media (max-width:580px){#campaignLoreContent .lore-training-card{grid-template-columns:minmax(0,1fr)}}
+
+
+/* Single visible tactical entry at map top: no landscape scroll required. */
+#campaignLoreContent .lore-map-training-action{margin-left:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:0 0 auto;min-width:150px;min-height:48px;padding:6px 12px;color:#ffe3ba;border:1px solid #c69a60;background:linear-gradient(#42342d,#282527);font-size:12px}
+#campaignLoreContent .lore-map-training-action small{font-size:9px;line-height:1.2;color:#d7b78d}
+@media (orientation:landscape) and (max-height:540px){
+ #campaignLoreContent .lore-map-training-action{min-height:44px;padding:4px 9px;min-width:135px;font-size:11px}
+}
+@media (max-width:560px) and (orientation:portrait){
+ #campaignLoreContent .lore-map-heading{flex-wrap:wrap}
+ #campaignLoreContent .lore-map-training-action{margin-left:0}
+}

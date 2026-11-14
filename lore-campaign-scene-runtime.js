@@ -42,6 +42,14 @@ const LoreCampaignSceneRuntime=(()=>{
    if(!session)return fail("NOT_IN_SCENE");
    return apply(scene.choose(progress,session,id));
   }
+  function inspect(id){
+   if(!session)return fail("NOT_IN_SCENE");
+   return apply(scene.inspect(progress,session,id));
+  }
+  function compare(id){
+   if(!session)return fail("NOT_IN_SCENE");
+   return apply(scene.compare(progress,session,id));
+  }
   function skipSeen(){
    if(!session)return fail("NOT_IN_SCENE");
    return apply(scene.skipSeen(progress,session));
@@ -60,7 +68,7 @@ const LoreCampaignSceneRuntime=(()=>{
    const node=graph.nodes.find(n=>n.id===nodeId);
    return !!node&&progress.stories[node.storyId]?.activeNodeId===nodeId;
   }
-  return Object.freeze({start,resume,next,choose,skipSeen,finish,leave,
+  return Object.freeze({start,resume,next,choose,inspect,compare,skipSeen,finish,leave,
    current,progress:progressCopy,stateFor,journal,hasCheckpoint,hasContent,
    storageStatus:()=>storageState,snapshot:()=>({
     storageStatus:storageState,session:session?{nodeId:session.nodeId,mode:session.mode,

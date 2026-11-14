@@ -26,6 +26,44 @@ const LoreCampaignSceneCore=(()=>{
    }
    return true;
   }
+  const seenKey=(nodeId,id)=>beatKey(nodeId,id);
+  const compareKey=(nodeId,id)=>beatKey(nodeId,"comparison:"+id);
+  const inspections=b=>b.inspections||[];
+  const comparisons=b=>b.comparisons||[];
+  function interactionsReady(session,b){
+   const evidence=session.work.stories[session.storyId].seenEvidenceIds;
+   return (b.requiredInspectionIds||[]).every(id=>evidence.includes(seenKey(session.nodeId,id)))&&
+     (b.requiredComparisonIds||[]).every(id=>evidence.includes(compareKey(session.nodeId,id)));
+  }
+  function inspect(progress,session,id){
+   const scene=session&&lookup(session.nodeId);
+   if(!scene)return fail("NOT_IN_SCENE");
+   const b=beat(scene,session.beatId);
+   const entry=b&&inspections(b).find(x=>x.id===id);
+   if(!entry)return fail("INSPECTION_NOT_AVAILABLE");
+   const work=copy(session.work),state=work.stories[session.storyId];
+   const key=seenKey(session.nodeId,id);
+   if(!state.seenEvidenceIds.includes(key))state.seenEvidenceIds.push(key);
+   return ok(session.mode==="primary"?work:progress,{
+    ...session,work,openedInspectionId:id,openedComparisonId:null
+   });
+  }
+  function compare(progress,session,id){
+   const scene=session&&lookup(session.nodeId);
+   if(!scene)return fail("NOT_IN_SCENE");
+   const b=beat(scene,session.beatId);
+   const entry=b&&comparisons(b).find(x=>x.id===id);
+   if(!entry)return fail("COMPARISON_NOT_AVAILABLE");
+   const seen=session.work.stories[session.storyId].seenEvidenceIds;
+   if(entry.evidenceIds.some(eid=>!seen.includes(seenKey(session.nodeId,eid))))
+    return fail("INSPECTION_REQUIRED");
+   const work=copy(session.work),state=work.stories[session.storyId];
+   const key=compareKey(session.nodeId,id);
+   if(!state.seenEvidenceIds.includes(key))state.seenEvidenceIds.push(key);
+   return ok(session.mode==="primary"?work:progress,{
+    ...session,work,openedComparisonId:id,openedInspectionId:null
+   });
+  }
   function current(session){
    if(!session)return null;
    const scene=lookup(session.nodeId);
@@ -38,6 +76,17 @@ const LoreCampaignSceneCore=(()=>{
     choices:b.choiceIds.map(id=>{const c=choice(scene,id);return {id:c.id,label:c.label};}),
     canContinue:b.choiceIds.length===0&&b.nextBeatId!==null,
     canFinish:b.choiceIds.length===0&&b.nextBeatId===null,
+    interactionsReady:interactionsReady(session,b),
+    inspections:inspections(b).map(item=>({
+      id:item.id,label:item.label,done:session.work.stories[session.storyId].seenEvidenceIds.includes(seenKey(session.nodeId,item.id)),
+      text:session.openedInspectionId===item.id?item.text:null
+    })),
+    comparisons:comparisons(b).map(item=>({
+      id:item.id,label:item.label,
+      ready:item.evidenceIds.every(id=>session.work.stories[session.storyId].seenEvidenceIds.includes(seenKey(session.nodeId,id))),
+      done:session.work.stories[session.storyId].seenEvidenceIds.includes(compareKey(session.nodeId,item.id)),
+      text:session.openedComparisonId===item.id?item.text:null
+    })),
     objectives:scene.objectives.map(o=>({id:o.id,hint:o.hint,required:o.required,done:completed(session,o)}))
    };
   }
@@ -45,6 +94,8 @@ const LoreCampaignSceneCore=(()=>{
    const record=session.work.stories[session.storyId],key=id=>beatKey(session.nodeId,id);
    if(objective.kind==="view")return record.seenBeatIds.includes(key(objective.beatId));
    if(objective.kind==="choose")return typeof record.primaryChoicesById[decisionKey(session.nodeId,objective.decisionId)]==="string";
+   if(objective.kind==="compare"&&objective.comparisonId)
+    return record.seenEvidenceIds.includes(compareKey(session.nodeId,objective.comparisonId));
    if(objective.kind==="inspect"||objective.kind==="compare")
     return objective.evidenceIds.every(id=>record.seenEvidenceIds.includes(key(id)));
    return false;
@@ -70,6 +121,7 @@ const LoreCampaignSceneCore=(()=>{
    if(!scene)return fail("NOT_IN_SCENE");
    const b=beat(scene,session.beatId);
    if(!b||b.choiceIds.length||!b.nextBeatId)return fail("CHOICE_OR_FINISH_REQUIRED");
+   if(!interactionsReady(session,b))return fail("INSPECTION_REQUIRED");
    const work=copy(session.work),node=sceneNode(session.nodeId);
    enter(work,scene,node,b.nextBeatId,session.mode);
    return ok(session.mode==="primary"?work:progress,
@@ -80,6 +132,7 @@ const LoreCampaignSceneCore=(()=>{
    if(!scene)return fail("NOT_IN_SCENE");
    const b=beat(scene,session.beatId);
    if(!b||!b.choiceIds.includes(choiceId))return fail("INVALID_CHOICE");
+   if(!interactionsReady(session,b))return fail("INSPECTION_REQUIRED");
    const selected=choice(scene,choiceId),node=sceneNode(session.nodeId);
    const key=decisionKey(node.id,selected.decisionId),work=copy(session.work);
    const state=work.stories[node.storyId],previous=state.primaryChoicesById[key];
@@ -105,13 +158,15 @@ const LoreCampaignSceneCore=(()=>{
    const scene=session&&lookup(session.nodeId);
    if(!scene)return fail("NOT_IN_SCENE");
    let now=beat(scene,session.beatId);
-   if(!now||now.choiceIds.length||!now.skipSafe)return fail("SKIP_UNAVAILABLE");
+   if(!now||now.choiceIds.length||!now.skipSafe||
+      !interactionsReady(session,now))return fail("SKIP_UNAVAILABLE");
    const work=copy(session.work),record=work.stories[session.storyId],node=sceneNode(session.nodeId);
    let destination=now.id,steps=0;
    while(now.nextBeatId&&!now.choiceIds.length&&now.skipSafe){
     const nextBeat=beat(scene,now.nextBeatId);
     if(!nextBeat||!nextBeat.skipSafe||nextBeat.choiceIds.length||
-       !record.seenBeatIds.includes(beatKey(node.id,nextBeat.id)))break;
+       !record.seenBeatIds.includes(beatKey(node.id,nextBeat.id))||
+       !interactionsReady(session,nextBeat))break;
     destination=nextBeat.id;now=nextBeat;
     if(++steps>scene.beats.length)break;
    }
@@ -125,6 +180,7 @@ const LoreCampaignSceneCore=(()=>{
    if(!scene)return fail("NOT_IN_SCENE");
    const b=beat(scene,session.beatId);
    if(!b||b.choiceIds.length||b.nextBeatId!==null)return fail("NOT_AT_END");
+   if(!interactionsReady(session,b))return fail("INSPECTION_REQUIRED");
    if(scene.objectives.some(o=>o.required&&!completed(session,o)))return fail("OBJECTIVE_INCOMPLETE");
    if(session.mode==="replay")return ok(progress,null);
    const work=copy(session.work),state=work.stories[session.storyId];
@@ -132,7 +188,7 @@ const LoreCampaignSceneCore=(()=>{
    state.activeNodeId=null;state.checkpointBeatId=null;
    return ok(work,null);
   }
-  return Object.freeze({begin,next,choose,skipSeen,finish,current});
+  return Object.freeze({begin,next,choose,inspect,compare,skipSeen,finish,current});
  }
  return Object.freeze({create});
 })();

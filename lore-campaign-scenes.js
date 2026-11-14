@@ -26,6 +26,7 @@ const LoreCampaignScenes=(()=>{
    const choices=new Map(scene.choices.map(c=>[c.id,c]));
    if(!beats.has(scene.entryBeatId))return false;
    let terminals=0;
+   const exposedInspections=new Map(),exposedComparisons=new Map();
    for(const beat of scene.beats){
     if(!object(beat)||!str(beat.id)||typeof beat.text!=="string"||
       !beat.text.trim()||beat.text.length>2000||
@@ -37,6 +38,29 @@ const LoreCampaignScenes=(()=>{
     if(beat.choiceIds.length&&beat.nextBeatId!==null)return false;
     if(beat.nextBeatId!==null&&!beats.has(beat.nextBeatId))return false;
     if(beat.choiceIds.some(id=>!choices.has(id)))return false;
+    // LC-004: inspection is a player action, not an automatic beat effect.
+    const inspections=beat.inspections||[],comparisons=beat.comparisons||[];
+    const requiredInspections=beat.requiredInspectionIds||[];
+    const requiredComparisons=beat.requiredComparisonIds||[];
+    if(!Array.isArray(inspections)||!Array.isArray(comparisons)||
+       !Array.isArray(requiredInspections)||!Array.isArray(requiredComparisons)||
+       !distinct(requiredInspections)||!distinct(requiredComparisons))return false;
+    const localInspections=new Set(),localComparisons=new Set();
+    for(const entry of inspections){
+     if(!object(entry)||!str(entry.id)||!str(entry.label)||
+        typeof entry.text!=="string"||!entry.text.trim()||entry.text.length>1500||localInspections.has(entry.id)||exposedInspections.has(entry.id))return false;
+     localInspections.add(entry.id);exposedInspections.set(entry.id,beat.id);
+    }
+    for(const comparison of comparisons){
+     if(!object(comparison)||!str(comparison.id)||!str(comparison.label)||
+        typeof comparison.text!=="string"||!comparison.text.trim()||comparison.text.length>1500||!Array.isArray(comparison.evidenceIds)||
+        comparison.evidenceIds.length<2||!distinct(comparison.evidenceIds)||
+        comparison.evidenceIds.some(id=>!str(id))||
+        localComparisons.has(comparison.id)||exposedComparisons.has(comparison.id))return false;
+     localComparisons.add(comparison.id);exposedComparisons.set(comparison.id,comparison);
+    }
+    if(requiredInspections.some(id=>!localInspections.has(id))||
+       requiredComparisons.some(id=>!localComparisons.has(id)))return false;
    }
    if(!terminals)return false;
    const referencedChoices=new Set(scene.beats.flatMap(b=>b.choiceIds));
@@ -66,6 +90,8 @@ const LoreCampaignScenes=(()=>{
       (!Array.isArray(objective.evidenceIds)||!objective.evidenceIds.length||
        !distinct(objective.evidenceIds)||objective.evidenceIds.some(id=>!str(id))))return false;
     if(objective.kind==="inspect"&&objective.evidenceIds.length!==1)return false;
+    if(objective.kind==="compare"&&objective.comparisonId!==undefined&&
+       (!str(objective.comparisonId)||!exposedComparisons.has(objective.comparisonId)))return false;
    }
    const seen=new Set(),visiting=new Set();
    function walk(id){
@@ -80,8 +106,17 @@ const LoreCampaignScenes=(()=>{
    if(!walk(scene.entryBeatId)||seen.size!==scene.beats.length)return false;
    const possibleEvidence=new Set([
     ...scene.beats.flatMap(b=>b.effects.map(e=>e.id)),
+    ...scene.choices.flatMap(c=>c.effects.map(e=>e.id)),
+    ...exposedInspections.keys()
+   ]);
+   // Explicit inspect receipts cannot be granted merely by entering a beat or choosing.
+   const autoEvidence=new Set([
+    ...scene.beats.flatMap(b=>b.effects.map(e=>e.id)),
     ...scene.choices.flatMap(c=>c.effects.map(e=>e.id))
    ]);
+   if([...exposedInspections.keys()].some(id=>autoEvidence.has(id)))return false;
+   for(const comparison of exposedComparisons.values())
+    if(comparison.evidenceIds.some(id=>!possibleEvidence.has(id)))return false;
    for(const o of scene.objectives)if(["inspect","compare"].includes(o.kind)&&
       o.evidenceIds.some(id=>!possibleEvidence.has(id)))return false;
   }

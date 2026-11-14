@@ -29,6 +29,8 @@ const LoreCampaignSceneSave=(()=>{
     for(const b of scene.beats){
      knownBeats.add(node.id+"/"+b.id);
      for(const e of b.effects)knownEvidence.add(node.id+"/"+e.id);
+     for(const item of b.inspections||[])knownEvidence.add(node.id+"/"+item.id);
+     for(const item of b.comparisons||[])knownEvidence.add(node.id+"/comparison:"+item.id);
     }
     for(const c of scene.choices){
      const key=node.id+"/"+c.decisionId;

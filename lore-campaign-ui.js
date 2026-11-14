@@ -5,6 +5,39 @@ const LoreCampaignUI=(()=>{
  const escapeHtml=value=>String(value).replace(/[&<>"']/g,ch=>escMap[ch]);
  let root=null,data=null,core=null,catalog=null,progress=null,sceneRuntime=null,scenePack=null,notice="";
  let view="stories",storyId=null,nodeId=null,layerId=null,globalKeyRegistered=false;
+ let narrativePage=0,narrativeBeatKey="",onStartTraining=null,trainingNotice="";
+ const PORTRAITS=Object.freeze({
+  "Рен Терен":"assets/ren-portrait-ui.webp",
+  "Нада":"assets/nada-portrait-ui.webp?v=2",
+  "Лиора Вель":"assets/liora-portrait-ui.webp?v=1"
+ });
+ function portraitFor(speaker){
+  if(!Object.prototype.hasOwnProperty.call(PORTRAITS,speaker))return null;
+  // Standalone private preview embeds its permitted portraits as data URIs.
+  const embedded=typeof window!=="undefined"?window.__lorePortraits?.[speaker]:null;
+  return typeof embedded==="string"&&embedded.startsWith("data:image/webp;base64,")?
+   embedded:PORTRAITS[speaker];
+ }
+ function landscapeNarrative(){
+  return typeof window!=="undefined"&&
+   typeof window.matchMedia==="function"&&
+   window.matchMedia("(orientation:landscape) and (max-height:540px)").matches;
+ }
+ function textPages(text){
+  const source=String(text||"").trim();
+  if(!landscapeNarrative()||source.length<=178)return [source];
+  const target=178,parts=[];
+  for(const paragraph of source.split(/\n+/).map(x=>x.trim()).filter(Boolean)){
+   const words=paragraph.split(/\s+/);let buffer="";
+   for(const word of words){
+    if(buffer&&buffer.length+word.length+1>target){parts.push(buffer);buffer="";}
+    if(word.length>target){if(buffer){parts.push(buffer);buffer="";}for(let i=0;i<word.length;i+=target)parts.push(word.slice(i,i+target));}
+    else buffer+=(buffer?" ":"")+word;
+   }
+   if(buffer)parts.push(buffer);
+  }
+  return parts.length?parts:[source];
+ }
  const hasOwn=(x,k)=>Object.prototype.hasOwnProperty.call(x,k);
  function nodeStatus(node,c= catalog,p=progress,engine=core){
   const completed=p?.stories?.[node.storyId]?.completedNodeIds;
@@ -58,13 +91,18 @@ const LoreCampaignUI=(()=>{
  function mount(element,d,c,options={}){
   if(!element||!d||!c||!d.catalogIsValid(d.catalog()))
    return false;
-  if(root===element)return true;
+  if(root===element){
+   if(Object.prototype.hasOwnProperty.call(options,"onStartTraining"))
+    onStartTraining=typeof options.onStartTraining==="function"?options.onStartTraining:null;
+   return true;
+  }
   if(root){root.removeEventListener("click",onClick);root.removeEventListener("keydown",onKeydown);}
   root=element;data=d;core=c;catalog=d.catalog();
+  onStartTraining=typeof options.onStartTraining==="function"?options.onStartTraining:null;
   try{sceneRuntime=initializeScenes(options);}
   catch(error){sceneRuntime=null;notice="Не удалось открыть сценарный модуль: "+String(error?.message||error);}
   syncProgress();
-  view="stories";storyId=null;nodeId=null;layerId=null;
+  view="stories";storyId=null;nodeId=null;layerId=null;narrativePage=0;narrativeBeatKey="";
   root.addEventListener("click",onClick);
   root.addEventListener("keydown",onKeydown);
   // Rerendering a beat removes the focused button. Keep Escape working when
@@ -154,6 +192,12 @@ const LoreCampaignUI=(()=>{
   if(!current)return '<section class="lore-scene"><p>Сцена недоступна.</p>'+
     '<button type="button" data-lore-action="leave-scene" class="ghost">← К карте</button></section>';
   const node=data.getNode(current.nodeId,catalog);
+  const narrativeKey=current.nodeId+"/"+current.beatId;
+  if(narrativeBeatKey!==narrativeKey){narrativeBeatKey=narrativeKey;narrativePage=0;}
+  const pages=textPages(current.text);
+  narrativePage=Math.max(0,Math.min(narrativePage,pages.length-1));
+  const lastPage=narrativePage===pages.length-1;
+  const portrait=portraitFor(current.speakerId);
   const needsInspection=!current.interactionsReady;
   const choiceButtons=current.choices.map(choice=>
    '<button type="button" class="lore-scene-choice" data-lore-action="scene-choose"'+
@@ -188,19 +232,40 @@ const LoreCampaignUI=(()=>{
    '<div class="lore-scene-objectives"><strong>ЗАДАЧИ СЦЕНЫ</strong>'+
     current.objectives.map(o=>'<div class="'+(o.done?'is-done':'')+'">'+
       (o.done?'✓ ':'◌ ')+escapeHtml(o.hint)+(o.required?'':' · дополнительно')+'</div>').join("")+'</div>':"";
-  return '<section class="lore-scene" aria-label="Сюжетная сцена">'+
-   '<div class="lore-scene-header"><button type="button" class="ghost" data-lore-action="leave-scene">← К карте</button>'+
-    '<div><small>ЛОРНАЯ ИСТОРИЯ · '+(current.mode==="replay"?"ПОВТОР":"ОСНОВНОЙ ПРОХОД")+'</small>'+
-    '<h3>'+escapeHtml(node.title)+'</h3></div></div>'+
-   '<article class="lore-scene-card" aria-live="polite">'+
-    (current.speakerId?'<div class="lore-scene-speaker">'+escapeHtml(current.speakerId)+'</div>':'')+
-    '<p class="lore-scene-text">'+escapeHtml(current.text)+'</p>'+
-    evidenceControls+
+  const portraitView=portrait?
+   '<img class="lore-scene-portrait" src="'+escapeHtml(portrait)+'" alt="Портрет: '+escapeHtml(current.speakerId)+'" loading="eager" decoding="async">':
+   '<div class="lore-scene-portrait lore-scene-portrait--narrator" aria-hidden="true"></div>';
+  const pager=pages.length>1?
+   '<nav class="lore-scene-pager" aria-label="Страницы реплики">'+
+    '<button type="button" class="ghost" data-lore-action="scene-page-prev"'+
+      (narrativePage===0?' disabled':'')+' aria-label="Предыдущая страница">‹</button>'+
+    '<span aria-live="polite">'+(narrativePage+1)+' / '+pages.length+'</span>'+
+    '<button type="button" class="ghost" data-lore-action="scene-page-next"'+
+      (lastPage?' disabled':'')+' aria-label="Следующая страница">›</button></nav>':"";
+  const controls=lastPage?
     '<div class="lore-scene-choices">'+actions+'</div>'+
     '<button type="button" class="lore-scene-skip ghost" data-lore-action="scene-skip"'+
       (!current.canContinue||!current.skipSafe?' disabled':'')+
-      '>Пропустить просмотренное</button></article>'+
-   objectives+
+      '>Пропустить просмотренное</button>':
+    '<div class="lore-scene-choices"><button type="button" class="primary lore-scene-read-next"'+
+      ' data-lore-action="scene-page-next">Читать дальше ›</button></div>';
+  return '<section class="lore-scene" aria-label="Сюжетная сцена">'+
+   '<div class="lore-scene-header"><button type="button" class="ghost" data-lore-action="leave-scene">← К карте</button>'+
+    '<div><small>ХРОНИКА · '+(current.mode==="replay"?"АЛЬТЕРНАТИВНЫЙ ПОВТОР":"ОСНОВНОЙ ПРОХОД")+'</small>'+
+    '<h3>'+escapeHtml(node.title)+'</h3></div></div>'+
+   '<div class="lore-scene-layout">'+
+    '<article class="lore-scene-card" aria-live="polite">'+
+     '<div class="lore-scene-speaker-row">'+portraitView+
+      '<div class="lore-scene-speaker-info"><span class="lore-scene-speaker">'+
+       escapeHtml(current.speakerId||"Хроника")+'</span></div></div>'+
+     '<p class="lore-scene-text">'+escapeHtml(pages[narrativePage])+'</p>'+
+     pager+'</article>'+
+    '<aside class="lore-scene-tools" aria-label="Действия сцены">'+
+     (evidenceControls||'<p class="lore-scene-tools-hint">Выберите действие, чтобы продолжить историю.</p>')+
+     '<details class="lore-scene-goals"><summary>Цели · '+current.objectives.filter(o=>o.done).length+
+       '/'+current.objectives.length+'</summary>'+objectives+'</details>'+
+     controls+
+    '</aside></div>'+
    '<p class="lore-scene-storage" role="status">'+escapeHtml(saveMessage())+'</p>'+
    (notice?'<p class="lore-scene-notice" role="alert">'+escapeHtml(notice)+'</p>':'')+
    '</section>';
@@ -223,6 +288,8 @@ const LoreCampaignUI=(()=>{
   else if(action==="back")back();
   else if(action==="start-node")startScene();
   else if(action==="leave-scene"||action==="leave-result")back();
+  else if(action==="scene-page-next"){narrativePage++;render();}
+  else if(action==="scene-page-prev"){narrativePage=Math.max(0,narrativePage-1);render();}
   else if(action==="scene-next")actInScene("next");
   else if(action==="scene-choose")actInScene("choose",button.dataset.loreChoice);
   else if(action==="scene-inspect")actInScene("inspect",button.dataset.loreItem);

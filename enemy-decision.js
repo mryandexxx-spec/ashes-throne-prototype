@@ -21,7 +21,7 @@ const EnemyDecision=(()=>{
    const first=opponents[0];
    // Escort objective: attackers actively threaten the protected hero.
    // Single-target taunt in CombatCore still intercepts these attacks.
-   const escortTarget=battle.tacticalObjective?.kind==="hold-or-defeat"
+   const escortTarget=actor.assaultFocus===true&&battle.tacticalObjective?.kind==="hold-or-defeat"
      ?opponents.find(i=>battle.fighters[i].id===battle.tacticalObjective.protectAllyId):-1;
    const weak=Number.isInteger(escortTarget)&&escortTarget>=0
      ?escortTarget:opponents.slice().sort(byLowestHp)[0];

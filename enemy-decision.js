@@ -19,7 +19,12 @@ const EnemyDecision=(()=>{
    const byLowestHp=(a,b)=>battle.fighters[a].hp-battle.fighters[b].hp||a-b;
    const byLowestRatio=(a,b)=>hpRatio(battle.fighters[a])-hpRatio(battle.fighters[b])||a-b;
    const first=opponents[0];
-   const weak=opponents.slice().sort(byLowestHp)[0];
+   // Escort objective: attackers actively threaten the protected hero.
+   // Single-target taunt in CombatCore still intercepts these attacks.
+   const escortTarget=battle.tacticalObjective?.kind==="hold-or-defeat"
+     ?opponents.find(i=>battle.fighters[i].id===battle.tacticalObjective.protectAllyId):-1;
+   const weak=Number.isInteger(escortTarget)&&escortTarget>=0
+     ?escortTarget:opponents.slice().sort(byLowestHp)[0];
    const can=id=>CombatCore.actorAbilityReady(battle,actorIndex,id);
    const ability=id=>can(id)?AbilityData.get(actor,id):null;
    const decision=(abilityId,targetIndex)=>({abilityId,targetIndex});

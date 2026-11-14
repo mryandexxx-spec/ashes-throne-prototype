@@ -101,7 +101,7 @@ async function check(name,browserType,width,height){
     // This test covers narrative navigation; tactical combat has separate tests.
     assert.equal(await page.locator('[data-lore-action="required-battle"]').count(),1);
     await page.locator('[data-lore-action="leave-result"]').click();
-    await page.locator('[data-lore-node="five-shadows:fs-06"]').click();
+    await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-06"]').click();
     assert.match(await page.locator(".lore-node-detail").innerText(),/обязательный бой/i);
     await page.evaluate(()=>{
       const key="ashes-throne.lore-campaign.v1",data=JSON.parse(localStorage.getItem(key));

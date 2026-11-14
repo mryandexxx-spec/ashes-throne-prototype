@@ -25,7 +25,7 @@ function emit(r,action,extra={}){
 test("LC-002: separate lore scripts and responsive CSS are loaded before app runtime",()=>{
  const html=file("index.html"),css=file("lore-campaign.css"),game=file("game.js"),pkg=JSON.parse(file("package.json"));
  for(const name of ["lore-campaign-data.js","lore-campaign-core.js","lore-campaign-ui.js"]){
-  assert.match(html,new RegExp('src="'+name.replace(".","\\.")+'\\?v=0\\.3\\.151"'));
+  assert.match(html,new RegExp('src="'+name.replace(".","\\.")+'\\?v=0\\.3\\.152"'));
   assert.ok(html.indexOf('src="'+name)<html.indexOf('src="game.js'),name+" loads before runtime");
   assert.ok(pkg.scripts.test.includes("node --check "+name),name+" syntax checked");
  }

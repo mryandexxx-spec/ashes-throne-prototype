@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="844" height="390" viewBox="0 0 844 390" role="img" aria-label="Лорная кампания — компактный экран iPhone landscape"><title>Лорная кампания — компактный экран iPhone landscape</title><desc>Эскиз интерфейса Пепельного престола, не реализованный игровой экран.</desc><defs>
+ <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#201d20"/><stop offset=".6" stop-color="#0d0f17"/><stop offset="1" stop-color="#2d231d"/></linearGradient>
+ <linearGradient id="gold" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f3d18a"/><stop offset="1" stop-color="#a67a43"/></linearGradient>
+ <linearGradient id="panel" x1="0" x2="1"><stop stop-color="#232124"/><stop offset="1" stop-color="#15181f"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#976b37" stop-opacity=".2"/><stop offset="1" stop-color="#976b37" stop-opacity="0"/></radialGradient>
+ <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M44 0H0V44" fill="none" stroke="#bd925b" stroke-opacity=".07"/></pattern>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="13" flood-color="#000000" flood-opacity=".55"/></filter>
+ </defs>
+ <rect width="844" height="390" fill="url(#bg)"/><rect width="844" height="390" fill="url(#grid)"/>
+ <g font-family="Arial, Helvetica, sans-serif">
+ <rect x="0" y="0" width="844" height="48" fill="#0c0d11" fill-opacity=".91"/>
+ <text x="20" y="30" fill="#f0c879" font-size="17" font-weight="700" >ПЯТЬ ТЕНЕЙ</text>
+ <text x="223" y="29" fill="#d0b99c" font-size="13" font-weight="400" >ГЛАВА I · Город</text>
+ <rect x="646" y="9" width="178" height="30" rx="15" fill="#2e292a" stroke="#544a41" /><text x="735" y="30" fill="#d0bb9c" font-size="13" font-weight="700" text-anchor="middle">К СПИСКУ</text>
+ <rect x="15" y="60" width="473" height="303" rx="9" fill="#17191f" stroke="#735d42" />
+ <circle cx="210" cy="184" r="167" fill="url(#glow)"/>
+ <path d="M 76 290 Q 162 250 216 206 T402 122" fill="none" stroke="#b98c55" stroke-width="3" stroke-dasharray="7 8"/>
+ <circle cx="80" cy="291" r="22" fill="#31533b" stroke="#f2cc8e" stroke-width="3"/><text x="80" y="299" fill="#f5e4ce" font-size="23" font-weight="700" text-anchor="middle">1</text>
+ <circle cx="230" cy="206" r="24" fill="#62452b" stroke="#f4cb7f" stroke-width="3"/><text x="230" y="214" fill="#ffefce" font-size="23" font-weight="700" text-anchor="middle">2</text>
+ <circle cx="400" cy="124" r="22" fill="#22242b" stroke="#807668" stroke-width="3"/><text x="400" y="132" fill="#b9aa95" font-size="23" font-weight="700" text-anchor="middle">3</text>
+ <text x="45" y="91" fill="#c9aa7c" font-size="12" font-weight="700" >СХЕМАТИЧНАЯ КАРТА</text>
+ <text x="33" y="334" fill="#c6b69c" font-size="11" font-weight="400" >FS-01 пройден   ·   FS-02 доступен   ·   FS-03 закрыт</text>
+ <rect x="500" y="60" width="329" height="303" rx="10" fill="url(#panel)" stroke="#a78348" />
+ <text x="518" y="89" fill="#f0cd89" font-size="13" font-weight="700" >FS-02 · ДОСТУПНО</text>
+ <text x="518" y="121" fill="#f8e7d0" font-size="21" font-weight="700" >Осмотр записей</text>
+ <path d="M518 136 L810 136" stroke="#91734d" opacity=".55" stroke-width="1" fill="none"/>
+ <text x="518" y="168" fill="#dfd2be" font-size="15" font-weight="400" >Сопоставить два источника.</text>
+ <text x="518" y="194" fill="#b4a287" font-size="13" font-weight="400" >FS-01 завершён</text>
+ <text x="518" y="231" fill="#b4a287" font-size="12" font-weight="400" >Награды: пока не определены</text>
+ <rect x="518" y="259" width="293" height="50" rx="8" fill="url(#gold)" stroke="#f0cb8a" /><text x="664.5" y="291" fill="#251e16" font-size="17" font-weight="700" text-anchor="middle">НАЧАТЬ</text>
+ <text x="19" y="381" fill="#b9a58a" font-size="11" font-weight="400" >ЭСКИЗ 844×390 · SAFE-AREA ПОТРЕБУЕТ ПРОВЕРКИ НА УСТРОЙСТВЕ</text>
+</g></svg>

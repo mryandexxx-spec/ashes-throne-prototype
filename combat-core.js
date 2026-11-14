@@ -534,6 +534,12 @@ const CombatCore = (() => {
       ? actor.side==="ally"?"enemy":"ally"
       : mode==="ally"||mode==="all-allies"?actor.side:null;
     if(!targetSide)return [];
+    // LIORA001: single-target enemy actions cannot bypass a living taunter.
+    if(mode==="enemy"&&actor.side==="enemy"&&typeof CombatStatusCore!=="undefined"){
+      const taunter=battle.fighters.findIndex(f=>f.side===targetSide&&f.hp>0&&
+        CombatStatusCore.read(f,"taunt")!==null);
+      if(taunter>=0)return [taunter];
+    }
     if(mode==="enemy"||mode==="ally")
       return Number.isInteger(primaryIndex)&&battle.fighters[primaryIndex]&&
         battle.fighters[primaryIndex].side===targetSide&&
@@ -869,6 +875,13 @@ const CombatCore = (() => {
     if(ability.kind==="damage"&&weakened)actor.weakenAttacks--;
     battle.message=actor.name+" применяет "+ability.name+
       ": целей "+recipients.length+".";
+    // Apply before the ordinary end-of-action tick; +1 keeps two subsequent
+    // own turns of provocation after the casting turn.
+    if(ability.tauntTurns!==undefined&&typeof CombatStatusCore!=="undefined"){
+      CombatStatusCore.apply(actor,"taunt",0,ability.tauntTurns+1);
+      emit(battle,"effect",{actorId:actor.id,targetId:actor.id,
+        effect:"taunt",remaining:ability.tauntTurns});
+    }
     finishAbilityCooldowns(actor,ability);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
     tickActorStatuses(actor);
@@ -898,6 +911,9 @@ const CombatCore = (() => {
        !validFollowUpEffects(ability)||!validOnHitStatus(battle,ability)||
        !validAreaStatus(ability)||!validAreaStatusProfile(battle,actor,ability))return false;
     if(!["damage","heal","guard"].includes(ability.kind))return false;
+    if(ability.tauntTurns!==undefined&&
+      (ability.kind!=="guard"||ability.target!=="self"||
+       !Number.isSafeInteger(ability.tauntTurns)||ability.tauntTurns<1))return false;
     if(ability.kind==="damage"&&(!Number.isFinite(ability.multiplier)||ability.multiplier<0))return false;
     if(ability.kind==="heal"&&(!Number.isFinite(ability.healAmount)||ability.healAmount<0))return false;
     if(ability.kind==="guard"&&(!Number.isInteger(ability.guardHits)||ability.guardHits<0))return false;
@@ -958,6 +974,13 @@ const CombatCore = (() => {
     if(ability.kind!=="damage"||!hitCheckEnabled(battle,type)||
       !battle.events.some(event=>event.type==="miss"&&event.actorId===actor.id&&event.targetId===target.id))
       applyFollowUpEffects(battle,actor,ability,[target],target,type,readMovePenalty);
+    // Apply before the ordinary end-of-action tick; +1 keeps two subsequent
+    // own turns of provocation after the casting turn.
+    if(ability.tauntTurns!==undefined&&typeof CombatStatusCore!=="undefined"){
+      CombatStatusCore.apply(actor,"taunt",0,ability.tauntTurns+1);
+      emit(battle,"effect",{actorId:actor.id,targetId:actor.id,
+        effect:"taunt",remaining:ability.tauntTurns});
+    }
     finishAbilityCooldowns(actor,ability);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
     tickActorStatuses(actor);

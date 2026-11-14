@@ -3,7 +3,7 @@ const LoreCampaignUI=(()=>{
  "use strict";
  const escMap={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"};
  const escapeHtml=value=>String(value).replace(/[&<>"']/g,ch=>escMap[ch]);
- let root=null,data=null,core=null,catalog=null,progress=null,sceneRuntime=null,notice="";
+ let root=null,data=null,core=null,catalog=null,progress=null,sceneRuntime=null,scenePack=null,notice="";
  let view="stories",storyId=null,nodeId=null,layerId=null,globalKeyRegistered=false;
  const hasOwn=(x,k)=>Object.prototype.hasOwnProperty.call(x,k);
  function nodeStatus(node,c= catalog,p=progress,engine=core){
@@ -26,7 +26,8 @@ const LoreCampaignUI=(()=>{
   let storage=null;
   if(Object.prototype.hasOwnProperty.call(options,"storage"))storage=options.storage;
   else try{storage=window.localStorage;}catch{storage=null;}
-  return runtime.create({graph:catalog,graphCore:core,pack:options.pack||scripts.catalog(),
+  scenePack=options.pack||scripts.catalog();
+  return runtime.create({graph:catalog,graphCore:core,pack:scenePack,
     scriptData:scripts,sceneCore:engine,saveModule:save,storage});
  }
  function syncProgress(){progress=sceneRuntime?sceneRuntime.progress():core.fresh(catalog);}
@@ -283,6 +284,19 @@ const LoreCampaignUI=(()=>{
    '<small>Реплики и задачи будут добавлены после сценарного утверждения. Награды пока не определены.</small></div>'+
    '</aside>';
  }
+ function renderJournal(){
+  const rows=sceneRuntime?.journal(storyId)||[];
+  if(!rows.length)return "";
+  const items=rows.map(row=>{
+   const node=data.getNode(row.nodeId,catalog);
+   const scene=scenePack?.scenes?.find(s=>s.nodeId===row.nodeId);
+   const choice=scene?.choices?.find(c=>c.id===row.choiceId);
+   return '<li><strong>'+escapeHtml(node?.title||"Сюжетный узел")+'</strong>: '+
+     escapeHtml(choice?.label||"Решение сохранено")+'</li>';
+  }).join("");
+  return '<details class="lore-decision-log"><summary>Журнал первичных решений ('+
+   rows.length+')</summary><ul>'+items+'</ul></details>';
+ }
  function renderMap(){
   const story=data.getStory(storyId,catalog);
   if(!story)return renderStories();
@@ -310,6 +324,7 @@ const LoreCampaignUI=(()=>{
    renderDetail(chosen)+'</div>'+
    '<div class="lore-legend" aria-label="Условные обозначения"><span class="lore-state-completed">● Пройдено</span><span class="lore-state-available">● Доступно</span><span class="lore-state-locked">● Закрыто</span></div>'+
    '<div class="lore-node-list" role="group" aria-label="Список сюжетных узлов">'+list+'</div>'+
+   renderJournal()+
    '<p class="lore-stage-note">'+escapeHtml(saveMessage())+' Игровые сцены включаются после утверждения текста.</p>'+
    '</section>';
  }

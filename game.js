@@ -2167,12 +2167,19 @@ function showCampaignPath(path){
  }
  if(title)title.textContent=selectedCampaignPath?CAMPAIGN_PATH_TITLES[selectedCampaignPath]:"Выбор кампании";
  if(back)back.textContent=selectedCampaignPath?"← К выбору":"← В штаб";
+ // LOREMAP001: open the non-combat lore map through the existing hub.
+ if(selectedCampaignPath==="lore"&&typeof LoreCampaignUI!=="undefined"&&
+   typeof LoreCampaignData!=="undefined"&&typeof LoreCampaignCore!=="undefined"){
+  const loreRoot=$("#loreCampaignRoot");
+  if(loreRoot&&LoreCampaignUI.mount(loreRoot,LoreCampaignData,LoreCampaignCore))LoreCampaignUI.open();
+ }
 }
 document.querySelectorAll("[data-campaign-path]").forEach(button=>button.addEventListener("click",()=>{
  showCampaignPath(button.dataset.campaignPath);
  if(button.dataset.campaignPath==="training")renderCampaign();
 }));
 $("#campaignBackButton")?.addEventListener("click",()=>{
+ if(selectedCampaignPath==="lore"&&typeof LoreCampaignUI!=="undefined"&&LoreCampaignUI.back())return;
  if(selectedCampaignPath)showCampaignPath(null);
  else showScreen("home");
 });

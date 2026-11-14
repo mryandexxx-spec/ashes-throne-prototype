@@ -76,6 +76,7 @@ async function check(engine,browserType,width,height){
   assert.ok((await page.locator('.lore-scene-result').innerText()).includes("Просмотр сцены завершён"));
   await page.locator('[data-lore-action="leave-result"]').click();
   assert.ok((await page.locator('.lore-node-list').innerText()).includes("Пройдено"));
+  assert.ok((await page.locator(".lore-decision-log").innerText()).includes("Сначала журнал"),tag+" primary decision journal");
   const primary=await page.evaluate(()=>localStorage.getItem("ashes-throne.lore-campaign.v1"));
   await page.locator('[data-lore-action="start-node"]').click();
   assert.match(await page.locator('.lore-scene-header').innerText(),/ПОВТОР/);

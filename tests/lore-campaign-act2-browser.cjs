@@ -87,12 +87,14 @@ async function check(name,browserType,width,height){
   for(let i=0;i<3;i++){
    await page.locator('[data-lore-action="start-node"]').click();
    if(i===0){
-    await page.locator('[data-lore-action="scene-next"]').click();
+    // The first long narration can span several landscape pages. Reload the
+    // persisted starting checkpoint instead of assuming the next button is shown.
     await page.reload({waitUntil:"load"});
     await enter(page);
     assert.equal(await page.locator(".lore-node-detail [data-lore-action='start-node']").count(),1);
+    assert.match(await page.locator(".lore-node-detail").innerText(),/Продолжить/);
     await page.locator('[data-lore-action="start-node"]').click();
-    assert.match(await page.locator(".lore-scene-text").innerText(),/Где Нада/);
+    assert.match(await page.locator(".lore-scene-text").innerText(),/Спустя три дня Рен/);
    }
    await finish(page);
    await page.locator('[data-lore-action="leave-result"]').click();

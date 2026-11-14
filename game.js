@@ -945,7 +945,9 @@ function showScreen(id){
   const label=$("#battleMissionLabel");
   if(label)label.textContent=battleIsSignal?"РАЗВЕДОПЕРАЦИЯ · ТРЕВОЖНЫЙ СИГНАЛ":
    battleIsOperation?"РАЗВЕДОПЕРАЦИЯ · ДВА КУРЬЕРА":
-   battleIsLoreRequired?"ПЯТЬ ТЕНЕЙ · ОБЯЗАТЕЛЬНЫЙ БОЙ (ИГРОВАЯ АДАПТАЦИЯ)":
+   battleIsLoreRequired?"ПЯТЬ ТЕНЕЙ · ОБЯЗАТЕЛЬНЫЙ БОЙ"+
+    (loreRequiredContext?.battleNarrative?.title?" · "+loreRequiredContext.battleNarrative.title:"")+
+    " (ИГРОВАЯ АДАПТАЦИЯ)":
     battleIsLoreTraining?"ПЯТЬ ТЕНЕЙ · ТРЕНИРОВКА (ВНЕ КАНОНА)":
     battleIsChallenge?"ИСПЫТАНИЕ · "+ChallengeCore.get(activeChallengeId).title:
    battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
@@ -2189,7 +2191,8 @@ function missionRewardLabel(id){
 // LC-005: only a verified real combat win can unlock the next episode.
 function openLoreRequiredBattle(context){
  if(!context?.nodeId||!context.battleId)return false;
- loreRequiredContext={nodeId:context.nodeId,battleId:context.battleId,storyId:context.storyId};
+ loreRequiredContext={nodeId:context.nodeId,battleId:context.battleId,
+  storyId:context.storyId,battleNarrative:context.battleNarrative||null};
  loreRequiredResult=null;activeMissionId=null;
  openSquad("loreRequired");return true;
 }
@@ -2197,10 +2200,16 @@ function renderLoreRequiredBattleResult(){
  const won=state?.winner==="ally",saved=!!loreRequiredResult?.ok;
  const title=$("#loreRequiredResultTitle"),body=$("#loreRequiredResultText");
  if(title)title.textContent=won?(saved?"Бой выигран":"Победа не сохранена"):"Бой проигран";
- if(body)body.textContent=won?(saved?
-  "Победа записана в истории. Следующий эпизод открыт.":
-  "Победа не сохранилась. Проверьте хранилище и повторите бой."):
-  "Поражение: следующий эпизод закрыт. Можно пересобрать отряд.";
+ if(body){
+  const summary=won?(saved?
+   "Победа записана в истории. Следующий эпизод открыт.":
+   "Победа не сохранилась. Проверьте хранилище и повторите бой."):
+   "Поражение: следующий эпизод закрыт. Можно пересобрать отряд.";
+  const n=loreRequiredContext?.battleNarrative;
+  const consequence=won?(saved?n?.victory:null):n?.defeat;
+  // Never turn private authored prose into HTML or a canonical game reward.
+  body.textContent=summary+(consequence?"\n\n"+consequence:"");
+ }
  const next=$("#loreRequiredResultContinue"),retry=$("#loreRequiredResultRetry");
  if(next)next.hidden=!saved;
  if(retry)retry.hidden=saved;

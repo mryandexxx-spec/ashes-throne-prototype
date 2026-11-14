@@ -29,7 +29,7 @@ test("LC-002: separate lore scripts and responsive CSS are loaded before app run
   assert.ok(html.indexOf('src="'+name)<html.indexOf('src="game.js'),name+" loads before runtime");
   assert.ok(pkg.scripts.test.includes("node --check "+name),name+" syntax checked");
  }
- assert.match(html,/href="lore-campaign\.css\?v=0\.3\.158"/);
+ assert.match(html,/href="lore-campaign\.css\?v=0\.3\.159"/);
  assert.match(html,/id="loreCampaignRoot"/);
  assert.match(html,/id="campaignLoreContent"/);
  assert.match(html,/Загрузка игрового пилота «Пять теней»/);

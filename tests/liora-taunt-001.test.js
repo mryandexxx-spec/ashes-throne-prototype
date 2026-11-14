@@ -125,7 +125,7 @@ test("LIORA001: Liora shields a wounded teammate, not herself, with a real coold
  assert.equal(battle.fighters[0].emergencyGuardCooldown,3);
  assert.equal(battle.events.some(x=>x.type==="passive-trigger"&&x.ownerId==="liora"),true);
  // Another action while the cooldown is active cannot grant a second shield.
- battle.fighters[1].guardHits=0;battle.fighters[2].meter=1000;
+ battle.fighters[1].guardHits=0;battle.currentActor=2;battle.fighters[2].meter=1000;
  assert.equal(Combat.performActorAbility(battle,"basic",1),true);
  assert.equal(battle.fighters[1].guardHits,0);
 });

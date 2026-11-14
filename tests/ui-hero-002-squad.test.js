@@ -18,7 +18,7 @@ test("UIHERO002 maintains five slots, the actual leader, disabled locked heroes 
  for(const id of ["squadBack","squadRoster","squadSlots","squadCount","squadHint","squadWarning","squadDisband","squadStart","battleLoadError","retryBattleLoad"]){
   assert.ok(html.includes('id="'+id+'"'),id+" retained");
  }
- assert.match(js,/const isLeader=selectedLeaderId===h\.id/);
+ assert.match(js,/const isLeader=ids\[0\]===h\.id/);
  assert.match(js,/aria-pressed="\$\{active\}"/);
  assert.match(js,/\$\{owned\?"":"disabled"\}/);
  assert.match(js,/if\(i===0\)return \`<div class="squad-slot squad-slot-leader/);

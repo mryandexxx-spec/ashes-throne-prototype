@@ -4371,3 +4371,17 @@ body:has(#storyDemo.active)::before{
  #campaignHub .campaign-hub-card{transition:none}
  #campaignHub .campaign-hub-card::before{transition:none}
 }
+
+
+/* LC-007: mandatory story heroes in the existing preparation screen. */
+.squad-screen .squad-choice-required{border-color:#d2ae74;background:linear-gradient(112deg,#46372c,#282831);box-shadow:inset 0 0 0 1px #b58e5533;cursor:default}
+.squad-screen .squad-choice-required[aria-disabled="true"]{opacity:1}
+.squad-screen .squad-choice-required small{color:#eacb99}
+.squad-screen .squad-choice-required>strong{color:#f3d7a9;font-size:16px}
+.squad-screen .squad-slot-required{border-color:#d6aa6b;background:linear-gradient(150deg,#3c2e27,#25262d)}
+.squad-screen .squad-slot-required .squad-slot-content{color:#f5dcba;font-weight:700}
+.squad-screen .squad-choice-required:focus-visible{outline:3px solid #f2cf88;outline-offset:2px}
+@media (pointer:coarse){
+ .squad-screen .squad-choice{min-height:44px}
+ .squad-screen .squad-actions button{min-height:44px}
+}

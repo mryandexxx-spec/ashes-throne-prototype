@@ -17,6 +17,10 @@ const LoreCampaignSceneSave=(()=>{
     !Array.isArray(state.seenEvidenceIds)||!unique(state.seenBeatIds)||!unique(state.seenEvidenceIds))return false;
    const nodes=graph.nodes.filter(n=>n.storyId===storyId);
    const byNode=new Map(nodes.map(n=>[n.id,n]));
+   // Older v1 saves have no battle receipts; an omitted array means empty.
+   const cleared=state.battleClearedNodeIds===undefined?[]:state.battleClearedNodeIds;
+   if(!Array.isArray(cleared)||!unique(cleared)||cleared.some(id=>
+     !byNode.get(id)?.requiredBattleId||!state.completedNodeIds.includes(id)))return false;
    if(state.completedNodeIds.some(id=>!byNode.has(id)))return false;
    if(state.completedNodeIds.some(id=>byNode.get(id).prerequisites.some(pre=>!state.completedNodeIds.includes(pre))))return false;
    if(Object.entries(state.bestStarsByNodeId).some(([id,star])=>!byNode.has(id)||
@@ -65,7 +69,7 @@ const LoreCampaignSceneSave=(()=>{
  function normalize(progress,graph,graphCore){
   const fresh=graphCore.fresh(graph);
   for(const [id,state] of Object.entries(progress.stories)){
-   fresh.stories[id]=clone(state);
+   fresh.stories[id]={...fresh.stories[id],...clone(state)};
   }
   return fresh;
  }

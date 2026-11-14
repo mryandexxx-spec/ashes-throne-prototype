@@ -132,7 +132,7 @@ function cancelAutoTimer(){
  if(autoTimer!==null){clearTimeout(autoTimer);autoTimer=null;}
 }
 function queueAutoAction(){
- if(autoTimer!==null||isVisualTransition()||visualActionPending()||!autoBattle||!state.active||document.hidden||
+ if(autoTimer!==null||isVisualTransition()||visualActionPending()||!autoBattle||!state.active||!!state.tacticalObjective||document.hidden||
     !$("#battle").classList.contains("active"))return;
  autoTimer=setTimeout(()=>{
   autoTimer=null;
@@ -149,7 +149,8 @@ function queueAutoAction(){
 }
 function setAutoBattle(enabled){
  cancelAutoTimer();
- autoBattle=!!enabled&&state.active&&$("#battle").classList.contains("active");
+ // FS-05 is a deliberate manual tactical pilot; other battle modes keep autoplay.
+ autoBattle=!!enabled&&!state.tacticalObjective&&state.active&&$("#battle").classList.contains("active");
  if(autoBattle)selectedAbility="basic";
  const button=$("#autoBattleBtn");
  if(button){
@@ -816,6 +817,10 @@ function renderSquad(){
      :"Первый персонаж — лидер. У него пока нет лидерской способности.")
   :"Выбери героя слева: он займёт первую свободную ячейку. Пока лидерская ячейка пуста, лидерского бонуса нет.";
  $("#squadHint").textContent=(loreMode?"Рен и Нада обязательны для этого боя. Остальные три места — на твой выбор. ":"")+leaderHint;
+ const tacticalBrief=$("#squadTacticalBrief");
+ if(tacticalBrief)tacticalBrief.hidden=!(loreMode&&loreRequiredContext?.battleObjective);
+ $("#squadStart").textContent=loreMode&&loreRequiredContext?.battleObjective?
+  "Начать испытание":"Начать бой";
  const intro=$("#squadIntro");
  if(intro)intro.textContent=loreMode
   ?"«Пять теней»: Рен и Нада обязательны. Остальных героев выбираешь ты.":"Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.";
@@ -1007,7 +1012,8 @@ function showScreen(id){
    battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
   const objective=$("#battleChallengeGoal");
   if(objective){
-   objective.hidden=!battleIsLoreRequired&&!battleIsLoreTraining&&!battleIsChallenge&&!battleIsOperation&&!battleIsSignal;
+   objective.hidden=!!(battleIsLoreRequired&&loreRequiredContext?.battleObjective)||
+   !battleIsLoreRequired&&!battleIsLoreTraining&&!battleIsChallenge&&!battleIsOperation&&!battleIsSignal;
    const def=battleIsChallenge?ChallengeCore.get(activeChallengeId):null;
    const priority=def?.kind==="tactical"?ENEMIES.find(e=>e.id===def.priorityId):null;
    objective.textContent=battleIsLoreRequired&&loreRequiredContext?.battleObjective?
@@ -1019,6 +1025,8 @@ function showScreen(id){
     "Цель: "+(priority?.name||"отмеченный враг")+" должен погибнуть первым и отдельно от остальных.":
     "Цель: пройти "+(def.futureWaves.length+1)+" волны, сохранив отряд.";
   }
+  const tacticalGoalCard=$("#tacticalGoalCard");
+  if(tacticalGoalCard)tacticalGoalCard.hidden=!(battleIsLoreRequired&&loreRequiredContext?.battleObjective);
   const freeStoryEntry=battleIsCampaign&&progress.saveVersion===3&&
    !campaignProgress.completed[activeMissionId];
   if(battleIsCampaign&&!freeStoryEntry&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
@@ -2256,7 +2264,7 @@ function openLoreRequiredBattle(context){
  if(!context?.nodeId||!context.battleId)return false;
  loreRequiredContext={nodeId:context.nodeId,battleId:context.battleId,
   storyId:context.storyId,battleNarrative:context.battleNarrative||null,
-  battleObjective:context.battleObjective||null};
+  battleObjective:context.battleObjective||null,replay:context.replay===true};
  loreRequiredResult=null;activeMissionId=null;
  loreSquadSlots=null; // New story encounter: copy global formation, then lock Ren and Nada.
  openSquad("loreRequired");return true;
@@ -2267,7 +2275,8 @@ function renderLoreRequiredBattleResult(){
  if(title)title.textContent=won?(saved?"Бой выигран":"Победа не сохранена"):"Бой проигран";
  if(body){
   const summary=won?(saved?
-   "Победа записана в истории. Следующий эпизод открыт.":
+   (loreRequiredResult?.replay?"Повтор пройден. Прежний результат сохранён, новых наград нет.":
+    "Победа записана в истории. Следующий эпизод открыт."):
    "Победа не сохранилась. Проверьте хранилище и повторите бой."):
    "Поражение: следующий эпизод закрыт. Можно пересобрать отряд.";
   const n=loreRequiredContext?.battleNarrative;
@@ -2280,10 +2289,17 @@ function renderLoreRequiredBattleResult(){
  }
  const next=$("#loreRequiredResultContinue"),retry=$("#loreRequiredResultRetry");
  if(next)next.hidden=!saved;
- if(retry)retry.hidden=saved;
+ if(retry){retry.hidden=false;retry.textContent=saved?"Сыграть ещё раз":"Повторить бой";}
 }
 $("#loreRequiredResultContinue")?.addEventListener("click",returnToLoreMap);
-$("#loreRequiredResultRetry")?.addEventListener("click",()=>openSquad("loreRequired"));
+$("#loreRequiredResultRetry")?.addEventListener("click",()=>{
+ if(!loreRequiredResult?.ok){openSquad("loreRequired");return;}
+ const nodeId=loreRequiredContext?.nodeId;
+ returnToLoreMap();
+ const node=LoreCampaignAct2.data.getNode(nodeId);
+ if(node?.mapLayerId)LoreCampaignUI.changeLayer(node.mapLayerId);
+ if(LoreCampaignUI.selectNode(nodeId))LoreCampaignUI.startRequiredBattle();
+});
 $("#loreRequiredResultBack")?.addEventListener("click",()=>{
  LoreCampaignUI.cancelRequiredBattle();returnToLoreMap();
 });
@@ -2545,10 +2561,11 @@ function renderTargetFighterHud(){
 function syncBattleUI(){
  if(inspectionId)renderFighterInspection();
  if(battleIsLoreRequired&&state.tacticalObjective){
-  const o=state.tacticalObjective,goal=$("#battleChallengeGoal");
-  if(goal)goal.textContent="Прикрыть отход · сохранить Рена · "+
-   Math.min(state.allyActions,o.allyActionsToHold)+"/"+o.allyActionsToHold+
-   " действий союзников. Или победить всех нападающих.";
+  const o=state.tacticalObjective;
+  const count=Math.min(state.allyActions,o.allyActionsToHold);
+  const counter=$("#tacticalGoalCounter"),fill=$("#tacticalGoalFill");
+  if(counter)counter.textContent=count+"/"+o.allyActionsToHold+" действий";
+  if(fill)fill.style.width=Math.round(count/o.allyActionsToHold*100)+"%";
  }
  if(!state.active||isVisualTransition())hideAbilityTooltip();
  if(!state.active){cancelAutoTimer();autoBattle=false;}
@@ -2718,7 +2735,12 @@ function syncBattleUI(){
  const powerfulButton=$("#powerfulAbilityBtn");
  if(powerfulButton)powerfulButton.disabled=!powerfulReady||autoBattle||visualBusy;
  const autoButton=$("#autoBattleBtn");
- if(autoButton){autoButton.disabled=!state.active;autoButton.textContent=autoBattle?"Ручной бой":"Автобой";autoButton.setAttribute("aria-pressed",String(autoBattle));}
+ if(autoButton){
+  autoButton.hidden=!!state.tacticalObjective;
+  autoButton.disabled=!state.active||!!state.tacticalObjective;
+  autoButton.textContent=autoBattle?"Ручной бой":"Автобой";
+  autoButton.setAttribute("aria-pressed",String(autoBattle));
+ }
  const speedButton=$("#autoSpeedBtn");
  if(speedButton){speedButton.disabled=!state.active;speedButton.textContent=BattleSpeed.get()+"×";speedButton.setAttribute("aria-label","Скорость боя "+BattleSpeed.get()+"×. Нажми, чтобы изменить");}
  $("#basicAbilityBtn").textContent="Базовая атака";

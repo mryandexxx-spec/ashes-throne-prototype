@@ -49,7 +49,8 @@ async function run(name,type,w,h){
  try{
   await page.goto(origin,{waitUntil:"domcontentloaded"});
   await open(page);
-  assert.equal(await page.locator('[data-lore-action="training-battle"]').count(),0);
+  assert.equal(await page.locator('[data-lore-action="training-battle"]').count(),1,
+   "Optional practice remains available but cannot satisfy a required story victory");
   assert.equal(await page.locator('[data-lore-action="required-battle"]').count(),0,
    "Cannot enter combat before completing scene");
   await page.locator('[data-lore-action="start-node"]').click();

@@ -97,7 +97,22 @@ async function check(name,browserType,width,height){
     assert.match(await page.locator(".lore-scene-text").innerText(),/Спустя три дня Рен/);
    }
    await finish(page);
-   await page.locator('[data-lore-action="leave-result"]').click();
+   if(i===1){
+    // This test covers narrative navigation; tactical combat has separate tests.
+    assert.equal(await page.locator('[data-lore-action="required-battle"]').count(),1);
+    await page.locator('[data-lore-action="leave-result"]').click();
+    await page.locator('[data-lore-node="five-shadows:fs-06"]').click();
+    assert.match(await page.locator(".lore-node-detail").innerText(),/обязательный бой/i);
+    await page.evaluate(()=>{
+      const key="ashes-throne.lore-campaign.v1",data=JSON.parse(localStorage.getItem(key));
+      data.stories["five-shadows"].battleClearedNodeIds.push("five-shadows:fs-05");
+      localStorage.setItem(key,JSON.stringify(data));
+    });
+    await page.reload({waitUntil:"load"});
+    await enter(page);
+   }else{
+    await page.locator('[data-lore-action="leave-result"]').click();
+   }
    if(i<2)assert.match(await page.locator(".lore-node-detail").innerText(),/Доступно/);
   }
   const result=await page.evaluate(()=>({
@@ -105,7 +120,7 @@ async function check(name,browserType,width,height){
    width:innerWidth,scroll:document.documentElement.scrollWidth
   }));
   assert.deepEqual(result.p.completedNodeIds,Array.from({length:6},(_,i)=>"five-shadows:fs-0"+(i+1)));
-  assert.deepEqual(result.p.battleClearedNodeIds,["five-shadows:fs-01","five-shadows:fs-02"]);
+  assert.deepEqual(result.p.battleClearedNodeIds,["five-shadows:fs-01","five-shadows:fs-02","five-shadows:fs-05"]);
   assert.ok(result.scroll<=result.width+1,"horizontal overflow "+result.scroll+"/"+result.width);
   await page.locator('[data-lore-layer="gardens-route"]').click();
   assert.equal(await page.locator(".lore-map-marker").count(),3);

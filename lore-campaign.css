@@ -237,3 +237,24 @@
  #campaignLoreContent .lore-scene-speaker-row{min-height:46px}
  #campaignLoreContent .lore-scene-tools>.lore-scene-goals{display:none}
 }
+
+
+/* Tactical training is intentionally separate from the literary chronicle. */
+#campaignLoreContent .lore-training-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;min-width:0;margin:8px 0;padding:12px 14px;background:linear-gradient(115deg,#322b24,#1b2229);border:1px solid #c39659;border-radius:11px}
+#campaignLoreContent .lore-training-card>div{min-width:0;display:flex;flex-direction:column;gap:3px}
+#campaignLoreContent .lore-training-card strong{font:600 17px Cinzel,Georgia,serif;color:#f5d4a3}
+#campaignLoreContent .lore-training-card small{font-size:11px;color:#e1c6a8;line-height:1.35}
+#campaignLoreContent .lore-training-card button{min-height:44px;min-width:100px;padding:10px 18px}
+#campaignLoreContent .lore-training-inactive{font-size:11px;color:#bfb3a3}
+.lore-training-result{max-width:640px;margin:clamp(10px,4vh,40px) auto;padding:24px;display:grid;gap:13px;min-width:0;border:1px solid #b88f5d;border-radius:12px;background:linear-gradient(145deg,#29272c,#141a21);color:#f1e1c6;box-shadow:0 10px 30px #08090e8a}
+.lore-training-result h2{font:600 clamp(21px,4vw,30px) Cinzel,Georgia,serif;margin:0;color:#f7d6a2}
+.lore-training-result p{font-size:14px;line-height:1.5;margin:0}
+.lore-training-result-actions{display:flex;gap:9px;flex-wrap:wrap}
+.lore-training-result-actions button{min-height:44px}
+@media (orientation:landscape) and (max-height:540px){
+ #campaignLoreContent .lore-training-card{margin:6px 0;padding:7px 11px;gap:7px}
+ #campaignLoreContent .lore-training-card strong{font-size:14px}
+ #campaignLoreContent .lore-training-card small{font-size:10px}
+ .lore-training-result{margin:0 auto;padding:13px 17px;gap:9px}
+}
+@media (max-width:580px){#campaignLoreContent .lore-training-card{grid-template-columns:minmax(0,1fr)}}

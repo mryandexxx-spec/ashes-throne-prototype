@@ -49,7 +49,10 @@ const LoreCampaignUI=(()=>{
    PRIMARY_CHOICE_IMMUTABLE:"Первый сюжетный выбор уже сохранён и не изменяется.",
    OBJECTIVE_INCOMPLETE:"Сначала выполните обязательные задачи сцены.",
    SKIP_UNAVAILABLE:"Пропустить можно только уже просмотренные безопасные кадры.",
-   NOT_AT_END:"Сцена ещё не завершена."
+   NOT_AT_END:"Сцена ещё не завершена.",
+   INSPECTION_REQUIRED:"Сначала осмотрите отмеченные предметы и сопоставьте находки.",
+   INSPECTION_NOT_AVAILABLE:"Этот предмет сейчас нельзя осмотреть.",
+   COMPARISON_NOT_AVAILABLE:"Здесь пока нечего сопоставлять."
   })[code]||"Действие недоступно: "+String(code);
  }
  function mount(element,d,c,options={}){
@@ -129,6 +132,8 @@ const LoreCampaignUI=(()=>{
   if(!sceneRuntime)return false;
   const result=action==="next"?sceneRuntime.next():
    action==="choose"?sceneRuntime.choose(choiceId):
+   action==="inspect"?sceneRuntime.inspect(choiceId):
+   action==="compare"?sceneRuntime.compare(choiceId):
    action==="skip"?sceneRuntime.skipSeen():
    action==="finish"?sceneRuntime.finish():{ok:false,code:"UNKNOWN_ACTION"};
   if(!result.ok){notice=actionMessage(result.code);render();return false;}
@@ -149,13 +154,36 @@ const LoreCampaignUI=(()=>{
   if(!current)return '<section class="lore-scene"><p>Сцена недоступна.</p>'+
     '<button type="button" data-lore-action="leave-scene" class="ghost">← К карте</button></section>';
   const node=data.getNode(current.nodeId,catalog);
+  const needsInspection=!current.interactionsReady;
   const choiceButtons=current.choices.map(choice=>
    '<button type="button" class="lore-scene-choice" data-lore-action="scene-choose"'+
-   ' data-lore-choice="'+escapeHtml(choice.id)+'">'+escapeHtml(choice.label)+'</button>').join("");
+   ' data-lore-choice="'+escapeHtml(choice.id)+'"'+(needsInspection?' disabled':'')+
+   '>'+escapeHtml(choice.label)+'</button>').join("");
   const actions=choiceButtons||(current.canContinue?
-   '<button type="button" class="primary" data-lore-action="scene-next">Продолжить</button>':
+   '<button type="button" class="primary" data-lore-action="scene-next"'+
+     (needsInspection?' disabled':'')+'>Продолжить</button>':
    current.canFinish?
-    '<button type="button" class="primary" data-lore-action="scene-finish">Завершить узел</button>':'');
+    '<button type="button" class="primary" data-lore-action="scene-finish"'+
+     (needsInspection?' disabled':'')+'>Завершить узел</button>':'');
+  const inspections=(current.inspections||[]).map(item=>
+   '<div class="lore-scene-inspect-item">'+
+    '<button type="button" class="lore-scene-inspect-btn" data-lore-action="scene-inspect"'+
+      ' data-lore-item="'+escapeHtml(item.id)+'" aria-expanded="'+(item.text?'true':'false')+'">'+
+      (item.done?'✓ ':'⌕ ')+escapeHtml(item.label)+'</button>'+
+    (item.text?'<p class="lore-scene-evidence-text">'+escapeHtml(item.text)+'</p>':'')+
+   '</div>').join("");
+  const comparisons=(current.comparisons||[]).map(item=>
+   '<div class="lore-scene-inspect-item">'+
+    '<button type="button" class="lore-scene-inspect-btn lore-scene-compare-btn" data-lore-action="scene-compare"'+
+      ' data-lore-item="'+escapeHtml(item.id)+'" aria-expanded="'+(item.text?'true':'false')+'"'+
+      (item.ready?'':' disabled')+'>'+(item.done?'✓ ':'⇄ ')+escapeHtml(item.label)+'</button>'+
+    (item.text?'<p class="lore-scene-evidence-text">'+escapeHtml(item.text)+'</p>':'')+
+   '</div>').join("");
+  const evidenceControls=inspections||comparisons?
+   '<section class="lore-scene-evidence" aria-label="Осмотр и сравнение материалов">'+
+    '<strong>ОСМОТРЕТЬ И СОПОСТАВИТЬ</strong>'+inspections+comparisons+
+    (needsInspection?'<small>Изучите необходимые сведения, прежде чем продолжать.</small>':'')+
+   '</section>':"";
   const objectives=current.objectives.length?
    '<div class="lore-scene-objectives"><strong>ЗАДАЧИ СЦЕНЫ</strong>'+
     current.objectives.map(o=>'<div class="'+(o.done?'is-done':'')+'">'+
@@ -167,6 +195,7 @@ const LoreCampaignUI=(()=>{
    '<article class="lore-scene-card" aria-live="polite">'+
     (current.speakerId?'<div class="lore-scene-speaker">'+escapeHtml(current.speakerId)+'</div>':'')+
     '<p class="lore-scene-text">'+escapeHtml(current.text)+'</p>'+
+    evidenceControls+
     '<div class="lore-scene-choices">'+actions+'</div>'+
     '<button type="button" class="lore-scene-skip ghost" data-lore-action="scene-skip"'+
       (!current.canContinue||!current.skipSafe?' disabled':'')+
@@ -196,6 +225,8 @@ const LoreCampaignUI=(()=>{
   else if(action==="leave-scene"||action==="leave-result")back();
   else if(action==="scene-next")actInScene("next");
   else if(action==="scene-choose")actInScene("choose",button.dataset.loreChoice);
+  else if(action==="scene-inspect")actInScene("inspect",button.dataset.loreItem);
+  else if(action==="scene-compare")actInScene("compare",button.dataset.loreItem);
   else if(action==="scene-skip")actInScene("skip");
   else if(action==="scene-finish")actInScene("finish");
  }

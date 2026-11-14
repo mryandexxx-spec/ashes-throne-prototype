@@ -51,8 +51,11 @@ const AbilityInfo=(()=>{
     meta:[]};
   }
   if(slotId==="leader"){
+   const protection=a.modifiers?.find(x=>x.stat==="protection"&&x.operation==="percent");
    return {id:slot.id,label:slot.label,name:a.name,status:"available",
-    description:"Автоматический лидерский эффект. Подробное действие уточняется.",meta:[]};
+    description:protection?"Пока герой жив и назначен лидером, каждый союзник получает +"+
+     protection.value+"% к запасу Protection. Значение тестовое.":
+     "Автоматический лидерский эффект. Подробное действие уточняется.",meta:[]};
   }
   const effects=[];
   if(a.kind==="damage"){

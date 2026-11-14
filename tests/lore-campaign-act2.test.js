@@ -111,9 +111,9 @@ test("LOREACT2001: fresh play cannot jump into new act and UI scripts load in sa
  for(const node of graph.nodes.slice(1))
   assert.equal(Core.available(graph,progress,node.id),false,"fresh save cannot skip "+node.id);
  assert.equal(Core.available(graph,progress,graph.nodes[0].id),true);
- const pilotScript='src="lore-campaign-pilot.js?v=0.3.157"';
- const actScript='src="lore-campaign-act2.js?v=0.3.157"';
- const gameScript='src="game.js?v=0.3.157"';
+ const pilotScript='src="lore-campaign-pilot.js?v=0.3.158"';
+ const actScript='src="lore-campaign-act2.js?v=0.3.158"';
+ const gameScript='src="game.js?v=0.3.158"';
  assert.ok(html.includes(pilotScript)&&html.includes(actScript)&&html.includes(gameScript));
  assert.ok(html.indexOf(pilotScript)<html.indexOf(actScript));
  assert.ok(html.indexOf(actScript)<html.indexOf(gameScript));

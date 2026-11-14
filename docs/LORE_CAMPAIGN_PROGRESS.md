@@ -23,7 +23,7 @@
 | UX-эскизы | [LORE_CAMPAIGN_UX_MOCKUPS.md](LORE_CAMPAIGN_UX_MOCKUPS.md) | Экраны, размеры, переходы, ссылки на исходники SVG |
 | Журнал решений | [LORE_CAMPAIGN_DECISIONS.md](LORE_CAMPAIGN_DECISIONS.md) | Утверждённое / остающееся предложением |
 | Сценарий | `ashes-throne-worldbuilding/game-design/campaigns/FIVE_SHADOWS_CAMPAIGN_ADAPTATION_0.1.md` | Приватная схема 5 актов / примерно 15 основных узлов, ещё предложение |
-| LC-001 | [LORE_CAMPAIGN_001.md](LORE_CAMPAIGN_001.md) в PR #317 | Фактическая граница первого кодового этапа, не в `main` |
+| LC-001 | [PR #317, файл `docs/LORE_CAMPAIGN_001.md`](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/317/files) | Фактическая граница первого кодового этапа, не в `main` |
 
 ## Отслеживание этапов
 

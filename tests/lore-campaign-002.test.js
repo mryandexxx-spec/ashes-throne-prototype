@@ -25,11 +25,11 @@ function emit(r,action,extra={}){
 test("LC-002: separate lore scripts and responsive CSS are loaded before app runtime",()=>{
  const html=file("index.html"),css=file("lore-campaign.css"),game=file("game.js"),pkg=JSON.parse(file("package.json"));
  for(const name of ["lore-campaign-data.js","lore-campaign-core.js","lore-campaign-ui.js"]){
-  assert.match(html,new RegExp('src="'+name.replace(".","\\.")+'\\?v=0\\.3\\.155"'));
+  assert.match(html,new RegExp('src="'+name.replace(".","\\.")+'\\?v=0\\.3\\.156"'));
   assert.ok(html.indexOf('src="'+name)<html.indexOf('src="game.js'),name+" loads before runtime");
   assert.ok(pkg.scripts.test.includes("node --check "+name),name+" syntax checked");
  }
- assert.match(html,/href="lore-campaign\.css\?v=0\.3\.155"/);
+ assert.match(html,/href="lore-campaign\.css\?v=0\.3\.156"/);
  assert.match(html,/id="loreCampaignRoot"/);
  assert.match(html,/id="campaignLoreContent"/);
  assert.match(html,/Загрузка игрового пилота «Пять теней»/);
@@ -41,7 +41,7 @@ test("LC-002: separate lore scripts and responsive CSS are loaded before app run
  assert.match(css,/\.lore-map-marker\{[^}]*width:46px;height:46px/);
  assert.match(css,/@media \(max-width:690px\)/);
  assert.equal(pkg.version,"0.3.156");
- assert.match(html,/id="buildVersion">Прототип · v0\.3\.155 · LOREACT2001/);
+ assert.match(html,/id="buildVersion">Прототип · v0\.3\.156 · LOREACT2001/);
 });
 test("LC-002: cover, map, node details and accessible list work with one event binding",()=>{
  const r=root();

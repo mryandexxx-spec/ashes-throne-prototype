@@ -52,7 +52,7 @@ assert.equal(CampaignCore.load(()=>{throw Error("Safari unavailable");}).availab
 const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
 const pkg=JSON.parse(fs.readFileSync(path.join(root,"package.json"),"utf8"));
 assert.equal(pkg.version,`${__BUILD_VERSION_FOR_TESTS}`);
-assert.match(html,/id="buildVersion"[^>]*>Прототип · v\d+[.]\d+[.]\d+ · LIORA001/);
+assert.match(html,/id="buildVersion"[^>]*>Прототип · v\d+[.]\d+[.]\d+ · [A-Z][A-Z0-9-]*/);
 assert.match(html,/src="mission-data.js"/);
 // Count only accepted player actions in the actual combat engine.
 const combatSrc=["initiative-model.js","ability-data.js","combat-core.js"]

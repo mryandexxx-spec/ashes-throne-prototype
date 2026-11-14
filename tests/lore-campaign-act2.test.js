@@ -99,3 +99,18 @@ test("LOREACT2001: map chooses city layer after FS-03 and can return to first ac
  assert.equal(UI.snapshot().view,"scene");
  assert.match(root.innerHTML,/Спустя три дня Рен/);
 });
+
+test("LOREACT2001: fresh play cannot jump into new act and UI scripts load in safe order",()=>{
+ const fs=require("node:fs"),path=require("node:path");
+ const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
+ const graph=Act2.data.catalog(),progress=Core.fresh(graph);
+ for(const node of graph.nodes.slice(1))
+  assert.equal(Core.available(graph,progress,node.id),false,"fresh save cannot skip "+node.id);
+ assert.equal(Core.available(graph,progress,graph.nodes[0].id),true);
+ const pilotScript='src="lore-campaign-pilot.js?v=0.3.156"';
+ const actScript='src="lore-campaign-act2.js?v=0.3.156"';
+ const gameScript='src="game.js?v=0.3.156"';
+ assert.ok(html.includes(pilotScript)&&html.includes(actScript)&&html.includes(gameScript));
+ assert.ok(html.indexOf(pilotScript)<html.indexOf(actScript));
+ assert.ok(html.indexOf(actScript)<html.indexOf(gameScript));
+});

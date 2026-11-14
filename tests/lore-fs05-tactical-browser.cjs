@@ -52,17 +52,31 @@ async function finishManually(page){
   const action=await page.evaluate(()=>{
    const proposal=AutoDecision.chooseAction(state);
    const actor=state.fighters[state.currentActor];
-   const ability=AbilityData.get(actor,proposal?.abilityId||"basic");
+   const abilityId=proposal?.abilityId||"basic";
+   const ability=AbilityData.get(actor,abilityId);
    const pursuer=state.fighters.findIndex(f=>f.id==="shade"&&f.hp>0);
    if(pursuer>=0&&["enemy","all-enemies"].includes(ability?.target))
     CombatCore.chooseEnemy(state,pursuer);
-   return proposal?.abilityId||"basic";
+   if(ability?.target==="ally")CombatCore.chooseAlly(state,proposal.targetIndex);
+   return {id:abilityId,target:ability.target};
   });
-  const abilityButton=action==="special"?"#specialAbilityBtn":
-   action==="powerful"?"#powerfulAbilityBtn":"#basicAbilityBtn";
+  const abilityButton=action.id==="special"?"#specialAbilityBtn":
+   action.id==="powerful"?"#powerfulAbilityBtn":"#basicAbilityBtn";
   await page.locator(abilityButton).click({timeout:12000});
+  if(action.target==="ally"){
+   // Pressing an ally-targeted ability arms the cursor. The canvas tap
+   // itself is covered in combat interaction tests; finish the same real
+   // game ability here with the already selected target.
+   assert.equal(await page.evaluate(()=>applyManualAbility("special")),true);
+  }
  }
- throw Error("TACTICAL_MANUAL_BATTLE_DID_NOT_END");
+ const stateText=await page.evaluate(()=>JSON.stringify({
+  active:state.active,winner:state.winner,allyActions:state.allyActions,
+  turn:state.turn,ren:state.fighters.find(f=>f.id==="ren")?.hp,
+  actor:state.fighters[state.currentActor]?.id,
+  enemies:state.fighters.filter(f=>f.side==="enemy").map(f=>[f.id,f.hp])
+ }));
+ throw Error("TACTICAL_MANUAL_BATTLE_DID_NOT_END "+stateText);
 }
 async function run(name,browserType,width,height){
  const browser=await browserType.launch(name==="chromium"?

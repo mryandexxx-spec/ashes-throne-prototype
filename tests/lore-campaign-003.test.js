@@ -233,6 +233,8 @@ test("LC-003: independent UI renders safe literal text and scene navigation with
  emit("leave-result");
  assert.equal(UI.snapshot().view,"map");
  assert.match(r.innerHTML,/Пройдено/);
+ assert.match(r.innerHTML,/Журнал первичных решений/);
+ assert.match(r.innerHTML,/Сначала журнал/);
  assert.match(r.innerHTML,/data-lore-action="start-node"/);
  assert.equal(storage.map.size,1);
 });

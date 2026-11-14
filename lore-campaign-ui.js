@@ -5,7 +5,7 @@ const LoreCampaignUI=(()=>{
  const escapeHtml=value=>String(value).replace(/[&<>"']/g,ch=>escMap[ch]);
  let root=null,data=null,core=null,catalog=null,progress=null,sceneRuntime=null,scenePack=null,notice="";
  let view="stories",storyId=null,nodeId=null,layerId=null,globalKeyRegistered=false;
- let narrativePage=0,narrativeBeatKey="",onStartTraining=null,trainingNotice="";
+ let narrativePage=0,narrativeBeatKey="",onStartTraining=null,onStartRequiredBattle=null,trainingNotice="";
  const PORTRAITS=Object.freeze({
   "Рен Терен":"assets/ren-portrait-ui.webp",
   "Нада":"assets/nada-portrait-ui.webp?v=2",
@@ -42,10 +42,20 @@ const LoreCampaignUI=(()=>{
  function nodeStatus(node,c= catalog,p=progress,engine=core){
   const completed=p?.stories?.[node.storyId]?.completedNodeIds;
   if(Array.isArray(completed)&&completed.includes(node.id))
-   return Object.freeze({code:"completed",label:"Пройдено",reason:"Этот узел уже пройден. Повторное прохождение появится на следующем этапе."});
+   return Object.freeze({code:"completed",label:"Пройдено",
+    reason:node.requiredBattleId&&engine.battleCleared&&!engine.battleCleared(p,node.storyId,node.id)?
+      "Исследование пройдено. Победите в обязательном бою, чтобы открыть следующий эпизод.":
+      "Узел пройден. Повтор не изменяет первоначальные решения."});
   if(engine.available(c,p,node.id))
    return Object.freeze({code:"available",label:"Доступно",reason:"Условия открытия выполнены. Игровая сцена находится в разработке."});
-  return Object.freeze({code:"locked",label:"Закрыто",reason:"Для открытия завершите предыдущий сюжетный узел."});
+  const gated=node.prerequisites.some(id=>{
+   const prior=c.nodes.find(n=>n.id===id);
+   return !!prior?.requiredBattleId&&Array.isArray(completed)&&completed.includes(id)&&
+    !engine.battleCleared?.(p,node.storyId,id);
+  });
+  return Object.freeze({code:"locked",label:"Закрыто",
+   reason:gated?"Сначала выиграйте обязательный бой после предыдущего эпизода.":
+    "Для открытия завершите предыдущий сюжетный узел."});
  }
  function visibleTitle(node,status){
   return status.code==="locked"?"Неизвестный узел":node.title;
@@ -85,7 +95,12 @@ const LoreCampaignUI=(()=>{
    NOT_AT_END:"Сцена ещё не завершена.",
    INSPECTION_REQUIRED:"Сначала осмотрите отмеченные предметы и сопоставьте находки.",
    INSPECTION_NOT_AVAILABLE:"Этот предмет сейчас нельзя осмотреть.",
-   COMPARISON_NOT_AVAILABLE:"Здесь пока нечего сопоставлять."
+   COMPARISON_NOT_AVAILABLE:"Здесь пока нечего сопоставлять.",
+   BATTLE_NOT_AVAILABLE:"Это сражение пока недоступно.",
+   BATTLE_OR_SCENE_ACTIVE:"Сначала завершите текущую сцену.",
+   INVALID_BATTLE:"Неизвестный боевой эпизод.",
+   SAVE_NOT_LOADED:"Невозможно сохранить результат.",
+   ALREADY_CLEARED:"Этот бой уже пройден."
   })[code]||"Действие недоступно: "+String(code);
  }
  function mount(element,d,c,options={}){
@@ -94,11 +109,14 @@ const LoreCampaignUI=(()=>{
   if(root===element){
    if(Object.prototype.hasOwnProperty.call(options,"onStartTraining"))
     onStartTraining=typeof options.onStartTraining==="function"?options.onStartTraining:null;
+   if(Object.prototype.hasOwnProperty.call(options,"onStartRequiredBattle"))
+    onStartRequiredBattle=typeof options.onStartRequiredBattle==="function"?options.onStartRequiredBattle:null;
    return true;
   }
   if(root){root.removeEventListener("click",onClick);root.removeEventListener("keydown",onKeydown);}
   root=element;data=d;core=c;catalog=d.catalog();
   onStartTraining=typeof options.onStartTraining==="function"?options.onStartTraining:null;
+  onStartRequiredBattle=typeof options.onStartRequiredBattle==="function"?options.onStartRequiredBattle:null;
   try{sceneRuntime=initializeScenes(options);}
   catch(error){sceneRuntime=null;notice="Не удалось открыть сценарный модуль: "+String(error?.message||error);}
   syncProgress();
@@ -183,6 +201,30 @@ const LoreCampaignUI=(()=>{
   if(action==="finish")view="result";
   render();return true;
  }
+ function pendingBattle(node){
+  if(!node?.requiredBattleId||!core?.battleCleared||!sceneRuntime)return false;
+  const record=sceneRuntime.stateFor(node.storyId);
+  return !!record?.completedNodeIds.includes(node.id)&&
+    !core.battleCleared(progress,node.storyId,node.id);
+ }
+ function startRequiredBattle(){
+  const node=data.getNode(nodeId,catalog);
+  if(!node||!pendingBattle(node)||!onStartRequiredBattle)return false;
+  const result=sceneRuntime.beginRequiredBattle(node.id);
+  if(!result.ok){notice=actionMessage(result.code);render();return false;}
+  try {
+   const entered=onStartRequiredBattle({nodeId:node.id,battleId:result.battleId,storyId:node.storyId});
+   if(entered===false){sceneRuntime.cancelRequiredBattle();return false;}
+   return true;
+  }catch(error){sceneRuntime.cancelRequiredBattle();throw error;}
+ }
+ function recordBattleVictory(nodeId,battleId){
+  const result=sceneRuntime?.recordBattleVictory(nodeId,battleId)||{ok:false,code:"NOT_READY"};
+  if(result.ok){syncProgress();notice="";render();}
+  else notice=actionMessage(result.code);
+  return result;
+ }
+ function cancelRequiredBattle(){return sceneRuntime?.cancelRequiredBattle()||{ok:false};}
  function startScene(){
   const node=data.getNode(nodeId,catalog);
   if(!node||node.storyId!==storyId||nodeStatus(node).code==="locked"||

@@ -481,7 +481,7 @@ const LoreCampaignUI=(()=>{
    '<button type="button" class="ghost lore-map-return" data-lore-action="back">← К историям</button>'+
    '<div><span class="lore-map-eyebrow">ХРОНИКА / ИНТЕРАКТИВНАЯ СХЕМА</span>'+
    '<h3>'+escapeHtml(story.title)+'</h3><small>'+escapeHtml(chapters[0]?.title||story.subtitle)+'</small></div>'+
-   (onStartTraining&&!catalog.nodes.some(n=>n.storyId===storyId&&n.requiredBattleId)?
+   (onStartTraining?
      '<button type="button" class="ghost lore-map-training-action" data-lore-action="training-battle">'+
      '⚔ Тактический бой <small>Вне канона · без энергии</small></button>':'')+'</div>'+
    '<nav class="lore-layer-list" aria-label="Слои карты">'+layers+'</nav>'+

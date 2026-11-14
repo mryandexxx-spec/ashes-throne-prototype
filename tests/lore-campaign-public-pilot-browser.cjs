@@ -93,7 +93,8 @@ async function fight(page,tag,index){
  const aftermath=await page.locator("#loreRequiredResultText").innerText();
  assert.ok(aftermath.includes(index===1?"Люди с фонарём отошли":"Под вечер Рен и Нада добрались"),
   "Win has a distinct causal consequence in the game version");
- assert.equal(await page.locator("#loreRequiredResultRetry").isHidden(),true);
+ assert.equal(await page.locator("#loreRequiredResultRetry").isVisible(),true,
+  "A cleared story battle can now be replayed for practice");
  const cleared=await page.evaluate(()=>JSON.parse(localStorage.getItem("ashes-throne.lore-campaign.v1"))
   .stories["five-shadows"].battleClearedNodeIds.slice());
  assert.equal(cleared.length,index);

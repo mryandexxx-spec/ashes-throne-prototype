@@ -1,9 +1,9 @@
-/* LC-002: presentation-only lore campaign map. No rewards, combat or saved progress. */
+/* LC-003: generic scene runtime and safe lore-only saves; no authored story yet. */
 const LoreCampaignUI=(()=>{
  "use strict";
  const escMap={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"};
  const escapeHtml=value=>String(value).replace(/[&<>"']/g,ch=>escMap[ch]);
- let root=null,data=null,core=null,catalog=null,progress=null;
+ let root=null,data=null,core=null,catalog=null,progress=null,sceneRuntime=null,notice="";
  let view="stories",storyId=null,nodeId=null,layerId=null;
  const hasOwn=(x,k)=>Object.prototype.hasOwnProperty.call(x,k);
  function nodeStatus(node,c= catalog,p=progress,engine=core){
@@ -17,16 +17,49 @@ const LoreCampaignUI=(()=>{
  function visibleTitle(node,status){
   return status.code==="locked"?"Неизвестный узел":node.title;
  }
- function safeProgress(){
-  // LC-003 implements actual storage, schema validation and primary decisions.
-  return core.fresh(catalog);
+ function initializeScenes(options={}){
+  const scripts=options.scripts||(typeof LoreCampaignScenes!=="undefined"?LoreCampaignScenes:null);
+  const engine=options.engine||(typeof LoreCampaignSceneCore!=="undefined"?LoreCampaignSceneCore:null);
+  const save=options.save||(typeof LoreCampaignSceneSave!=="undefined"?LoreCampaignSceneSave:null);
+  const runtime=options.runtime||(typeof LoreCampaignSceneRuntime!=="undefined"?LoreCampaignSceneRuntime:null);
+  if(!scripts||!engine||!save||!runtime)return null;
+  let storage=null;
+  if(Object.prototype.hasOwnProperty.call(options,"storage"))storage=options.storage;
+  else try{storage=window.localStorage;}catch{storage=null;}
+  return runtime.create({graph:catalog,graphCore:core,pack:options.pack||scripts.catalog(),
+    scriptData:scripts,sceneCore:engine,saveModule:save,storage});
  }
- function mount(element,d,c){
+ function syncProgress(){progress=sceneRuntime?sceneRuntime.progress():core.fresh(catalog);}
+ function saveMessage(){
+  const status=sceneRuntime?.storageStatus();
+  if(status==="corrupt")return "Сохранение истории повреждено или несовместимо. Исходные данные не перезаписаны. Игровые сцены временно заблокированы.";
+  if(status==="volatile")return "Прогресс истории не сохраняется в этом браузере. После закрытия вкладки прохождение может исчезнуть.";
+  return "История сохраняется отдельно от коллекции героев и учебной кампании.";
+ }
+ function actionMessage(code){
+  return ({
+   CONTENT_NOT_READY:"Текст этой сцены ещё не утверждён.",
+   LOCKED:"Сначала завершите предыдущий сюжетный узел.",
+   CORRUPT_SAVE_PROTECTED:"Запись истории повреждена; данные сохранены без изменений.",
+   SAVE_WRITE_FAILED:"Не удалось записать прогресс. Действие не выполнено.",
+   SAVE_VERIFY_FAILED:"Не удалось подтвердить сохранение. Действие не выполнено.",
+   SAVE_CONFLICT:"История изменилась в другой вкладке. Перезагрузите страницу, чтобы не потерять данные.",
+   INVALID_CHOICE:"Этот вариант здесь недоступен.",
+   PRIMARY_CHOICE_IMMUTABLE:"Первый сюжетный выбор уже сохранён и не изменяется.",
+   OBJECTIVE_INCOMPLETE:"Сначала выполните обязательные задачи сцены.",
+   SKIP_UNAVAILABLE:"Пропустить можно только уже просмотренные безопасные кадры.",
+   NOT_AT_END:"Сцена ещё не завершена."
+  })[code]||"Действие недоступно: "+String(code);
+ }
+ function mount(element,d,c,options={}){
   if(!element||!d||!c||!d.catalogIsValid(d.catalog()))
    return false;
   if(root===element)return true;
   if(root){root.removeEventListener("click",onClick);root.removeEventListener("keydown",onKeydown);}
-  root=element;data=d;core=c;catalog=d.catalog();progress=safeProgress();
+  root=element;data=d;core=c;catalog=d.catalog();
+  try{sceneRuntime=initializeScenes(options);}
+  catch(error){sceneRuntime=null;notice="Не удалось открыть сценарный модуль: "+String(error?.message||error);}
+  syncProgress();
   view="stories";storyId=null;nodeId=null;layerId=null;
   root.addEventListener("click",onClick);
   root.addEventListener("keydown",onKeydown);
@@ -45,7 +78,10 @@ const LoreCampaignUI=(()=>{
   return true;
  }
  function back(){
-  if(!root||view!=="map")return false;
+  if(!root)return false;
+  if(view==="scene"){sceneRuntime?.leave();view="map";syncProgress();render();return true;}
+  if(view==="result"){view="map";syncProgress();render();return true;}
+  if(view!=="map")return false;
   const previousStory=storyId;
   view="stories";storyId=null;nodeId=null;layerId=null;
   render();
@@ -59,7 +95,8 @@ const LoreCampaignUI=(()=>{
   view="map";storyId=id;
   layerId=story.mapLayers[0].id;
   const nodes=data.nodesForStory(id,catalog).filter(n=>n.mapLayerId===layerId);
-  nodeId=(nodes.find(n=>nodeStatus(n).code==="available")||nodes[0])?.id||null;
+  const active=sceneRuntime?.stateFor(id)?.activeNodeId;
+  nodeId=(nodes.find(n=>n.id===active)||nodes.find(n=>nodeStatus(n).code==="available")||nodes[0])?.id||null;
   render();
   return true;
  }

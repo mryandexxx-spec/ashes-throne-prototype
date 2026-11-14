@@ -413,7 +413,9 @@ const LoreCampaignUI=(()=>{
    '<div class="lore-map-heading">'+
    '<button type="button" class="ghost lore-map-return" data-lore-action="back">← К историям</button>'+
    '<div><span class="lore-map-eyebrow">ХРОНИКА / ИНТЕРАКТИВНАЯ СХЕМА</span>'+
-   '<h3>'+escapeHtml(story.title)+'</h3><small>'+escapeHtml(chapters[0]?.title||story.subtitle)+'</small></div></div>'+
+   '<h3>'+escapeHtml(story.title)+'</h3><small>'+escapeHtml(chapters[0]?.title||story.subtitle)+'</small></div>'+
+   (onStartTraining?'<button type="button" class="ghost lore-map-training-action" data-lore-action="training-battle">'+
+     '⚔ Тактический бой <small>Вне канона · без энергии</small></button>':'')+'</div>'+
    '<nav class="lore-layer-list" aria-label="Слои карты">'+layers+'</nav>'+
    '<div class="lore-map-layout">'+
    '<div class="lore-map-surface" role="group" aria-label="Схема последовательности узлов. Не географическая карта.">'+
@@ -423,14 +425,6 @@ const LoreCampaignUI=(()=>{
    renderDetail(chosen)+'</div>'+
    '<div class="lore-legend" aria-label="Условные обозначения"><span class="lore-state-completed">● Пройдено</span><span class="lore-state-available">● Доступно</span><span class="lore-state-locked">● Закрыто</span></div>'+
    '<div class="lore-node-list" role="group" aria-label="Список сюжетных узлов">'+list+'</div>'+
-   '<section class="lore-training-card" aria-label="Тактическая тренировка">'+
-     '<div><span class="lore-detail-eyebrow">ИГРОВОЙ БОЙ · ВНЕ СОБЫТИЙ ГЛАВЫ</span>'+
-       '<strong>Тренировка отряда</strong>'+
-       '<small>Отдельная тактическая схватка на существующей 3D-арене. Не меняет сюжетные решения и не расходует энергию.</small></div>'+
-     (onStartTraining?
-      '<button type="button" class="primary" data-lore-action="training-battle">К бою</button>':
-      '<span class="lore-training-inactive">Доступно в полной игре</span>')+
-    '</section>'+
    renderJournal()+
    '<p class="lore-stage-note">'+escapeHtml(saveMessage())+' Игровые сцены включаются после утверждения текста.</p>'+
    '</section>';

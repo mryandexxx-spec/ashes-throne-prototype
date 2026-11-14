@@ -7,18 +7,24 @@ const LoreCampaignCore=(function buildLoreCampaignCore(){
   const stories={};
   for(const story of catalog.stories)stories[story.id]={
    completedNodeIds:[],bestStarsByNodeId:{},primaryChoicesById:{},
-   keyDecisionLog:[],seenBeatIds:[],seenEvidenceIds:[],
+   keyDecisionLog:[],seenBeatIds:[],seenEvidenceIds:[],battleClearedNodeIds:[],
    activeNodeId:null,checkpointBeatId:null
   };
   return {version:VERSION,stories};
  }
  const record=(progress,id)=>progress?.stories?.[id];
  const hasCompleted=(s,id)=>Array.isArray(s?.completedNodeIds)&&s.completedNodeIds.includes(id);
+ const battleCleared=(progress,storyId,nodeId)=>
+  Array.isArray(progress?.stories?.[storyId]?.battleClearedNodeIds)&&
+  progress.stories[storyId].battleClearedNodeIds.includes(nodeId);
  const findNode=(catalog,id)=>Array.isArray(catalog?.nodes)?catalog.nodes.find(n=>n.id===id)||null:null;
  function available(catalog,progress,nodeId){
   const node=findNode(catalog,nodeId),state=node&&record(progress,node.storyId);
   return !!node&&!!state&&
-   node.prerequisites.every(id=>hasCompleted(state,id))&&
+   node.prerequisites.every(id=>{
+    const prior=findNode(catalog,id);
+    return hasCompleted(state,id)&&(!prior?.requiredBattleId||battleCleared(progress,node.storyId,id));
+   })&&
    (!hasCompleted(state,nodeId)||node.replay?.allowed===true);
  }
  function begin(catalog,progress,nodeId){
@@ -50,6 +56,6 @@ const LoreCampaignCore=(function buildLoreCampaignCore(){
   // Explicitly prevent payout before LC-008 adds an idempotent wallet transaction.
   return Object.freeze({ok:false,code:"REWARD_ENGINE_NOT_IMPLEMENTED"});
  }
- return Object.freeze({KEY,VERSION,fresh,available,begin,rewardCheck});
+ return Object.freeze({KEY,VERSION,fresh,available,begin,rewardCheck,battleCleared});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=LoreCampaignCore;

@@ -5,7 +5,7 @@ const LoreCampaignUI=(()=>{
  const escapeHtml=value=>String(value).replace(/[&<>"']/g,ch=>escMap[ch]);
  let root=null,data=null,core=null,catalog=null,progress=null,sceneRuntime=null,scenePack=null,notice="";
  let view="stories",storyId=null,nodeId=null,layerId=null,globalKeyRegistered=false;
- let narrativePage=0,narrativeBeatKey="",onStartTraining=null,trainingNotice="";
+ let narrativePage=0,narrativeBeatKey="",onStartTraining=null,onStartRequiredBattle=null,trainingNotice="";
  const PORTRAITS=Object.freeze({
   "Рен Терен":"assets/ren-portrait-ui.webp",
   "Нада":"assets/nada-portrait-ui.webp?v=2",
@@ -42,10 +42,20 @@ const LoreCampaignUI=(()=>{
  function nodeStatus(node,c= catalog,p=progress,engine=core){
   const completed=p?.stories?.[node.storyId]?.completedNodeIds;
   if(Array.isArray(completed)&&completed.includes(node.id))
-   return Object.freeze({code:"completed",label:"Пройдено",reason:"Этот узел уже пройден. Повторное прохождение появится на следующем этапе."});
+   return Object.freeze({code:"completed",label:"Пройдено",
+    reason:node.requiredBattleId&&engine.battleCleared&&!engine.battleCleared(p,node.storyId,node.id)?
+      "Исследование пройдено. Победите в обязательном бою, чтобы открыть следующий эпизод.":
+      "Узел пройден. Повтор не изменяет первоначальные решения."});
   if(engine.available(c,p,node.id))
    return Object.freeze({code:"available",label:"Доступно",reason:"Условия открытия выполнены. Игровая сцена находится в разработке."});
-  return Object.freeze({code:"locked",label:"Закрыто",reason:"Для открытия завершите предыдущий сюжетный узел."});
+  const gated=node.prerequisites.some(id=>{
+   const prior=c.nodes.find(n=>n.id===id);
+   return !!prior?.requiredBattleId&&Array.isArray(completed)&&completed.includes(id)&&
+    !engine.battleCleared?.(p,node.storyId,id);
+  });
+  return Object.freeze({code:"locked",label:"Закрыто",
+   reason:gated?"Сначала выиграйте обязательный бой после предыдущего эпизода.":
+    "Для открытия завершите предыдущий сюжетный узел."});
  }
  function visibleTitle(node,status){
   return status.code==="locked"?"Неизвестный узел":node.title;
@@ -85,7 +95,12 @@ const LoreCampaignUI=(()=>{
    NOT_AT_END:"Сцена ещё не завершена.",
    INSPECTION_REQUIRED:"Сначала осмотрите отмеченные предметы и сопоставьте находки.",
    INSPECTION_NOT_AVAILABLE:"Этот предмет сейчас нельзя осмотреть.",
-   COMPARISON_NOT_AVAILABLE:"Здесь пока нечего сопоставлять."
+   COMPARISON_NOT_AVAILABLE:"Здесь пока нечего сопоставлять.",
+   BATTLE_NOT_AVAILABLE:"Это сражение пока недоступно.",
+   BATTLE_OR_SCENE_ACTIVE:"Сначала завершите текущую сцену.",
+   INVALID_BATTLE:"Неизвестный боевой эпизод.",
+   SAVE_NOT_LOADED:"Невозможно сохранить результат.",
+   ALREADY_CLEARED:"Этот бой уже пройден."
   })[code]||"Действие недоступно: "+String(code);
  }
  function mount(element,d,c,options={}){
@@ -94,11 +109,14 @@ const LoreCampaignUI=(()=>{
   if(root===element){
    if(Object.prototype.hasOwnProperty.call(options,"onStartTraining"))
     onStartTraining=typeof options.onStartTraining==="function"?options.onStartTraining:null;
+   if(Object.prototype.hasOwnProperty.call(options,"onStartRequiredBattle"))
+    onStartRequiredBattle=typeof options.onStartRequiredBattle==="function"?options.onStartRequiredBattle:null;
    return true;
   }
   if(root){root.removeEventListener("click",onClick);root.removeEventListener("keydown",onKeydown);}
   root=element;data=d;core=c;catalog=d.catalog();
   onStartTraining=typeof options.onStartTraining==="function"?options.onStartTraining:null;
+  onStartRequiredBattle=typeof options.onStartRequiredBattle==="function"?options.onStartRequiredBattle:null;
   try{sceneRuntime=initializeScenes(options);}
   catch(error){sceneRuntime=null;notice="Не удалось открыть сценарный модуль: "+String(error?.message||error);}
   syncProgress();
@@ -183,6 +201,30 @@ const LoreCampaignUI=(()=>{
   if(action==="finish")view="result";
   render();return true;
  }
+ function pendingBattle(node){
+  if(!node?.requiredBattleId||!core?.battleCleared||!sceneRuntime)return false;
+  const record=sceneRuntime.stateFor(node.storyId);
+  return !!record?.completedNodeIds.includes(node.id)&&
+    !core.battleCleared(progress,node.storyId,node.id);
+ }
+ function startRequiredBattle(){
+  const node=data.getNode(nodeId,catalog);
+  if(!node||!pendingBattle(node)||!onStartRequiredBattle)return false;
+  const result=sceneRuntime.beginRequiredBattle(node.id);
+  if(!result.ok){notice=actionMessage(result.code);render();return false;}
+  try {
+   const entered=onStartRequiredBattle({nodeId:node.id,battleId:result.battleId,storyId:node.storyId});
+   if(entered===false){sceneRuntime.cancelRequiredBattle();return false;}
+   return true;
+  }catch(error){sceneRuntime.cancelRequiredBattle();throw error;}
+ }
+ function recordBattleVictory(nodeId,battleId){
+  const result=sceneRuntime?.recordBattleVictory(nodeId,battleId)||{ok:false,code:"NOT_READY"};
+  if(result.ok){syncProgress();notice="";render();}
+  else notice=actionMessage(result.code);
+  return result;
+ }
+ function cancelRequiredBattle(){return sceneRuntime?.cancelRequiredBattle()||{ok:false};}
  function startScene(){
   const node=data.getNode(nodeId,catalog);
   if(!node||node.storyId!==storyId||nodeStatus(node).code==="locked"||
@@ -275,12 +317,17 @@ const LoreCampaignUI=(()=>{
    '</section>';
  }
  function renderResult(){
-  const title=data.getNode(nodeId,catalog)?.title||"Узел";
+  const node=data.getNode(nodeId,catalog),title=node?.title||"Узел";
+  const pending=pendingBattle(node);
   return '<section class="lore-scene lore-scene-result"><div class="lore-scene-card">'+
    '<span class="lore-detail-eyebrow">РЕЗУЛЬТАТ · БЕЗ НАГРАД</span>'+
-   '<h3>'+escapeHtml(title)+'</h3><p>Просмотр сцены завершён. '+
-   'Первичные решения сохраняются только в основном прохождении.</p>'+
-   '<button type="button" class="primary" data-lore-action="leave-result">Вернуться к карте</button></div></section>';
+   '<h3>'+escapeHtml(title)+'</h3><p>'+
+   (pending?"Исследование завершено. Для продолжения кампании требуется победа в обязательном бою игровой адаптации.":
+    "Просмотр сцены завершён. Первичные решения сохраняются только в основном прохождении.")+
+   '</p>'+
+   (pending&&onStartRequiredBattle?
+     '<button type="button" class="primary" data-lore-action="required-battle">⚔ Вступить в обязательный бой</button>':"")+
+   '<button type="button" class="ghost" data-lore-action="leave-result">Вернуться к карте</button></div></section>';
  }
  function onClick(event){
   const button=event.target.closest?.("button[data-lore-action]");
@@ -292,6 +339,7 @@ const LoreCampaignUI=(()=>{
   else if(action==="back")back();
   else if(action==="start-node")startScene();
   else if(action==="training-battle"&&onStartTraining)onStartTraining();
+  else if(action==="required-battle")startRequiredBattle();
   else if(action==="leave-scene"||action==="leave-result")back();
   else if(action==="scene-page-next"){narrativePage++;render();}
   else if(action==="scene-page-prev"){narrativePage=Math.max(0,narrativePage-1);render();}
@@ -378,13 +426,17 @@ const LoreCampaignUI=(()=>{
    '<p class="lore-detail-reason">'+escapeHtml(status.reason)+'</p>'+
    deps+
    '<div class="lore-detail-actions">'+
+   (pendingBattle(node)&&onStartRequiredBattle?
+    '<button type="button" class="primary" data-lore-action="required-battle">⚔ Обязательный бой</button>':"")+
    (known&&sceneRuntime?.hasContent(node.id)&&sceneRuntime?.storageStatus()!=="corrupt"?
     '<button type="button" class="primary" data-lore-action="start-node">'+
        (sceneRuntime.hasCheckpoint(node.id)?"Продолжить":status.code==="completed"?"Перепройти":"Начать сцену")+
     '</button>':
     '<button type="button" class="primary" disabled aria-disabled="true">'+
       (sceneRuntime?.storageStatus()==="corrupt"?"Сохранение повреждено":"Сюжетная сцена готовится")+'</button>')+
-   '<small>Сюжетное прохождение без затрат энергии. Тренировочный бой расположен на карте отдельно от канона.</small></div>'+
+   '<small>'+(node.requiredBattleId?
+    'Продолжение открывается только после победы в бою. Бой — игровая адаптация, не событие литературного канона.':
+    'Сюжетное прохождение без затрат энергии и наград.')+'</small></div>'+
    '</aside>';
  }
  function renderJournal(){
@@ -418,7 +470,8 @@ const LoreCampaignUI=(()=>{
    '<button type="button" class="ghost lore-map-return" data-lore-action="back">← К историям</button>'+
    '<div><span class="lore-map-eyebrow">ХРОНИКА / ИНТЕРАКТИВНАЯ СХЕМА</span>'+
    '<h3>'+escapeHtml(story.title)+'</h3><small>'+escapeHtml(chapters[0]?.title||story.subtitle)+'</small></div>'+
-   (onStartTraining?'<button type="button" class="ghost lore-map-training-action" data-lore-action="training-battle">'+
+   (onStartTraining&&!catalog.nodes.some(n=>n.storyId===storyId&&n.requiredBattleId)?
+     '<button type="button" class="ghost lore-map-training-action" data-lore-action="training-battle">'+
      '⚔ Тактический бой <small>Вне канона · без энергии</small></button>':'')+'</div>'+
    '<nav class="lore-layer-list" aria-label="Слои карты">'+layers+'</nav>'+
    '<div class="lore-map-layout">'+
@@ -443,6 +496,7 @@ const LoreCampaignUI=(()=>{
   return Object.freeze({view,storyId,nodeId,layerId,hasRoot:!!root});
  }
  return Object.freeze({mount,open,close,back,openStory,changeLayer,selectNode,
-  render,nodeStatus,snapshot,startScene,actInScene,saveMessage});
+  render,nodeStatus,snapshot,startScene,actInScene,saveMessage,
+  pendingBattle,startRequiredBattle,recordBattleVictory,cancelRequiredBattle});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=LoreCampaignUI;

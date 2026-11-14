@@ -97,6 +97,8 @@ const LoreCampaignData=(function buildLoreCampaignData(){
     !(node.rewardPoolId===null||string(node.rewardPoolId))||
     !(node.energyCostId===null||string(node.energyCostId))||
     !(node.dailyLimitId===null||string(node.dailyLimitId)))return false;
+   if(node.requiredBattleId!==undefined&&
+      (!string(node.requiredBattleId)||node.kind==="battle"||node.nextNodeIds.length===0))return false;
    if(node.prerequisites.includes(node.id)||node.nextNodeIds.includes(node.id)||
     [...node.prerequisites,...node.nextNodeIds].some(id=>nodes.get(id)?.storyId!==node.storyId))return false;
    if(node.kind==="battle"){
@@ -108,6 +110,8 @@ const LoreCampaignData=(function buildLoreCampaignData(){
    if(node.instantClaim.supported&&
      (node.kind!=="battle"||node.rating.mode!=="stars-1-3"))return false;
   }
+  const gates=c.nodes.filter(node=>node.requiredBattleId!==undefined).map(node=>node.requiredBattleId);
+  if(!unique(gates))return false;
   for(const node of c.nodes){
    if(node.prerequisites.some(id=>!nodes.get(id).nextNodeIds.includes(node.id)))return false;
    if(!node.optional&&node.prerequisites.some(id=>nodes.get(id).optional))return false;

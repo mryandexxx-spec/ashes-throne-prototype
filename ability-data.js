@@ -15,7 +15,7 @@ const AbilityData=(()=>{
   nada:Object.freeze({id:"special",name:"Найти закономерность",target:"enemy",kind:"damage",damageType:"physical",multiplier:.7,weakening:0,cooldown:2,
    onHitStatus:Object.freeze({type:"read-move",stacks:2,turns:2})}),
   // LIORAPLAY001: unarmed test pilot; not canonical combat techniques.
-  liora:Object.freeze({id:"special",name:"Защитная стойка · тест",target:"self",kind:"guard",guardHits:2,cooldown:2}),
+  liora:Object.freeze({id:"special",name:"Под прикрытием",target:"self",kind:"guard",guardHits:2,tauntTurns:2,cooldown:2}),
   "trial-nada":Object.freeze({id:"special",name:"Выверенное действие · проба",target:"enemy",kind:"damage",multiplier:.8,weakening:2,cooldown:2}),
   "trial-liora":Object.freeze({id:"special",name:"Прикрыть товарища · проба",target:"ally",kind:"guard",guardHits:2,cooldown:2}),
   // Combat-011B regression fixtures: not in HEROES or campaign content.
@@ -61,7 +61,7 @@ const AbilityData=(()=>{
    followUpStatusAll:Object.freeze({type:"debuff-resistance-down",amount:15,turns:2})}),
   nada:Object.freeze({id:"powerful",name:"Разгадать замысел",target:"all-enemies",kind:"damage",damageType:"physical",multiplier:.6,weakening:0,cooldown:3,
    onHitStatus:Object.freeze({type:"read-move",stacks:2,turns:2})}),
-  liora:Object.freeze({id:"powerful",name:"Удержать позицию · тест",target:"self",kind:"guard",guardHits:3,cooldown:2}),
+  liora:Object.freeze({id:"powerful",name:"Держать строй",target:"all-allies",kind:"guard",guardHits:2,cooldown:3}),
   "trial-nada":Object.freeze({id:"powerful",name:"Слабое место · проба",target:"enemy",kind:"damage",multiplier:1.25,weakening:2,cooldown:2}),
   "trial-liora":Object.freeze({id:"powerful",name:"Удержать позицию · проба",target:"self",kind:"guard",guardHits:3,cooldown:2}),
   // Combat-012B: same temporary parameters for the existing optional demo fighter.

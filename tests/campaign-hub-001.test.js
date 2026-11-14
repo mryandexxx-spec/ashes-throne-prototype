@@ -34,7 +34,7 @@ test("existing battles remain in training and story trial in main",()=>{
  assert.match(main,/id="storyDemoOpen"/);
  assert.doesNotMatch(main,/id="campaignMissions"/);
  assert.doesNotMatch(lore,/data-campaign-mission/);
- assert.match(lore,/Игровые миссии по мотивам историй мира пока не доступны/);
+ assert.match(lore,/Загрузка игрового пилота «Пять теней»/);
 });
 test("landscape cards and native hidden attribute are styled",()=>{
  assert.match(css,/#campaignHub\[hidden\],\.campaign-path-content\[hidden\]\{display:none!important\}/);

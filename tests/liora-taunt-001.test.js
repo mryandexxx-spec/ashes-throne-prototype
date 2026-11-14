@@ -53,3 +53,21 @@ test("LIORA001: mass guard is a separate ability and protects the entire living 
  assert.equal(battle.fighters[0].guardHits,2);
  assert.equal(battle.fighters[1].guardHits,2);
 });
+
+test("LIORA001: leader aura adds 10% Protection and vanishes when Liora dies",()=>{
+ const l=fighter("liora","ally"),r=fighter("ren","ally"),e=fighter("shade","enemy");
+ l.protection=80;l.maxProtection=80;r.protection=50;r.maxProtection=50;
+ const battle=Combat.createBattle([l,r,e],[],{leaderId:"liora"});
+ assert.equal(battle.fighters[0].protection,88);
+ assert.equal(battle.fighters[0].maxProtection,88);
+ assert.equal(battle.fighters[1].protection,55);
+ assert.equal(battle.fighters[1].maxProtection,55);
+ // The opponent deals lethal damage to the actual leader through the
+ // ordinary combat executor. The aura is removed before its action ends.
+ battle.currentActor=2;battle.fighters[2].meter=1000;
+ battle.fighters[2].atk=999; battle.fighters[2].physicalAttack=999;
+ assert.equal(Combat.performActorAbility(battle,"basic",0),true);
+ assert.equal(battle.fighters[0].hp,0);
+ assert.equal(battle.fighters[1].maxProtection,50);
+ assert.equal(battle.fighters[1].protection,50);
+});

@@ -65,7 +65,8 @@ test("LOREPLAY001: real map exposes first scene and keeps optional practice sepa
  const UI=require("../lore-campaign-ui.js");
  const root={innerHTML:"",addEventListener(){},removeEventListener(){},contains(){return true;},querySelector(){return null;}};
  assert.equal(UI.mount(root,Pilot.data,Core,{pack:Pilot.pack,storage:storage(),
-  onStartTraining:()=>{},onStartRequiredBattle:()=>true}),true);
+  onStartTraining:()=>{},onStartRequiredBattle:()=>true,
+  scripts:Scripts,engine:Engine,save:Save,runtime:Runtime}),true);
  assert.equal(UI.openStory("five-shadows"),true);
  assert.match(root.innerHTML,/data-lore-action="start-node"/);
  assert.match(root.innerHTML,/Начать сцену/);

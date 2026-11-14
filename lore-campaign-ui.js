@@ -428,6 +428,8 @@ const LoreCampaignUI=(()=>{
  }
  function render(){
   if(!root)return;
+  if(typeof document!=="undefined"&&document.body?.classList)
+   document.body.classList.toggle("lore-scene-open",view==="scene");
   root.innerHTML=view==="scene"?renderScene():view==="result"?renderResult():view==="map"?renderMap():renderStories();
  }
  function snapshot(){

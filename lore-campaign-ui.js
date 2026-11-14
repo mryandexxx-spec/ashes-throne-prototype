@@ -125,6 +125,10 @@ const LoreCampaignUI=(()=>{
   if(!root)return false;
   sceneRuntime?.leave();
   view="stories";storyId=null;nodeId=null;layerId=null;notice="";
+  // Global navigation does not rerender the hidden lore scene. Release its
+  // fullscreen body lock now, rather than waiting for the next lore visit.
+  if(typeof document!=="undefined"&&document.body?.classList)
+   document.body.classList.remove("lore-scene-open");
   return true;
  }
  function back(){

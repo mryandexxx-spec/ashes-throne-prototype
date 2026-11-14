@@ -47,13 +47,13 @@ const LoreCampaignScenes=(()=>{
        !distinct(requiredInspections)||!distinct(requiredComparisons))return false;
     const localInspections=new Set(),localComparisons=new Set();
     for(const entry of inspections){
-     if(!object(entry)||!str(entry.id)||!str(entry.label)||!str(entry.text)||
-        entry.text.length>1500||localInspections.has(entry.id)||exposedInspections.has(entry.id))return false;
+     if(!object(entry)||!str(entry.id)||!str(entry.label)||
+        typeof entry.text!=="string"||!entry.text.trim()||entry.text.length>1500||localInspections.has(entry.id)||exposedInspections.has(entry.id))return false;
      localInspections.add(entry.id);exposedInspections.set(entry.id,beat.id);
     }
     for(const comparison of comparisons){
-     if(!object(comparison)||!str(comparison.id)||!str(comparison.label)||!str(comparison.text)||
-        comparison.text.length>1500||!Array.isArray(comparison.evidenceIds)||
+     if(!object(comparison)||!str(comparison.id)||!str(comparison.label)||
+        typeof comparison.text!=="string"||!comparison.text.trim()||comparison.text.length>1500||!Array.isArray(comparison.evidenceIds)||
         comparison.evidenceIds.length<2||!distinct(comparison.evidenceIds)||
         comparison.evidenceIds.some(id=>!str(id))||
         localComparisons.has(comparison.id)||exposedComparisons.has(comparison.id))return false;
@@ -109,6 +109,12 @@ const LoreCampaignScenes=(()=>{
     ...scene.choices.flatMap(c=>c.effects.map(e=>e.id)),
     ...exposedInspections.keys()
    ]);
+   // Explicit inspect receipts cannot be granted merely by entering a beat or choosing.
+   const autoEvidence=new Set([
+    ...scene.beats.flatMap(b=>b.effects.map(e=>e.id)),
+    ...scene.choices.flatMap(c=>c.effects.map(e=>e.id))
+   ]);
+   if([...exposedInspections.keys()].some(id=>autoEvidence.has(id)))return false;
    for(const comparison of exposedComparisons.values())
     if(comparison.evidenceIds.some(id=>!possibleEvidence.has(id)))return false;
    for(const o of scene.objectives)if(["inspect","compare"].includes(o.kind)&&

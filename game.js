@@ -2288,7 +2288,9 @@ function renderLoreRequiredBattleResult(){
    (loreRequiredResult?.replay?"Повтор пройден. Прежний результат сохранён, новых наград нет.":
     "Победа записана в истории. Следующий эпизод открыт."):
    "Победа не сохранилась. Проверьте хранилище и повторите бой."):
-   "Поражение: следующий эпизод закрыт. Можно пересобрать отряд.";
+   (loreRequiredContext?.replay?
+     "Повтор проигран. Прежняя победа и доступ к истории сохранены. Можно попробовать ещё раз.":
+     "Поражение: следующий эпизод закрыт. Можно пересобрать отряд.");
   const n=loreRequiredContext?.battleNarrative;
   const consequence=won?(saved?n?.victory:null):n?.defeat;
   // Never turn private authored prose into HTML or a canonical game reward.

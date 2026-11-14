@@ -3,10 +3,10 @@ const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const read=file=>fs.readFileSync(path.join(__dirname,"..",file),"utf8");
 const scripts=["initiative-model.js","battle-rng.js","combat-status-core.js",
- "skill-core.js","ability-data.js","combat-core.js","progress-core.js"];
+ "skill-core.js","ability-data.js","combat-core.js","progress-core.js","gear-data.js"];
 const api=vm.runInNewContext(scripts.map(read).join("\n")+
- "\n({CombatCore,CombatStatusCore,AbilityData,ProgressCore})");
-const {CombatCore:Combat,CombatStatusCore:Status,AbilityData,ProgressCore}=api;
+ "\n({CombatCore,CombatStatusCore,AbilityData,ProgressCore,GearData,SkillCore})");
+const {CombatCore:Combat,CombatStatusCore:Status,AbilityData,ProgressCore,GearData,SkillCore}=api;
 const fighter=(id,side,speed=100)=>({id,name:id,side,speed,hp:500,atk:20,
  physicalAttack:20,physicalDefense:0,magicDefense:0,protection:0,maxProtection:0,
  accuracy:0,evasion:0,critChance:0,critDamage:150,defensePenetration:0,
@@ -70,4 +70,33 @@ test("LIORA001: leader aura adds 10% Protection and vanishes when Liora dies",()
  assert.equal(battle.fighters[0].hp,0);
  assert.equal(battle.fighters[1].maxProtection,50);
  assert.equal(battle.fighters[1].protection,50);
+});
+
+test("LIORA001: Liora active skill ranks L1-L6 are distinct from generic guard growth",()=>{
+ for(let level=1;level<=6;level++){
+  const hero=fighter("liora","ally");hero.skillLevels={basic:level,special:level,powerful:level};
+  const basic=AbilityData.get(hero,"basic");
+  const special=AbilityData.get(hero,"special");
+  const powerful=AbilityData.get(hero,"powerful");
+  assert.equal(basic.multiplier,[1,1.05,1.1,1.15,1.2,1.25][level-1]);
+  assert.equal(special.guardHits,[2,2,3,3,4,4][level-1]);
+  assert.equal(special.tauntTurns,2,"rank cannot increase taunt duration");
+  assert.equal(special.cooldown,[3,3,3,2,2,2][level-1]);
+  assert.equal(powerful.guardHits,[2,2,2,3,3,3][level-1]);
+  assert.equal(powerful.target,"all-allies");
+  assert.equal(powerful.cooldown,3);
+ }
+});
+test("LIORA001: tank gear offers all six slots at every G1-G13 rank",()=>{
+ const slots=GearData.SLOTS.map(x=>x.id);
+ assert.equal(slots.length,6);
+ for(let tier=1;tier<=13;tier++){
+  for(const slot of slots){
+   const items=GearData.offered("tank",slot,tier);
+   assert.equal(items.length,1,"tank G"+tier+" "+slot);
+   assert.equal(items[0].tier,tier);
+   assert.equal(items[0].allowedClasses.includes("tank"),true);
+   assert.equal(items[0].bonuses.speed,0);
+  }
+ }
 });

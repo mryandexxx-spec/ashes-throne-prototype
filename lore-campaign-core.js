@@ -20,10 +20,14 @@ const LoreCampaignCore=(function buildLoreCampaignCore(){
  const findNode=(catalog,id)=>Array.isArray(catalog?.nodes)?catalog.nodes.find(n=>n.id===id)||null:null;
  function available(catalog,progress,nodeId){
   const node=findNode(catalog,nodeId),state=node&&record(progress,node.storyId);
+  // Replaying an already finished scene must survive later-added gates.
+  // This never unlocks an uncompleted successor or fakes a battle receipt.
+  const legacyReplay=hasCompleted(state,nodeId);
   return !!node&&!!state&&
    node.prerequisites.every(id=>{
     const prior=findNode(catalog,id);
-    return hasCompleted(state,id)&&(!prior?.requiredBattleId||battleCleared(progress,node.storyId,id));
+    return hasCompleted(state,id)&&(legacyReplay||!prior?.requiredBattleId||
+      battleCleared(progress,node.storyId,id));
    })&&
    (!hasCompleted(state,nodeId)||node.replay?.allowed===true);
  }

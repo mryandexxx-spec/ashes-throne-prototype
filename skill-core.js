@@ -15,7 +15,7 @@ const SkillCore=(()=>{
    Object.keys(value).length>=(PASSIVE_IDS.length-1)&&
    PASSIVE_IDS.filter(id=>id!=="liora").every(id=>
     own(value,id)&&Number.isInteger(value[id])&&value[id]>=1&&value[id]<=MAX)&&
-   (value.liora===undefined||(Number.isInteger(value.liora)&&value.liora>=1&&value.liora<=MAX));
+   (!own(value,"liora")||(Number.isInteger(value.liora)&&value.liora>=1&&value.liora<=MAX));
  }
  function passiveLevel(progress,id){
   if(!PASSIVE_IDS.includes(id))return null;

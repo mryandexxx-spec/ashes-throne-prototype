@@ -108,10 +108,11 @@ test("LC-001: reward modes have no payouts before rules and transaction layer",(
  state.stories["five-shadows"].completedNodeIds.push(id(3));
  assert.equal(Core.rewardCheck(battle,state,id(3),"simulate",1).code,"RATING_REQUIRED");
  state.stories["five-shadows"].bestStarsByNodeId[id(3)]=3;
+ const unchanged=JSON.stringify(state);
  assert.equal(Core.rewardCheck(battle,state,id(3),"simulate",10).code,"REWARDS_NOT_CONFIGURED");
  assert.equal(Core.rewardCheck(battle,state,id(3),"instant").code,"REWARDS_NOT_CONFIGURED");
  node.rewardPoolId="configured-later";node.energyCostId="configured-later";
  assert.equal(Core.rewardCheck(battle,state,id(3),"simulate").code,"REWARD_ENGINE_NOT_IMPLEMENTED");
  assert.equal(Core.rewardCheck(battle,state,id(3),"instant").code,"REWARD_ENGINE_NOT_IMPLEMENTED");
- assert.equal(JSON.stringify(state),JSON.stringify(Core.fresh(battle)).replace("[]","[]")===JSON.stringify(state)?true:JSON.stringify(state)!=="");
+ assert.equal(JSON.stringify(state),unchanged,"reward checks never mutate progress");
 });

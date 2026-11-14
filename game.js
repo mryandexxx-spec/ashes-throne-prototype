@@ -132,7 +132,7 @@ function cancelAutoTimer(){
  if(autoTimer!==null){clearTimeout(autoTimer);autoTimer=null;}
 }
 function queueAutoAction(){
- if(autoTimer!==null||isVisualTransition()||visualActionPending()||!autoBattle||!state.active||!!state.tacticalObjective||document.hidden||
+ if(autoTimer!==null||isVisualTransition()||visualActionPending()||!autoBattle||!state.active||document.hidden||
     !$("#battle").classList.contains("active"))return;
  autoTimer=setTimeout(()=>{
   autoTimer=null;
@@ -149,8 +149,8 @@ function queueAutoAction(){
 }
 function setAutoBattle(enabled){
  cancelAutoTimer();
- // FS-05 is a deliberate manual tactical pilot; other battle modes keep autoplay.
- autoBattle=!!enabled&&!state.tacticalObjective&&state.active&&$("#battle").classList.contains("active");
+ // Autoplay remains a normal tactical option; the mission must make it meaningful.
+ autoBattle=!!enabled&&state.active&&$("#battle").classList.contains("active");
  if(autoBattle)selectedAbility="basic";
  const button=$("#autoBattleBtn");
  if(button){
@@ -742,9 +742,15 @@ function battleLineup(){
  if(battleIsLoreRequired){
   if(!loreRequiredContext?.nodeId)throw Error("MISSING_LORE_BATTLE_CONTEXT");
   if(!requiredLoreSquadReady())throw Error("MISSING_REQUIRED_LORE_HERO");
+  const isRescue=loreRequiredContext.nodeId==="five-shadows:fs-05";
   const count=["five-shadows:fs-02","five-shadows:fs-05"].includes(loreRequiredContext.nodeId)?3:2;
-  return [...selectedParty(),...ENEMIES.slice(0,count).map((e,i)=>
-   progressedEnemy({...e,name:"Игровой противник "+(i+1)}))];
+  // FS-05 only. Prototype pressure: attackers cannot be swept away before
+  // the evacuation condition matters; combat does NOT alter other rosters.
+  const attackers=ENEMIES.slice(0,count).map((e,i)=>progressedEnemy({
+   ...e,name:"Игровой противник "+(i+1),
+   ...(isRescue?{hp:Math.round(e.hp*2),atk:Math.round(e.atk*1.2)}:{})
+  }));
+  return [...selectedParty(),...attackers];
  }
  // STORY-002 uses temporary hero IDs outside v3 save validation.
  if(battleIsStoryDemo&&storyTrialParty)
@@ -2736,8 +2742,8 @@ function syncBattleUI(){
  if(powerfulButton)powerfulButton.disabled=!powerfulReady||autoBattle||visualBusy;
  const autoButton=$("#autoBattleBtn");
  if(autoButton){
-  autoButton.hidden=!!state.tacticalObjective;
-  autoButton.disabled=!state.active||!!state.tacticalObjective;
+  autoButton.hidden=false;
+  autoButton.disabled=!state.active;
   autoButton.textContent=autoBattle?"Ручной бой":"Автобой";
   autoButton.setAttribute("aria-pressed",String(autoBattle));
  }

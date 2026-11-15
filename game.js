@@ -268,6 +268,7 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
  if(typeof renderHeadquarters==="function")renderHeadquarters();
 });
 let battleIsCampaign=false;
+let battleIsNpcMissionPilot=false; // Test-only, no energy, rewards or save writes.
 let battleIsLoreTraining=false; // Noncanonical combat, no costs or rewards.
 let battleIsLoreRequired=false;
 let loreRequiredContext=null,loreRequiredResult=null;
@@ -1077,6 +1078,8 @@ function showScreen(id){
   missionEntryPaid=false;
   missionResultSaveFailed=false;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
+  battleIsNpcMissionPilot=battleIsCampaign&&NPC_MISSION_PILOT_ENABLED&&
+   activeMissionId==="demo-mission-2";
   battleIsLoreTraining=squadReturnScreen==="loreTraining";
   battleIsLoreRequired=squadReturnScreen==="loreRequired"&&!!loreRequiredContext;
   battleIsStoryDemo=squadReturnScreen==="storyDemo"&&storyDemoState?.phase==="battle";
@@ -1122,7 +1125,7 @@ function showScreen(id){
   }
   const freeStoryEntry=battleIsCampaign&&progress.saveVersion===3&&
    !campaignProgress.completed[activeMissionId];
-  if(battleIsCampaign&&!freeStoryEntry&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
+  if(battleIsCampaign&&!battleIsNpcMissionPilot&&!freeStoryEntry&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
    showScreen("squad");
    const warning=$("#squadWarning");
    if(warning){warning.textContent="Недостаточно энергии для входа в миссию.";warning.hidden=false;}
@@ -1135,7 +1138,7 @@ function showScreen(id){
    if(!engine)initBabylon();
    resetArenaCamera(); // Start every encounter from the approved perspective.
    engine.resize();
-   if(battleIsCampaign&&!freeStoryEntry){
+   if(battleIsCampaign&&!battleIsNpcMissionPilot&&!freeStoryEntry){
     if(!ProgressCore.spendEnergy(progress,activeMissionId))throw new Error("Недостаточно энергии");
     entryPaid=true;
     if(!persistProgress())throw new Error("Не удалось сохранить расход энергии");
@@ -2596,6 +2599,16 @@ if(simulationClose)simulationClose.addEventListener("click",()=>{
 });
 function renderMissionResult(){
  const won=state.winner==="ally";
+ if(battleIsNpcMissionPilot){
+  $("#missionResultChapter").textContent="NPCMISSION002 · ВНЕ КАНОНА";
+  $("#missionResultTitle").textContent=won?"Пробный бой выигран":"Пробный бой проигран";
+  $("#missionResultText").textContent="Проверка новой пары противников. Энергия, задания, награды и сохранённые звёзды не изменены.";
+  $("#missionResultStars").textContent="Тестовая оценка: "+"★".repeat(lastMissionStars)+
+   "☆".repeat(3-lastMissionStars)+" · Действий союзников: "+state.allyActions+" (не сохраняется)";
+  $("#missionResultRetry").textContent="Повторить пробу";
+  return;
+ }
+
  const entry=CampaignData.getMission(activeMissionId);
  const chapter=entry&&CampaignData.allChapters().find(c=>c.id===entry.chapterId);
  const chapterLabel=$("#missionResultChapter");
@@ -2691,7 +2704,7 @@ function syncBattleUI(){
  if(!state.active){cancelAutoTimer();autoBattle=false;}
  // Commit battle outcome immediately as before, even if the player leaves
  // the arena before the final animation ends. Only visual navigation waits.
- if(battleIsCampaign&&!state.active&&!missionResultRecorded){
+ if(battleIsCampaign&&!battleIsNpcMissionPilot&&!state.active&&!missionResultRecorded){
   const firstClear=state.winner==="ally"&&!campaignProgress.completed[activeMissionId];
   const beforeCampaign=JSON.parse(JSON.stringify(campaignProgress));
   const beforeWallet=progress.saveVersion===3?JSON.parse(JSON.stringify(progress)):null;
@@ -2724,6 +2737,11 @@ function syncBattleUI(){
   lastMissionStars=result.earned;
   if(walletSaved&&result.improved)
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
+  missionResultRecorded=true;
+ }
+ if(battleIsNpcMissionPilot&&!state.active&&!missionResultRecorded){
+  // Reuse the campaign star predicate, never touch campaignProgress or wallet.
+  lastMissionStars=MissionData.score(activeMissionId,state);
   missionResultRecorded=true;
  }
  if(battleIsSignal&&!state.active&&!signalResultRecorded){

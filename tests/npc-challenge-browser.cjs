@@ -38,7 +38,10 @@ async function check(name,type){
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
    "Прототип · v0.3.167 · NPCCHALLENGE004");
-  await page.locator('#home [data-screen="challenges"].hq-station-challenges').evaluate(el=>el.click());
+  // The painted HQ hotspot intentionally defers navigation for its lighting
+  // cue. Use the ordinary More-menu route for a deterministic user click.
+  await page.locator("#hqMoreToggle").click();
+  await page.locator('#hqMoreMenu [data-screen="challenges"]').click();
   await page.locator("#challenges").waitFor({state:"visible",timeout:15000});
   assert.match(await page.locator("#challengeSaveStatus").innerText(),/без записи оценки и ежедневных задач/);
   await page.locator('[data-challenge-kind="tactical"]').click();

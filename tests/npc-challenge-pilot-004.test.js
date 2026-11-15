@@ -96,12 +96,12 @@ test("NPCCHALLENGE004: precise optional tracker validates original mode and conc
  assert.deepEqual(Array.from(good.enemyIds),["npc-t01-signaller","npc-t01-interceptor"]);
  assert.ok(Object.isFrozen(good.enemyIds));
  assert.equal(good.priorityId,"npc-t01-signaller");
- assert.equal(Q.start("T-01",{enemyIds:["duplicate","duplicate"],priorityId:"duplicate"}),null);
- assert.equal(Q.start("T-01",{enemyIds:["a","b"],priorityId:"missing"}),null);
- assert.equal(Q.start("T-01",{enemyIds:["a"],priorityId:"a"}),null);
- assert.equal(Q.start("T-01",{enemyIds:["a","b"],priorityId:"a",saveVersion:2}),null);
- assert.equal(Q.start("N-01",{enemyIds:["a","b","c"],priorityId:"a"}),null);
- assert.equal(Q.start("N-01",{enemyIds:["a","b","c"],priorityId:null})?.id,"N-01");
+ assert.equal(Q.start("T-01",{challengeId:"T-01",enemyIds:["duplicate","duplicate"],priorityId:"duplicate"}),null);
+ assert.equal(Q.start("T-01",{challengeId:"T-01",enemyIds:["a","b"],priorityId:"missing"}),null);
+ assert.equal(Q.start("T-01",{challengeId:"T-01",enemyIds:["a"],priorityId:"a"}),null);
+ assert.equal(Q.start("T-01",{challengeId:"T-01",enemyIds:["a","b"],priorityId:"a",saveVersion:2}),null);
+ assert.equal(Q.start("N-01",{challengeId:"N-01",enemyIds:["a","b","c"],priorityId:"a"}),null);
+ assert.equal(Q.start("N-01",{challengeId:"N-01",enemyIds:["a","b","c"],priorityId:null})?.id,"N-01");
  assert.equal(Q.start("T-02",P.trackerTargets("T-01")),null,
   "only known scenario targets must be passed for their own challenge ID");
 });

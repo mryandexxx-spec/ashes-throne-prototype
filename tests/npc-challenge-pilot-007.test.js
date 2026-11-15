@@ -21,25 +21,31 @@ function hero(id,level=1){
   {level,stars:1,gearPercent:{hp:0,atk:0},gearStats:{}},
   Profiles[id],Stats),skillLevels:{basic:1,special:1,powerful:1,passive:1,leader:1}};
 }
-function makeBattle(id,selected=partyIds,level=1,seed=1){
+function makeBattle(id,selected=partyIds,level=1,seed=1,tuning=null){
  const party=selected.map(x=>hero(x,level));
- const initial=P.spawn(id),waves=P.spawnWaves(id);
+ let initial=P.spawn(id),waves=P.spawnWaves(id);
  assert.ok(initial&&waves);
+ if(tuning?.enemyAttack!==undefined){
+  const scale=f=>({...f,physicalAttack:Math.round(f.physicalAttack*tuning.enemyAttack),
+   atk:Math.round(f.atk*tuning.enemyAttack)});
+  initial=initial.map(scale);waves=waves.map(w=>w.map(scale));
+ }
  const options={leaderId:party[0].id,
   ...(selected.includes("medic-demo")?{}:{
    rngSeed:seed,hitChecks:true,critChecks:true,
    penetrationChecks:true,statusChecks:true
   })};
  const objective=P.tacticalObjective(id,party);
- if(objective)options.tacticalObjective=objective;
+ if(objective)options.tacticalObjective=tuning?.holdActions?
+  {...objective,allyActionsToHold:tuning.holdActions}:objective;
  const battle=C.createBattle([...party,...initial],waves,options);
  const tracker=Q.start(id,P.trackerTargets(id));
  assert.ok(tracker);
  C.advanceToPlayerTurn(battle);
  return {battle,tracker,party};
 }
-function run(id,selected,level,seed,strategy){
- const {battle:b,tracker}=makeBattle(id,selected,level,seed);
+function run(id,selected,level,seed,strategy,tuning=null){
+ const {battle:b,tracker}=makeBattle(id,selected,level,seed,tuning);
  let steps=0;
  while(b.active&&steps<160){
   if(b.currentActor<0)C.advanceToPlayerTurn(b);
@@ -215,6 +221,39 @@ test("007 N-04: unlocked training healer introduces a genuine manual heal tradeo
  assert.equal(P.capture("N-04",tracker,battle.events,battle),true);
  assert.equal(tracker.pilotActiveHealUsed,true,
   "pilot recorded a real active heal, not a synthetic mock event");
+});
+test("007 exploration: compare hold duration and NPC pressure without changing live objectives",()=>{
+ const teams=[
+  {ids:partyIds,level:1},
+  {ids:partyIds,level:3},
+  {ids:["ren","nada","sava"],level:3},
+  {ids:["ren","liora","art"],level:3},
+  {ids:["ren","nada","liora","art"],level:8}
+ ];
+ for(const id of ["T-04","N-04"]){
+  const durations=id==="T-04"?[8,10,12]:[0];
+  const attacks=id==="T-04"?[1,1.2]:[1,1.15,1.3];
+  for(const holdActions of durations)for(const enemyAttack of attacks){
+   let total=0,wins=0,held=0,full=0,three=0;
+   const byTeam=[];
+   for(const team of teams){
+    const scores={attack:[],support:[],auto:[]};
+    for(const strategy of ["attack","support","auto"])for(const seed of [1,17,71]){
+     const result=run(id,team.ids,team.level,seed,strategy,{holdActions,enemyAttack});
+     total++;wins+=result.winner==="ally";
+     const validHold=id==="T-04"&&result.outcome==="held";
+     held+=validHold;
+     const star3=id==="T-04"?validHold&&result.allAlive:
+       result.stars===3;
+     full+=result.allAlive;three+=star3;
+     scores[strategy].push(star3?3:result.stars);
+    }
+    byTeam.push({team:team.ids.join(",")+"@"+team.level,...scores});
+   }
+   console.log("NPCCHALLENGE007_TUNE "+JSON.stringify({id,holdActions,enemyAttack,
+    total,wins,held,allAlive:full,stars3:three,byTeam}));
+  }
+ }
 });
 test("007: opt-in only, no new persisted schema, build and UI scripts",()=>{
  const game=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));

@@ -3,7 +3,7 @@
  * Does not mutate base fighter speed/resistance or existing combat.effects. */
 const CombatStatusCore=(()=>{
  "use strict";
- const KINDS=Object.freeze(["slowed","debuff-resistance-down","read-move","taunt"]);
+ const KINDS=Object.freeze(["slowed","debuff-resistance-down","read-move","taunt","disrupted-plan"]);
  const TYPES=new Set(KINDS);
  const validFighter=f=>f&&typeof f==="object"&&!Array.isArray(f);
  const validStatus=f=>validFighter(f)&&validFighter(f.renStatuses);
@@ -62,6 +62,11 @@ const CombatStatusCore=(()=>{
   }
   return true;
  }
+ // ARTSAVASKILLS001: spend the enemy's disruption independently of Nada marks.
+ function remove(f,type){
+  if(!TYPES.has(type)||!validFighter(f)||!validStatus(f))return false;
+  delete f.renStatuses[type];return true;
+ }
  function effectiveSpeed(f,baseSpeed){
   if(!Number.isFinite(baseSpeed))return baseSpeed;
   const slow=read(f,"slowed");
@@ -78,6 +83,6 @@ const CombatStatusCore=(()=>{
   if(validStatus(f))for(const type of KINDS)delete f.renStatuses[type];
   return true;
  }
- return Object.freeze({KINDS,read,apply,applyReadMove,spendReadMove,tickOwnTurn,effectiveSpeed,effectiveDebuffResistance,clear});
+ return Object.freeze({KINDS,read,apply,remove,applyReadMove,spendReadMove,tickOwnTurn,effectiveSpeed,effectiveDebuffResistance,clear});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=CombatStatusCore;

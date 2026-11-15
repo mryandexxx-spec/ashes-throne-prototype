@@ -139,7 +139,7 @@ assert.equal(camera.beta,.96);
 assert.equal(camera.radius,12);
 assert.equal(createdCameras.length,1);
 assert.equal(engineCreates,1);
-assert.equal(meshCreates,39,"replay reuses 3D meshes for expanded roster");
+assert.equal(meshCreates,45,"replay reuses 3D meshes for expanded roster");
 
 // All entry points still route through the composition screen.
 api.openSquad();

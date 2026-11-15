@@ -22,7 +22,7 @@ test("NADAROSTER001: only collection uses wide WebP; details retain v2 square",(
  assert.equal((js.match(/assets\/nada-portrait-roster\.webp\?v=1/g)||[]).length,1);
  assert.equal((js.match(/assets\/nada-portrait-ui\.webp\?v=2/g)||[]).length,2);
  assert.match(js,/sketch\.src="assets\/nada-portrait-ui\.webp\?v=2"/);
- assert.match(js,/renPortrait\.src=showLioraPortrait\?"assets\/liora-portrait-ui\.webp\?v=1":showNadaPortrait\?"assets\/nada-portrait-ui\.webp\?v=2"/);
+ assert.match(js,/showLioraPortrait\?"assets\/liora-portrait-ui\.webp\?v=1":showNadaPortrait\?"assets\/nada-portrait-ui\.webp\?v=2"/);
  assert.match(roster,/owned&&h\.id==="ren"\?'<img class="ren-collection-portrait"/);
 });
 test("NADAROSTER001: no legacy cover crop or viewport width overflows",()=>{

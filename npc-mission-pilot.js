@@ -1,39 +1,73 @@
-/* NPCMISSION002 — [PROPOSAL] one noncanonical campaign demo pilot.
- * The opt-in encounter uses existing tactical mechanics and never adds
- * river species to the Gardens or modifies player progression rules.
+/* NPCMISSION003 — [PROPOSAL] opt-in, noncanonical PvE demo encounters.
+ * Keep the second demo mission fixed; add one two-wave third mission.
+ * No global NPC changes, no save migrations or story-world encounters.
  */
 const NpcMissionPilot=(()=>{
  "use strict";
- const ID="demo-mission-2";
- const roster=Object.freeze([
-  Object.freeze({archetypeId:"npc-ridge-slinger",instanceId:"npc-m2-slinger",level:1,stars:1,gearTier:1,skillLevel:1,hp:75,protection:5}),
-  Object.freeze({archetypeId:"npc-field-medic",instanceId:"npc-m2-medic",level:1,stars:1,gearTier:1,skillLevel:1,hp:55,protection:5})
- ]);
- const plan=Object.freeze({
-  missionId:ID,difficulty:"light",label:"Учебный бой · выбор цели",
-  // No enemy species/country affiliation implies moral alignment.
-  encounterTag:"noncanonical-demo-training",enemyIds:roster
+ const unit=(archetypeId,instanceId,hp,protection)=>Object.freeze({
+  archetypeId,instanceId,level:1,stars:1,gearTier:1,skillLevel:1,hp,protection
  });
- function get(id){return id===ID?plan:null;}
- function spawn(id){
-  const entry=get(id);
-  if(!entry||typeof NpcEnemyData==="undefined")return null;
-  const fighters=entry.enemyIds.map(def=>{
-   const base=NpcEnemyData.spawn(def.archetypeId,{
-    instanceId:def.instanceId,level:def.level,stars:def.stars,
-    gearTier:def.gearTier,skillLevel:def.skillLevel
-   });
-   // Explicit fixed training encounter stats, never a change to the
-   // archetype's base values or scaling to the current player's squad.
-   if(!base||!Number.isSafeInteger(def.hp)||def.hp<1||def.hp>base.hp||
-      !Number.isSafeInteger(def.protection)||def.protection<0||
-      def.protection>base.protection)return null;
-   return {...base,hp:def.hp,protection:def.protection,
-    maxProtection:def.protection};
+ const plans=Object.freeze({
+  "demo-mission-2":Object.freeze({
+   missionId:"demo-mission-2",difficulty:"light",
+   label:"Учебный бой · выбор цели",
+   encounterTag:"noncanonical-demo-training",
+   enemyIds:Object.freeze([
+    unit("npc-ridge-slinger","npc-m2-slinger",75,5),
+    unit("npc-field-medic","npc-m2-medic",55,5)
+   ]),
+   futureWaves:Object.freeze([])
+  }),
+  "demo-mission-3":Object.freeze({
+   missionId:"demo-mission-3",difficulty:"light",
+   label:"Учебный бой · две волны · приоритет поддержки",
+   encounterTag:"noncanonical-demo-training",
+   enemyIds:Object.freeze([
+    unit("npc-trail-interceptor","npc-m3-interceptor",55,5),
+    unit("npc-route-signaller","npc-m3-signaller",35,4)
+   ]),
+   futureWaves:Object.freeze([Object.freeze([
+    unit("npc-pass-guard","npc-m3-guard",55,8),
+    unit("npc-ridge-slinger","npc-m3-slinger",45,3),
+    unit("npc-field-medic","npc-m3-medic",35,3)
+   ])])
+  })
+ });
+ function get(id){return Object.prototype.hasOwnProperty.call(plans,id)?plans[id]:null;}
+ function createUnit(def){
+  const base=NpcEnemyData.spawn(def.archetypeId,{
+   instanceId:def.instanceId,level:def.level,stars:def.stars,
+   gearTier:def.gearTier,skillLevel:def.skillLevel
   });
-  if(fighters.some(f=>!f)||new Set(fighters.map(f=>f.id)).size!==fighters.length)return null;
-  return fighters;
+  // Fixed, mission-only test stats: no dynamic player power scaling.
+  if(!base||!Number.isSafeInteger(def.hp)||def.hp<1||def.hp>base.hp||
+     !Number.isSafeInteger(def.protection)||def.protection<0||
+     def.protection>base.protection)return null;
+  return {...base,hp:def.hp,protection:def.protection,maxProtection:def.protection};
  }
- return Object.freeze({get,spawn});
+ function allDefinitions(plan){return plan.enemyIds.concat(...plan.futureWaves);}
+ function validateUnique(plan){
+  const defs=allDefinitions(plan);
+  return new Set(defs.map(x=>x.instanceId)).size===defs.length;
+ }
+ function spawn(id){
+  const plan=get(id);
+  if(!plan||typeof NpcEnemyData==="undefined"||!validateUnique(plan))return null;
+  const fighters=plan.enemyIds.map(createUnit);
+  return fighters.some(f=>!f)?null:fighters;
+ }
+ function spawnWaves(id){
+  const plan=get(id);
+  if(!plan||typeof NpcEnemyData==="undefined"||!validateUnique(plan))return null;
+  const waves=plan.futureWaves.map(wave=>wave.map(createUnit));
+  return waves.some(wave=>wave.some(f=>!f))?null:waves;
+ }
+ function visuals(){
+  if(typeof NpcEnemyData==="undefined")return [];
+  // One reserved low-poly capsule per opt-in encounter ID, all waves included.
+  // Ordinary sessions never call this and allocate no extra Babylon assets.
+  return Object.values(plans).flatMap(plan=>allDefinitions(plan).map(createUnit)).filter(Boolean);
+ }
+ return Object.freeze({get,spawn,spawnWaves,visuals});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=NpcMissionPilot;

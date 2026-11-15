@@ -26,6 +26,13 @@ const HEROES = [
 // noncanonical PvE in the no-reward lore-training mode. Ordinary battles remain intact.
 const NPC_PILOT_ENABLED=typeof location!=="undefined"&&
  /(?:^|[?&])npcPilot=1(?:&|$)/.test(location.search);
+// Only the explicit test URL reserves three additional capsule meshes.
+// Their IDs must match the combat instances for picking, HUD and animation.
+const NPC_PILOT_IDS=Object.freeze(["npc-pass-guard","npc-sarkh-land-courier","npc-laun-physician"]);
+const NPC_PILOT_VISUALS=NPC_PILOT_ENABLED&&typeof NpcEnemyData!=="undefined"
+ ? NPC_PILOT_IDS.map((id,i)=>NpcEnemyData.spawn(id,{instanceId:id+"-training-"+(i+1)}))
+ : [];
+const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean));
 const $=s=>document.querySelector(s);
 // ENV022: default temporary concept-art backdrop. Combat visuals stay unchanged.
 // Fixed image has no parallax; it is NOT a rendered/reconstructed 3D environment.
@@ -749,10 +756,11 @@ function battleLineup(){
   return [...selectedParty(),...enemies.map(progressedEnemy)];
  }
  // LC-004: use existing combat with generic noncanonical training enemies.
- if(battleIsLoreTraining&&NPC_PILOT_ENABLED&&typeof NpcEnemyData!=="undefined"){
-  const trainingIds=["npc-pass-guard","npc-sarkh-land-courier","npc-laun-physician"];
-  const trainingEnemies=trainingIds.map((id,i)=>
-   NpcEnemyData.spawn(id,{instanceId:id+"-training-"+(i+1)}));
+ if(battleIsLoreTraining&&NPC_PILOT_ENABLED){
+  if(NPC_PILOT_VISUALS.length!==NPC_PILOT_IDS.length||
+     NPC_PILOT_VISUALS.some(enemy=>!enemy))throw Error("NPC_PILOT_TEMPLATE_MISSING");
+  const trainingEnemies=NPC_PILOT_VISUALS.map(enemy=>
+   NpcEnemyData.spawn(enemy.archetypeId,{instanceId:enemy.id}));
   if(trainingEnemies.some(enemy=>!enemy))throw Error("NPC_PILOT_TEMPLATE_MISSING");
   return [...selectedParty(),...trainingEnemies];
  }
@@ -3457,7 +3465,7 @@ function initBabylon(){
   gridmat.alpha=.28;gridmat.wireframe=true;gridmat.backFaceCulling=false;grid.material=gridmat;
  }
  // Low-poly stylized fighters: capsule body, sphere head, colored shield.
- HEROES.forEach((h,i)=>{
+ COMBAT_VISUALS.forEach((h,i)=>{
   const start=formationPosition(h.side,i%3,3);
   const x=start.x,z=start.z;
   let body,head;
@@ -3543,7 +3551,7 @@ function updateMeshes(){
  ensureLiora3D();
  const roster=presentationFighters();
  const sideMembersBySide={ally:roster.filter(f=>f.side==="ally"),enemy:roster.filter(f=>f.side==="enemy")};
- for(const h of HEROES){
+ for(const h of COMBAT_VISUALS){
   const mesh=meshes[h.id];
   if(!mesh)continue;
   const member=roster.find(f=>f.id===h.id);

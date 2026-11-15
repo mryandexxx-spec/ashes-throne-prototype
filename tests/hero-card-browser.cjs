@@ -94,7 +94,7 @@ const {chromium,webkit}=require('playwright');
     gear:document.querySelectorAll('#gearSlots button').length
    }));
    assert.equal(info.name,id==='art'?'Арт':'Сава');
-   assert.equal(info.image,'assets/'+id+'-portrait-ui.webp?v=1');
+   assert.equal(info.image,'assets/'+id+'-portrait-ui.webp?v=2');
    assert.equal(info.imageVisible,true);
    assert.equal(info.stageHasPortrait,true);
    assert.equal(info.viewerHidden,true,'new GLB must not load');

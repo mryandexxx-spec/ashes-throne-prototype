@@ -24,8 +24,20 @@ const CombatLog=(()=>{
      return name(e.targetId)+": −"+e.amount+" HP (осталось "+e.remainingHp+")";
     case "heal":return name(e.targetId)+": +"+e.amount+" HP (теперь "+e.remainingHp+")";
     case "status-resisted":return name(e.targetId)+": сопротивление эффекту «"+(e.effect==="read-move"?"Просчитанный ход":e.effect==="slowed"?"Замедление":e.effect==="debuff-resistance-down"?"Пониженное сопротивление":"Ослабление")+"»";
+    case "insurance-triggered":return name(e.actorId)+" страхует "+name(e.targetId)+": принимает "+e.amount+" урона от "+name(e.sourceId);
+    case "field-tempo":return name(e.targetId)+": ускорение инициативы на "+e.amount+" от "+name(e.actorId);
+    case "field-signal-used":return name(e.actorId)+": использован Сигнал от "+name(e.sourceId);
+    case "coordinated-open":return name(e.actorId)+": открыто Согласованное окно";
+    case "coordinated-completion":return "Согласованный шаг: "+(e.kind==="attack"?"совместный удар":"безопасный проход")+
+      " ("+name(e.sourceId)+" → "+name(e.actorId)+")";
+    case "coordinated-expired":return name(e.ownerId)+": Согласованное окно закрылось";
+    case "disrupted-plan":return name(e.actorId)+": Срыв ритма — "+(e.fallback?"задержано восстановление":"сорвано продолжение")+
+      " опасной способности";
     case "read-move-predicted":return name(e.actorId)+": подготовленная атака предугадана (−20 п.п. к точности, −20 п.п. эффективности наложения эффектов, −30% урона; −3 зацепки)";
-    case "effect":return e.effect==="read-move"?name(e.targetId)+": Просчитанный ход · "+e.stacks+"/4 зацепки, "+e.remaining+" ход(а)":name(e.targetId)+": "+(e.effect==="guard"?"Защита":e.effect==="weaken"?"Ослабление":e.effect==="slowed"?"Замедление":e.effect==="debuff-resistance-down"?"Пониженное сопротивление":e.effect)+
+    case "effect":return e.effect==="insurance"||e.effect==="field-signal"||e.effect==="disrupted-plan"?
+      name(e.targetId)+": "+({"insurance":"Страховка","field-signal":"Сигнал",
+       "disrupted-plan":"Срыв ритма"}[e.effect])+" (осталось "+e.remaining+" ходов)":
+      e.effect==="read-move"?name(e.targetId)+": Просчитанный ход · "+e.stacks+"/4 зацепки, "+e.remaining+" ход(а)":name(e.targetId)+": "+(e.effect==="guard"?"Защита":e.effect==="weaken"?"Ослабление":e.effect==="slowed"?"Замедление":e.effect==="debuff-resistance-down"?"Пониженное сопротивление":e.effect)+
       (Number.isFinite(e.amount)?" −"+e.amount+(e.effect==="debuff-resistance-down"?" п.п.":"%")+" на "+e.remaining+" ход(а)":" ×"+e.stacks);
     case "death":return name(e.targetId)+": повержен";
     case "wave-start":return "Волна " + e.wave + "/" + e.total + ": новые противники";

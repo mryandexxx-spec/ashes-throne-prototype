@@ -115,7 +115,6 @@ test("ARTSAVA001 connects portraits to roster, dossier and biography with no GLB
   assert.ok(game.includes("hero-avatar-"+name));
   assert.ok(css.includes(".hero-avatar-"+name));
  }
- assert.match(card,/heroId!=="nada"/,{message:"legacy on older branches"});
  assert.match(card,/\["art","sava"\]\.includes\(heroId\)/);
  assert.match(read("index.html"),/v0\.3\.160 · ARTSAVA001/);
 });

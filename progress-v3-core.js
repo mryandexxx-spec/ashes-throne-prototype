@@ -269,10 +269,10 @@ const ProgressV3Core=(()=>{
   if(!object(p)||p.saveVersion!==3||!object(p.levels)||!object(p.gear)||
      !object(p.materials)||!object(p.classes)||!object(p.energy))return null;
   // Old five-hero fixtures are still valid for standalone migration tests.
-  // The live game passes all eight IDs after stage() expands prior saved rosters.
+  // The live game passes all ten IDs after stage() expands prior saved rosters.
   const ids=Object.keys(p.classes);
   const legacyIds=["kael","lyra","darin","medic-demo","test-area-damage"];
-  if(![5,6,7,8].includes(ids.length)||
+  if(![5,6,7,8,10].includes(ids.length)||
      !legacyIds.every(id=>ids.includes(id))||
      ids.some(id=>!own(TEST_CLASSES,id))||
      ids.some(id=>!own(p.levels,id)||!own(p.gear,id)||p.classes[id]!==TEST_CLASSES[id]))

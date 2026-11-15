@@ -2609,7 +2609,7 @@ if(simulationClose)simulationClose.addEventListener("click",()=>{
 function renderMissionResult(){
  const won=state.winner==="ally";
  if(battleIsNpcMissionPilot){
-  $("#missionResultChapter").textContent="NPCMISSION002 · ВНЕ КАНОНА";
+  $("#missionResultChapter").textContent="NPC-ПРОБА · ВНЕ КАНОНА";
   $("#missionResultTitle").textContent=won?"Пробный бой выигран":"Пробный бой проигран";
   $("#missionResultText").textContent="Проверка новой пары противников. Энергия, задания, награды и сохранённые звёзды не изменены.";
   $("#missionResultStars").textContent="Тестовая оценка: "+"★".repeat(lastMissionStars)+

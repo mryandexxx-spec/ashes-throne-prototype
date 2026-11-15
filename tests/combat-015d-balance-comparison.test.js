@@ -14,7 +14,7 @@ const gameSource=read("game.js");
 const roster=vm.runInNewContext(gameSource.slice(0,gameSource.indexOf("const $="))+
   "\nHEROES");
 // Preserve the historical five-hero comparison, not a new balance study.
-const allAllies=roster.filter(f=>f.side==="ally"&&f.id!=="ren"&&f.id!=="nada"&&f.id!=="liora");
+const allAllies=roster.filter(f=>f.side==="ally"&&f.id!=="ren"&&f.id!=="nada"&&f.id!=="liora"&&f.id!=="art"&&f.id!=="sava");
 const allEnemies=roster.filter(f=>f.side==="enemy");
 const mission=MissionData.get("demo-mission-2");
 assert.equal(allAllies.length,5);

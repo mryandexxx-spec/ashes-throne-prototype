@@ -93,9 +93,9 @@ test("NPCMISSION002: opt-in is only demo-mission-2 and 3D instances match IDs",(
  assert.match(game,/NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED/);
  assert.match(game,/const ENEMIES=HEROES.filter\(h=>h.side==="enemy"\)/);
  assert.match(game,/activeMissionId==="demo-mission-2"\?ENEMIES:ENEMIES.slice\(0,2\)/);
- assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.166/);
- assert.equal(pkg.version,"0.3.166");
- assert.match(html,/v0\.3\.166 · NPCMISSION003/);
+ assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.167/);
+ assert.equal(pkg.version,"0.3.167");
+ assert.match(html,/v0\.3\.166 · NPCCHALLENGE004/);
  assert.equal((game.match(/side:"enemy",glyph:/g)||[]).length,5);
 });
 test("NPCMISSION002: practical combat matrix for actual Gardens hero stats (L1, L3, L8)",()=>{

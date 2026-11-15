@@ -78,7 +78,8 @@ const ChallengeCore=(()=>{
   // score and persisted challenge schema remain entirely unchanged.
   if(targets===null)return {id,killGroups:[],invalid:false};
   if(!targets||typeof targets!=="object"||Array.isArray(targets)||
-     Object.keys(targets).some(k=>!["enemyIds","priorityId"].includes(k))||
+     Object.keys(targets).some(k=>!["challengeId","enemyIds","priorityId"].includes(k))||
+     targets.challengeId!==id||
      !Array.isArray(targets.enemyIds)||
      targets.enemyIds.length!==def.enemyIds.length||
      targets.enemyIds.some(x=>typeof x!=="string"||!/^[a-z0-9][a-z0-9_.:-]{0,79}$/i.test(x))||

@@ -97,6 +97,34 @@ test("Art disruption blocks secondary enemy effects, not the attack or Nada's re
  assert.equal(Statuses.read(fighter(b,enemy.id),"read-move"),null,
   "only Nada's independent mitigation spends its three marks on this enemy action");
 });
+test("Liora's real taunt redirects the hit and Art's insurance protects HER, not the false target",()=>{
+ const b=create([mk("art"),mk("liora"),mk("ren"),
+  mk("shade","enemy",{atk:70,physicalAttack:70,speed:1})]);
+ assert.equal(act(b,"art","special","liora"),true);
+ const l=fighter(b,"liora"),ren=fighter(b,"ren"),art=fighter(b,"art");
+ const oldL=l.hp,oldR=ren.hp,oldA=art.hp;
+ assert.equal(Statuses.apply(l,"taunt",0,2),true);
+ assert.equal(act(b,"shade","basic","ren"),true,"enemy chooses Ren but taunt takes priority");
+ assert.ok(l.hp<oldL);
+ assert.equal(ren.hp,oldR);
+ assert.ok(art.hp<oldA);
+ assert.ok(b.events.some(e=>e.type==="insurance-triggered"&&e.targetId==="liora"));
+});
+test("Art and Sava leader bonuses are event-based and never duplicate Liora's Protection aura",()=>{
+ const artBattle=create([mk("art"),mk("liora"),mk("sava"),
+  mk("shade","enemy",{atk:80,physicalAttack:80,speed:1})],"art");
+ assert.equal(act(artBattle,"art","special","liora"),true);
+ assert.equal(act(artBattle,"shade","basic","liora"),true);
+ assert.ok(artBattle.events.some(e=>e.type==="field-tempo"&&e.actorId==="art"));
+ const svaBattle=create([mk("sava"),mk("art"),mk("ren"),
+  mk("shade","enemy",{hp:3000,speed:1})],"sava");
+ assert.equal(act(svaBattle,"sava","powerful","sava"),true);
+ assert.equal(act(svaBattle,"art","basic","shade"),true);
+ assert.equal(act(svaBattle,"ren","basic","shade"),true);
+ assert.ok(svaBattle.events.some(e=>e.type==="coordinated-completion"));
+ assert.ok(svaBattle.events.some(e=>e.type==="field-tempo"&&e.actorId==="sava"));
+ assert.equal(Abilities.get(level("liora",1),"leader").name,"Опора отряда");
+});
 test("Sava signals a chosen ally, advances initiative without granting a free action",()=>{
  const b=create([mk("sava"),mk("ren"),mk("art"),mk("enemy","enemy",{speed:1})]);
  fighter(b,"ren").meter=100;

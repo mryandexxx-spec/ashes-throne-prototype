@@ -54,7 +54,8 @@ test("NPCDATA001: independent instances, strict levels, stars, G tiers and no ra
  assert.equal(first.protection,first.maxProtection);
  assert.equal(second.npcAbilities.special.healAmount,36+Math.round(7*.8+3*5));
  assert.equal(first.npcAbilities.special.healAmount,36);
- first.npcAbilities.special.healAmount=999; // frozen definition cannot change
+ assert.equal(Object.isFrozen(first.npcAbilities.special),true);
+ assert.equal(first.npcAbilities.special.healAmount,36,"new spawn does not mutate frozen kit");
 });
 test("NPCDATA001: reject invalid, polluted or out-of-range instance configs",()=>{
  for(const opts of [{level:0},{level:86},{level:1.1},{stars:0},{stars:8},

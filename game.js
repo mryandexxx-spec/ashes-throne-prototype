@@ -11,7 +11,7 @@ const HEROES = [
  // NADA-PLAYABLE-001: provisional gameplay role and combat numbers only.
  {id:"nada",name:"Нада",classId:"support",tags:["gardens-over-abyss"],role:"Поддержка · игровой пилот",hp:85,atk:18,speed:120,side:"ally",glyph:"✎"},
  // LIORAPLAY001: provisional unarmed pilot, no approved balance or recruitment canon.
- {id:"liora",name:"Лиора Вель",classId:"tank",role:"Защита · тестовый герой со щитом",hp:105,atk:20,speed:115,side:"ally",glyph:"♙"},
+ {id:"liora",name:"Лиора Вель",classId:"tank",tags:["gardens-over-abyss"],role:"Защита · тестовый герой со щитом",hp:105,atk:20,speed:115,side:"ally",glyph:"♙"},
  // ARTSAVA001: playable pilot heroes; portraits approved, combat abilities remain templates.
  {id:"art",name:"Арт",classId:"tank",tags:["gardens-over-abyss"],role:"Страховка · учебные навыки",hp:128,atk:22,speed:118,side:"ally",glyph:"⚒"},
  {id:"sava",name:"Сава",classId:"support",tags:["gardens-over-abyss"],role:"Поддержка · учебные навыки",hp:104,atk:17,speed:136,side:"ally",glyph:"✦"},

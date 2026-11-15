@@ -131,9 +131,9 @@ const ProgressV3Core=(()=>{
     try{
      // Retain established backup keys for historical partial rosters. Only the
      // 8 -> 10 transition uses the new Art/Sava backup; never overwrite old ones.
-     const backupKey=KEY+(missing.includes("ren")?".before-ren":
-       missing.includes("nada")?".before-nada":
-       missing.includes("liora")?".before-liora":".before-art-sava");
+     const backupKey=KEY+(missing.includes("liora")?".before-liora":
+       missing.includes("ren")?".before-ren":
+       missing.includes("nada")?".before-nada":".before-art-sava");
      if(storage.getItem(backupKey)===null){
       storage.setItem(backupKey,raw3);
       if(storage.getItem(backupKey)!==raw3)throw Error("backup verification failed");

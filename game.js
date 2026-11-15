@@ -2799,9 +2799,11 @@ function syncBattleUI(){
  const powerfulReady=!!powerful&&CombatCore.abilityReady(state,"powerful");
  if(!specialReady)selectedAbility="basic";
  const supportTarget=!!actor&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
+ const needsOtherAlly=supportTarget&&["insurance","signal"].includes(AbilityData.get(actor,"special")?.kind);
  const targetIndex=supportTarget?state.selectedAlly:state.selectedEnemy;
  const target=state.active?fighters[targetIndex]:null;
- const validTarget=!!target&&target.hp>0&&target.side===(supportTarget?"ally":"enemy");
+ const validTarget=!!target&&target.hp>0&&target.side===(supportTarget?"ally":"enemy")&&
+  !(needsOtherAlly&&target.id===actor.id);
  $("#battleStatus").textContent=visualBusy?"Действие выполняется…":actor?"Ход: "+actor.name:"Бой завершён";
  $("#turnChip").textContent=(state.totalWaves>1?"Волна "+state.wave+"/"+state.totalWaves+" · ":"")+"Ход "+state.turn;
  $("#actionTitle").textContent=visualBusy?"Анимация действия":actor?(supportTarget?"Выбери союзника":"Способности: "+actor.name):"Бой завершён";
@@ -2821,13 +2823,13 @@ function syncBattleUI(){
  }
  const speedButton=$("#autoSpeedBtn");
  if(speedButton){speedButton.disabled=!state.active;speedButton.textContent=BattleSpeed.get()+"×";speedButton.setAttribute("aria-label","Скорость боя "+BattleSpeed.get()+"×. Нажми, чтобы изменить");}
- $("#basicAbilityBtn").textContent="Базовая атака";
+ $("#basicAbilityBtn").textContent=actor&&["art","sava"].includes(actor.id)?AbilityData.get(actor,"basic")?.name:"Базовая атака";
  $("#specialAbilityBtn").textContent=actor?CombatCore.specialName(actor)+(actor.specialCooldown>0?" · "+actor.specialCooldown:""):"Особая способность";
  if(powerfulButton)powerfulButton.textContent=powerful?powerful.name+(actor.powerfulCooldown>0?" · "+actor.powerfulCooldown:""):"Мощная способность";
  $("#basicAbilityBtn").classList.toggle("selected",false);
  $("#specialAbilityBtn").classList.toggle("selected",supportTarget);
  $("#actionHint").textContent=visualBusy?"Завершается предыдущее действие.":autoBattle?"Автобой активен. Нажми «Ручной бой», чтобы управлять.":
-  supportTarget?"Коснись союзника с курсором, чтобы применить способность.":
+  supportTarget?(needsOtherAlly?"Коснись другого союзника: себя выбрать нельзя.":"Коснись союзника с курсором, чтобы применить способность."):
   actor&&CombatCore.abilityTargetSide(state,"special")==="all-enemies"?"Курсор отмечает основную цель. Учебный широкий удар поражает всех живых врагов.":
   validTarget?"В фокусе: "+target.name+". Нажми на нужную способность.":"Коснись противника, чтобы выбрать цель.";
  const retry=$("#battleRetryBtn");if(retry)retry.hidden=!!state.active;
@@ -2863,13 +2865,21 @@ function renderArenaIndicators(){
    typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"read-move")?
      `<span class="arena-effect debuff" title="Просчитанный ход: ${CombatStatusCore.read(h,"read-move").stacks} из 4 зацепок, ${CombatStatusCore.read(h,"read-move").remaining} ход(а). При 3+ сильная атака теряет 20 п.п. точности, 20 п.п. эффективности наложения эффектов и 30% урона; тратятся 3 зацепки.">◎${CombatStatusCore.read(h,"read-move").stacks}</span>`:"",
    typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"taunt")?
-     `<span class="arena-effect" title="Провокация: одиночные враги атакуют этого героя. Осталось ${CombatStatusCore.read(h,"taunt").remaining} хода(ов).">⚑${CombatStatusCore.read(h,"taunt").remaining}</span>`:""].join("");
+     `<span class="arena-effect" title="Провокация: одиночные враги атакуют этого героя. Осталось ${CombatStatusCore.read(h,"taunt").remaining} хода(ов).">⚑${CombatStatusCore.read(h,"taunt").remaining}</span>`:"",
+   typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"disrupted-plan")?
+     `<span class="arena-effect debuff" title="Срыв ритма: следующая особая/мощная способность потеряет продолжение.">✕${CombatStatusCore.read(h,"disrupted-plan").remaining}</span>`:"",
+   h.insurance?`<span class="arena-effect" title="Страховка Арта: часть прямого HP-урона получит Арт.">⛓${h.insurance.remaining}</span>`:"",
+   h.fieldSignal?`<span class="arena-effect" title="Сигнал Савы: ускорен ближайший ход.">⚑${h.fieldSignal.remaining}</span>`:"",
+   h.tacticalFocus?`<span class="arena-effect" title="Собранность Арта: ответ по нападавшему.">✦</span>`:""].join("");
   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
   const active=actor?.id===h.id;
   const support=!!actor&&!autoBattle&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
   // A group ability does not change focus on turn start: exactly one
   // primary enemy remains selected until the player taps a different one.
-  const focused=!!actor&&!autoBattle&&h.hp>0&&(support?h.side==="ally":h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
+  const onlyOther=support&&["insurance","signal"].includes(AbilityData.get(actor,"special")?.kind);
+  const focused=!!actor&&!autoBattle&&h.hp>0&&(support?
+   h.side==="ally"&&(!onlyOther||h.id!==actor.id):
+   h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
   return `<div class="arena-indicator ${h.side} ${active?"acting":""}" data-fighter-id="${h.id}" aria-label="${h.name}: здоровье ${Math.max(0,view.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
    ${focused?`<div class="arena-focus-cursor ${support?"available":"locked"}" aria-hidden="true">▼</div>`:""}
    <div class="arena-indicator-name">${h.name}</div>
@@ -2948,7 +2958,7 @@ function resetBattle(){
  const lineup=battleLineup();
  const allies=lineup.filter(f=>f.side==="ally");
  const realHeroFight=allies.length>0&&
-  allies.every(f=>["ren","nada","liora"].includes(f.id));
+  allies.every(f=>["ren","nada","liora","art","sava"].includes(f.id));
  state=CombatCore.createBattle(lineup,battleFutureWaves(),{
   leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId,
   ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{}),
@@ -3029,6 +3039,7 @@ function showAbilityTooltip(abilityId){
  if(definition.kind==="damage"){
   effects.push("Урон: "+(definition.multiplier===1?"100%":Math.round(definition.multiplier*100)+"%")+" атаки.");
   if(definition.weakening)effects.push("Ослабление на "+definition.weakening+" атаки.");
+  if(definition.fieldNote)effects.push(definition.fieldNote);
   if(definition.onHitStatus?.type==="read-move")
    effects.push("При попадании +"+definition.onHitStatus.stacks+
     " зацепок «Просчитанного хода» (максимум 4, срок 2 собственных хода врага). "+
@@ -3039,6 +3050,10 @@ function showAbilityTooltip(abilityId){
  else if(definition.kind==="heal")
   effects.push("Восстанавливает до "+definition.healAmount+" HP.");
  effects.push("Цель: "+({ally:"союзник",enemy:"противник",self:"сам герой","all-allies":"все живые союзники","all-enemies":"все живые противники"}[definition.target]||"неизвестная")+".");
+ if(definition.kind==="insurance")effects.push("Страховка: Арт принимает "+definition.insurancePercent+"% первого реального HP-урона другого союзника после обычной защиты. Не массовый щит.");
+ if(definition.kind==="signal")effects.push("Сигнал: выбранный союзник получает +"+definition.signalMeter+" инициативы, без дополнительного хода.");
+ if(definition.kind==="coordinate")effects.push("Согласованный шаг: две атаки разных героев по одному врагу; на развитых уровнях также связка защита → действие защищённого.");
+ if(definition.disruptTurns)effects.push("Срыв ритма: противник теряет вторичное действие следующей особой/мощной способности. Зацепки Нады остаются.");
  if(definition.cooldown)effects.push("Перезарядка: "+definition.cooldown+" хода.");
  $("#abilityTooltipTitle").textContent=definition.name;
  $("#abilityTooltipText").textContent=effects.join(" ");

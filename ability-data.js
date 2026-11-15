@@ -16,9 +16,11 @@ const AbilityData=(()=>{
    onHitStatus:Object.freeze({type:"read-move",stacks:2,turns:2})}),
   // LIORAPLAY001: unarmed test pilot; not canonical combat techniques.
   liora:Object.freeze({id:"special",name:"Под прикрытием",target:"self",kind:"guard",guardHits:2,tauntTurns:2,cooldown:2}),
-  // ARTSAVA001: temporary actions, NOT story combat skills.
-  art:Object.freeze({id:"special",name:"Учебная страховка",target:"ally",kind:"guard",guardHits:2,cooldown:2}),
-  sava:Object.freeze({id:"special",name:"Учебное отвлечение",target:"enemy",kind:"damage",damageType:"physical",multiplier:.7,weakening:1,cooldown:2}),
+  // ARTSAVASKILLS001: ordinary physical fieldwork, no magic or canon weapon.
+  art:Object.freeze({id:"special",name:"Страховочный узел",target:"ally",
+   kind:"insurance",insurancePercent:40,insuranceTurns:2,cooldown:2}),
+  sava:Object.freeze({id:"special",name:"Передать сигнал",target:"ally",
+   kind:"signal",signalMeter:200,signalTurns:2,cooldown:2}),
   "trial-nada":Object.freeze({id:"special",name:"Выверенное действие · проба",target:"enemy",kind:"damage",multiplier:.8,weakening:2,cooldown:2}),
   "trial-liora":Object.freeze({id:"special",name:"Прикрыть товарища · проба",target:"ally",kind:"guard",guardHits:2,cooldown:2}),
   // Combat-011B regression fixtures: not in HEROES or campaign content.
@@ -65,9 +67,12 @@ const AbilityData=(()=>{
   nada:Object.freeze({id:"powerful",name:"Разгадать замысел",target:"all-enemies",kind:"damage",damageType:"physical",multiplier:.6,weakening:0,cooldown:3,
    onHitStatus:Object.freeze({type:"read-move",stacks:2,turns:2})}),
   liora:Object.freeze({id:"powerful",name:"Держать строй",target:"all-allies",kind:"guard",guardHits:2,cooldown:3}),
-  // ARTSAVA001: temporary powerful actions; no magic, no new status types.
-  art:Object.freeze({id:"powerful",name:"Учебное сдерживание",target:"enemy",kind:"damage",damageType:"physical",multiplier:1.25,weakening:2,cooldown:3}),
-  sava:Object.freeze({id:"powerful",name:"Учебное прикрытие отряда",target:"all-allies",kind:"guard",guardHits:1,cooldown:3}),
+  // ARTSAVASKILLS001: Art disrupts a follow-up; Sava opens one bounded two-person chain.
+  art:Object.freeze({id:"powerful",name:"Снять нагрузку",target:"enemy",
+   kind:"damage",damageType:"physical",multiplier:1.05,weakening:0,disruptTurns:2,cooldown:3}),
+  sava:Object.freeze({id:"powerful",name:"Согласованный шаг",target:"self",
+   kind:"coordinate",windowActions:4,coordinationDamagePercent:12,
+   coordinationMeter:100,cooldown:3}),
   "trial-nada":Object.freeze({id:"powerful",name:"Слабое место · проба",target:"enemy",kind:"damage",multiplier:1.25,weakening:2,cooldown:2}),
   "trial-liora":Object.freeze({id:"powerful",name:"Удержать позицию · проба",target:"self",kind:"guard",guardHits:3,cooldown:2}),
   // Combat-012B: same temporary parameters for the existing optional demo fighter.
@@ -100,7 +105,12 @@ const AbilityData=(()=>{
    triggers:Object.freeze([]),modifiers:Object.freeze([]),
    combatRules:Object.freeze({protectAllyBelowHpPercent:35,
     protectAllyGuardHits:1,protectAllyCooldownOwnTurns:3})}),
-  art:passiveEmpty,sava:passiveEmpty,
+  art:Object.freeze({id:"passive",name:"Знать предел",
+   triggers:Object.freeze([]),modifiers:Object.freeze([]),
+   combatRules:Object.freeze({insuranceFocusPercent:12,insuranceFocusDelay:0})}),
+  sava:Object.freeze({id:"passive",name:"Заметить вовремя",
+   triggers:Object.freeze([]),modifiers:Object.freeze([]),
+   combatRules:Object.freeze({coordinationCooldownRecovery:1,coordinationTempo:0})}),
   "trial-nada":passiveEmpty,"trial-liora":passiveEmpty,
   // Nonplayable fixtures verify automatic trigger registration and ownership.
   "test-passive-attacker":Object.freeze({id:"passive",name:"Тест реакции атакующего",
@@ -142,6 +152,11 @@ const AbilityData=(()=>{
  // Combat-014A: only nonplayable fixtures can be leaders until the owner
  // approves actual hero eligibility and leader effects.
  const leaderByHero=Object.freeze({
+  // ARTSAVASKILLS001: situational regional synergy, no permanent combat-stat aura.
+  art:Object.freeze({id:"leader",name:"Работа по риску",
+   combatRules:Object.freeze({tagId:"gardens-over-abyss",insuranceAllyMeter:90})}),
+  sava:Object.freeze({id:"leader",name:"Полевая координация",
+   combatRules:Object.freeze({tagId:"gardens-over-abyss",coordinationAllyMeter:90})}),
   // LIORA001: [PROPOSAL] 10% of each ally's Protection while Liora leads and lives.
   liora:Object.freeze({id:"leader",name:"Опора отряда",
    modifiers:Object.freeze([Object.freeze({stat:"protection",operation:"percent",value:10,
@@ -163,7 +178,11 @@ const AbilityData=(()=>{
    if(actor?.id==="nada")return Object.freeze({...typedBasic,name:"Прицельное действие",multiplier:.8,
     onHitStatus:Object.freeze({type:"read-move",stacks:1,turns:2})});
    if(actor?.id==="liora")return Object.freeze({...typedBasic,name:"Удар щитом"});
-   if(actor?.id==="art"||actor?.id==="sava")return Object.freeze({...typedBasic,name:"Учебная атака"});
+   if(actor?.id==="art")return Object.freeze({...typedBasic,name:"Сбить шаг",multiplier:1,
+     fieldNote:"После реальной Страховки следующий удар по нападавшему получает усиление Собранности."});
+   if(actor?.id==="sava")return Object.freeze({...typedBasic,name:"Отметить момент",
+    multiplier:.65,nextAllyMeter:70,
+    fieldNote:"После действия следующий союзник Садов получает ускорение инициативы; бесплатных ходов нет."});
    // REN-COMBAT-B: story-only temporary skill level; no v3 progression.
    if(actor?.id==="trial-ren"||actor?.id==="ren"){
     const level=actor.skillLevels?.basic;

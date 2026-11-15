@@ -1,5 +1,5 @@
 "use strict";
-// ARTSAVAPORTRAIT002: exact owner-provided cinematic references, not A-pose crops.
+// ARTSAVASKILLS001: exact owner-provided cinematic references, not A-pose crops.
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),crypto=require("node:crypto"),path=require("node:path");
 const root=path.join(__dirname,"..");
@@ -31,7 +31,7 @@ test("roster, biography and dossier reference the refreshed images; 3D stays a p
  }
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const version=JSON.parse(fs.readFileSync(path.join(root,"package.json"),"utf8")).version;
- assert.equal(version,"0.3.161");
- assert.ok(html.includes("v0.3.161 · ARTSAVAPORTRAIT002"));
+ assert.equal(version,"0.3.162");
+ assert.ok(html.includes("v0.3.162 · ARTSAVASKILLS001"));
  assert.ok(html.includes("game.js?v="+version));
 });

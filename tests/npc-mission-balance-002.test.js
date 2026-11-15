@@ -93,7 +93,7 @@ test("NPCMISSION002: opt-in is only demo-mission-2 and 3D instances match IDs",(
  assert.match(game,/NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED/);
  assert.match(game,/const ENEMIES=HEROES.filter\(h=>h.side==="enemy"\)/);
  assert.match(game,/activeMissionId==="demo-mission-2"\?ENEMIES:ENEMIES.slice\(0,2\)/);
- assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.168/);
+ assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.169/);
  assert.equal(pkg.version,"0.3.169");
  assert.match(html,/v0\.3\.169 · NPCCHALLENGE006/);
  assert.equal((game.match(/side:"enemy",glyph:/g)||[]).length,5);

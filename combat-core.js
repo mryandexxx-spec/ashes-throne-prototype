@@ -1178,7 +1178,9 @@ const CombatCore = (() => {
         effect:"taunt",remaining:ability.tauntTurns});
     }
     finishAbilityCooldowns(actor,ability);
+    finishDisruption(battle,actor,ability,disruption);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
+    finishTacticalAction(battle,actor,ability,battle.fighters[primaryIndex]);
     tickActorStatuses(actor);
     battle.turn++;
     battle.currentActor=-1;
@@ -1195,7 +1197,9 @@ const CombatCore = (() => {
     const actorIndex=battle?.currentActor;
     if(!actorAbilityReady(battle,actorIndex,abilityId))return false;
     const actor=battle.fighters[actorIndex];
-    const ability=AbilityData.get(actor,abilityId);
+    const planned=AbilityData.get(actor,abilityId);
+    const disruption=disruptDefinition(battle,actor,planned);
+    const ability=disruption.ability;
     const readMovePenalty=readMoveMitigation(actor,ability);
     // Invalid definitions must not consume an action or overwrite events.
     // Stats-001B: explicit typed attacks require a valid matching attack value.
@@ -1205,20 +1209,33 @@ const CombatCore = (() => {
     if(!Number.isSafeInteger(ability.cooldown)||ability.cooldown<0||
        !validFollowUpEffects(ability)||!validOnHitStatus(battle,ability)||
        !validAreaStatus(ability)||!validAreaStatusProfile(battle,actor,ability))return false;
-    if(!["damage","heal","guard"].includes(ability.kind))return false;
+    if(!["damage","heal","guard","insurance","signal","coordinate"].includes(ability.kind))return false;
     if(ability.tauntTurns!==undefined&&
       (ability.kind!=="guard"||ability.target!=="self"||
        !Number.isSafeInteger(ability.tauntTurns)||ability.tauntTurns<1))return false;
     if(ability.kind==="damage"&&(!Number.isFinite(ability.multiplier)||ability.multiplier<0))return false;
     if(ability.kind==="heal"&&(!Number.isFinite(ability.healAmount)||ability.healAmount<0))return false;
     if(ability.kind==="guard"&&(!Number.isInteger(ability.guardHits)||ability.guardHits<0))return false;
+    if(ability.kind==="insurance"&&(!Number.isFinite(ability.insurancePercent)||
+       ability.insurancePercent<=0||ability.insurancePercent>100||
+       !Number.isSafeInteger(ability.insuranceTurns)||ability.insuranceTurns<1))return false;
+    if(ability.kind==="signal"&&(!Number.isFinite(ability.signalMeter)||
+       ability.signalMeter<0||ability.signalMeter>1000||
+       !Number.isSafeInteger(ability.signalTurns)||ability.signalTurns<1))return false;
+    if(ability.kind==="coordinate"&&(!Number.isSafeInteger(ability.windowActions)||
+       ability.windowActions<2||ability.windowActions>12||
+       !Number.isFinite(ability.coordinationDamagePercent)||
+       !Number.isFinite(ability.coordinationMeter)))return false;
     const targets=actorTargetIndices(battle,actorIndex,ability.target,primaryIndex);
     if(["self","all-enemies","all-allies"].includes(ability.target))
-      return performMultiTargetAbility(battle,actor,ability,targets,primaryIndex,readMovePenalty);
+      return performMultiTargetAbility(battle,actor,ability,targets,primaryIndex,readMovePenalty,disruption);
     if(ability.target!=="ally" && ability.target!=="enemy")return false;
     if(targets.length!==1)return false;
     const targetIndex=targets[0];
     const target=battle.fighters[targetIndex];
+    if(["insurance","signal"].includes(ability.kind)&&
+       (actor.side!=="ally"||target.side!=="ally"||actor.id===target.id))
+      return false;
     const type=ability.kind==="damage"?AbilityData.damageType(ability):null;
     if(type&&type!=="legacy"&&!validTypedTarget(target,type))return false;
     if(ability.kind==="damage"&&!validHitProfile(battle,actor,[target],type))return false;
@@ -1230,7 +1247,19 @@ const CombatCore = (() => {
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
     if(!consumeReadMoveMitigation(battle,actor,readMovePenalty))return false;
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
-    if(ability.kind==="guard"){
+    if(ability.kind==="insurance"){
+      target.insurance={ownerId:actor.id,percent:ability.insurancePercent,
+       remaining:ability.insuranceTurns,afterMeter:ability.afterInterceptMeter??0};
+      emit(battle,"effect",{actorId:actor.id,targetId:target.id,
+       effect:"insurance",remaining:ability.insuranceTurns});
+      battle.message=actor.name+" страхует "+target.name+".";
+    }else if(ability.kind==="signal"){
+      target.fieldSignal={ownerId:actor.id,remaining:ability.signalTurns};
+      target.meter=Math.min(1000,target.meter+ability.signalMeter);
+      emit(battle,"effect",{actorId:actor.id,targetId:target.id,
+       effect:"field-signal",remaining:ability.signalTurns});
+      battle.message=actor.name+" передаёт сигнал "+target.name+".";
+    }else if(ability.kind==="guard"){
       target.guardHits=ability.guardHits;
       emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"guard",stacks:ability.guardHits});
       battle.message=actor.name+" защищает "+target.name+": защита ×"+ability.guardHits+".";
@@ -1244,11 +1273,13 @@ const CombatCore = (() => {
       battle.message=actor.name+" промахивается по "+target.name+".";
     }else{
       const oldHp=target.hp,oldProtection=target.protection??null;
-      const baseDamage=bonusDamage(battle,actor,target,
-        Math.round(effectiveStat(battle,actor,damageStat)*ability.multiplier));
+      const baseDamage=tacticalDamageBonus(battle,actor,target,
+       bonusDamage(battle,actor,target,
+        Math.round(effectiveStat(battle,actor,damageStat)*ability.multiplier)));
       const damage=dealDamage(actor,target,
         reducedReadMoveDamage(rollCriticalDamage(battle,actor,target,baseDamage,type),readMovePenalty),true,type,
-        penetrationEnabled(battle,type)?actor.defensePenetration:0);
+        penetrationEnabled(battle,type)?actor.defensePenetration:0,battle,
+        ability.target==="enemy");
       emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
         ...typedDamageFields(target,type,oldHp,oldProtection)});
       if(target.hp===0)emit(battle,"death",{targetId:target.id});
@@ -1256,6 +1287,10 @@ const CombatCore = (() => {
         applyNegativeStatus(battle,actor,target,ability.weakening,type,readMovePenalty);
       applyOnHitStatus(battle,actor,target,ability,readMovePenalty);
       applyAreaStatusAfterHit(battle,actor,ability,readMovePenalty);
+      if(ability.disruptTurns&&target.hp>0&&typeof CombatStatusCore!=="undefined"&&
+         CombatStatusCore.apply(target,"disrupted-plan",0,ability.disruptTurns))
+        emit(battle,"effect",{actorId:actor.id,targetId:target.id,
+         effect:"disrupted-plan",remaining:ability.disruptTurns});
       battle.message=actor.side==="enemy"&&ability.id==="basic"
         ? actor.name+" атакует "+target.name+": "+damage+" урона."
         : actor.name+(ability.id!=="basic"?" применяет "+ability.name+": ":" атакует: ")+
@@ -1277,7 +1312,9 @@ const CombatCore = (() => {
         effect:"taunt",remaining:ability.tauntTurns});
     }
     finishAbilityCooldowns(actor,ability);
+    finishDisruption(battle,actor,ability,disruption);
     InitiativeModel.finishTurn(battle.fighters,actor.id);
+    finishTacticalAction(battle,actor,ability,battle.fighters[primaryIndex]);
     tickActorStatuses(actor);
     battle.turn++;
     battle.currentActor=-1;

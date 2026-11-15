@@ -33,8 +33,8 @@ test("approved artwork is now a real owned roster card and 2D hero dossier",()=>
  assert.match(roster,/h\.id==="nada"/);
  assert.match(roster,/nada-collection-portrait/);
  assert.match(game,/showNadaPortrait=hero\.id==="nada"/);
- assert.match(game,/renPortrait\.src=showLioraPortrait\?"assets\/liora-portrait-ui\.webp\?v=1":showNadaPortrait\?"assets\/nada-portrait-ui\.webp\?v=2"/);
- assert.match(root("ren-card-3d.js"),/portrait\.hidden=heroId!=="nada"/);
+ assert.match(game,/showLioraPortrait\?"assets\/liora-portrait-ui\.webp\?v=1":showNadaPortrait\?"assets\/nada-portrait-ui\.webp\?v=2"/);
+ assert.match(root("ren-card-3d.js"),/portrait\.hidden=!\["art","sava"\]\.includes\(heroId\)/);
  assert.equal(fs.existsSync(path.join(__dirname,"..","assets","nada-portrait-ui.webp")),true);
  assert.equal(profiles.get("ren")?.name,"Рен Терен");
 });

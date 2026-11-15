@@ -216,7 +216,7 @@ test("NPCCHALLENGE006: URL, save path and real objective UI remain separated",()
  assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.170/);
  assert.match(js,/npcChallengePilot=1/);
  assert.match(js,/NpcChallengePilot\.criteria\(def\.id\)/);
- assert.match(js,/NpcChallengePilot\.goal\(activeChallengeId\)/);
+ assert.match(js,/NpcChallengePilot\.goal\(activeChallengeId,/);
  assert.match(js,/NpcChallengePilot\.resultText\(activeChallengeId,state,challengeTracker\)/);
  assert.match(js,/NpcChallengePilot\.score\(activeChallengeId,state,challengeTracker\)/);
  assert.match(js,/NPC-пробы T-01…T-04 \/ N-01…N-04/);

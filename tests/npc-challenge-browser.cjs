@@ -38,10 +38,10 @@ async function check(name,type){
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
    "Прототип · v0.3.167 · NPCCHALLENGE004");
-  // The painted HQ hotspot intentionally defers navigation for its lighting
-  // cue. Use the ordinary More-menu route for a deterministic user click.
-  await page.locator("#hqMoreToggle").click();
-  await page.locator('#hqMoreMenu [data-screen="challenges"]').click();
+  // In short landscape both the painted hotspot and More button can be
+  // visually hidden or animated. Invoke the actual delegated UI click handler
+  // on the existing More menu item, as other browser regression tests do.
+  await page.locator('#hqMoreMenu [data-screen="challenges"]').evaluate(el=>el.click());
   await page.locator("#challenges").waitFor({state:"visible",timeout:15000});
   assert.match(await page.locator("#challengeSaveStatus").innerText(),/без записи оценки и ежедневных задач/);
   await page.locator('[data-challenge-kind="tactical"]').click();

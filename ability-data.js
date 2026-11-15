@@ -16,6 +16,9 @@ const AbilityData=(()=>{
    onHitStatus:Object.freeze({type:"read-move",stacks:2,turns:2})}),
   // LIORAPLAY001: unarmed test pilot; not canonical combat techniques.
   liora:Object.freeze({id:"special",name:"Под прикрытием",target:"self",kind:"guard",guardHits:2,tauntTurns:2,cooldown:2}),
+  // ARTSAVA001: temporary actions, NOT story combat skills.
+  art:Object.freeze({id:"special",name:"Учебная страховка",target:"ally",kind:"guard",guardHits:2,cooldown:2}),
+  sava:Object.freeze({id:"special",name:"Учебное отвлечение",target:"enemy",kind:"damage",damageType:"physical",multiplier:.7,weakening:1,cooldown:2}),
   "trial-nada":Object.freeze({id:"special",name:"Выверенное действие · проба",target:"enemy",kind:"damage",multiplier:.8,weakening:2,cooldown:2}),
   "trial-liora":Object.freeze({id:"special",name:"Прикрыть товарища · проба",target:"ally",kind:"guard",guardHits:2,cooldown:2}),
   // Combat-011B regression fixtures: not in HEROES or campaign content.
@@ -62,6 +65,9 @@ const AbilityData=(()=>{
   nada:Object.freeze({id:"powerful",name:"Разгадать замысел",target:"all-enemies",kind:"damage",damageType:"physical",multiplier:.6,weakening:0,cooldown:3,
    onHitStatus:Object.freeze({type:"read-move",stacks:2,turns:2})}),
   liora:Object.freeze({id:"powerful",name:"Держать строй",target:"all-allies",kind:"guard",guardHits:2,cooldown:3}),
+  // ARTSAVA001: temporary powerful actions; no magic, no new status types.
+  art:Object.freeze({id:"powerful",name:"Учебное сдерживание",target:"enemy",kind:"damage",damageType:"physical",multiplier:1.25,weakening:2,cooldown:3}),
+  sava:Object.freeze({id:"powerful",name:"Учебное прикрытие отряда",target:"all-allies",kind:"guard",guardHits:1,cooldown:3}),
   "trial-nada":Object.freeze({id:"powerful",name:"Слабое место · проба",target:"enemy",kind:"damage",multiplier:1.25,weakening:2,cooldown:2}),
   "trial-liora":Object.freeze({id:"powerful",name:"Удержать позицию · проба",target:"self",kind:"guard",guardHits:3,cooldown:2}),
   // Combat-012B: same temporary parameters for the existing optional demo fighter.
@@ -94,6 +100,7 @@ const AbilityData=(()=>{
    triggers:Object.freeze([]),modifiers:Object.freeze([]),
    combatRules:Object.freeze({protectAllyBelowHpPercent:35,
     protectAllyGuardHits:1,protectAllyCooldownOwnTurns:3})}),
+  art:passiveEmpty,sava:passiveEmpty,
   "trial-nada":passiveEmpty,"trial-liora":passiveEmpty,
   // Nonplayable fixtures verify automatic trigger registration and ownership.
   "test-passive-attacker":Object.freeze({id:"passive",name:"Тест реакции атакующего",
@@ -156,6 +163,7 @@ const AbilityData=(()=>{
    if(actor?.id==="nada")return Object.freeze({...typedBasic,name:"Прицельное действие",multiplier:.8,
     onHitStatus:Object.freeze({type:"read-move",stacks:1,turns:2})});
    if(actor?.id==="liora")return Object.freeze({...typedBasic,name:"Удар щитом"});
+   if(actor?.id==="art"||actor?.id==="sava")return Object.freeze({...typedBasic,name:"Учебная атака"});
    // REN-COMBAT-B: story-only temporary skill level; no v3 progression.
    if(actor?.id==="trial-ren"||actor?.id==="ren"){
     const level=actor.skillLevels?.basic;

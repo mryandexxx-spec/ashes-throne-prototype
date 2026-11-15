@@ -22,7 +22,7 @@ test("RENROSTER001: roster uses wide Ren, biography and detail keep original Ren
  assert.match(roster,/width="384" height="192"/);
  assert.equal((js.match(/assets\/ren-portrait-roster\.webp\?v=1/g)||[]).length,1);
  assert.match(js,/sketch\.src="assets\/ren-portrait-ui\.webp"/);
- assert.match(js,/renPortrait\.src=showLioraPortrait\?"assets\/liora-portrait-ui\.webp\?v=1":showNadaPortrait\?"assets\/nada-portrait-ui\.webp\?v=2":"assets\/ren-portrait-ui\.webp"/);
+ assert.match(js,/showLioraPortrait\?"assets\/liora-portrait-ui\.webp\?v=1":showNadaPortrait\?"assets\/nada-portrait-ui\.webp\?v=2":"assets\/ren-portrait-ui\.webp"/);
  assert.equal((js.match(/assets\/nada-portrait-roster\.webp\?v=1/g)||[]).length,1);
 });
 test("RENROSTER001: wide artwork stays in collection and footer is compact",()=>{

@@ -4464,3 +4464,15 @@ body:has(#storyDemo.active)::before{
 }
 
 
+
+/* ARTSAVA001 — approved portraits for the temporary no-GLB character phase. */
+#collection .roster-card-art.hero-avatar-art,
+#collection .roster-card-art.hero-avatar-sava{padding:0;overflow:hidden;background:#29272b}
+#collection .hero-avatar-art .art-collection-portrait,
+#collection .hero-avatar-sava .sava-collection-portrait{
+ position:absolute;inset:0;z-index:1;display:block;
+ width:100%;height:100%;max-width:none;max-height:none;
+ object-fit:cover;object-position:center 42%;filter:none;
+}
+#collection .roster-card-art.hero-avatar-art{background:#342a24}
+#collection .roster-card-art.hero-avatar-sava{background:#253a42}

@@ -75,7 +75,39 @@ const {chromium,webkit}=require('playwright');
   await page.locator('#detailHome').click();
   await page.evaluate(()=>{selectedHeroId='ren';showScreen('heroDetail');});
   await page.waitForFunction(()=>document.querySelector('#detailHeroStage').classList.contains('has-ren-3d'),null,{timeout:45000});
-  await fits('re-entry');assert.deepEqual(errors,[]);
+  await fits('re-entry');
+  // ARTSAVA001: both approved portraits must load in the *real* Chromium/WebKit
+  // hero dossier without instantiating either a new Babylon engine or a GLB.
+  for(const id of ['art','sava']){
+   await page.evaluate(heroId=>{selectedHeroId=heroId;showScreen('heroDetail');},id);
+   await page.waitForFunction(heroId=>{
+    const img=document.getElementById('detailRenPortrait');
+    return !!img&&img.complete&&img.naturalWidth>0&&img.src.includes(heroId+'-portrait-ui.webp');
+   },id,{timeout:15000});
+   const info=await page.evaluate(()=>({
+    name:document.getElementById('detailName').textContent,
+    image:document.getElementById('detailRenPortrait').getAttribute('src'),
+    imageVisible:!document.getElementById('detailRenPortrait').hidden,
+    stageHasPortrait:document.getElementById('detailHeroStage').classList.contains('has-ren-portrait'),
+    viewerHidden:document.getElementById('renCard3DCanvas').hidden,
+    stats:document.getElementById('detailStats').textContent,
+    gear:document.querySelectorAll('#gearSlots button').length
+   }));
+   assert.equal(info.name,id==='art'?'Арт':'Сава');
+   assert.equal(info.image,'assets/'+id+'-portrait-ui.webp?v=1');
+   assert.equal(info.imageVisible,true);
+   assert.equal(info.stageHasPortrait,true);
+   assert.equal(info.viewerHidden,true,'new GLB must not load');
+   assert.ok(info.stats.includes('Здоровье'));
+   assert.equal(info.gear,6);
+   await fits('ARTSAVA001 '+id);
+   await page.locator('#detailBiography').click();
+   assert.equal(await page.locator('#heroBiographyDialog').evaluate(n=>n.open),true);
+   const bio=await page.locator('#heroBiographyText').textContent();
+   assert.ok(bio.length>50);
+   await page.evaluate(()=>document.getElementById('heroBiographyDialog').close());
+  }
+  assert.deepEqual(errors,[]);
   console.log('HEROCARD001 browser passed',useWebkit?'WebKit':'Chromium');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

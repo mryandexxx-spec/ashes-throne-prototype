@@ -117,8 +117,8 @@ const SkillCore=(()=>{
    insuranceFocusDelay:Object.freeze([0,0,35,45,55,85])
   }),
   sava:Object.freeze({
-   coordinationCooldownRecovery:Object.freeze([1,1,1,1,1,2]),
-   coordinationTempo:Object.freeze([0,0,0,25,50,80])
+   coordinationCooldownRecovery:Object.freeze([1,2,2,2,2,3]),
+   coordinationTempo:Object.freeze([0,0,25,35,50,80])
   })
  });
  function applyPassive(base,actor){
@@ -135,7 +135,7 @@ const SkillCore=(()=>{
  const HERO_KITS=Object.freeze({
   art:Object.freeze({
    basic:Object.freeze({damage:[1,1.08,1.14,1.22,1.3,1.38]}),
-   special:Object.freeze({percent:[40,40,45,45,50,60],turns:[2,3,3,3,4,4],
+   special:Object.freeze({percent:[40,40,45,48,50,60],turns:[2,3,3,3,4,4],
     afterMeter:[0,0,0,0,60,100],cooldown:[2,2,2,2,2,2]}),
    powerful:Object.freeze({damage:[1.05,1.1,1.16,1.2,1.26,1.32],
     turns:[2,2,2,3,3,3],delay:[0,0,1,1,2,2]})
@@ -145,7 +145,7 @@ const SkillCore=(()=>{
     meter:[70,80,90,100,110,130]}),
    special:Object.freeze({meter:[200,220,240,260,280,310],
     turns:[2,2,2,3,3,3],cooldown:[2,2,2,2,2,2]}),
-   powerful:Object.freeze({window:[4,4,5,5,6,6],
+   powerful:Object.freeze({window:[4,5,5,5,6,6],
     damage:[12,12,12,18,18,22],
     meter:[100,100,100,110,130,150]})
   }),

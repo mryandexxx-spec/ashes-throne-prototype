@@ -1,0 +1,39 @@
+name: NPCCHALLENGE006 T-03 reversed and N-03 HP preservation Chromium-WebKit
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'npc-challenge-pilot.js'
+      - 'npc-enemy-data.js'
+      - 'challenge-core.js'
+      - 'game.js'
+      - 'index.html'
+      - 'tests/npc-challenge-006-browser.cjs'
+      - '.github/workflows/npc-challenge-006-browser.yml'
+permissions:
+  contents: read
+jobs:
+  npc-challenge-006-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Real Babylon T-03 last medic and N-03 three-wave HP challenge
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/npc-challenge-006.log 2>&1 &
+          sleep 2
+          node tests/npc-challenge-006-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npc-challenge-006-browser
+          path: artifacts/npc-challenge-006/
+          retention-days: 14
+          if-no-files-found: warn

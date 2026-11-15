@@ -7,7 +7,7 @@ const ProgressV3Core=(()=>{
  const MATERIALS=Object.freeze(["Fe","Le","Cl","Wo","Fa","Th","Gl"]);
  // TEST-ONLY roles, explicitly approved for the vertical slice; not lore.
  const TEST_CLASSES=Object.freeze({
-  kael:"tank",lyra:"ranged",darin:"melee","medic-demo":"support","test-area-damage":"mage",ren:"melee",nada:"support",liora:"tank"
+  kael:"tank",lyra:"ranged",darin:"melee","medic-demo":"support","test-area-damage":"mage",ren:"melee",nada:"support",liora:"tank",art:"tank",sava:"support"
  });
  const own=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
  const object=x=>!!x&&typeof x==="object"&&!Array.isArray(x);
@@ -101,9 +101,9 @@ const ProgressV3Core=(()=>{
    const missing=actualIds?.filter(id=>!currentIds.includes(id))||[];
    // LIORAPLAY001: recognize only exact historical roster prefixes.
    // Never migrate an unknown hero set or a malformed current profile.
-   const historic=[oldIds,oldIds.concat("ren"),oldIds.concat("ren","nada")];
+   const historic=[oldIds,oldIds.concat("ren"),oldIds.concat("ren","nada"),oldIds.concat("ren","nada","liora")];
    const expandable=actualIds&&missing.length>0&&
-    missing.every(id=>["ren","nada","liora"].includes(id))&&
+    missing.every(id=>["ren","nada","liora","art","sava"].includes(id))&&
     historic.some(ids=>currentIds.length===ids.length&&
      ids.every(id=>currentIds.includes(id)))&&
     currentIds.every(id=>actualIds.includes(id));
@@ -129,7 +129,8 @@ const ProgressV3Core=(()=>{
     const validUpgrade=validateActive(candidate,heroes);
     if(!validUpgrade)return {status:"blocked",reason:"invalid-v3"};
     try{
-     const backupKey=KEY+(missing.includes("liora")?".before-liora":
+     const backupKey=KEY+(missing.includes("art")||missing.includes("sava")?".before-art-sava":
+       missing.includes("liora")?".before-liora":
       missing.includes("ren")?".before-ren":".before-nada");
      if(storage.getItem(backupKey)===null){
       storage.setItem(backupKey,raw3);

@@ -160,7 +160,7 @@ test("NPCDATA001: test-only meshes match exact battle IDs without changing HEROE
  const game=read("game.js");
  const html=read("index.html");
  const version=JSON.parse(read("package.json")).version;
- assert.ok(game.includes("const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean),NPC_MISSION_VISUALS);"));
+ assert.ok(game.includes("const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean),NPC_MISSION_VISUALS,NPC_CHALLENGE_VISUALS);"));
  assert.ok(game.includes("COMBAT_VISUALS.forEach((h,i)=>{"),"Babylon creates reserved NPC meshes");
  assert.ok(game.includes("for(const h of COMBAT_VISUALS){"),"visibility sync includes pilot enemies");
  assert.ok(game.includes("NpcEnemyData.spawn(enemy.archetypeId,{instanceId:enemy.id})"),

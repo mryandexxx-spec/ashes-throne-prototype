@@ -26,6 +26,7 @@ const CombatLog=(()=>{
     case "status-resisted":return name(e.targetId)+": сопротивление эффекту «"+(e.effect==="read-move"?"Просчитанный ход":e.effect==="slowed"?"Замедление":e.effect==="debuff-resistance-down"?"Пониженное сопротивление":"Ослабление")+"»";
     case "insurance-triggered":return name(e.actorId)+" страхует "+name(e.targetId)+": принимает "+e.amount+" урона от "+name(e.sourceId);
     case "field-tempo":return name(e.targetId)+": ускорение инициативы на "+e.amount+" от "+name(e.actorId);
+    case "tactical-delay":return name(e.actorId)+": сбивает темп "+name(e.targetId)+" на "+e.amount+" инициативы";
     case "field-signal-used":return name(e.actorId)+": использован Сигнал от "+name(e.sourceId);
     case "coordinated-open":return name(e.actorId)+": открыто Согласованное окно";
     case "coordinated-completion":return "Согласованный шаг: "+(e.kind==="attack"?"совместный удар":"безопасный проход")+

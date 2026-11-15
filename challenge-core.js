@@ -71,9 +71,23 @@ const ChallengeCore=(()=>{
    return true;
   }catch(_){return false;}
  }
- function start(id){
+ function start(id,targets=null){
   const def=get(id);
-  return def?{id,killGroups:[],invalid:false}:null;
+  if(!def)return null;
+  // Opt-in scenario uses real NPC instance IDs in death events. The normal
+  // score and persisted challenge schema remain entirely unchanged.
+  if(targets===null)return {id,killGroups:[],invalid:false};
+  if(!targets||typeof targets!=="object"||Array.isArray(targets)||
+     Object.keys(targets).some(k=>!["enemyIds","priorityId"].includes(k))||
+     !Array.isArray(targets.enemyIds)||
+     targets.enemyIds.length!==def.enemyIds.length||
+     targets.enemyIds.some(x=>typeof x!=="string"||!/^[a-z0-9][a-z0-9_.:-]{0,79}$/i.test(x))||
+     new Set(targets.enemyIds).size!==targets.enemyIds.length||
+     (def.kind==="tactical"?!targets.enemyIds.includes(targets.priorityId):
+      targets.priorityId!==null))return null;
+  return {id,killGroups:[],invalid:false,
+   enemyIds:Object.freeze(targets.enemyIds.slice()),
+   priorityId:targets.priorityId};
  }
  // One "ability" starts one logical action. All deaths until the next
  // ability belong to that action, including chained passive reactions.
@@ -87,7 +101,7 @@ const ChallengeCore=(()=>{
    if(e.type==="ability"){
     current=[];
     tracker.killGroups.push(current);
-   }else if(e.type==="death"&&def.enemyIds.includes(e.targetId)){
+   }else if(e.type==="death"&&(tracker.enemyIds||def.enemyIds).includes(e.targetId)){
     if(!current){tracker.invalid=true;return false;}
     if(!current.includes(e.targetId))current.push(e.targetId);
    }
@@ -107,7 +121,7 @@ const ChallengeCore=(()=>{
   const allAlive=battle.fighters.filter(f=>f.side==="ally").length>0&&
    battle.fighters.filter(f=>f.side==="ally").every(f=>f.hp>0);
   if(def.kind==="tactical"){
-   if(!strictFirst(tracker,def.priorityId))return 1;
+   if(!strictFirst(tracker,tracker.priorityId??def.priorityId))return 1;
    stars=2;
    if(allAlive)stars=3;
   }else if(def.kind==="onslaught"){

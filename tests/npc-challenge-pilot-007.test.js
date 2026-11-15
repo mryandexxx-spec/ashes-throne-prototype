@@ -114,13 +114,13 @@ test("007 T-04: true hold, early victory, loss and 7/8 boundary",()=>{
   active:false,winner:"ally",fighters:override,tacticalObjective:objective,
   tacticalOutcome:outcome,allyActions:actions,wave:1,totalWaves:1
  });
- assert.equal(P.score("T-04",b("held")),3);
- assert.equal(P.score("T-04",b("held",8,[allies[0],{...allies[1],hp:0}])),2);
- assert.equal(P.score("T-04",b("defeated-attackers",3)),1);
- assert.equal(P.score("T-04",b("held",7)),0,"not yet eight actions");
- assert.equal(P.score("T-04",{...b("held"),winner:"enemy"}),0);
- assert.equal(P.score("T-04",b("held",8,[{...allies[0],hp:0},allies[1]])),0);
- assert.equal(P.score("T-04",{...b("held"),tacticalObjective:{...objective,protectAllyId:"missing"}}),0);
+ assert.equal(P.score("T-04",b("held"),tracker),3);
+ assert.equal(P.score("T-04",b("held",8,[allies[0],{...allies[1],hp:0}]),tracker),2);
+ assert.equal(P.score("T-04",b("defeated-attackers",3),tracker),1);
+ assert.equal(P.score("T-04",b("held",7),tracker),0,"not yet eight actions");
+ assert.equal(P.score("T-04",{...b("held"),winner:"enemy"},tracker),0);
+ assert.equal(P.score("T-04",b("held",8,[{...allies[0],hp:0},allies[1]]),tracker),0);
+ assert.equal(P.score("T-04",{...b("held"),tacticalObjective:{...objective,protectAllyId:"missing"}},tracker),0);
  assert.match(P.resultText("T-04",b("held"),tracker),/удержание завершено/i);
  assert.match(P.resultText("T-04",b("defeated-attackers",3),tracker),/досрочно/i);
 });

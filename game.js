@@ -2799,9 +2799,11 @@ function syncBattleUI(){
  const powerfulReady=!!powerful&&CombatCore.abilityReady(state,"powerful");
  if(!specialReady)selectedAbility="basic";
  const supportTarget=!!actor&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
+ const needsOtherAlly=supportTarget&&["insurance","signal"].includes(AbilityData.get(actor,"special")?.kind);
  const targetIndex=supportTarget?state.selectedAlly:state.selectedEnemy;
  const target=state.active?fighters[targetIndex]:null;
- const validTarget=!!target&&target.hp>0&&target.side===(supportTarget?"ally":"enemy");
+ const validTarget=!!target&&target.hp>0&&target.side===(supportTarget?"ally":"enemy")&&
+  !(needsOtherAlly&&target.id===actor.id);
  $("#battleStatus").textContent=visualBusy?"Действие выполняется…":actor?"Ход: "+actor.name:"Бой завершён";
  $("#turnChip").textContent=(state.totalWaves>1?"Волна "+state.wave+"/"+state.totalWaves+" · ":"")+"Ход "+state.turn;
  $("#actionTitle").textContent=visualBusy?"Анимация действия":actor?(supportTarget?"Выбери союзника":"Способности: "+actor.name):"Бой завершён";
@@ -2821,13 +2823,13 @@ function syncBattleUI(){
  }
  const speedButton=$("#autoSpeedBtn");
  if(speedButton){speedButton.disabled=!state.active;speedButton.textContent=BattleSpeed.get()+"×";speedButton.setAttribute("aria-label","Скорость боя "+BattleSpeed.get()+"×. Нажми, чтобы изменить");}
- $("#basicAbilityBtn").textContent="Базовая атака";
+ $("#basicAbilityBtn").textContent=actor&&["art","sava"].includes(actor.id)?AbilityData.get(actor,"basic")?.name:"Базовая атака";
  $("#specialAbilityBtn").textContent=actor?CombatCore.specialName(actor)+(actor.specialCooldown>0?" · "+actor.specialCooldown:""):"Особая способность";
  if(powerfulButton)powerfulButton.textContent=powerful?powerful.name+(actor.powerfulCooldown>0?" · "+actor.powerfulCooldown:""):"Мощная способность";
  $("#basicAbilityBtn").classList.toggle("selected",false);
  $("#specialAbilityBtn").classList.toggle("selected",supportTarget);
  $("#actionHint").textContent=visualBusy?"Завершается предыдущее действие.":autoBattle?"Автобой активен. Нажми «Ручной бой», чтобы управлять.":
-  supportTarget?"Коснись союзника с курсором, чтобы применить способность.":
+  supportTarget?(needsOtherAlly?"Коснись другого союзника: себя выбрать нельзя.":"Коснись союзника с курсором, чтобы применить способность."):
   actor&&CombatCore.abilityTargetSide(state,"special")==="all-enemies"?"Курсор отмечает основную цель. Учебный широкий удар поражает всех живых врагов.":
   validTarget?"В фокусе: "+target.name+". Нажми на нужную способность.":"Коснись противника, чтобы выбрать цель.";
  const retry=$("#battleRetryBtn");if(retry)retry.hidden=!!state.active;
@@ -2874,7 +2876,10 @@ function renderArenaIndicators(){
   const support=!!actor&&!autoBattle&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
   // A group ability does not change focus on turn start: exactly one
   // primary enemy remains selected until the player taps a different one.
-  const focused=!!actor&&!autoBattle&&h.hp>0&&(support?h.side==="ally":h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
+  const onlyOther=support&&["insurance","signal"].includes(AbilityData.get(actor,"special")?.kind);
+  const focused=!!actor&&!autoBattle&&h.hp>0&&(support?
+   h.side==="ally"&&(!onlyOther||h.id!==actor.id):
+   h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
   return `<div class="arena-indicator ${h.side} ${active?"acting":""}" data-fighter-id="${h.id}" aria-label="${h.name}: здоровье ${Math.max(0,view.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
    ${focused?`<div class="arena-focus-cursor ${support?"available":"locked"}" aria-hidden="true">▼</div>`:""}
    <div class="arena-indicator-name">${h.name}</div>

@@ -939,10 +939,10 @@ function showHeroBiography(hero){
   sketch.src="assets/nada-portrait-ui.webp?v=2";
   sketch.alt="Нада — утверждённый живописный портрет";
   }else if(sketch&&hero.id==="art"){
-  sketch.src="assets/art-portrait-ui.webp?v=1";
+  sketch.src="assets/art-portrait-ui.webp?v=2";
   sketch.alt="Арт — игровой портрет";
  }else if(sketch&&hero.id==="sava"){
-  sketch.src="assets/sava-portrait-ui.webp?v=1";
+  sketch.src="assets/sava-portrait-ui.webp?v=2";
   sketch.alt="Сава — игровой портрет";
  }else if(sketch&&(hero.id==="ren"||hero.id==="trial-ren")){
   sketch.src="assets/ren-portrait-ui.webp";
@@ -1809,8 +1809,8 @@ function renderHeroes(){
   const portraitAvatar=owned&&h.id==="ren"?'<img class="ren-collection-portrait" src="assets/ren-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':
    owned&&h.id==="nada"?'<img class="nada-collection-portrait" src="assets/nada-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':
    owned&&h.id==="liora"?'<img class="liora-collection-portrait" src="assets/liora-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':
-    owned&&h.id==="art"?'<img class="art-collection-portrait" src="assets/art-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':
-    owned&&h.id==="sava"?'<img class="sava-collection-portrait" src="assets/sava-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
+    owned&&h.id==="art"?'<img class="art-collection-portrait" src="assets/art-portrait-roster.webp?v=2" width="384" height="192" loading="lazy" decoding="async" alt="">':
+    owned&&h.id==="sava"?'<img class="sava-collection-portrait" src="assets/sava-portrait-roster.webp?v=2" width="384" height="192" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
   const starInfo=owned&&rank!==null?'<span class="hero-star-summary" aria-label="Ранг '+rank+' из 7">'+starGlyphs(rank)+'</span>':"";
   const name=owned?h.name:"Неизвестный герой";
   const levelLine=owned?"Ур. "+h.level+" · "+h.role:"Условия получения";
@@ -2074,7 +2074,7 @@ function renderHeroDetail(){
  const renPortrait=$("#detailRenPortrait"),heroStage=$("#detailHeroStage"),artworkLabel=$("#detailArtworkLabel");
  if(renPortrait){
   renPortrait.hidden=!(showRenPortrait||showNadaPortrait||showLioraPortrait||showArtPortrait||showSavaPortrait);
-  renPortrait.src=showArtPortrait?"assets/art-portrait-ui.webp?v=1":showSavaPortrait?"assets/sava-portrait-ui.webp?v=1":showLioraPortrait?"assets/liora-portrait-ui.webp?v=1":showNadaPortrait?"assets/nada-portrait-ui.webp?v=2":"assets/ren-portrait-ui.webp";
+  renPortrait.src=showArtPortrait?"assets/art-portrait-ui.webp?v=2":showSavaPortrait?"assets/sava-portrait-ui.webp?v=2":showLioraPortrait?"assets/liora-portrait-ui.webp?v=1":showNadaPortrait?"assets/nada-portrait-ui.webp?v=2":"assets/ren-portrait-ui.webp";
   renPortrait.alt=showArtPortrait?"Арт — игровой портрет":showSavaPortrait?"Сава — игровой портрет":showLioraPortrait?"Лиора Вель — портрет":showNadaPortrait?"Нада — утверждённый портрет исследовательницы":"Рен Терен — портрет проводника Садов над пропастью";
  }
  if(heroStage){

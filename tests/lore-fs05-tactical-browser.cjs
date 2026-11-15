@@ -6,14 +6,14 @@ const fs=require("node:fs"),path=require("node:path");
 const Core=require("../lore-campaign-core.js");
 const Scripts=require("../lore-campaign-scenes.js"),Engine=require("../lore-campaign-scene-core.js");
 const Runtime=require("../lore-campaign-scene-runtime.js"),Save=require("../lore-campaign-scene-save.js");
-const Act2=require("../lore-campaign-act2.js");
+const Trials=require("../lore-campaign-trials.js");
 const origin=process.env.GAME_ORIGIN||"http://127.0.0.1:8765/";
 const out=path.join(process.cwd(),"artifacts","lore-fs05-tactical");fs.mkdirSync(out,{recursive:true});
 function seed(){
  const map=new Map(),storage={getItem:k=>map.has(k)?map.get(k):null,setItem:(k,v)=>map.set(k,String(v))};
- const r=Runtime.create({graph:Act2.data.catalog(),graphCore:Core,
-  pack:Act2.pack,scriptData:Scripts,sceneCore:Engine,saveModule:Save,storage});
- const ids=Act2.data.catalog().nodes.map(n=>n.id);
+ const r=Runtime.create({graph:Trials.data.catalog(),graphCore:Core,
+  pack:Trials.pack,scriptData:Scripts,sceneCore:Engine,saveModule:Save,storage});
+ const ids=Trials.data.catalog().nodes.map(n=>n.id);
  function play(id){
   assert.equal(r.start(id).ok,true,"start "+id);
   for(let i=0;i<160;i++){
@@ -31,12 +31,14 @@ function seed(){
  }
  for(let i=0;i<5;i++){
   play(ids[i]);
-  if(i===0||i===1){
+  if(i<4){
+   // All preceding battles must be cleared before FS-05 unlocks.
    assert.equal(r.beginRequiredBattle(ids[i]).ok,true);
-   assert.equal(r.recordBattleVictory(ids[i],i===0?"fs01-approach-combat":"fs02-evidence-combat").ok,true);
+   assert.equal(r.recordBattleVictory(ids[i],
+    Trials.data.catalog().nodes[i].requiredBattleId).ok,true);
   }
  }
- assert.equal(Core.available(Act2.data.catalog(),r.progress(),ids[5]),false);
+ assert.equal(Core.available(Trials.data.catalog(),r.progress(),ids[5]),false);
  return map.get(Core.KEY);
 }
 async function finishManually(page){
@@ -152,7 +154,7 @@ async function run(name,browserType,width,height){
   assert.ok(battle.protectedHp<setup.protectedHp,
    "The objective must expose Ren to actual enemy attacks, not a decorative win condition");
   assert.ok(["held","defeated-attackers"].includes(battle.outcome));
-  assert.deepEqual(battle.cleared,["five-shadows:fs-01","five-shadows:fs-02","five-shadows:fs-05"]);
+  assert.deepEqual(battle.cleared,Array.from({length:5},(_,i)=>"five-shadows:fs-0"+(i+1)));
   // A victory must leave a repeat action, and replay must use the real squad.
   assert.equal(await page.locator("#loreRequiredResultRetry").isVisible(),true);
   const storedBeforeRepeat=await page.evaluate(()=>localStorage.getItem("ashes-throne.lore-campaign.v1"));

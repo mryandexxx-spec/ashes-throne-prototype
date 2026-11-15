@@ -305,3 +305,10 @@
  #campaignLoreContent .lore-battle-result-actions{flex-direction:column}
  #campaignLoreContent .lore-battle-result-actions button{width:100%}
 }
+
+/* LORETRIALS001: completed narration is not a cleared mandatory fight. */
+#campaignLoreContent .lore-map-marker.lore-state-battle-pending{border-color:#e7b66e;background:#58402e;color:#fff0d8}
+#campaignLoreContent .lore-detail-status.lore-state-battle-pending{color:#ffdfad;background:#543b25}
+#campaignLoreContent .lore-list-node.lore-state-battle-pending{border-color:#a9844a}
+#campaignLoreContent .lore-list-node.lore-state-battle-pending small{color:#ffdfad}
+#campaignLoreContent .lore-legend .lore-state-battle-pending{color:#ffdfad}

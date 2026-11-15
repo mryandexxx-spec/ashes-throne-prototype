@@ -743,6 +743,16 @@ function battleLineup(){
   if(!loreRequiredContext?.nodeId)throw Error("MISSING_LORE_BATTLE_CONTEXT");
   if(!requiredLoreSquadReady())throw Error("MISSING_REQUIRED_LORE_HERO");
   const isRescue=loreRequiredContext.nodeId==="five-shadows:fs-05";
+  const trial=LoreCampaignTrials.encounter(loreRequiredContext.nodeId);
+  if(!trial)throw Error("UNKNOWN_LORE_TRIAL");
+  if(!isRescue){
+   const attackers=trial.enemies.map(entry=>{
+    const template=ENEMIES.find(e=>e.id===entry.id);
+    if(!template)throw Error("MISSING_LORE_ENEMY_TEMPLATE");
+    return progressedEnemy({...template,...entry});
+   });
+   return [...selectedParty(),...attackers];
+  }
   const count=["five-shadows:fs-02","five-shadows:fs-05"].includes(loreRequiredContext.nodeId)?3:2;
   // FS-05 only: one dangerous pursuer hunts Ren; the two guards delay
   // the party. These game-only numbers never modify global enemy templates.
@@ -770,6 +780,15 @@ function battleLineup(){
 // Optional future wave rosters live in mission data. Existing missions have no
 // future waves, so their accepted encounters and balance remain unchanged.
 function battleFutureWaves(){
+ if(battleIsLoreRequired){
+  const trial=LoreCampaignTrials.encounter(loreRequiredContext?.nodeId);
+  if(!trial)throw Error("UNKNOWN_LORE_TRIAL");
+  return trial.waves.map(wave=>wave.map(entry=>{
+   const template=ENEMIES.find(e=>e.id===entry.id);
+   if(!template)throw Error("MISSING_LORE_WAVE_TEMPLATE");
+   return progressedEnemy({...template,...entry});
+  }));
+ }
  if(battleIsSignal){
   const plan=SignalOperationCore.battlePlan(signalProgress.active);
   if(!plan)throw Error("Unknown signal battle plan");
@@ -828,9 +847,15 @@ function renderSquad(){
   :"Выбери героя слева: он займёт первую свободную ячейку. Пока лидерская ячейка пуста, лидерского бонуса нет.";
  $("#squadHint").textContent=(loreMode?"Рен и Нада обязательны для этого боя. Остальные три места — на твой выбор. ":"")+leaderHint;
  const tacticalBrief=$("#squadTacticalBrief");
- if(tacticalBrief)tacticalBrief.hidden=!(loreMode&&loreRequiredContext?.battleObjective);
- $("#squadStart").textContent=loreMode&&loreRequiredContext?.battleObjective?
-  "Начать испытание":"Начать бой";
+ const trial=loreMode?LoreCampaignTrials.encounter(loreRequiredContext?.nodeId):null;
+ if(tacticalBrief){
+  tacticalBrief.hidden=!trial;
+  if(trial){
+   tacticalBrief.querySelector("strong").textContent=trial.briefTitle+" · ЗАДАЧА";
+   tacticalBrief.querySelector("p").textContent=trial.brief;
+  }
+ }
+ $("#squadStart").textContent=loreMode?"Начать испытание":"Начать бой";
  const intro=$("#squadIntro");
  if(intro)intro.textContent=loreMode
   ?"«Пять теней»: Рен и Нада обязательны. Остальных героев выбираешь ты.":"Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.";
@@ -1020,14 +1045,15 @@ function showScreen(id){
     battleIsChallenge?"ИСПЫТАНИЕ · "+ChallengeCore.get(activeChallengeId).title:
    battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
    battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
+  const trial=battleIsLoreRequired?LoreCampaignTrials.encounter(loreRequiredContext?.nodeId):null;
   const objective=$("#battleChallengeGoal");
   if(objective){
-   objective.hidden=!!(battleIsLoreRequired&&loreRequiredContext?.battleObjective)||
+   objective.hidden=!!trial||
    !battleIsLoreRequired&&!battleIsLoreTraining&&!battleIsChallenge&&!battleIsOperation&&!battleIsSignal;
    const def=battleIsChallenge?ChallengeCore.get(activeChallengeId):null;
    const priority=def?.kind==="tactical"?ENEMIES.find(e=>e.id===def.priorityId):null;
-   objective.textContent=battleIsLoreRequired&&loreRequiredContext?.battleObjective?
-     "Прикрытие: сохраните Рена. Победите всех врагов или продержитесь 12 действий союзников.":
+   objective.textContent=battleIsLoreRequired&&trial?
+     trial.goalText:
      battleIsLoreRequired?"Победите, чтобы открыть следующий эпизод. Бой относится к игровой адаптации.":battleIsLoreTraining?"Учебные противники. Без наград, энергии и влияния на хронику.":battleIsSignal?signalProgress.active?.assault==="quiet"?
      "Тихий штурм: первым обезвредь связного. Два стража одним действием — сигнал подавлен.":
      "Окружение: две волны, сигнал подавлен после победы, но скрытность потеряна.":
@@ -1036,7 +1062,13 @@ function showScreen(id){
     "Цель: пройти "+(def.futureWaves.length+1)+" волны, сохранив отряд.";
   }
   const tacticalGoalCard=$("#tacticalGoalCard");
-  if(tacticalGoalCard)tacticalGoalCard.hidden=!(battleIsLoreRequired&&loreRequiredContext?.battleObjective);
+  if(tacticalGoalCard){
+   tacticalGoalCard.hidden=!trial;
+   if(trial){
+    tacticalGoalCard.querySelector("strong").textContent=trial.goalTitle;
+    tacticalGoalCard.querySelector("p").textContent=trial.goalText;
+   }
+  }
   const freeStoryEntry=battleIsCampaign&&progress.saveVersion===3&&
    !campaignProgress.completed[activeMissionId];
   if(battleIsCampaign&&!freeStoryEntry&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
@@ -2286,7 +2318,9 @@ function renderLoreRequiredBattleResult(){
  if(body){
   const summary=won?(saved?
    (loreRequiredResult?.replay?"Повтор пройден. Прежний результат сохранён, новых наград нет.":
-    "Победа записана в истории. Следующий эпизод открыт."):
+    LoreCampaignTrials.data.getNode(loreRequiredContext?.nodeId)?.nextNodeIds.length?
+     "Победа записана в истории. Следующий эпизод открыт.":
+     "Победа записана. Финальное испытание завершено."):
    "Победа не сохранилась. Проверьте хранилище и повторите бой."):
    (loreRequiredContext?.replay?
      "Повтор проигран. Прежняя победа и доступ к истории сохранены. Можно попробовать ещё раз.":
@@ -2294,9 +2328,19 @@ function renderLoreRequiredBattleResult(){
   const n=loreRequiredContext?.battleNarrative;
   const consequence=won?(saved?n?.victory:null):n?.defeat;
   // Never turn private authored prose into HTML or a canonical game reward.
-   const outcome=state?.tacticalOutcome==="held"?"Отход прикрыт до завершения эвакуации.":
-    state?.tacticalOutcome==="defeated-attackers"?"Нападавшие оттеснены раньше окончания эвакуации.":
-    state?.tacticalOutcome==="protected-fallen"?"Рен выбыл из боя: прикрытие сорвалось.":"";
+   const obj=loreRequiredContext?.battleObjective;
+   const protectedName=obj?.protectAllyId==="nada"?"Нада":"Рен";
+   const outcome=state?.tacticalOutcome==="held"?
+    (obj?.protectAllyId==="nada"?"Сигнал удержан до завершения наблюдения.":
+     "Отход прикрыт до завершения эвакуации."):
+    state?.tacticalOutcome==="defeated-attackers"?
+     (obj?.protectAllyId==="nada"?"Помехи устранены до окончания наблюдения.":
+      "Нападавшие оттеснены раньше окончания эвакуации."):
+    state?.tacticalOutcome==="protected-fallen"?protectedName+
+      (protectedName==="Нада"?" выбыла":" выбыл")+" из боя: задача сорвалась.":
+    state?.tacticalOutcome==="wrong-order"?"Зачинщик должен выбыть раньше остальных.":
+    state?.tacticalOutcome==="priority-victory"?"Приоритетная цель устранена первой.":
+    state?.tacticalOutcome==="protected-victory"?"Защищаемый герой остался в строю.":"";
    body.textContent=summary+(outcome?"\n\n"+outcome:"")+(consequence?"\n\n"+consequence:"");
  }
  const next=$("#loreRequiredResultContinue"),retry=$("#loreRequiredResultRetry");
@@ -2308,7 +2352,7 @@ $("#loreRequiredResultRetry")?.addEventListener("click",()=>{
  if(!loreRequiredResult?.ok){openSquad("loreRequired");return;}
  const nodeId=loreRequiredContext?.nodeId;
  returnToLoreMap();
- const node=LoreCampaignAct2.data.getNode(nodeId);
+ const node=LoreCampaignTrials.data.getNode(nodeId);
  if(node?.mapLayerId)LoreCampaignUI.changeLayer(node.mapLayerId);
  if(LoreCampaignUI.selectNode(nodeId))LoreCampaignUI.startRequiredBattle();
 });
@@ -2354,8 +2398,8 @@ function showCampaignPath(path){
  if(selectedCampaignPath==="lore"&&typeof LoreCampaignUI!=="undefined"&&
    typeof LoreCampaignAct2!=="undefined"&&typeof LoreCampaignCore!=="undefined"){
   const loreRoot=$("#loreCampaignRoot");
-  if(loreRoot&&LoreCampaignUI.mount(loreRoot,LoreCampaignAct2.data,LoreCampaignCore,{
-   pack:LoreCampaignAct2.pack,
+  if(loreRoot&&LoreCampaignUI.mount(loreRoot,LoreCampaignTrials.data,LoreCampaignCore,{
+   pack:LoreCampaignTrials.pack,
    onStartRequiredBattle:openLoreRequiredBattle,
    onStartTraining:openLoreTraining
   }))LoreCampaignUI.open();
@@ -2572,12 +2616,21 @@ function renderTargetFighterHud(){
 }
 function syncBattleUI(){
  if(inspectionId)renderFighterInspection();
- if(battleIsLoreRequired&&state.tacticalObjective){
+ if(battleIsLoreRequired){
   const o=state.tacticalObjective;
-  const count=Math.min(state.allyActions,o.allyActionsToHold);
-  const counter=$("#tacticalGoalCounter"),fill=$("#tacticalGoalFill");
-  if(counter)counter.textContent=count+"/"+o.allyActionsToHold+" действий";
-  if(fill)fill.style.width=Math.round(count/o.allyActionsToHold*100)+"%";
+  const timed=o?.kind==="hold-or-defeat",counter=$("#tacticalGoalCounter");
+  const track=$("#tacticalGoalCard .tactical-goal-track"),fill=$("#tacticalGoalFill");
+  if(counter){
+   counter.hidden=!(timed||state.totalWaves>1||o?.kind==="priority-first");
+   if(timed)counter.textContent=Math.min(state.allyActions,o.allyActionsToHold)+
+    "/"+o.allyActionsToHold+" действий";
+   else if(state.totalWaves>1)counter.textContent="Волна "+state.wave+"/"+state.totalWaves;
+   else if(o?.kind==="priority-first")counter.textContent=state.priorityCleared?
+    "Приоритет выполнен":"Сначала отмеченный";
+  }
+  if(track)track.hidden=!timed;
+  if(fill&&timed)fill.style.width=Math.round(
+   Math.min(state.allyActions,o.allyActionsToHold)/o.allyActionsToHold*100)+"%";
  }
  if(!state.active||isVisualTransition())hideAbilityTooltip();
  if(!state.active){cancelAutoTimer();autoBattle=false;}

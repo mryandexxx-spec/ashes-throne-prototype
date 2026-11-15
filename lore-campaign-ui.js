@@ -41,11 +41,15 @@ const LoreCampaignUI=(()=>{
  const hasOwn=(x,k)=>Object.prototype.hasOwnProperty.call(x,k);
  function nodeStatus(node,c= catalog,p=progress,engine=core){
   const completed=p?.stories?.[node.storyId]?.completedNodeIds;
-  if(Array.isArray(completed)&&completed.includes(node.id))
-   return Object.freeze({code:"completed",label:"Пройдено",
-    reason:node.requiredBattleId&&engine.battleCleared&&!engine.battleCleared(p,node.storyId,node.id)?
-      "Исследование пройдено. Победите в обязательном бою, чтобы открыть следующий эпизод.":
+  if(Array.isArray(completed)&&completed.includes(node.id)){
+   const battlePending=!!node.requiredBattleId&&!!engine.battleCleared&&
+     !engine.battleCleared(p,node.storyId,node.id);
+   return Object.freeze({code:battlePending?"battle-pending":"completed",
+    label:battlePending?"Ожидает бой":"Пройдено",
+    reason:battlePending?
+      "Сюжетная сцена завершена. Для полного прохождения узла нужна победа в обязательном бою.":
       "Узел пройден. Повтор не изменяет первоначальные решения."});
+  }
   if(engine.available(c,p,node.id))
    return Object.freeze({code:"available",label:"Доступно",reason:"Условия открытия выполнены. Этот сюжетный эпизод доступен для прохождения."});
   const gated=node.prerequisites.some(id=>{
@@ -414,7 +418,7 @@ const LoreCampaignUI=(()=>{
   }).join("");
   return '<section class="lore-chronicle">'+
    '<div class="lore-chronicle-heading"><span>ИСТОРИИ МИРА</span><h3>Кампании лора</h3>'+
-   '<p>Пройдите два акта «Пяти теней»: шесть сцен, расследования и два обязательных боя первого акта. Это игровая адаптация [ПРЕДЛОЖЕНИЕ], не литературный канон.</p></div>'+
+   '<p>Пройдите два акта «Пяти теней»: шесть сюжетных сцен и шесть обязательных боевых испытаний — по одному после каждого узла. Это игровая адаптация [ПРЕДЛОЖЕНИЕ], не литературный канон.</p></div>'+
    '<div class="lore-story-grid">'+cards+'</div>'+
    '<p class="lore-stage-note">LOREACT2001 · [ПРЕДЛОЖЕНИЕ] · Сюжетные сцены и боевые обстоятельства не являются литературным каноном.</p></section>';
  }
@@ -472,12 +476,12 @@ const LoreCampaignUI=(()=>{
     '<button type="button" class="primary" data-lore-action="replay-battle">↻ Повторить бой</button>':"")+
    (known&&sceneRuntime?.hasContent(node.id)&&sceneRuntime?.storageStatus()!=="corrupt"?
     '<button type="button" class="primary" data-lore-action="start-node">'+
-       (sceneRuntime.hasCheckpoint(node.id)?"Продолжить":status.code==="completed"?"Перепройти":"Начать сцену")+
+       (sceneRuntime.hasCheckpoint(node.id)?"Продолжить":["completed","battle-pending"].includes(status.code)?"Перепройти":"Начать сцену")+
     '</button>':
     '<button type="button" class="primary" disabled aria-disabled="true">'+
       (sceneRuntime?.storageStatus()==="corrupt"?"Сохранение повреждено":"Сюжетная сцена готовится")+'</button>')+
    '<small>'+(node.requiredBattleId?
-    'Продолжение открывается только после победы в бою. Бой — игровая адаптация, не событие литературного канона.':
+    'Для завершения узла нужна победа в бою. Бой — игровая адаптация, не событие литературного канона.':
     'Сюжетное прохождение без затрат энергии и наград.')+'</small></div>'+
    '</aside>';
  }

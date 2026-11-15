@@ -65,7 +65,7 @@ function run(id,ids,level,seed,strategy){
 test("NPCCHALLENGE006: opt-in plans add three+five distinct human NPCs, preserve base v1",()=>{
  const t=P.get("T-03"),n=P.get("N-03");
  assert.ok(t&&n&&Object.isFrozen(t)&&Object.isFrozen(n));
- assert.equal(P.get("T-04"),null);assert.equal(P.get("N-04"),null);
+ assert.ok(P.get("T-04"));assert.ok(P.get("N-04"));
  assert.equal(t.objective.kind,"priority-last-solo");
  assert.equal(t.priorityId,"npc-t03-medic");
  assert.deepEqual(Array.from(t.enemyIds,x=>x.archetypeId),
@@ -82,8 +82,8 @@ test("NPCCHALLENGE006: opt-in plans add three+five distinct human NPCs, preserve
  assert.equal(P.spawn("T-03").length,3);
  assert.equal(P.spawnWaves("T-03").length,0);
  const all=P.visuals();
- assert.equal(all.length,19);
- assert.equal(new Set(all.map(x=>x.id)).size,19);
+ assert.equal(all.length,27);
+ assert.equal(new Set(all.map(x=>x.id)).size,27);
  assert.ok(all.every(x=>x.side==="enemy"&&x.speciesId==="human"&&
   x.originRegionId==="gardens-over-abyss"&&x.factionId===null));
  assert.equal(N.get("npc-watch-captain").stats.hp,178);
@@ -211,15 +211,15 @@ test("NPCCHALLENGE006: 90 real seeded battles, different tactical success condit
 });
 test("NPCCHALLENGE006: URL, save path and real objective UI remain separated",()=>{
  const js=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.169");
- assert.match(html,/v0\.3\.169 · NPCCHALLENGE006/);
+ assert.equal(pkg.version,"0.3.170");
+ assert.match(html,/v0\.3\.169 · NPCCHALLENGE007/);
  assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.169/);
  assert.match(js,/npcChallengePilot=1/);
  assert.match(js,/NpcChallengePilot\.criteria\(def\.id\)/);
  assert.match(js,/NpcChallengePilot\.goal\(activeChallengeId\)/);
  assert.match(js,/NpcChallengePilot\.resultText\(activeChallengeId,state,challengeTracker\)/);
  assert.match(js,/NpcChallengePilot\.score\(activeChallengeId,state,challengeTracker\)/);
- assert.match(js,/NPC-пробы T-01…T-03 \/ N-01…N-03/);
+ assert.match(js,/NPC-пробы T-01…T-04 \/ N-01…N-04/);
  assert.match(js,/if\(battleIsChallenge&&!battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
  assert.match(js,/ChallengeCore\.save\(outcome.candidate,\(\)=>window.localStorage,challengeSaveBlocked\)/);
  assert.equal(Q.KEY,"ashes-throne.challenges.v1");

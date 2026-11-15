@@ -39,6 +39,33 @@ const HeroStatsProfiles=(()=>{
     star:{hp:14,protection:8,physicalAttack:2,physicalDefense:3,magicDefense:1}
    }
   }),
+  // ARTSAVA001: provisional 14-stat values; no canon or balance claims.
+  art:freezeProfile({
+   id:"art",
+   combatStats:{
+    hp:128,protection:48,physicalAttack:22,magicAttack:0,
+    physicalDefense:22,magicDefense:13,speed:118,critChance:5,
+    critDamage:150,accuracy:5,evasion:3,defensePenetration:2,
+    debuffPotency:10,debuffResistance:18
+   },
+   growth:{
+    level:{hp:2.5,protection:.75,physicalAttack:.40,physicalDefense:.28,magicDefense:.15},
+    star:{hp:13,protection:6,physicalAttack:2,physicalDefense:3,magicDefense:1}
+   }
+  }),
+  sava:freezeProfile({
+   id:"sava",
+   combatStats:{
+    hp:104,protection:34,physicalAttack:17,magicAttack:0,
+    physicalDefense:11,magicDefense:17,speed:136,critChance:5,
+    critDamage:150,accuracy:11,evasion:6,defensePenetration:0,
+    debuffPotency:16,debuffResistance:17
+   },
+   growth:{
+    level:{hp:2.05,protection:.55,physicalAttack:.32,physicalDefense:.16,magicDefense:.22},
+    star:{hp:9,protection:5,physicalAttack:2,physicalDefense:1,magicDefense:2}
+   }
+  }),
   nada:freezeProfile({
    id:"nada",
    combatStats:{

@@ -1,0 +1,38 @@
+name: NPCMISSION003 two-wave Chromium and WebKit battle
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'npc-mission-pilot.js'
+      - 'npc-enemy-data.js'
+      - 'game.js'
+      - 'index.html'
+      - 'tests/npc-mission-waves-browser.cjs'
+      - '.github/workflows/npc-mission-waves-browser.yml'
+permissions:
+  contents: read
+jobs:
+  npc-waves-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: NPC demo mission three, two 3D waves, no progress mutation
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/npc-waves.log 2>&1 &
+          sleep 2
+          node tests/npc-mission-waves-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npc-mission-waves-browser
+          path: artifacts/npc-mission-waves/
+          retention-days: 14
+          if-no-files-found: warn

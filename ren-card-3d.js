@@ -63,7 +63,7 @@ const RenCard3D=(()=>{
   if(!canDisplay3D){
    if(active)dispose();
    const portrait=byId("detailRenPortrait");
-   if(portrait)portrait.hidden=heroId!=="nada";
+   if(portrait)portrait.hidden=!["art","sava"].includes(heroId);
    return;
   }
   if(active)return;

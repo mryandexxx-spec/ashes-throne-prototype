@@ -50,6 +50,13 @@ test("unique playable skills and L1-L6 curves are exposed through the existing s
  assert.ok(Abilities.get(level("sava",6),"powerful").coordinationDamagePercent>
    Abilities.get(level("sava",1),"powerful").coordinationDamagePercent);
  assert.equal(Abilities.get(level("sava",1),"powerful").defenseComboEnabled,false);
+ assert.ok(Abilities.get(level("sava",2),"powerful").windowActions>
+  Abilities.get(level("sava",1),"powerful").windowActions,"Sava L2 must improve her ultimate");
+ assert.ok(Abilities.get(level("art",4),"special").insurancePercent>
+  Abilities.get(level("art",3),"special").insurancePercent,"Art L4 must add insurance value");
+ assert.ok(Abilities.get(level("sava",2),"passive").combatRules.coordinationCooldownRecovery>
+  Abilities.get(level("sava",1),"passive").combatRules.coordinationCooldownRecovery,
+  "Sava L2 passive must have a real benefit");
  assert.equal(Abilities.get(level("sava",3),"powerful").defenseComboEnabled,true);
  assert.ok(Skill.PASSIVE_IDS.includes("art")&&Skill.PASSIVE_IDS.includes("sava"));
  assert.equal(Skill.validPassiveLevels({ren:1,nada:1}),true,

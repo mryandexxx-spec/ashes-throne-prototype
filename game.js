@@ -12,6 +12,9 @@ const HEROES = [
  {id:"nada",name:"Нада",classId:"support",tags:["gardens-over-abyss"],role:"Поддержка · игровой пилот",hp:85,atk:18,speed:120,side:"ally",glyph:"✎"},
  // LIORAPLAY001: provisional unarmed pilot, no approved balance or recruitment canon.
  {id:"liora",name:"Лиора Вель",classId:"tank",role:"Защита · тестовый герой со щитом",hp:105,atk:20,speed:115,side:"ally",glyph:"♙"},
+ // ARTSAVA001: playable pilot heroes; portraits approved, combat abilities remain templates.
+ {id:"art",name:"Арт",classId:"tank",tags:["gardens-over-abyss"],role:"Страховка · учебные навыки",hp:128,atk:22,speed:118,side:"ally",glyph:"⚒"},
+ {id:"sava",name:"Сава",classId:"support",tags:["gardens-over-abyss"],role:"Поддержка · учебные навыки",hp:104,atk:17,speed:136,side:"ally",glyph:"✦"},
   {id:"ves",name:"Вестник Конклава",role:"Противник",hp:90,atk:18,speed:105,side:"enemy",glyph:"☠"},
   {id:"shade",name:"Теневой клинок",role:"Противник",hp:78,atk:22,speed:135,side:"enemy",glyph:"♟"},
   // Demo-only copies: no new combat stats or lore. First mission still uses two enemies.
@@ -566,7 +569,7 @@ function heroOwned(id){
 }
 function heroUnlockLabel(id){
  const mission=typeof HeroCollectionCore!=="undefined"?HeroCollectionCore.unlockMission(id):null;
- return ["ren","nada","liora"].includes(id)?"Доступен с начала (тест)":mission?(MissionData.get(mission)?.title||"миссия"):"сюжетное прохождение";
+ return ["ren","nada","liora","art","sava"].includes(id)?"Доступен с начала (тест)":mission?(MissionData.get(mission)?.title||"миссия"):"сюжетное прохождение";
 }
 function defaultSquad(){
  const ids=ALLIES.filter(h=>heroOwned(h.id)).slice(0,MAX_SQUAD).map(h=>h.id);
@@ -673,7 +676,7 @@ function equippedPilotStats(hero,profile){
 // Other fighters remain test mannequins under their existing demo rules.
 function progressedHero(hero){
  let h;
- if((["ren","nada","liora"].includes(hero.id))&&
+ if((["ren","nada","liora","art","sava"].includes(hero.id))&&
     typeof HeroStatsCore!=="undefined"&&
     typeof HeroStatsProfiles!=="undefined"&&
     typeof HeroStatsCombatBridge!=="undefined"){
@@ -927,7 +930,7 @@ function showHeroBiography(hero){
   "Биография персонажа пока не подготовлена. Демонстрационные герои не являются утверждёнными персонажами вселенной.";
  $("#heroBiographyNote").textContent=data?.note||"История персонажа будет добавлена после согласования.";
  const sketch=$("#heroBiographyPortrait");
- if(sketch)sketch.hidden=!["trial-ren","ren","nada","liora"].includes(hero.id);
+ if(sketch)sketch.hidden=!["trial-ren","ren","nada","liora","art","sava"].includes(hero.id);
  // Preserve Ren's established biography visibility; Nada is an independent preview.
  if(sketch&&hero.id==="liora"){
   sketch.src="assets/liora-portrait-ui.webp?v=1";
@@ -935,6 +938,12 @@ function showHeroBiography(hero){
  }else if(sketch&&hero.id==="nada"){
   sketch.src="assets/nada-portrait-ui.webp?v=2";
   sketch.alt="Нада — утверждённый живописный портрет";
+  }else if(sketch&&hero.id==="art"){
+  sketch.src="assets/art-portrait-ui.webp?v=1";
+  sketch.alt="Арт — игровой портрет";
+ }else if(sketch&&hero.id==="sava"){
+  sketch.src="assets/sava-portrait-ui.webp?v=1";
+  sketch.alt="Сава — игровой портрет";
  }else if(sketch&&(hero.id==="ren"||hero.id==="trial-ren")){
   sketch.src="assets/ren-portrait-ui.webp";
   sketch.alt="Рен Терен — портрет проводника Садов над пропастью";
@@ -1799,7 +1808,9 @@ function renderHeroes(){
   const progressPercent=Math.min(100,Math.round(safeAmount/safeCost*100));
   const portraitAvatar=owned&&h.id==="ren"?'<img class="ren-collection-portrait" src="assets/ren-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':
    owned&&h.id==="nada"?'<img class="nada-collection-portrait" src="assets/nada-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':
-   owned&&h.id==="liora"?'<img class="liora-collection-portrait" src="assets/liora-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
+   owned&&h.id==="liora"?'<img class="liora-collection-portrait" src="assets/liora-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':
+    owned&&h.id==="art"?'<img class="art-collection-portrait" src="assets/art-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':
+    owned&&h.id==="sava"?'<img class="sava-collection-portrait" src="assets/sava-portrait-roster.webp?v=1" width="384" height="192" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
   const starInfo=owned&&rank!==null?'<span class="hero-star-summary" aria-label="Ранг '+rank+' из 7">'+starGlyphs(rank)+'</span>':"";
   const name=owned?h.name:"Неизвестный герой";
   const levelLine=owned?"Ур. "+h.level+" · "+h.role:"Условия получения";
@@ -1812,7 +1823,7 @@ function renderHeroes(){
   const tags=labels.length?'<span class="roster-identity-tags">'+labels.map(label=>'<span class="roster-identity-tag">'+safeTag(label)+'</span>').join("")+'</span>':"";
   const isLeader=owned&&selectedLeaderId===h.id;
   const leaderBadge=isLeader?'<span class="roster-leader-indicator">★ Лидер</span>':"";
-  return `<button type="button" class="hero-card hero-open roster-card ${owned?"":"hero-locked"}" data-open-hero="${h.id}" aria-label="${name}${isLeader?". Лидер отряда":""}. ${owned?"Открыть досье":"Условия получения"}${labels.length?". "+labels.join(", "):""}"><span class="roster-card-art hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":owned&&h.id==="nada"?"hero-avatar-nada":owned&&h.id==="liora"?"hero-avatar-liora":""}">${portraitAvatar}${leaderBadge}</span><span class="roster-card-name">${name}</span>${tags}${starInfo}<span class="roster-card-subtitle">${levelLine}</span>${owned?'<span class="roster-card-gear">'+gearLabel+'</span>':progressLine}<span class="hero-open-hint">${owned?"Открыть досье ›":"Как получить ›"}</span></button>`;
+  return `<button type="button" class="hero-card hero-open roster-card ${owned?"":"hero-locked"}" data-open-hero="${h.id}" aria-label="${name}${isLeader?". Лидер отряда":""}. ${owned?"Открыть досье":"Условия получения"}${labels.length?". "+labels.join(", "):""}"><span class="roster-card-art hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":owned&&h.id==="nada"?"hero-avatar-nada":owned&&h.id==="liora"?"hero-avatar-liora":owned&&h.id==="art"?"hero-avatar-art":owned&&h.id==="sava"?"hero-avatar-sava":""}">${portraitAvatar}${leaderBadge}</span><span class="roster-card-name">${name}</span>${tags}${starInfo}<span class="roster-card-subtitle">${levelLine}</span>${owned?'<span class="roster-card-gear">'+gearLabel+'</span>':progressLine}<span class="hero-open-hint">${owned?"Открыть досье ›":"Как получить ›"}</span></button>`;
  }).join("");
  if(!visible.length)$("#heroList").innerHTML='<p class="roster-empty">В этой категории героев пока нет.</p>';
  document.querySelectorAll("[data-open-hero]").forEach(node=>node.addEventListener("click",()=>{
@@ -2043,7 +2054,7 @@ function renderHeroDetail(){
  const hero=progressedHero(base);
  const cost=ProgressCore.upgradeCost(progress,base.id);
  const levelCap=ProgressCore.heroLevelCap(progress,base.id);
- const next=cost===null?null:((["ren","nada","liora"].includes(base.id))?
+ const next=cost===null?null:((["ren","nada","liora","art","sava"].includes(base.id))?
   HeroStatsCombatBridge.apply(base,{
    level:hero.level+1,
    stars:StarCore.rankOf(progress,base.id),
@@ -2051,27 +2062,29 @@ function renderHeroDetail(){
   },HeroStatsProfiles[base.id],HeroStatsCore):
   equippedPilotStats(ProgressCore.heroStats(progress,base,hero.level+1),PILOT_HERO_STATS[base.id]));
  $("#detailName").textContent=hero.name;
- $("#detailRole").textContent=hero.role+((["ren","nada","liora"].includes(hero.id))?" · Играбельный герой (баланс тестовый)":" · Демонстрационный персонаж");
+ $("#detailRole").textContent=hero.role+((["ren","nada","liora","art","sava"].includes(hero.id))?" · Играбельный герой (баланс тестовый)":" · Демонстрационный персонаж");
  if($("#detailTags"))$("#detailTags").textContent=heroTagText(hero);
  $("#detailGlyph").textContent=hero.glyph;
  const showRenPortrait=hero.id==="ren";
  const showNadaPortrait=hero.id==="nada";
  const showLioraPortrait=hero.id==="liora";
+ const showArtPortrait=hero.id==="art";
+ const showSavaPortrait=hero.id==="sava";
  const showLiora3D=showLioraPortrait;
  const renPortrait=$("#detailRenPortrait"),heroStage=$("#detailHeroStage"),artworkLabel=$("#detailArtworkLabel");
  if(renPortrait){
-  renPortrait.hidden=!(showRenPortrait||showNadaPortrait||showLioraPortrait);
-  renPortrait.src=showLioraPortrait?"assets/liora-portrait-ui.webp?v=1":showNadaPortrait?"assets/nada-portrait-ui.webp?v=2":"assets/ren-portrait-ui.webp";
-  renPortrait.alt=showLioraPortrait?"Лиора Вель — портрет":showNadaPortrait?"Нада — утверждённый портрет исследовательницы":"Рен Терен — портрет проводника Садов над пропастью";
+  renPortrait.hidden=!(showRenPortrait||showNadaPortrait||showLioraPortrait||showArtPortrait||showSavaPortrait);
+  renPortrait.src=showArtPortrait?"assets/art-portrait-ui.webp?v=1":showSavaPortrait?"assets/sava-portrait-ui.webp?v=1":showLioraPortrait?"assets/liora-portrait-ui.webp?v=1":showNadaPortrait?"assets/nada-portrait-ui.webp?v=2":"assets/ren-portrait-ui.webp";
+  renPortrait.alt=showArtPortrait?"Арт — игровой портрет":showSavaPortrait?"Сава — игровой портрет":showLioraPortrait?"Лиора Вель — портрет":showNadaPortrait?"Нада — утверждённый портрет исследовательницы":"Рен Терен — портрет проводника Садов над пропастью";
  }
  if(heroStage){
   heroStage.classList.toggle("has-ren-portrait",showRenPortrait);
-  if(showNadaPortrait||showLioraPortrait)heroStage.classList.add("has-ren-portrait");
+  if(showNadaPortrait||showLioraPortrait||showArtPortrait||showSavaPortrait)heroStage.classList.add("has-ren-portrait");
   heroStage.setAttribute("aria-label",showLiora3D?"Лиора Вель — 3D со щитом":showNadaPortrait?"Нада — 3D-модель при загрузке, иначе портрет":
-   showRenPortrait?"Рен Терен: 3D-модель и портрет":"Схематичный силуэт героя, без 3D-модели");
+   showRenPortrait?"Рен Терен: 3D-модель и портрет":showArtPortrait?"Арт: портрет, в бою простая 3D-заглушка":showSavaPortrait?"Сава: портрет, в бою простая 3D-заглушка":"Схематичный силуэт героя, без 3D-модели");
  }
  if(artworkLabel)artworkLabel.textContent=showLiora3D?"ЛИОРА · 3D СО ЩИТОМ (ТЕСТ)":showNadaPortrait?"ГЕРОЙ · 3D-ПРОСМОТР (ПИЛОТ)":
-  showRenPortrait?"ГЕРОЙ · 3D-МОДЕЛЬ":"ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД";
+  showRenPortrait?"ГЕРОЙ · 3D-МОДЕЛЬ":showArtPortrait||showSavaPortrait?"ГЕРОЙ · ПОРТРЕТ И 3D-ЗАГЛУШКА":"ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД";
  if(typeof RenCard3D!=="undefined" && $("#heroDetail")?.classList.contains("active"))
   void RenCard3D.activate(hero.id);
  renderStarPanel(base.id);
@@ -2082,8 +2095,8 @@ function renderHeroDetail(){
   '<div class="stat-catalog-row"><span>'+stat.label+'</span><strong>'+
    (stat.active?stat.value:'Не рассчитано')+'</strong></div>').join("");
  const activeStats=overview.filter(stat=>stat.active).length;
- const trueHero=["ren","nada","liora"].includes(hero.id);
- $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>${trueHero?"Физическая атака":"Атака (общая, тест)"}</span><strong>${trueHero?hero.physicalAttack:hero.atk+" ATK"}</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · ${activeStats} рассчитано</summary><p class="muted">${trueHero?"Параметры Рена, Нады и Лиоры рассчитываются из уровня, звёзд и снаряжения. Числа и формулы роста — рабочие, баланс ещё не утверждён.":"Учебный персонаж: часть характеристик ещё не рассчитывается."}</p>${statRows}</details>`;
+ const trueHero=["ren","nada","liora","art","sava"].includes(hero.id);
+ $("#detailStats").innerHTML=`<div><span>Здоровье</span><strong>${hero.hp} HP</strong></div><div><span>${trueHero?"Физическая атака":"Атака (общая, тест)"}</span><strong>${trueHero?hero.physicalAttack:hero.atk+" ATK"}</strong></div><div><span>Скорость</span><strong>${hero.speed}</strong></div><details class="stat-catalog-details"><summary>Все 14 характеристик · ${activeStats} рассчитано</summary><p class="muted">${trueHero?"Параметры играбельных героев рассчитываются из уровня, звёзд и снаряжения. Числа и формулы роста — рабочие, баланс ещё не утверждён.":"Учебный персонаж: часть характеристик ещё не рассчитывается."}</p>${statRows}</details>`;
  $("#detailLevel").textContent="Уровень героя "+hero.level;
  if($("#heroCardCap"))$("#heroCardCap").textContent=saveBlocked?"Сохранение недоступно":
   hero.level>=levelCap?"Достигнут предел: "+levelCap:
@@ -3421,7 +3434,10 @@ function initBabylon(){
    ({body,head}=RenVisualModel.create(BABYLON,scene,x,z,i));
   }else{
    body=BABYLON.MeshBuilder.CreateCapsule("body_"+i,{height:1.5,radius:.42},scene);body.position=new BABYLON.Vector3(x,.8,z);
-   const mat=new BABYLON.StandardMaterial("mat_"+i,scene);mat.diffuseColor=h.side==="ally"?new BABYLON.Color3(.28,.55,.76):new BABYLON.Color3(.72,.25,.23);mat.emissiveColor=h.side==="ally"?new BABYLON.Color3(.02,.06,.09):new BABYLON.Color3(.08,.015,.01);body.material=mat;
+   const mat=new BABYLON.StandardMaterial("mat_"+i,scene);// No GLB for Art and Sava: distinguish the same existing capsule meshes by material only.
+   mat.diffuseColor=h.id==="art"?new BABYLON.Color3(.40,.31,.22):
+    h.id==="sava"?new BABYLON.Color3(.22,.43,.51):
+    h.side==="ally"?new BABYLON.Color3(.28,.55,.76):new BABYLON.Color3(.72,.25,.23);mat.emissiveColor=h.side==="ally"?new BABYLON.Color3(.02,.06,.09):new BABYLON.Color3(.08,.015,.01);body.material=mat;
    head=BABYLON.MeshBuilder.CreateSphere("head_"+i,{diameter:.62,segments:12},scene);head.position=new BABYLON.Vector3(x,1.8,z);head.material=mat;
   }
   const base=BABYLON.MeshBuilder.CreateCylinder("base_"+i,{diameter:1.15,height:.12,tessellation:24},scene);base.position=new BABYLON.Vector3(x,.08,z);const bm=new BABYLON.StandardMaterial("basemat_"+i,scene);bm.diffuseColor=h.side==="ally"?new BABYLON.Color3(.65,.48,.2):new BABYLON.Color3(.4,.18,.18);base.material=bm;

@@ -18,9 +18,9 @@ const HeroProfileData=(()=>{
    ].join("\n\n"),
    note:"Биография основана на утверждённой литературе. Боевой баланс и место персонажа в игровой хронологии ещё не утверждены."
   }),
-  // LIORAPLAY001: do not invent an unapproved biography or affiliation.
+  // LIORAPLAY001 / GARDENS-TAG-001: owner approved Gardens regional tag for Liora; biography still pending.
   "liora":Object.freeze({
-   id:"liora",name:"Лиора Вель",tags:Object.freeze([]),
+   id:"liora",name:"Лиора Вель",tags:Object.freeze(["gardens-over-abyss"]),
    biography:"Биография Лиоры Вель для игровой карточки ещё не утверждена. Игровые параметры и боевые действия демонстрационные.",
    note:"3D-модель с щитом, закреплённым на левом предплечье (LIORA-SHIELD-006). Класс, стартовое получение и способности — временный игровой пилот, не канон."
   }),

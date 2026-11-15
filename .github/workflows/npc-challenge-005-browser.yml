@@ -1,0 +1,39 @@
+name: NPCCHALLENGE005 T-02 and N-02 Chromium-WebKit
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'npc-challenge-pilot.js'
+      - 'npc-enemy-data.js'
+      - 'challenge-core.js'
+      - 'game.js'
+      - 'index.html'
+      - 'tests/npc-challenge-005-browser.cjs'
+      - '.github/workflows/npc-challenge-005-browser.yml'
+permissions:
+  contents: read
+jobs:
+  npc-challenge-005-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Real T-02 and N-02 in Babylon Chromium and WebKit
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/npc-challenge-005.log 2>&1 &
+          sleep 2
+          node tests/npc-challenge-005-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npc-challenge-005-browser
+          path: artifacts/npc-challenge-005/
+          retention-days: 14
+          if-no-files-found: warn

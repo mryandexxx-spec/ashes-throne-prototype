@@ -49,7 +49,7 @@ test("unique playable skills and L1-L6 curves are exposed through the existing s
    Abilities.get(level("sava",1),"special").signalMeter);
  assert.ok(Abilities.get(level("sava",6),"powerful").coordinationDamagePercent>
    Abilities.get(level("sava",1),"powerful").coordinationDamagePercent);
- assert.equal(Abilities.get(level("sava",1),"powerful").defenseComboEnabled,undefined);
+ assert.equal(Abilities.get(level("sava",1),"powerful").defenseComboEnabled,false);
  assert.equal(Abilities.get(level("sava",3),"powerful").defenseComboEnabled,true);
  assert.ok(Skill.PASSIVE_IDS.includes("art")&&Skill.PASSIVE_IDS.includes("sava"));
  assert.equal(Skill.validPassiveLevels({ren:1,nada:1}),true,

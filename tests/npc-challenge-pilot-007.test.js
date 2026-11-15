@@ -14,6 +14,9 @@ const {NpcChallengePilot:P,NpcEnemyData:N,ChallengeCore:Q,CombatCore:C,
  "\n({NpcChallengePilot,NpcEnemyData,ChallengeCore,CombatCore,HeroStatsProfiles,HeroStatsCore,HeroStatsCombatBridge,AbilityData,AutoDecision})");
 const partyIds=["ren","nada","liora","art","sava"];
 function hero(id,level=1){
+ // Demo-only medic unlocks from the first mission and is not a canonical hero.
+ if(id==="medic-demo")return {id,name:"Учебный лекарь",side:"ally",
+  role:"Лекарь",hp:90,atk:14,speed:115};
  return {...Bridge.apply({id,name:id,side:"ally",role:id},
   {level,stars:1,gearPercent:{hp:0,atk:0},gearStats:{}},
   Profiles[id],Stats),skillLevels:{basic:1,special:1,powerful:1,passive:1,leader:1}};
@@ -22,8 +25,11 @@ function makeBattle(id,selected=partyIds,level=1,seed=1){
  const party=selected.map(x=>hero(x,level));
  const initial=P.spawn(id),waves=P.spawnWaves(id);
  assert.ok(initial&&waves);
- const options={leaderId:party[0].id,rngSeed:seed,hitChecks:true,critChecks:true,
-  penetrationChecks:true,statusChecks:true};
+ const options={leaderId:party[0].id,
+  ...(selected.includes("medic-demo")?{}:{
+   rngSeed:seed,hitChecks:true,critChecks:true,
+   penetrationChecks:true,statusChecks:true
+  })};
  const objective=P.tacticalObjective(id,party);
  if(objective)options.tacticalObjective=objective;
  const battle=C.createBattle([...party,...initial],waves,options);
@@ -178,6 +184,20 @@ test("007: two mechanically different objectives run on actual heroes and AI",()
   console.log("NPCCHALLENGE007_BALANCE",id,JSON.stringify({wins,stars3,heals,runs:45}));
  }
  console.log("NPCCHALLENGE007_DETAILS="+JSON.stringify(rows));
+});
+test("007 N-04: unlocked training healer introduces a genuine manual heal tradeoff",()=>{
+ const chosen=["ren","nada","liora","art","medic-demo"];
+ const rows=[];
+ for(const seed of [1,17,71]){
+  const rush=run("N-04",chosen,3,seed,"attack");
+  const heal=run("N-04",chosen,3,seed,"support");
+  rows.push({seed,rush,heal});
+  assert.equal(rush.heals,false);
+  assert.equal(heal.heals,true,"active healing in the test party must be exercised");
+  if(heal.winner==="ally")assert.ok(heal.stars<=2,
+   "a healed victory must not receive 3 stars");
+ }
+ console.log("NPCCHALLENGE007_HEALER="+JSON.stringify(rows));
 });
 test("007: opt-in only, no new persisted schema, build and UI scripts",()=>{
  const game=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));

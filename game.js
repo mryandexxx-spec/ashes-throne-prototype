@@ -2611,7 +2611,7 @@ function renderMissionResult(){
  if(battleIsNpcMissionPilot){
   $("#missionResultChapter").textContent="NPC-ПРОБА · ВНЕ КАНОНА";
   $("#missionResultTitle").textContent=won?"Пробный бой выигран":"Пробный бой проигран";
-  $("#missionResultText").textContent="Проверка новой пары противников. Энергия, задания, награды и сохранённые звёзды не изменены.";
+  $("#missionResultText").textContent=(activeMissionId==="demo-mission-3"?"Проверка двух волн противников. ":"Проверка новой пары противников. ")+"Энергия, задания, награды и сохранённые звёзды не изменены.";
   $("#missionResultStars").textContent="Тестовая оценка: "+"★".repeat(lastMissionStars)+
    "☆".repeat(3-lastMissionStars)+" · Действий союзников: "+state.allyActions+" (не сохраняется)";
   $("#missionResultRetry").textContent="Повторить пробу";

@@ -155,3 +155,26 @@ test("NPCDATA001: NPCs survive real initiative, a second wave and combat termina
  assert.equal(N.spawn("npc-field-medic").npcAbilities.special.healAmount,36,
   "fresh later spawn is not modified by previous battle");
 });
+
+test("NPCDATA001: test-only meshes match exact battle IDs without changing HEROES or save rosters",()=>{
+ const game=read("game.js");
+ const html=read("index.html");
+ const version=JSON.parse(read("package.json")).version;
+ assert.ok(game.includes("const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean));"));
+ assert.ok(game.includes("COMBAT_VISUALS.forEach((h,i)=>{"),"Babylon creates reserved NPC meshes");
+ assert.ok(game.includes("for(const h of COMBAT_VISUALS){"),"visibility sync includes pilot enemies");
+ assert.ok(game.includes("NpcEnemyData.spawn(enemy.archetypeId,{instanceId:enemy.id})"),
+  "the battle ID matches the pickable capsule metadata");
+ assert.ok(game.includes("const ENEMIES=HEROES.filter(h=>h.side===\"enemy\");"),
+  "legacy mission pool and saved IDs remain unchanged");
+ assert.ok(game.includes("if(battleIsLoreTraining&&NPC_PILOT_ENABLED)"),
+  "NPCs only participate in explicit training");
+ assert.ok(html.includes("npc-enemy-data.js?v="+version));
+ assert.ok(html.indexOf("npc-enemy-data.js")<html.indexOf("game.js?v="+version));
+ const ids=["npc-pass-guard","npc-sarkh-land-courier","npc-laun-physician"];
+ for(let i=0;i<ids.length;i++){
+  const instanceId=ids[i]+"-training-"+(i+1);
+  const spawned=N.spawn(ids[i],{instanceId});
+  assert.equal(spawned.id,instanceId);
+ }
+});

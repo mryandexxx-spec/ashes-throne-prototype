@@ -3034,6 +3034,7 @@ function showAbilityTooltip(abilityId){
  if(definition.kind==="damage"){
   effects.push("Урон: "+(definition.multiplier===1?"100%":Math.round(definition.multiplier*100)+"%")+" атаки.");
   if(definition.weakening)effects.push("Ослабление на "+definition.weakening+" атаки.");
+  if(definition.fieldNote)effects.push(definition.fieldNote);
   if(definition.onHitStatus?.type==="read-move")
    effects.push("При попадании +"+definition.onHitStatus.stacks+
     " зацепок «Просчитанного хода» (максимум 4, срок 2 собственных хода врага). "+

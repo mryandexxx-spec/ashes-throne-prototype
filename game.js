@@ -2863,7 +2863,12 @@ function renderArenaIndicators(){
    typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"read-move")?
      `<span class="arena-effect debuff" title="Просчитанный ход: ${CombatStatusCore.read(h,"read-move").stacks} из 4 зацепок, ${CombatStatusCore.read(h,"read-move").remaining} ход(а). При 3+ сильная атака теряет 20 п.п. точности, 20 п.п. эффективности наложения эффектов и 30% урона; тратятся 3 зацепки.">◎${CombatStatusCore.read(h,"read-move").stacks}</span>`:"",
    typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"taunt")?
-     `<span class="arena-effect" title="Провокация: одиночные враги атакуют этого героя. Осталось ${CombatStatusCore.read(h,"taunt").remaining} хода(ов).">⚑${CombatStatusCore.read(h,"taunt").remaining}</span>`:""].join("");
+     `<span class="arena-effect" title="Провокация: одиночные враги атакуют этого героя. Осталось ${CombatStatusCore.read(h,"taunt").remaining} хода(ов).">⚑${CombatStatusCore.read(h,"taunt").remaining}</span>`:"",
+   typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"disrupted-plan")?
+     `<span class="arena-effect debuff" title="Срыв ритма: следующая особая/мощная способность потеряет продолжение.">✕${CombatStatusCore.read(h,"disrupted-plan").remaining}</span>`:"",
+   h.insurance?`<span class="arena-effect" title="Страховка Арта: часть прямого HP-урона получит Арт.">⛓${h.insurance.remaining}</span>`:"",
+   h.fieldSignal?`<span class="arena-effect" title="Сигнал Савы: ускорен ближайший ход.">⚑${h.fieldSignal.remaining}</span>`:"",
+   h.tacticalFocus?`<span class="arena-effect" title="Собранность Арта: ответ по нападавшему.">✦</span>`:""].join("");
   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
   const active=actor?.id===h.id;
   const support=!!actor&&!autoBattle&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
@@ -2948,7 +2953,7 @@ function resetBattle(){
  const lineup=battleLineup();
  const allies=lineup.filter(f=>f.side==="ally");
  const realHeroFight=allies.length>0&&
-  allies.every(f=>["ren","nada","liora"].includes(f.id));
+  allies.every(f=>["ren","nada","liora","art","sava"].includes(f.id));
  state=CombatCore.createBattle(lineup,battleFutureWaves(),{
   leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId,
   ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{}),
@@ -3039,6 +3044,10 @@ function showAbilityTooltip(abilityId){
  else if(definition.kind==="heal")
   effects.push("Восстанавливает до "+definition.healAmount+" HP.");
  effects.push("Цель: "+({ally:"союзник",enemy:"противник",self:"сам герой","all-allies":"все живые союзники","all-enemies":"все живые противники"}[definition.target]||"неизвестная")+".");
+ if(definition.kind==="insurance")effects.push("Страховка: Арт принимает "+definition.insurancePercent+"% первого реального HP-урона другого союзника после обычной защиты. Не массовый щит.");
+ if(definition.kind==="signal")effects.push("Сигнал: выбранный союзник получает +"+definition.signalMeter+" инициативы, без дополнительного хода.");
+ if(definition.kind==="coordinate")effects.push("Согласованный шаг: две атаки разных героев по одному врагу; на развитых уровнях также связка защита → действие защищённого.");
+ if(definition.disruptTurns)effects.push("Срыв ритма: противник теряет вторичное действие следующей особой/мощной способности. Зацепки Нады остаются.");
  if(definition.cooldown)effects.push("Перезарядка: "+definition.cooldown+" хода.");
  $("#abilityTooltipTitle").textContent=definition.name;
  $("#abilityTooltipText").textContent=effects.join(" ");

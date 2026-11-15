@@ -78,6 +78,7 @@ const AbilityInfo=(()=>{
    if(percent!==null)effects.push("Наносит "+percent+"% от действующей атаки.");
    else effects.push("Наносит урон.");
    if(a.weakening>0)effects.push("Ослабляет противника на "+a.weakening+" атаки.");
+    if(a.fieldNote)effects.push(a.fieldNote);
    if(a.disruptTurns)effects.push("Срыв ритма: следующая особая или мощная способность врага теряет вторичные эффекты; без них дольше восстанавливается. На "+a.disruptTurns+" собственных хода врага; зацепки Нады не расходуются.");
     if(a.onHitStatus?.type==="slowed")effects.push("Замедление: -"+a.onHitStatus.amount+"% скорости на "+a.onHitStatus.turns+" собственных хода цели (тестовый баланс).");
     if(a.followUpStatusAll?.type==="debuff-resistance-down")effects.push("После попадания по основной цели снижает сопротивление всех оставшихся противников на "+a.followUpStatusAll.amount+" п.п. на "+a.followUpStatusAll.turns+" их собственных хода. Тестовый баланс.");

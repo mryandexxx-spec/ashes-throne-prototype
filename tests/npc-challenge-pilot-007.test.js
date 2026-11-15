@@ -14,40 +14,34 @@ const {NpcChallengePilot:P,NpcEnemyData:N,ChallengeCore:Q,CombatCore:C,
  "\n({NpcChallengePilot,NpcEnemyData,ChallengeCore,CombatCore,HeroStatsProfiles,HeroStatsCore,HeroStatsCombatBridge,AbilityData,AutoDecision})");
 const partyIds=["ren","nada","liora","art","sava"];
 function hero(id,level=1){
- // Demo-only medic unlocks from the first mission and is not a canonical hero.
+ // Training healer uses the normal +4%/level legacy hero scaling, with no
+ // invented gear or star bonuses; it unlocks from the first demo mission.
  if(id==="medic-demo")return {id,name:"Учебный лекарь",side:"ally",
-  role:"Лекарь",hp:90,atk:14,speed:115};
+  role:"Лекарь",hp:Math.round(90*(1+(level-1)*.04)),
+  atk:Math.round(14*(1+(level-1)*.04)),speed:115,level};
  return {...Bridge.apply({id,name:id,side:"ally",role:id},
   {level,stars:1,gearPercent:{hp:0,atk:0},gearStats:{}},
   Profiles[id],Stats),skillLevels:{basic:1,special:1,powerful:1,passive:1,leader:1}};
 }
-function makeBattle(id,selected=partyIds,level=1,seed=1,tuning=null){
+function makeBattle(id,selected=partyIds,level=1,seed=1){
  const party=selected.map(x=>hero(x,level));
- let initial=P.spawn(id),waves=P.spawnWaves(id);
+ const initial=P.spawn(id),waves=P.spawnWaves(id);
  assert.ok(initial&&waves);
- if(tuning?.enemyAttack!==undefined||tuning?.finalAttack!==undefined){
-  const scale=(f,multiplier)=>({...f,physicalAttack:Math.round(f.physicalAttack*multiplier),
-   atk:Math.round(f.atk*multiplier)});
-  initial=initial.map(f=>scale(f,tuning.enemyAttack??1));
-  waves=waves.map((w,i)=>w.map(f=>scale(f,i===waves.length-1?
-   (tuning.finalAttack??tuning.enemyAttack??1):tuning.enemyAttack??1)));
- }
  const options={leaderId:party[0].id,
   ...(selected.includes("medic-demo")?{}:{
    rngSeed:seed,hitChecks:true,critChecks:true,
    penetrationChecks:true,statusChecks:true
   })};
  const objective=P.tacticalObjective(id,party);
- if(objective)options.tacticalObjective=tuning?.holdActions?
-  {...objective,allyActionsToHold:tuning.holdActions}:objective;
+ if(objective)options.tacticalObjective=objective;
  const battle=C.createBattle([...party,...initial],waves,options);
  const tracker=Q.start(id,P.trackerTargets(id));
  assert.ok(tracker);
  C.advanceToPlayerTurn(battle);
  return {battle,tracker,party};
 }
-function run(id,selected,level,seed,strategy,tuning=null){
- const {battle:b,tracker}=makeBattle(id,selected,level,seed,tuning);
+function run(id,selected,level,seed,strategy){
+ const {battle:b,tracker}=makeBattle(id,selected,level,seed);
  let steps=0;
  while(b.active&&steps<160){
   if(b.currentActor<0)C.advanceToPlayerTurn(b);
@@ -107,6 +101,16 @@ test("007: exact T-04/N-04 rosters and original v1 contracts",()=>{
  assert.equal(Q.get("N-04").thirdStarActionLimit,null);
  assert.equal(P.get("T-03").priorityId,"npc-t03-medic");
  assert.equal(P.get("N-03").objective.minimumHealthPercent,95);
+ const tuned=[...P.spawn("T-04"),...P.spawn("N-04"),...P.spawnWaves("N-04").flat()];
+ const planUnits=[...P.get("T-04").enemyIds,...P.get("N-04").enemyIds,
+  ...P.get("N-04").futureWaves.flat()];
+ assert.deepEqual(Array.from(planUnits,x=>x.attackBonusPercent),
+  [15,15,15,5,5,5,30,30]);
+ assert.deepEqual(Array.from(tuned,x=>x.physicalAttack),
+  Array.from(planUnits,x=>Math.round(N.spawn(x.archetypeId,{
+   instanceId:x.instanceId}).physicalAttack*(100+x.attackBonusPercent)/100)));
+ assert.equal(P.get("T-03").enemyIds[0].attackBonusPercent,undefined,
+  "earlier pilot NPC statistics must remain unchanged");
  assert.ok(Q.start("T-04",P.trackerTargets("T-04")));
  assert.ok(Q.start("N-04",P.trackerTargets("N-04")));
  assert.equal(Q.start("T-04",P.trackerTargets("N-04")),null);
@@ -224,40 +228,28 @@ test("007 N-04: unlocked training healer introduces a genuine manual heal tradeo
  assert.equal(tracker.pilotActiveHealUsed,true,
   "pilot recorded a real active heal, not a synthetic mock event");
 });
-test("007 exploration: compare hold duration and NPC pressure without changing live objectives",()=>{
- const teams=[
-  {ids:partyIds,level:1},
-  {ids:partyIds,level:3},
-  {ids:["ren","nada","sava"],level:3},
-  {ids:["ren","liora","art"],level:3},
-  {ids:["ren","nada","liora","art"],level:8}
+test("007 balanced encounters: tactical support changes stars without forcing one squad",()=>{
+ const cases=[
+  {id:"T-04",team:partyIds,level:1,weak:"attack",strong:"support"},
+  {id:"T-04",team:["ren","liora","art"],level:3,weak:"attack",strong:"support"},
+  {id:"N-04",team:partyIds,level:3,weak:"attack",strong:"support"},
+  {id:"N-04",team:["ren","liora","art"],level:3,weak:"auto",strong:"support"}
  ];
- for(const id of ["T-04","N-04"]){
-  const durations=id==="T-04"?[8,10,12]:[0];
-  const attacks=id==="T-04"?[1,1.1,1.15,1.2]:[1,1.05,1.1,1.15];
-  const finalAttacks=id==="T-04"?[undefined]:[undefined,1.15,1.3];
-  for(const holdActions of durations)for(const enemyAttack of attacks)
-   for(const finalAttack of finalAttacks){
-   let total=0,wins=0,held=0,full=0,three=0;
-   const byTeam=[];
-   for(const team of teams){
-    const scores={attack:[],support:[],auto:[]};
-    for(const strategy of ["attack","support","auto"])for(const seed of [1,17,71]){
-     const result=run(id,team.ids,team.level,seed,strategy,{holdActions,enemyAttack,finalAttack});
-     total++;wins+=result.winner==="ally";
-     const validHold=id==="T-04"&&result.outcome==="held";
-     held+=validHold;
-     const star3=id==="T-04"?validHold&&result.allAlive:
-       result.stars===3;
-     full+=result.allAlive;three+=star3;
-     scores[strategy].push(star3?3:result.stars);
-    }
-    byTeam.push({team:team.ids.join(",")+"@"+team.level,...scores});
-   }
-   console.log("NPCCHALLENGE007_TUNE "+JSON.stringify({id,holdActions,enemyAttack,finalAttack,
-    total,wins,held,allAlive:full,stars3:three,byTeam}));
+ for(const c of cases){
+  let stronger=0,strongWins=0;
+  for(const seed of [1,17,71]){
+   const weak=run(c.id,c.team,c.level,seed,c.weak);
+   const strong=run(c.id,c.team,c.level,seed,c.strong);
+   stronger+=Number(strong.stars>weak.stars);
+   strongWins+=Number(strong.winner==="ally"&&strong.stars===3);
   }
+  assert.ok(stronger>=2,c.id+" defensive decisions must improve results in "+c.team);
+  assert.ok(strongWins>=2,c.id+" 3 stars must be attainable beyond a single team");
  }
+ const few=run("T-04",["ren","nada","sava"],3,1,"attack");
+ assert.ok(few.stars>=1,"small squad remains able to hold for the minimum rating");
+ const result=run("N-04",partyIds,1,17,"support");
+ assert.equal(result.winner,"ally","starter team can complete N-04 for baseline stars");
 });
 test("007: opt-in only, no new persisted schema, build and UI scripts",()=>{
  const game=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));

@@ -42,6 +42,12 @@ const AbilityInfo=(()=>{
       rules.protectAllyBelowHpPercent+"% или ниже, Лиора даёт защиту от "+
       rules.protectAllyGuardHits+" следующего удара (или ударов). Перезарядка: "+
       rules.protectAllyCooldownOwnTurns+" собственных хода Лиоры. Тестовые значения.":
+    Number.isFinite(rules.insuranceFocusPercent)?
+     "После реального перехвата урона Арт готовит ответ по нападавшему: +"+
+     rules.insuranceFocusPercent+"% к следующему удару по этой цели. Числа тестовые.":
+    Number.isFinite(rules.coordinationCooldownRecovery)?
+     "Когда два разных союзника завершают Согласованный шаг, Сава быстрее "+
+     "готовит следующий Сигнал (перезарядка −"+rules.coordinationCooldownRecovery+"). Числа тестовые.":
     Number.isFinite(rules.allyBonusVsDebuffedPercent)?
      "Пока герой жив, союзники наносят +"+rules.allyBonusVsDebuffedPercent+
       "% урона врагам с действующими негативными эффектами. Числа тестовые.":
@@ -60,6 +66,10 @@ const AbilityInfo=(()=>{
    return {id:slot.id,label:slot.label,name:a.name,status:"available",
     description:protection?"Пока герой жив и назначен лидером, каждый союзник получает +"+
      protection.value+"% к запасу Protection. Значение тестовое.":
+     Number.isFinite(a.combatRules?.insuranceAllyMeter)?
+     "После успешной страховки Арта следующий союзник Садов получает инициативу. Числа тестовые.":
+     Number.isFinite(a.combatRules?.coordinationAllyMeter)?
+     "После завершения двух действий разных героев Сава помогает следующему союзнику Садов действовать быстрее. Числа тестовые.":
      "Автоматический лидерский эффект. Подробное действие уточняется.",meta:[]};
   }
   const effects=[];
@@ -68,6 +78,7 @@ const AbilityInfo=(()=>{
    if(percent!==null)effects.push("Наносит "+percent+"% от действующей атаки.");
    else effects.push("Наносит урон.");
    if(a.weakening>0)effects.push("Ослабляет противника на "+a.weakening+" атаки.");
+   if(a.disruptTurns)effects.push("Срыв ритма: следующая особая или мощная способность врага теряет вторичные эффекты; без них дольше восстанавливается. На "+a.disruptTurns+" собственных хода врага; зацепки Нады не расходуются.");
     if(a.onHitStatus?.type==="slowed")effects.push("Замедление: -"+a.onHitStatus.amount+"% скорости на "+a.onHitStatus.turns+" собственных хода цели (тестовый баланс).");
     if(a.followUpStatusAll?.type==="debuff-resistance-down")effects.push("После попадания по основной цели снижает сопротивление всех оставшихся противников на "+a.followUpStatusAll.amount+" п.п. на "+a.followUpStatusAll.turns+" их собственных хода. Тестовый баланс.");
     if(a.onHitStatus?.type==="debuff-resistance-down")effects.push("При попадании снижает сопротивление основной цели негативным эффектам на "+a.onHitStatus.amount+" п.п. на "+a.onHitStatus.turns+" её собственных хода. Тестовый баланс.");
@@ -80,6 +91,13 @@ const AbilityInfo=(()=>{
    if(Number.isFinite(a.guardHits))effects.push("Даёт защиту от "+a.guardHits+" ударов.");
    if(Number.isSafeInteger(a.tauntTurns))effects.push("Провокация на "+a.tauntTurns+" последующих собственных хода: одиночные атаки врагов направляются только на героя. Массовые атаки не перенаправляются.");
    else effects.push("Даёт защиту.");
+  }else if(a.kind==="insurance"){
+   effects.push("При первом прямом уроне по HP защищённого союзника Арт принимает на себя "+a.insurancePercent+"% остатка после обычной защиты. Действует до "+a.insuranceTurns+" собственных действий союзника.");
+  }else if(a.kind==="signal"){
+   effects.push("Продвигает следующий ход выбранного союзника на "+a.signalMeter+" инициативы. Бесплатного хода нет. Зацепки Нады сохраняются.");
+  }else if(a.kind==="coordinate"){
+   effects.push("Открывает окно для двух разных союзников: две атаки по одной цели дают усиленный второй удар."+
+    (a.defenseComboEnabled?" Также работает сочетание защита товарища → его следующее действие.":""));
   }else if(a.kind==="heal"){
    if(Number.isFinite(a.healAmount))effects.push("Восстанавливает до "+a.healAmount+" HP.");
    else effects.push("Восстанавливает здоровье.");

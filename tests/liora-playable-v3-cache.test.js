@@ -29,7 +29,8 @@ test("Liora playable pilot has a real persistent ID but no approved backstory",(
  assert.ok(skills.HERO_IDS.includes("liora"));
  assert.equal(v3.TEST_CLASSES.liora,"tank");
  assert.equal(api.HeroStatsProfiles.liora.combatStats.speed,115);
- assert.equal(api.HeroProfileData.get("liora").tags.length,0);
+ assert.deepEqual(Array.from(api.HeroProfileData.get("liora").tags),["gardens-over-abyss"]);
+ assert.equal(api.HeroProfileData.hasTag(api.HeroProfileData.get("liora"),"gardens-over-abyss"),true);
  assert.equal(api.LioraModelAssets.bytes,2117776);
  assert.equal(api.LioraModelAssets.shieldMesh,"Liora_Shield");
  assert.equal(api.AbilityData.get({id:"liora"},"special").kind,"guard");

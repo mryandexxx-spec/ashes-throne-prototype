@@ -32,7 +32,12 @@ const NPC_PILOT_IDS=Object.freeze(["npc-pass-guard","npc-sarkh-land-courier","np
 const NPC_PILOT_VISUALS=NPC_PILOT_ENABLED&&typeof NpcEnemyData!=="undefined"
  ? NPC_PILOT_IDS.map((id,i)=>NpcEnemyData.spawn(id,{instanceId:id+"-training-"+(i+1)}))
  : [];
-const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean));
+// NPCMISSION002: opt-in only; ordinary sessions allocate no extra 3D meshes.
+const NPC_MISSION_PILOT_ENABLED=typeof location!=="undefined"&&
+ /(?:^|[?&])npcMissionPilot=1(?:&|$)/.test(location.search);
+const NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED&&typeof NpcMissionPilot!=="undefined"
+ ? NpcMissionPilot.spawn("demo-mission-2")||[]:[];
+const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean),NPC_MISSION_VISUALS);
 const $=s=>document.querySelector(s);
 // ENV022: default temporary concept-art backdrop. Combat visuals stay unchanged.
 // Fixed image has no parallax; it is NOT a rendered/reconstructed 3D environment.
@@ -799,6 +804,15 @@ function battleLineup(){
   return [...StoryTrialData.heroes(),...ENEMIES.slice(0,2).map((e,i)=>
    progressedEnemy({...e,name:i===0?"Старший охраны":"Наёмный охранник",
     debuffPotency:0,debuffResistance:StoryTrialData.statusPilot.enemyResistance[i]}))];
+ // NPCMISSION002: explicit, noncanonical pilot for the second demo mission.
+ // The previous five-enemy roster remains the normal production path.
+ if(battleIsCampaign&&activeMissionId==="demo-mission-2"&&NPC_MISSION_PILOT_ENABLED){
+  const enemies=typeof NpcMissionPilot!=="undefined"?
+   NpcMissionPilot.spawn(activeMissionId):null;
+  if(!enemies||enemies.length!==NPC_MISSION_VISUALS.length)
+   throw Error("NPC_MISSION_PILOT_TEMPLATE_MISSING");
+  return [...selectedParty(),...enemies];
+ }
  // Mission #2 tests five enemies; the shared enemy AI is mission-independent.
  const enemies=battleIsCampaign&&activeMissionId==="demo-mission-2"?ENEMIES:ENEMIES.slice(0,2);
  // Reuse training templates, not the noncanonical "Conclave" story identities.
@@ -1080,7 +1094,8 @@ function showScreen(id){
     battleIsLoreTraining?(NPC_PILOT_ENABLED?"ПРОБА NPC · УЧЕБНЫЙ БОЙ (ВНЕ КАНОНА)":"ПЯТЬ ТЕНЕЙ · ТРЕНИРОВКА (ВНЕ КАНОНА)"):
     battleIsChallenge?"ИСПЫТАНИЕ · "+ChallengeCore.get(activeChallengeId).title:
    battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
-   battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
+   battleIsCampaign?(MissionData.get(activeMissionId).title+
+    (NPC_MISSION_PILOT_ENABLED&&activeMissionId==="demo-mission-2"?" · NPC-ПРОБА":"")):"ТЕСТОВАЯ АРЕНА";
   const trial=battleIsLoreRequired?LoreCampaignTrials.encounter(loreRequiredContext?.nodeId):null;
   const objective=$("#battleChallengeGoal");
   if(objective){

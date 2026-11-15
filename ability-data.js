@@ -173,6 +173,12 @@ const AbilityData=(()=>{
  });
  const fallback=Object.freeze({id:"special",name:"Особый удар",target:"enemy",kind:"damage",multiplier:1,weakening:0,cooldown:2});
  function rawGet(actor,abilityId){
+  // NPCDATA001: only explicit non-recruitable enemy instances carry their
+  // own abilities. Do not borrow an NPC kit for a player hero or legacy foe.
+  if(actor?.side==="enemy"&&typeof actor.archetypeId==="string"&&
+     actor.archetypeId.startsWith("npc-")&&actor.npcAbilities&&
+     ["basic","special","powerful","passive"].includes(abilityId))
+    return actor.npcAbilities[abilityId]??null;
   // Stats-002C pilot: only explicitly outfitted fighters use typed basic attacks.
   if(abilityId==="basic"){
    if(actor?.id==="nada")return Object.freeze({...typedBasic,name:"Прицельное действие",multiplier:.8,

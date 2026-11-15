@@ -84,8 +84,8 @@ test("LOREARTSAVA001: approved image paths are present in both story and battle 
 
 test("LOREARTSAVA001: new web build version and safe caching contract",()=>{
  const html=read("index.html"),pack=JSON.parse(read("package.json"));
- assert.equal(pack.version,"0.3.163");
- assert.ok(html.includes("v0.3.163 · LOREARTSAVA001"));
+ assert.match(pack.version,/^\d+\.\d+\.\d+$/);
+ assert.ok(html.includes("v"+pack.version+" · "));
  for(const f of ["game.js","lore-campaign-ui.js","lore-campaign-act2.js","lore-campaign-trials.js"]){
   assert.ok(html.includes(f+"?v="+pack.version),f);
  }

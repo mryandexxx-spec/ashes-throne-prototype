@@ -315,10 +315,12 @@ const CombatCore = (() => {
   function finishDisruption(battle,actor,ability,info){
     if(!info?.disrupted)return;
     CombatStatusCore.remove(actor,"disrupted-plan");
-    if(!info.secondary){
+    const delayed=(info.secondary?0:1)+(actor.tacticalDisruptDelay??0);
+    if(delayed>0){
       const key=ability.id==="special"?"specialCooldown":"powerfulCooldown";
-      actor[key]=Math.max(0,actor[key]+1);
+      actor[key]=Math.max(0,actor[key]+delayed);
     }
+    delete actor.tacticalDisruptDelay;
     battle.events.push({type:"disrupted-plan",actorId:actor.id,
       fallback:!info.secondary});
   }
@@ -1288,9 +1290,16 @@ const CombatCore = (() => {
       applyOnHitStatus(battle,actor,target,ability,readMovePenalty);
       applyAreaStatusAfterHit(battle,actor,ability,readMovePenalty);
       if(ability.disruptTurns&&target.hp>0&&typeof CombatStatusCore!=="undefined"&&
-         CombatStatusCore.apply(target,"disrupted-plan",0,ability.disruptTurns))
+         CombatStatusCore.apply(target,"disrupted-plan",0,ability.disruptTurns)){
+        target.tacticalDisruptDelay=ability.disruptDelay??0;
         emit(battle,"effect",{actorId:actor.id,targetId:target.id,
          effect:"disrupted-plan",remaining:ability.disruptTurns});
+      }
+      if(actor.tacticalFocus?.enemyId===target.id&&actor.tacticalFocus.delay>0){
+        target.meter=Math.max(0,target.meter-actor.tacticalFocus.delay);
+        emit(battle,"tactical-delay",{actorId:actor.id,targetId:target.id,
+         amount:actor.tacticalFocus.delay});
+      }
       battle.message=actor.side==="enemy"&&ability.id==="basic"
         ? actor.name+" атакует "+target.name+": "+damage+" урона."
         : actor.name+(ability.id!=="basic"?" применяет "+ability.name+": ":" атакует: ")+

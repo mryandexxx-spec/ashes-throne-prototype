@@ -38,7 +38,7 @@ async function run(name,browserType){
   url.searchParams.set("npcChallengePilot","1");
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v0.3.168 · NPCCHALLENGE005");
+   "Прототип · v0.3.169 · NPCCHALLENGE005");
   // Unlock the preceding original challenges IN MEMORY only; do not synthesize
   // victories, write storage or grant stars in any test scenario.
   await page.evaluate(()=>{

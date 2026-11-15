@@ -1652,15 +1652,19 @@ function renderChallenges(){
   container.innerHTML=ChallengeCore.byKind(kind).map(def=>{
    const stars=challengeProgress.bestStars[def.id]||0;
    const unlocked=ChallengeCore.available(def.id,challengeProgress);
-   const priority=def.kind==="tactical"?ENEMIES.find(e=>e.id===def.priorityId):null;
-   const waves=1+def.futureWaves.length;
+   const pilot=NPC_CHALLENGE_PILOT_ENABLED&&typeof NpcChallengePilot!=="undefined"?
+    NpcChallengePilot.get(def.id):null;
+   const priority=def.kind==="tactical"?(pilot?
+    NpcChallengePilot.spawn(def.id)?.find(e=>e.id===pilot.priorityId):
+    ENEMIES.find(e=>e.id===def.priorityId)):null;
+   const waves=1+(pilot?pilot.futureWaves.length:def.futureWaves.length);
    const details=def.kind==="tactical"?
     ["1★ — победить","2★ — уничтожить "+(priority?.name||"отмеченного врага")+" первым и отдельно от остальных",
      "3★ — дополнительно сохранить всех союзников"]:
     ["1★ — пройти "+waves+" волны","2★ — победить без потерь",
      "3★ — лимит действий пока не установлен"];
    return '<article class="campaign-panel campaign-mission"><div class="node">✦</div><div>'+
-    '<h3>'+def.id+' · '+def.title+'</h3>'+
+    '<h3>'+def.id+' · '+def.title+(pilot?' · NPC-ПРОБА':'')+'</h3>'+
     '<p>'+(def.kind==="tactical"?"Тактическая задача · "+def.enemyIds.length+" противника":
      "Натиск · "+waves+" волны")+'</p>'+
     '<p class="mission-stars">Лучшая оценка: '+("★".repeat(stars)+"☆".repeat(3-stars))+'</p>'+
@@ -1670,7 +1674,9 @@ function renderChallenges(){
     '</div></article>';
   }).join("");
  }else container.innerHTML="";
- $("#challengeSaveStatus").textContent=challengeSaveBlocked?
+ $("#challengeSaveStatus").textContent=NPC_CHALLENGE_PILOT_ENABLED?
+  "NPC-пробы T-01/N-01: без записи оценки и ежедневных задач. Другие испытания сохраняют обычный прогресс.":
+  challengeSaveBlocked?
   "Прогресс испытаний недоступен: бои доступны, сохранение заблокировано.":
   challengeSaveAvailable?"Лучшая оценка сохраняется в этом браузере.":
   "Хранилище браузера недоступно: результаты не сохраняются.";
@@ -1704,6 +1710,15 @@ function renderChallengeResult(){
  $("#challengeResultTitle").textContent=won?"Испытание пройдено":"Испытание не пройдено";
  $("#challengeResultName").textContent=ChallengeCore.get(activeChallengeId)?.title||"Испытание";
  const stars=challengeLastStars;
+ if(battleIsNpcChallengePilot){
+  $("#challengeResultName").textContent+=" · NPC-ПРОБА";
+  $("#challengeResultStars").textContent="Тестовая оценка: "+"★".repeat(stars)+
+   "☆".repeat(3-stars)+" (не сохраняется)";
+  $("#challengeResultText").textContent="Проверка "+(activeChallengeId==="T-01"?
+   "первой приоритетной цели":"двух волн")+" с новыми NPC. Энергия, ежедневные задачи, награды и постоянные оценки не изменены.";
+  $("#challengeResultRetry").textContent="Повторить пробу";
+  return;
+ }
  $("#challengeResultStars").textContent="Оценка: "+"★".repeat(stars)+"☆".repeat(3-stars)+
   " · Лучший результат: "+(challengeProgress.bestStars[activeChallengeId]||0)+"/3";
  $("#challengeResultText").textContent=challengeSaveFailed?

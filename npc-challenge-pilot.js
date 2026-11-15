@@ -4,8 +4,9 @@
  */
 const NpcChallengePilot=(()=>{
  "use strict";
- const unit=(archetypeId,instanceId,hp,protection)=>Object.freeze({
+ const unit=(archetypeId,instanceId,hp,protection,attackBonusPercent=0)=>Object.freeze({
   archetypeId,instanceId,hp,protection,
+  ...(attackBonusPercent?{attackBonusPercent}:{}),
   level:1,stars:1,gearTier:1,skillLevel:1
  });
  const catalog=Object.freeze({
@@ -46,9 +47,9 @@ const NpcChallengePilot=(()=>{
    encounterTag:"noncanonical-demo-training",
    objective:Object.freeze({kind:"protect-hold",allyActionsToHold:8}),
    enemyIds:Object.freeze([
-    unit("npc-trail-interceptor","npc-t04-interceptor",80,7),
-    unit("npc-ridge-slinger","npc-t04-slinger",72,8),
-    unit("npc-pass-guard","npc-t04-guard",125,25)
+    unit("npc-trail-interceptor","npc-t04-interceptor",80,7,15),
+    unit("npc-ridge-slinger","npc-t04-slinger",72,8,15),
+    unit("npc-pass-guard","npc-t04-guard",125,25,15)
    ]),
    // Only required by the legacy tracker schema; NOT a first-kill objective.
    priorityId:"npc-t04-interceptor",futureWaves:Object.freeze([])
@@ -103,15 +104,15 @@ const NpcChallengePilot=(()=>{
    encounterTag:"noncanonical-demo-training",
    objective:Object.freeze({kind:"no-active-heal"}),
    enemyIds:Object.freeze([
-    unit("npc-trail-interceptor","npc-n04-interceptor",58,5),
-    unit("npc-ridge-slinger","npc-n04-slinger",54,4)
+    unit("npc-trail-interceptor","npc-n04-interceptor",58,5,5),
+    unit("npc-ridge-slinger","npc-n04-slinger",54,4,5)
    ]),
    priorityId:null,
    futureWaves:Object.freeze([
-    Object.freeze([unit("npc-field-medic","npc-n04-medic",60,5)]),
+    Object.freeze([unit("npc-field-medic","npc-n04-medic",60,5,5)]),
     Object.freeze([
-     unit("npc-watch-captain","npc-n04-captain",98,14),
-     unit("npc-route-signaller","npc-n04-signaller",50,5)
+     unit("npc-watch-captain","npc-n04-captain",98,14,30),
+     unit("npc-route-signaller","npc-n04-signaller",50,5,30)
     ])
    ])
   })
@@ -124,11 +125,17 @@ const NpcChallengePilot=(()=>{
    instanceId:def.instanceId,level:def.level,stars:def.stars,
    gearTier:def.gearTier,skillLevel:def.skillLevel
   });
+  const boost=def.attackBonusPercent??0;
   if(!base||!Number.isSafeInteger(def.hp)||def.hp<1||def.hp>base.hp||
      !Number.isSafeInteger(def.protection)||def.protection<0||
-     def.protection>base.protection)return null;
+     def.protection>base.protection||
+     !Number.isSafeInteger(boost)||boost<0||boost>30)return null;
+  // NPCCHALLENGE007 balance: opt-in instance stat only. No NPC archetype,
+  // hero, regular challenge, CombatCore, AI profile or status scaling changes.
+  const attack=Math.round(base.physicalAttack*(100+boost)/100);
   return {...base,hp:def.hp,protection:def.protection,
-   maxProtection:def.protection};
+   maxProtection:def.protection,
+   ...(boost?{physicalAttack:attack,atk:attack}:{})};
  }
  function valid(plan){
   const all=definitions(plan);

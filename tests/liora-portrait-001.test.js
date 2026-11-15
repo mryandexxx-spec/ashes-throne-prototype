@@ -25,7 +25,7 @@ test("Liora uses wide roster art in clipped frame and square portrait for dossie
  assert.equal((game.match(/assets\/liora-portrait-ui\.webp\?v=1/g)||[]).length,2);
  assert.match(css,/#collection \.roster-card-art\.hero-avatar-liora\{[^}]*overflow:hidden/);
  assert.match(css,/#collection \.hero-avatar-liora \.liora-collection-portrait\{[^}]*width:100%;height:100%;[^}]*object-fit:cover;object-position:center 50%/);
- assert.match(game,/sketch\.hidden=!\["trial-ren","ren","nada","liora"\]\.includes\(hero\.id\)/);
+ assert.match(game,/sketch\.hidden=!\["trial-ren","ren","nada","liora","art","sava"\]\.includes\(hero\.id\)/);
  assert.match(game,/showLioraPortrait=hero\.id==="liora"/);
  assert.match(card,/modeButton\.hidden=!canDisplay3D/);
  const html=read("index.html"),layout=read("hero-card.css");

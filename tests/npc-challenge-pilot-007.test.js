@@ -25,10 +25,12 @@ function makeBattle(id,selected=partyIds,level=1,seed=1,tuning=null){
  const party=selected.map(x=>hero(x,level));
  let initial=P.spawn(id),waves=P.spawnWaves(id);
  assert.ok(initial&&waves);
- if(tuning?.enemyAttack!==undefined){
-  const scale=f=>({...f,physicalAttack:Math.round(f.physicalAttack*tuning.enemyAttack),
-   atk:Math.round(f.atk*tuning.enemyAttack)});
-  initial=initial.map(scale);waves=waves.map(w=>w.map(scale));
+ if(tuning?.enemyAttack!==undefined||tuning?.finalAttack!==undefined){
+  const scale=(f,multiplier)=>({...f,physicalAttack:Math.round(f.physicalAttack*multiplier),
+   atk:Math.round(f.atk*multiplier)});
+  initial=initial.map(f=>scale(f,tuning.enemyAttack??1));
+  waves=waves.map((w,i)=>w.map(f=>scale(f,i===waves.length-1?
+   (tuning.finalAttack??tuning.enemyAttack??1):tuning.enemyAttack??1)));
  }
  const options={leaderId:party[0].id,
   ...(selected.includes("medic-demo")?{}:{
@@ -232,14 +234,16 @@ test("007 exploration: compare hold duration and NPC pressure without changing l
  ];
  for(const id of ["T-04","N-04"]){
   const durations=id==="T-04"?[8,10,12]:[0];
-  const attacks=id==="T-04"?[1,1.2]:[1,1.15,1.3];
-  for(const holdActions of durations)for(const enemyAttack of attacks){
+  const attacks=id==="T-04"?[1,1.1,1.15,1.2]:[1,1.05,1.1,1.15];
+  const finalAttacks=id==="T-04"?[undefined]:[undefined,1.15,1.3];
+  for(const holdActions of durations)for(const enemyAttack of attacks)
+   for(const finalAttack of finalAttacks){
    let total=0,wins=0,held=0,full=0,three=0;
    const byTeam=[];
    for(const team of teams){
     const scores={attack:[],support:[],auto:[]};
     for(const strategy of ["attack","support","auto"])for(const seed of [1,17,71]){
-     const result=run(id,team.ids,team.level,seed,strategy,{holdActions,enemyAttack});
+     const result=run(id,team.ids,team.level,seed,strategy,{holdActions,enemyAttack,finalAttack});
      total++;wins+=result.winner==="ally";
      const validHold=id==="T-04"&&result.outcome==="held";
      held+=validHold;
@@ -250,7 +254,7 @@ test("007 exploration: compare hold duration and NPC pressure without changing l
     }
     byTeam.push({team:team.ids.join(",")+"@"+team.level,...scores});
    }
-   console.log("NPCCHALLENGE007_TUNE "+JSON.stringify({id,holdActions,enemyAttack,
+   console.log("NPCCHALLENGE007_TUNE "+JSON.stringify({id,holdActions,enemyAttack,finalAttack,
     total,wins,held,allAlive:full,stars3:three,byTeam}));
   }
  }

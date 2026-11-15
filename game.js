@@ -36,7 +36,7 @@ const NPC_PILOT_VISUALS=NPC_PILOT_ENABLED&&typeof NpcEnemyData!=="undefined"
 const NPC_MISSION_PILOT_ENABLED=typeof location!=="undefined"&&
  /(?:^|[?&])npcMissionPilot=1(?:&|$)/.test(location.search);
 const NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED&&typeof NpcMissionPilot!=="undefined"
- ? NpcMissionPilot.spawn("demo-mission-2")||[]:[];
+ ? NpcMissionPilot.visuals():[];
 const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean),NPC_MISSION_VISUALS);
 const $=s=>document.querySelector(s);
 // ENV022: default temporary concept-art backdrop. Combat visuals stay unchanged.
@@ -807,10 +807,10 @@ function battleLineup(){
     debuffPotency:0,debuffResistance:StoryTrialData.statusPilot.enemyResistance[i]}))];
  // NPCMISSION002: explicit, noncanonical pilot for the second demo mission.
  // The previous five-enemy roster remains the normal production path.
- if(battleIsCampaign&&activeMissionId==="demo-mission-2"&&NPC_MISSION_PILOT_ENABLED){
-  const enemies=typeof NpcMissionPilot!=="undefined"?
-   NpcMissionPilot.spawn(activeMissionId):null;
-  if(!enemies||enemies.length!==NPC_MISSION_VISUALS.length)
+ if(battleIsCampaign&&NPC_MISSION_PILOT_ENABLED&&
+    typeof NpcMissionPilot!=="undefined"&&NpcMissionPilot.get(activeMissionId)){
+  const enemies=NpcMissionPilot.spawn(activeMissionId);
+  if(!enemies||enemies.some(enemy=>!NPC_MISSION_VISUALS.some(visual=>visual.id===enemy.id)))
    throw Error("NPC_MISSION_PILOT_TEMPLATE_MISSING");
   return [...selectedParty(),...enemies];
  }
@@ -854,6 +854,13 @@ function battleFutureWaves(){
    if(!enemy)throw Error("Unknown challenge wave enemy");
    return progressedEnemy(enemy);
   }));
+ }
+ if(battleIsNpcMissionPilot){
+  const waves=NpcMissionPilot.spawnWaves(activeMissionId);
+  if(!waves||waves.some(wave=>wave.some(enemy=>
+     !NPC_MISSION_VISUALS.some(visual=>visual.id===enemy.id))))
+   throw Error("NPC_MISSION_PILOT_WAVE_MISSING");
+  return waves;
  }
  const mission=battleIsCampaign&&MissionData.get(activeMissionId);
  return (mission&&mission.futureEnemyWaves||[]).map(ids=>ids.map(id=>{
@@ -1079,7 +1086,7 @@ function showScreen(id){
   missionResultSaveFailed=false;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
   battleIsNpcMissionPilot=battleIsCampaign&&NPC_MISSION_PILOT_ENABLED&&
-   activeMissionId==="demo-mission-2";
+   typeof NpcMissionPilot!=="undefined"&&!!NpcMissionPilot.get(activeMissionId);
   battleIsLoreTraining=squadReturnScreen==="loreTraining";
   battleIsLoreRequired=squadReturnScreen==="loreRequired"&&!!loreRequiredContext;
   battleIsStoryDemo=squadReturnScreen==="storyDemo"&&storyDemoState?.phase==="battle";
@@ -1098,7 +1105,7 @@ function showScreen(id){
     battleIsChallenge?"ИСПЫТАНИЕ · "+ChallengeCore.get(activeChallengeId).title:
    battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
    battleIsCampaign?(MissionData.get(activeMissionId).title+
-    (NPC_MISSION_PILOT_ENABLED&&activeMissionId==="demo-mission-2"?" · NPC-ПРОБА":"")):"ТЕСТОВАЯ АРЕНА";
+    (battleIsNpcMissionPilot?" · NPC-ПРОБА":"")):"ТЕСТОВАЯ АРЕНА";
   const trial=battleIsLoreRequired?LoreCampaignTrials.encounter(loreRequiredContext?.nodeId):null;
   const objective=$("#battleChallengeGoal");
   if(objective){
@@ -2498,12 +2505,13 @@ function renderCampaign(){
    const best=campaignProgress.bestStars[entry.missionId]||0;
    const cost=ProgressCore.missionEnergyCost(mission.id);
    const freeEntry=progress.saveVersion===3&&!completed;
-   const npcPilot=NPC_MISSION_PILOT_ENABLED&&mission.id==="demo-mission-2";
+   const npcPilot=NPC_MISSION_PILOT_ENABLED&&typeof NpcMissionPilot!=="undefined"&&
+    !!NpcMissionPilot.get(mission.id);
    const enough=npcPilot||freeEntry||ProgressCore.affordableRuns(progress,mission.id)>0;
    const status=completed?"Пройдено · Повторное прохождение доступно":available?"Не пройдено":"Заблокировано";
    const criteria=mission.stars.map((star,index)=>
     `<li><span class="mission-criteria-star">${index+1}★</span><span>${star.hint}</span></li>`).join("");
-   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}${npcPilot?" · NPC-ПРОБА":""}</h3><p>${entry.description}</p><p class="muted">${npcPilot?"Учебный бой с лекарем и пращником: без энергии, наград и сохранения оценки.":freeEntry?"Сюжетные попытки до первой победы: бесплатно. Повторы и симуляция: "+cost+" ⚡.":progress.saveVersion===3?"Повторный бой или симуляция: "+cost+" ⚡ за попытку.":"Стоимость входа: "+cost+" ⚡ за попытку (бой или симуляция)"}</p>${npcPilot?"":missionRewardLabel(mission.id)}<p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available&&enough?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${!npcPilot&&best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}" ${enough?"":"disabled"}>Симуляция</button>`:""}</div></div></article>`;
+   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}${npcPilot?" · NPC-ПРОБА":""}</h3><p>${entry.description}</p><p class="muted">${npcPilot?"Учебный бой: "+NpcMissionPilot.get(mission.id).label+". Без энергии, наград и сохранения оценки.":freeEntry?"Сюжетные попытки до первой победы: бесплатно. Повторы и симуляция: "+cost+" ⚡.":progress.saveVersion===3?"Повторный бой или симуляция: "+cost+" ⚡ за попытку.":"Стоимость входа: "+cost+" ⚡ за попытку (бой или симуляция)"}</p>${npcPilot?"":missionRewardLabel(mission.id)}<p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available&&enough?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${!npcPilot&&best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}" ${enough?"":"disabled"}>Симуляция</button>`:""}</div></div></article>`;
    }).join("");
    return `<div class="campaign-route"><h3>${route.title}</h3>${items}</div>`;
   }).join("");

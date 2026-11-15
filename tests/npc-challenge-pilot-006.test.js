@@ -213,7 +213,7 @@ test("NPCCHALLENGE006: URL, save path and real objective UI remain separated",()
  const js=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));
  assert.equal(pkg.version,"0.3.170");
  assert.match(html,/v0\.3\.170 · NPCCHALLENGE007/);
- assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.169/);
+ assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.170/);
  assert.match(js,/npcChallengePilot=1/);
  assert.match(js,/NpcChallengePilot\.criteria\(def\.id\)/);
  assert.match(js,/NpcChallengePilot\.goal\(activeChallengeId\)/);

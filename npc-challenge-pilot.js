@@ -67,6 +67,7 @@ const NpcChallengePilot=(()=>{
   const plan=get(id);
   if(!plan||!valid(plan))return null;
   return Object.freeze({
+   challengeId:id,
    enemyIds:Object.freeze(definitions(plan).map(x=>x.instanceId)),
    priorityId:plan.priorityId
   });

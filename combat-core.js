@@ -17,6 +17,9 @@ const CombatCore = (() => {
   }
   function activeEffects(fighter) {
     const regular=Object.keys(fighter.effects).map(type=>({type,remaining:effectCount(fighter,type)}));
+    if(fighter.insurance&&fighter.hp>0)regular.push({type:"insurance",remaining:fighter.insurance.remaining});
+    if(fighter.fieldSignal&&fighter.hp>0)regular.push({type:"field-signal",remaining:fighter.fieldSignal.remaining});
+    if(fighter.tacticalFocus&&fighter.hp>0)regular.push({type:"tactical-focus",remaining:1});
     if(typeof CombatStatusCore==="undefined")return regular;
     return regular.concat(CombatStatusCore.KINDS.flatMap(type=>{
       const status=CombatStatusCore.read(fighter,type);
@@ -172,6 +175,152 @@ const CombatCore = (() => {
       }
       recipient.leaderProtectionBonus=next;
     }
+  }
+
+
+  // ARTSAVASKILLS001 — tiny battle-local, nonmagical tactical states.
+  // No global timers, recursive actions or extra WebGL resources.
+  function livingTacticalLeader(battle,abilityKey){
+    const leader=battle.leaderId&&battle.fighters.find(f=>f.id===battle.leaderId);
+    if(!leader||leader.hp<=0||leader.side!=="ally")return null;
+    const rules=AbilityData.get(leader,"leader")?.combatRules;
+    return Number.isFinite(rules?.[abilityKey])&&rules[abilityKey]>0?{leader,rules}:null;
+  }
+  function grantTacticalMeter(battle,owner,amount,excludedIds=[]){
+    if(!Number.isFinite(amount)||amount<=0)return null;
+    const options=battle.fighters.filter(f=>f.side==="ally"&&f.hp>0&&
+      f.id!==owner.id&&!excludedIds.includes(f.id)&&
+      Array.isArray(f.tags)&&f.tags.includes("gardens-over-abyss"));
+    options.sort((a,b)=>b.meter-a.meter||a.index-b.index);
+    if(!options.length)return null;
+    const recipient=options[0];
+    recipient.meter=Math.min(1000,recipient.meter+amount);
+    battle.events.push({type:"field-tempo",actorId:owner.id,targetId:recipient.id,amount});
+    return recipient;
+  }
+  function insuranceRedirect(battle,attacker,target,hpLoss){
+    const insurance=target.insurance;
+    if(!insurance||target.side!=="ally"||attacker.side!=="enemy"||hpLoss<=0)return hpLoss;
+    const protector=battle.fighters.find(f=>f.id===insurance.ownerId&&f.side==="ally"&&f.hp>0);
+    if(!protector||protector.id===target.id){delete target.insurance;return hpLoss;}
+    const redirected=Math.min(hpLoss,protector.hp,Math.max(1,Math.round(hpLoss*insurance.percent/100)));
+    if(redirected<=0)return hpLoss;
+    protector.hp=Math.max(0,protector.hp-redirected);
+    delete target.insurance; // exactly one intervention for a real HP hit
+    const rules=passiveCombatRules(protector);
+    if(protector.hp>0&&rules?.insuranceFocusPercent>0){
+      protector.tacticalFocus={enemyId:attacker.id,
+       bonus:rules.insuranceFocusPercent,delay:rules.insuranceFocusDelay??0};
+    }
+    battle.events.push({type:"insurance-triggered",actorId:protector.id,
+     targetId:target.id,sourceId:attacker.id,amount:redirected});
+    battle.events.push({type:"damage",actorId:attacker.id,targetId:protector.id,
+     amount:redirected,remainingHp:protector.hp,hpDamage:redirected});
+    if(protector.hp===0){
+      protector.guardHits=0;protector.weakenAttacks=0;
+      battle.events.push({type:"death",targetId:protector.id});
+    }else if(Number.isFinite(insurance.afterMeter)&&insurance.afterMeter>0){
+      protector.meter=Math.min(1000,protector.meter+insurance.afterMeter);
+    }
+    const leadership=livingTacticalLeader(battle,"insuranceAllyMeter");
+    if(leadership&&leadership.leader.id===protector.id)
+      grantTacticalMeter(battle,protector,leadership.rules.insuranceAllyMeter,[target.id]);
+    return hpLoss-redirected;
+  }
+  function tacticalDamageBonus(battle,actor,target,raw){
+    let percent=0;
+    if(actor.tacticalFocus?.enemyId===target.id)
+      percent+=actor.tacticalFocus.bonus;
+    const w=battle.coordinatedWindow;
+    if(w?.first?.kind==="attack"&&w.ownerId!==actor.id&&actor.side==="ally"&&
+       w.first.actorId!==actor.id&&w.first.targetId===target.id)
+      percent+=w.damagePercent;
+    return percent?Math.round(raw*(1+percent/100)):raw;
+  }
+  function coordinateCompletion(battle,owner){
+    const rules=passiveCombatRules(owner);
+    if(owner.hp>0&&rules){
+      const recovery=rules.coordinationCooldownRecovery??0;
+      owner.specialCooldown=Math.max(0,owner.specialCooldown-recovery);
+      if(rules.coordinationTempo>0)
+        grantTacticalMeter(battle,owner,rules.coordinationTempo);
+    }
+    const leader=livingTacticalLeader(battle,"coordinationAllyMeter");
+    if(leader&&leader.leader.id===owner.id)
+      grantTacticalMeter(battle,owner,leader.rules.coordinationAllyMeter);
+  }
+  function finishTacticalAction(battle,actor,ability,primaryTarget){
+    // Called AFTER the normal finishTurn: any meter gained here moves a *future*
+    // turn, never generates an immediate free action.
+    if(actor.side!=="ally")return;
+    if(actor.id==="sava"&&ability.id==="basic"&&ability.nextAllyMeter>0)
+      grantTacticalMeter(battle,actor,ability.nextAllyMeter);
+    if(actor.fieldSignal){
+      battle.events.push({type:"field-signal-used",actorId:actor.id,
+        sourceId:actor.fieldSignal.ownerId});
+      delete actor.fieldSignal;
+    }
+    if(actor.tacticalFocus)delete actor.tacticalFocus;
+    if(actor.insurance){
+      actor.insurance.remaining--;
+      if(actor.insurance.remaining<=0)delete actor.insurance;
+    }
+    const w=battle.coordinatedWindow;
+    if(!w||w.ownerId===actor.id)return; // Sava's casting turn is not a chain link.
+    const owner=battle.fighters.find(f=>f.id===w.ownerId);
+    if(!owner||owner.hp<=0){battle.coordinatedWindow=null;return;}
+    const hit=battle.events.find(e=>e.type==="damage"&&e.actorId===actor.id&&
+       (e.targetId===primaryTarget?.id));
+    let step=null;
+    if(ability.kind==="damage"&&hit)step={kind:"attack",actorId:actor.id,targetId:primaryTarget.id};
+    else if(w.defenseEnabled&&(ability.kind==="guard"||ability.kind==="insurance")){
+      const protectedIds=ability.target==="all-allies"?
+        battle.fighters.filter(f=>f.side==="ally"&&f.hp>0).map(f=>f.id):
+        [primaryTarget?.id].filter(Boolean);
+      step={kind:"defense",actorId:actor.id,protectedIds};
+    }
+    const first=w.first;
+    let success=null;
+    if(first&&actor.id!==first.actorId){
+      if(first.kind==="attack"&&step?.kind==="attack"&&
+         first.targetId===step.targetId)success="attack";
+      if(first.kind==="defense"&&first.protectedIds.includes(actor.id))
+        success="defense";
+    }
+    if(success){
+      if(success==="defense")actor.meter=Math.min(1000,actor.meter+w.defenseMeter);
+      battle.events.push({type:"coordinated-completion",kind:success,
+       actorId:actor.id,sourceId:w.first.actorId,ownerId:w.ownerId});
+      battle.coordinatedWindow=null;
+      coordinateCompletion(battle,owner);
+      return;
+    }
+    if(!first&&step)w.first=step;
+    w.remainingActions--;
+    if(w.remainingActions<=0){
+      battle.events.push({type:"coordinated-expired",ownerId:w.ownerId});
+      battle.coordinatedWindow=null;
+    }
+  }
+  function disruptDefinition(battle,actor,original){
+    if(actor.side!=="enemy"||!["special","powerful"].includes(original.id)||
+       typeof CombatStatusCore==="undefined"||
+       !CombatStatusCore.read(actor,"disrupted-plan"))return {ability:original,disrupted:false};
+    const secondary=!!(original.onHitStatus||original.followUpStatusAll||
+      original.followUpEffects?.length||original.weakening>0||original.tauntTurns);
+    return {ability:{...original,onHitStatus:undefined,followUpStatusAll:undefined,
+       followUpEffects:[],weakening:0,tauntTurns:undefined},
+       disrupted:true,secondary};
+  }
+  function finishDisruption(battle,actor,ability,info){
+    if(!info?.disrupted)return;
+    CombatStatusCore.remove(actor,"disrupted-plan");
+    if(!info.secondary){
+      const key=ability.id==="special"?"specialCooldown":"powerfulCooldown";
+      actor[key]=Math.max(0,actor[key]+1);
+    }
+    battle.events.push({type:"disrupted-plan",actorId:actor.id,
+      fallback:!info.secondary});
   }
 
   function makeFighter(hero,index,meter) {

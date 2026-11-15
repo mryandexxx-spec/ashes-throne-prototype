@@ -178,9 +178,11 @@ const AbilityData=(()=>{
    if(actor?.id==="nada")return Object.freeze({...typedBasic,name:"Прицельное действие",multiplier:.8,
     onHitStatus:Object.freeze({type:"read-move",stacks:1,turns:2})});
    if(actor?.id==="liora")return Object.freeze({...typedBasic,name:"Удар щитом"});
-   if(actor?.id==="art")return Object.freeze({...typedBasic,name:"Сбить шаг",multiplier:1});
+   if(actor?.id==="art")return Object.freeze({...typedBasic,name:"Сбить шаг",multiplier:1,
+     fieldNote:"После реальной Страховки следующий удар по нападавшему получает усиление Собранности."});
    if(actor?.id==="sava")return Object.freeze({...typedBasic,name:"Отметить момент",
-    multiplier:.65,nextAllyMeter:70});
+    multiplier:.65,nextAllyMeter:70,
+    fieldNote:"После действия следующий союзник Садов получает ускорение инициативы; бесплатных ходов нет."});
    // REN-COMBAT-B: story-only temporary skill level; no v3 progression.
    if(actor?.id==="trial-ren"||actor?.id==="ren"){
     const level=actor.skillLevels?.basic;

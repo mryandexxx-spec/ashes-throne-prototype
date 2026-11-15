@@ -45,9 +45,9 @@ test("ARTSAVA001 exposes permanent selectable heroes with typed 14-stat profiles
   assert.ok(HeroData.get(id).biography.length>70);
   assert.ok(G.offered(classId,"weapon",1).length>=1);
  }
- assert.equal(Abilities.get({id:"art"},"special").kind,"guard");
- assert.equal(Abilities.get({id:"sava"},"special").kind,"damage");
- assert.equal(Abilities.get({id:"art"},"passive").name,"Пассивная способность (не определена)");
+ assert.equal(Abilities.get({id:"art"},"special").kind,"insurance");
+ assert.equal(Abilities.get({id:"sava"},"special").kind,"signal");
+ assert.equal(Abilities.get({id:"art"},"passive").name,"Знать предел");
 });
 test("ARTSAVA001 migrates exact valid 8-hero save once, preserving values, items, revision and old squad",()=>{
  const local=db();const old=old8();const raw=JSON.stringify(old);

@@ -19,7 +19,7 @@ async function run(name,type){
   url.searchParams.set("npcMissionPilot","1");
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v0.3.168 · NPCCHALLENGE005");
+   "Прототип · v0.3.169 · NPCCHALLENGE005");
   // Simulate only prerequisites in memory, not in storage or user economy.
   await page.evaluate(()=>{
    campaignProgress.completed["black-pass-ambush"]=true;

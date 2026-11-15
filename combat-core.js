@@ -1036,7 +1036,11 @@ const CombatCore = (() => {
     }
   }
   function tickActorStatuses(actor){
-    if(typeof CombatStatusCore!=="undefined")CombatStatusCore.tickOwnTurn(actor);
+    if(typeof CombatStatusCore!=="undefined"){
+      CombatStatusCore.tickOwnTurn(actor);
+      if(!CombatStatusCore.read(actor,"disrupted-plan"))
+        delete actor.tacticalDisruptDelay;
+    }
     if(Number.isSafeInteger(actor.emergencyGuardCooldown)&&actor.emergencyGuardCooldown>0)
       actor.emergencyGuardCooldown--;
   }

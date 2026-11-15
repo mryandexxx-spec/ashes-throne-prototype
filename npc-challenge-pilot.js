@@ -134,10 +134,6 @@ const NpcChallengePilot=(()=>{
   if(typeof NpcEnemyData==="undefined")return [];
   return Object.values(catalog).flatMap(p=>definitions(p).map(make)).filter(Boolean);
  }
- const lateGoal=id=>id==="T-03"?
-  "2★: перевязчик погиб последним и отдельно; 3★: дополнительно все герои живы.":
-  id==="N-03"?
-  "3★: все герои живы, суммарное здоровье отряда не ниже 95% от максимума.":null;
  function criteria(id){
   if(id==="T-03")return Object.freeze([
    "1★ — победить",

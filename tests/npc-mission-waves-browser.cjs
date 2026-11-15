@@ -93,6 +93,7 @@ async function run(name,type){
   assert.equal(result.wave,2);
   assert.match(result.stars,/Тестовая оценка: [★☆]{3}/);
   assert.match(result.stars,/не сохраняется/);
+  assert.match(result.text,/Проверка двух волн противников/);
   assert.match(result.text,/Энергия, задания, награды и сохранённые звёзды не изменены/);
   const after=await page.evaluate(()=>({
    wallet:JSON.stringify(progress),campaign:JSON.stringify(campaignProgress),

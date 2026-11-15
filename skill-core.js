@@ -138,7 +138,7 @@ const SkillCore=(()=>{
    special:Object.freeze({percent:[40,40,45,45,50,60],turns:[2,3,3,3,4,4],
     afterMeter:[0,0,0,0,60,100],cooldown:[2,2,2,2,2,2]}),
    powerful:Object.freeze({damage:[1.05,1.1,1.16,1.2,1.26,1.32],
-    turns:[2,2,2,3,3,3],delay:[0,0,80,80,110,140]})
+    turns:[2,2,2,3,3,3],delay:[0,0,1,1,2,2]})
   }),
   sava:Object.freeze({
    basic:Object.freeze({damage:[.65,.7,.75,.8,.84,.9],

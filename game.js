@@ -37,7 +37,7 @@ const NPC_MISSION_PILOT_ENABLED=typeof location!=="undefined"&&
  /(?:^|[?&])npcMissionPilot=1(?:&|$)/.test(location.search);
 const NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED&&typeof NpcMissionPilot!=="undefined"
  ? NpcMissionPilot.visuals():[];
-// NPCCHALLENGE004: five extra capsule meshes only with explicit URL opt-in.
+// NPCCHALLENGE004/005: reserve 11 lightweight NPC capsules only with opt-in URL.
 const NPC_CHALLENGE_PILOT_ENABLED=typeof location!=="undefined"&&
  /(?:^|[?&])npcChallengePilot=1(?:&|$)/.test(location.search);
 const NPC_CHALLENGE_VISUALS=NPC_CHALLENGE_PILOT_ENABLED&&typeof NpcChallengePilot!=="undefined"
@@ -1675,7 +1675,7 @@ function renderChallenges(){
   }).join("");
  }else container.innerHTML="";
  $("#challengeSaveStatus").textContent=NPC_CHALLENGE_PILOT_ENABLED?
-  "NPC-пробы T-01/N-01: без записи оценки и ежедневных задач. Другие испытания сохраняют обычный прогресс.":
+  "NPC-пробы T-01/T-02/N-01/N-02: оценка и ежедневные задачи не сохраняются. Остальные испытания ведут обычный прогресс.":
   challengeSaveBlocked?
   "Прогресс испытаний недоступен: бои доступны, сохранение заблокировано.":
   challengeSaveAvailable?"Лучшая оценка сохраняется в этом браузере.":
@@ -1714,8 +1714,8 @@ function renderChallengeResult(){
   $("#challengeResultName").textContent+=" · NPC-ПРОБА";
   $("#challengeResultStars").textContent="Тестовая оценка: "+"★".repeat(stars)+
    "☆".repeat(3-stars)+" (не сохраняется)";
-  $("#challengeResultText").textContent="Проверка "+(activeChallengeId==="T-01"?
-   "первой приоритетной цели":"двух волн")+" с новыми NPC. Энергия, ежедневные задачи, награды и постоянные оценки не изменены.";
+  $("#challengeResultText").textContent="Проверка "+(ChallengeCore.get(activeChallengeId)?.kind==="tactical"?
+   "выбора первоочередной цели":"двух волн")+" с новыми NPC. Энергия, ежедневные задачи, награды и постоянные оценки не изменены.";
   $("#challengeResultRetry").textContent="Повторить пробу";
   return;
  }

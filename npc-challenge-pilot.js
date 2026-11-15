@@ -1,4 +1,4 @@
-/* NPCCHALLENGE004 — [PROPOSAL] opt-in T-01 / N-01 NPC trial rosters.
+/* NPCCHALLENGE004/005 — [PROPOSAL] opt-in T-01/T-02/N-01/N-02 NPC trials.
  * A separate, reward-free training preview. Existing challenge IDs, scoring,
  * daily tasks, saves, progression and normal non-NPC opponents are untouched.
  */
@@ -18,6 +18,16 @@ const NpcChallengePilot=(()=>{
    ]),
    priorityId:"npc-t01-signaller",futureWaves:Object.freeze([])
   }),
+  // T-02 is about disabling the fast attacker before the slower guard.
+  "T-02":Object.freeze({
+   id:"T-02",kind:"tactical",label:"NPC-ПРОБА · быстрая угроза",
+   encounterTag:"noncanonical-demo-training",
+   enemyIds:Object.freeze([
+    unit("npc-trail-interceptor","npc-t02-interceptor",70,6),
+    unit("npc-pass-guard","npc-t02-guard",78,12)
+   ]),
+   priorityId:"npc-t02-interceptor",futureWaves:Object.freeze([])
+  }),
   "N-01":Object.freeze({
    id:"N-01",kind:"onslaught",label:"NPC-ПРОБА · две волны",
    encounterTag:"noncanonical-demo-training",
@@ -28,6 +38,20 @@ const NpcChallengePilot=(()=>{
    priorityId:null,
    futureWaves:Object.freeze([Object.freeze([
     unit("npc-ridge-slinger","npc-n01-slinger",65,5)
+   ])])
+  }),
+  // N-02 escalates from two harassers to a guarded field medic.
+  "N-02":Object.freeze({
+   id:"N-02",kind:"onslaught",label:"NPC-ПРОБА · смена караула",
+   encounterTag:"noncanonical-demo-training",
+   enemyIds:Object.freeze([
+    unit("npc-ridge-slinger","npc-n02-slinger",60,5),
+    unit("npc-route-signaller","npc-n02-signaller",52,4)
+   ]),
+   priorityId:null,
+   futureWaves:Object.freeze([Object.freeze([
+    unit("npc-watch-captain","npc-n02-captain",90,12),
+    unit("npc-field-medic","npc-n02-medic",45,4)
    ])])
   })
  });

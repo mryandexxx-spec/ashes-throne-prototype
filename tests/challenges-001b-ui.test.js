@@ -33,7 +33,7 @@ test("pilot uses the real player squad and custom enemy waves, leaving campaign 
  ];
  for(const part of checks)assert.ok(game.includes(part),part);
  assert.ok(game.includes('battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId'));
- assert.ok(game.includes('if(battleIsCampaign&&!freeStoryEntry){'));
+ assert.ok(game.includes('if(battleIsCampaign&&!battleIsNpcMissionPilot&&!freeStoryEntry){'),"only real campaign costs energy");
  assert.ok(!read("campaign-data.js").includes("T-01"));
  assert.ok(!read("mission-data.js").includes("N-01"));
  assert.ok(!read("hero-collection-core.js").includes("T-01"));

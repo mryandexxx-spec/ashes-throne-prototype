@@ -45,7 +45,7 @@ test("operation routes only to shared battle and does not pay or alter campaign"
  ];
  for(const value of checks)assert.ok(game.includes(value),value);
  assert.match(game,/battleIsCampaign=squadReturnScreen==="campaign"/);
- assert.match(game,/if\(battleIsCampaign&&!freeStoryEntry\)/);
+ assert.match(game,/if\(battleIsCampaign&&!battleIsNpcMissionPilot&&!freeStoryEntry\)/);
  assert.ok(!read("mission-data.js").includes("OPS-001"));
  assert.ok(!read("campaign-data.js").includes("OPS-001"));
  assert.ok(!read("daily-core.js").includes("OPS-001"));

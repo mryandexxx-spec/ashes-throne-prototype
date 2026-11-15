@@ -32,7 +32,12 @@ const NPC_PILOT_IDS=Object.freeze(["npc-pass-guard","npc-sarkh-land-courier","np
 const NPC_PILOT_VISUALS=NPC_PILOT_ENABLED&&typeof NpcEnemyData!=="undefined"
  ? NPC_PILOT_IDS.map((id,i)=>NpcEnemyData.spawn(id,{instanceId:id+"-training-"+(i+1)}))
  : [];
-const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean));
+// NPCMISSION002: opt-in only; ordinary sessions allocate no extra 3D meshes.
+const NPC_MISSION_PILOT_ENABLED=typeof location!=="undefined"&&
+ /(?:^|[?&])npcMissionPilot=1(?:&|$)/.test(location.search);
+const NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED&&typeof NpcMissionPilot!=="undefined"
+ ? NpcMissionPilot.spawn("demo-mission-2")||[]:[];
+const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean),NPC_MISSION_VISUALS);
 const $=s=>document.querySelector(s);
 // ENV022: default temporary concept-art backdrop. Combat visuals stay unchanged.
 // Fixed image has no parallax; it is NOT a rendered/reconstructed 3D environment.
@@ -263,6 +268,7 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
  if(typeof renderHeadquarters==="function")renderHeadquarters();
 });
 let battleIsCampaign=false;
+let battleIsNpcMissionPilot=false; // Test-only, no energy, rewards or save writes.
 let battleIsLoreTraining=false; // Noncanonical combat, no costs or rewards.
 let battleIsLoreRequired=false;
 let loreRequiredContext=null,loreRequiredResult=null;
@@ -799,6 +805,15 @@ function battleLineup(){
   return [...StoryTrialData.heroes(),...ENEMIES.slice(0,2).map((e,i)=>
    progressedEnemy({...e,name:i===0?"Старший охраны":"Наёмный охранник",
     debuffPotency:0,debuffResistance:StoryTrialData.statusPilot.enemyResistance[i]}))];
+ // NPCMISSION002: explicit, noncanonical pilot for the second demo mission.
+ // The previous five-enemy roster remains the normal production path.
+ if(battleIsCampaign&&activeMissionId==="demo-mission-2"&&NPC_MISSION_PILOT_ENABLED){
+  const enemies=typeof NpcMissionPilot!=="undefined"?
+   NpcMissionPilot.spawn(activeMissionId):null;
+  if(!enemies||enemies.length!==NPC_MISSION_VISUALS.length)
+   throw Error("NPC_MISSION_PILOT_TEMPLATE_MISSING");
+  return [...selectedParty(),...enemies];
+ }
  // Mission #2 tests five enemies; the shared enemy AI is mission-independent.
  const enemies=battleIsCampaign&&activeMissionId==="demo-mission-2"?ENEMIES:ENEMIES.slice(0,2);
  // Reuse training templates, not the noncanonical "Conclave" story identities.
@@ -1063,6 +1078,8 @@ function showScreen(id){
   missionEntryPaid=false;
   missionResultSaveFailed=false;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
+  battleIsNpcMissionPilot=battleIsCampaign&&NPC_MISSION_PILOT_ENABLED&&
+   activeMissionId==="demo-mission-2";
   battleIsLoreTraining=squadReturnScreen==="loreTraining";
   battleIsLoreRequired=squadReturnScreen==="loreRequired"&&!!loreRequiredContext;
   battleIsStoryDemo=squadReturnScreen==="storyDemo"&&storyDemoState?.phase==="battle";
@@ -1080,7 +1097,8 @@ function showScreen(id){
     battleIsLoreTraining?(NPC_PILOT_ENABLED?"ПРОБА NPC · УЧЕБНЫЙ БОЙ (ВНЕ КАНОНА)":"ПЯТЬ ТЕНЕЙ · ТРЕНИРОВКА (ВНЕ КАНОНА)"):
     battleIsChallenge?"ИСПЫТАНИЕ · "+ChallengeCore.get(activeChallengeId).title:
    battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
-   battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
+   battleIsCampaign?(MissionData.get(activeMissionId).title+
+    (NPC_MISSION_PILOT_ENABLED&&activeMissionId==="demo-mission-2"?" · NPC-ПРОБА":"")):"ТЕСТОВАЯ АРЕНА";
   const trial=battleIsLoreRequired?LoreCampaignTrials.encounter(loreRequiredContext?.nodeId):null;
   const objective=$("#battleChallengeGoal");
   if(objective){
@@ -1107,7 +1125,7 @@ function showScreen(id){
   }
   const freeStoryEntry=battleIsCampaign&&progress.saveVersion===3&&
    !campaignProgress.completed[activeMissionId];
-  if(battleIsCampaign&&!freeStoryEntry&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
+  if(battleIsCampaign&&!battleIsNpcMissionPilot&&!freeStoryEntry&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
    showScreen("squad");
    const warning=$("#squadWarning");
    if(warning){warning.textContent="Недостаточно энергии для входа в миссию.";warning.hidden=false;}
@@ -1120,7 +1138,7 @@ function showScreen(id){
    if(!engine)initBabylon();
    resetArenaCamera(); // Start every encounter from the approved perspective.
    engine.resize();
-   if(battleIsCampaign&&!freeStoryEntry){
+   if(battleIsCampaign&&!battleIsNpcMissionPilot&&!freeStoryEntry){
     if(!ProgressCore.spendEnergy(progress,activeMissionId))throw new Error("Недостаточно энергии");
     entryPaid=true;
     if(!persistProgress())throw new Error("Не удалось сохранить расход энергии");
@@ -2480,11 +2498,12 @@ function renderCampaign(){
    const best=campaignProgress.bestStars[entry.missionId]||0;
    const cost=ProgressCore.missionEnergyCost(mission.id);
    const freeEntry=progress.saveVersion===3&&!completed;
-   const enough=freeEntry||ProgressCore.affordableRuns(progress,mission.id)>0;
+   const npcPilot=NPC_MISSION_PILOT_ENABLED&&mission.id==="demo-mission-2";
+   const enough=npcPilot||freeEntry||ProgressCore.affordableRuns(progress,mission.id)>0;
    const status=completed?"Пройдено · Повторное прохождение доступно":available?"Не пройдено":"Заблокировано";
    const criteria=mission.stars.map((star,index)=>
     `<li><span class="mission-criteria-star">${index+1}★</span><span>${star.hint}</span></li>`).join("");
-   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="muted">${freeEntry?"Сюжетные попытки до первой победы: бесплатно. Повторы и симуляция: "+cost+" ⚡.":progress.saveVersion===3?"Повторный бой или симуляция: "+cost+" ⚡ за попытку.":"Стоимость входа: "+cost+" ⚡ за попытку (бой или симуляция)"}</p>${missionRewardLabel(mission.id)}<p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available&&enough?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}" ${enough?"":"disabled"}>Симуляция</button>`:""}</div></div></article>`;
+   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}${npcPilot?" · NPC-ПРОБА":""}</h3><p>${entry.description}</p><p class="muted">${npcPilot?"Учебный бой с лекарем и пращником: без энергии, наград и сохранения оценки.":freeEntry?"Сюжетные попытки до первой победы: бесплатно. Повторы и симуляция: "+cost+" ⚡.":progress.saveVersion===3?"Повторный бой или симуляция: "+cost+" ⚡ за попытку.":"Стоимость входа: "+cost+" ⚡ за попытку (бой или симуляция)"}</p>${npcPilot?"":missionRewardLabel(mission.id)}<p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available&&enough?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${!npcPilot&&best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}" ${enough?"":"disabled"}>Симуляция</button>`:""}</div></div></article>`;
    }).join("");
    return `<div class="campaign-route"><h3>${route.title}</h3>${items}</div>`;
   }).join("");
@@ -2581,6 +2600,16 @@ if(simulationClose)simulationClose.addEventListener("click",()=>{
 });
 function renderMissionResult(){
  const won=state.winner==="ally";
+ if(battleIsNpcMissionPilot){
+  $("#missionResultChapter").textContent="NPCMISSION002 · ВНЕ КАНОНА";
+  $("#missionResultTitle").textContent=won?"Пробный бой выигран":"Пробный бой проигран";
+  $("#missionResultText").textContent="Проверка новой пары противников. Энергия, задания, награды и сохранённые звёзды не изменены.";
+  $("#missionResultStars").textContent="Тестовая оценка: "+"★".repeat(lastMissionStars)+
+   "☆".repeat(3-lastMissionStars)+" · Действий союзников: "+state.allyActions+" (не сохраняется)";
+  $("#missionResultRetry").textContent="Повторить пробу";
+  return;
+ }
+
  const entry=CampaignData.getMission(activeMissionId);
  const chapter=entry&&CampaignData.allChapters().find(c=>c.id===entry.chapterId);
  const chapterLabel=$("#missionResultChapter");
@@ -2676,7 +2705,7 @@ function syncBattleUI(){
  if(!state.active){cancelAutoTimer();autoBattle=false;}
  // Commit battle outcome immediately as before, even if the player leaves
  // the arena before the final animation ends. Only visual navigation waits.
- if(battleIsCampaign&&!state.active&&!missionResultRecorded){
+ if(battleIsCampaign&&!battleIsNpcMissionPilot&&!state.active&&!missionResultRecorded){
   const firstClear=state.winner==="ally"&&!campaignProgress.completed[activeMissionId];
   const beforeCampaign=JSON.parse(JSON.stringify(campaignProgress));
   const beforeWallet=progress.saveVersion===3?JSON.parse(JSON.stringify(progress)):null;
@@ -2709,6 +2738,11 @@ function syncBattleUI(){
   lastMissionStars=result.earned;
   if(walletSaved&&result.improved)
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
+  missionResultRecorded=true;
+ }
+ if(battleIsNpcMissionPilot&&!state.active&&!missionResultRecorded){
+  // Reuse the campaign star predicate, never touch campaignProgress or wallet.
+  lastMissionStars=MissionData.score(activeMissionId,state);
   missionResultRecorded=true;
  }
  if(battleIsSignal&&!state.active&&!signalResultRecorded){

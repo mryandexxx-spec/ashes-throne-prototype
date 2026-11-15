@@ -23,7 +23,7 @@ test("pilot uses the real player squad and custom enemy waves, leaving campaign 
   'openSquad("challenges")',
   'const first=def.enemyIds.filter(id=>!later.has(id));',
   'return [...selectedParty(),...enemies.map(progressedEnemy)];',
-  'ChallengeCore.start(activeChallengeId)',
+  'ChallengeCore.start(activeChallengeId,',
   'ChallengeCore.capture(challengeTracker,state.events||[])',
   'ChallengeCore.result(challengeProgress,activeChallengeId,state,challengeTracker)',
   'ChallengeCore.save(outcome.candidate,()=>window.localStorage,challengeSaveBlocked)',

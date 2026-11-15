@@ -129,9 +129,11 @@ const ProgressV3Core=(()=>{
     const validUpgrade=validateActive(candidate,heroes);
     if(!validUpgrade)return {status:"blocked",reason:"invalid-v3"};
     try{
-     const backupKey=KEY+(missing.includes("art")||missing.includes("sava")?".before-art-sava":
-       missing.includes("liora")?".before-liora":
-      missing.includes("ren")?".before-ren":".before-nada");
+     // Retain established backup keys for historical partial rosters. Only the
+     // 8 -> 10 transition uses the new Art/Sava backup; never overwrite old ones.
+     const backupKey=KEY+(missing.includes("ren")?".before-ren":
+       missing.includes("nada")?".before-nada":
+       missing.includes("liora")?".before-liora":".before-art-sava");
      if(storage.getItem(backupKey)===null){
       storage.setItem(backupKey,raw3);
       if(storage.getItem(backupKey)!==raw3)throw Error("backup verification failed");

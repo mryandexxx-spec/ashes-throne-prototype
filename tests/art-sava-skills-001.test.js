@@ -79,7 +79,7 @@ test("Art insurance triggers only on residual single-target HP damage; Liora gua
 });
 test("Art disruption blocks secondary enemy effects, not the attack or Nada's read-move",()=>{
  const enemy=mk("test-area-weaken","enemy",{hp:1500,atk:15,physicalAttack:15,speed:1});
- const b=create([mk("art",{invalid:true}?.side||"ally"),mk("nada"),enemy]);
+ const b=create([mk("art"),mk("nada"),enemy]);
  assert.equal(act(b,"art","powerful",enemy.id),true);
  assert.ok(Statuses.read(fighter(b,enemy.id),"disrupted-plan"));
  assert.equal(Statuses.applyReadMove(fighter(b,enemy.id),3,3),true);

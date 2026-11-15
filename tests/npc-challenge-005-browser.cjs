@@ -47,7 +47,7 @@ async function run(name,browserType){
   });
   await page.locator('#hqMoreMenu [data-screen="challenges"]').evaluate(el=>el.click());
   await page.locator("#challenges").waitFor({state:"visible",timeout:15000});
-  assert.match(await page.locator("#challengeSaveStatus").innerText(),/T-01\/T-02\/N-01\/N-02/);
+  assert.match(await page.locator("#challengeSaveStatus").innerText(),/T-01…T-03 \/ N-01…N-03/);
   await page.locator('[data-challenge-kind="tactical"]').click();
   const tCard=page.locator('[data-start-challenge="T-02"]').locator("xpath=ancestor::article");
   assert.equal(await page.locator('[data-start-challenge="T-02"]').isEnabled(),true);

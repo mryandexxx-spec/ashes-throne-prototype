@@ -179,7 +179,7 @@ test("NPCCHALLENGE004: source isolates opt-in challenge previews and preserves s
  assert.match(js,/if\(battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
  assert.match(js,/ChallengeCore\.save\(outcome.candidate,\(\)=>window.localStorage,challengeSaveBlocked\)/);
  assert.match(js,/NPC-пробы T-01…T-04 \/ N-01…N-04/);
- assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.169/);
+ assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.170/);
  assert.match(html,/v0\.3\.170 · NPCCHALLENGE007/);
  assert.equal(pkg.version,"0.3.170");
 });

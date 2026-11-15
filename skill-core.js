@@ -4,18 +4,16 @@ const SkillCore=(()=>{
  "use strict";
  const HERO_IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora","art","sava"]);
  const IDS=Object.freeze(["basic","special","powerful"]);
- const PASSIVE_IDS=Object.freeze(["ren","nada","liora"]);
+ const PASSIVE_IDS=Object.freeze(["ren","nada","liora","art","sava"]);
  const UPGRADABLE_IDS=Object.freeze([...IDS,"passive"]);
  // Optional v3 field. All pre-CHAR003 saves imply L1 without mutation.
  const freshPassiveLevels=()=>Object.fromEntries(PASSIVE_IDS.map(id=>[id,1]));
+ // Keep historical {ren,nada} and {ren,nada,liora} passive records valid.
+ // New heroes default to L1; no save rewrite solely for their passive skill.
  function validPassiveLevels(value){
-  // Historical CHAR003 saves legitimately contain only Ren and Nada.
-  // The optional Liora entry defaults to L1 without rewriting those saves.
-  return object(value)&&Object.keys(value).every(id=>PASSIVE_IDS.includes(id))&&
-   Object.keys(value).length>=(PASSIVE_IDS.length-1)&&
-   PASSIVE_IDS.filter(id=>id!=="liora").every(id=>
-    own(value,id)&&Number.isInteger(value[id])&&value[id]>=1&&value[id]<=MAX)&&
-   (!own(value,"liora")||(Number.isInteger(value.liora)&&value.liora>=1&&value.liora<=MAX));
+  if(!object(value)||!own(value,"ren")||!own(value,"nada"))return false;
+  return Object.entries(value).every(([id,n])=>PASSIVE_IDS.includes(id)&&
+   Number.isInteger(n)&&n>=1&&n<=MAX);
  }
  function passiveLevel(progress,id){
   if(!PASSIVE_IDS.includes(id))return null;
@@ -112,6 +110,15 @@ const SkillCore=(()=>{
    protectAllyBelowHpPercent:Object.freeze([35,35,40,40,45,45]),
    protectAllyGuardHits:Object.freeze([1,1,1,2,2,2]),
    protectAllyCooldownOwnTurns:Object.freeze([3,3,3,3,2,2])
+  }),
+  // ARTSAVASKILLS001: each level has an observable deterministic improvement.
+  art:Object.freeze({
+   insuranceFocusPercent:Object.freeze([12,14,16,18,20,24]),
+   insuranceFocusDelay:Object.freeze([0,0,35,45,55,85])
+  }),
+  sava:Object.freeze({
+   coordinationCooldownRecovery:Object.freeze([1,1,1,1,1,2]),
+   coordinationTempo:Object.freeze([0,0,0,25,50,80])
   })
  });
  function applyPassive(base,actor){
@@ -126,6 +133,22 @@ const SkillCore=(()=>{
  // Every array index is current skill level minus one. This table, not the
  // general +0.1 demo scaling, owns Ren/Nada's real active ability effects.
  const HERO_KITS=Object.freeze({
+  art:Object.freeze({
+   basic:Object.freeze({damage:[1,1.08,1.14,1.22,1.3,1.38]}),
+   special:Object.freeze({percent:[40,40,45,45,50,60],turns:[2,3,3,3,4,4],
+    afterMeter:[0,0,0,0,60,100],cooldown:[2,2,2,2,2,2]}),
+   powerful:Object.freeze({damage:[1.05,1.1,1.16,1.2,1.26,1.32],
+    turns:[2,2,2,3,3,3],delay:[0,0,80,80,110,140]})
+  }),
+  sava:Object.freeze({
+   basic:Object.freeze({damage:[.65,.7,.75,.8,.84,.9],
+    meter:[70,80,90,100,110,130]}),
+   special:Object.freeze({meter:[200,220,240,260,280,310],
+    turns:[2,2,2,3,3,3],cooldown:[2,2,2,2,2,2]}),
+   powerful:Object.freeze({window:[4,4,5,5,6,6],
+    damage:[12,12,12,18,18,22],
+    meter:[100,100,100,110,130,150]})
+  }),
   // LIORA001: [PROPOSAL] separate tank curves instead of generic +1 guard hit per rank.
   liora:Object.freeze({
    basic:Object.freeze({damage:[1,1.05,1.1,1.15,1.2,1.25]}),
@@ -150,6 +173,24 @@ const SkillCore=(()=>{
   const kit=HERO_KITS[heroId]?.[id];
   if(!kit)return base;
   const index=level-1;
+  if(heroId==="art"||heroId==="sava"){
+   if(base?.kind==="insurance")return {...base,
+    insurancePercent:kit.percent[index],insuranceTurns:kit.turns[index],
+    afterInterceptMeter:kit.afterMeter[index],cooldown:kit.cooldown[index]};
+   if(base?.kind==="signal")return {...base,
+    signalMeter:kit.meter[index],signalTurns:kit.turns[index],
+    cooldown:kit.cooldown[index]};
+   if(base?.kind==="coordinate")return {...base,
+    windowActions:kit.window[index],coordinationDamagePercent:kit.damage[index],
+    coordinationMeter:kit.meter[index],
+    defenseComboEnabled:level>=3};
+   if(base?.kind==="damage"){
+    return {...base,multiplier:kit.damage[index],
+     ...(heroId==="art"&&id==="powerful"?
+      {disruptTurns:kit.turns[index],disruptDelay:kit.delay[index]}:
+      heroId==="sava"&&id==="basic"?{nextAllyMeter:kit.meter[index]}:{})};
+   }
+  }
   if(heroId==="liora"&&base?.kind==="guard")
    return {...base,guardHits:kit.guard[index],cooldown:kit.cooldown[index]};
   if(base?.kind!=="damage")return base;

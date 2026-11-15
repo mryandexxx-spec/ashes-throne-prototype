@@ -80,7 +80,7 @@ test("NPCCHALLENGE004: original T-01/N-01 retain five isolated human NPC instanc
   x.originRegionId==="gardens-over-abyss"&&x.factionId===null));
  assert.notEqual(P.spawn("T-01")[0],P.spawn("T-01")[0]);
  const visuals=Array.from(P.visuals(),x=>x.id);
- assert.equal(visuals.length,11);
+ assert.equal(visuals.length,19);
  assert.equal(new Set(visuals).size,11);
  assert.ok(all.every(x=>visuals.includes(x.id)),"original five capsule IDs still reserved");
  assert.equal(N.get("npc-field-medic").stats.hp,103);
@@ -178,8 +178,8 @@ test("NPCCHALLENGE004: source isolates opt-in challenge previews and preserves s
  assert.match(js,/if\(battleIsChallenge&&!battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
  assert.match(js,/if\(battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
  assert.match(js,/ChallengeCore\.save\(outcome.candidate,\(\)=>window.localStorage,challengeSaveBlocked\)/);
- assert.match(js,/NPC-пробы T-01\/T-02\/N-01\/N-02/);
+ assert.match(js,/NPC-пробы T-01…T-03 \/ N-01…N-03/);
  assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.168/);
- assert.match(html,/v0\.3\.168 · NPCCHALLENGE005/);
- assert.equal(pkg.version,"0.3.168");
+ assert.match(html,/v0\.3\.169 · NPCCHALLENGE006/);
+ assert.equal(pkg.version,"0.3.169");
 });

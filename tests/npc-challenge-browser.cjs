@@ -43,7 +43,7 @@ async function check(name,type){
   // on the existing More menu item, as other browser regression tests do.
   await page.locator('#hqMoreMenu [data-screen="challenges"]').evaluate(el=>el.click());
   await page.locator("#challenges").waitFor({state:"visible",timeout:15000});
-  assert.match(await page.locator("#challengeSaveStatus").innerText(),/оценка и ежедневные задачи не сохраняются/);
+  assert.match(await page.locator("#challengeSaveStatus").innerText(),/оценки и ежедневные задачи не сохраняются/);
   await page.locator('[data-challenge-kind="tactical"]').click();
   const tCard=page.locator('[data-start-challenge="T-01"]').locator("xpath=ancestor::article");
   assert.match(await tCard.innerText(),/NPC-ПРОБА/);

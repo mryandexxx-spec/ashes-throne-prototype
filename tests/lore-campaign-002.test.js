@@ -40,7 +40,7 @@ test("LC-002: separate lore scripts and responsive CSS are loaded before app run
  assert.match(css,/@media \(orientation:landscape\) and \(max-height:540px\)/);
  assert.match(css,/\.lore-map-marker\{[^}]*width:46px;height:46px/);
  assert.match(css,/@media \(max-width:690px\)/);
- assert.equal(pkg.version,"0.3.159");
+ assert.equal(pkg.version,"0.3.160");
  assert.match(html,/id="buildVersion">Прототип · v0\.3\.159 · LORETRIALS001/);
 });
 test("LC-002: cover, map, node details and accessible list work with one event binding",()=>{

@@ -69,7 +69,7 @@ test("NPCMISSION002: mission-specific config does not change current campaigns o
  assert.equal(plan.enemyIds.length,2);
  assert.equal(new Set(plan.enemyIds.map(e=>e.instanceId)).size,2);
  const f=P.spawn("demo-mission-2"),again=P.spawn("demo-mission-2");
- assert.deepEqual(f.map(e=>e.archetypeId),["npc-ridge-slinger","npc-field-medic"]);
+ assert.deepEqual(Array.from(f,e=>e.archetypeId),["npc-ridge-slinger","npc-field-medic"]);
  assert.ok(f.every(x=>x.side==="enemy"&&x.speciesId==="human"&&x.originRegionId==="gardens-over-abyss"));
  assert.notEqual(f[0],again[0]);
  assert.equal(f[0].level,1);

@@ -186,7 +186,7 @@ test("NPCCHALLENGE005: only pilot roster and presentation change, not save routi
  const pkg=JSON.parse(read("package.json"));
  assert.equal(pkg.version,"0.3.169");
  assert.match(html,/v0\.3\.169 · NPCCHALLENGE006/);
- assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.168/);
+ assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.169/);
  assert.match(game,/npcChallengePilot=1/);
  assert.match(game,/NpcChallengePilot\.get\(activeChallengeId\)/);
  assert.match(game,/NpcChallengePilot\.spawnWaves\(activeChallengeId\)/);

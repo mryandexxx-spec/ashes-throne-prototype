@@ -60,11 +60,11 @@ function simulate(id,ids,level,seed,strategy){
   totalWaves:b.totalWaves,wave:b.wave,visitedSecond,
   firstKill:enemies[0]||null,killGroups:tracker.killGroups.filter(g=>g.length)};
 }
-test("NPCCHALLENGE004: only T-01/N-01 get five real, isolated human NPC instances",()=>{
+test("NPCCHALLENGE004: original T-01/N-01 retain five isolated human NPC instances",()=>{
  const t=P.get("T-01"),n=P.get("N-01");
  assert.ok(Object.isFrozen(t)&&Object.isFrozen(n));
- assert.equal(P.get("T-02"),null);
- assert.equal(P.get("N-02"),null);
+ assert.ok(P.get("T-02"),"successor tactical preview exists in separate mode");
+ assert.ok(P.get("N-02"),"successor onslaught preview exists in separate mode");
  assert.equal(P.get("invalid"),null);
  assert.equal(t.priorityId,"npc-t01-signaller");
  assert.equal(t.enemyIds.length,2);
@@ -79,7 +79,10 @@ test("NPCCHALLENGE004: only T-01/N-01 get five real, isolated human NPC instance
  assert.ok(all.every(x=>x.side==="enemy"&&x.speciesId==="human"&&
   x.originRegionId==="gardens-over-abyss"&&x.factionId===null));
  assert.notEqual(P.spawn("T-01")[0],P.spawn("T-01")[0]);
- assert.deepEqual(Array.from(P.visuals(),x=>x.id),all.map(x=>x.id));
+ const visuals=Array.from(P.visuals(),x=>x.id);
+ assert.equal(visuals.length,11);
+ assert.equal(new Set(visuals).size,11);
+ assert.ok(all.every(x=>visuals.includes(x.id)),"original five capsule IDs still reserved");
  assert.equal(N.get("npc-field-medic").stats.hp,103);
  assert.equal(N.get("npc-pass-guard").stats.hp,145);
  assert.equal(Q.get("T-01").priorityId,"ves");
@@ -175,8 +178,8 @@ test("NPCCHALLENGE004: source isolates opt-in challenge previews and preserves s
  assert.match(js,/if\(battleIsChallenge&&!battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
  assert.match(js,/if\(battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
  assert.match(js,/ChallengeCore\.save\(outcome.candidate,\(\)=>window.localStorage,challengeSaveBlocked\)/);
- assert.match(js,/NPC-пробы T-01\/N-01/);
- assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.167/);
- assert.match(html,/v0\.3\.167 · NPCCHALLENGE004/);
- assert.equal(pkg.version,"0.3.167");
+ assert.match(js,/NPC-пробы T-01\/T-02\/N-01\/N-02/);
+ assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.168/);
+ assert.match(html,/v0\.3\.168 · NPCCHALLENGE005/);
+ assert.equal(pkg.version,"0.3.168");
 });

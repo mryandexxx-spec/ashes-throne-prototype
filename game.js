@@ -1676,7 +1676,7 @@ function renderChallenges(){
   }).join("");
  }else container.innerHTML="";
  $("#challengeSaveStatus").textContent=NPC_CHALLENGE_PILOT_ENABLED?
-  "NPC-пробы T-01…T-03 / N-01…N-03: оценки и ежедневные задачи не сохраняются. Остальные испытания ведут обычный прогресс.":
+  "NPC-пробы T-01…T-03 / N-01…N-03: оценка и ежедневные задачи не сохраняются. Остальные испытания ведут обычный прогресс.":
   challengeSaveBlocked?
   "Прогресс испытаний недоступен: бои доступны, сохранение заблокировано.":
   challengeSaveAvailable?"Лучшая оценка сохраняется в этом браузере.":

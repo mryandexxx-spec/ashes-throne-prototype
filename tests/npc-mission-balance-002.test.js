@@ -74,6 +74,13 @@ test("NPCMISSION002: mission-specific config does not change current campaigns o
  assert.notEqual(f[0],again[0]);
  assert.equal(f[0].level,1);
  assert.equal(f[1].npcAbilities.special.healAmount,36);
+ assert.equal(f[0].hp,75);
+ assert.equal(f[0].protection,5);
+ assert.equal(f[1].hp,55);
+ assert.equal(f[1].protection,5);
+ assert.equal(N.get("npc-field-medic").stats.hp,103,
+  "only this mission is tuned; the archetype remains unchanged");
+ assert.equal(N.get("npc-ridge-slinger").stats.hp,88);
  assert.equal(M.get("demo-mission-2").stars.length,3);
  assert.equal(M.get("demo-mission-2").stars[2].conditions.at(-1).limit,9);
 });
@@ -106,7 +113,12 @@ test("NPCMISSION002: practical combat matrix for actual Gardens hero stats (L1, 
  }
  const full=results.filter(x=>x.ids===IDS.join(",")&&x.level===1);
  assert.ok(full.some(x=>x.won),"starter five must be able to beat the pilot");
- assert.ok(full.some(x=>x.stars>=2),"starter five must be able to win without casualties");
+ assert.ok(full.some(x=>x.stars===3),"third star must be achievable at reachable L1");
+ assert.ok(full.every(x=>x.stars>=2),"the five-hero starter roster should survive");
+ const smart=full.filter(x=>x.strategy==="focus-healer");
+ const naive=full.filter(x=>x.strategy==="focus-attacker");
+ assert.ok(smart.reduce((n,r)=>n+r.actions,0)<naive.reduce((n,r)=>n+r.actions,0),
+  "focusing the medic must save actions over ignoring treatment");
  const winRate=results.filter(x=>x.won).length/results.length;
  console.log("NPCMISSION002_BALANCE="+JSON.stringify({
   scenarios:results.length,winRate:Number(winRate.toFixed(3)),

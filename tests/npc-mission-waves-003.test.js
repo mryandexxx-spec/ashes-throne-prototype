@@ -1,5 +1,5 @@
 "use strict";
-/* NPCMISSION003: single opt-in two-wave encounter, no existing campaign mutation. */
+/* NPCCHALLENGE004: single opt-in two-wave encounter, no existing campaign mutation. */
 const test=require("node:test");
 const assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
@@ -56,7 +56,7 @@ function run(ids,level,seed,strategy){
   actions:battle.allyActions,alive:battle.fighters.filter(f=>f.side==="ally"&&f.hp>0).length,
   wave:battle.wave,strategy};
 }
-test("NPCMISSION003: two waves, immutable plans, unique IDs, unchanged legacy mission rules",()=>{
+test("NPCCHALLENGE004: two waves, immutable plans, unique IDs, unchanged legacy mission rules",()=>{
  const second=P.get("demo-mission-2"),third=P.get("demo-mission-3");
  assert.equal(second.enemyIds.length,2);
  assert.equal(second.futureWaves.length,0);
@@ -90,7 +90,7 @@ test("NPCMISSION003: two waves, immutable plans, unique IDs, unchanged legacy mi
  const campaign=Progress.fresh();
  assert.equal(Campaign.available(Campaign.getMission("demo-mission-3"),campaign),false);
 });
-test("NPCMISSION003: only opt-in two-wave mission; regular modes and visuals untouched",()=>{
+test("NPCCHALLENGE004: only opt-in two-wave mission; regular modes and visuals untouched",()=>{
  const game=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));
  assert.match(game,/npcMissionPilot=1/);
  assert.match(game,/NpcMissionPilot\.visuals\(\)/);
@@ -101,11 +101,11 @@ test("NPCMISSION003: only opt-in two-wave mission; regular modes and visuals unt
  assert.match(game,/if\(battleIsNpcMissionPilot&&!state.active&&!missionResultRecorded\)/);
  assert.match(game,/const ENEMIES=HEROES.filter\(h=>h.side==="enemy"\)/);
  assert.match(game,/NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED/);
- assert.match(html,/v0\.3\.166 · NPCMISSION003/);
+ assert.match(html,/v0\.3\.166 · NPCCHALLENGE004/);
  assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.166/);
- assert.equal(pkg.version,"0.3.166");
+ assert.equal(pkg.version,"0.3.167");
 });
-test("NPCMISSION003: 45 real two-wave bouts with reachable heroes, 3-star possibility and tactical value",()=>{
+test("NPCCHALLENGE004: 45 real two-wave bouts with reachable heroes, 3-star possibility and tactical value",()=>{
  const cases=[
   {ids:SQUAD,level:1},{ids:SQUAD,level:3},
   {ids:["ren","nada","sava"],level:3},
@@ -129,7 +129,7 @@ test("NPCMISSION003: 45 real two-wave bouts with reachable heroes, 3-star possib
  assert.ok(prudent.reduce((sum,x)=>sum+x.actions,0)<
   greedy.reduce((sum,x)=>sum+x.actions,0),"support-first saves actions");
  const avg=arr=>Number((arr.reduce((s,x)=>s+x.actions,0)/arr.length).toFixed(1));
- console.log("NPCMISSION003_BALANCE="+JSON.stringify({
+ console.log("NPCCHALLENGE004_BALANCE="+JSON.stringify({
   scenarios:results.length,wins:results.filter(x=>x.win).length,
   threeStars:results.filter(x=>x.stars===3).length,
   groups:cases.map(c=>{
@@ -143,7 +143,7 @@ test("NPCMISSION003: 45 real two-wave bouts with reachable heroes, 3-star possib
   }
  }));
 });
-test("NPCMISSION003: party wipe ends the mission instead of starting an extra wave",()=>{
+test("NPCCHALLENGE004: party wipe ends the mission instead of starting an extra wave",()=>{
  const battle=C.createBattle([hero("ren",1),...P.spawn("demo-mission-3")],
   P.spawnWaves("demo-mission-3"));
  battle.fighters.find(f=>f.id==="ren").hp=0;

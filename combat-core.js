@@ -705,7 +705,7 @@ const CombatCore = (() => {
   }
   // Legacy: weakening -> guard -> HP (unchanged).
   // Typed: weakening -> matching defense -> guard -> Protection -> HP.
-  function dealDamage(attacker,target,rawDamage,consumeWeakening=true,type="legacy",penetration=0){
+  function dealDamage(attacker,target,rawDamage,consumeWeakening=true,type="legacy",penetration=0,battle=null,canInsurance=false){
     let damage=Math.max(0,rawDamage);
     if(attacker.weakenAttacks>0)damage=Math.round(damage*0.7);
     if(type!=="legacy"){
@@ -724,9 +724,12 @@ const CombatCore = (() => {
     if(type!=="legacy"&&target.protection!==undefined){
       const absorbed=Math.min(damage,target.protection);
       target.protection-=absorbed;
-      target.hp=Math.max(0,target.hp-(damage-absorbed));
+      const hpLoss=damage-absorbed;
+      target.hp=Math.max(0,target.hp-(battle&&canInsurance?
+        insuranceRedirect(battle,attacker,target,hpLoss):hpLoss));
     }else{
-      target.hp=Math.max(0,target.hp-damage);
+      target.hp=Math.max(0,target.hp-(battle&&canInsurance?
+        insuranceRedirect(battle,attacker,target,damage):damage));
     }
     if(target.hp===0){
       target.guardHits=0;
@@ -846,6 +849,9 @@ const CombatCore = (() => {
        actor.meter<1000-1e-8)return false;
     const ability=AbilityData.get(actor,abilityId);
     if(!ability)return false;
+    if(["insurance","signal"].includes(ability.kind)&&
+       !battle.fighters.some(f=>f.side===actor.side&&f.hp>0&&f.id!==actor.id))
+      return false;
     if(abilityId==="basic")return ability.id==="basic";
     if(abilityId==="special")return ability.id==="special"&&actor.specialCooldown===0;
     if(abilityId==="powerful")return ability.id==="powerful"&&actor.powerfulCooldown===0;
@@ -1086,9 +1092,10 @@ const CombatCore = (() => {
       damageReduction:READ_MOVE_DAMAGE_REDUCTION_PERCENT});
     return true;
   }
-  function performMultiTargetAbility(battle, actor, ability, targets, chosenPrimaryIndex,readMovePenalty=false) {
+  function performMultiTargetAbility(battle, actor, ability, targets, chosenPrimaryIndex,readMovePenalty=false,disruption=null) {
     if(!["self","all-enemies","all-allies"].includes(ability.target))return false;
-    if(!["damage","heal","guard"].includes(ability.kind))return false;
+    if(!["damage","heal","guard","coordinate"].includes(ability.kind))return false;
+    if(ability.kind==="coordinate"&&ability.target!=="self")return false;
     if(ability.target==="all-enemies"&&ability.kind!=="damage")return false;
     if((ability.target==="all-allies"||ability.target==="self")&&ability.kind==="damage")return false;
     if(ability.kind==="damage"&&(!Number.isFinite(ability.multiplier)||ability.multiplier<0))return false;
@@ -1116,16 +1123,24 @@ const CombatCore = (() => {
       targetIds:recipients.map(f=>f.id),abilityId:ability.id
     });
     const weakened=actor.weakenAttacks>0;
-    for(const target of recipients){
+    if(ability.kind==="coordinate"){
+      battle.coordinatedWindow={ownerId:actor.id,first:null,
+       remainingActions:ability.windowActions,
+       damagePercent:ability.coordinationDamagePercent,
+       defenseMeter:ability.coordinationMeter,
+       defenseEnabled:!!ability.defenseComboEnabled};
+      emit(battle,"coordinated-open",{actorId:actor.id,remaining:ability.windowActions});
+    }
+    for(const target of ability.kind==="coordinate"?[]:recipients){
       if(ability.kind==="damage"){
         if(!rollToHit(battle,actor,target,type,readMovePenalty))continue;
         const oldHp=target.hp,oldProtection=target.protection??null;
-        const baseDamage=bonusDamage(battle,actor,target,
-          Math.round(effectiveStat(battle,actor,
-            AbilityData.damageStat(ability))*ability.multiplier));
+        const baseDamage=tacticalDamageBonus(battle,actor,target,
+         bonusDamage(battle,actor,target,Math.round(effectiveStat(battle,actor,
+           AbilityData.damageStat(ability))*ability.multiplier)));
         const damage=dealDamage(actor,target,
           reducedReadMoveDamage(rollCriticalDamage(battle,actor,target,baseDamage,type),readMovePenalty),false,type,
-          penetrationEnabled(battle,type)?actor.defensePenetration:0);
+          penetrationEnabled(battle,type)?actor.defensePenetration:0,battle,false);
         emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
           ...typedDamageFields(target,type,oldHp,oldProtection)});
         if(target.hp===0)emit(battle,"death",{targetId:target.id});
@@ -1152,8 +1167,9 @@ const CombatCore = (() => {
     // Weakening counts attacks (commands), not recipients. All group targets
     // get the same weakened damage; one use is consumed at the end.
     if(ability.kind==="damage"&&weakened)actor.weakenAttacks--;
-    battle.message=actor.name+" применяет "+ability.name+
-      ": целей "+recipients.length+".";
+    battle.message=ability.kind==="coordinate"?
+      actor.name+" открывает согласованное окно для двух разных союзников.":
+      actor.name+" применяет "+ability.name+": целей "+recipients.length+".";
     // Apply before the ordinary end-of-action tick; +1 keeps two subsequent
     // own turns of provocation after the casting turn.
     if(ability.tauntTurns!==undefined&&typeof CombatStatusCore!=="undefined"){

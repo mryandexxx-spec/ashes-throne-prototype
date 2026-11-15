@@ -38,7 +38,7 @@ async function run(name,browserType){
   url.searchParams.set("npcChallengePilot","1");
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v0.3.168 · NPCCHALLENGE005");
+   "Прототип · v0.3.169 · NPCCHALLENGE006");
   // Unlock the preceding original challenges IN MEMORY only; do not synthesize
   // victories, write storage or grant stars in any test scenario.
   await page.evaluate(()=>{
@@ -47,7 +47,7 @@ async function run(name,browserType){
   });
   await page.locator('#hqMoreMenu [data-screen="challenges"]').evaluate(el=>el.click());
   await page.locator("#challenges").waitFor({state:"visible",timeout:15000});
-  assert.match(await page.locator("#challengeSaveStatus").innerText(),/T-01\/T-02\/N-01\/N-02/);
+  assert.match(await page.locator("#challengeSaveStatus").innerText(),/T-01…T-03 \/ N-01…N-03/);
   await page.locator('[data-challenge-kind="tactical"]').click();
   const tCard=page.locator('[data-start-challenge="T-02"]').locator("xpath=ancestor::article");
   assert.equal(await page.locator('[data-start-challenge="T-02"]').isEnabled(),true);

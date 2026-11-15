@@ -37,7 +37,7 @@ const NPC_MISSION_PILOT_ENABLED=typeof location!=="undefined"&&
  /(?:^|[?&])npcMissionPilot=1(?:&|$)/.test(location.search);
 const NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED&&typeof NpcMissionPilot!=="undefined"
  ? NpcMissionPilot.visuals():[];
-// NPCCHALLENGE004/005: reserve 11 lightweight NPC capsules only with opt-in URL.
+// NPCCHALLENGE004–006: reserve lightweight capsules for explicit opt-in only.
 const NPC_CHALLENGE_PILOT_ENABLED=typeof location!=="undefined"&&
  /(?:^|[?&])npcChallengePilot=1(?:&|$)/.test(location.search);
 const NPC_CHALLENGE_VISUALS=NPC_CHALLENGE_PILOT_ENABLED&&typeof NpcChallengePilot!=="undefined"
@@ -1138,14 +1138,15 @@ function showScreen(id){
     NpcChallengePilot.spawn(activeChallengeId)?.find(e=>e.id===
       NpcChallengePilot.get(activeChallengeId).priorityId):
     ENEMIES.find(e=>e.id===def.priorityId)):null;
-   objective.textContent=battleIsLoreRequired&&trial?
+   const npcGoal=battleIsNpcChallengePilot?NpcChallengePilot.goal(activeChallengeId):null;
+   objective.textContent=npcGoal|| (battleIsLoreRequired&&trial?
      trial.goalText:
      battleIsLoreRequired?"Победите, чтобы открыть следующий эпизод. Бой относится к игровой адаптации.":battleIsLoreTraining?(NPC_PILOT_ENABLED?"Пробный состав: человек, сарх и лаун-лекарь. Вне канона, без наград, энергии и влияния на хронику.":"Учебные противники. Без наград, энергии и влияния на хронику."):battleIsSignal?signalProgress.active?.assault==="quiet"?
      "Тихий штурм: первым обезвредь связного. Два стража одним действием — сигнал подавлен.":
      "Окружение: две волны, сигнал подавлен после победы, но скрытность потеряна.":
     battleIsOperation?"Перехватить подлинный пакет.":!def?"":def.kind==="tactical"?
     "Цель: "+(priority?.name||"отмеченный враг")+" должен погибнуть первым и отдельно от остальных.":
-    "Цель: пройти "+(def.futureWaves.length+1)+" волны, сохранив отряд.";
+    "Цель: пройти "+(def.futureWaves.length+1)+" волны, сохранив отряд.");
   }
   const tacticalGoalCard=$("#tacticalGoalCard");
   if(tacticalGoalCard){
@@ -1658,11 +1659,11 @@ function renderChallenges(){
     NpcChallengePilot.spawn(def.id)?.find(e=>e.id===pilot.priorityId):
     ENEMIES.find(e=>e.id===def.priorityId)):null;
    const waves=1+(pilot?pilot.futureWaves.length:def.futureWaves.length);
-   const details=def.kind==="tactical"?
+   const details=(pilot&&NpcChallengePilot.criteria(def.id))||(def.kind==="tactical"?
     ["1★ — победить","2★ — уничтожить "+(priority?.name||"отмеченного врага")+" первым и отдельно от остальных",
      "3★ — дополнительно сохранить всех союзников"]:
     ["1★ — пройти "+waves+" волны","2★ — победить без потерь",
-     "3★ — лимит действий пока не установлен"];
+     "3★ — лимит действий пока не установлен"]);
    return '<article class="campaign-panel campaign-mission"><div class="node">✦</div><div>'+
     '<h3>'+def.id+' · '+def.title+(pilot?' · NPC-ПРОБА':'')+'</h3>'+
     '<p>'+(def.kind==="tactical"?"Тактическая задача · "+def.enemyIds.length+" противника":
@@ -1675,7 +1676,7 @@ function renderChallenges(){
   }).join("");
  }else container.innerHTML="";
  $("#challengeSaveStatus").textContent=NPC_CHALLENGE_PILOT_ENABLED?
-  "NPC-пробы T-01/T-02/N-01/N-02: оценка и ежедневные задачи не сохраняются. Остальные испытания ведут обычный прогресс.":
+  "NPC-пробы T-01…T-03 / N-01…N-03: оценка и ежедневные задачи не сохраняются. Остальные испытания ведут обычный прогресс.":
   challengeSaveBlocked?
   "Прогресс испытаний недоступен: бои доступны, сохранение заблокировано.":
   challengeSaveAvailable?"Лучшая оценка сохраняется в этом браузере.":
@@ -1714,8 +1715,11 @@ function renderChallengeResult(){
   $("#challengeResultName").textContent+=" · NPC-ПРОБА";
   $("#challengeResultStars").textContent="Тестовая оценка: "+"★".repeat(stars)+
    "☆".repeat(3-stars)+" (не сохраняется)";
-  $("#challengeResultText").textContent="Проверка "+(ChallengeCore.get(activeChallengeId)?.kind==="tactical"?
-   "выбора первоочередной цели":"двух волн")+" с новыми NPC. Энергия, ежедневные задачи, награды и постоянные оценки не изменены.";
+  const npcExplanation=NpcChallengePilot.resultText(activeChallengeId,state,challengeTracker);
+  $("#challengeResultText").textContent=(npcExplanation||("Проверка "+
+   (ChallengeCore.get(activeChallengeId)?.kind==="tactical"?
+    "выбора первоочередной цели":"двух волн")+" с новыми NPC."))+
+   " Энергия, ежедневные задачи, награды и постоянные оценки не изменены.";
   $("#challengeResultRetry").textContent="Повторить пробу";
   return;
  }
@@ -2809,9 +2813,9 @@ function syncBattleUI(){
   operationResultRecorded=true;
  }
  if(battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded){
-  // Exact same rating rules but no writes to challengeProgress, daily tasks,
-  // wallet, or any storage keys for experimental NPC encounters.
-  challengeLastStars=ChallengeCore.score(activeChallengeId,state,challengeTracker);
+  // Pilot-only scoring may add reversed target/HP preservation objectives.
+  // There are no challengeProgress, daily task, wallet or storage writes.
+  challengeLastStars=NpcChallengePilot.score(activeChallengeId,state,challengeTracker);
   challengeResultRecorded=true;
  }
  if(battleIsChallenge&&!battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded){

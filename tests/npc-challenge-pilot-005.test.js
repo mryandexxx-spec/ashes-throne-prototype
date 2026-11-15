@@ -60,10 +60,10 @@ function run(id,ids,level,seed,strategy){
   alliesAlive:battle.fighters.filter(f=>f.side==="ally"&&f.hp>0).length,
   totalWaves:battle.totalWaves};
 }
-test("NPCCHALLENGE005: four separate plans, eleven distinct opt-in mesh IDs",()=>{
+test("NPCCHALLENGE005: legacy T-02/N-02 plans remain inside nineteen distinct opt-in mesh IDs",()=>{
  const t=P.get("T-02"),n=P.get("N-02");
  assert.ok(t&&n&&Object.isFrozen(t)&&Object.isFrozen(n));
- assert.equal(P.get("T-03"),null);assert.equal(P.get("N-03"),null);
+ assert.ok(P.get("T-03"));assert.ok(P.get("N-03"));
  assert.equal(P.get("T-01").priorityId,"npc-t01-signaller");
  assert.equal(P.get("N-01").futureWaves[0].length,1);
  assert.equal(t.priorityId,"npc-t02-interceptor");
@@ -79,7 +79,7 @@ test("NPCCHALLENGE005: four separate plans, eleven distinct opt-in mesh IDs",()=
  assert.deepEqual(Array.from(P.spawnWaves("N-02")[0],x=>[x.hp,x.protection]),[[90,12],[45,4]]);
  assert.ok(Object.isFrozen(n.futureWaves[0]));
  const mobs=P.visuals();
- assert.equal(mobs.length,11);
+ assert.equal(mobs.length,19);
  const ids=mobs.map(x=>x.id);
  assert.equal(new Set(ids).size,ids.length);
  assert.ok(mobs.every(x=>x.side==="enemy"&&x.speciesId==="human"&&
@@ -184,14 +184,14 @@ test("NPCCHALLENGE005: defeated early party cannot erroneously unlock next wave"
 test("NPCCHALLENGE005: only pilot roster and presentation change, not save routing",()=>{
  const game=read("game.js"),html=read("index.html");
  const pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.168");
- assert.match(html,/v0\.3\.168 · NPCCHALLENGE005/);
- assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.168/);
+ assert.equal(pkg.version,"0.3.169");
+ assert.match(html,/v0\.3\.169 · NPCCHALLENGE006/);
+ assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.169/);
  assert.match(game,/npcChallengePilot=1/);
  assert.match(game,/NpcChallengePilot\.get\(activeChallengeId\)/);
  assert.match(game,/NpcChallengePilot\.spawnWaves\(activeChallengeId\)/);
  assert.match(game,/NpcChallengePilot\.trackerTargets\(activeChallengeId\)/);
- assert.match(game,/NPC-пробы T-01\/T-02\/N-01\/N-02/);
+ assert.match(game,/NPC-пробы T-01…T-03 \/ N-01…N-03/);
  assert.match(game,/if\(battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
  assert.match(game,/if\(battleIsChallenge&&!battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
  assert.match(game,/ChallengeCore\.save\(outcome.candidate,\(\)=>window.localStorage,challengeSaveBlocked\)/);

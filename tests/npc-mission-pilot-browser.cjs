@@ -18,7 +18,7 @@ async function check(name,type){
   uri.searchParams.set("npcMissionPilot","1");
   await page.goto(uri.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v0.3.168 · NPCCHALLENGE005");
+   "Прототип · v0.3.169 · NPCCHALLENGE006");
   // Unlock only the prerequisite IN MEMORY. No synthetic victory or local save.
   await page.evaluate(()=>{
    campaignProgress.completed["black-pass-ambush"]=true;

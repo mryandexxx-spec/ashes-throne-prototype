@@ -101,9 +101,9 @@ test("NPCMISSION003: only opt-in two-wave mission; regular modes and visuals unt
  assert.match(game,/if\(battleIsNpcMissionPilot&&!state.active&&!missionResultRecorded\)/);
  assert.match(game,/const ENEMIES=HEROES.filter\(h=>h.side==="enemy"\)/);
  assert.match(game,/NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED/);
- assert.match(html,/v0\.3\.168 · NPCCHALLENGE005/);
- assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.168/);
- assert.equal(pkg.version,"0.3.168");
+ assert.match(html,/v0\.3\.169 · NPCCHALLENGE006/);
+ assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.169/);
+ assert.equal(pkg.version,"0.3.169");
 });
 test("NPCMISSION003: 45 real two-wave bouts with reachable heroes, 3-star possibility and tactical value",()=>{
  const cases=[

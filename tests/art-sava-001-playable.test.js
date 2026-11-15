@@ -111,7 +111,8 @@ test("ARTSAVA001 connects portraits to roster, dossier and biography with no GLB
  const game=read("game.js"),card=read("ren-card-3d.js"),css=read("styles.css");
  for(const name of ["art","sava"]){
   assert.ok(game.includes('id:"'+name+'",name:'));
-  assert.ok(game.includes("assets/"+name+"-portrait.webp?v=1"));
+  assert.ok(game.includes("assets/"+name+"-portrait-ui.webp?v=1"));
+  assert.ok(game.includes("assets/"+name+"-portrait-roster.webp?v=1"));
   assert.ok(game.includes("hero-avatar-"+name));
   assert.ok(css.includes(".hero-avatar-"+name));
  }

@@ -9,7 +9,9 @@ const LoreCampaignUI=(()=>{
  const PORTRAITS=Object.freeze({
   "Рен Терен":"assets/ren-portrait-ui.webp",
   "Нада":"assets/nada-portrait-ui.webp?v=2",
-  "Лиора Вель":"assets/liora-portrait-ui.webp?v=1"
+  "Лиора Вель":"assets/liora-portrait-ui.webp?v=1",
+  "Сава":"assets/sava-portrait-ui.webp?v=2",
+  "Арт":"assets/art-portrait-ui.webp?v=2"
  });
  function portraitFor(speaker){
   if(!Object.prototype.hasOwnProperty.call(PORTRAITS,speaker))return null;

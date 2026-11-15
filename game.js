@@ -611,19 +611,25 @@ let squadReturnScreen="home";
 // LC-007: temporary selection for the story encounter. Never overwrite the
 // player's saved normal battle formation just to include required heroes.
 const LORE_REQUIRED_HERO_IDS=Object.freeze(["ren","nada"]);
+// Encounter-specific requirements are temporary: the regular saved squad is untouched.
+function requiredLoreHeroIds(){
+ const extra=LoreCampaignTrials.encounter(loreRequiredContext?.nodeId)?.requiredHeroIds||[];
+ return [...new Set([...LORE_REQUIRED_HERO_IDS,...extra])];
+}
 let loreSquadSlots=null;
 function isLoreRequiredSquad(){return squadReturnScreen==="loreRequired";}
 function prepareLoreRequiredSlots(current){
  const slots=current.slice(0,MAX_SQUAD);
  while(slots.length<MAX_SQUAD)slots.push(null);
- for(const heroId of LORE_REQUIRED_HERO_IDS){
+ const mandatory=requiredLoreHeroIds();
+ for(const heroId of mandatory){
   if(slots.includes(heroId))continue;
   let index=slots.indexOf(null);
   if(index<0){
    // Keep the leader whenever possible. Remove the last optional fighter,
    // never another mandatory fighter, so Ren and Nada are always included.
    for(let i=slots.length-1;i>=0;i--){
-    if(!LORE_REQUIRED_HERO_IDS.includes(slots[i])){index=i;break;}
+    if(!mandatory.includes(slots[i])){index=i;break;}
    }
   }
   if(index<0)throw Error("LORE_REQUIRED_SQUAD_NO_SLOT");
@@ -642,7 +648,7 @@ function setSquadSlots(slots){
 }
 function requiredLoreSquadReady(){
  const ids=squadSlots();
- return LORE_REQUIRED_HERO_IDS.every(id=>ids.includes(id)&&heroOwned(id));
+ return requiredLoreHeroIds().every(id=>ids.includes(id)&&heroOwned(id));
 }
 let undersizedSquadConfirmed=false;
 function resetSquadWarning(){
@@ -824,6 +830,8 @@ function battleFutureWaves(){
 }
 function renderSquad(){
  const loreMode=isLoreRequiredSquad();
+ const mandatoryIds=loreMode?requiredLoreHeroIds():[];
+ const mandatoryNames=mandatoryIds.map(id=>ALLIES.find(h=>h.id===id)?.name||id).join(", ");
  const chosen=selectedParty();
  const ids=squadSlots();
  const slots=ids.map(id=>ALLIES.find(h=>h.id===id)||null);
@@ -831,14 +839,14 @@ function renderSquad(){
  $("#squadRoster").innerHTML=ALLIES.map(progressedHero).map(h=>{
   const isLeader=ids[0]===h.id;
   const active=ids.includes(h.id);
-  const required=loreMode&&LORE_REQUIRED_HERO_IDS.includes(h.id);
+  const required=loreMode&&mandatoryIds.includes(h.id);
   const skill=hasLeaderSkill(h.id);
   const owned=heroOwned(h.id);
   return `<button type="button" class="squad-choice ${active?"chosen":""} ${owned?"":"hero-locked"} ${required?"squad-choice-required":""}" data-hero-id="${h.id}" aria-pressed="${active}" ${required?'aria-disabled="true" data-squad-required="true" title="Обязательный герой сюжетного боя"':""} ${owned?"":"disabled"}><span class="squad-glyph">${owned?h.glyph:"♙"}</span><span><b>${owned?h.name:"Закрытый герой"}</b><small>${owned?(required?"ОБЯЗАТЕЛЬНЫЙ · ":"")+h.role+" · HP "+h.hp+" · ATK "+h.atk+(skill?" · Лидерская способность":""):"Открывается: "+heroUnlockLabel(h.id)}</small></span><strong>${owned?(required?"🔒":active?"✓":"+"):"🔒"}</strong></button>`;
  }).join("");
  $("#squadSlots").innerHTML=Array.from({length:MAX_SQUAD},(_,i)=>{
   const h=slots[i];
-  const locked=loreMode&&h&&LORE_REQUIRED_HERO_IDS.includes(h.id);
+  const locked=loreMode&&h&&mandatoryIds.includes(h.id);
   if(i===0)return `<div class="squad-slot squad-slot-leader ${h?"filled":""} ${locked?"squad-slot-required":""}" aria-label="Лидер отряда${locked?" · обязательный герой":""}"><span class="squad-slot-number">★ ЛИДЕР</span><span class="squad-slot-content">${h?h.name:"Свободно"}${locked?" 🔒":""}</span></div>`;
   return `<div class="squad-slot ${h?"filled":""} ${locked?"squad-slot-required":""}"><span class="squad-slot-number">${i+1}</span><span class="squad-slot-content">${h?h.name:"Свободно"}${locked?" 🔒":""}</span></div>`;
  }).join("");
@@ -848,7 +856,7 @@ function renderSquad(){
      ?"Первый персонаж — лидер; его лидерская способность действует автоматически."
      :"Первый персонаж — лидер. У него пока нет лидерской способности.")
   :"Выбери героя слева: он займёт первую свободную ячейку. Пока лидерская ячейка пуста, лидерского бонуса нет.";
- $("#squadHint").textContent=(loreMode?"Рен и Нада обязательны для этого боя. Остальные три места — на твой выбор. ":"")+leaderHint;
+ $("#squadHint").textContent=(loreMode?"Обязательные герои: "+mandatoryNames+". Свободных мест: "+(MAX_SQUAD-mandatoryIds.length)+". ":"")+leaderHint;
  const tacticalBrief=$("#squadTacticalBrief");
  const trial=loreMode?LoreCampaignTrials.encounter(loreRequiredContext?.nodeId):null;
  if(tacticalBrief){
@@ -861,7 +869,7 @@ function renderSquad(){
  $("#squadStart").textContent=loreMode?"Начать испытание":"Начать бой";
  const intro=$("#squadIntro");
  if(intro)intro.textContent=loreMode
-  ?"«Пять теней»: Рен и Нада обязательны. Остальных героев выбираешь ты.":"Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.";
+  ?(mandatoryIds.length===2?"«Пять теней»: Рен и Нада обязательны. Остальных героев выбираешь ты.":"«Пять теней»: обязательны "+mandatoryNames+". Свободных мест: "+(MAX_SQUAD-mandatoryIds.length)+"."):"Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.";
  const disband=$("#squadDisband");
  if(disband)disband.textContent=loreMode?"Убрать остальных":"Распустить";
  $("#squadStart").disabled=chosen.length===0||(loreMode&&!requiredLoreSquadReady());
@@ -871,7 +879,7 @@ function renderSquad(){
 }
 function toggleSquadHero(id){
  if(!ALLIES.some(h=>h.id===id)||!heroOwned(id))return false;
- if(isLoreRequiredSquad()&&LORE_REQUIRED_HERO_IDS.includes(id))return false;
+ if(isLoreRequiredSquad()&&requiredLoreHeroIds().includes(id))return false;
  const slots=squadSlots();
  const occupied=slots.indexOf(id);
  if(occupied!==-1){
@@ -890,7 +898,7 @@ function toggleSquadHero(id){
 function disbandSquad(){
  const slots=squadSlots();
  const remaining=isLoreRequiredSquad()?
-  slots.map(id=>LORE_REQUIRED_HERO_IDS.includes(id)?id:null):
+  slots.map(id=>requiredLoreHeroIds().includes(id)?id:null):
   Array(MAX_SQUAD).fill(null);
  if(slots.every((id,i)=>id===remaining[i]))return false;
  setSquadSlots(remaining);
@@ -1673,7 +1681,7 @@ $("#squadStart").addEventListener("click",()=>{
  if(isLoreRequiredSquad()&&!requiredLoreSquadReady()){
   const warning=$("#squadWarning");
   if(warning){
-   warning.textContent="Для сюжетного боя «Пяти теней» нужны Рен и Нада.";
+   warning.textContent="Для этого боя «Пяти теней» обязательны: "+requiredLoreHeroIds().map(id=>ALLIES.find(h=>h.id===id)?.name||id).join(", ")+".";
    warning.hidden=false;
   }
   return;

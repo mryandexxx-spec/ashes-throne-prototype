@@ -31,7 +31,7 @@ test("roster, biography and dossier reference the refreshed images; 3D stays a p
  }
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const version=JSON.parse(fs.readFileSync(path.join(root,"package.json"),"utf8")).version;
- assert.equal(version,"0.3.162");
- assert.ok(html.includes("v0.3.162 · ARTSAVASKILLS001"));
+ assert.equal(version,"0.3.163");
+ assert.ok(html.includes("v0.3.163 · LOREARTSAVA001"));
  assert.ok(html.includes("game.js?v="+version));
 });

@@ -135,6 +135,33 @@ async function run(name,type,w,h){
   assert.equal(await page.locator("#squadRoster [data-squad-required]").count(),0);
   assert.equal((await state(page)).lore,null);
   assert.deepEqual((await state(page)).normal,baseline.normal);
+  // LOREARTSAVA001: the existing two baseline locks remain in every episode;
+  // the third lock follows the approved story's participant locations.
+  for(const [episode,extra,battleId] of [
+   ["fs-04","sava","fs04-stop-instigator"],
+   ["fs-06","art","fs06-keep-the-light"]
+  ]){
+   const opened=await page.evaluate(x=>openLoreRequiredBattle({
+    nodeId:"five-shadows:"+x.episode,battleId:x.battleId,storyId:"five-shadows"
+   }),{episode,battleId});
+   assert.equal(opened,true,episode+" squad opens");
+   await page.locator("#squad").waitFor({state:"visible"});
+   assert.equal(await page.locator('#squadRoster [data-squad-required="true"]').count(),3);
+   for(const id of ["ren","nada",extra]){
+    assert.equal(await page.locator('#squadRoster [data-hero-id="'+id+'"]').getAttribute("data-squad-required"),"true");
+    assert.equal(await page.evaluate(heroId=>toggleSquadHero(heroId),id),false);
+   }
+   const excluded=extra==="sava"?"art":"sava";
+   assert.equal(await page.locator('#squadRoster [data-hero-id="'+excluded+'"]').getAttribute("data-squad-required"),null);
+   assert.match(await page.locator("#squadIntro").innerText(),new RegExp(extra==="sava"?"Сава":"Арт"));
+   await page.locator("#squadDisband").click();
+   assert.equal(await page.locator("#squadCount").innerText(),"3/5");
+   assert.deepEqual((await state(page)).lore.filter(Boolean).sort(),["ren","nada",extra].sort());
+   assert.deepEqual((await state(page)).normal,baseline.normal);
+   assert.equal((await state(page)).savedFormation,baseline.savedFormation);
+   await page.locator("#squadBack").click();
+   assert.equal((await state(page)).lore,null);
+  }
   assert.deepEqual(errors.filter(e=>/LORE_SQUAD|TypeError|ReferenceError/.test(e)),[],
    "No JS exceptions in narrative / squad / real Babylon battle");
   console.log("LC007 REAL REQUIRED SQUAD",tag,"PASS",JSON.stringify({combat,geometry}));

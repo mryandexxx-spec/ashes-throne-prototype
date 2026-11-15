@@ -1,4 +1,4 @@
-/* NPCCHALLENGE004–006 — [PROPOSAL] opt-in T-01…T-03/N-01…N-03.
+/* NPCCHALLENGE004–007 — [PROPOSAL] opt-in T-01…T-04/N-01…N-04.
  * Reward-free training previews. Base challenge scoring remains untouched;
  * daily tasks, saves, progression and normal non-NPC opponents are untouched.
  */
@@ -39,6 +39,19 @@ const NpcChallengePilot=(()=>{
     unit("npc-field-medic","npc-t03-medic",55,5)
    ]),
    priorityId:"npc-t03-medic",futureWaves:Object.freeze([])
+  }),
+  // T-04 is a timed hold with a protected real squad member, not a kill order.
+  "T-04":Object.freeze({
+   id:"T-04",kind:"tactical",label:"NPC-ПРОБА · прикрыть отход",
+   encounterTag:"noncanonical-demo-training",
+   objective:Object.freeze({kind:"protect-hold",allyActionsToHold:8}),
+   enemyIds:Object.freeze([
+    unit("npc-trail-interceptor","npc-t04-interceptor",80,7),
+    unit("npc-ridge-slinger","npc-t04-slinger",72,8),
+    unit("npc-pass-guard","npc-t04-guard",125,25)
+   ]),
+   // Only required by the legacy tracker schema; NOT a first-kill objective.
+   priorityId:"npc-t04-interceptor",futureWaves:Object.freeze([])
   }),
   "N-01":Object.freeze({
    id:"N-01",kind:"onslaught",label:"NPC-ПРОБА · две волны",
@@ -83,6 +96,24 @@ const NpcChallengePilot=(()=>{
     ]),
     Object.freeze([unit("npc-watch-captain","npc-n03-captain",92,13)])
    ])
+  }),
+  // N-04 rewards defending the squad without player-selected active healing.
+  "N-04":Object.freeze({
+   id:"N-04",kind:"onslaught",label:"NPC-ПРОБА · без передышки",
+   encounterTag:"noncanonical-demo-training",
+   objective:Object.freeze({kind:"no-active-heal"}),
+   enemyIds:Object.freeze([
+    unit("npc-trail-interceptor","npc-n04-interceptor",58,5),
+    unit("npc-ridge-slinger","npc-n04-slinger",54,4)
+   ]),
+   priorityId:null,
+   futureWaves:Object.freeze([
+    Object.freeze([unit("npc-field-medic","npc-n04-medic",60,5)]),
+    Object.freeze([
+     unit("npc-watch-captain","npc-n04-captain",98,14),
+     unit("npc-route-signaller","npc-n04-signaller",50,5)
+    ])
+   ])
   })
  });
  const get=id=>Object.prototype.hasOwnProperty.call(catalog,id)?catalog[id]:null;
@@ -107,7 +138,10 @@ const NpcChallengePilot=(()=>{
    (plan.objective===undefined||
     plan.id==="T-03"&&plan.objective.kind==="priority-last-solo"||
     plan.id==="N-03"&&plan.objective.kind==="final-team-hp"&&
-     plan.objective.minimumHealthPercent===95);
+     plan.objective.minimumHealthPercent===95||
+    plan.id==="T-04"&&plan.objective.kind==="protect-hold"&&
+     plan.objective.allyActionsToHold===8||
+    plan.id==="N-04"&&plan.objective.kind==="no-active-heal");
  }
  function spawn(id){
   const plan=get(id);
@@ -134,6 +168,37 @@ const NpcChallengePilot=(()=>{
   if(typeof NpcEnemyData==="undefined")return [];
   return Object.values(catalog).flatMap(p=>definitions(p).map(make)).filter(Boolean);
  }
+ function title(id){
+  return id==="T-04"?"Прикрыть отход":id==="N-04"?"Без передышки":null;
+ }
+ function tacticalObjective(id,party){
+  const plan=get(id);
+  if(id!=="T-04"||!plan||!valid(plan)||!Array.isArray(party))return null;
+  const protectedHero=party.find(f=>f&&f.side==="ally"&&f.hp>0);
+  if(!protectedHero||typeof protectedHero.id!=="string")return null;
+  return Object.freeze({kind:"hold-or-defeat",protectAllyId:protectedHero.id,
+   allyActionsToHold:plan.objective.allyActionsToHold});
+ }
+ // Consume exactly one resolved ally command at a time, including enemy AI
+ // reactions. No DOM and no save fields. Missing/repeated batches fail closed.
+ function capture(id,tracker,events,battle){
+  if(!tracker||!Array.isArray(events)||typeof ChallengeCore==="undefined")
+   return false;
+  if(!ChallengeCore.capture(tracker,events))return false;
+  if(id!=="N-04")return true;
+  const allies=new Set((battle?.fighters||[]).filter(f=>f.side==="ally").map(f=>f.id));
+  const castEvents=events.filter(e=>e?.type==="ability"&&allies.has(e.actorId));
+  const previous=tracker.pilotCapturedActions||0;
+  if(!Number.isSafeInteger(battle?.allyActions)||
+    battle.allyActions!==previous+1||castEvents.length!==1){
+   tracker.invalid=true;return false;
+  }
+  tracker.pilotCapturedActions=previous+1;
+  if(events.some(e=>e?.type==="heal"&&allies.has(e.actorId)&&
+    !Object.prototype.hasOwnProperty.call(e,"passiveId")))
+   tracker.pilotActiveHealUsed=true;
+  return true;
+ }
  function criteria(id){
   if(id==="T-03")return Object.freeze([
    "1★ — победить",
@@ -145,9 +210,22 @@ const NpcChallengePilot=(()=>{
    "2★ — не потерять ни одного героя",
    "3★ — завершить бой с ≥95% суммарного HP отряда"
   ]);
+  if(id==="T-04")return Object.freeze([
+   "1★ — одержать победу (даже досрочно)",
+   "2★ — удержать выбранного героя до 8 союзных действий",
+   "3★ — удержать позицию и сохранить всех героев"
+  ]);
+  if(id==="N-04")return Object.freeze([
+   "1★ — преодолеть 3 волны",
+   "2★ — победить без потерь",
+   "3★ — не применять активное лечение союзников (пассивное допустимо)"
+  ]);
   return null;
  }
- function goal(id){
+ function goal(id,protectedName){
+  if(id==="T-04")return "Цель: защищай "+(protectedName||"первого выбранного героя")+
+   " в течение 8 действий отряда. Досрочная победа над врагами — только 1★.";
+  if(id==="N-04")return "Цель: пройди три волны без потерь; для 3★ не применяй активное лечение. Автоматическое пассивное лечение допускается.";
   if(id==="T-03")return "Цель: уничтожь остальных противников, оставив Полевого перевязчика последним. Сражайся с ним отдельно.";
   if(id==="N-03")return "Цель: пройди 3 волны. Для 3★ сохрани всех героев и не меньше 95% суммарного HP отряда.";
   return null;
@@ -165,7 +243,8 @@ const NpcChallengePilot=(()=>{
   const plan=get(id);
   if(!plan||typeof ChallengeCore==="undefined")return 0;
   // All previously accepted previews delegate to unchanged v1 challenge scoring.
-  if(id!=="T-03"&&id!=="N-03")return ChallengeCore.score(id,battle,tracker);
+  if(!["T-03","N-03","T-04","N-04"].includes(id))
+   return ChallengeCore.score(id,battle,tracker);
   if(!battle||battle.active||battle.winner!=="ally"||
      !Array.isArray(battle.fighters)||!tracker||tracker.id!==id||tracker.invalid||
      !valid(plan)||!Array.isArray(tracker.enemyIds)||
@@ -186,12 +265,43 @@ const NpcChallengePilot=(()=>{
    if(last.length!==1||last[0]!==plan.priorityId)return 1;
    return allAlive?3:2;
   }
+  if(id==="T-04"){
+   const objective=battle.tacticalObjective;
+   if(battle.wave!==1||battle.totalWaves!==1||
+      objective?.kind!=="hold-or-defeat"||
+      objective.allyActionsToHold!==plan.objective.allyActionsToHold||
+      !allies.some(f=>f.id===objective.protectAllyId&&f.hp>0))return 0;
+   if(battle.tacticalOutcome==="defeated-attackers")return 1;
+   if(battle.tacticalOutcome!=="held"||
+      battle.allyActions<objective.allyActionsToHold)return 0;
+   return allAlive?3:2;
+  }
   if(battle.wave!==3||battle.totalWaves!==3)return 0;
   if(!allAlive)return 1;
+  if(id==="N-04")return tracker.pilotCapturedActions===battle.allyActions&&
+   Number.isSafeInteger(battle.allyActions)&&battle.allyActions>0&&
+   tracker.pilotActiveHealUsed!==true?3:2;
   const hp=healthPercent(battle);
   return hp&&hp.current*100>=hp.maximum*plan.objective.minimumHealthPercent?3:2;
  }
  function resultText(id,battle,tracker){
+  if(id==="T-04"){
+   const protectedId=battle?.tacticalObjective?.protectAllyId;
+   const hero=battle?.fighters?.find(f=>f.id===protectedId)?.name||"Защищаемый герой";
+   return battle?.tacticalOutcome==="held"?
+    hero+" защищён: удержание завершено после "+battle.allyActions+
+      " действий. "+(score(id,battle,tracker)===3?"Все союзники выжили.":"Для 3★ сохраняй весь отряд."):
+    battle?.winner==="ally"?
+     "Противники побеждены досрочно. Для 2★ дождись 8 действий отряда, не допуская гибели защищаемого героя.":
+     hero+" выведен из строя или отряд потерпел поражение.";
+  }
+  if(id==="N-04"){
+   const verified=tracker?.pilotCapturedActions===battle?.allyActions&&
+    Number.isSafeInteger(battle?.allyActions)&&battle.allyActions>0&&!tracker?.invalid;
+   return "Активное лечение союзников: "+
+    (!verified?"журнал действий неполон":tracker.pilotActiveHealUsed?"использовано":"не использовалось")+
+    ". Для 3★ пройди все три волны без потерь и без активного лечения.";
+  }
   if(id==="T-03"){
    const stars=score(id,battle,tracker);
    return stars>=2?
@@ -206,6 +316,6 @@ const NpcChallengePilot=(()=>{
   }
   return null;
  }
- return Object.freeze({get,spawn,spawnWaves,trackerTargets,visuals,criteria,goal,score,healthPercent,resultText});
+ return Object.freeze({get,title,tacticalObjective,capture,spawn,spawnWaves,trackerTargets,visuals,criteria,goal,score,healthPercent,resultText});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=NpcChallengePilot;

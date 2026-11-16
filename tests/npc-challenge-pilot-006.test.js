@@ -212,8 +212,8 @@ test("NPCCHALLENGE006: 90 real seeded battles, different tactical success condit
 test("NPCCHALLENGE006: objective UI and v1 save work without URL flag",()=>{
  const js=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));
  assert.equal(pkg.version,"0.3.174");
- assert.match(html,/v0\.3\.173 · NPCUX004/);
- assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.173/);
+ assert.match(html,/v0\.3\.174 · NPCUX004/);
+ assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.174/);
  assert.match(js,/const NPC_CHALLENGE_PILOT_ENABLED=true;/);
  assert.match(js,/NpcChallengePilot\.criteria\(def\.id\)/);
  assert.match(js,/NpcChallengePilot\.goal\(activeChallengeId,/);

@@ -56,7 +56,7 @@ async function finishManually(page){
    const actor=state.fighters[state.currentActor];
    const abilityId=proposal?.abilityId||"basic";
    const ability=AbilityData.get(actor,abilityId);
-   const pursuer=state.fighters.findIndex(f=>f.id==="shade"&&f.hp>0);
+   const pursuer=state.fighters.findIndex(f=>f.id===NpcStoryOpsAdapter.storyId("five-shadows:fs-05","shade")&&f.hp>0);
    if(pursuer>=0&&["enemy","all-enemies"].includes(ability?.target))
     CombatCore.chooseEnemy(state,pursuer);
    if(ability?.target==="ally")CombatCore.chooseAlly(state,proposal.targetIndex);
@@ -117,7 +117,7 @@ async function run(name,browserType,width,height){
    objective:state.tacticalObjective,
    protectedHp:state.fighters.find(x=>x.id==="ren")?.hp,
    enemyCount:state.fighters.filter(x=>x.side==="enemy").length,
-   hunter:(()=>{const h=state.fighters.find(x=>x.id==="shade");return {
+   hunter:(()=>{const h=state.fighters.find(x=>x.id===NpcStoryOpsAdapter.storyId("five-shadows:fs-05","shade"));return {
      name:h?.name,focus:h?.assaultFocus,hp:h?.hp,atk:h?.atk};})(),
    goal:document.querySelector("#tacticalGoalCard").textContent,
    goalBounds:(()=>{const r=document.querySelector("#tacticalGoalCard").getBoundingClientRect();return {top:r.top,left:r.left,bottom:r.bottom,right:r.right}})(),

@@ -162,7 +162,7 @@ test("combat capture hook processes completed batches before any presentation ch
    {type:"death",targetId:"ves"},{type:"death",targetId:"shade"}]},
   challengeTracker:null,battleIsChallenge:false,battleIsSignal:true,
   signalBattleTracker:signal.startTracker(battle),signalCaptureFailed:false,
-  SignalOperationCore:signal,scene:null,engine:null
+  SignalOperationCore:signal,NpcStoryOpsAdapter:require("../npc-story-ops-adapter.js"),scene:null,engine:null
  };
  const hook=vm.runInNewContext(game.slice(start,end)+"\n captureResolvedVisuals",ctx);
  hook([]);

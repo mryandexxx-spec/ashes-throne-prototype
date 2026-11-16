@@ -157,3 +157,61 @@ test("LOREACT3001: UI selects the third act and build has stable script ordering
  assert.match(game,/ActiveLoreCampaign\.encounter/);
  assert.equal(html.includes("0.3.174"),false);
 });
+
+
+test("LOREACT3001 editorial QA: three distinct stakes, truthful timeline and voiced scenes",()=>{
+ const entries=Act3.pack.scenes.filter(x=>/five-shadows:fs-0[789]$/.test(x.nodeId));
+ assert.equal(entries.length,3);
+ const beat=(scene,id)=>scene.beats.find(x=>x.id===id);
+ const [road,market,street]=entries;
+ assert.equal(beat(road,"fs07-map").speakerId,"Рен Терен");
+ assert.equal(beat(road,"fs07-compare").speakerId,"Нада");
+ assert.equal(beat(road,"fs07-priority").speakerId,"Арт");
+ assert.doesNotMatch(JSON.stringify(road),/После будущего обвала/);
+ assert.match(beat(road,"fs07-fall").text,/Долг за потерянный груз остался/);
+
+ // FS-08 asks the player which dispute to investigate after inspections,
+ // before comparing the evidence; the result keeps a tangible cost for school.
+ assert.equal(beat(market,"fs08-return").nextBeatId,"fs08-priority");
+ assert.equal(beat(market,"fs08-pass").nextBeatId,"fs08-documents");
+ assert.equal(beat(market,"fs08-claims").nextBeatId,"fs08-documents");
+ assert.equal(beat(market,"fs08-documents").nextBeatId,"fs08-reopen");
+ assert.equal(beat(market,"fs08-priority").speakerId,"Лиора Вель");
+ assert.match(beat(market,"fs08-reopen").text,/не сможет оплатить школе новые снасти/);
+ assert.match(beat(market,"fs08-school").text,/не показывает, когда именно люди работали/);
+
+ assert.equal(beat(street,"fs09-rope").speakerId,"Ала");
+ assert.equal(beat(street,"fs09-lists").speakerId,"Нада");
+ assert.equal(beat(street,"fs09-next").speakerId,"Сава");
+ assert.match(beat(street,"fs09-lists").text,/Их порядок не изменился/);
+ assert.match(beat(street,"fs09-path").text,/тупик, а не проход через ущелье/);
+});
+
+test("LOREACT3001: FS-08 choice precedes comparison and old saves still traverse",()=>{
+ const storage=memory();seedSix(storage);
+ const r=create(Act3,storage);
+ finish(r,"five-shadows:fs-07");
+ assert.equal(r.start("five-shadows:fs-08").ok,true);
+ assert.equal(r.next().ok,true);
+ assert.equal(r.current().beatId,"fs08-return");
+ assert.equal(r.next().code,"INSPECTION_REQUIRED");
+ for(const item of r.current().inspections){
+  assert.equal(r.inspect(item.id).ok,true);
+ }
+ assert.equal(r.next().ok,true);
+ assert.equal(r.current().beatId,"fs08-priority");
+ assert.equal(r.choose("fs08-pass-first").ok,true);
+ assert.equal(r.current().beatId,"fs08-pass");
+ assert.equal(r.next().ok,true);
+ assert.equal(r.current().beatId,"fs08-documents");
+ assert.equal(r.next().code,"INSPECTION_REQUIRED");
+ assert.equal(r.compare("fs08-access").ok,true);
+ assert.equal(r.next().ok,true);
+ assert.equal(r.current().beatId,"fs08-reopen");
+ assert.equal(r.next().ok,true);
+ assert.equal(r.current().beatId,"fs08-school");
+ assert.equal(r.finish().ok,true);
+ const primary=r.stateFor("five-shadows");
+ assert.equal(primary.keyDecisionLog.find(x=>x.nodeId==="five-shadows:fs-08").choiceId,"fs08-pass-first");
+ assert.equal(r.stateFor("five-shadows").completedNodeIds.includes("five-shadows:fs-08"),true);
+});

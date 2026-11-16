@@ -1,5 +1,5 @@
 "use strict";
-/* NPCCHALLENGE007: real WebGL Chromium/WebKit, touch 932x430, T-04 hold and N-04 no active healing. */
+/* NPCROLLOUT001: real WebGL Chromium/WebKit, touch 932x430, T-04 hold and N-04 no active healing. */
 const assert=require("node:assert/strict");
 const {chromium,webkit}=require("playwright");
 const fs=require("node:fs"),path=require("node:path");
@@ -29,6 +29,26 @@ async function enter(page,id){
  if(await page.locator("#squad").isVisible())await page.locator("#squadStart").click();
  await page.locator("#battle").waitFor({state:"visible",timeout:30000});
 }
+function assertNpcSaved(before,after,id,earned){
+ const previous=before.challengeSave?JSON.parse(before.challengeSave).bestStars[id]||0:0;
+ const storage=after.challengeSave?JSON.parse(after.challengeSave):null;
+ const inMemory=JSON.parse(after.challenges||after.challengeProgress).bestStars[id];
+ if(!storage){
+  assert.equal(Math.max(previous,earned),0,"only zero-star results need no saved record");
+  assert.equal(after.challengeSave,before.challengeSave,"failed battle cannot write progress");
+  assert.equal(inMemory,0);
+ }else{
+  assert.equal(storage.version,1);
+  assert.equal(storage.bestStars[id],Math.max(previous,earned));
+  assert.equal(inMemory,storage.bestStars[id]);
+ }
+ const walletBefore=JSON.parse(before.wallet||before.progress);
+ const walletAfter=JSON.parse(after.wallet||after.progress);
+ for(const key of ["currency","xp","energy"]){
+  if(walletBefore[key]!==undefined)assert.deepEqual(walletAfter[key],walletBefore[key],
+   "challenge must not grant currency, XP or spend energy");
+ }
+}
 async function smoke(name,kind){
  const browser=await kind.launch(name==="chromium"?
   {headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader",
@@ -37,10 +57,10 @@ async function smoke(name,kind){
  const errors=[];
  page.on("pageerror",e=>errors.push(e.message));
  try{
-  const url=new URL(origin);url.searchParams.set("npcChallengePilot","1");
+  const url=new URL(origin);
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v0.3.170 · NPCCHALLENGE007");
+   "Прототип · v0.3.171 · NPCROLLOUT001");
   // Earlier completed stages are a memory-only prerequisite. Do not write saves.
   await page.evaluate(()=>{
    for(const id of ["T-01","T-02","T-03","N-01","N-02","N-03"])
@@ -48,7 +68,7 @@ async function smoke(name,kind){
   });
   await page.locator('#hqMoreMenu [data-screen="challenges"]').evaluate(el=>el.click());
   await page.locator("#challenges").waitFor({state:"visible",timeout:12000});
-  assert.match(await page.locator("#challengeSaveStatus").innerText(),/T-01…T-04 \/ N-01…N-04/);
+  assert.match(await page.locator("#challengeSaveStatus").innerText(),/Лучшая оценка сохраняется/);
   await page.locator('[data-challenge-kind="tactical"]').click();
   const tCard=page.locator('[data-start-challenge="T-04"]').locator("xpath=ancestor::article");
   assert.match(await tCard.innerText(),/Прикрыть отход/);
@@ -93,8 +113,8 @@ async function smoke(name,kind){
   assert.equal(tResult.stars,tResult.won==="ally"?
    tResult.outcome==="held"?(tResult.alive?3:2):1:0);
   assert.match(tResult.resultName,/Прикрыть отход/);
-  assert.match(tResult.status,/не сохраняется/);
-  assert.deepEqual(await snapshot(page),beforeT);
+  assert.match(tResult.status,/Лучший результат/);
+  assertNpcSaved(beforeT,await snapshot(page),"T-04",tResult.stars);
   await page.locator("#challengeResultBack").click();
   await page.locator("#challengeModeBack").click();
   await page.locator('[data-challenge-kind="onslaught"]').click();
@@ -141,19 +161,19 @@ async function smoke(name,kind){
   assert.equal(nResult.won,"ally");assert.equal(nResult.wave,3);
   assert.equal(nResult.stars,nResult.alive?(nResult.activeHeals||!nResult.verified?2:3):1);
   assert.match(nResult.text,/Активное лечение союзников/);
-  assert.match(nResult.label,/не сохраняется/);
-  assert.deepEqual(await snapshot(page),beforeN);
+  assert.match(nResult.label,/Лучший результат/);
+  assertNpcSaved(beforeN,await snapshot(page),"N-02",nResult.stars);
   await page.locator("#challengeResultRetry").click();
   await page.locator("#squad").waitFor({state:"visible",timeout:14000});
   await page.locator("#squadBack").click();
   assert.equal(await page.evaluate(()=>renderLoopRunning),false);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   assert.deepEqual(errors.filter(x=>/TypeError|ReferenceError|CombatCore|NpcChallengePilot/.test(x)),[]);
-  console.log("NPCCHALLENGE007_BROWSER",name,"PASS",
+  console.log("NPCROLLOUT001_BROWSER",name,"PASS",
    JSON.stringify({tFirst,tResult,nFirst,nResult}));
  }catch(error){
   await page.screenshot({path:path.join(artifacts,name+"-failed.png"),fullPage:true}).catch(()=>{});
-  console.error("NPCCHALLENGE007_BROWSER_FAIL",name,errors);
+  console.error("NPCROLLOUT001_BROWSER_FAIL",name,errors);
   throw error;
  }finally{await browser.close();}
 }

@@ -209,18 +209,18 @@ test("NPCCHALLENGE006: 90 real seeded battles, different tactical success condit
    .map(x=>({seed:x.seed,strategy:x.strategy,stars:x.stars,actions:x.actions,hp:x.hp}))
  }));
 });
-test("NPCCHALLENGE006: URL, save path and real objective UI remain separated",()=>{
+test("NPCCHALLENGE006: objective UI and v1 save work without URL flag",()=>{
  const js=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.170");
- assert.match(html,/v0\.3\.170 · NPCCHALLENGE007/);
- assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.170/);
- assert.match(js,/npcChallengePilot=1/);
+ assert.equal(pkg.version,"0.3.171");
+ assert.match(html,/v0\.3\.171 · NPCROLLOUT001/);
+ assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.171/);
+ assert.match(js,/const NPC_CHALLENGE_PILOT_ENABLED=true;/);
  assert.match(js,/NpcChallengePilot\.criteria\(def\.id\)/);
  assert.match(js,/NpcChallengePilot\.goal\(activeChallengeId,/);
  assert.match(js,/NpcChallengePilot\.resultText\(activeChallengeId,state,challengeTracker\)/);
  assert.match(js,/NpcChallengePilot\.score\(activeChallengeId,state,challengeTracker\)/);
- assert.match(js,/NPC-пробы T-01…T-04 \/ N-01…N-04/);
- assert.match(js,/if\(battleIsChallenge&&!battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
+ assert.doesNotMatch(js,/NPC-пробы T-01…T-04/);
+ assert.match(js,/if\(battleIsChallenge&&!state.active&&!challengeResultRecorded\)/);
  assert.match(js,/ChallengeCore\.save\(outcome.candidate,\(\)=>window.localStorage,challengeSaveBlocked\)/);
  assert.equal(Q.KEY,"ashes-throne.challenges.v1");
  assert.equal(Q.get("N-03").thirdStarActionLimit,null);

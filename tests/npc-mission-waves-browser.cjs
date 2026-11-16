@@ -16,10 +16,10 @@ async function run(name,type){
  const pageErrors=[];page.on("pageerror",e=>pageErrors.push(e.message));
  try{
   const url=new URL(origin);
-  url.searchParams.set("npcMissionPilot","1");
+  
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v0.3.170 · NPCCHALLENGE007");
+   "Прототип · v0.3.171 · NPCROLLOUT001");
   // Simulate only prerequisites in memory, not in storage or user economy.
   await page.evaluate(()=>{
    campaignProgress.completed["black-pass-ambush"]=true;
@@ -38,8 +38,8 @@ async function run(name,type){
    dailySave:localStorage.getItem("ashes-throne.daily.v1")
   }));
   const card=mission.locator("xpath=ancestor::article");
-  assert.match(await card.innerText(),/NPC-ПРОБА/);
-  assert.match(await card.innerText(),/две волны/);
+  assert.doesNotMatch(await card.innerText(),/NPC-ПРОБА/);
+  assert.match(await card.innerText(),/двух волн/);
   await mission.click();
   await page.locator("#squad").waitFor({state:"visible",timeout:10000});
   await page.locator("#squadDisband").evaluate(el=>el.click());
@@ -91,16 +91,19 @@ async function run(name,type){
   }));
   assert.equal(result.winner,"ally");
   assert.equal(result.wave,2);
-  assert.match(result.stars,/Тестовая оценка: [★☆]{3}/);
-  assert.match(result.stars,/не сохраняется/);
-  assert.match(result.text,/Проверка двух волн противников/);
-  assert.match(result.text,/Энергия, задания, награды и сохранённые звёзды не изменены/);
+  assert.match(result.stars,/Оценка: [★☆]{3}/);
+  assert.match(result.stars,/Лучший результат/);
+  assert.match(result.text,/Получено|Победа|Наград/i);
+  
   const after=await page.evaluate(()=>({
    wallet:JSON.stringify(progress),campaign:JSON.stringify(campaignProgress),
    campaignSave:localStorage.getItem(CampaignCore.KEY),
    dailySave:localStorage.getItem("ashes-throne.daily.v1")
   }));
-  assert.deepEqual(after,before,"both real waves must not touch persistent economy");
+  assert.equal(JSON.parse(after.campaign).completed["demo-mission-3"],true,"wave mission completed");
+  assert.ok(JSON.parse(after.campaign).bestStars["demo-mission-3"]>=1);
+  assert.notEqual(after.campaignSave,before.campaignSave,"normal campaign stars persisted");
+  assert.notEqual(after.wallet,before.wallet,"ordinary campaign payout persisted");
   await page.locator("#missionResultRetry").click();
   await page.locator("#squad").waitFor({state:"visible",timeout:15000});
   await page.locator("#squadBack").click();

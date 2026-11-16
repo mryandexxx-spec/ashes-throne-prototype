@@ -122,7 +122,7 @@ test("CC0 Rock063 material is bundled locally and keeps the procedural fallback"
 test("fixed camera ignores single-finger rotation, retains 12..21 pinch and clears cancelled pointers",()=>{
  const source=read("game.js");
  const begin=source.indexOf("function installArenaPointerCamera(canvas,camera){");
- const end=source.indexOf("// Reuse the scene rather than re-creating meshes on every battle entry.",begin);
+ const end=source.indexOf("// NPCROLLOUT001: create only encountered NPC capsules.",begin);
  assert.ok(begin>0&&end>begin);
  const events=new Map(),globals=new Map();
  const canvas={addEventListener:(event,fn)=>events.set(event,fn)};

@@ -167,19 +167,19 @@ test("NPCCHALLENGE004: 90 real seeded battles preserve tactics, two-wave transit
   }))
  }));
 });
-test("NPCCHALLENGE004: source isolates opt-in challenge previews and preserves save paths",()=>{
+test("NPCCHALLENGE004: NPC scores now use the original challenge save path",()=>{
  const js=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.match(js,/npcChallengePilot=1/);
+ assert.match(js,/const NPC_CHALLENGE_PILOT_ENABLED=true;/);
  assert.match(js,/NPC_CHALLENGE_PILOT_ENABLED&&typeof NpcChallengePilot/);
- assert.match(js,/const COMBAT_VISUALS=HEROES.concat\(NPC_PILOT_VISUALS.filter\(Boolean\),NPC_MISSION_VISUALS,NPC_CHALLENGE_VISUALS\)/);
+ assert.match(js,/ensureEncounterNpcVisuals\(\[\.\.\.lineup,\.\.\.waves.flat\(\)\]\)/);
  assert.match(js,/battleIsNpcChallengePilot=battleIsChallenge&&NPC_CHALLENGE_PILOT_ENABLED/);
  assert.match(js,/NpcChallengePilot\.spawnWaves\(activeChallengeId\)/);
  assert.match(js,/NpcChallengePilot\.trackerTargets\(activeChallengeId\)/);
- assert.match(js,/if\(battleIsChallenge&&!battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
- assert.match(js,/if\(battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
+ assert.match(js,/if\(battleIsChallenge&&!state.active&&!challengeResultRecorded\)/);
+ assert.match(js,/ChallengeCore\.resultEarned\(challengeProgress,activeChallengeId/);
  assert.match(js,/ChallengeCore\.save\(outcome.candidate,\(\)=>window.localStorage,challengeSaveBlocked\)/);
- assert.match(js,/NPC-пробы T-01…T-04 \/ N-01…N-04/);
- assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.170/);
- assert.match(html,/v0\.3\.170 · NPCCHALLENGE007/);
- assert.equal(pkg.version,"0.3.170");
+ assert.doesNotMatch(js,/NPC-пробы T-01…T-04/);
+ assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.171/);
+ assert.match(html,/v0\.3\.171 · NPCROLLOUT001/);
+ assert.equal(pkg.version,"0.3.171");
 });

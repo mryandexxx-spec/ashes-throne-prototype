@@ -32,17 +32,17 @@ const NPC_PILOT_IDS=Object.freeze(["npc-pass-guard","npc-sarkh-land-courier","np
 const NPC_PILOT_VISUALS=NPC_PILOT_ENABLED&&typeof NpcEnemyData!=="undefined"
  ? NPC_PILOT_IDS.map((id,i)=>NpcEnemyData.spawn(id,{instanceId:id+"-training-"+(i+1)}))
  : [];
-// NPCMISSION002: opt-in only; ordinary sessions allocate no extra 3D meshes.
-const NPC_MISSION_PILOT_ENABLED=typeof location!=="undefined"&&
- /(?:^|[?&])npcMissionPilot=1(?:&|$)/.test(location.search);
+// NPCROLLOUT001: use NPC encounter data in ordinary campaign battles.
+const NPC_MISSION_PILOT_ENABLED=true;
 const NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED&&typeof NpcMissionPilot!=="undefined"
  ? NpcMissionPilot.visuals():[];
-// NPCCHALLENGE004–007: reserve lightweight capsules for explicit opt-in only.
-const NPC_CHALLENGE_PILOT_ENABLED=typeof location!=="undefined"&&
- /(?:^|[?&])npcChallengePilot=1(?:&|$)/.test(location.search);
+// NPCROLLOUT001: use NPC rosters and objectives in ordinary challenges.
+const NPC_CHALLENGE_PILOT_ENABLED=true;
 const NPC_CHALLENGE_VISUALS=NPC_CHALLENGE_PILOT_ENABLED&&typeof NpcChallengePilot!=="undefined"
  ? NpcChallengePilot.visuals():[];
-const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean),NPC_MISSION_VISUALS,NPC_CHALLENGE_VISUALS);
+// NPC visuals are loaded only for the current battle.
+const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean));
+const encounterNpcVisualIds=new Set();
 const $=s=>document.querySelector(s);
 // ENV022: default temporary concept-art backdrop. Combat visuals stay unchanged.
 // Fixed image has no parallax; it is NOT a rendered/reconstructed 3D environment.
@@ -277,14 +277,14 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
  if(typeof renderHeadquarters==="function")renderHeadquarters();
 });
 let battleIsCampaign=false;
-let battleIsNpcMissionPilot=false; // Test-only, no energy, rewards or save writes.
+let battleIsNpcMissionPilot=false; // NPC roster, normal campaign rewards and saves.
 let battleIsLoreTraining=false; // Noncanonical combat, no costs or rewards.
 let battleIsLoreRequired=false;
 let loreRequiredContext=null,loreRequiredResult=null;
 // STORY-001 is an opt-in sandbox, independent of campaign rewards and saves.
 let battleIsStoryDemo=false;
 let battleIsChallenge=false;
-let battleIsNpcChallengePilot=false; // Score shown, but no stars or daily task saved.
+let battleIsNpcChallengePilot=false; // NPC objectives, normal saved challenge scores.
 const challengeLoaded=typeof ChallengeCore!=="undefined"?
  ChallengeCore.load(()=>window.localStorage):
  {progress:{bestStars:{"T-01":0,"N-01":0}},available:false,blocked:true};
@@ -931,10 +931,10 @@ function renderSquad(){
    tacticalBrief.querySelector("strong").textContent=trial.briefTitle+" · ЗАДАЧА";
    tacticalBrief.querySelector("p").textContent=trial.brief;
   }else if(npcBrief){
-   tacticalBrief.querySelector("strong").textContent=(NpcChallengePilot.title(activeChallengeId)||
-    ChallengeCore.get(activeChallengeId)?.title)+" · NPC-ПРОБА";
+   tacticalBrief.querySelector("strong").textContent=NpcChallengePilot.title(activeChallengeId)||
+    ChallengeCore.get(activeChallengeId)?.title;
    tacticalBrief.querySelector("p").textContent=NpcChallengePilot.goal(activeChallengeId,
-    chosen[0]?.name)||"Пробное испытание без сохранения результата.";
+    chosen[0]?.name)||"Выполни условия испытания.";
   }
  }
  $("#squadStart").textContent=loreMode?"Начать испытание":"Начать бой";
@@ -1136,11 +1136,9 @@ function showScreen(id){
     battleIsLoreTraining?(NPC_PILOT_ENABLED?"ПРОБА NPC · УЧЕБНЫЙ БОЙ (ВНЕ КАНОНА)":"ПЯТЬ ТЕНЕЙ · ТРЕНИРОВКА (ВНЕ КАНОНА)"):
     battleIsChallenge?"ИСПЫТАНИЕ · "+
      ((battleIsNpcChallengePilot?NpcChallengePilot.title(activeChallengeId):null)||
-      ChallengeCore.get(activeChallengeId).title)+
-     (battleIsNpcChallengePilot?" · NPC-ПРОБА":""):
+      ChallengeCore.get(activeChallengeId).title):
    battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
-   battleIsCampaign?(MissionData.get(activeMissionId).title+
-    (battleIsNpcMissionPilot?" · NPC-ПРОБА":"")):"ТЕСТОВАЯ АРЕНА";
+   battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
   const trial=battleIsLoreRequired?LoreCampaignTrials.encounter(loreRequiredContext?.nodeId):null;
   const objective=$("#battleChallengeGoal");
   if(objective){
@@ -1177,7 +1175,7 @@ function showScreen(id){
   }
   const freeStoryEntry=battleIsCampaign&&progress.saveVersion===3&&
    !campaignProgress.completed[activeMissionId];
-  if(battleIsCampaign&&!battleIsNpcMissionPilot&&!freeStoryEntry&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
+  if(battleIsCampaign&&!freeStoryEntry&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
    showScreen("squad");
    const warning=$("#squadWarning");
    if(warning){warning.textContent="Недостаточно энергии для входа в миссию.";warning.hidden=false;}
@@ -1212,7 +1210,7 @@ function showScreen(id){
    if(lioraGlbRuntime){lioraGlbRuntime.dispose();lioraGlbRuntime=null;}
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
-   scene=undefined;engine=undefined;arenaCamera=null;meshes={};indicatorNodes={};combatVisual007=null;renderLoopRunning=false;
+   scene=undefined;engine=undefined;arenaCamera=null;meshes={};encounterNpcVisualIds.clear();indicatorNodes={};combatVisual007=null;renderLoopRunning=false;
    if(battleIsStoryDemo&&storyTrialParty){
     StoryDemoCore.cancelBattle(storyDemoState);
     showScreen("storyDemo");
@@ -1684,10 +1682,10 @@ function renderChallenges(){
     ["1★ — пройти "+waves+" волны","2★ — победить без потерь",
      "3★ — лимит действий пока не установлен"]);
    return '<article class="campaign-panel campaign-mission"><div class="node">✦</div><div>'+
-    '<h3>'+def.id+' · '+((pilot?NpcChallengePilot.title(def.id):null)||def.title)+(pilot?' · NPC-ПРОБА':'')+'</h3>'+
+    '<h3>'+def.id+' · '+((pilot?NpcChallengePilot.title(def.id):null)||def.title)+'</h3>'+
     '<p>'+(def.kind==="tactical"?"Тактическая задача · "+def.enemyIds.length+" противника":
      "Натиск · "+waves+" волны")+'</p>'+
-    '<p class="mission-stars">'+(pilot?"Обычный результат: ":"Лучшая оценка: ")+
+    '<p class="mission-stars">'+"Лучшая оценка: "+
      ("★".repeat(stars)+"☆".repeat(3-stars))+'</p>'+
     '<ul class="mission-criteria">'+details.map(x=>'<li>'+x+'</li>').join("")+'</ul>'+
     '<div class="campaign-mission-actions"><button class="primary" type="button" data-start-challenge="'+def.id+
@@ -1695,9 +1693,7 @@ function renderChallenges(){
     '</div></article>';
   }).join("");
  }else container.innerHTML="";
- $("#challengeSaveStatus").textContent=NPC_CHALLENGE_PILOT_ENABLED?
-  "NPC-пробы T-01…T-04 / N-01…N-04: оценки и ежедневные задачи не сохраняются. Открытие этапов — по обычному прогрессу.":
-  challengeSaveBlocked?
+ $("#challengeSaveStatus").textContent=challengeSaveBlocked?
   "Прогресс испытаний недоступен: бои доступны, сохранение заблокировано.":
   challengeSaveAvailable?"Лучшая оценка сохраняется в этом браузере.":
   "Хранилище браузера недоступно: результаты не сохраняются.";
@@ -1733,24 +1729,16 @@ function renderChallengeResult(){
   (battleIsNpcChallengePilot?NpcChallengePilot.title(activeChallengeId):null)||
   ChallengeCore.get(activeChallengeId)?.title||"Испытание";
  const stars=challengeLastStars;
- if(battleIsNpcChallengePilot){
-  $("#challengeResultName").textContent+=" · NPC-ПРОБА";
-  $("#challengeResultStars").textContent="Тестовая оценка: "+"★".repeat(stars)+
-   "☆".repeat(3-stars)+" (не сохраняется)";
-  const npcExplanation=NpcChallengePilot.resultText(activeChallengeId,state,challengeTracker);
-  $("#challengeResultText").textContent=(npcExplanation||("Проверка "+
-   (ChallengeCore.get(activeChallengeId)?.kind==="tactical"?
-    "выбора первоочередной цели":"двух волн")+" с новыми NPC."))+
-   " Энергия, ежедневные задачи, награды и постоянные оценки не изменены.";
-  $("#challengeResultRetry").textContent="Повторить пробу";
-  return;
- }
  $("#challengeResultStars").textContent="Оценка: "+"★".repeat(stars)+"☆".repeat(3-stars)+
   " · Лучший результат: "+(challengeProgress.bestStars[activeChallengeId]||0)+"/3";
  $("#challengeResultText").textContent=challengeSaveFailed?
   "Прогресс не сохранён: хранилище браузера недоступно или повреждено. Старые данные сохранены.":
-  won?"Победа. В учебном пилоте нет наград, энергии или сюжетных последствий.":
+  won?"Победа. Испытание не расходует энергию и не выдаёт отдельную награду.":
   "Поражение. Можно повторить испытание без ограничений.";
+ if(battleIsNpcChallengePilot&&!challengeSaveFailed){
+  const explanation=NpcChallengePilot.resultText(activeChallengeId,state,challengeTracker);
+  if(explanation)$("#challengeResultText").textContent=explanation;
+ }
  $("#challengeResultRetry").textContent=won?"Повторить испытание":"Попробовать снова";
 }
 $("#challengeResultBack")?.addEventListener("click",()=>showScreen("challenges"));
@@ -2571,13 +2559,11 @@ function renderCampaign(){
    const best=campaignProgress.bestStars[entry.missionId]||0;
    const cost=ProgressCore.missionEnergyCost(mission.id);
    const freeEntry=progress.saveVersion===3&&!completed;
-   const npcPilot=NPC_MISSION_PILOT_ENABLED&&typeof NpcMissionPilot!=="undefined"&&
-    !!NpcMissionPilot.get(mission.id);
-   const enough=npcPilot||freeEntry||ProgressCore.affordableRuns(progress,mission.id)>0;
+   const enough=freeEntry||ProgressCore.affordableRuns(progress,mission.id)>0;
    const status=completed?"Пройдено · Повторное прохождение доступно":available?"Не пройдено":"Заблокировано";
    const criteria=mission.stars.map((star,index)=>
     `<li><span class="mission-criteria-star">${index+1}★</span><span>${star.hint}</span></li>`).join("");
-   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}${npcPilot?" · NPC-ПРОБА":""}</h3><p>${entry.description}</p><p class="muted">${npcPilot?"Учебный бой: "+NpcMissionPilot.get(mission.id).label+". Без энергии, наград и сохранения оценки.":freeEntry?"Сюжетные попытки до первой победы: бесплатно. Повторы и симуляция: "+cost+" ⚡.":progress.saveVersion===3?"Повторный бой или симуляция: "+cost+" ⚡ за попытку.":"Стоимость входа: "+cost+" ⚡ за попытку (бой или симуляция)"}</p>${npcPilot?"":missionRewardLabel(mission.id)}<p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available&&enough?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${!npcPilot&&best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}" ${enough?"":"disabled"}>Симуляция</button>`:""}</div></div></article>`;
+   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="muted">${freeEntry?"Сюжетные попытки до первой победы: бесплатно. Повторы и симуляция: "+cost+" ⚡.":progress.saveVersion===3?"Повторный бой или симуляция: "+cost+" ⚡ за попытку.":"Стоимость входа: "+cost+" ⚡ за попытку (бой или симуляция)"}</p>${missionRewardLabel(mission.id)}<p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available&&enough?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}" ${enough?"":"disabled"}>Симуляция</button>`:""}</div></div></article>`;
    }).join("");
    return `<div class="campaign-route"><h3>${route.title}</h3>${items}</div>`;
   }).join("");
@@ -2674,16 +2660,6 @@ if(simulationClose)simulationClose.addEventListener("click",()=>{
 });
 function renderMissionResult(){
  const won=state.winner==="ally";
- if(battleIsNpcMissionPilot){
-  $("#missionResultChapter").textContent="NPC-ПРОБА · ВНЕ КАНОНА";
-  $("#missionResultTitle").textContent=won?"Пробный бой выигран":"Пробный бой проигран";
-  $("#missionResultText").textContent=(activeMissionId==="demo-mission-3"?"Проверка двух волн противников. ":"Проверка новой пары противников. ")+"Энергия, задания, награды и сохранённые звёзды не изменены.";
-  $("#missionResultStars").textContent="Тестовая оценка: "+"★".repeat(lastMissionStars)+
-   "☆".repeat(3-lastMissionStars)+" · Действий союзников: "+state.allyActions+" (не сохраняется)";
-  $("#missionResultRetry").textContent="Повторить пробу";
-  return;
- }
-
  const entry=CampaignData.getMission(activeMissionId);
  const chapter=entry&&CampaignData.allChapters().find(c=>c.id===entry.chapterId);
  const chapterLabel=$("#missionResultChapter");
@@ -2786,7 +2762,7 @@ function syncBattleUI(){
  if(!state.active){cancelAutoTimer();autoBattle=false;}
  // Commit battle outcome immediately as before, even if the player leaves
  // the arena before the final animation ends. Only visual navigation waits.
- if(battleIsCampaign&&!battleIsNpcMissionPilot&&!state.active&&!missionResultRecorded){
+ if(battleIsCampaign&&!state.active&&!missionResultRecorded){
   const firstClear=state.winner==="ally"&&!campaignProgress.completed[activeMissionId];
   const beforeCampaign=JSON.parse(JSON.stringify(campaignProgress));
   const beforeWallet=progress.saveVersion===3?JSON.parse(JSON.stringify(progress)):null;
@@ -2821,11 +2797,6 @@ function syncBattleUI(){
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
   missionResultRecorded=true;
  }
- if(battleIsNpcMissionPilot&&!state.active&&!missionResultRecorded){
-  // Reuse the campaign star predicate, never touch campaignProgress or wallet.
-  lastMissionStars=MissionData.score(activeMissionId,state);
-  missionResultRecorded=true;
- }
  if(battleIsSignal&&!state.active&&!signalResultRecorded){
   const pending=signalProgress.active;
   const result=pending&&!signalCaptureFailed&&signalBattleTracker&&
@@ -2841,13 +2812,7 @@ function syncBattleUI(){
    operationNotice="Результат боя не сохранён. План остался на контрольной точке: повтори бой после проверки хранилища.";
   operationResultRecorded=true;
  }
- if(battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded){
-  // Pilot-only scoring may add reversed target/HP preservation objectives.
-  // There are no challengeProgress, daily task, wallet or storage writes.
-  challengeLastStars=NpcChallengePilot.score(activeChallengeId,state,challengeTracker);
-  challengeResultRecorded=true;
- }
- if(battleIsChallenge&&!battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded){
+ if(battleIsChallenge&&!state.active&&!challengeResultRecorded){
   // A fully resolved challenge counts as participation even on defeat.
   // Cancel the daily change if its v3 save is rejected.
   const beforeDaily=JSON.stringify(progress);
@@ -2857,7 +2822,10 @@ function syncBattleUI(){
    Object.keys(progress).forEach(key=>delete progress[key]);
    Object.assign(progress,JSON.parse(beforeDaily));
   }
-  const outcome=ChallengeCore.result(challengeProgress,activeChallengeId,state,challengeTracker);
+  const outcome=battleIsNpcChallengePilot?
+   ChallengeCore.resultEarned(challengeProgress,activeChallengeId,
+    NpcChallengePilot.score(activeChallengeId,state,challengeTracker)):
+   ChallengeCore.result(challengeProgress,activeChallengeId,state,challengeTracker);
   challengeLastStars=outcome?.earned||0;
   if(challengeSaveBlocked||!challengeSaveAvailable||!outcome)challengeSaveFailed=true;
   else if(outcome.improved){
@@ -3089,6 +3057,7 @@ function resetBattle(){
  cancelVisualTransition();
  BattleAnimation.clear();
  combatVisual007?.clear();
+ clearEncounterNpcVisuals();
  autoBattle=false;
  // Keep the chosen speed between battles; only autoplay resets.
  missionResultShown=false;
@@ -3105,10 +3074,11 @@ function resetBattle(){
  lastMissionStars=0;
  selectedAbility="basic";
  const lineup=battleLineup();
+ const waves=battleFutureWaves();
  const allies=lineup.filter(f=>f.side==="ally");
  const realHeroFight=allies.length>0&&
   allies.every(f=>["ren","nada","liora","art","sava"].includes(f.id));
- state=CombatCore.createBattle(lineup,battleFutureWaves(),{
+ state=CombatCore.createBattle(lineup,waves,{
   leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId,
   ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{}),
   ...(battleIsLoreRequired&&loreRequiredContext?.battleObjective?
@@ -3122,6 +3092,7 @@ function resetBattle(){
    penetrationChecks:true,statusChecks:true
   }:{})
  });
+ ensureEncounterNpcVisuals([...lineup,...waves.flat()]);
  CombatCore.advanceToPlayerTurn(state);
  syncBattleUI();
 }
@@ -3550,7 +3521,45 @@ function ensureNada3D(){
   if(kind==="error")console.warn("NADA3D001: "+message);
  });
 }
-// Reuse the scene rather than re-creating meshes on every battle entry.
+// NPCROLLOUT001: create only encountered NPC capsules. A whole eight-stage
+// catalog at once would allocate 27*3 meshes plus unused materials on iPhone.
+function clearEncounterNpcVisuals(){
+ for(const id of encounterNpcVisualIds){
+  const visual=meshes[id];
+  if(!visual)continue;
+  const parts=[visual.body,visual.head,visual.base];
+  const materials=new Set(parts.map(x=>x.material).filter(Boolean));
+  for(const part of parts)part.dispose();
+  for(const mat of materials)mat.dispose();
+  delete meshes[id];
+ }
+ encounterNpcVisualIds.clear();
+}
+function ensureEncounterNpcVisuals(fighters){
+ if(!scene)return;
+ for(const f of fighters){
+  if(f?.side!=="enemy"||!f.archetypeId?.startsWith("npc-")||meshes[f.id])continue;
+  const i=100+encounterNpcVisualIds.size;
+  const body=BABYLON.MeshBuilder.CreateCapsule("npc_body_"+i,{height:1.5,radius:.42},scene);
+  body.position=new BABYLON.Vector3(0,.8,0);
+  const mat=new BABYLON.StandardMaterial("npc_mat_"+i,scene);
+  mat.diffuseColor=new BABYLON.Color3(.72,.25,.23);
+  mat.emissiveColor=new BABYLON.Color3(.08,.015,.01);
+  body.material=mat;
+  const head=BABYLON.MeshBuilder.CreateSphere("npc_head_"+i,{diameter:.62,segments:12},scene);
+  head.position=new BABYLON.Vector3(0,1.8,0);
+  head.material=mat;
+  const base=BABYLON.MeshBuilder.CreateCylinder("npc_base_"+i,{diameter:1.15,height:.12,tessellation:24},scene);
+  base.position=new BABYLON.Vector3(0,.08,0);
+  const baseMat=new BABYLON.StandardMaterial("npc_base_mat_"+i,scene);
+  baseMat.diffuseColor=new BABYLON.Color3(.4,.18,.18);
+  base.material=baseMat;
+  for(const part of [body,head,base])part.metadata={fighterId:f.id};
+  meshes[f.id]={body,head,base};
+  encounterNpcVisualIds.add(f.id);
+ }
+}
+// Reuse the scene rather than re-creating permanent hero meshes on each battle.
 function initBabylon(){
  const canvas=$("#renderCanvas");
  // Transparent WebGL is required for a real CSS image to show BEHIND 3D actors.
@@ -3675,7 +3684,7 @@ function updateMeshes(){
  ensureLiora3D();
  const roster=presentationFighters();
  const sideMembersBySide={ally:roster.filter(f=>f.side==="ally"),enemy:roster.filter(f=>f.side==="enemy")};
- for(const h of COMBAT_VISUALS){
+ for(const h of [...COMBAT_VISUALS,...Array.from(encounterNpcVisualIds,id=>({id}))]){
   const mesh=meshes[h.id];
   if(!mesh)continue;
   const member=roster.find(f=>f.id===h.id);

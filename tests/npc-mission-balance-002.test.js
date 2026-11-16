@@ -64,7 +64,7 @@ test("NPCMISSION002: mission-specific config does not change current campaigns o
  const plan=P.get("demo-mission-2");
  assert.equal(plan.missionId,"demo-mission-2");
  assert.equal(plan.difficulty,"light");
- assert.equal(P.get("black-pass-ambush"),null);
+ assert.equal(P.get("black-pass-ambush").enemyIds.length,2);
  assert.ok(P.get("demo-mission-3"),"a separate two-wave mission is now available");
  assert.equal(P.spawnWaves("demo-mission-2").length,0);
  assert.equal(plan.enemyIds.length,2);
@@ -85,17 +85,17 @@ test("NPCMISSION002: mission-specific config does not change current campaigns o
  assert.equal(M.get("demo-mission-2").stars.length,3);
  assert.equal(M.get("demo-mission-2").stars[2].conditions.at(-1).limit,9);
 });
-test("NPCMISSION002: opt-in is only demo-mission-2 and 3D instances match IDs",()=>{
+test("NPCMISSION002: default campaign NPCs have pickable visuals and regular saves",()=>{
  const game=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.match(game,/npcMissionPilot=1/);
+ assert.match(game,/const NPC_MISSION_PILOT_ENABLED=true;/);
  assert.match(game,/battleIsCampaign&&NPC_MISSION_PILOT_ENABLED/);
- assert.match(game,/const COMBAT_VISUALS=HEROES.concat\(NPC_PILOT_VISUALS.filter\(Boolean\),NPC_MISSION_VISUALS,NPC_CHALLENGE_VISUALS\)/);
+ assert.match(game,/ensureEncounterNpcVisuals\(\[\.\.\.lineup,\.\.\.waves.flat\(\)\]\)/);
  assert.match(game,/NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED/);
  assert.match(game,/const ENEMIES=HEROES.filter\(h=>h.side==="enemy"\)/);
  assert.match(game,/activeMissionId==="demo-mission-2"\?ENEMIES:ENEMIES.slice\(0,2\)/);
- assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.170/);
- assert.equal(pkg.version,"0.3.170");
- assert.match(html,/v0\.3\.170 · NPCCHALLENGE007/);
+ assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.171/);
+ assert.equal(pkg.version,"0.3.171");
+ assert.match(html,/v0\.3\.171 · NPCROLLOUT001/);
  assert.equal((game.match(/side:"enemy",glyph:/g)||[]).length,5);
 });
 test("NPCMISSION002: practical combat matrix for actual Gardens hero stats (L1, L3, L8)",()=>{

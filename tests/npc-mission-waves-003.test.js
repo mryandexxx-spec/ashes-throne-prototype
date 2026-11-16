@@ -77,10 +77,10 @@ test("NPCMISSION003: two waves, immutable plans, unique IDs, unchanged legacy mi
  assert.deepEqual(Array.from(waves[0],x=>[x.hp,x.protection]),[[55,8],[45,3],[35,3]]);
  assert.equal(N.get("npc-pass-guard").stats.hp,145,"generic NPC HP unchanged");
  assert.equal(N.get("npc-field-medic").stats.hp,103,"generic healer unchanged");
- assert.equal(P.spawn("black-pass-ambush"),null);
- assert.equal(P.spawnWaves("black-pass-ambush"),null);
+ assert.equal(P.spawn("black-pass-ambush").length,2);
+ assert.equal(P.spawnWaves("black-pass-ambush").length,0);
  assert.deepEqual(Array.from(P.visuals(),x=>x.id).sort(),
-  ["npc-m2-slinger","npc-m2-medic",...ids].sort());
+  ["npc-m1-guard","npc-m1-interceptor","npc-m2-slinger","npc-m2-medic",...ids].sort());
  assert.equal(M.get("demo-mission-3").futureEnemyWaves[0].length,3,
   "the normal campaign mission still has its original wave IDs");
  assert.deepEqual(Array.from(M.get("demo-mission-3").futureEnemyWaves[0]),
@@ -90,20 +90,20 @@ test("NPCMISSION003: two waves, immutable plans, unique IDs, unchanged legacy mi
  const campaign=Progress.fresh();
  assert.equal(Campaign.available(Campaign.getMission("demo-mission-3"),campaign),false);
 });
-test("NPCMISSION003: only opt-in two-wave mission; regular modes and visuals untouched",()=>{
+test("NPCMISSION003: default NPC campaign waves retain costs and progression",()=>{
  const game=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.match(game,/npcMissionPilot=1/);
+ assert.match(game,/const NPC_MISSION_PILOT_ENABLED=true;/);
  assert.match(game,/NpcMissionPilot\.visuals\(\)/);
  assert.match(game,/NpcMissionPilot\.spawnWaves\(activeMissionId\)/);
  assert.match(game,/battleIsCampaign&&NPC_MISSION_PILOT_ENABLED/);
  assert.match(game,/!!NpcMissionPilot\.get\(activeMissionId\)/);
- assert.match(game,/if\(battleIsCampaign&&!battleIsNpcMissionPilot&&!freeStoryEntry\)/);
- assert.match(game,/if\(battleIsNpcMissionPilot&&!state.active&&!missionResultRecorded\)/);
+ assert.match(game,/if\(battleIsCampaign&&!freeStoryEntry\)/);
+ assert.match(game,/if\(battleIsCampaign&&!state.active&&!missionResultRecorded\)/);
  assert.match(game,/const ENEMIES=HEROES.filter\(h=>h.side==="enemy"\)/);
  assert.match(game,/NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED/);
- assert.match(html,/v0\.3\.170 · NPCCHALLENGE007/);
- assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.170/);
- assert.equal(pkg.version,"0.3.170");
+ assert.match(html,/v0\.3\.171 · NPCROLLOUT001/);
+ assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.171/);
+ assert.equal(pkg.version,"0.3.171");
 });
 test("NPCMISSION003: 45 real two-wave bouts with reachable heroes, 3-star possibility and tactical value",()=>{
  const cases=[

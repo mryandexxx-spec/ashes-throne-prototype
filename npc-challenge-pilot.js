@@ -1,6 +1,6 @@
-/* NPCCHALLENGE004–007 — [PROPOSAL] opt-in T-01…T-04/N-01…N-04.
- * Reward-free training previews. Base challenge scoring remains untouched;
- * daily tasks, saves, progression and normal non-NPC opponents are untouched.
+/* NPCROLLOUT001: normal T-01..04/N-01..04 use accepted NPC encounter
+ * objectives. Existing archetype numbers are provisional game balance.
+ * ChallengeCore remains the sole owner of progress and v1 storage.
  */
 const NpcChallengePilot=(()=>{
  "use strict";
@@ -176,7 +176,10 @@ const NpcChallengePilot=(()=>{
   return Object.values(catalog).flatMap(p=>definitions(p).map(make)).filter(Boolean);
  }
  function title(id){
-  return id==="T-04"?"Прикрыть отход":id==="N-04"?"Без передышки":null;
+  return ({ "T-01":"Первая цель","T-02":"Быстрая угроза",
+   "T-03":"Последняя цель","T-04":"Прикрыть отход",
+   "N-01":"Два рубежа","N-02":"Смена караула",
+   "N-03":"Запас сил","N-04":"Без передышки" })[id]||null;
  }
  function tacticalObjective(id,party){
   const plan=get(id);

@@ -39,7 +39,7 @@ async function run(name,type){
   }));
   const card=mission.locator("xpath=ancestor::article");
   assert.doesNotMatch(await card.innerText(),/NPC-ПРОБА/);
-  assert.match(await card.innerText(),/две волны/);
+  assert.match(await card.innerText(),/двух волн/);
   await mission.click();
   await page.locator("#squad").waitFor({state:"visible",timeout:10000});
   await page.locator("#squadDisband").evaluate(el=>el.click());

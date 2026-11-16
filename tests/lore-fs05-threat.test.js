@@ -74,9 +74,10 @@ test("LOREUX001: tactical decision affects survival; automatic planner is still 
 });
 test("LOREUX001: mission tuning stays scoped to FS-05, old arena contracts unchanged",()=>{
  const game=file("game.js");
- assert.match(game,/const isRescue=loreRequiredContext.nodeId==="five-shadows:fs-05"/);
- assert.match(game,/name:"Преследователь",hp:225,atk:60,assaultFocus:true/);
- assert.match(game,/name:"Дозорный 1",hp:150,atk:22/);
+ assert.match(game,/NpcStoryOpsAdapter\.story\(loreRequiredContext.nodeId,trial\)\.first/);
+ const adapter=file("npc-story-ops-adapter.js");
+ assert.match(adapter,/name:"Преследователь",hp:225,atk:60,assaultFocus:true/);
+ assert.match(adapter,/name:"Дозорный 1",hp:150,atk:22/);
  const old=CombatCore.createBattle([...team(),enemy("ves",90,18,105)],[],{});
  assert.equal(old.tacticalObjective,undefined);
 });

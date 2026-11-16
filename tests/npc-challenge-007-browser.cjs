@@ -60,7 +60,7 @@ async function smoke(name,kind){
   const url=new URL(origin);
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v0.3.171 · NPCROLLOUT001");
+   "Прототип · v"+require("../package.json").version+" · NPCPVE002");
   // Earlier completed stages are a memory-only prerequisite. Do not write saves.
   await page.evaluate(()=>{
    for(const id of ["T-01","T-02","T-03","N-01","N-02","N-03"])
@@ -162,7 +162,7 @@ async function smoke(name,kind){
   assert.equal(nResult.stars,nResult.alive?(nResult.activeHeals||!nResult.verified?2:3):1);
   assert.match(nResult.text,/Активное лечение союзников/);
   assert.match(nResult.label,/Лучший результат/);
-  assertNpcSaved(beforeN,await snapshot(page),"N-02",nResult.stars);
+  assertNpcSaved(beforeN,await snapshot(page),"N-04",nResult.stars);
   await page.locator("#challengeResultRetry").click();
   await page.locator("#squad").waitFor({state:"visible",timeout:14000});
   await page.locator("#squadBack").click();

@@ -93,7 +93,7 @@ function captureResolvedVisuals(beforeFighters){
   else ChallengeCore.capture(challengeTracker,state.events||[]);
  }
  if(battleIsSignal&&signalBattleTracker&&!signalCaptureFailed){
-  const batch=SignalOperationCore.capture(signalBattleTracker,state.events||[],signalBattleTracker.lastSequence+1);
+  const batch=SignalOperationCore.capture(signalBattleTracker,NpcStoryOpsAdapter.signalEvents(state.events||[]),signalBattleTracker.lastSequence+1);
   if(batch)signalBattleTracker=batch;
   else signalCaptureFailed=true; // Refuse to invent a clean result from incomplete events.
  }
@@ -754,13 +754,12 @@ function battleLineup(){
  if(battleIsSignal){
   const plan=SignalOperationCore.battlePlan(signalProgress.active);
   if(!plan)throw Error("Unknown signal operation plan");
-  const enemies=plan.guardIds.map(id=>ENEMIES.find(enemy=>enemy.id===id));
-  if(enemies.some(enemy=>!enemy))throw Error("Missing signal guard template");
-  return [...selectedParty(),...enemies.map(progressedEnemy)];
+  return [...selectedParty(),...NpcStoryOpsAdapter.operation("OPS-002",plan).first];
  }
  if(battleIsOperation){
-  if(!OperationCore.battlePlan(operationProgress.active))throw Error("Unknown operation plan");
-  return [...selectedParty(),...ENEMIES.slice(0,2).map(progressedEnemy)];
+  const plan=OperationCore.battlePlan(operationProgress.active);
+  if(!plan)throw Error("Unknown operation plan");
+  return [...selectedParty(),...NpcStoryOpsAdapter.operation("OPS-001",plan).first];
  }
  if(battleIsNpcChallengePilot){
   const enemies=NpcChallengePilot.spawn(activeChallengeId);
@@ -788,33 +787,14 @@ function battleLineup(){
  }
  if(battleIsLoreTraining)return [...selectedParty(),...ENEMIES.slice(0,2).map((e,i)=>
   progressedEnemy({...e,name:"Учебный противник "+(i+1)}))];
- // Gameplay adaptation only. These enemies are NOT invented literary canon.
+ // NPCPVE002: noncanonical story enemies use NPC abilities and disposable
+ // instance visuals. Their scenario identities and tactical gates survive.
  if(battleIsLoreRequired){
   if(!loreRequiredContext?.nodeId)throw Error("MISSING_LORE_BATTLE_CONTEXT");
   if(!requiredLoreSquadReady())throw Error("MISSING_REQUIRED_LORE_HERO");
-  const isRescue=loreRequiredContext.nodeId==="five-shadows:fs-05";
   const trial=LoreCampaignTrials.encounter(loreRequiredContext.nodeId);
   if(!trial)throw Error("UNKNOWN_LORE_TRIAL");
-  if(!isRescue){
-   const attackers=trial.enemies.map(entry=>{
-    const template=ENEMIES.find(e=>e.id===entry.id);
-    if(!template)throw Error("MISSING_LORE_ENEMY_TEMPLATE");
-    return progressedEnemy({...template,...entry});
-   });
-   return [...selectedParty(),...attackers];
-  }
-  const count=["five-shadows:fs-02","five-shadows:fs-05"].includes(loreRequiredContext.nodeId)?3:2;
-  // FS-05 only: one dangerous pursuer hunts Ren; the two guards delay
-  // the party. These game-only numbers never modify global enemy templates.
-  const rescueOpponents=[
-   {name:"Дозорный 1",hp:150,atk:22},
-   {name:"Преследователь",hp:225,atk:60,assaultFocus:true},
-   {name:"Дозорный 2",hp:150,atk:22}
-  ];
-  const attackers=ENEMIES.slice(0,count).map((e,i)=>
-   progressedEnemy({...e,...(isRescue?rescueOpponents[i]:{
-    name:"Игровой противник "+(i+1)})}));
-  return [...selectedParty(),...attackers];
+  return [...selectedParty(),...NpcStoryOpsAdapter.story(loreRequiredContext.nodeId,trial).first];
  }
  // STORY-002 uses temporary hero IDs outside v3 save validation.
  if(battleIsStoryDemo&&storyTrialParty)
@@ -842,25 +822,17 @@ function battleFutureWaves(){
  if(battleIsLoreRequired){
   const trial=LoreCampaignTrials.encounter(loreRequiredContext?.nodeId);
   if(!trial)throw Error("UNKNOWN_LORE_TRIAL");
-  return trial.waves.map(wave=>wave.map(entry=>{
-   const template=ENEMIES.find(e=>e.id===entry.id);
-   if(!template)throw Error("MISSING_LORE_WAVE_TEMPLATE");
-   return progressedEnemy({...template,...entry});
-  }));
+  return NpcStoryOpsAdapter.story(loreRequiredContext.nodeId,trial).waves;
  }
  if(battleIsSignal){
   const plan=SignalOperationCore.battlePlan(signalProgress.active);
   if(!plan)throw Error("Unknown signal battle plan");
-  const reserve=ENEMIES.find(enemy=>enemy.id==="ves-2");
-  if(plan.kind==="twoWaves"&&!reserve)throw Error("Missing signal reinforcement");
-  return plan.kind==="twoWaves"?[[progressedEnemy(reserve)]]:[];
+  return NpcStoryOpsAdapter.operation("OPS-002",plan).waves;
  }
  if(battleIsOperation){
   const plan=OperationCore.battlePlan(operationProgress.active);
   if(!plan)throw Error("Unknown operation plan");
-  const reinforcement=ENEMIES.find(h=>h.id==="ves-2");
-  if(plan.kind==="twoWaves"&&!reinforcement)throw Error("Missing training reinforcement");
-  return plan.kind==="twoWaves"?[[progressedEnemy(reinforcement)]]:[];
+  return NpcStoryOpsAdapter.operation("OPS-001",plan).waves;
  }
  if(battleIsNpcChallengePilot){
   const waves=NpcChallengePilot.spawnWaves(activeChallengeId);
@@ -1556,8 +1528,8 @@ function renderSignalOperations(){
   "План хранится отдельно. При закрытии Safari во время боя он начнётся заново, без восстановления ходов и HP.";
  notice.textContent=signalNotice;
  history.textContent=last?"Последний итог: "+signalOutcomeText(last):"Завершённых операций ещё нет.";
- if($("#sigGuardAName"))$("#sigGuardAName").textContent=ENEMIES.find(e=>e.id==="ves")?.name||"Страж 1";
- if($("#sigGuardBName"))$("#sigGuardBName").textContent=ENEMIES.find(e=>e.id==="shade")?.name||"Страж 2";
+ if($("#sigGuardAName"))$("#sigGuardAName").textContent=(typeof NpcStoryOpsAdapter!=="undefined"?NpcStoryOpsAdapter.signalGuardName("ves"):null)||ENEMIES.find(e=>e.id==="ves")?.name||"Страж 1";
+ if($("#sigGuardBName"))$("#sigGuardBName").textContent=(typeof NpcStoryOpsAdapter!=="undefined"?NpcStoryOpsAdapter.signalGuardName("shade"):null)||ENEMIES.find(e=>e.id==="shade")?.name||"Страж 2";
  guardA.textContent=intel?.signalId==="ves"?"Связной установлен":
   intel?.signalId==="shade"?"Постовой":"Роль не установлена";
  guardB.textContent=intel?.signalId==="shade"?"Связной установлен":
@@ -3082,7 +3054,7 @@ function resetBattle(){
   leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId,
   ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{}),
   ...(battleIsLoreRequired&&loreRequiredContext?.battleObjective?
-   {tacticalObjective:loreRequiredContext.battleObjective}:{}),
+   {tacticalObjective:NpcStoryOpsAdapter.storyObjective(loreRequiredContext.nodeId,loreRequiredContext.battleObjective)}:{}),
   ...(battleIsNpcChallengePilot&&activeChallengeId==="T-04"?
    {tacticalObjective:NpcChallengePilot.tacticalObjective(activeChallengeId,allies)}:{}),
   // RNG combat formulas are active only for parties of the two real heroes.

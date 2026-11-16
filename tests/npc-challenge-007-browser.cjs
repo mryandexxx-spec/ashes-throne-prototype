@@ -31,10 +31,17 @@ async function enter(page,id){
 }
 function assertNpcSaved(before,after,id,earned){
  const previous=before.challengeSave?JSON.parse(before.challengeSave).bestStars[id]||0:0;
- const storage=JSON.parse(after.challengeSave);
- assert.equal(storage.version,1);
- assert.equal(storage.bestStars[id],Math.max(previous,earned));
- assert.equal(JSON.parse(after.challenges||after.challengeProgress).bestStars[id],storage.bestStars[id]);
+ const storage=after.challengeSave?JSON.parse(after.challengeSave):null;
+ const inMemory=JSON.parse(after.challenges||after.challengeProgress).bestStars[id];
+ if(!storage){
+  assert.equal(Math.max(previous,earned),0,"only zero-star results need no saved record");
+  assert.equal(after.challengeSave,before.challengeSave,"failed battle cannot write progress");
+  assert.equal(inMemory,0);
+ }else{
+  assert.equal(storage.version,1);
+  assert.equal(storage.bestStars[id],Math.max(previous,earned));
+  assert.equal(inMemory,storage.bestStars[id]);
+ }
  const walletBefore=JSON.parse(before.wallet||before.progress);
  const walletAfter=JSON.parse(after.wallet||after.progress);
  for(const key of ["currency","xp","energy"]){

@@ -18,7 +18,7 @@ async function check(name,type){
   
   await page.goto(uri.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v"+require("../package.json").version+" · NPCUX004");
+   "Прототип · v"+require("../package.json").version+" · LOREACT3001");
   // Unlock only the prerequisite IN MEMORY. No synthetic victory or local save.
   await page.evaluate(()=>{
    campaignProgress.completed["black-pass-ambush"]=true;

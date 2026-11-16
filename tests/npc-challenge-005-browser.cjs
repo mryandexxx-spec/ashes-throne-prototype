@@ -27,6 +27,19 @@ async function snapshot(page){
   daily:JSON.stringify(progress.daily)
  }));
 }
+function assertNpcSaved(before,after,id,earned){
+ const previous=before.challengeSave?JSON.parse(before.challengeSave).bestStars[id]||0:0;
+ const storage=JSON.parse(after.challengeSave);
+ assert.equal(storage.version,1);
+ assert.equal(storage.bestStars[id],Math.max(previous,earned));
+ assert.equal(JSON.parse(after.challenges||after.challengeProgress).bestStars[id],storage.bestStars[id]);
+ const walletBefore=JSON.parse(before.wallet||before.progress);
+ const walletAfter=JSON.parse(after.wallet||after.progress);
+ for(const key of ["currency","xp","energy"]){
+  if(walletBefore[key]!==undefined)assert.deepEqual(walletAfter[key],walletBefore[key],
+   "challenge must not grant currency, XP or spend energy");
+ }
+}
 async function run(name,browserType){
  const browser=await browserType.launch(name==="chromium"?
   {headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage"]}:
@@ -35,10 +48,10 @@ async function run(name,browserType){
  const errors=[];page.on("pageerror",e=>errors.push(e.message));
  try{
   const url=new URL(origin);
-  url.searchParams.set("npcChallengePilot","1");
+  
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v0.3.170 · NPCCHALLENGE007");
+   "Прототип · v0.3.171 · NPCROLLOUT001");
   // Unlock the preceding original challenges IN MEMORY only; do not synthesize
   // victories, write storage or grant stars in any test scenario.
   await page.evaluate(()=>{
@@ -47,11 +60,11 @@ async function run(name,browserType){
   });
   await page.locator('#hqMoreMenu [data-screen="challenges"]').evaluate(el=>el.click());
   await page.locator("#challenges").waitFor({state:"visible",timeout:15000});
-  assert.match(await page.locator("#challengeSaveStatus").innerText(),/T-01…T-04 \/ N-01…N-04/);
+  assert.match(await page.locator("#challengeSaveStatus").innerText(),/Лучшая оценка сохраняется/);
   await page.locator('[data-challenge-kind="tactical"]').click();
   const tCard=page.locator('[data-start-challenge="T-02"]').locator("xpath=ancestor::article");
   assert.equal(await page.locator('[data-start-challenge="T-02"]').isEnabled(),true);
-  assert.match(await tCard.innerText(),/NPC-ПРОБА/);
+  assert.doesNotMatch(await tCard.innerText(),/NPC-ПРОБА/);
   assert.match(await tCard.innerText(),/Перехватчик троп/);
   const before=await snapshot(page);
   await selectFullSquad(page,"T-02");
@@ -87,16 +100,16 @@ async function run(name,browserType){
   }));
   assert.equal(result.won,"ally");
   assert.equal(result.stars,result.firstKill==="npc-t02-interceptor"?3:1);
-  assert.match(result.label,/не сохраняется/);
-  assert.match(result.text,/первоочередной цели/);
-  assert.deepEqual(await snapshot(page),before);
+  assert.match(result.label,/Лучший результат/);
+  assert.match(result.text,/Победа|испытан/i);
+  assertNpcSaved(before,await snapshot(page),"T-02",result.stars);
   await page.locator("#challengeResultBack").click();
   await page.locator("#challenges").waitFor({state:"visible",timeout:12000});
   await page.locator("#challengeModeBack").click();
   await page.locator('[data-challenge-kind="onslaught"]').click();
   const nCard=page.locator('[data-start-challenge="N-02"]').locator("xpath=ancestor::article");
   assert.equal(await page.locator('[data-start-challenge="N-02"]').isEnabled(),true);
-  assert.match(await nCard.innerText(),/NPC-ПРОБА/);
+  assert.doesNotMatch(await nCard.innerText(),/NPC-ПРОБА/);
   assert.match(await nCard.innerText(),/2 волны/);
   assert.match(await nCard.innerText(),/лимит действий пока не установлен/);
   const beforeN=await snapshot(page);
@@ -144,9 +157,9 @@ async function run(name,browserType){
   assert.equal(nResult.won,"ally");
   assert.equal(nResult.wave,2);
   assert.ok([1,2].includes(nResult.stars),"no third-star action threshold defined");
-  assert.match(nResult.label,/не сохраняется/);
-  assert.match(nResult.text,/двух волн/);
-  assert.deepEqual(await snapshot(page),beforeN);
+  assert.match(nResult.label,/Лучший результат/);
+  assert.match(nResult.text,/Победа|испытан/i);
+  assertNpcSaved(beforeN,await snapshot(page),"N-02",nResult.stars);
   await page.locator("#challengeResultRetry").click();
   await page.locator("#squad").waitFor({state:"visible",timeout:15000});
   await page.locator("#squadBack").click();

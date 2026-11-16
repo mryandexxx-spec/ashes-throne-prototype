@@ -42,6 +42,7 @@ const NPC_CHALLENGE_VISUALS=NPC_CHALLENGE_PILOT_ENABLED&&typeof NpcChallengePilo
  ? NpcChallengePilot.visuals():[];
 // NPC visuals are loaded only for the current battle.
 const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean));
+const encounterNpcVisualIds=new Set();
 const $=s=>document.querySelector(s);
 // ENV022: default temporary concept-art backdrop. Combat visuals stay unchanged.
 // Fixed image has no parallax; it is NOT a rendered/reconstructed 3D environment.
@@ -1209,7 +1210,7 @@ function showScreen(id){
    if(lioraGlbRuntime){lioraGlbRuntime.dispose();lioraGlbRuntime=null;}
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
-   scene=undefined;engine=undefined;arenaCamera=null;meshes={};indicatorNodes={};combatVisual007=null;renderLoopRunning=false;
+   scene=undefined;engine=undefined;arenaCamera=null;meshes={};encounterNpcVisualIds.clear();indicatorNodes={};combatVisual007=null;renderLoopRunning=false;
    if(battleIsStoryDemo&&storyTrialParty){
     StoryDemoCore.cancelBattle(storyDemoState);
     showScreen("storyDemo");
@@ -3056,6 +3057,7 @@ function resetBattle(){
  cancelVisualTransition();
  BattleAnimation.clear();
  combatVisual007?.clear();
+ clearEncounterNpcVisuals();
  autoBattle=false;
  // Keep the chosen speed between battles; only autoplay resets.
  missionResultShown=false;
@@ -3072,10 +3074,11 @@ function resetBattle(){
  lastMissionStars=0;
  selectedAbility="basic";
  const lineup=battleLineup();
+ const waves=battleFutureWaves();
  const allies=lineup.filter(f=>f.side==="ally");
  const realHeroFight=allies.length>0&&
   allies.every(f=>["ren","nada","liora","art","sava"].includes(f.id));
- state=CombatCore.createBattle(lineup,battleFutureWaves(),{
+ state=CombatCore.createBattle(lineup,waves,{
   leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId,
   ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{}),
   ...(battleIsLoreRequired&&loreRequiredContext?.battleObjective?
@@ -3089,6 +3092,7 @@ function resetBattle(){
    penetrationChecks:true,statusChecks:true
   }:{})
  });
+ ensureEncounterNpcVisuals([...lineup,...waves.flat()]);
  CombatCore.advanceToPlayerTurn(state);
  syncBattleUI();
 }
@@ -3517,7 +3521,45 @@ function ensureNada3D(){
   if(kind==="error")console.warn("NADA3D001: "+message);
  });
 }
-// Reuse the scene rather than re-creating meshes on every battle entry.
+// NPCROLLOUT001: create only encountered NPC capsules. A whole eight-stage
+// catalog at once would allocate 27*3 meshes plus unused materials on iPhone.
+function clearEncounterNpcVisuals(){
+ for(const id of encounterNpcVisualIds){
+  const visual=meshes[id];
+  if(!visual)continue;
+  const parts=[visual.body,visual.head,visual.base];
+  const materials=new Set(parts.map(x=>x.material).filter(Boolean));
+  for(const part of parts)part.dispose();
+  for(const mat of materials)mat.dispose();
+  delete meshes[id];
+ }
+ encounterNpcVisualIds.clear();
+}
+function ensureEncounterNpcVisuals(fighters){
+ if(!scene)return;
+ for(const f of fighters){
+  if(f?.side!=="enemy"||!f.archetypeId?.startsWith("npc-")||meshes[f.id])continue;
+  const i=100+encounterNpcVisualIds.size;
+  const body=BABYLON.MeshBuilder.CreateCapsule("npc_body_"+i,{height:1.5,radius:.42},scene);
+  body.position=new BABYLON.Vector3(0,.8,0);
+  const mat=new BABYLON.StandardMaterial("npc_mat_"+i,scene);
+  mat.diffuseColor=new BABYLON.Color3(.72,.25,.23);
+  mat.emissiveColor=new BABYLON.Color3(.08,.015,.01);
+  body.material=mat;
+  const head=BABYLON.MeshBuilder.CreateSphere("npc_head_"+i,{diameter:.62,segments:12},scene);
+  head.position=new BABYLON.Vector3(0,1.8,0);
+  head.material=mat;
+  const base=BABYLON.MeshBuilder.CreateCylinder("npc_base_"+i,{diameter:1.15,height:.12,tessellation:24},scene);
+  base.position=new BABYLON.Vector3(0,.08,0);
+  const baseMat=new BABYLON.StandardMaterial("npc_base_mat_"+i,scene);
+  baseMat.diffuseColor=new BABYLON.Color3(.4,.18,.18);
+  base.material=baseMat;
+  for(const part of [body,head,base])part.metadata={fighterId:f.id};
+  meshes[f.id]={body,head,base};
+  encounterNpcVisualIds.add(f.id);
+ }
+}
+// Reuse the scene rather than re-creating permanent hero meshes on each battle.
 function initBabylon(){
  const canvas=$("#renderCanvas");
  // Transparent WebGL is required for a real CSS image to show BEHIND 3D actors.
@@ -3642,7 +3684,7 @@ function updateMeshes(){
  ensureLiora3D();
  const roster=presentationFighters();
  const sideMembersBySide={ally:roster.filter(f=>f.side==="ally"),enemy:roster.filter(f=>f.side==="enemy")};
- for(const h of COMBAT_VISUALS){
+ for(const h of [...COMBAT_VISUALS,...Array.from(encounterNpcVisualIds,id=>({id}))]){
   const mesh=meshes[h.id];
   if(!mesh)continue;
   const member=roster.find(f=>f.id===h.id);

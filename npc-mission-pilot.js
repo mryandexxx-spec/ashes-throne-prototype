@@ -1,6 +1,6 @@
-/* NPCMISSION003 — [PROPOSAL] opt-in, noncanonical PvE demo encounters.
- * Keep the second demo mission fixed; add one two-wave third mission.
- * No global NPC changes, no save migrations or story-world encounters.
+/* NPCROLLOUT001: ordinary campaign encounters use the existing human NPC
+ * archetypes. Three demo missions only; economy, save and rewards are handled
+ * by the original campaign pipeline. Names/stats are gameplay provisional.
  */
 const NpcMissionPilot=(()=>{
  "use strict";
@@ -8,6 +8,16 @@ const NpcMissionPilot=(()=>{
   archetypeId,instanceId,level:1,stars:1,gearTier:1,skillLevel:1,hp,protection
  });
  const plans=Object.freeze({
+  "black-pass-ambush":Object.freeze({
+   missionId:"black-pass-ambush",difficulty:"intro",
+   label:"Первые противники",
+   encounterTag:"gameplay-training",
+   enemyIds:Object.freeze([
+    unit("npc-pass-guard","npc-m1-guard",64,8),
+    unit("npc-trail-interceptor","npc-m1-interceptor",58,6)
+   ]),
+   futureWaves:Object.freeze([])
+  }),
   "demo-mission-2":Object.freeze({
    missionId:"demo-mission-2",difficulty:"light",
    label:"Учебный бой · выбор цели",
@@ -64,8 +74,7 @@ const NpcMissionPilot=(()=>{
  }
  function visuals(){
   if(typeof NpcEnemyData==="undefined")return [];
-  // One reserved low-poly capsule per opt-in encounter ID, all waves included.
-  // Ordinary sessions never call this and allocate no extra Babylon assets.
+  // Descriptors only; 3D capsules are allocated lazily per current encounter.
   return Object.values(plans).flatMap(plan=>allDefinitions(plan).map(createUnit)).filter(Boolean);
  }
  return Object.freeze({get,spawn,spawnWaves,visuals});

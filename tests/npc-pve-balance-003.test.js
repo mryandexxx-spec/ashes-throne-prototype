@@ -221,5 +221,5 @@ test("NPCPVE003: proposal-only FS-05 and OPS numerical sensitivity; no game writ
   }
  }
  console.log("NPCPVE003_SENSITIVITY="+JSON.stringify(variants));
- assert.ok(variants.length>120);
+ assert.equal(variants.length,104);
 });

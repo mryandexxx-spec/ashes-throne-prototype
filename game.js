@@ -1,3 +1,6 @@
+// LOREACT3001: use the latest validated narrative graph; older trials remain
+// intact for existing Node fixtures and previous saves.
+const ActiveLoreCampaign=typeof LoreCampaignAct3!=="undefined"?LoreCampaignAct3:LoreCampaignTrials;
 const HEROES = [
   {id:"kael",name:"Каэль Ворон",role:"Страж",hp:120,atk:24,speed:110,side:"ally",glyph:"♜"},
   {id:"lyra",name:"Лира Соль",role:"Следопыт",hp:88,atk:31,speed:155,side:"ally",glyph:"♧"},
@@ -640,7 +643,7 @@ let squadReturnScreen="home";
 const LORE_REQUIRED_HERO_IDS=Object.freeze(["ren","nada"]);
 // Encounter-specific requirements are temporary: the regular saved squad is untouched.
 function requiredLoreHeroIds(){
- const extra=LoreCampaignTrials.encounter(loreRequiredContext?.nodeId)?.requiredHeroIds||[];
+ const extra=ActiveLoreCampaign.encounter(loreRequiredContext?.nodeId)?.requiredHeroIds||[];
  return [...new Set([...LORE_REQUIRED_HERO_IDS,...extra])];
 }
 let loreSquadSlots=null;
@@ -792,7 +795,7 @@ function battleLineup(){
  if(battleIsLoreRequired){
   if(!loreRequiredContext?.nodeId)throw Error("MISSING_LORE_BATTLE_CONTEXT");
   if(!requiredLoreSquadReady())throw Error("MISSING_REQUIRED_LORE_HERO");
-  const trial=LoreCampaignTrials.encounter(loreRequiredContext.nodeId);
+  const trial=ActiveLoreCampaign.encounter(loreRequiredContext.nodeId);
   if(!trial)throw Error("UNKNOWN_LORE_TRIAL");
   return [...selectedParty(),...NpcStoryOpsAdapter.story(loreRequiredContext.nodeId,trial).first];
  }
@@ -820,7 +823,7 @@ function battleLineup(){
 // future waves, so their accepted encounters and balance remain unchanged.
 function battleFutureWaves(){
  if(battleIsLoreRequired){
-  const trial=LoreCampaignTrials.encounter(loreRequiredContext?.nodeId);
+  const trial=ActiveLoreCampaign.encounter(loreRequiredContext?.nodeId);
   if(!trial)throw Error("UNKNOWN_LORE_TRIAL");
   return NpcStoryOpsAdapter.story(loreRequiredContext.nodeId,trial).waves;
  }
@@ -894,7 +897,7 @@ function renderSquad(){
   :"Выбери героя слева: он займёт первую свободную ячейку. Пока лидерская ячейка пуста, лидерского бонуса нет.";
  $("#squadHint").textContent=(loreMode?"Обязательные герои: "+mandatoryNames+". Свободных мест: "+(MAX_SQUAD-mandatoryIds.length)+". ":"")+leaderHint;
  const tacticalBrief=$("#squadTacticalBrief");
- const trial=loreMode?LoreCampaignTrials.encounter(loreRequiredContext?.nodeId):null;
+ const trial=loreMode?ActiveLoreCampaign.encounter(loreRequiredContext?.nodeId):null;
  const npcBrief=squadReturnScreen==="challenges"&&NPC_CHALLENGE_PILOT_ENABLED&&
   typeof NpcChallengePilot!=="undefined"?NpcChallengePilot.get(activeChallengeId):null;
  if(tacticalBrief){
@@ -1111,7 +1114,7 @@ function showScreen(id){
       ChallengeCore.get(activeChallengeId).title):
    battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
    battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
-  const trial=battleIsLoreRequired?LoreCampaignTrials.encounter(loreRequiredContext?.nodeId):null;
+  const trial=battleIsLoreRequired?ActiveLoreCampaign.encounter(loreRequiredContext?.nodeId):null;
   const objective=$("#battleChallengeGoal");
   if(objective){
    objective.hidden=!!trial||
@@ -2409,7 +2412,7 @@ function renderLoreRequiredBattleResult(){
  if(body){
   const summary=won?(saved?
    (loreRequiredResult?.replay?"Повтор пройден. Прежний результат сохранён, новых наград нет.":
-    LoreCampaignTrials.data.getNode(loreRequiredContext?.nodeId)?.nextNodeIds.length?
+    ActiveLoreCampaign.data.getNode(loreRequiredContext?.nodeId)?.nextNodeIds.length?
      "Победа записана в истории. Следующий эпизод открыт.":
      "Победа записана. Финальное испытание завершено."):
    "Победа не сохранилась. Проверьте хранилище и повторите бой."):
@@ -2443,7 +2446,7 @@ $("#loreRequiredResultRetry")?.addEventListener("click",()=>{
  if(!loreRequiredResult?.ok){openSquad("loreRequired");return;}
  const nodeId=loreRequiredContext?.nodeId;
  returnToLoreMap();
- const node=LoreCampaignTrials.data.getNode(nodeId);
+ const node=ActiveLoreCampaign.data.getNode(nodeId);
  if(node?.mapLayerId)LoreCampaignUI.changeLayer(node.mapLayerId);
  if(LoreCampaignUI.selectNode(nodeId))LoreCampaignUI.startRequiredBattle();
 });
@@ -2489,8 +2492,8 @@ function showCampaignPath(path){
  if(selectedCampaignPath==="lore"&&typeof LoreCampaignUI!=="undefined"&&
    typeof LoreCampaignAct2!=="undefined"&&typeof LoreCampaignCore!=="undefined"){
   const loreRoot=$("#loreCampaignRoot");
-  if(loreRoot&&LoreCampaignUI.mount(loreRoot,LoreCampaignTrials.data,LoreCampaignCore,{
-   pack:LoreCampaignTrials.pack,
+  if(loreRoot&&LoreCampaignUI.mount(loreRoot,ActiveLoreCampaign.data,LoreCampaignCore,{
+   pack:ActiveLoreCampaign.pack,
    onStartRequiredBattle:openLoreRequiredBattle,
    onStartTraining:openLoreTraining
   }))LoreCampaignUI.open();

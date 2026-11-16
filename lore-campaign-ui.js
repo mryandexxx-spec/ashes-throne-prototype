@@ -531,7 +531,7 @@ const LoreCampaignUI=(()=>{
    '<div class="lore-legend" aria-label="Условные обозначения"><span class="lore-state-completed">● Пройдено</span><span class="lore-state-available">● Доступно</span><span class="lore-state-locked">● Закрыто</span></div>'+
    '<div class="lore-node-list" role="group" aria-label="Список сюжетных узлов">'+list+'</div>'+
    renderJournal()+
-   '<p class="lore-stage-note">'+escapeHtml(saveMessage())+' FS-01—FS-06 доступны как игровая адаптация [ПРЕДЛОЖЕНИЕ].</p>'+
+   '<p class="lore-stage-note">'+escapeHtml(saveMessage())+' Пройденные узлы «Пяти теней» — игровая адаптация [ПРЕДЛОЖЕНИЕ].</p>'+
    '</section>';
  }
  function render(){

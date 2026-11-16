@@ -167,3 +167,59 @@ test("NPCPVE003: real OPS-001 route wave matrix and OPS-002 signal-choice matrix
  summarize(rows,"OPS");
  assert.ok(rows.every(x=>x.actions<160));
 });
+
+
+test("NPCPVE003: proposal-only FS-05 and OPS numerical sensitivity; no game writes",()=>{
+ const seeds=[1,17,71,103,211];
+ const variants=[];
+ const fs=trial("five-shadows:fs-05");
+ for(const hunterAtk of [60,50,45,40,35]){
+  for(const team of groups.filter(x=>["duo-L1","duo-L3","full-L1","support-L3"].includes(x.id))){
+   for(const strategy of ["auto","focus"]){
+    const outcomes=[];
+    for(const seed of seeds){
+     const first=fs.first.map(x=>x.id===Adapter.storyId(fs.node,"shade")?
+      {...x,physicalAttack:hunterAtk,atk:hunterAtk}:x);
+     const row=run(team,first,[],{seed,strategy,
+      objective:fs.objective,targetId:Adapter.storyId(fs.node,"shade")});
+     outcomes.push(row);
+    }
+    variants.push({type:"fs05",key:hunterAtk+"/"+team.id+"/"+strategy,
+     wins:outcomes.filter(x=>x.win).length,
+     actions:+(outcomes.reduce((a,x)=>a+x.actions,0)/seeds.length).toFixed(1),
+     lossCount:outcomes.filter(x=>x.lost>0).length});
+   }
+  }
+ }
+ for(const scale of [1,1.3,1.6,2]){
+  for(const team of groups.filter(x=>["duo-L1","duo-L3","full-L1","support-L3"].includes(x.id))){
+   for(const op of ["OPS-001","OPS-002"]){
+    const results=[];
+    for(const assault of ["quiet","cordon"]){
+     const plan={kind:assault==="quiet"?"singleWave":"twoWaves"};
+     const e=Adapter.operation(op,plan);
+     const change=x=>({...x,hp:Math.round(x.hp*scale),
+      physicalAttack:Math.round(x.physicalAttack*scale),
+      atk:Math.round(x.atk*scale)});
+     for(const seed of seeds){
+      const b=run(team,e.first.map(change),e.waves.map(w=>w.map(change)),
+       {seed,strategy:"auto",operation:op,
+        ...(op==="OPS-002"?{signalRun:Signal.chooseAssault(
+         Signal.prepare(Signal.start("ves",
+          "probe-"+team.id+"-"+scale+"-"+seed+"-"+assault),"survey"),assault)}:{})});
+      results.push({...b,assault});
+     }
+    }
+    for(const assault of ["quiet","cordon"]){
+     const x=results.filter(x=>x.assault===assault);
+     variants.push({type:op,key:scale+"/"+team.id+"/"+assault,
+      wins:x.filter(x=>x.win).length,
+      actions:+(x.reduce((a,z)=>a+z.actions,0)/x.length).toFixed(1),
+      lossCount:x.filter(x=>x.lost>0).length});
+    }
+   }
+  }
+ }
+ console.log("NPCPVE003_SENSITIVITY="+JSON.stringify(variants));
+ assert.ok(variants.length>120);
+});

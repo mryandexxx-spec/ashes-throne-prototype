@@ -37,7 +37,7 @@ const NPC_MISSION_PILOT_ENABLED=typeof location!=="undefined"&&
  /(?:^|[?&])npcMissionPilot=1(?:&|$)/.test(location.search);
 const NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED&&typeof NpcMissionPilot!=="undefined"
  ? NpcMissionPilot.visuals():[];
-// NPCCHALLENGE004–006: reserve lightweight capsules for explicit opt-in only.
+// NPCCHALLENGE004–007: reserve lightweight capsules for explicit opt-in only.
 const NPC_CHALLENGE_PILOT_ENABLED=typeof location!=="undefined"&&
  /(?:^|[?&])npcChallengePilot=1(?:&|$)/.test(location.search);
 const NPC_CHALLENGE_VISUALS=NPC_CHALLENGE_PILOT_ENABLED&&typeof NpcChallengePilot!=="undefined"
@@ -87,7 +87,11 @@ function isVisualTransition(){return visualTransition!==null;}
 function visualActionPending(){return !!scene&&BattleAnimation.pending()>0;}
 function captureResolvedVisuals(beforeFighters){
  // One resolved action batch, not an arbitrary UI render.
- if(battleIsChallenge&&challengeTracker)ChallengeCore.capture(challengeTracker,state.events||[]);
+ if(battleIsChallenge&&challengeTracker){
+  if(battleIsNpcChallengePilot)
+   NpcChallengePilot.capture(activeChallengeId,challengeTracker,state.events||[],state);
+  else ChallengeCore.capture(challengeTracker,state.events||[]);
+ }
  if(battleIsSignal&&signalBattleTracker&&!signalCaptureFailed){
   const batch=SignalOperationCore.capture(signalBattleTracker,state.events||[],signalBattleTracker.lastSequence+1);
   if(batch)signalBattleTracker=batch;
@@ -919,11 +923,18 @@ function renderSquad(){
  $("#squadHint").textContent=(loreMode?"Обязательные герои: "+mandatoryNames+". Свободных мест: "+(MAX_SQUAD-mandatoryIds.length)+". ":"")+leaderHint;
  const tacticalBrief=$("#squadTacticalBrief");
  const trial=loreMode?LoreCampaignTrials.encounter(loreRequiredContext?.nodeId):null;
+ const npcBrief=squadReturnScreen==="challenges"&&NPC_CHALLENGE_PILOT_ENABLED&&
+  typeof NpcChallengePilot!=="undefined"?NpcChallengePilot.get(activeChallengeId):null;
  if(tacticalBrief){
-  tacticalBrief.hidden=!trial;
+  tacticalBrief.hidden=!trial&&!npcBrief;
   if(trial){
    tacticalBrief.querySelector("strong").textContent=trial.briefTitle+" · ЗАДАЧА";
    tacticalBrief.querySelector("p").textContent=trial.brief;
+  }else if(npcBrief){
+   tacticalBrief.querySelector("strong").textContent=(NpcChallengePilot.title(activeChallengeId)||
+    ChallengeCore.get(activeChallengeId)?.title)+" · NPC-ПРОБА";
+   tacticalBrief.querySelector("p").textContent=NpcChallengePilot.goal(activeChallengeId,
+    chosen[0]?.name)||"Пробное испытание без сохранения результата.";
   }
  }
  $("#squadStart").textContent=loreMode?"Начать испытание":"Начать бой";
@@ -1123,7 +1134,9 @@ function showScreen(id){
     (loreRequiredContext?.battleNarrative?.title?" · "+loreRequiredContext.battleNarrative.title:"")+
     " (ИГРОВАЯ АДАПТАЦИЯ)":
     battleIsLoreTraining?(NPC_PILOT_ENABLED?"ПРОБА NPC · УЧЕБНЫЙ БОЙ (ВНЕ КАНОНА)":"ПЯТЬ ТЕНЕЙ · ТРЕНИРОВКА (ВНЕ КАНОНА)"):
-    battleIsChallenge?"ИСПЫТАНИЕ · "+ChallengeCore.get(activeChallengeId).title+
+    battleIsChallenge?"ИСПЫТАНИЕ · "+
+     ((battleIsNpcChallengePilot?NpcChallengePilot.title(activeChallengeId):null)||
+      ChallengeCore.get(activeChallengeId).title)+
      (battleIsNpcChallengePilot?" · NPC-ПРОБА":""):
    battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
    battleIsCampaign?(MissionData.get(activeMissionId).title+
@@ -1138,7 +1151,8 @@ function showScreen(id){
     NpcChallengePilot.spawn(activeChallengeId)?.find(e=>e.id===
       NpcChallengePilot.get(activeChallengeId).priorityId):
     ENEMIES.find(e=>e.id===def.priorityId)):null;
-   const npcGoal=battleIsNpcChallengePilot?NpcChallengePilot.goal(activeChallengeId):null;
+   const npcGoal=battleIsNpcChallengePilot?NpcChallengePilot.goal(activeChallengeId,
+    selectedParty()[0]?.name):null;
    objective.textContent=npcGoal|| (battleIsLoreRequired&&trial?
      trial.goalText:
      battleIsLoreRequired?"Победите, чтобы открыть следующий эпизод. Бой относится к игровой адаптации.":battleIsLoreTraining?(NPC_PILOT_ENABLED?"Пробный состав: человек, сарх и лаун-лекарь. Вне канона, без наград, энергии и влияния на хронику.":"Учебные противники. Без наград, энергии и влияния на хронику."):battleIsSignal?signalProgress.active?.assault==="quiet"?
@@ -1149,11 +1163,16 @@ function showScreen(id){
     "Цель: пройти "+(def.futureWaves.length+1)+" волны, сохранив отряд.");
   }
   const tacticalGoalCard=$("#tacticalGoalCard");
+  const npcHold=battleIsNpcChallengePilot&&activeChallengeId==="T-04";
   if(tacticalGoalCard){
-   tacticalGoalCard.hidden=!trial;
+   tacticalGoalCard.hidden=!trial&&!npcHold;
    if(trial){
     tacticalGoalCard.querySelector("strong").textContent=trial.goalTitle;
     tacticalGoalCard.querySelector("p").textContent=trial.goalText;
+   }else if(npcHold){
+    tacticalGoalCard.querySelector("strong").textContent="ПРИКРЫТЬ ОТХОД";
+    tacticalGoalCard.querySelector("p").textContent=NpcChallengePilot.goal(activeChallengeId,
+     selectedParty()[0]?.name);
    }
   }
   const freeStoryEntry=battleIsCampaign&&progress.saveVersion===3&&
@@ -1665,10 +1684,11 @@ function renderChallenges(){
     ["1★ — пройти "+waves+" волны","2★ — победить без потерь",
      "3★ — лимит действий пока не установлен"]);
    return '<article class="campaign-panel campaign-mission"><div class="node">✦</div><div>'+
-    '<h3>'+def.id+' · '+def.title+(pilot?' · NPC-ПРОБА':'')+'</h3>'+
+    '<h3>'+def.id+' · '+((pilot?NpcChallengePilot.title(def.id):null)||def.title)+(pilot?' · NPC-ПРОБА':'')+'</h3>'+
     '<p>'+(def.kind==="tactical"?"Тактическая задача · "+def.enemyIds.length+" противника":
      "Натиск · "+waves+" волны")+'</p>'+
-    '<p class="mission-stars">Лучшая оценка: '+("★".repeat(stars)+"☆".repeat(3-stars))+'</p>'+
+    '<p class="mission-stars">'+(pilot?"Обычный результат: ":"Лучшая оценка: ")+
+     ("★".repeat(stars)+"☆".repeat(3-stars))+'</p>'+
     '<ul class="mission-criteria">'+details.map(x=>'<li>'+x+'</li>').join("")+'</ul>'+
     '<div class="campaign-mission-actions"><button class="primary" type="button" data-start-challenge="'+def.id+
     '" '+(unlocked?"":"disabled")+'> '+(unlocked?"Вступить в бой":"Открой предыдущую миссию на 1★")+'</button></div>'+
@@ -1676,7 +1696,7 @@ function renderChallenges(){
   }).join("");
  }else container.innerHTML="";
  $("#challengeSaveStatus").textContent=NPC_CHALLENGE_PILOT_ENABLED?
-  "NPC-пробы T-01…T-03 / N-01…N-03: оценка и ежедневные задачи не сохраняются. Остальные испытания ведут обычный прогресс.":
+  "NPC-пробы T-01…T-04 / N-01…N-04: оценки и ежедневные задачи не сохраняются. Открытие этапов — по обычному прогрессу.":
   challengeSaveBlocked?
   "Прогресс испытаний недоступен: бои доступны, сохранение заблокировано.":
   challengeSaveAvailable?"Лучшая оценка сохраняется в этом браузере.":
@@ -1709,7 +1729,9 @@ $("#challengeList")?.addEventListener("click",event=>{
 function renderChallengeResult(){
  const won=state.winner==="ally";
  $("#challengeResultTitle").textContent=won?"Испытание пройдено":"Испытание не пройдено";
- $("#challengeResultName").textContent=ChallengeCore.get(activeChallengeId)?.title||"Испытание";
+ $("#challengeResultName").textContent=
+  (battleIsNpcChallengePilot?NpcChallengePilot.title(activeChallengeId):null)||
+  ChallengeCore.get(activeChallengeId)?.title||"Испытание";
  const stars=challengeLastStars;
  if(battleIsNpcChallengePilot){
   $("#challengeResultName").textContent+=" · NPC-ПРОБА";
@@ -2735,9 +2757,16 @@ function renderTargetFighterHud(){
     " · PR "+view.protection+"/"+target.maxProtection:"");
  fill.style.width=Math.max(0,Math.min(100,view.hp/Math.max(1,target.maxHp)*100))+"%";
 }
+function npcBattleMessage(){
+ if(battleIsNpcChallengePilot&&activeChallengeId==="T-04"){
+  if(state?.tacticalOutcome==="held")return "Удержание завершено. Защищаемый герой в безопасности.";
+  if(state?.tacticalOutcome==="protected-fallen")return "Поражение: защищаемый герой выведен из строя.";
+ }
+ return state.message;
+}
 function syncBattleUI(){
  if(inspectionId)renderFighterInspection();
- if(battleIsLoreRequired){
+ if(battleIsLoreRequired||(battleIsNpcChallengePilot&&activeChallengeId==="T-04")){
   const o=state.tacticalObjective;
   const timed=o?.kind==="hold-or-defeat",counter=$("#tacticalGoalCounter");
   const track=$("#tacticalGoalCard .tactical-goal-track"),fill=$("#tacticalGoalFill");
@@ -2856,7 +2885,7 @@ function syncBattleUI(){
   if(autoControl)autoControl.disabled=!state.active;
   const speedControl=$("#autoSpeedBtn");
   if(speedControl)speedControl.disabled=!state.active;
-  $("#battleMessage").textContent=state.message;
+  $("#battleMessage").textContent=npcBattleMessage();
   renderBattleLog();
   renderTargetFighterHud();
   renderArenaIndicators();
@@ -2953,7 +2982,7 @@ function syncBattleUI(){
   validTarget?"В фокусе: "+target.name+". Нажми на нужную способность.":"Коснись противника, чтобы выбрать цель.";
  const retry=$("#battleRetryBtn");if(retry)retry.hidden=!!state.active;
  $("#abilityControls")?.classList.toggle("battle-finished",!state.active);
- $("#battleMessage").textContent=state.message;
+ $("#battleMessage").textContent=npcBattleMessage();
  renderBattleLog();
  renderTargetFighterHud();
  renderArenaIndicators();
@@ -3084,6 +3113,8 @@ function resetBattle(){
   ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{}),
   ...(battleIsLoreRequired&&loreRequiredContext?.battleObjective?
    {tacticalObjective:loreRequiredContext.battleObjective}:{}),
+  ...(battleIsNpcChallengePilot&&activeChallengeId==="T-04"?
+   {tacticalObjective:NpcChallengePilot.tacticalObjective(activeChallengeId,allies)}:{}),
   // RNG combat formulas are active only for parties of the two real heroes.
   // Mannequin-based demos preserve their historical combat behavior.
   ...(realHeroFight?{

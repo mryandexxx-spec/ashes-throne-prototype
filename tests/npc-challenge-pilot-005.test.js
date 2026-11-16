@@ -79,7 +79,7 @@ test("NPCCHALLENGE005: legacy T-02/N-02 plans remain inside nineteen distinct op
  assert.deepEqual(Array.from(P.spawnWaves("N-02")[0],x=>[x.hp,x.protection]),[[90,12],[45,4]]);
  assert.ok(Object.isFrozen(n.futureWaves[0]));
  const mobs=P.visuals();
- assert.equal(mobs.length,19);
+ assert.equal(mobs.length,27);
  const ids=mobs.map(x=>x.id);
  assert.equal(new Set(ids).size,ids.length);
  assert.ok(mobs.every(x=>x.side==="enemy"&&x.speciesId==="human"&&
@@ -184,14 +184,14 @@ test("NPCCHALLENGE005: defeated early party cannot erroneously unlock next wave"
 test("NPCCHALLENGE005: only pilot roster and presentation change, not save routing",()=>{
  const game=read("game.js"),html=read("index.html");
  const pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.169");
- assert.match(html,/v0\.3\.169 · NPCCHALLENGE006/);
- assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.169/);
+ assert.equal(pkg.version,"0.3.170");
+ assert.match(html,/v0\.3\.170 · NPCCHALLENGE007/);
+ assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.170/);
  assert.match(game,/npcChallengePilot=1/);
  assert.match(game,/NpcChallengePilot\.get\(activeChallengeId\)/);
  assert.match(game,/NpcChallengePilot\.spawnWaves\(activeChallengeId\)/);
  assert.match(game,/NpcChallengePilot\.trackerTargets\(activeChallengeId\)/);
- assert.match(game,/NPC-пробы T-01…T-03 \/ N-01…N-03/);
+ assert.match(game,/NPC-пробы T-01…T-04 \/ N-01…N-04/);
  assert.match(game,/if\(battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
  assert.match(game,/if\(battleIsChallenge&&!battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
  assert.match(game,/ChallengeCore\.save\(outcome.candidate,\(\)=>window.localStorage,challengeSaveBlocked\)/);

@@ -169,57 +169,58 @@ test("NPCPVE003: real OPS-001 route wave matrix and OPS-002 signal-choice matrix
 });
 
 
-test("NPCPVE003: proposal-only FS-05 and OPS numerical sensitivity; no game writes",()=>{
- const seeds=[1,17,71,103,211];
- const variants=[];
- const fs=trial("five-shadows:fs-05");
- for(const hunterAtk of [60,50,45,40,35]){
-  for(const team of groups.filter(x=>["duo-L1","duo-L3","full-L1","support-L3"].includes(x.id))){
-   for(const strategy of ["auto","focus"]){
-    const outcomes=[];
-    for(const seed of seeds){
-     const first=fs.first.map(x=>x.id===Adapter.storyId(fs.node,"shade")?
-      {...x,physicalAttack:hunterAtk,atk:hunterAtk}:x);
-     const row=run(team,first,[],{seed,strategy,
-      objective:fs.objective,targetId:Adapter.storyId(fs.node,"shade")});
-     outcomes.push(row);
-    }
-    variants.push({type:"fs05",key:hunterAtk+"/"+team.id+"/"+strategy,
-     wins:outcomes.filter(x=>x.win).length,
-     actions:+(outcomes.reduce((a,x)=>a+x.actions,0)/seeds.length).toFixed(1),
-     lossCount:outcomes.filter(x=>x.lost>0).length});
+
+test("NPCPVE003: operation-only balance numbers and FS-05 tactical rule unchanged",()=>{
+ for(const operation of ["OPS-001","OPS-002"]){
+  const one=Adapter.operation(operation,{kind:"singleWave"});
+  const two=Adapter.operation(operation,{kind:"twoWaves"});
+  assert.deepEqual(Array.from(one.first,x=>[x.hp,x.physicalAttack]),
+   [[144,29],[125,35]]);
+  assert.deepEqual(Array.from(two.waves[0],x=>[x.hp,x.physicalAttack]),
+   [[144,29]]);
+  assert.equal(one.waves.length,0);
+  assert.equal(two.waves.length,1);
+ }
+ const brief=Trials.encounter("five-shadows:fs-05").brief;
+ assert.match(brief,/4–5 бойцов/);
+ assert.equal(Trials.data.getNode("five-shadows:fs-05").requiredBattleObjective.allyActionsToHold,12);
+ assert.equal(Adapter.story("five-shadows:fs-05",Trials.encounter("five-shadows:fs-05")).first
+  .find(x=>x.id==="npc-fs05-shade").physicalAttack,60);
+});
+test("NPCPVE003: starter full squad survives harder operations; duo cordon carries risk",()=>{
+ const seeds=[1,17,71,103,211],full=groups.find(x=>x.id==="full-L1");
+ const duo=groups.find(x=>x.id==="duo-L1");
+ for(const op of ["OPS-001","OPS-002"]){
+  const scores={full:[],duo:[]};
+  for(const team of [full,duo]){
+   for(const seed of seeds){
+    const plan={kind:"twoWaves"},e=Adapter.operation(op,plan);
+    const runId="npcpve003-"+op+"-"+team.id+"-"+seed;
+    const context=op==="OPS-002"?{
+     signalRun:Signal.chooseAssault(Signal.prepare(
+      Signal.start("ves",runId),"survey"),"cordon")}: {};
+    const b=run(team,e.first,e.waves,{seed,strategy:"auto",operation:op,...context});
+    scores[team===full?"full":"duo"].push(b.win);
    }
   }
+  assert.equal(scores.full.filter(Boolean).length,5,"complete squad can finish "+op);
+  assert.ok(scores.duo.some(Boolean),"duo has a viable route in "+op);
+  assert.ok(scores.duo.some(x=>!x),"duo assault should carry a real risk in "+op);
  }
- for(const scale of [1,1.3,1.6,2]){
-  for(const team of groups.filter(x=>["duo-L1","duo-L3","full-L1","support-L3"].includes(x.id))){
-   for(const op of ["OPS-001","OPS-002"]){
-    const results=[];
-    for(const assault of ["quiet","cordon"]){
-     const plan={kind:assault==="quiet"?"singleWave":"twoWaves"};
-     const e=Adapter.operation(op,plan);
-     const change=x=>({...x,hp:Math.round(x.hp*scale),
-      physicalAttack:Math.round(x.physicalAttack*scale),
-      atk:Math.round(x.atk*scale)});
-     for(const seed of seeds){
-      const b=run(team,e.first.map(change),e.waves.map(w=>w.map(change)),
-       {seed,strategy:"auto",operation:op,
-        ...(op==="OPS-002"?{signalRun:Signal.chooseAssault(
-         Signal.prepare(Signal.start("ves",
-          "probe-"+team.id+"-"+scale+"-"+seed+"-"+assault),"survey"),assault)}:{})});
-      results.push({...b,assault});
-     }
-    }
-    for(const assault of ["quiet","cordon"]){
-     const x=results.filter(x=>x.assault===assault);
-     variants.push({type:op,key:scale+"/"+team.id+"/"+assault,
-      wins:x.filter(x=>x.win).length,
-      actions:+(x.reduce((a,z)=>a+z.actions,0)/x.length).toFixed(1),
-      lossCount:x.filter(x=>x.lost>0).length});
-    }
-   }
-  }
+});
+test("NPCPVE003: OPS-002 signal objective still rewards intentional target choice",()=>{
+ const full=groups.find(x=>x.id==="full-L1");
+ for(const seed of [1,17,71]){
+  const runId="npcpve003-signal-"+seed;
+  const op=Signal.chooseAssault(Signal.prepare(Signal.start("ves",runId),"survey"),"quiet");
+  const enc=Adapter.operation("OPS-002",Signal.battlePlan(op));
+  const focus=run(full,enc.first,enc.waves,{seed,strategy:"focus",
+   operation:"OPS-002",signalRun:op,targetId:Adapter.operationId("OPS-002","ves")});
+  const auto=run(full,enc.first,enc.waves,{seed,strategy:"auto",
+   operation:"OPS-002",signalRun:op});
+  assert.equal(focus.win,true);
+  assert.equal(focus.signalOutcome,"clean");
+  assert.equal(auto.win,true);
+  assert.equal(auto.signalOutcome,"alerted");
  }
- console.log("NPCPVE003_SENSITIVITY="+JSON.stringify(variants));
- assert.equal(variants.length,104);
 });

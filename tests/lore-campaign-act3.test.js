@@ -183,7 +183,8 @@ test("LOREACT3001 editorial QA: three distinct stakes, truthful timeline and voi
  assert.equal(beat(street,"fs09-rope").speakerId,"Ала");
  assert.equal(beat(street,"fs09-lists").speakerId,"Нада");
  assert.equal(beat(street,"fs09-next").speakerId,"Сава");
- assert.match(beat(street,"fs09-lists").text,/Их порядок не изменился/);
+ assert.doesNotMatch(beat(street,"fs09-lists").text,/Их порядок не изменился/);
+ assert.match(beat(street,"fs09-lists").comparisons.find(c=>c.id==="fs09-orders").text,/перенос одного имени/);
  assert.match(beat(street,"fs09-path").text,/тупик, а не проход через ущелье/);
 });
 

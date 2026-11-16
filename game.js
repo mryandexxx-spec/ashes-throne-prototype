@@ -644,7 +644,7 @@ let squadReturnScreen="home";
 const LORE_REQUIRED_HERO_IDS=Object.freeze(["ren","nada"]);
 // Encounter-specific requirements are temporary: the regular saved squad is untouched.
 function requiredLoreHeroIds(){
- const extra=ActiveLoreCampaign.encounter(loreRequiredContext?.nodeId)?.requiredHeroIds||[];
+ const extra=LoreCampaignTrials.encounter(loreRequiredContext?.nodeId)?.requiredHeroIds||[];
  return [...new Set([...LORE_REQUIRED_HERO_IDS,...extra])];
 }
 let loreSquadSlots=null;

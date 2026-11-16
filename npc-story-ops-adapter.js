@@ -69,22 +69,25 @@ const NpcStoryOpsAdapter=(()=>{
    return {...objective,priorityEnemyId:storyId(nodeId,objective.priorityEnemyId)};
   return {...objective};
  }
+ // NPCPVE003 [ПРЕДЛОЖЕНИЕ]: operation-only L1 tuning after seeded
+ // CombatCore probes; earlier story and challenge balances stay untouched.
+ // 90/18 -> 144/29 and 78/22 -> 125/35 (approximately +60%).
  const OPERATIONS=Object.freeze({
   "OPS-001":Object.freeze({
    first:Object.freeze([
-    {archetype:"npc-route-signaller",legacyId:"ves",name:"Курьер 1",hp:90,atk:18},
-    {archetype:"npc-trail-interceptor",legacyId:"shade",name:"Курьер 2",hp:78,atk:22}
+    {archetype:"npc-route-signaller",legacyId:"ves",name:"Курьер 1",hp:144,atk:29},
+    {archetype:"npc-trail-interceptor",legacyId:"shade",name:"Курьер 2",hp:125,atk:35}
    ]),
    reserve:Object.freeze({archetype:"npc-pass-guard",legacyId:"ves-2",
-    name:"Прикрывающий",hp:90,atk:18})
+    name:"Прикрывающий",hp:144,atk:29})
   }),
   "OPS-002":Object.freeze({
    first:Object.freeze([
-    {archetype:"npc-route-signaller",legacyId:"ves",name:"Сигнальщик поста",hp:90,atk:18},
-    {archetype:"npc-pass-guard",legacyId:"shade",name:"Страж поста",hp:78,atk:22}
+    {archetype:"npc-route-signaller",legacyId:"ves",name:"Сигнальщик поста",hp:144,atk:29},
+    {archetype:"npc-pass-guard",legacyId:"shade",name:"Страж поста",hp:125,atk:35}
    ]),
    reserve:Object.freeze({archetype:"npc-trail-interceptor",legacyId:"ves-2",
-    name:"Подкрепление",hp:90,atk:18})
+    name:"Подкрепление",hp:144,atk:29})
   })
  });
  function operationId(op,legacyId){

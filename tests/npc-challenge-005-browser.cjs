@@ -58,7 +58,7 @@ async function run(name,browserType){
   
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v"+require("../package.json").version+" · NPCPVE003");
+   "Прототип · v"+require("../package.json").version+" · NPCUX004");
   // Unlock the preceding original challenges IN MEMORY only; do not synthesize
   // victories, write storage or grant stars in any test scenario.
   await page.evaluate(()=>{

@@ -22,6 +22,12 @@
 | RENOPT001 — облегчённая модель Рена | #285 | `fd3c738` |
 
 
+## 2026-11-16
+
+- **`v0.3.173 · NPCPVE003`** — [PR #352](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/352), squash `485198907e4b517241c4d3f9feab59c71fed5237`: отдельный баланс OPS-001/002 и подсказка FS-05, матрица реальных боёв. 26/26 проверок PR; после merge Node/Pages success. Числа являются игровыми кандидатами, не каноном.
+- **`v0.3.172 · NPCPVE002`** — [PR #351](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/351), squash `ac976eb3d38ed9661e013919da32db498509f8e2`: NPC в FS-01…FS-06 и OPS-001/002, старые цели/сохранения сохранены. 27/27 CI; после merge Node/Pages success.
+- **`v0.3.171 · NPCROLLOUT001`** — [PR #350](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/350), squash `5ddffa353847f7f83caafea9b9927f8de27ab85e`: NPC в обычных T/N испытаниях и трёх демонстрационных миссиях, оценки и награды сохранены. Владелец принял мобильную проверку.
+
 ## 2026-11-14
 
 - **`v0.3.149 · LOREMAP001`** — LC-002: 2D-карта истории «Пять теней» в существующем хабе, маркеры и статусы, доступная навигация, компактный landscape, Chromium/WebKit CI 844×390 и 932×430. Сцены/сохранения/награды пока не подключены ([#318](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/318)) · `fcaaf255`

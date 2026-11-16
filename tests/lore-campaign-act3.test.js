@@ -216,3 +216,23 @@ test("LOREACT3001: FS-08 choice precedes comparison and old saves still traverse
  assert.equal(primary.keyDecisionLog.find(x=>x.nodeId==="five-shadows:fs-08").choiceId,"fs08-pass-first");
  assert.equal(r.stateFor("five-shadows").completedNodeIds.includes("five-shadows:fs-08"),true);
 });
+
+
+test("LOREACT3001: alternate research choices work but replay never replaces primary",()=>{
+ const storage=memory();seedSix(storage);
+ const r=create(Act3,storage);
+ finish(r,"five-shadows:fs-07",1);
+ finish(r,"five-shadows:fs-08",1);
+ finish(r,"five-shadows:fs-09",1);
+ const first=r.stateFor("five-shadows");
+ assert.deepEqual(first.keyDecisionLog.filter(x=>/^five-shadows:fs-0[789]$/.test(x.nodeId))
+  .map(x=>x.choiceId),
+  ["fs07-anchor-first","fs08-claims-first","fs09-documents-first"]);
+ const preserved=JSON.stringify(first.primaryChoicesById);
+ finish(r,"five-shadows:fs-07",0);
+ finish(r,"five-shadows:fs-08",0);
+ finish(r,"five-shadows:fs-09",0);
+ assert.equal(JSON.stringify(r.stateFor("five-shadows").primaryChoicesById),preserved);
+ assert.deepEqual(r.stateFor("five-shadows").keyDecisionLog,first.keyDecisionLog);
+ assert.equal(r.stateFor("five-shadows").battleClearedNodeIds.length,6);
+});

@@ -251,18 +251,18 @@ test("007 balanced encounters: tactical support changes stars without forcing on
  const result=run("N-04",partyIds,1,17,"support");
  assert.equal(result.winner,"ally","starter team can complete N-04 for baseline stars");
 });
-test("007: opt-in only, no new persisted schema, build and UI scripts",()=>{
+test("007: approved objectives persist through the existing v1 schema",()=>{
  const game=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.170");
- assert.match(html,/v0\.3\.170 · NPCCHALLENGE007/);
- assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.170/);
- assert.match(html,/game\.js\?v=0\.3\.170/);
- assert.match(game,/npcChallengePilot=1/);
+ assert.equal(pkg.version,"0.3.171");
+ assert.match(html,/v0\.3\.171 · NPCROLLOUT001/);
+ assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.171/);
+ assert.match(html,/game\.js\?v=0\.3\.171/);
+ assert.match(game,/const NPC_CHALLENGE_PILOT_ENABLED=true;/);
  assert.match(game,/NpcChallengePilot\.capture\(activeChallengeId,challengeTracker/);
  assert.match(game,/NpcChallengePilot\.tacticalObjective\(activeChallengeId,allies\)/);
- assert.match(game,/NPC-пробы T-01…T-04 \/ N-01…N-04/);
- assert.match(game,/if\(battleIsNpcChallengePilot&&!state\.active&&!challengeResultRecorded\)/);
- assert.match(game,/if\(battleIsChallenge&&!battleIsNpcChallengePilot&&!state\.active&&!challengeResultRecorded\)/);
- assert.doesNotMatch(game,/NpcChallengePilot\.score\([^)]+\).*ChallengeCore\.save/);
+ assert.doesNotMatch(game,/NPC-пробы T-01…T-04/);
+ assert.match(game,/ChallengeCore\.resultEarned\(challengeProgress,activeChallengeId/);
+ assert.match(game,/if\(battleIsChallenge&&!state.active&&!challengeResultRecorded\)/);
+ assert.match(game,/ChallengeCore\.save\(outcome\.candidate,\(\)=>window\.localStorage,challengeSaveBlocked\)/);
  assert.equal(Q.get("N-04").thirdStarActionLimit,null);
 });

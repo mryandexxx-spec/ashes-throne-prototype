@@ -97,7 +97,7 @@ async function check(name,browserType,width,height){
     await page.reload({waitUntil:"load"});
     await enter(page);
     await page.locator('[data-lore-action="start-node"]').click();
-    assert.match(await page.locator(".lore-scene-text").innerText(),/После опыта со светом/);
+    assert.match(await page.locator(".lore-scene-text").innerText(),/После опыта с лампой/);
    }
    await finish(page);
    assert.equal(await page.locator('[data-lore-action="required-battle"]').count(),0,

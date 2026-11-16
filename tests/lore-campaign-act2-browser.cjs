@@ -129,6 +129,8 @@ async function check(name,browserType,width,height){
    await enter(page);
    if(i<2)assert.match(await page.locator(".lore-node-detail").innerText(),/Доступно/);
    else {
+    // Act III adds another layer: explicitly return to Act II before checking FS-06.
+    await page.locator('[data-lore-layer="city-response"]').click();
     await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-06"]').click();
     assert.match(await page.locator(".lore-node-detail").innerText(),/Пройдено/);
    }

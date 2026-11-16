@@ -1,6 +1,7 @@
 // LOREACT3001: use the latest validated narrative graph; older trials remain
 // intact for existing Node fixtures and previous saves.
-const ActiveLoreCampaign=typeof LoreCampaignAct3!=="undefined"?LoreCampaignAct3:LoreCampaignTrials;
+const ActiveLoreCampaign=typeof LoreCampaignAct3!=="undefined"?LoreCampaignAct3:
+ (typeof LoreCampaignTrials!=="undefined"?LoreCampaignTrials:null);
 const HEROES = [
   {id:"kael",name:"Каэль Ворон",role:"Страж",hp:120,atk:24,speed:110,side:"ally",glyph:"♜"},
   {id:"lyra",name:"Лира Соль",role:"Следопыт",hp:88,atk:31,speed:155,side:"ally",glyph:"♧"},

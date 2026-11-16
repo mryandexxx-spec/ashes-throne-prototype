@@ -2679,7 +2679,8 @@ function renderBattleLog(){
 // SignalOperationCore intel only. Never read run.signalId directly.
 function npcCombatMarker(fighter){
  if(typeof NpcBattleIntel==="undefined")return null;
- const knownSignal=battleIsSignal&&signalProgress.active?.phase==="battle"?
+ const knownSignal=battleIsSignal&&signalProgress.active?.phase==="battle"&&
+  signalProgress.active?.assault==="quiet"?
   SignalOperationCore.intel(signalProgress.active)?.signalId:null;
  return NpcBattleIntel.marker(fighter,state,knownSignal);
 }

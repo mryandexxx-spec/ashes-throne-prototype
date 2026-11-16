@@ -2675,6 +2675,14 @@ function renderBattleLog(){
 }
 // Combat-008D: the top-right card follows the valid selected target,
 // including allied support targets. It never shows the current turn owner.
+// NPCUX004: this marker is based on the battle objective or EARNED
+// SignalOperationCore intel only. Never read run.signalId directly.
+function npcCombatMarker(fighter){
+ if(typeof NpcBattleIntel==="undefined")return null;
+ const knownSignal=battleIsSignal&&signalProgress.active?.phase==="battle"?
+  SignalOperationCore.intel(signalProgress.active)?.signalId:null;
+ return NpcBattleIntel.marker(fighter,state,knownSignal);
+}
 function renderTargetFighterHud(){
  const panel=$("#targetFighterHud");
  if(!panel)return;
@@ -2694,8 +2702,13 @@ function renderTargetFighterHud(){
   hp.textContent="";stats.textContent="";fill.style.width="0%";
   return;
  }
- side.textContent=target.side==="ally"?"ЦЕЛЬ: СОЮЗНИК":"ЦЕЛЬ: ПРОТИВНИК";
- level.textContent=Number.isInteger(target.level)&&target.level>0?"Ур. "+target.level:"";
+ const mark=npcCombatMarker(target);
+ side.textContent=typeof NpcBattleIntel!=="undefined"&&mark?
+  NpcBattleIntel.markerLabel(mark):
+  target.side==="ally"?"ЦЕЛЬ: СОЮЗНИК":"ЦЕЛЬ: ПРОТИВНИК";
+ const npcRole=typeof NpcBattleIntel!=="undefined"?NpcBattleIntel.role(target):null;
+ const targetLevel=Number.isInteger(target.level)&&target.level>0?"Ур. "+target.level:"";
+ level.textContent=[npcRole,targetLevel].filter(Boolean).join(" · ");
  name.textContent=target.name;
  // HUDSYNC001: numbers follow the drawn blows, not the already-resolved CombatCore state.
  const view=BattleAnimation.displayed(target);
@@ -2965,10 +2978,11 @@ function renderArenaIndicators(){
   // A group ability does not change focus on turn start: exactly one
   // primary enemy remains selected until the player taps a different one.
   const onlyOther=support&&["insurance","signal"].includes(AbilityData.get(actor,"special")?.kind);
+  const npcMark=npcCombatMarker(h);
   const focused=!!actor&&!autoBattle&&h.hp>0&&(support?
    h.side==="ally"&&(!onlyOther||h.id!==actor.id):
    h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
-  return `<div class="arena-indicator ${h.side} ${active?"acting":""}" data-fighter-id="${h.id}" aria-label="${h.name}: здоровье ${Math.max(0,view.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
+  return `<div class="arena-indicator ${h.side} ${active?"acting":""} ${npcMark==="first"||npcMark==="signal"?"must-first":npcMark==="hunter"?"assault-hunter":""}" data-fighter-id="${h.id}" aria-label="${h.name}${npcMark?", "+NpcBattleIntel.markerLabel(npcMark):""}: здоровье ${Math.max(0,view.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
    ${focused?`<div class="arena-focus-cursor ${support?"available":"locked"}" aria-hidden="true">▼</div>`:""}
    <div class="arena-indicator-name">${h.name}</div>
    ${protectionLine}
@@ -3217,7 +3231,11 @@ function renderFighterInspection(){
  }
  $("#inspectSide").textContent=fighter.side==="ally"?"СОЮЗНИК":"ПРОТИВНИК";
  $("#inspectName").textContent=fighter.name;
- $("#inspectRole").textContent=fighter.role+(Number.isInteger(fighter.level)?" · Уровень "+fighter.level:"");
+ const npcRole=typeof NpcBattleIntel!=="undefined"?NpcBattleIntel.role(fighter):null;
+ const mark=npcCombatMarker(fighter);
+ $("#inspectRole").textContent=(npcRole||fighter.role)+
+  (Number.isInteger(fighter.level)?" · Уровень "+fighter.level:"")+
+  (mark?" · "+NpcBattleIntel.markerLabel(mark):"");
  $("#inspectStats").textContent="Здоровье: "+BattleAnimation.displayed(fighter).hp+" / "+fighter.maxHp+
   " · Атака: "+fighter.atk+
   (Number.isFinite(fighter.physicalAttack)?" · Физ. атака: "+fighter.physicalAttack:"")+
@@ -3242,6 +3260,12 @@ function renderFighterInspection(){
    " ход(а). При 3+ особая/мощная атака сохраняется, но имеет −20 п.п. точности, −20 п.п. эффективности наложения эффектов и −30% урона (−3 зацепки).");
  }
  $("#inspectEffects").textContent=effects.length?effects.join(" · "):"Активных эффектов нет";
+ const npcAbilities=$("#inspectNpcAbilities");
+ if(npcAbilities){
+  const lines=typeof NpcBattleIntel!=="undefined"?NpcBattleIntel.abilities(fighter):[];
+  npcAbilities.hidden=!lines.length;
+  npcAbilities.textContent=lines.length?"СПОСОБНОСТИ\n"+lines.join("\n"):"";
+ }
  dialog.hidden=false;
 }
 function startInspectionGesture(info){

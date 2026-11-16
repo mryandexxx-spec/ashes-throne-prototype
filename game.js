@@ -32,17 +32,16 @@ const NPC_PILOT_IDS=Object.freeze(["npc-pass-guard","npc-sarkh-land-courier","np
 const NPC_PILOT_VISUALS=NPC_PILOT_ENABLED&&typeof NpcEnemyData!=="undefined"
  ? NPC_PILOT_IDS.map((id,i)=>NpcEnemyData.spawn(id,{instanceId:id+"-training-"+(i+1)}))
  : [];
-// NPCMISSION002: opt-in only; ordinary sessions allocate no extra 3D meshes.
-const NPC_MISSION_PILOT_ENABLED=typeof location!=="undefined"&&
- /(?:^|[?&])npcMissionPilot=1(?:&|$)/.test(location.search);
+// NPCROLLOUT001: use NPC encounter data in ordinary campaign battles.
+const NPC_MISSION_PILOT_ENABLED=true;
 const NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED&&typeof NpcMissionPilot!=="undefined"
  ? NpcMissionPilot.visuals():[];
-// NPCCHALLENGE004–007: reserve lightweight capsules for explicit opt-in only.
-const NPC_CHALLENGE_PILOT_ENABLED=typeof location!=="undefined"&&
- /(?:^|[?&])npcChallengePilot=1(?:&|$)/.test(location.search);
+// NPCROLLOUT001: use NPC rosters and objectives in ordinary challenges.
+const NPC_CHALLENGE_PILOT_ENABLED=true;
 const NPC_CHALLENGE_VISUALS=NPC_CHALLENGE_PILOT_ENABLED&&typeof NpcChallengePilot!=="undefined"
  ? NpcChallengePilot.visuals():[];
-const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean),NPC_MISSION_VISUALS,NPC_CHALLENGE_VISUALS);
+// NPC visuals are loaded only for the current battle.
+const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean));
 const $=s=>document.querySelector(s);
 // ENV022: default temporary concept-art backdrop. Combat visuals stay unchanged.
 // Fixed image has no parallax; it is NOT a rendered/reconstructed 3D environment.
@@ -277,14 +276,14 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
  if(typeof renderHeadquarters==="function")renderHeadquarters();
 });
 let battleIsCampaign=false;
-let battleIsNpcMissionPilot=false; // Test-only, no energy, rewards or save writes.
+let battleIsNpcMissionPilot=false; // NPC roster, normal campaign rewards and saves.
 let battleIsLoreTraining=false; // Noncanonical combat, no costs or rewards.
 let battleIsLoreRequired=false;
 let loreRequiredContext=null,loreRequiredResult=null;
 // STORY-001 is an opt-in sandbox, independent of campaign rewards and saves.
 let battleIsStoryDemo=false;
 let battleIsChallenge=false;
-let battleIsNpcChallengePilot=false; // Score shown, but no stars or daily task saved.
+let battleIsNpcChallengePilot=false; // NPC objectives, normal saved challenge scores.
 const challengeLoaded=typeof ChallengeCore!=="undefined"?
  ChallengeCore.load(()=>window.localStorage):
  {progress:{bestStars:{"T-01":0,"N-01":0}},available:false,blocked:true};
@@ -931,10 +930,10 @@ function renderSquad(){
    tacticalBrief.querySelector("strong").textContent=trial.briefTitle+" · ЗАДАЧА";
    tacticalBrief.querySelector("p").textContent=trial.brief;
   }else if(npcBrief){
-   tacticalBrief.querySelector("strong").textContent=(NpcChallengePilot.title(activeChallengeId)||
-    ChallengeCore.get(activeChallengeId)?.title)+" · NPC-ПРОБА";
+   tacticalBrief.querySelector("strong").textContent=NpcChallengePilot.title(activeChallengeId)||
+    ChallengeCore.get(activeChallengeId)?.title;
    tacticalBrief.querySelector("p").textContent=NpcChallengePilot.goal(activeChallengeId,
-    chosen[0]?.name)||"Пробное испытание без сохранения результата.";
+    chosen[0]?.name)||"Выполни условия испытания.";
   }
  }
  $("#squadStart").textContent=loreMode?"Начать испытание":"Начать бой";
@@ -1136,11 +1135,9 @@ function showScreen(id){
     battleIsLoreTraining?(NPC_PILOT_ENABLED?"ПРОБА NPC · УЧЕБНЫЙ БОЙ (ВНЕ КАНОНА)":"ПЯТЬ ТЕНЕЙ · ТРЕНИРОВКА (ВНЕ КАНОНА)"):
     battleIsChallenge?"ИСПЫТАНИЕ · "+
      ((battleIsNpcChallengePilot?NpcChallengePilot.title(activeChallengeId):null)||
-      ChallengeCore.get(activeChallengeId).title)+
-     (battleIsNpcChallengePilot?" · NPC-ПРОБА":""):
+      ChallengeCore.get(activeChallengeId).title):
    battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
-   battleIsCampaign?(MissionData.get(activeMissionId).title+
-    (battleIsNpcMissionPilot?" · NPC-ПРОБА":"")):"ТЕСТОВАЯ АРЕНА";
+   battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
   const trial=battleIsLoreRequired?LoreCampaignTrials.encounter(loreRequiredContext?.nodeId):null;
   const objective=$("#battleChallengeGoal");
   if(objective){
@@ -1177,7 +1174,7 @@ function showScreen(id){
   }
   const freeStoryEntry=battleIsCampaign&&progress.saveVersion===3&&
    !campaignProgress.completed[activeMissionId];
-  if(battleIsCampaign&&!battleIsNpcMissionPilot&&!freeStoryEntry&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
+  if(battleIsCampaign&&!freeStoryEntry&&ProgressCore.affordableRuns(progress,activeMissionId)<1){
    showScreen("squad");
    const warning=$("#squadWarning");
    if(warning){warning.textContent="Недостаточно энергии для входа в миссию.";warning.hidden=false;}
@@ -2674,16 +2671,6 @@ if(simulationClose)simulationClose.addEventListener("click",()=>{
 });
 function renderMissionResult(){
  const won=state.winner==="ally";
- if(battleIsNpcMissionPilot){
-  $("#missionResultChapter").textContent="NPC-ПРОБА · ВНЕ КАНОНА";
-  $("#missionResultTitle").textContent=won?"Пробный бой выигран":"Пробный бой проигран";
-  $("#missionResultText").textContent=(activeMissionId==="demo-mission-3"?"Проверка двух волн противников. ":"Проверка новой пары противников. ")+"Энергия, задания, награды и сохранённые звёзды не изменены.";
-  $("#missionResultStars").textContent="Тестовая оценка: "+"★".repeat(lastMissionStars)+
-   "☆".repeat(3-lastMissionStars)+" · Действий союзников: "+state.allyActions+" (не сохраняется)";
-  $("#missionResultRetry").textContent="Повторить пробу";
-  return;
- }
-
  const entry=CampaignData.getMission(activeMissionId);
  const chapter=entry&&CampaignData.allChapters().find(c=>c.id===entry.chapterId);
  const chapterLabel=$("#missionResultChapter");
@@ -2786,7 +2773,7 @@ function syncBattleUI(){
  if(!state.active){cancelAutoTimer();autoBattle=false;}
  // Commit battle outcome immediately as before, even if the player leaves
  // the arena before the final animation ends. Only visual navigation waits.
- if(battleIsCampaign&&!battleIsNpcMissionPilot&&!state.active&&!missionResultRecorded){
+ if(battleIsCampaign&&!state.active&&!missionResultRecorded){
   const firstClear=state.winner==="ally"&&!campaignProgress.completed[activeMissionId];
   const beforeCampaign=JSON.parse(JSON.stringify(campaignProgress));
   const beforeWallet=progress.saveVersion===3?JSON.parse(JSON.stringify(progress)):null;
@@ -2821,11 +2808,6 @@ function syncBattleUI(){
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
   missionResultRecorded=true;
  }
- if(battleIsNpcMissionPilot&&!state.active&&!missionResultRecorded){
-  // Reuse the campaign star predicate, never touch campaignProgress or wallet.
-  lastMissionStars=MissionData.score(activeMissionId,state);
-  missionResultRecorded=true;
- }
  if(battleIsSignal&&!state.active&&!signalResultRecorded){
   const pending=signalProgress.active;
   const result=pending&&!signalCaptureFailed&&signalBattleTracker&&
@@ -2841,13 +2823,7 @@ function syncBattleUI(){
    operationNotice="Результат боя не сохранён. План остался на контрольной точке: повтори бой после проверки хранилища.";
   operationResultRecorded=true;
  }
- if(battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded){
-  // Pilot-only scoring may add reversed target/HP preservation objectives.
-  // There are no challengeProgress, daily task, wallet or storage writes.
-  challengeLastStars=NpcChallengePilot.score(activeChallengeId,state,challengeTracker);
-  challengeResultRecorded=true;
- }
- if(battleIsChallenge&&!battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded){
+ if(battleIsChallenge&&!state.active&&!challengeResultRecorded){
   // A fully resolved challenge counts as participation even on defeat.
   // Cancel the daily change if its v3 save is rejected.
   const beforeDaily=JSON.stringify(progress);
@@ -2857,7 +2833,10 @@ function syncBattleUI(){
    Object.keys(progress).forEach(key=>delete progress[key]);
    Object.assign(progress,JSON.parse(beforeDaily));
   }
-  const outcome=ChallengeCore.result(challengeProgress,activeChallengeId,state,challengeTracker);
+  const outcome=battleIsNpcChallengePilot?
+   ChallengeCore.resultEarned(challengeProgress,activeChallengeId,
+    NpcChallengePilot.score(activeChallengeId,state,challengeTracker)):
+   ChallengeCore.result(challengeProgress,activeChallengeId,state,challengeTracker);
   challengeLastStars=outcome?.earned||0;
   if(challengeSaveBlocked||!challengeSaveAvailable||!outcome)challengeSaveFailed=true;
   else if(outcome.improved){

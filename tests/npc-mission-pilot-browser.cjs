@@ -15,10 +15,10 @@ async function check(name,type){
  const errors=[];page.on("pageerror",e=>errors.push(e.message));
  try{
   const uri=new URL(origin);
-  uri.searchParams.set("npcMissionPilot","1");
+  
   await page.goto(uri.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v0.3.170 · NPCCHALLENGE007");
+   "Прототип · v0.3.171 · NPCROLLOUT001");
   // Unlock only the prerequisite IN MEMORY. No synthetic victory or local save.
   await page.evaluate(()=>{
    campaignProgress.completed["black-pass-ambush"]=true;
@@ -57,7 +57,7 @@ async function check(name,type){
   assert.equal(info.pilot,true);
   assert.equal(info.campaign,true);
   assert.equal(info.gpu,true);
-  assert.ok(info.label.includes("NPC-ПРОБА"));
+  assert.ok(!info.label.includes("NPC-ПРОБА"),"ordinary campaign label");
   assert.equal(info.fighters.length,7);
   assert.deepEqual(info.fighters.filter(f=>f.side==="enemy").map(f=>f.id),
    ["npc-m2-slinger","npc-m2-medic"]);
@@ -76,14 +76,17 @@ async function check(name,type){
    winner:state.winner
   }));
   assert.equal(result.winner,"ally","starter Gardens five should win a light pilot");
-  assert.match(result.title,/Пробный бой выигран/);
-  assert.match(result.stars,/не сохраняется/);
-  assert.match(result.text,/Энергия, задания, награды и сохранённые звёзды не изменены/);
+  assert.match(result.title,/Миссия пройдена/);
+  assert.match(result.stars,/Оценка:/);
+  assert.match(result.text,/Получено|Победа|Наград/i);
   const after=await page.evaluate(()=>({
    wallet:JSON.stringify(progress),campaign:JSON.stringify(campaignProgress),
    campaignSave:localStorage.getItem(CampaignCore.KEY)
   }));
-  assert.deepEqual(after,before,"no wallet, campaign or save modification");
+  assert.equal(JSON.parse(after.campaign).completed["demo-mission-2"],true,"mission completion committed");
+  assert.ok(JSON.parse(after.campaign).bestStars["demo-mission-2"]>=1);
+  assert.notEqual(after.campaignSave,before.campaignSave,"new campaign stars persisted");
+  assert.notEqual(after.wallet,before.wallet,"ordinary first-clear wallet reward persisted");
   await page.locator("#missionResultRetry").click();
   await page.locator("#squad").waitFor({state:"visible",timeout:15000});
   await page.locator("#squadBack").click();
@@ -93,8 +96,8 @@ async function check(name,type){
    gpuRunning:!!renderLoopRunning,
    scroll:document.documentElement.scrollWidth,width:innerWidth
   }));
-  assert.equal(end.wallet,before.wallet);
-  assert.equal(end.campaign,before.campaign);
+  assert.equal(end.wallet,after.wallet);
+  assert.equal(end.campaign,after.campaign);
   assert.equal(end.gpuRunning,false,"WebGL suspended on return");
   assert.ok(end.scroll<=end.width+1,"no campaign overflow after return");
   assert.deepEqual(errors.filter(e=>/TypeError|ReferenceError|CombatCore|NpcMissionPilot/.test(e)),[]);

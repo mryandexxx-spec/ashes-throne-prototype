@@ -184,8 +184,8 @@ test("NPCCHALLENGE005: defeated early party cannot erroneously unlock next wave"
 test("NPCCHALLENGE005: NPC scores follow the regular persistence path",()=>{
  const game=read("game.js"),html=read("index.html");
  const pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.171");
- assert.match(html,/v0\.3\.171 · NPCROLLOUT001/);
+ assert.equal(pkg.version,"0.3.172");
+ assert.match(html,/v0\.3\.171 · NPCPVE002/);
  assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.171/);
  assert.match(game,/const NPC_CHALLENGE_PILOT_ENABLED=true;/);
  assert.match(game,/NpcChallengePilot\.get\(activeChallengeId\)/);

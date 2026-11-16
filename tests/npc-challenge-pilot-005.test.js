@@ -181,19 +181,19 @@ test("NPCCHALLENGE005: defeated early party cannot erroneously unlock next wave"
  assert.equal(b.wave,1);
  assert.equal(Q.score("N-02",b,Q.start("N-02",P.trackerTargets("N-02"))),0);
 });
-test("NPCCHALLENGE005: only pilot roster and presentation change, not save routing",()=>{
+test("NPCCHALLENGE005: NPC scores follow the regular persistence path",()=>{
  const game=read("game.js"),html=read("index.html");
  const pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.170");
- assert.match(html,/v0\.3\.170 · NPCCHALLENGE007/);
- assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.170/);
- assert.match(game,/npcChallengePilot=1/);
+ assert.equal(pkg.version,"0.3.171");
+ assert.match(html,/v0\.3\.171 · NPCROLLOUT001/);
+ assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.171/);
+ assert.match(game,/const NPC_CHALLENGE_PILOT_ENABLED=true;/);
  assert.match(game,/NpcChallengePilot\.get\(activeChallengeId\)/);
  assert.match(game,/NpcChallengePilot\.spawnWaves\(activeChallengeId\)/);
  assert.match(game,/NpcChallengePilot\.trackerTargets\(activeChallengeId\)/);
- assert.match(game,/NPC-пробы T-01…T-04 \/ N-01…N-04/);
- assert.match(game,/if\(battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
- assert.match(game,/if\(battleIsChallenge&&!battleIsNpcChallengePilot&&!state.active&&!challengeResultRecorded\)/);
+ assert.doesNotMatch(game,/NPC-пробы T-01…T-04/);
+ assert.match(game,/ChallengeCore\.resultEarned\(challengeProgress,activeChallengeId/);
+ assert.match(game,/if\(battleIsChallenge&&!state.active&&!challengeResultRecorded\)/);
  assert.match(game,/ChallengeCore\.save\(outcome.candidate,\(\)=>window.localStorage,challengeSaveBlocked\)/);
  assert.match(game,/renderChallengeResult\(\)/);
  assert.match(game,/ChallengeCore\.available\(id,challengeProgress\)/);

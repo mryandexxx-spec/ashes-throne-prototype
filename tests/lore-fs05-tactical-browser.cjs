@@ -134,6 +134,28 @@ async function run(name,browserType,width,height){
   assert.match(setup.goal,/РЕНА/);
   assert.equal(setup.topGoalHidden,true);
   assert.equal(setup.autoHidden,false,"autoplay remains available to test the tactical mission");
+
+  // NPCUX004: check real battle HUD and inspect panel in BOTH engines.
+  assert.equal(await page.locator(".arena-indicator.assault-hunter").count(),1,
+   "Only the pursuer may show the assault marker");
+  const npcInspect=await page.evaluate(()=>{
+   const hunter=state.fighters.find(f=>f.side==="enemy"&&f.assaultFocus===true);
+   inspectionId=hunter.id;
+   renderFighterInspection();
+   const el=document.querySelector("#inspectNpcAbilities");
+   return {visible:!el.hidden&&el.textContent.length>0,
+    name:document.querySelector("#inspectName").textContent,
+    role:document.querySelector("#inspectRole").textContent,
+    abilities:el.textContent,shown:!document.querySelector("#fighterInspect").hidden};
+  });
+  assert.equal(npcInspect.shown,true);
+  assert.equal(npcInspect.visible,true);
+  assert.equal(npcInspect.name,"Преследователь");
+  assert.match(npcInspect.role,/Защитник.*ПРЕСЛЕДОВАТЕЛЬ/);
+  assert.match(npcInspect.abilities,/Жёсткий приказ/);
+  await page.locator("#inspectClose").click();
+  assert.equal(await page.locator("#fighterInspect").isVisible(),false);
+
   assert.notEqual(setup.goalStyle,"rgba(0, 0, 0, 0)");
   assert.ok(setup.goalBounds.left>=0&&setup.goalBounds.right<=width+1);
   assert.ok(setup.goalBounds.top>=0&&setup.goalBounds.bottom<=height+1);

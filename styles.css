@@ -4476,3 +4476,25 @@ body:has(#storyDemo.active)::before{
 }
 #collection .roster-card-art.hero-avatar-art{background:#342a24}
 #collection .roster-card-art.hero-avatar-sava{background:#253a42}
+
+
+/* NPCUX004: tactical markers use existing mesh-anchored HUD; no new overlay
+   interception, animation, meshes or layout calculations. */
+.battle-screen .arena-indicator.must-first .arena-indicator-name::before{
+ content:"① ";color:#f5c781;font-weight:800;
+}
+.battle-screen .arena-indicator.assault-hunter .arena-indicator-name::before{
+ content:"! ";color:#f4a49c;font-weight:800;
+}
+.battle-screen #targetFighterLevel,
+.battle-screen #targetFighterSide{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.battle-screen #targetFighterLevel{text-align:right}
+.battle-screen .fighter-inspect-abilities{
+ white-space:pre-line;line-height:1.55;font-size:12px;
+ margin-top:10px;padding-top:10px;border-top:1px solid #b9956388;
+ color:#e9d5b7;
+}
+.battle-screen .fighter-inspect-abilities[hidden]{display:none!important}
+@media (orientation:landscape) and (max-height:390px){
+ .battle-screen .fighter-inspect-abilities{font-size:11px;line-height:1.4;margin-top:6px;padding-top:6px}
+}

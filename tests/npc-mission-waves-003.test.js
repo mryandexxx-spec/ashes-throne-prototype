@@ -97,7 +97,7 @@ test("NPCMISSION003: default NPC campaign waves retain costs and progression",()
  assert.match(game,/NpcMissionPilot\.spawnWaves\(activeMissionId\)/);
  assert.match(game,/battleIsCampaign&&NPC_MISSION_PILOT_ENABLED/);
  assert.match(game,/!!NpcMissionPilot\.get\(activeMissionId\)/);
- assert.match(game,/if\(battleIsCampaign&&!freeStoryEntry\)/);
+ assert.match(game,/if\(battleIsCampaign&&!freeStoryEntry/);
  assert.match(game,/if\(battleIsCampaign&&!state.active&&!missionResultRecorded\)/);
  assert.match(game,/const ENEMIES=HEROES.filter\(h=>h.side==="enemy"\)/);
  assert.match(game,/NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED/);

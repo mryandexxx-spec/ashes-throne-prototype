@@ -135,15 +135,21 @@ const ChallengeCore=(()=>{
   return stars;
  }
  // Pure transition: caller saves candidate before showing the best as permanent.
- function result(progress,id,battle,tracker){
-  const earned=score(id,battle,tracker);
+ // A validated externally scored challenge can use the same atomic v1 save path.
+ // Needed for NPC encounter-specific objectives without replacing legacy scoring.
+ function resultEarned(progress,id,earned){
   if(!get(id)||!progress||!progress.bestStars||
-   !Number.isInteger(progress.bestStars[id]))return null;
+   !Number.isInteger(earned)||earned<0||earned>3||
+   !Number.isInteger(progress.bestStars[id])||
+   progress.bestStars[id]<0||progress.bestStars[id]>3)return null;
   const old=progress.bestStars[id];
   const best=Math.max(old,earned);
   const candidate={bestStars:{...progress.bestStars,[id]:best}};
   return {earned,best,improved:best>old,candidate};
  }
- return Object.freeze({KEY,VERSION,get,all:()=>ids().map(get),byKind,available,fresh,valid,load,save,start,capture,strictFirst,score,result});
+ function result(progress,id,battle,tracker){
+  return resultEarned(progress,id,score(id,battle,tracker));
+ }
+ return Object.freeze({KEY,VERSION,get,all:()=>ids().map(get),byKind,available,fresh,valid,load,save,start,capture ,strictFirst,score,result,resultEarned});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=ChallengeCore;

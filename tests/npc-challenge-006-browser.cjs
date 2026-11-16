@@ -26,6 +26,19 @@ const snapshot=page=>page.evaluate(()=>({
  progressSave:localStorage.getItem("ashes-throne.progress.v3"),
  daily:JSON.stringify(progress.daily)
 }));
+function assertNpcSaved(before,after,id,earned){
+ const previous=before.challengeSave?JSON.parse(before.challengeSave).bestStars[id]||0:0;
+ const storage=JSON.parse(after.challengeSave);
+ assert.equal(storage.version,1);
+ assert.equal(storage.bestStars[id],Math.max(previous,earned));
+ assert.equal(JSON.parse(after.challenges||after.challengeProgress).bestStars[id],storage.bestStars[id]);
+ const walletBefore=JSON.parse(before.wallet||before.progress);
+ const walletAfter=JSON.parse(after.wallet||after.progress);
+ for(const key of ["currency","xp","energy"]){
+  if(walletBefore[key]!==undefined)assert.deepEqual(walletAfter[key],walletBefore[key],
+   "challenge must not grant currency, XP or spend energy");
+ }
+}
 async function smoke(name,kind){
  const browser=await kind.launch(name==="chromium"?
   {headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage"]}:
@@ -34,10 +47,10 @@ async function smoke(name,kind){
  const errors=[];
  page.on("pageerror",e=>errors.push(e.message));
  try{
-  const url=new URL(origin);url.searchParams.set("npcChallengePilot","1");
+  const url=new URL(origin);
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v0.3.170 · NPCCHALLENGE007");
+   "Прототип · v0.3.171 · NPCROLLOUT001");
   // Unlock only in-memory prerequisites; never mutate localStorage.
   await page.evaluate(()=>{
    for(const id of ["T-01","T-02","N-01","N-02"])
@@ -45,11 +58,11 @@ async function smoke(name,kind){
   });
   await page.locator('#hqMoreMenu [data-screen="challenges"]').evaluate(el=>el.click());
   await page.locator("#challenges").waitFor({state:"visible",timeout:12000});
-  assert.match(await page.locator("#challengeSaveStatus").innerText(),/T-01…T-04 \/ N-01…N-04/);
+  assert.match(await page.locator("#challengeSaveStatus").innerText(),/Лучшая оценка сохраняется/);
   await page.locator('[data-challenge-kind="tactical"]').click();
   const tCard=page.locator('[data-start-challenge="T-03"]').locator("xpath=ancestor::article");
   assert.equal(await page.locator('[data-start-challenge="T-03"]').isEnabled(),true);
-  assert.match(await tCard.innerText(),/NPC-ПРОБА/);
+  assert.doesNotMatch(await tCard.innerText(),/NPC-ПРОБА/);
   assert.match(await tCard.innerText(),/перевязчика последним/i);
   const beforeT=await snapshot(page);
   await battleEntry(page,"T-03");
@@ -87,16 +100,16 @@ async function smoke(name,kind){
   assert.equal(tResult.stars,1,
    "auto strategy eliminates the healer early; reversed objective must not give 3 stars");
   assert.notDeepEqual(tResult.lastGroup,["npc-t03-medic"]);
-  assert.match(tResult.label,/не сохраняется/);
+  assert.match(tResult.label,/Лучший результат/);
   assert.match(tResult.text,/оставь лекаря последним/i);
-  assert.deepEqual(await snapshot(page),beforeT,"T-03 must be save-free");
+  assertNpcSaved(beforeT,await snapshot(page),"T-03",tResult.stars);
   await page.locator("#challengeResultBack").click();
   await page.locator("#challenges").waitFor({state:"visible",timeout:12000});
   await page.locator("#challengeModeBack").click();
   await page.locator('[data-challenge-kind="onslaught"]').click();
   const nCard=page.locator('[data-start-challenge="N-03"]').locator("xpath=ancestor::article");
   assert.equal(await page.locator('[data-start-challenge="N-03"]').isEnabled(),true);
-  assert.match(await nCard.innerText(),/NPC-ПРОБА/);
+  assert.doesNotMatch(await nCard.innerText(),/NPC-ПРОБА/);
   assert.match(await nCard.innerText(),/3 волны/);
   assert.match(await nCard.innerText(),/95%/);
   const beforeN=await snapshot(page);
@@ -149,10 +162,10 @@ async function smoke(name,kind){
   }));
   assert.equal(nResult.won,"ally");assert.equal(nResult.wave,3);
   assert.equal(nResult.stars,nResult.allAlive?(nResult.remaining>=95?3:2):1);
-  assert.match(nResult.label,/не сохраняется/);
+  assert.match(nResult.label,/Лучший результат/);
   assert.match(nResult.text,/Суммарное HP отряда в финале/);
   assert.match(nResult.text,/95%/);
-  assert.deepEqual(await snapshot(page),beforeN,"N-03 must not change progress/daily");
+  assertNpcSaved(beforeN,await snapshot(page),"N-03",nResult.stars);
   await page.locator("#challengeResultRetry").click();
   await page.locator("#squad").waitFor({state:"visible",timeout:14000});
   await page.locator("#squadBack").click();

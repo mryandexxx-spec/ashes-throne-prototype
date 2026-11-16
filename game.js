@@ -1681,10 +1681,10 @@ function renderChallenges(){
     ["1★ — пройти "+waves+" волны","2★ — победить без потерь",
      "3★ — лимит действий пока не установлен"]);
    return '<article class="campaign-panel campaign-mission"><div class="node">✦</div><div>'+
-    '<h3>'+def.id+' · '+((pilot?NpcChallengePilot.title(def.id):null)||def.title)+(pilot?' · NPC-ПРОБА':'')+'</h3>'+
+    '<h3>'+def.id+' · '+((pilot?NpcChallengePilot.title(def.id):null)||def.title)+'</h3>'+
     '<p>'+(def.kind==="tactical"?"Тактическая задача · "+def.enemyIds.length+" противника":
      "Натиск · "+waves+" волны")+'</p>'+
-    '<p class="mission-stars">'+(pilot?"Обычный результат: ":"Лучшая оценка: ")+
+    '<p class="mission-stars">'+"Лучшая оценка: "+
      ("★".repeat(stars)+"☆".repeat(3-stars))+'</p>'+
     '<ul class="mission-criteria">'+details.map(x=>'<li>'+x+'</li>').join("")+'</ul>'+
     '<div class="campaign-mission-actions"><button class="primary" type="button" data-start-challenge="'+def.id+
@@ -1692,9 +1692,7 @@ function renderChallenges(){
     '</div></article>';
   }).join("");
  }else container.innerHTML="";
- $("#challengeSaveStatus").textContent=NPC_CHALLENGE_PILOT_ENABLED?
-  "NPC-пробы T-01…T-04 / N-01…N-04: оценки и ежедневные задачи не сохраняются. Открытие этапов — по обычному прогрессу.":
-  challengeSaveBlocked?
+ $("#challengeSaveStatus").textContent=challengeSaveBlocked?
   "Прогресс испытаний недоступен: бои доступны, сохранение заблокировано.":
   challengeSaveAvailable?"Лучшая оценка сохраняется в этом браузере.":
   "Хранилище браузера недоступно: результаты не сохраняются.";
@@ -1730,24 +1728,16 @@ function renderChallengeResult(){
   (battleIsNpcChallengePilot?NpcChallengePilot.title(activeChallengeId):null)||
   ChallengeCore.get(activeChallengeId)?.title||"Испытание";
  const stars=challengeLastStars;
- if(battleIsNpcChallengePilot){
-  $("#challengeResultName").textContent+=" · NPC-ПРОБА";
-  $("#challengeResultStars").textContent="Тестовая оценка: "+"★".repeat(stars)+
-   "☆".repeat(3-stars)+" (не сохраняется)";
-  const npcExplanation=NpcChallengePilot.resultText(activeChallengeId,state,challengeTracker);
-  $("#challengeResultText").textContent=(npcExplanation||("Проверка "+
-   (ChallengeCore.get(activeChallengeId)?.kind==="tactical"?
-    "выбора первоочередной цели":"двух волн")+" с новыми NPC."))+
-   " Энергия, ежедневные задачи, награды и постоянные оценки не изменены.";
-  $("#challengeResultRetry").textContent="Повторить пробу";
-  return;
- }
  $("#challengeResultStars").textContent="Оценка: "+"★".repeat(stars)+"☆".repeat(3-stars)+
   " · Лучший результат: "+(challengeProgress.bestStars[activeChallengeId]||0)+"/3";
  $("#challengeResultText").textContent=challengeSaveFailed?
   "Прогресс не сохранён: хранилище браузера недоступно или повреждено. Старые данные сохранены.":
-  won?"Победа. В учебном пилоте нет наград, энергии или сюжетных последствий.":
+  won?"Победа. Испытание не расходует энергию и не выдаёт отдельную награду.":
   "Поражение. Можно повторить испытание без ограничений.";
+ if(battleIsNpcChallengePilot&&!challengeSaveFailed){
+  const explanation=NpcChallengePilot.resultText(activeChallengeId,state,challengeTracker);
+  if(explanation)$("#challengeResultText").textContent=explanation;
+ }
  $("#challengeResultRetry").textContent=won?"Повторить испытание":"Попробовать снова";
 }
 $("#challengeResultBack")?.addEventListener("click",()=>showScreen("challenges"));
@@ -2568,13 +2558,11 @@ function renderCampaign(){
    const best=campaignProgress.bestStars[entry.missionId]||0;
    const cost=ProgressCore.missionEnergyCost(mission.id);
    const freeEntry=progress.saveVersion===3&&!completed;
-   const npcPilot=NPC_MISSION_PILOT_ENABLED&&typeof NpcMissionPilot!=="undefined"&&
-    !!NpcMissionPilot.get(mission.id);
-   const enough=npcPilot||freeEntry||ProgressCore.affordableRuns(progress,mission.id)>0;
+   const enough=freeEntry||ProgressCore.affordableRuns(progress,mission.id)>0;
    const status=completed?"Пройдено · Повторное прохождение доступно":available?"Не пройдено":"Заблокировано";
    const criteria=mission.stars.map((star,index)=>
     `<li><span class="mission-criteria-star">${index+1}★</span><span>${star.hint}</span></li>`).join("");
-   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}${npcPilot?" · NPC-ПРОБА":""}</h3><p>${entry.description}</p><p class="muted">${npcPilot?"Учебный бой: "+NpcMissionPilot.get(mission.id).label+". Без энергии, наград и сохранения оценки.":freeEntry?"Сюжетные попытки до первой победы: бесплатно. Повторы и симуляция: "+cost+" ⚡.":progress.saveVersion===3?"Повторный бой или симуляция: "+cost+" ⚡ за попытку.":"Стоимость входа: "+cost+" ⚡ за попытку (бой или симуляция)"}</p>${npcPilot?"":missionRewardLabel(mission.id)}<p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available&&enough?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${!npcPilot&&best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}" ${enough?"":"disabled"}>Симуляция</button>`:""}</div></div></article>`;
+   return `<article class="campaign-panel campaign-mission"><div class="node">I</div><div><h3>${mission.title}</h3><p>${entry.description}</p><p class="muted">${freeEntry?"Сюжетные попытки до первой победы: бесплатно. Повторы и симуляция: "+cost+" ⚡.":progress.saveVersion===3?"Повторный бой или симуляция: "+cost+" ⚡ за попытку.":"Стоимость входа: "+cost+" ⚡ за попытку (бой или симуляция)"}</p>${missionRewardLabel(mission.id)}<p class="campaign-mission-status">${status}</p><p class="mission-stars">Лучшая оценка: ${"★".repeat(best)+"☆".repeat(3-best)} (${best}/3)</p><ul class="mission-criteria" aria-label="Условия получения звёзд">${criteria}</ul><div class="campaign-mission-actions"><button type="button" class="primary" data-campaign-mission="${mission.id}" ${available&&enough?"":"disabled"}>${completed?"Пройти ещё раз":available?"Вступить в бой":"Недоступно"}</button>${best===3?`<button type="button" class="ghost" data-simulate-mission="${mission.id}" ${enough?"":"disabled"}>Симуляция</button>`:""}</div></div></article>`;
    }).join("");
    return `<div class="campaign-route"><h3>${route.title}</h3>${items}</div>`;
   }).join("");

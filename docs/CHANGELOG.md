@@ -24,6 +24,9 @@
 
 ## 2026-11-16
 
+- **DOCS-ROADMAP-001** — актуализация планирования после `v0.3.174`: единый [ROADMAP](ROADMAP.md), новый короткий [PROJECT_STATUS](PROJECT_STATUS.md), [техническая сводка](TECHNICAL_STATUS.md), [прогресс LC](LORE_CAMPAIGN_PROGRESS.md) и архив исторических снимков. **Docs-only, версия игры не меняется.** Доставка: [PR #354](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/354), согласие владельца на документационное слияние дано 16.11.2026; точный merge-коммит доступен на странице PR.
+- **`v0.3.174 · NPCUX004`** — [PR #353](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/353), squash `e4d417702820ab354e577b1ec914dd403fa08354`: тактические маркеры FS-04/FS-05/OPS-002, видимые роли и реальные умения NPC по длительному нажатию. 27/27 CI, 646/646 Node, единичный WebKit timeout прошёл адресный rerun; после слияния Node/Pages success. Физический iPhone не проверен.
+
 - **`v0.3.173 · NPCPVE003`** — [PR #352](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/352), squash `485198907e4b517241c4d3f9feab59c71fed5237`: отдельный баланс OPS-001/002 и подсказка FS-05, матрица реальных боёв. 26/26 проверок PR; после merge Node/Pages success. Числа являются игровыми кандидатами, не каноном.
 - **`v0.3.172 · NPCPVE002`** — [PR #351](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/351), squash `ac976eb3d38ed9661e013919da32db498509f8e2`: NPC в FS-01…FS-06 и OPS-001/002, старые цели/сохранения сохранены. 27/27 CI; после merge Node/Pages success.
 - **`v0.3.171 · NPCROLLOUT001`** — [PR #350](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/350), squash `5ddffa353847f7f83caafea9b9927f8de27ab85e`: NPC в обычных T/N испытаниях и трёх демонстрационных миссиях, оценки и награды сохранены. Владелец принял мобильную проверку.

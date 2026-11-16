@@ -162,7 +162,7 @@ async function smoke(name,kind){
   assert.equal(nResult.stars,nResult.alive?(nResult.activeHeals||!nResult.verified?2:3):1);
   assert.match(nResult.text,/Активное лечение союзников/);
   assert.match(nResult.label,/Лучший результат/);
-  assertNpcSaved(beforeN,await snapshot(page),"N-02",nResult.stars);
+  assertNpcSaved(beforeN,await snapshot(page),"N-04",nResult.stars);
   await page.locator("#challengeResultRetry").click();
   await page.locator("#squad").waitFor({state:"visible",timeout:14000});
   await page.locator("#squadBack").click();

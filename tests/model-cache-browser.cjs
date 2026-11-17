@@ -2,7 +2,7 @@
 const assert=require("node:assert/strict");
 const {chromium,webkit}=require("playwright");
 const HOST="http://127.0.0.1:8765/";
-const MODEL_PATHS=["assets/ren-meshy-mixamo-animated.glb","dev/assets/models/nada-mobile-animated.glb","dev/assets/models/liora-mobile-animated.glb","dev/assets/models/sava-mobile-animated.glb"];
+const MODEL_PATHS=["assets/ren-meshy-mixamo-animated.glb","dev/assets/models/nada-mobile-animated.glb","dev/assets/models/liora-mobile-animated.glb","dev/assets/models/sava-mobile-animated.glb","dev/assets/models/art-mobile-animated.glb"];
 async function run(browserName,driver){
  const browser=await driver.launch(browserName==="chromium"
   ?{headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage"]}
@@ -20,6 +20,7 @@ async function run(browserName,driver){
    nada:document.getElementById("cache002-nada")?.textContent,
    liora:document.getElementById("cache002-liora")?.textContent,
    sava:document.getElementById("cache002-sava")?.textContent,
+   art:document.getElementById("cache002-art")?.textContent,
    pointerEvents:getComputedStyle(document.getElementById("cache002-indicator")).pointerEvents,
    overflow:document.documentElement.scrollWidth>window.innerWidth+2
   }));
@@ -27,6 +28,7 @@ async function run(browserName,driver){
   assert.match(dock.nada,/Нада/);
   assert.match(dock.liora,/Лиора/);
   assert.match(dock.sava,/Сава/);
+  assert.match(dock.art,/Арт/);
   assert.equal(dock.pointerEvents,"none");
   assert.equal(dock.overflow,false);
   const cached=await page.evaluate(async()=>{
@@ -55,6 +57,7 @@ async function run(browserName,driver){
   assert.ok(cached.progress.some(x=>x.asset==="nada-mobile-animated.glb"));
   assert.ok(cached.progress.some(x=>x.asset==="liora-mobile-animated.glb"));
   assert.ok(cached.progress.some(x=>x.asset==="sava-mobile-animated.glb"));
+  assert.ok(cached.progress.some(x=>x.asset==="art-mobile-animated.glb"));
   assert.ok(cached.progress.every(x=>x.type==="CACHE002_ASSET"));
   assert.ok(cached.progress.some(x=>x.status==="cached"||x.status==="stored"),
    "SW must confirm persistent cache when warmup completes");

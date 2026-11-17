@@ -59,6 +59,7 @@ let renGlbRuntime=null; // Default Ren GLB visual, no gameplay ownership.
 let nadaGlbRuntime=null; // Optional Nada GLB only when she is in the party.
 let lioraGlbRuntime=null; // Optional Liora GLB (shield baked into the rig), only in party.
 let savaGlbRuntime=null; // SAVA3D001: optional skinned Sava, no gameplay ownership.
+let sava3dDisabledScene=null; // SAVA3D002: optional 3D failures must not block battle startup.
 let arenaCamera=null;
 // Combat-008B: allies are near the viewer, enemies farther away.
 const ARENA_VIEW=typeof ArenaStageView!=="undefined"?ArenaStageView.view:Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
@@ -1198,7 +1199,13 @@ function showScreen(id){
    }else{
     showScreen("squad");
     const notice=$("#battleLoadError");
-    if(notice)notice.hidden=false;
+    if(notice){
+     const raw=typeof error?.message==="string"?error.message:String(error);
+     const reason=raw.trim().slice(0,180)||"неизвестная ошибка";
+     const detail=notice.querySelector("p");
+     if(detail)detail.textContent="Причина: "+reason+". Повторите попытку; если ошибка сохранится, сообщите этот текст.";
+     notice.hidden=false;
+    }
    }
   }
  }
@@ -3514,13 +3521,24 @@ function ensureSava3D(){
   if(savaGlbRuntime){savaGlbRuntime.dispose();savaGlbRuntime=null;}
   return;
  }
- if(savaGlbRuntime)return;
- savaGlbRuntime=SavaGlbRuntime.create(BABYLON,scene,meshes.sava,(kind,message)=>{
+ if(savaGlbRuntime||sava3dDisabledScene===scene)return;
+ try{
+  savaGlbRuntime=SavaGlbRuntime.create(BABYLON,scene,meshes.sava,(kind,message)=>{
+   const info=$("#renModelBattleStatus"),label=$("#renModelBattleStatusText");
+   if(label)label.textContent=message;
+   if(info){info.dataset.status=kind;info.hidden=false;}
+   if(kind==="error")console.warn("SAVA3D001: "+message);
+  });
+ }catch(error){
+  // SAVA3D002: a synchronous error in optional skinned rig creation must
+  // never abort the combat simulation or tear down Babylon's arena.
+  sava3dDisabledScene=scene;
+  savaGlbRuntime=null;
+  console.warn("SAVA3D002: optional Sava GLB disabled for this scene",error);
   const info=$("#renModelBattleStatus"),label=$("#renModelBattleStatusText");
-  if(label)label.textContent=message;
-  if(info){info.dataset.status=kind;info.hidden=false;}
-  if(kind==="error")console.warn("SAVA3D001: "+message);
- });
+  if(label)label.textContent="3D Савы недоступно — бой продолжается с простой моделью.";
+  if(info){info.dataset.status="error";info.hidden=false;}
+ }
 }
 function ensureNada3D(){
  if(!scene||!meshes.nada||typeof NadaGlbRuntime==="undefined")return;

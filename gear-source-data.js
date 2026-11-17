@@ -39,7 +39,8 @@ const GearSourceData=(()=>{
      campaign.completed[entry.missionId]!== (campaign.bestStars[entry.missionId]>0))
    return {status:"unknown",stars:null,missingPrerequisites:EMPTY};
   const missing=entry.requiredMissionIds.filter(id=>!campaign.completed[id]);
-  return {status:missing.length?"locked":campaign.completed[entry.missionId]?"repeat":"first-clear",
+  const unlocked=CampaignData.available(entry,campaign);
+  return {status:!unlocked?"locked":campaign.completed[entry.missionId]?"repeat":"first-clear",
    stars:campaign.bestStars[entry.missionId],missingPrerequisites:Object.freeze(missing)};
  }
  function findSources(materialId,campaign=null,energy=null){

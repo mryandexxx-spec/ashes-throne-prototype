@@ -4,12 +4,13 @@
  */
 "use strict";
 const CACHE_PREFIX="ashes-models-";
-const CACHE_NAME=CACHE_PREFIX+"ren-a15fd00f_nada-4c8b29b8_liora-aeb64b8d_sava-f88842d6_v1";
+const CACHE_NAME=CACHE_PREFIX+"ren-a15fd00f_nada-4c8b29b8_liora-aeb64b8d_sava-f88842d6_art-c7a25c48_v1";
 const MODEL_PATHS=[
  "assets/ren-meshy-mixamo-animated.glb",
  "dev/assets/models/nada-mobile-animated.glb",
  "dev/assets/models/liora-mobile-animated.glb",
- "dev/assets/models/sava-mobile-animated.glb"
+ "dev/assets/models/sava-mobile-animated.glb",
+ "dev/assets/models/art-mobile-animated.glb"
 ];
 const MODEL_URLS=MODEL_PATHS.map(path=>new URL(path,self.registration.scope).href);
 const inflight=new Map();
@@ -72,7 +73,7 @@ self.addEventListener("fetch",event=>{
 });
 // CACHE002: exact downloadable GLB sizes; progress is based on bytes actually
 // consumed from the response stream, not a timer or a simulated percentage.
-const MODEL_BYTES=[2862860,1462284,2117776,1498852];
+const MODEL_BYTES=[2862860,1462284,2117776,1498852,2032788];
 async function reportCacheStatus(port){
  const cache=await openCache();
  const results=[];

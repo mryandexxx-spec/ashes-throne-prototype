@@ -114,6 +114,7 @@ async function run(name,type){
  const errors=[];page.on("pageerror",e=>errors.push(e.message));
  try{
   await page.goto(origin,{waitUntil:"load",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await page.locator('#home .hq-bottom button[data-screen="campaign"]').evaluate(el=>el.click());
   await page.locator('[data-campaign-path="lore"]').click();
   await page.locator(".lore-story-cover").click();

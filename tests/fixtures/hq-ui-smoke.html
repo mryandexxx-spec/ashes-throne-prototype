@@ -5,7 +5,12 @@
 <script>
 const frame=document.getElementById("game");
 function error(message){document.body.dataset.hqStatus="error";document.body.dataset.hqError=String(message).slice(0,200)}
-frame.addEventListener("load",async()=>{
+frame.addEventListener("load",()=>{
+ const win=frame.contentWindow;
+ if(typeof win.showScreen==="function")void run();
+ else win.addEventListener("wallet-game-ready",()=>void run(),{once:true});
+});
+async function run(){
  try {
   const doc=frame.contentDocument,win=frame.contentWindow,pan=doc.getElementById("hqPan"),home=doc.getElementById("home");
   if(!pan||!home||typeof win.showScreen!=="function")throw Error("Main game not initialized");
@@ -82,6 +87,6 @@ frame.addEventListener("load",async()=>{
   }
   document.body.dataset.hqStatus="pass";
  }catch(e){error(e&&e.message||e)}
-});
+}
 setTimeout(()=>{if(document.body.dataset.hqStatus==="loading")error("Game load timed out")},18000);
 </script></body></html>

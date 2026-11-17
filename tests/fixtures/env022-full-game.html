@@ -23,7 +23,7 @@ const watchdog=setInterval(()=>{
  try{
   if(++attempts>160)throw Error("ENV022 full game entry timed out");
   const doc=frame.contentDocument,win=frame.contentWindow;
-  if(!doc||doc.readyState!=="complete")return;
+  if(!doc||doc.readyState!=="complete"||typeof frame.contentWindow.showScreen!=="function")return;
   if(doc.querySelector("#loginCalendar.active")){
    doc.querySelector('#loginCalendar [data-screen="home"]')?.click();
    entered=false;launched=false;return;

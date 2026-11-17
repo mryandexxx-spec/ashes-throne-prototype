@@ -32,6 +32,7 @@ async function check(name,type){
  const errors=[];page.on("pageerror",e=>errors.push(e.message));
  try{
   await page.goto(origin,{waitUntil:"load",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await openLore(page);
   assert.equal(await page.locator('[data-lore-action="training-battle"]').count(),1);
   const original=await page.evaluate(()=>({

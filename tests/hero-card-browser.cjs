@@ -9,6 +9,7 @@ const {chromium,webkit}=require('playwright');
   const page=await browser.newPage({viewport:{width:844,height:390}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:8765/',{waitUntil:'load'});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await page.evaluate(()=>{selectedHeroId='ren';showScreen('heroDetail');});
   await page.waitForFunction(()=>document.querySelector('#detailHeroStage').classList.contains('has-ren-3d'),null,{timeout:45000});
   async function drawn(){

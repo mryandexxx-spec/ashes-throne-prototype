@@ -78,8 +78,10 @@ async function check(name,browserType,width,height){
  const tag=name+"-"+width+"x"+height;
  try{
   await page.goto(origin,{waitUntil:"load",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await page.evaluate(({key,value})=>localStorage.setItem(key,value),{key:Core.KEY,value:seed()});
   await page.reload({waitUntil:"load"});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await enter(page);
   // A pre-trials save completed FS-03 narration, but not its new combat.
   // FS-04 remains locked until that verified win is recorded.
@@ -96,6 +98,7 @@ async function check(name,browserType,width,height){
    localStorage.setItem(key,JSON.stringify(data));
   });
   await page.reload({waitUntil:"load"});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await enter(page);
   assert.equal(await page.locator('[data-lore-layer="city-response"][aria-pressed="true"]').count(),1);
   assert.match(await page.locator(".lore-map-heading").innerText(),/Акт II/);
@@ -106,6 +109,7 @@ async function check(name,browserType,width,height){
     // The first long narration can span several landscape pages. Reload the
     // persisted starting checkpoint instead of assuming the next button is shown.
     await page.reload({waitUntil:"load"});
+    await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
     await enter(page);
     assert.equal(await page.locator(".lore-node-detail [data-lore-action='start-node']").count(),1);
     assert.match(await page.locator(".lore-node-detail").innerText(),/Продолжить/);
@@ -126,6 +130,7 @@ async function check(name,browserType,width,height){
     localStorage.setItem(key,JSON.stringify(data));
    },currentId);
    await page.reload({waitUntil:"load"});
+   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
    await enter(page);
    if(i<2)assert.match(await page.locator(".lore-node-detail").innerText(),/Доступно/);
    else {

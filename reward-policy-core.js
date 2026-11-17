@@ -76,6 +76,10 @@ const RewardPolicyCore=(()=>{
     run identity and any limits, before returning strictly true. */
  async function claim({source,occurrenceId,count=1,day,heroes,storageProvider,authorize,exclusive}={}){
   if(typeof exclusive!=="function")return failure("EXCLUSIVE_LOCK_REQUIRED");
+  // Browser claims must participate in the SAME writer as all v3 saves.
+  if(typeof window!=="undefined"&&typeof ProgressWriterCore!=="undefined"&&
+     (!ProgressWriterCore.isOwner()||exclusive!==ProgressWriterCore.exclusive))
+   return failure("EXCLUSIVE_LOCK_REQUIRED");
   if(typeof authorize!=="function")return failure("PROOF_REQUIRED");
   if(typeof storageProvider!=="function"||!Array.isArray(heroes))
    return failure("INVALID_ADAPTER");

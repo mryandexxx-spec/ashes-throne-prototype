@@ -245,8 +245,8 @@ test("Old v2 and older v3 save round trips keep resources; receipts are opt-in",
 test("Candidate build marker matches package and reward module remains unwired",()=>{
  const pkg=require("../package.json");
  const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
- assert.equal(pkg.version,"0.3.183");
- assert.match(html,/id="buildVersion"[^>]*>Прототип · v0\.3\.183 · REWARD007A/);
+ assert.equal(pkg.version,"0.3.184");
+ assert.match(html,/id="buildVersion"[^>]*>Прототип · v0\.3\.184 · WALLET008B/);
  assert.doesNotMatch(html,/<script[^>]*src="reward-policy-core\.js/);
  assert.doesNotMatch(html,/rewardPoolId:\s*["']/);
 });

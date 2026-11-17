@@ -16,7 +16,7 @@
   try{
    if(++tick>120)throw Error("ENV017 diagnostic timeout");
    const doc=frame.contentDocument,win=frame.contentWindow;
-   if(!doc||doc.readyState!=="complete")return;
+   if(!doc||doc.readyState!=="complete"||typeof frame.contentWindow.showScreen!=="function")return;
    if(doc.querySelector("#loginCalendar.active")){
     doc.querySelector('#loginCalendar [data-screen="home"]')?.click();return;
    }

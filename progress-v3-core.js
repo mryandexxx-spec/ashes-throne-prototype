@@ -105,6 +105,9 @@ const ProgressV3Core=(()=>{
   return JSON.parse(JSON.stringify(data));
  }
  function stage(heroes,getStorage,now=Date.now()){
+  // v3 staging/migration also writes: never run it outside the wallet lock.
+  if(typeof window!=="undefined"&&typeof ProgressWriterCore!=="undefined"&&
+     !ProgressWriterCore.canPersist())return {status:"blocked",reason:"wallet-writer-lock-required"};
   if(!allyIds(heroes))return {status:"blocked",reason:"unknown-hero-ids"};
   let storage;
   try{storage=getStorage();if(!storage)return {status:"blocked",reason:"storage-unavailable"};}
@@ -329,6 +332,9 @@ const ProgressV3Core=(()=>{
   return validateActive(source,ids.map(id=>({id,side:"ally"})));
  }
  function persist(p,getStorage){
+  // revision/readback is defense-in-depth, not an atomic cross-tab CAS.
+  if(typeof window!=="undefined"&&typeof ProgressWriterCore!=="undefined"&&
+     !ProgressWriterCore.canPersist())return false;
   if(!p||p.saveVersion!==3)return false;
   const candidate=fromRuntime(p);
   if(!candidate)return false;

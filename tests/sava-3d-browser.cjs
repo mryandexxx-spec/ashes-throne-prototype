@@ -9,6 +9,7 @@ const {chromium,webkit}=require("playwright");
   const page=await browser.newPage({viewport:{width:932,height:430}});
   const errors=[];page.on("pageerror",e=>errors.push(e.message));
   await page.goto("http://127.0.0.1:8765/",{waitUntil:"load"});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await page.waitForFunction(()=>typeof SavaGlbRuntime!=="undefined"&&typeof BABYLON!=="undefined");
   const result=await page.evaluate(async()=>{
    const B=BABYLON,canvas=document.createElement("canvas");

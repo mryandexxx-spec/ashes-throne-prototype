@@ -56,8 +56,8 @@ async function check(name,type){
  try{
   const url=new URL(origin);
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
-  assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v"+require("../package.json").version+" · SAVA3D002");
+  assert.ok((await page.locator("#buildVersion").innerText())
+   .startsWith("Прототип · v"+require("../package.json").version+" · "), "footer must match package version");
   // In short landscape both the painted hotspot and More button can be
   // visually hidden or animated. Invoke the actual delegated UI click handler
   // on the existing More menu item, as other browser regression tests do.

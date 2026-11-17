@@ -109,7 +109,7 @@ test("LOREACT5001: fresh save full story FS-01…FS-15 and six combat gates",()=
  const record=r.stateFor("five-shadows");
  assert.equal(record.completedNodeIds.length,15);
  assert.equal(record.battleClearedNodeIds.length,6);
- assert.equal(record.keyDecisionLog.length,Act5.pack.scenes.filter(x=>x.choices.length>0).length);
+ assert.equal(record.keyDecisionLog.length,Act5.pack.scenes.reduce((sum,scene)=>sum+new Set(scene.choices.map(c=>c.decisionId)).size,0));
  assert.equal(record.activeNodeId,null);
  assert.equal(create(Act5,storage).stateFor("five-shadows").completedNodeIds.length,15);
 });
@@ -117,6 +117,9 @@ test("LOREACT5001: save checkpoint, second branch and replay cannot rewrite prim
  const storage=memory();seedTwelve(storage);
  const r=create(Act5,storage);
  assert.equal(r.start(id(13)).ok,true);
+ for(const item of r.current().inspections){
+  assert.equal(r.inspect(item.id).ok,true,"checkpoint first-beat inspection "+item.id);
+ }
  assert.equal(r.next().ok,true);
  assert.equal(r.current().beatId,"fs13-market-evidence");
  r.leave();

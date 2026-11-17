@@ -26,7 +26,7 @@ const url="http://127.0.0.1:8765/";
   await second.waitForFunction(()=>document.getElementById("walletWriterMessage")?.textContent.includes("другой вкладке"),
    null,{timeout:15000});
   const busy=await second.evaluate(()=>({
-   overlay:document.getElementById("walletWriterNotice").style.display,
+   overlay:document.getElementById("walletWriterNotice")?.style.display,
    gameLoaded:typeof progress!=="undefined",
    hasLock:ProgressWriterCore.isOwner(),
    currency:JSON.parse(localStorage.getItem("ashes-throne.progress.v3")).currency
@@ -37,7 +37,7 @@ const url="http://127.0.0.1:8765/";
   assert.equal(busy.currency,initial.current);
   await first.close();
   await second.click("#walletWriterRetry");
-  await second.waitForFunction(()=>document.getElementById("walletWriterNotice").style.display==="none",
+  await second.waitForFunction(()=>document.getElementById("walletWriterNotice")?.style.display==="none",
    null,{timeout:60000});
   const recovered=await second.evaluate(()=>{
    const before=progress.currency;
@@ -55,7 +55,7 @@ const url="http://127.0.0.1:8765/";
   const broken=await browser.newContext({viewport:{width:844,height:390}});
   const failedPage=await broken.newPage();
   await failedPage.goto(url,{waitUntil:"domcontentloaded"});
-  await failedPage.waitForFunction(()=>document.getElementById("walletWriterNotice").style.display==="none",
+  await failedPage.waitForFunction(()=>document.getElementById("walletWriterNotice")?.style.display==="none",
    null,{timeout:60000});
   const failed=await failedPage.evaluate(()=>{
    const key="ashes-throne.progress.v3";
@@ -66,13 +66,13 @@ const url="http://127.0.0.1:8765/";
    const saved=persistProgress();
    Storage.prototype.setItem=original;
    return {prior,saved,stored:JSON.parse(localStorage.getItem(key)).currency,
-    overlay:document.getElementById("walletWriterNotice").style.display};
+    overlay:document.getElementById("walletWriterNotice")?.style.display};
   });
   assert.equal(failed.saved,false);
   assert.equal(failed.stored,failed.prior);
   assert.equal(failed.overlay,"flex");
   await failedPage.click("#walletWriterRetry");
-  await failedPage.waitForFunction(()=>document.getElementById("walletWriterNotice").style.display==="none",
+  await failedPage.waitForFunction(()=>document.getElementById("walletWriterNotice")?.style.display==="none",
    null,{timeout:60000});
   assert.equal(await failedPage.evaluate(()=>progress.currency),failed.prior);
   await broken.close();

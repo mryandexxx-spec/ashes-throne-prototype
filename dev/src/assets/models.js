@@ -24,4 +24,19 @@ const LioraModelAssets=Object.freeze({
  shieldMesh:"Liora_Shield",shieldJoint:"mixamorig:LeftForeArm",
  clips:Object.freeze({idle:"Idle_02",basic:"Liora_Shield_Bash",special:"Liora_Shield_Block",powerful:"Squat_Stance",guard:"Liora_Shield_Block",ward:"Liora_Shield_Block",hit:"Hit_Reaction",death:"Liora_Shield_Death",run:"Running",walk:"Walking",alert:"Alert",breath:"Catching_Breath",push:"Step_Forward_and_Push",approach:"Walk_Fight_Forward"})
 });
+/* SAVA3D001: compact Mixamo GLB for Sava, same path convention as Nada/Liora. */
+const SavaModelAssets=Object.freeze({
+ id:"sava",
+ url:"dev/assets/models/sava-mobile-animated.glb",
+ filename:"sava-mobile-animated.glb",
+ source:"dev/assets-src/characters/sava/",
+ bytes:1498852,
+ sha256:"f88842d6677b1383e5ac337b1d49704462033a3b6e35498f0ea124ee36d4560b",
+ clips:Object.freeze({
+  idle:"Idle",basic:"mage_soell_cast",special:"mage_soell_cast",
+  powerful:"mage_soell_cast_4",guard:"Idle",ward:"Idle",
+  hit:"Hit_Reaction_to_Waist",death:"dying_backwards",
+  run:"Running",walk:"Walking"
+ })
+});
 if(typeof module!=="undefined"&&module.exports)module.exports=NadaModelAssets;

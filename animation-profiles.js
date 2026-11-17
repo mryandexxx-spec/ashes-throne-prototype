@@ -60,6 +60,17 @@ const AnimationProfiles=(()=>{
   hit:Object.freeze({kind:"hit",durationMs:850,amplitude:.18}),
   death:Object.freeze({kind:"death",durationMs:2000,amplitude:.85})
  }));
+ // SAVA3D001: no fake melee lunge; the skinned rig animates while rooted.
+ overrides.set("sava",Object.freeze({
+  idle:Object.freeze({kind:"idle",durationMs:4000,amplitude:0}),
+  basic:Object.freeze({kind:"idle",durationMs:1400,amplitude:0}),
+  special:Object.freeze({kind:"idle",durationMs:1700,amplitude:0}),
+  powerful:Object.freeze({kind:"idle",durationMs:2100,amplitude:0}),
+  guard:Object.freeze({kind:"idle",durationMs:900,amplitude:0}),
+  ward:Object.freeze({kind:"idle",durationMs:900,amplitude:0}),
+  hit:Object.freeze({kind:"hit",durationMs:1150,amplitude:.12}),
+  death:Object.freeze({kind:"death",durationMs:2200,amplitude:0})
+ }));
  function register(heroId,slots){
   if(typeof heroId!=="string"||!heroId.trim()||!slots||typeof slots!=="object"||Array.isArray(slots))
    throw Error("Invalid character animation profile");

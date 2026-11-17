@@ -47,6 +47,22 @@
           1024
         ]
       }
+    },
+    {
+      "id": "sava",
+      "file": "sava-mobile-animated.glb",
+      "bytes": 1498852,
+      "sha256": "f88842d6677b1383e5ac337b1d49704462033a3b6e35498f0ea124ee36d4560b",
+      "vertices": 14246,
+      "triangles": 14944,
+      "bones": 68,
+      "animations": 8,
+      "textureSize": [
+        2048,
+        2048
+      ],
+      "textureMime": "image/webp",
+      "source": "../../assets-src/characters/sava/README.md"
     }
   ]
 }

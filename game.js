@@ -58,6 +58,7 @@ let combatVisual007=null; // One optional visual layer per Babylon Scene.
 let renGlbRuntime=null; // Default Ren GLB visual, no gameplay ownership.
 let nadaGlbRuntime=null; // Optional Nada GLB only when she is in the party.
 let lioraGlbRuntime=null; // Optional Liora GLB (shield baked into the rig), only in party.
+let savaGlbRuntime=null; // SAVA3D001: optional skinned Sava, no gameplay ownership.
 let arenaCamera=null;
 // Combat-008B: allies are near the viewer, enemies farther away.
 const ARENA_VIEW=typeof ArenaStageView!=="undefined"?ArenaStageView.view:Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
@@ -1185,6 +1186,7 @@ function showScreen(id){
    if(renGlbRuntime){renGlbRuntime.dispose();renGlbRuntime=null;}
    if(nadaGlbRuntime){nadaGlbRuntime.dispose();nadaGlbRuntime=null;}
    if(lioraGlbRuntime){lioraGlbRuntime.dispose();lioraGlbRuntime=null;}
+   if(savaGlbRuntime){savaGlbRuntime.dispose();savaGlbRuntime=null;}
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
    scene=undefined;engine=undefined;arenaCamera=null;meshes={};encounterNpcVisualIds.clear();indicatorNodes={};combatVisual007=null;renderLoopRunning=false;
@@ -2164,10 +2166,10 @@ function renderHeroDetail(){
   heroStage.classList.toggle("has-ren-portrait",showRenPortrait);
   if(showNadaPortrait||showLioraPortrait||showArtPortrait||showSavaPortrait)heroStage.classList.add("has-ren-portrait");
   heroStage.setAttribute("aria-label",showLiora3D?"Лиора Вель — 3D со щитом":showNadaPortrait?"Нада — 3D-модель при загрузке, иначе портрет":
-   showRenPortrait?"Рен Терен: 3D-модель и портрет":showArtPortrait?"Арт: портрет, в бою простая 3D-заглушка":showSavaPortrait?"Сава: портрет, в бою простая 3D-заглушка":"Схематичный силуэт героя, без 3D-модели");
+   showRenPortrait?"Рен Терен: 3D-модель и портрет":showArtPortrait?"Арт: портрет, в бою простая 3D-заглушка":showSavaPortrait?"Сава: 3D-модель при загрузке, иначе портрет":"Схематичный силуэт героя, без 3D-модели");
  }
  if(artworkLabel)artworkLabel.textContent=showLiora3D?"ЛИОРА · 3D СО ЩИТОМ (ТЕСТ)":showNadaPortrait?"ГЕРОЙ · 3D-ПРОСМОТР (ПИЛОТ)":
-  showRenPortrait?"ГЕРОЙ · 3D-МОДЕЛЬ":showArtPortrait||showSavaPortrait?"ГЕРОЙ · ПОРТРЕТ И 3D-ЗАГЛУШКА":"ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД";
+  showRenPortrait||showSavaPortrait?"ГЕРОЙ · 3D-МОДЕЛЬ":showArtPortrait?"ГЕРОЙ · ПОРТРЕТ И 3D-ЗАГЛУШКА":"ГЕРОЙ · СХЕМАТИЧНЫЙ ВИД";
  if(typeof RenCard3D!=="undefined" && $("#heroDetail")?.classList.contains("active"))
   void RenCard3D.activate(hero.id);
  renderStarPanel(base.id);
@@ -3382,7 +3384,7 @@ function renderBattleFrame(){
   const targetSlot=target?opponents.findIndex(f=>f.id===target.id):-1;
   const targetPosition=targetSlot>=0?formationPosition(target.side,targetSlot,opponents.length):null;
   // NADAANIM001: Nada is an archer — she shoots from her place, no melee lunge.
-  const approach=h.id==="nada"?{x:0,z:0}:BattleAnimation.approach(activity,origin,targetPosition);
+  const approach=(h.id==="nada"||h.id==="sava")?{x:0,z:0}:BattleAnimation.approach(activity,origin,targetPosition);
   const offset=pose.x*(h.side==="ally"?1:-1);
   visual.body.position.x=visual.head.position.x=visual.base.position.x=origin.x+offset+approach.x;
   visual.body.position.z=visual.head.position.z=visual.base.position.z=origin.z+approach.z;
@@ -3391,8 +3393,8 @@ function renderBattleFrame(){
   if(visual.body.rotation)visual.body.rotation.z=pose.tilt;
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
   // MOBILEQA001: GLB heroes rest three-quarter to the camera, facing the enemy lane.
-  if((h.id==="ren"&&renGlbRuntime)||(h.id==="nada"&&nadaGlbRuntime)||(h.id==="liora"&&lioraGlbRuntime)){
-   const nadaAim=h.id==="nada"&&targetPosition&&["basic","special","powerful"].includes(activity.slot);
+  if((h.id==="ren"&&renGlbRuntime)||(h.id==="nada"&&nadaGlbRuntime)||(h.id==="liora"&&lioraGlbRuntime)||(h.id==="sava"&&savaGlbRuntime)){
+   const nadaAim=(h.id==="nada"||h.id==="sava")&&targetPosition&&["basic","special","powerful"].includes(activity.slot);
    if(nadaAim&&visual.body.rotation){
     // NADAANIM001: turn toward the target while shooting, same smoothing as the rest pose.
     const aim=-Math.atan2(targetPosition.z-origin.z,targetPosition.x-origin.x),cur=visual.body.rotation.y||0;
@@ -3406,6 +3408,7 @@ function renderBattleFrame(){
   }
   if(h.id==="nada"&&nadaGlbRuntime)nadaGlbRuntime.update(activity);
   if(h.id==="liora"&&lioraGlbRuntime)lioraGlbRuntime.update(activity);
+  if(h.id==="sava"&&savaGlbRuntime)savaGlbRuntime.update(activity);
   if(h.id==="ren"&&renGlbRuntime){
    if(visual.body.rotation&&targetPosition&&activity.plan){
     const yaw=-Math.atan2(targetPosition.z-origin.z,targetPosition.x-origin.x);
@@ -3501,6 +3504,22 @@ function ensureLiora3D(){
   if(label)label.textContent=message;
   if(info){info.dataset.status=kind;info.hidden=false;}
   if(kind==="error")console.warn("LIORAPLAY001: "+message);
+ });
+}
+// SAVA3D001: lazy actor-specific skinned rig, reuse shared Babylon Scene and frame loop.
+function ensureSava3D(){
+ if(!scene||!meshes.sava||typeof SavaGlbRuntime==="undefined")return;
+ const selected=presentationFighters().some(f=>f.id==="sava"&&f.side==="ally");
+ if(!selected){
+  if(savaGlbRuntime){savaGlbRuntime.dispose();savaGlbRuntime=null;}
+  return;
+ }
+ if(savaGlbRuntime)return;
+ savaGlbRuntime=SavaGlbRuntime.create(BABYLON,scene,meshes.sava,(kind,message)=>{
+  const info=$("#renModelBattleStatus"),label=$("#renModelBattleStatusText");
+  if(label)label.textContent=message;
+  if(info){info.dataset.status=kind;info.hidden=false;}
+  if(kind==="error")console.warn("SAVA3D001: "+message);
  });
 }
 function ensureNada3D(){
@@ -3684,6 +3703,7 @@ function updateMeshes(){
  if(!scene)return;
  ensureNada3D();
  ensureLiora3D();
+ ensureSava3D();
  const roster=presentationFighters();
  const sideMembersBySide={ally:roster.filter(f=>f.side==="ally"),enemy:roster.filter(f=>f.side==="enemy")};
  for(const h of [...COMBAT_VISUALS,...Array.from(encounterNpcVisualIds,id=>({id}))]){

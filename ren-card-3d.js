@@ -53,12 +53,13 @@ const RenCard3D=(()=>{
   const isRen=heroId==="ren";
   const isNada=heroId==="nada";
   const isLiora=heroId==="liora";
-  const canDisplay3D=isRen||isNada||isLiora;
+  const isSava=heroId==="sava";
+  const canDisplay3D=isRen||isNada||isLiora||isSava;
   if(active&&activeHeroId!==heroId)dispose();
   const controls=byId("renCard3DControls");
   const canvas=byId("renCard3DCanvas");
   if(controls)controls.hidden=!canDisplay3D;
-  if(canvas){canvas.hidden=!canDisplay3D;canvas.setAttribute("aria-label",isLiora?"Лиора Вель со щитом, трёхмерная модель; вращение пальцем":isNada?"Нада, трёхмерная модель; вращение пальцем":"Рен Терен, трёхмерная модель; вращение пальцем");}
+  if(canvas){canvas.hidden=!canDisplay3D;canvas.setAttribute("aria-label",isLiora?"Лиора Вель со щитом, трёхмерная модель; вращение пальцем":isNada?"Нада, трёхмерная модель; вращение пальцем":isSava?"Сава, трёхмерная модель; вращение пальцем":"Рен Терен, трёхмерная модель; вращение пальцем");}
   const modeButton=byId("renCardMode");if(modeButton)modeButton.hidden=!canDisplay3D;
   if(!canDisplay3D){
    if(active)dispose();
@@ -73,7 +74,7 @@ const RenCard3D=(()=>{
   active=true;activeHeroId=heroId;
   const token=++loadingToken;
   view="model";
-  loading(isLiora?"Загружаем Лиору…":isNada?"Загружаем Наду…":"Загружаем Рена…");
+  loading(isLiora?"Загружаем Лиору…":isNada?"Загружаем Наду…":isSava?"Загружаем Саву…":"Загружаем Рена…");
   try{
    engine=new BABYLON.Engine(canvas,true,{alpha:true,stencil:true,preserveDrawingBuffer:false});
    scene=new BABYLON.Scene(engine);
@@ -103,10 +104,11 @@ const RenCard3D=(()=>{
    }
    const tracker=RenGlbRuntime.createDownloadTracker(message=>{
     if(active&&token===loadingToken)loading(message);
-   },isLiora?"Лиоры":isNada?"Нады":"Рена");
+   },isLiora?"Лиоры":isNada?"Нады":isSava?"Савы":"Рена");
    // Nada has a verified local manifest size; no extra HEAD request needed.
    if(isNada&&typeof NadaModelAssets!=="undefined")tracker.setTotal(NadaModelAssets.bytes);
     if(isLiora&&typeof LioraModelAssets!=="undefined")tracker.setTotal(LioraModelAssets.bytes);
+   if(isSava&&typeof SavaModelAssets!=="undefined")tracker.setTotal(SavaModelAssets.bytes);
    // Only probe the Ren legacy URL. Nada uses a separate manifest path.
    if(isRen)void RenGlbRuntime.probeAssetBytes().then(bytes=>{
     if(active&&token===loadingToken&&bytes!==null)tracker.setTotal(bytes);
@@ -114,7 +116,7 @@ const RenCard3D=(()=>{
    await RenGlbRuntime.ensureLoader();
    if(!active||token!==loadingToken){tracker.done();return;}
    const assetUrl=isLiora?LioraGlbRuntime.assetUrl():
-    isNada?NadaGlbRuntime.assetUrl():RenGlbRuntime.ASSET_URL;
+    isNada?NadaGlbRuntime.assetUrl():isSava?SavaGlbRuntime.assetUrl():RenGlbRuntime.ASSET_URL;
    const slash=assetUrl.lastIndexOf("/");
    const result=await BABYLON.SceneLoader.ImportMeshAsync(
     null,assetUrl.slice(0,slash+1),assetUrl.slice(slash+1),scene,event=>{
@@ -154,7 +156,8 @@ const RenCard3D=(()=>{
    camera.setTarget(new BABYLON.Vector3(0,1.08,0));
    camera.radius=3.15;
    const groups=result.animationGroups;
-   animation=isLiora?groups.find(g=>g.name==="Idle_02")||null:
+   animation=isSava?groups.find(g=>g.name==="Idle")||null:
+    isLiora?groups.find(g=>g.name==="Idle_02")||null:
     isNada?groups.find(g=>g.name==="Idle_11")||null:
     groups.find(g=>g.name==="Idle_4")||groups.find(g=>g.name==="Ren_Idle_Breathing_3s")||null;
    groups.forEach(g=>g.stop());
@@ -162,9 +165,9 @@ const RenCard3D=(()=>{
    // Never combine native AnimationGroups with old hand-authored retarget poses.
    if(animation){
     animation.start(true,0.75);
-    canvas.dataset.animationSource=isLiora?"liora-native-idle":isNada?"nada-mixamo-native-idle":"meshy-native-idle";
+    canvas.dataset.animationSource=isLiora?"liora-native-idle":isNada?"nada-mixamo-native-idle":isSava?"sava-mixamo-native-idle":"meshy-native-idle";
    }else{
-    if(isNada||isLiora)throw Error("В GLB героя отсутствует анимация ожидания");
+    if(isNada||isLiora||isSava)throw Error("В GLB героя отсутствует анимация ожидания");
     // The legacy rig can still use its previous safe fallback.
     try{
      retargetIdle=typeof RenMotionRetarget!=="undefined"
@@ -182,9 +185,9 @@ const RenCard3D=(()=>{
    setMode("model");
    engine.resize();
    endLoading();
-   report((isLiora?"3D Лиора со щитом":isNada?"3D Нада":"3D Рен")+" загружен. Проведите пальцем для поворота; двумя пальцами меняйте масштаб.");
+   report((isLiora?"3D Лиора со щитом":isNada?"3D Нада":isSava?"3D Сава":"3D Рен")+" загружен. Проведите пальцем для поворота; двумя пальцами меняйте масштаб.");
   }catch(error){
-   console.warn(isLiora?"LIORAPLAY001 card fallback":isNada?"NADA3D001 card fallback":"REN-GLB-003 card model unavailable",error);
+   console.warn(isLiora?"LIORAPLAY001 card fallback":isNada?"NADA3D001 card fallback":isSava?"SAVA3D001 card fallback":"REN-GLB-003 card model unavailable",error);
    report("Не удалось загрузить 3D: "+(error.message||String(error))+". Показан портрет.");
    // Retain portrait and release the card's WebGL context on load failure.
    dispose();

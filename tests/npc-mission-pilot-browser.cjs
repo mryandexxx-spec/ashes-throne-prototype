@@ -17,6 +17,7 @@ async function check(name,type){
   const uri=new URL(origin);
   
   await page.goto(uri.toString(),{waitUntil:"load",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   assert.ok((await page.locator("#buildVersion").innerText())
    .startsWith("Прототип · v"+require("../package.json").version+" · "), "footer must match package version");
   // Unlock only the prerequisite IN MEMORY. No synthetic victory or local save.

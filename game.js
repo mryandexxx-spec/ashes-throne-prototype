@@ -541,6 +541,8 @@ $("#loginClaim")?.addEventListener("click",()=>{
 });
 function persistProgress(){
  if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>window.localStorage);
+ // An unknown write outcome requires a reload: continuing risks a duplicate spend.
+ if(!saveAvailable&&progress.saveVersion===3)window.walletWriterHalt?.();
  renderAccountHeader();
  const notice=$("#progressSaveNote");
  if(notice)notice.textContent=saveAvailable
@@ -2582,9 +2584,16 @@ function renderCampaign(){
 }
 // A visible campaign can be left open while energy regenerates.
 function energyRefreshFeedback(now=Date.now()){
+ const snapshot=progress.saveVersion===3?JSON.stringify(progress):null;
  const before=progress.energy.value;
- const restored=ProgressCore.refreshEnergy(progress,now);
- if(restored>0)persistProgress();
+ let restored=ProgressCore.refreshEnergy(progress,now);
+ if(restored>0&&!persistProgress()){
+  if(snapshot){
+   Object.keys(progress).forEach(k=>delete progress[k]);
+   Object.assign(progress,JSON.parse(snapshot));
+  }
+  restored=0; // No optimistic energy on unconfirmed storage.
+ }
  renderCampaign();
  const status=$("#energyRefreshStatus");
  if(!status)return restored;
@@ -2642,11 +2651,23 @@ $("#simulationConfirm")?.addEventListener("click",()=>{
  if(!simulationMissionId)return;
  const count=Number($("#simulationCount").value);
  // Revalidate immediately before charging: energy may have changed while modal was open.
+ const snapshot=progress.saveVersion===3?JSON.stringify(progress):null;
  const gain=ProgressCore.simulate(progress,simulationMissionId,campaignProgress.bestStars[simulationMissionId],count);
  if(!gain){renderSimulationPreview();return;}
+ if(!persistProgress()){
+  if(snapshot){
+   Object.keys(progress).forEach(k=>delete progress[k]);
+   Object.assign(progress,JSON.parse(snapshot));
+  }
+  simulationMissionId=null;
+  $("#simulationTitle").textContent="Сохранение не подтверждено";
+  $("#simulationText").textContent="Проверьте баланс после перезагрузки, затем повторите действие.";
+  $("#simulationRewards").textContent="Награды не подтверждены.";
+  $("#simulationSetup").hidden=true;$("#simulationResults").hidden=false;
+  return;
+ }
  // Prevent a second confirmation from paying the same visible result again.
  simulationMissionId=null;
- persistProgress();
  $("#simulationSetup").hidden=true;
  $("#simulationResults").hidden=false;
  $("#simulationTitle").textContent="Поздравляем!";

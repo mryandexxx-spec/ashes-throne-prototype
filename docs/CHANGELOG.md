@@ -22,6 +22,10 @@
 | RENOPT001 — облегчённая модель Рена | #285 | `fd3c738` |
 
 
+## 2026-11-17
+
+- **`v0.3.175 · LOREACT3001`** — [PR #355](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/355), squash `dacf94ab35f3f2fb50fa7afae99aef3231966407`: Акт III лорной кампании, FS-07…FS-09, третий слой карты, расследования дороги, доступа и свидетельств. 26/26 GitHub Actions последнего PR-коммита успешны, включая Chromium/WebKit и Node/бой; исходы утверждённой прозы и шесть старых боёв не изменены. Пользователь показал экран Акта III, но прохождение новых эпизодов на физическом iPhone не подтверждено.
+
 ## 2026-11-16
 
 - **DOCS-ROADMAP-001** — актуализация планирования после `v0.3.174`: единый [ROADMAP](ROADMAP.md), новый короткий [PROJECT_STATUS](PROJECT_STATUS.md), [техническая сводка](TECHNICAL_STATUS.md), [прогресс LC](LORE_CAMPAIGN_PROGRESS.md) и архив исторических снимков. **Docs-only, версия игры не меняется.** Доставка: [PR #354](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/354), согласие владельца на документационное слияние дано 16.11.2026; точный merge-коммит доступен на странице PR.

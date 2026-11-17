@@ -11,7 +11,7 @@ const heroes=["kael","lyra","darin","medic-demo","test-area-damage"].map(id=>({i
 const copy=x=>JSON.parse(JSON.stringify(x));
 function tab(){
  const context={window:{}};
- return vm.runInNewContext(src+"\n({S:SaveCore,V:ProgressV3Core,W:ProgressWriterCore,R:RewardPolicyCore})",context);
+ return vm.runInNewContext(src+"\n({S:SaveCore,V:ProgressV3Core,W:ProgressWriterCore,R:RewardPolicyCore,P:ProgressCore})",context);
 }
 function fixtures(){
  const map=new Map();let failure=null;
@@ -63,6 +63,43 @@ test("two competing tabs: second cannot stage/save, then acquires and reloads fr
  latest.progress.currency+=4;
  assert.equal(b.S.save(latest.progress,f.provider),true);
  assert.equal(JSON.parse(f.map.get(b.V.KEY)).currency,15);
+ b.W.release();
+});
+
+test("energy charges cannot lose the other tab's debit, stale writer cannot save",async()=>{
+ const f=fixtures(),a=tab(),b=tab(),mission="black-pass-ambush";
+ const cost=a.P.missionEnergyCost(mission);
+ assert.ok(cost>0);
+ await a.W.acquire(f.manager);
+ const pa=a.S.load(heroes,f.provider).progress;
+ const stale=b.V.toRuntime(JSON.parse(f.map.get(a.V.KEY)),heroes);
+ assert.equal(a.P.spendEnergy(pa,mission,1),true);
+ assert.equal(a.S.save(pa,f.provider),true);
+ assert.equal(b.S.save(stale,f.provider),false,"non-owner cannot overwrite energy");
+ a.W.release();
+ await new Promise(resolve=>setImmediate(resolve));
+ await b.W.acquire(f.manager);
+ const pb=b.S.load(heroes,f.provider).progress;
+ assert.equal(pb.energy.value,a.P.ENERGY_MAX-cost);
+ assert.equal(b.P.spendEnergy(pb,mission,1),true);
+ assert.equal(b.S.save(pb,f.provider),true);
+ assert.equal(JSON.parse(f.map.get(b.V.KEY)).energy.value,a.P.ENERGY_MAX-2*cost);
+ b.W.release();
+});
+
+test("a receipt claimed in one tab cannot be paid again by the next owner",async()=>{
+ const f=fixtures(),a=tab(),b=tab();
+ f.map.set("persisted-proof","yes");
+ await a.W.acquire(f.manager);a.S.load(heroes,f.provider);
+ const claimA=await a.R.claim(claimArgs(a,f));
+ assert.equal(claimA.ok,true);
+ a.W.release();
+ await new Promise(resolve=>setImmediate(resolve));
+ await b.W.acquire(f.manager);
+ const claimB=await b.R.claim(claimArgs(b,f));
+ assert.equal(claimB.code,"ALREADY_CLAIMED");
+ assert.equal(JSON.parse(f.map.get(b.V.KEY)).rewardReceipts.length,1);
+ assert.equal(JSON.parse(f.map.get(b.V.KEY)).currency,37);
  b.W.release();
 });
 

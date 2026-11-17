@@ -179,7 +179,7 @@ test("NPCCHALLENGE004: NPC scores now use the original challenge save path",()=>
  assert.match(js,/ChallengeCore\.resultEarned\(challengeProgress,activeChallengeId/);
  assert.match(js,/ChallengeCore\.save\(outcome.candidate,\(\)=>window.localStorage,challengeSaveBlocked\)/);
  assert.doesNotMatch(js,/NPC-пробы T-01…T-04/);
- assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.179/);
- assert.match(html,/v0\.3\.179 · SAVA3D002/);
- assert.equal(pkg.version,"0.3.179");
+ assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.180/);
+ assert.match(html,/v0\.3\.180 · ART3D001/);
+ assert.equal(pkg.version,"0.3.180");
 });

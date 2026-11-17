@@ -15,7 +15,7 @@ let attempts=0,entered=false,launched=false,readyFrames=0;
 const far=new URLSearchParams(location.search).get("radius")==="far";
 function fail(message){
  clearInterval(watchdog);
- document.documentElement.dataset.visualStatus="error";frame.contentWindow?.ProgressWriterCore?.release?.();
+ document.documentElement.dataset.visualStatus="error";
  document.documentElement.dataset.visualError=message;
  console.error(message);
 }
@@ -53,7 +53,7 @@ const watchdog=setInterval(()=>{
   if(people<2||!indicators||indicators.childElementCount<2)return;
   if(++readyFrames<3)return;
   clearInterval(watchdog);
-  document.documentElement.dataset.visualStatus="ready";frame.contentWindow?.ProgressWriterCore?.release?.();
+  document.documentElement.dataset.visualStatus="ready";
   document.documentElement.dataset.canvasAlpha=String(scene.clearColor.a);
   document.documentElement.dataset.visibleFighters=String(people);
   document.documentElement.dataset.fighterIndicators=String(indicators.childElementCount);

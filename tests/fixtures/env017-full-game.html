@@ -51,8 +51,8 @@
    data.camera=JSON.stringify(view);
    data.environment="ENV017";data.webgl="true";data.view=far?"far":"normal";
    clearInterval(poll);
-   setTimeout(()=>{data.visualStatus="ready";frame.contentWindow?.ProgressWriterCore?.release?.();},700);
-  }catch(e){clearInterval(poll);data.visualStatus="error";frame.contentWindow?.ProgressWriterCore?.release?.();data.error=e.message;console.error(e)}
+   setTimeout(()=>{data.visualStatus="ready";},700);
+  }catch(e){clearInterval(poll);data.visualStatus="error";data.error=e.message;console.error(e)}
  },125);
 })();
 </script></body></html>

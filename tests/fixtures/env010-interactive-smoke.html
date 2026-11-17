@@ -13,7 +13,7 @@
  const frame=document.querySelector("#game");
  let tick=0,phase="entry",started=false,replayed=false,autoSeen=false,firstEngine=null;
  const status=document.documentElement.dataset;
- function fail(message){clearInterval(poll);status.visualStatus="error";status.visualError=message;console.error(message);frame.contentWindow?.ProgressWriterCore?.release?.();}
+ function fail(message){clearInterval(poll);status.visualStatus="error";status.visualError=message;console.error(message);}
  function assert(test,message){if(!test)throw Error(message);}
  const poll=setInterval(()=>{
   try{
@@ -115,7 +115,7 @@
     replayed=true;
     clearInterval(poll);
     status.replayTest="pass";
-    status.visualStatus="ready";frame.contentWindow?.ProgressWriterCore?.release?.();
+    status.visualStatus="ready";
    }
   }catch(error){fail(error.message);}
  },100);

@@ -16,7 +16,7 @@ test("CACHE002: percentage reflects actual byte counters, bounded without fake t
 });
 test("CACHE002: UI reports both characters and cache states without stealing touch",()=>{
  const html=read("index.html"),css=read("styles.css"),source=read("model-cache-client.js");
- for(const id of ["cache002-indicator","cache002-caption","cache002-ren","cache002-nada","cache002-ren-bar","cache002-nada-bar"])
+ for(const id of ["cache002-indicator","cache002-caption","cache002-ren","cache002-nada","cache002-sava","cache002-ren-bar","cache002-nada-bar","cache002-sava-bar"])
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(html,/v\d+\.\d+\.\d+ · [A-Z][A-Z0-9-]*/);
  assert.match(html,/model-cache-client\.js\?v=\d+\.\d+\.\d+/);
@@ -32,7 +32,7 @@ test("CACHE002: worker reports actual chunk bytes and cache status, scoped to mo
  const worker=read("model-cache-sw.js");
  // NADAOPT001: progress totals must equal the real GLB sizes.
  const size=f=>fs.statSync(path.join(__dirname,"..",f)).size;
- assert.ok(worker.includes("const MODEL_BYTES=["+size("assets/ren-meshy-mixamo-animated.glb")+","+size("dev/assets/models/nada-mobile-animated.glb")+","+size("dev/assets/models/liora-mobile-animated.glb")+"]"));
+ assert.ok(worker.includes("const MODEL_BYTES=["+size("assets/ren-meshy-mixamo-animated.glb")+","+size("dev/assets/models/nada-mobile-animated.glb")+","+size("dev/assets/models/liora-mobile-animated.glb")+","+JSON.parse(read("dev/assets/models/manifest.json")).assets.find(a=>a.id==="sava").bytes+"]"));
  assert.match(worker,/const \{done,value\}=await reader\.read\(\)/);
  assert.match(worker,/loaded\+=value\.byteLength/);
  assert.match(worker,/CACHE002_ASSET/);

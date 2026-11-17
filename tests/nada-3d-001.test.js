@@ -53,9 +53,9 @@ test("NADA3D001: game and card load the same asset without new engine in combat"
  assert.match(game,/nadaGlbRuntime=NadaGlbRuntime\.create\(BABYLON,scene,meshes\.nada/);
  assert.match(game,/if\(h\.id==="nada"&&nadaGlbRuntime\)nadaGlbRuntime\.update\(activity\)/);
  assert.match(game,/if\(nadaGlbRuntime\)\{nadaGlbRuntime\.dispose\(\);nadaGlbRuntime=null;\}/);
- assert.match(card,/isNada\?NadaGlbRuntime\.assetUrl\(\):RenGlbRuntime\.ASSET_URL/);
+ assert.match(card,/isNada\?NadaGlbRuntime\.assetUrl\(\):isSava\?SavaGlbRuntime\.assetUrl\(\):RenGlbRuntime\.ASSET_URL/);
  assert.match(card,/isNada\?groups\.find\(g=>g\.name==="Idle_11"\)/);
- assert.match(card,/if\(isNada\|\|isLiora\)throw Error\("В GLB героя отсутствует анимация ожидания"\)/);
+ assert.match(card,/if\(isNada\|\|isLiora\|\|isSava\)throw Error\("В GLB героя отсутствует анимация ожидания"\)/);
  assert.match(game,/assets\/nada-portrait-ui\.webp\?v=2/);
  assert.match(game,/const showRenPortrait=hero\.id==="ren"/);
  assert.equal((game.match(/new BABYLON\.Engine/g)||[]).length,1,

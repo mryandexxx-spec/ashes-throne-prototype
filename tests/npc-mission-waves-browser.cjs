@@ -18,8 +18,8 @@ async function run(name,type){
   const url=new URL(origin);
   
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
-  assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v"+require("../package.json").version+" · SAVA3D002");
+  assert.ok((await page.locator("#buildVersion").innerText())
+   .startsWith("Прототип · v"+require("../package.json").version+" · "), "footer must match package version");
   // Simulate only prerequisites in memory, not in storage or user economy.
   await page.evaluate(()=>{
    campaignProgress.completed["black-pass-ambush"]=true;

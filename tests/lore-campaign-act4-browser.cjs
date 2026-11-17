@@ -113,6 +113,8 @@ async function check(name,browserType,width,height){
   }
   await page.reload({waitUntil:"load"});
   await enter(page);
+  // With Act V unlocked, switch back to the Act IV layer explicitly.
+  await page.locator('[data-lore-layer="two-banks"]').click();
   await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-12"]').click();
   assert.match(await page.locator(".lore-node-detail").innerText(),/Пройдено/);
   const current=await page.evaluate(()=>({

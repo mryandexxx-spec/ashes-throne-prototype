@@ -350,9 +350,13 @@ const LoreCampaignAct5=(()=>{
   graph.nodes.push(n);
  }
  pack.scenes.push(...scenes);
- if(graph.nodes.length!==15||pack.scenes.length!==15||
-    !Data.catalogIsValid(graph)||!Scripts.valid(pack,graph))
-  throw Error("LORE_ACT5_INVALID_GRAPH_OR_SCRIPT");
+ const graphValid=Data.catalogIsValid(graph);
+ const scriptsValid=Scripts.valid(pack,graph);
+ if(graph.nodes.length!==15||pack.scenes.length!==15||!graphValid||!scriptsValid){
+  const diagnostic=scenes.map(x=>x.id+":"+Scripts.valid({scenes:[x]},graph)).join(",");
+  throw Error("LORE_ACT5_INVALID_GRAPH_OR_SCRIPT graph="+graphValid+
+   " scripts="+scriptsValid+" "+diagnostic);
+ }
  const deepFreeze=x=>{if(x&&typeof x==="object"&&!Object.isFrozen(x)){
   Object.values(x).forEach(deepFreeze);Object.freeze(x);
  }return x;};

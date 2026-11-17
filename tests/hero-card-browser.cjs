@@ -76,14 +76,14 @@ const {chromium,webkit}=require('playwright');
   await page.evaluate(()=>{selectedHeroId='ren';showScreen('heroDetail');});
   await page.waitForFunction(()=>document.querySelector('#detailHeroStage').classList.contains('has-ren-3d'),null,{timeout:45000});
   await fits('re-entry');
-  // ARTSAVA001: both approved portraits must load in the *real* Chromium/WebKit
-  // hero dossier without instantiating either a new Babylon engine or a GLB.
+  // ARTSAVA001: Art remains portrait-only; Sava now loads her own GLB in the dossier.
   for(const id of ['art','sava']){
    await page.evaluate(heroId=>{selectedHeroId=heroId;showScreen('heroDetail');},id);
    await page.waitForFunction(heroId=>{
     const img=document.getElementById('detailRenPortrait');
     return !!img&&img.complete&&img.naturalWidth>0&&img.src.includes(heroId+'-portrait-ui.webp');
    },id,{timeout:15000});
+   if(id==='sava')await page.waitForFunction(()=>document.getElementById('detailHeroStage').classList.contains('has-ren-3d'),null,{timeout:45000});
    const info=await page.evaluate(()=>({
     name:document.getElementById('detailName').textContent,
     image:document.getElementById('detailRenPortrait').getAttribute('src'),
@@ -95,9 +95,9 @@ const {chromium,webkit}=require('playwright');
    }));
    assert.equal(info.name,id==='art'?'Арт':'Сава');
    assert.equal(info.image,'assets/'+id+'-portrait-ui.webp?v=2');
-   assert.equal(info.imageVisible,true);
+   assert.equal(info.imageVisible,id==='art');
    assert.equal(info.stageHasPortrait,true);
-   assert.equal(info.viewerHidden,true,'new GLB must not load');
+   assert.equal(info.viewerHidden,id==='art','only Art remains portrait-only');
    assert.ok(info.stats.includes('Здоровье'));
    assert.equal(info.gear,6);
    await fits('ARTSAVA001 '+id);

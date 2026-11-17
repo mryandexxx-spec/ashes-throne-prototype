@@ -92,7 +92,7 @@ test("ARTSAVA001 refuses corrupted old records and denied backup writes without 
  assert.equal(V.stage(heroes,()=>denied).status,"blocked");
  assert.equal(local.getItem(V.KEY),raw);
 });
-test("ARTSAVA001 boots combat with their built-in non-GLB actions and battle placeholders",()=>{
+test("ARTSAVA001 boots combat with unchanged actions and fallback placeholders",()=>{
  const a=Bridge.apply({id:"art",name:"Арт",side:"ally"}, {level:1,stars:1},Profiles.art,Stats);
  const s=Bridge.apply({id:"sava",name:"Сава",side:"ally"}, {level:1,stars:1},Profiles.sava,Stats);
  const dummy={id:"enemy",name:"Манекен",side:"enemy",hp:300,atk:5,speed:80};
@@ -105,9 +105,9 @@ test("ARTSAVA001 boots combat with their built-in non-GLB actions and battle pla
  assert.match(read("game.js"),/CreateCapsule\("body_"/);
  assert.match(read("game.js"),/h\.id==="art"\?new BABYLON\.Color3/);
  assert.match(read("game.js"),/h\.id==="sava"\?new BABYLON\.Color3/);
- assert.doesNotMatch(read("dev\/src\/assets\/models.js"),/art-mobile|sava-mobile/);
+ assert.doesNotMatch(read("dev\/src\/assets\/models.js"),/art-mobile/); assert.match(read("dev\/src\/assets\/models.js"),/sava-mobile/);
 });
-test("ARTSAVA001 connects portraits to roster, dossier and biography with no GLB card loader",()=>{
+test("ARTSAVA001 preserves portraits and biographies with optional Sava GLB",()=>{
  const game=read("game.js"),card=read("ren-card-3d.js"),css=read("styles.css");
  for(const name of ["art","sava"]){
   assert.ok(game.includes('id:"'+name+'",name:'));

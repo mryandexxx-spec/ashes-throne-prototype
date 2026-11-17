@@ -26,8 +26,12 @@ const GearUX004=(()=>{
  function cancelReturn(){returnContext=null;}
  function openSlot(){active=true;mode="item";materialId=null;}
  function restore(){active=true;mode="item";materialId=null;}
- function showItem(){mode="item";materialId=null;refresh();}
- function showSources(id){materialId=id;mode="sources";refresh();}
+ function focusPanelHeading(){
+  const heading=get("gearUxLeft")?.querySelector("h3");
+  if(heading){heading.tabIndex=-1;heading.focus();}
+ }
+ function showItem(){mode="item";materialId=null;refresh();focusPanelHeading();}
+ function showSources(id){materialId=id;mode="sources";refresh();focusPanelHeading();}
  function hasReturnContext(){return !!returnContext;}
  function rememberMission(missionId){
   if(!last||!active)return false;
@@ -39,7 +43,9 @@ const GearUX004=(()=>{
   const c=returnContext;
   returnContext=null;
   restore();
-  return openHeroDetail(c.heroId,c.slotIndex);
+  const opened=openHeroDetail(c.heroId,c.slotIndex);
+  if(opened)get("gearSlots")?.querySelector('[data-gear-slot="'+c.slotIndex+'"]')?.focus();
+  return opened;
  }
  function sourceStatus(source){
   if(source.access==="unknown")return "Доступность не определена";
@@ -112,10 +118,13 @@ const GearUX004=(()=>{
   if(!sources.length)list.append(node("p","gear-ux-warning","Для материала пока нет источников в доступном каталоге."));
   for(const source of sources){
    const card=node("div","gear-ux-source");
+   const lacksEnergy=(source.access==="repeat"||source.access==="first-clear")&&!source.canStartManual;
+   const energyKnown=Number.isSafeInteger(last.progress.energy?.value);
+   const warning=lacksEnergy?(energyKnown?" · не хватает энергии":" · запас энергии не определён"):"";
    card.append(node("strong","",source.title),
     node("small","", "За победу: "+source.quantity+" × "+m.label+
      " · "+source.currencyPerVictory+" валюты"),
-    node("small","",sourceStatus(source)));
+    node("small","",sourceStatus(source)+warning));
    const actions=node("div","gear-ux-source-actions");
    if(source.access==="first-clear"||source.access==="repeat"){
     actions.append(btn(source.access==="first-clear"?"В бой · бесплатно":"В бой · "+source.energyCost+" ⚡",
@@ -174,12 +183,13 @@ const GearUX004=(()=>{
    if(state?.mode!=="itemized"){HeroCardUI.open("heroGearDialog");return;}
    if(active)reset();else openSlot();
    renderHeroDetail();
+   if(!active)get("gearFocusToggle")?.focus();
   });
   document.addEventListener("keydown",event=>{
    if(event.key!=="Escape"||!active||!get("heroDetail")?.classList.contains("active")||
       document.querySelector("dialog[open]"))return;
    event.preventDefault();
-   if(mode==="sources")showItem();else{reset();renderHeroDetail();}
+   if(mode==="sources")showItem();else{reset();renderHeroDetail();get("gearFocusToggle")?.focus();}
   });
  }
  return Object.freeze({reset,cancelReturn,openSlot,restore,render,refresh,hasReturnContext,

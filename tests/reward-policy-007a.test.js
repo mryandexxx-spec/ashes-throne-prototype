@@ -160,7 +160,7 @@ test("Empty energy, overflow and malformed amounts reject before any write",asyn
  const raw=m.map.get(V.KEY);
  for(const e of [
   {source:source("repeat",{energyCost:241}),occurrenceId:"run-1"},
-  {source:source("first-clear",{reward:{currency:Number.MAX_SAFE_INTEGER,accountXp:10,materials:{}}})},
+  {source:source("first-clear",{reward:{currency:Number.MAX_SAFE_INTEGER+1,accountXp:10,materials:{}}})},
   {source:source("repeat",{reward:{currency:-1,accountXp:0,materials:{}}})}
  ]){
   const output=await R.claim(args(m,e));
@@ -204,19 +204,24 @@ test("Challenge 1/2/3 stars, loss and persisted operation run proof are adapter 
  assert.equal((await R.claim(challengeArgs)).ok,true);
  assert.equal((await R.claim(challengeArgs)).code,"ALREADY_CLAIMED");
  const opsSource=source("repeat",{sourceId:"ops-001"});
- const entry={runId:"run-ops-1",variantId:"quiet",outcome:"defeat",
+ const entry={runId:"run-ops-1",variantId:"A",outcome:"defeat",
   coverPreserved:false,ledgerSecured:false};
- // Use a valid production variant ID from the real catalog.
- const variant=Object.keys(O.fresh()).length?O.start("quiet","run-ops-1"):null;
- assert.ok(O.validProgress(O.fresh()));
+ assert.equal(O.save({active:null,history:[entry]},m.provider),true);
  const opProof=({storage,occurrenceId})=>{
   const loaded=O.load(()=>storage);
   return !loaded.blocked&&loaded.progress.history.some(x=>
    x.runId===occurrenceId&&x.outcome==="success");
  };
- assert.equal((await R.claim(args(m,{source:opsSource,occurrenceId:"run-ops-1",
-  authorize:opProof}))).code,"PROOF_NOT_PERSISTED");
- assert.equal(saved(m).rewardReceipts.length,1);
+ const opArgs=args(m,{source:opsSource,occurrenceId:"run-ops-1",authorize:opProof});
+ assert.equal((await R.claim(opArgs)).code,"PROOF_NOT_PERSISTED");
+ entry.outcome="success";
+ assert.equal(O.save({active:null,history:[entry]},m.provider),true);
+ assert.equal((await R.claim(opArgs)).ok,true);
+ // OPS intentionally keeps only 20 recent runs; wallet receipts must outlive them.
+ const rotated=Array.from({length:20},(_,i)=>({...entry,runId:"new-run-"+i}));
+ assert.equal(O.save({active:null,history:rotated},m.provider),true);
+ assert.equal((await R.claim(opArgs)).code,"ALREADY_CLAIMED");
+ assert.equal(saved(m).rewardReceipts.length,2);
 });
 test("Old v2 and older v3 save round trips keep resources; receipts are opt-in",async()=>{
  const m=memory(),old=P.createProgress(heroes);

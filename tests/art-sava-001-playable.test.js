@@ -105,7 +105,7 @@ test("ARTSAVA001 boots combat with unchanged actions and fallback placeholders",
  assert.match(read("game.js"),/CreateCapsule\("body_"/);
  assert.match(read("game.js"),/h\.id==="art"\?new BABYLON\.Color3/);
  assert.match(read("game.js"),/h\.id==="sava"\?new BABYLON\.Color3/);
- assert.doesNotMatch(read("dev\/src\/assets\/models.js"),/art-mobile/); assert.match(read("dev\/src\/assets\/models.js"),/sava-mobile/);
+ assert.match(read("dev\/src\/assets\/models.js"),/art-mobile/); assert.match(read("dev\/src\/assets\/models.js"),/sava-mobile/);
 });
 test("ARTSAVA001 preserves portraits and biographies with optional Sava GLB",()=>{
  const game=read("game.js"),card=read("ren-card-3d.js"),css=read("styles.css");

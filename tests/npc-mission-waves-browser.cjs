@@ -19,7 +19,7 @@ async function run(name,type){
   
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v"+require("../package.json").version+" · LOREACT4001");
+   "Прототип · v"+require("../package.json").version+" · LOREACT5001");
   // Simulate only prerequisites in memory, not in storage or user economy.
   await page.evaluate(()=>{
    campaignProgress.completed["black-pass-ambush"]=true;

@@ -1,5 +1,6 @@
-// LOREACT4001: published runtime loads the latest validated graph (12 nodes).
-const ActiveLoreCampaign=typeof LoreCampaignAct4!=="undefined"?LoreCampaignAct4:
+// LOREACT5001: validated 15-node final arc; keep prior versions for fixtures.
+const ActiveLoreCampaign=typeof LoreCampaignAct5!=="undefined"?LoreCampaignAct5:
+ typeof LoreCampaignAct4!=="undefined"?LoreCampaignAct4:
  typeof LoreCampaignAct3!=="undefined"?LoreCampaignAct3:
  typeof LoreCampaignTrials!=="undefined"?LoreCampaignTrials:null;
 const HEROES = [

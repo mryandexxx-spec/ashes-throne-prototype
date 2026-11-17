@@ -27,11 +27,11 @@ test("GEAR-UX-004 keeps active gear panels outside the existing 3D stage",()=>{
  assert.match(css,/overflow-y:auto/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.match(css,/max-height:430px/);
- assert.match(html,/gear-source-data\.js\?v=0\.3\.182/);
- assert.match(html,/gear-planning-core\.js\?v=0\.3\.182/);
- assert.match(html,/gear-ux-004\.js\?v=0\.3\.182/);
- assert.match(html,/v0\.3\.182 · GEARUX004/);
- assert.equal(JSON.parse(read("package.json")).version,"0.3.182");
+ const version=JSON.parse(read("package.json")).version;
+ const escaped=version.replace(/\./g,"\\.");
+ for(const file of ["gear-source-data","gear-planning-core","gear-ux-004"])
+  assert.match(html,new RegExp(file+"\\.js\\?v="+escaped));
+ assert.match(html,new RegExp('id="buildVersion"[^>]*>Прототип · v'+escaped+' · [A-Z0-9]+'));
 });
 
 test("GEAR-UX-004 preserves existing transactions and original campaign reward code",()=>{

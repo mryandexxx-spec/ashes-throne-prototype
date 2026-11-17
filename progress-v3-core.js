@@ -9,6 +9,25 @@ const ProgressV3Core=(()=>{
  const TEST_CLASSES=Object.freeze({
   kael:"tank",lyra:"ranged",darin:"melee","medic-demo":"support","test-area-damage":"mage",ren:"melee",nada:"support",liora:"tank",art:"tank",sava:"support"
  });
+ const MAX_REWARD_RECEIPTS=10000;
+ const RECEIPT_ID=/^(first-clear|best-stars|repeat):([a-z0-9][a-z0-9._-]{0,79}):([a-z0-9][a-z0-9._-]{0,79})$/;
+ const validDay=day=>typeof day==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(day)&&
+  !Number.isNaN(Date.parse(day+"T00:00:00Z"))&&
+  new Date(day+"T00:00:00Z").toISOString().slice(0,10)===day;
+ function validReceipts(rows){
+  if(!Array.isArray(rows)||rows.length>MAX_REWARD_RECEIPTS)return false;
+  const ids=new Set();
+  for(const row of rows){
+   if(!row||typeof row!=="object"||Array.isArray(row)||
+      Object.keys(row).length!==4||!["id","sourceId","day","count"].every(k=>own(row,k))||
+      typeof row.id!=="string"||!RECEIPT_ID.test(row.id)||
+      row.sourceId!==RECEIPT_ID.exec(row.id)[2]||
+      !validDay(row.day)||!Number.isSafeInteger(row.count)||row.count<1||row.count>100||
+      (row.id.split(":")[0]!=="repeat"&&row.count!==1)||ids.has(row.id))return false;
+   ids.add(row.id);
+  }
+  return true;
+ }
  const own=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
  const object=x=>!!x&&typeof x==="object"&&!Array.isArray(x);
  const nonneg=x=>Number.isSafeInteger(x)&&x>=0;
@@ -64,6 +83,7 @@ const ProgressV3Core=(()=>{
      !nonneg(data.energy.updatedAt)||!Array.isArray(data.claimedMissions)||
      !object(data.heroes)||!object(data.materials)||!object(data.migration))
    return null;
+  if(data.rewardReceipts!==undefined&&!validReceipts(data.rewardReceipts))return null;
   if(data.migration.strategy!=="clean-heroes-v1"||
      (data.migration.sourceVersion!==2&&data.migration.sourceVersion!==null))return null;
   const known=Object.keys(ProgressCore.FIRST_CLEAR_REWARDS);
@@ -177,6 +197,7 @@ const ProgressV3Core=(()=>{
      !nonneg(data.energy.updatedAt)||!Array.isArray(data.claimedMissions)||
      !object(data.heroes)||!object(data.materials)||!object(data.migration)||
      !nonneg(data.revision??0))return null;
+  if(data.rewardReceipts!==undefined&&!validReceipts(data.rewardReceipts))return null;
   if(data.migration.strategy!=="clean-heroes-v1"||
      (data.migration.sourceVersion!==2&&data.migration.sourceVersion!==null))return null;
   const known=Object.keys(ProgressCore.FIRST_CLEAR_REWARDS);
@@ -244,6 +265,7 @@ const ProgressV3Core=(()=>{
    gearMaterials:source.legacyC,
    energy:source.energy,claimedMissions:source.claimedMissions,
    materials:source.materials,
+   ...(source.rewardReceipts!==undefined?{rewardReceipts:source.rewardReceipts}:{}),
    daily:source.daily,
    login:source.login,
    unlockedHeroes:source.unlockedHeroes,
@@ -284,6 +306,7 @@ const ProgressV3Core=(()=>{
    accountXp:p.accountXp,currency:p.currency,legacyC:p.gearMaterials,
    energy:p.energy,claimedMissions:p.claimedMissions,
    materials:p.materials,
+   ...(p.rewardReceipts!==undefined?{rewardReceipts:p.rewardReceipts}:{}),
    ...(p.daily!==undefined?{daily:p.daily}:{}),
    ...(p.login!==undefined?{login:p.login}:{}),
    ...(p.unlockedHeroes!==undefined?{unlockedHeroes:p.unlockedHeroes}:{}),
@@ -322,6 +345,6 @@ const ProgressV3Core=(()=>{
    p.saveRevision=candidate.revision;return true;
   }catch(_){return false;}
  }
- return Object.freeze({KEY,SOURCE_KEY,VERSION,SLOTS,MATERIALS,TEST_CLASSES,fromV2,fresh,validate,validateActive,toRuntime,fromRuntime,persist,stage});
+ return Object.freeze({KEY,SOURCE_KEY,VERSION,SLOTS,MATERIALS,TEST_CLASSES,MAX_REWARD_RECEIPTS,validReceipts,fromV2,fresh,validate,validateActive,toRuntime,fromRuntime,persist,stage});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=ProgressV3Core;

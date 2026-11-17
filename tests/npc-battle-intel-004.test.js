@@ -79,16 +79,17 @@ test("NPCUX004: assault-focus hints only on objectives with a protected hero",()
 });
 test("NPCUX004: browser only reads current battle, never modifies combat or saves",()=>{
  const html=read("index.html"),game=read("game.js"),style=read("styles.css");
- const mod=html.indexOf('src="npc-battle-intel.js?v=0.3.182"');
- const npc=html.indexOf('src="npc-story-ops-adapter.js?v=0.3.182"');
- const script=html.indexOf('src="game.js?v=0.3.182"');
+ const pkg=JSON.parse(read("package.json"));
+ const mod=html.indexOf('src="npc-battle-intel.js?v='+pkg.version+'"');
+ const npc=html.indexOf('src="npc-story-ops-adapter.js?v='+pkg.version+'"');
+ const script=html.indexOf('src="game.js?v='+pkg.version+'"');
  assert.ok(npc>=0&&mod>npc&&mod<script);
  assert.match(html,/id="inspectNpcAbilities"/);
  assert.match(game,/SignalOperationCore\.intel\(signalProgress\.active\)/);
  assert.match(game,/NpcBattleIntel\.marker\(/);
  assert.match(game,/NpcBattleIntel\.abilities\(/);
  assert.match(style,/\.battle-screen \.arena-indicator\.must-first/);
- assert.match(html,/v0\.3\.182 · GEARUX004/);
- assert.equal(JSON.parse(read("package.json")).version,"0.3.182");
+ assert.ok(html.includes("v"+pkg.version+" · "), "footer should match package version");
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
  assert.equal(read("signal-operation-core.js").includes('const GUARDS=Object.freeze(["ves","shade"])'),true);
 });

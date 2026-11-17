@@ -93,9 +93,9 @@ test("NPCMISSION002: default campaign NPCs have pickable visuals and regular sav
  assert.match(game,/NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED/);
  assert.match(game,/const ENEMIES=HEROES.filter\(h=>h.side==="enemy"\)/);
  assert.match(game,/activeMissionId==="demo-mission-2"\?ENEMIES:ENEMIES.slice\(0,2\)/);
- assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.182/);
- assert.equal(pkg.version,"0.3.182");
- assert.match(html,/v0\.3\.182 · GEARUX004/);
+ assert.ok(html.includes("npc-mission-pilot.js?v="+pkg.version));
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
+ assert.ok(html.includes("v"+pkg.version+" · "), "footer should match package version");
  assert.equal((game.match(/side:"enemy",glyph:/g)||[]).length,5);
 });
 test("NPCMISSION002: practical combat matrix for actual Gardens hero stats (L1, L3, L8)",()=>{

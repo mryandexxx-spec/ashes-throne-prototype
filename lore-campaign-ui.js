@@ -461,7 +461,7 @@ const LoreCampaignUI=(()=>{
   const status=nodeStatus(node);
   const known=status.code!=="locked";
   const deps=node.prerequisites.length?
-   '<p class="lore-detail-prereq">'+(known?'Предыдущие события учтены.':'Сначала завершите предыдущий узел.')+'</p>':
+   '<p class="lore-detail-prereq">'+(known?'Предыдущие события учтены.':escapeHtml(status.reason))+'</p>':
    '<p class="lore-detail-prereq">Начало истории.</p>';
   const type={scene:"Сцена",investigation:"Исследование",task:"Задание",
    choice:"Выбор",battle:"Испытание",finale:"Финал"}[node.kind]||"Узел";
@@ -481,7 +481,7 @@ const LoreCampaignUI=(()=>{
        (sceneRuntime.hasCheckpoint(node.id)?"Продолжить":["completed","battle-pending"].includes(status.code)?"Перепройти":"Начать сцену")+
     '</button>':
     '<button type="button" class="primary" disabled aria-disabled="true">'+
-      (sceneRuntime?.storageStatus()==="corrupt"?"Сохранение повреждено":"Сюжетная сцена готовится")+'</button>')+
+      (sceneRuntime?.storageStatus()==="corrupt"?"Сохранение повреждено":status.code==="locked"?"Узел закрыт":"Сюжетная сцена готовится")+'</button>')+
    '<small>'+(node.requiredBattleId?
     'Для завершения узла нужна победа в бою. Бой — игровая адаптация, не событие литературного канона.':
     'Сюжетное прохождение без затрат энергии и наград.')+'</small></div>'+

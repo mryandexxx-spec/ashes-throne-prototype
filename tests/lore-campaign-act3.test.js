@@ -142,8 +142,8 @@ test("LOREACT3001: UI selects the third act and build has stable script ordering
  assert.equal(UI.changeLayer("city-response"),true);
  assert.equal(UI.changeLayer("city-route"),true);
  const html=read("index.html"),game=read("game.js"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.179");
- assert.match(html,/v0\.3\.179 · SAVA3D002/);
+ assert.equal(pkg.version,"0.3.180");
+ assert.match(html,/v0\.3\.180 · ART3D001/);
  const files=["lore-campaign-pilot.js","lore-campaign-act2.js",
   "lore-campaign-trials.js","lore-campaign-act3.js","game.js"];
  let last=-1;

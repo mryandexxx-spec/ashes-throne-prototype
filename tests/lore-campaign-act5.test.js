@@ -160,6 +160,9 @@ test("LOREACT5001: finale does not invent Ela death, Tav reunion or false knowle
  assert.match(beat(contact,"fs14-vanish").text,/никто не видел падения или смерти/);
  assert.match(beat(contact,"fs14-closure").comparisons[0].text,/Нет наблюдаемого доказательства смерти Элы/);
  assert.match(beat(finale,"fs15-docs").text,/шаг он сделал сам/);
+ assert.equal(beat(finale,"fs15-docs").nextBeatId,"fs15-return");
+ assert.equal(beat(finale,"fs15-return").nextBeatId,"fs15-doc-compare");
+ assert.equal(beat(finale,"fs15-doc-compare").nextBeatId,"fs15-doubt");
  assert.match(beat(finale,"fs15-public-end").text,/Не знаю/);
  assert.match(beat(finale,"fs15-reply").text,/через пять недель/);
  assert.match(beat(finale,"fs15-reply").text,/Мена умерла/);

@@ -15,15 +15,16 @@ test("CACHE001: background prefetch stays off on metered networks and hidden tab
  assert.equal(client.mayWarm({connection:{effectiveType:"4g"},visible:true}),true);
  assert.equal(client.mayWarm({visible:true}),true);
 });
-test("CACHE001: only the four current, versioned GLB URLs can be stored",()=>{
+test("CACHE001: only the five current, versioned GLB URLs can be stored",()=>{
  const worker=read("model-cache-sw.js"),html=read("index.html");
  assert.match(worker,/assets\/ren-meshy-mixamo-animated\.glb/);
  assert.match(worker,/dev\/assets\/models\/nada-mobile-animated\.glb/);
  assert.match(worker,/dev\/assets\/models\/liora-mobile-animated\.glb/);
  assert.match(worker,/dev\/assets\/models\/sava-mobile-animated\.glb/);
+ assert.match(worker,/dev\/assets\/models\/art-mobile-animated\.glb/);
  // RENOPT001: the cache name must follow the actual GLB bytes, otherwise devices keep a stale model.
  const blob=f=>{const b=fs.readFileSync(path.join(__dirname,"..",f));return require("node:crypto").createHash("sha1").update(Buffer.concat([Buffer.from("blob "+b.length+"\0"),b])).digest("hex").slice(0,8);};
- assert.match(worker,new RegExp('CACHE_PREFIX\\+"ren-'+blob("assets/ren-meshy-mixamo-animated.glb")+"_nada-"+blob("dev/assets/models/nada-mobile-animated.glb")+"_liora-"+blob("dev/assets/models/liora-mobile-animated.glb")+'_sava-'+JSON.parse(read("dev/assets/models/manifest.json")).assets.find(a=>a.id==="sava").sha256.slice(0,8)+'_v1"'));
+ assert.match(worker,new RegExp('CACHE_PREFIX\\+"ren-'+blob("assets/ren-meshy-mixamo-animated.glb")+"_nada-"+blob("dev/assets/models/nada-mobile-animated.glb")+"_liora-"+blob("dev/assets/models/liora-mobile-animated.glb")+'_sava-'+JSON.parse(read("dev/assets/models/manifest.json")).assets.find(a=>a.id==="sava").sha256.slice(0,8)+'_art-'+JSON.parse(read("dev/assets/models/manifest.json")).assets.find(a=>a.id==="art").sha256.slice(0,8)+'_v1"'));
  assert.match(worker,/event\.request\.method!=="GET"/);
  assert.match(worker,/event\.request\.headers\.has\("range"\)/);
  assert.match(worker,/cache\.put\(url,response\.clone\(\)\)/);

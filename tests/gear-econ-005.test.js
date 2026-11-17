@@ -1,7 +1,11 @@
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const M=require("../scripts/gear-econ-005.cjs");
-const GearData=require("../gear-data.js"),ProgressCore=require("../progress-core.js");
+const GearData=require("../gear-data.js");
+const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
+const ProgressCore=vm.runInNewContext(
+ fs.readFileSync(path.join(__dirname,"../progress-core.js"),"utf8")+"\nProgressCore",
+ {GearData});
 test("GEAR-ECON-005 reads current source data without mutation",()=>{
  const before=JSON.stringify(ProgressCore.MISSION_GEAR_FARM);
  const src=M.sources("current"),a=M.firstClear(src);

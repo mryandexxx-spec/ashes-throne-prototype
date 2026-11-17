@@ -1,6 +1,12 @@
 "use strict";
 /* GEAR-ECON-005: offline, read-only exact integer optimizer. No game mutations. */
-const GearData=require("../gear-data.js"),ProgressCore=require("../progress-core.js");
+const GearData=require("../gear-data.js");
+const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
+// ProgressCore is a browser-global IIFE, not CommonJS; read its real source
+// in a sandbox as the project's existing Node tests do.
+const ProgressCore=vm.runInNewContext(
+ fs.readFileSync(path.join(__dirname,"../progress-core.js"),"utf8")+"\nProgressCore",
+ {GearData});
 const MATERIALS=GearData.MATERIALS;
 const KEYS=[...MATERIALS,"currency"];
 const MISSIONS=Object.keys(ProgressCore.MISSION_GEAR_FARM);

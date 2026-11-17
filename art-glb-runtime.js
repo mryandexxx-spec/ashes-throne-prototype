@@ -135,7 +135,7 @@ const ArtGlbRuntime=(()=>{
    instance=value;report("ready","3D Арт загружен");return true;
   }).catch(error=>{
    tracker?.done();
-   report("error","3D Арт недоступна — показана простая модель");
+   report("error","3D Арт недоступен — показана простая модель");
    if(!disposed)console.warn("ART3D001: combat fallback",error);
    return false;
   });

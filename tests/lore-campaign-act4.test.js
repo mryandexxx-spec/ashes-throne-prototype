@@ -165,11 +165,11 @@ test("LOREACT4001: map selects Act IV and locked labels report reality",()=>{
  assert.equal(UI.changeLayer("city-route"),true);
  assert.equal(UI.changeLayer("two-banks"),true);
  const html=read("index.html"),game=read("game.js"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.176");
- assert.match(html,/v0\.3\.176 · LOREACT4001/);
- assert.match(game,/const ActiveLoreCampaign=typeof LoreCampaignAct4/);
+ assert.equal(pkg.version,"0.3.177");
+ assert.match(html,/v0\.3\.177 · LOREACT5001/);
+ assert.match(game,/const ActiveLoreCampaign=typeof LoreCampaignAct5/);
  const files=["lore-campaign-pilot.js","lore-campaign-act2.js",
-  "lore-campaign-trials.js","lore-campaign-act3.js","lore-campaign-act4.js","game.js"];
+  "lore-campaign-trials.js","lore-campaign-act3.js","lore-campaign-act4.js","lore-campaign-act5.js","game.js"];
  let last=-1;
  for(const name of files){
   const pos=html.indexOf('src="'+name+'?v='+pkg.version+'"');

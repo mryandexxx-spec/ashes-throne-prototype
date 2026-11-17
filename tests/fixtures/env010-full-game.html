@@ -37,12 +37,12 @@ const watchdog=setInterval(()=>{
      doc.documentElement.dataset.env010Rock==="ready"){
    clearInterval(watchdog);
    setTimeout(()=>{
-    document.documentElement.dataset.visualStatus="ready";
+    document.documentElement.dataset.visualStatus="ready";frame.contentWindow?.ProgressWriterCore?.release?.();
     document.documentElement.dataset.canvasWidth=String(canvas.width);
     document.documentElement.dataset.fighterIndicators=String(controls.childElementCount);
    },700);
   }
- }catch(e){clearInterval(watchdog);document.documentElement.dataset.visualStatus="error";
+ }catch(e){clearInterval(watchdog);document.documentElement.dataset.visualStatus="error";frame.contentWindow?.ProgressWriterCore?.release?.();
   document.documentElement.dataset.visualError=e.message;console.error(e);}
 },125);
 </script></body></html>

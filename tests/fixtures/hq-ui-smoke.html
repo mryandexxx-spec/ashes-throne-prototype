@@ -4,7 +4,7 @@
 <body data-hq-status="loading"><iframe id="game" src="../../index.html" title="Штаб"></iframe>
 <script>
 const frame=document.getElementById("game");
-function error(message){document.body.dataset.hqStatus="error";document.body.dataset.hqError=String(message).slice(0,200)}
+function error(message){document.body.dataset.hqStatus="error";document.body.dataset.hqError=String(message).slice(0,200);frame.contentWindow?.ProgressWriterCore?.release?.();}
 frame.addEventListener("load",()=>{
  const win=frame.contentWindow;
  if(typeof win.showScreen==="function")void run();
@@ -85,7 +85,7 @@ async function run(){
     home.querySelector(".hq-station-"+preview).classList.add("is-activating");
    }
   }
-  document.body.dataset.hqStatus="pass";
+  document.body.dataset.hqStatus="pass";frame.contentWindow?.ProgressWriterCore?.release?.();
  }catch(e){error(e&&e.message||e)}
 }
 setTimeout(()=>{if(document.body.dataset.hqStatus==="loading")error("Game load timed out")},18000);

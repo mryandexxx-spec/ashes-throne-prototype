@@ -4,7 +4,7 @@ const HeroCardUI=(()=>{
  let returnFocus=null;
  const get=id=>document.getElementById(id);
  const build=get("buildVersion");
- if(build)build.dataset.shortBuild=(build.textContent.match(/v\d+\.\d+\.\d+/)?.[0]||"")+" · HEROCARD001";
+ if(build)build.dataset.shortBuild=(build.textContent.match(/v\d+\.\d+\.\d+/)?.[0]||"")+" · GEARUX004";
  function open(id){
   const dialog=get(id);
   if(!dialog||dialog.open)return;

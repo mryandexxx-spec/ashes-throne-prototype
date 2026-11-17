@@ -253,10 +253,10 @@ test("007 balanced encounters: tactical support changes stars without forcing on
 });
 test("007: approved objectives persist through the existing v1 schema",()=>{
  const game=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.175");
- assert.match(html,/v0\.3\.175 · LOREACT3001/);
- assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.175/);
- assert.match(html,/game\.js\?v=0\.3\.175/);
+ assert.equal(pkg.version,"0.3.176");
+ assert.match(html,/v0\.3\.176 · LOREACT4001/);
+ assert.match(html,/npc-challenge-pilot\.js\?v=0\.3\.176/);
+ assert.match(html,/game\.js\?v=0\.3\.176/);
  assert.match(game,/const NPC_CHALLENGE_PILOT_ENABLED=true;/);
  assert.match(game,/NpcChallengePilot\.capture\(activeChallengeId,challengeTracker/);
  assert.match(game,/NpcChallengePilot\.tacticalObjective\(activeChallengeId,allies\)/);

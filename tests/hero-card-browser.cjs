@@ -42,8 +42,36 @@ const {chromium,webkit}=require('playwright');
    await page.screenshot({path:`artifacts/hero-card-${useWebkit?'webkit':'chromium'}-${w}x${h}.png`});
   }
   await page.setViewportSize({width:844,height:390});
-  await page.locator('#gearSlots button').nth(0).click();assert.equal(await page.locator('#heroGearDialog').evaluate(n=>n.open),true);
-  await page.locator('#heroGearDialog [data-hero-dialog-close]').click();
+  await page.locator('#gearSlots button').nth(0).click();
+  assert.equal(await page.locator('#heroDetail').evaluate(n=>n.classList.contains('gear-ux-active')),true);
+  assert.equal(await page.locator('#heroGearDialog').evaluate(n=>n.open),false,'Gear must not cover the 3D hero');
+  assert.match(await page.locator('#gearUxLeft').textContent(),/Короткий клинок/);
+  assert.match(await page.locator('#gearUxRight').textContent(),/Материалы для изготовления/);
+  for(const [w,h] of [[844,390],[932,430]]){
+   await page.setViewportSize({width:w,height:h});
+   const dims=await page.evaluate(()=>{
+    const stage=document.querySelector('#detailHeroStage').getBoundingClientRect();
+    const root=document.documentElement;
+    return {horizontalOverflow:root.scrollWidth>innerWidth+1,verticalOverflow:root.scrollHeight>innerHeight+1,
+     stageHeight:stage.height,panelsVisible:['gearUxLeft','gearUxRight'].every(id=>document.getElementById(id).getBoundingClientRect().height>130)};
+   });
+   assert.equal(dims.horizontalOverflow,false);assert.equal(dims.verticalOverflow,false);
+   assert.ok(dims.stageHeight>160);assert.equal(dims.panelsVisible,true);
+   await page.screenshot({path:`artifacts/gear-ux-004-${useWebkit?'webkit':'chromium'}-${w}x${h}.png`});
+  }
+  await page.setViewportSize({width:844,height:390});
+  await page.locator('#gearUxRight .gear-ux-find').first().click();
+  assert.match(await page.locator('#gearUxLeft').textContent(),/Где добыть/);
+  const farm=page.locator('#gearUxLeft .gear-ux-source-actions button.primary').first();
+  assert.equal(await farm.isEnabled(),true,'First available mission remains playable');
+  await farm.click();
+  assert.equal(await page.locator('#squad').evaluate(n=>n.classList.contains('active')),true);
+  await page.locator('#squadBack').click();
+  assert.equal(await page.locator('#heroDetail').evaluate(n=>n.classList.contains('active')),true);
+  assert.equal(await page.evaluate(()=>selectedGearSlot),0);
+  assert.equal(await page.locator('#heroDetail').evaluate(n=>n.classList.contains('gear-ux-active')),true);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#heroDetail').evaluate(n=>n.classList.contains('gear-ux-active')),false);
   await page.locator('[data-hero-ability=basic]').click();assert.equal(await page.locator('#skillUpgradeDialog').evaluate(n=>n.open),true);
   await page.locator('#skillUpgradeClose').click();
   await page.locator('[data-hero-ability=passive]').click();assert.equal(await page.locator('#heroAbilityDialog').evaluate(n=>n.open),true);
@@ -66,9 +94,9 @@ const {chromium,webkit}=require('playwright');
   assert.equal(after.level,before.level+1);assert.ok(after.currency<before.currency);
   await page.locator('#starPromoteButton').click();assert.equal(await page.evaluate(()=>StarCore.rankOf(progress,'ren')),before.rank+1);
   await page.locator('#gearSlots button').nth(0).click();
-  await page.locator('#gearEquipNext').click();
+  await page.locator('#gearUxRight .gear-ux-craft').click();
   assert.equal(await page.evaluate(()=>!!ProgressCore.gearState(progress,'ren').slots[0]),true);
-  await page.locator('#heroGearDialog [data-hero-dialog-close]').click();
+  await page.keyboard.press('Escape');
   await page.locator('#detailBack').click();assert.equal(await page.locator('#collection').evaluate(n=>n.classList.contains('active')),true);
   assert.equal(await page.evaluate(()=>document.body.classList.contains('hero-card-mode')),false);
   await page.evaluate(()=>{selectedHeroId='kael';showScreen('heroDetail');});await fits('other hero');

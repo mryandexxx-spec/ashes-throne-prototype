@@ -145,8 +145,8 @@ test("NPCPVE002: OPS-002 cordon remains two waves without clean signal outcome",
 });
 test("NPCPVE002: scene UI loads adapter first; no new save paths or permanent meshes",()=>{
  const game=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.181");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.181 · GEARSAFE002'));
+ assert.equal(pkg.version,"0.3.182");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.182 · GEARUX004'));
  const npcScript='src="npc-story-ops-adapter.js?v='+pkg.version+'"';
  assert.ok(html.includes(npcScript));
  assert.ok(html.indexOf(npcScript)<html.indexOf('src="game.js?v='+pkg.version+'"'));

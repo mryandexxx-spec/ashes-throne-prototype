@@ -27,9 +27,9 @@ test("001 NPCs are normal challenge and campaign encounters, not opt-in previews
  assert.match(g,/ensureEncounterNpcVisuals\(\[\.\.\.lineup,\.\.\.waves\.flat\(\)\]\)/);
  assert.match(g,/clearEncounterNpcVisuals\(\)/);
  assert.ok(!g.includes("HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean),NPC_MISSION_VISUALS,NPC_CHALLENGE_VISUALS)"));
- assert.ok(html.includes("v"+pkg.version+" · GEARSAFE002"));
+ assert.ok(html.includes("v"+pkg.version+" · GEARUX004"));
  assert.ok(html.includes("npc-challenge-pilot.js?v="+pkg.version));
- assert.equal(pkg.version,"0.3.181");
+ assert.equal(pkg.version,"0.3.182");
 });
 
 test("001 all eight challenges have NPC rosters, distinct goals and matching waves",()=>{

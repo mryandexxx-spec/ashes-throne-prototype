@@ -57,7 +57,7 @@ async function smoke(name,kind){
   const url=new URL(origin);
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
   assert.equal(await page.locator("#buildVersion").innerText(),
-   "Прототип · v"+require("../package.json").version+" · LOREACT3001");
+   "Прототип · v"+require("../package.json").version+" · LOREACT4001");
   // Unlock only in-memory prerequisites; never mutate localStorage.
   await page.evaluate(()=>{
    for(const id of ["T-01","T-02","N-01","N-02"])

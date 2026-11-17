@@ -111,6 +111,8 @@ async function check(name,browserType,width,height){
   }
   await page.reload({waitUntil:"load"});
   await enter(page);
+  // A newer Act IV auto-selects FS-10; navigate back to the older layer.
+  await page.locator('[data-lore-layer="city-route"]').click();
   await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-09"]').click();
   assert.match(await page.locator(".lore-node-detail").innerText(),/Пройдено/);
   const current=await page.evaluate(()=>({

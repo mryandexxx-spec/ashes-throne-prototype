@@ -1038,6 +1038,7 @@ function showScreen(id){
  if(id!=="campaign"&&typeof LoreCampaignUI!=="undefined"&&
     document.body?.classList?.contains("lore-scene-open"))LoreCampaignUI.close();
  if(typeof HeroCardUI!=="undefined")HeroCardUI.leave(id);
+ if((id==="home"||id==="collection")&&typeof GearUX004!=="undefined")GearUX004.cancelReturn();
  // Re-entering from home opens the two-mode chooser, not a stale mission list.
  if(id==="challenges"&&$("#home")?.classList.contains("active"))selectedChallengeKind=null;
  if(id!=="home"){
@@ -1757,6 +1758,9 @@ $("#squadBack").addEventListener("click",()=>{
  if(squadReturnScreen==="loreTraining"){returnToLoreMap();return;}
  if(squadReturnScreen==="storyDemo"&&storyDemoState&&typeof StoryDemoCore!=="undefined")
   StoryDemoCore.cancelBattle(storyDemoState);
+ if(squadReturnScreen==="campaign"&&typeof GearUX004!=="undefined"&&GearUX004.hasReturnContext()){
+  GearUX004.returnToHero();return;
+ }
  showScreen(squadReturnScreen);
 });
 $("#squadDisband")?.addEventListener("click",disbandSquad);
@@ -1955,7 +1959,7 @@ document.addEventListener("keydown",event=>{
   closeRosterSortMenu();$("#rosterSortTrigger")?.focus?.();
  }
 });
-function openHeroDetail(id){
+function openHeroDetail(id,preferredGearSlot=null){
  if(!ALLIES.some(h=>h.id===id)||!heroOwned(id))return false;
  if($("#collection")?.classList.contains("active")){
   rosterReturnScrollY=window.scrollY||document.documentElement?.scrollTop||0;
@@ -1964,6 +1968,11 @@ function openHeroDetail(id){
  selectedHeroId=id;
  const current=ProgressCore.gearState(progress,id);
  selectedGearSlot=current?Math.max(0,current.slots.findIndex(installed=>!installed)):0;
+ if(typeof GearUX004!=="undefined"){
+  if(Number.isInteger(preferredGearSlot)&&preferredGearSlot>=0&&preferredGearSlot<ProgressCore.SLOT_COUNT){
+   selectedGearSlot=preferredGearSlot;GearUX004.restore();
+  }else GearUX004.reset();
+ }
  showScreen("heroDetail");
  return true;
 }
@@ -2282,6 +2291,9 @@ function renderHeroDetail(){
   :saveAvailable?"Прогресс сохраняется в этом браузере. Очистка данных Safari может его удалить."
   :"Сохранение сейчас недоступно. Прогресс может сброситься после перезагрузки.";
  if(typeof HeroCardUI!=="undefined")HeroCardUI.decorate();
+ if(typeof GearUX004!=="undefined")GearUX004.render({
+  progress,heroId:base.id,slotIndex:selectedGearSlot,campaign:campaignProgress,saveBlocked
+ });
 }
 $("#gearSlots")?.addEventListener("click",event=>{
  const button=event.target.closest?.("[data-gear-slot]");
@@ -2289,6 +2301,11 @@ $("#gearSlots")?.addEventListener("click",event=>{
  const slot=Number(button.dataset.gearSlot);
  if(!Number.isInteger(slot)||slot<0||slot>=ProgressCore.SLOT_COUNT)return;
  selectedGearSlot=slot;
+ if(typeof GearUX004!=="undefined"&&ProgressCore.gearState(progress,selectedHeroId)?.mode==="itemized"){
+  GearUX004.openSlot();renderHeroDetail();
+  $("#gearSlots")?.querySelector?.('[data-gear-slot="'+slot+'"]')?.focus?.();
+  return;
+ }
  renderHeroDetail();
  if(typeof HeroCardUI!=="undefined"){
   $("#gearSlots")?.querySelector?.('[data-gear-slot="'+slot+'"]')?.focus?.();
@@ -2642,10 +2659,12 @@ $("#simulationConfirm")?.addEventListener("click",()=>{
  ].filter(Boolean).map(item=>"• "+item).join("\n");
  $("#simulationClose").textContent="Закрыть";
  renderCampaign();
+ if($("#heroDetail")?.classList.contains("active"))renderHeroDetail();
 });
 const simulationClose=$("#simulationClose");
 if(simulationClose)simulationClose.addEventListener("click",()=>{
  $("#simulationDialog").close();simulationMissionId=null;
+ if($("#heroDetail")?.classList.contains("active"))renderHeroDetail();
 });
 function renderMissionResult(){
  const won=state.winner==="ally";
@@ -2676,10 +2695,20 @@ function renderMissionResult(){
    :"Оценка: ☆☆☆ (0/3)";
  }
  $("#missionResultRetry").textContent=won?"Пройти ещё раз":"Попробовать снова";
+ $("#missionResultBack").textContent=typeof GearUX004!=="undefined"&&GearUX004.hasReturnContext()?
+  "К предмету":"К кампании";
 }
-$("#missionResultBack").addEventListener("click",()=>showScreen("campaign"));
+$("#missionResultBack").addEventListener("click",()=>{
+ if(typeof GearUX004!=="undefined"&&GearUX004.hasReturnContext()){
+  GearUX004.returnToHero();return;
+ }
+ showScreen("campaign");
+});
 $("#missionResultRetry").addEventListener("click",()=>activeMissionId&&openCampaignMission(activeMissionId));
-$("#missionResultHome").addEventListener("click",()=>showScreen("home"));
+$("#missionResultHome").addEventListener("click",()=>{
+ if(typeof GearUX004!=="undefined")GearUX004.cancelReturn();
+ showScreen("home");
+});
 
 function livingEnemies(){return CombatCore.livingEnemies(state.fighters);}
 function renderBattleLog(){

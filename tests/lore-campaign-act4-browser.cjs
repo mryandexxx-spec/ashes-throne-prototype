@@ -99,7 +99,7 @@ async function check(name,browserType,width,height){
     await page.reload({waitUntil:"load"});
     await enter(page);
     await page.locator('[data-lore-action="start-node"]').click();
-    assert.match(await page.locator(".lore-scene-text").innerText(),/В школе опять переставляли объявления/);
+    assert.match(await page.locator(".lore-scene-text").innerText(),/В школе на одной доске/);
    }
    await finish(page);
    assert.equal(await page.locator('[data-lore-action="required-battle"]').count(),0,

@@ -145,7 +145,7 @@ test("LOREACT4001: no invented monster combat or explanation of unusual event",(
  const scenes=Act4.pack.scenes.slice(9);
  const beat=(i,id)=>scenes[i].beats.find(b=>b.id===id);
  assert.match(beat(0,"fs10-cord").text,/не нашёл отверстия|не нашёл/);
- assert.match(beat(0,"fs10-test").text,/не возникло/);
+ assert.match(beat(0,"fs10-test").text,/шнур просто лёг на песок/);
  assert.match(beat(1,"fs11-measure").comparisons[0].text,/Причина ещё не установлена/);
  assert.match(beat(2,"fs12-ledge").text,/несходящиеся времена/);
  assert.match(beat(2,"fs12-hold").text,/оторвала её руки от камня/);

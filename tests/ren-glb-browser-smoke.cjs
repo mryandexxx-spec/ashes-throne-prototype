@@ -17,6 +17,7 @@ const assert=require("node:assert/strict");
   page.on("console",msg=>{if(msg.type()==="error")errors.push("console: "+msg.text());});
   page.on("requestfailed",r=>errors.push("request: "+r.url()+" "+r.failure()?.errorText));
   await page.goto("http://127.0.0.1:8765/",{waitUntil:"load",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await page.waitForFunction(()=>typeof BABYLON!=="undefined"&&typeof RenGlbRuntime!=="undefined"&&typeof RenCard3D!=="undefined",{timeout:30000});
   const result=await page.evaluate(async()=>{
    const B=BABYLON;

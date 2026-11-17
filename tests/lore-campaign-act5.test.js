@@ -109,7 +109,7 @@ test("LOREACT5001: fresh save full story FS-01…FS-15 and six combat gates",()=
  const record=r.stateFor("five-shadows");
  assert.equal(record.completedNodeIds.length,15);
  assert.equal(record.battleClearedNodeIds.length,6);
- assert.equal(record.keyDecisionLog.length,15);
+ assert.equal(record.keyDecisionLog.length,Act5.pack.scenes.filter(x=>x.choices.length>0).length);
  assert.equal(record.activeNodeId,null);
  assert.equal(create(Act5,storage).stateFor("five-shadows").completedNodeIds.length,15);
 });

@@ -86,11 +86,13 @@ const RewardPolicyCore=(()=>{
      storage=storageProvider();
      if(!storage)return failure("STORAGE_UNAVAILABLE");
      raw=storage.getItem(KEY);
-     if(raw===null)return failure("WALLET_NOT_STAGED");
+    }catch(_){return failure("WALLET_READ_FAILED");}
+    if(raw===null)return failure("WALLET_NOT_STAGED");
+    try{
      const parsed=JSON.parse(raw);
      profile=typeof ProgressV3Core==="undefined"?null:
       ProgressV3Core.validateActive(parsed,heroes);
-    }catch(_){return failure("WALLET_READ_FAILED");}
+    }catch(_){return failure("INVALID_WALLET");}
     if(!profile)return failure("INVALID_WALLET");
     const plan=resolve({source,occurrenceId,count,day,wallet:profile});
     if(!plan.ok)return plan;

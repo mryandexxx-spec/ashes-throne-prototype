@@ -89,7 +89,7 @@ async function check(name,browserType,width,height){
   assert.equal(await page.locator('[data-lore-layer="two-banks"][aria-pressed="true"]').count(),1);
   assert.match(await page.locator(".lore-map-heading").innerText(),/Акт IV/);
   assert.equal(await page.locator(".lore-map-marker").count(),3);
-  for(let i=10;i<=12;i++{
+  for(let i=10;i<=12;i++){
    const id="five-shadows:fs-"+String(i).padStart(2,"0");
    if(i!==10)await page.locator('.lore-list-node[data-lore-node="'+id+'"]').click();
    assert.match(await page.locator(".lore-node-detail").innerText(),/Доступно/);

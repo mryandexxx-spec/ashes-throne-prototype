@@ -178,3 +178,25 @@ test("LOREACT4001: map selects Act IV and locked labels report reality",()=>{
  }
  assert.ok(!html.includes("0.3.175"));
 });
+
+
+test("LOREACT4001 UX: screen-shot locked FS-07 names the missing battle, not missing content",()=>{
+ const storage=memory();seedNine(storage);
+ const saved=JSON.parse(storage.map.get(Core.KEY));
+ const record=saved.stories["five-shadows"];
+ record.completedNodeIds=record.completedNodeIds.filter(id=>!/five-shadows:fs-0[789]$/.test(id));
+ record.battleClearedNodeIds=record.battleClearedNodeIds.filter(id=>id!=="five-shadows:fs-06");
+ storage.map.set(Core.KEY,JSON.stringify(saved));
+ const root={innerHTML:"",addEventListener(){},removeEventListener(){},
+  contains(){return true;},querySelector(){return null;}};
+ assert.equal(UI.mount(root,Act4.data,Core,{pack:Act4.pack,storage,
+  scripts:Scripts,engine:Engine,save:Save,runtime:Runtime}),true);
+ assert.equal(UI.openStory("five-shadows"),true);
+ assert.equal(UI.changeLayer("city-route"),true);
+ assert.equal(UI.selectNode("five-shadows:fs-07"),true);
+ assert.match(root.innerHTML,/Неизвестный узел/);
+ assert.match(root.innerHTML,/Сначала выиграйте обязательный бой после предыдущего эпизода/);
+ assert.match(root.innerHTML,/Узел закрыт/);
+ assert.doesNotMatch(root.innerHTML,/Сюжетная сцена готовится/);
+ assert.equal(UI.nodeStatus(Act4.data.getNode("five-shadows:fs-07")).code,"locked");
+});

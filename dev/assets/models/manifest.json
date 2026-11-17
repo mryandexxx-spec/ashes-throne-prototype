@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "user-provided Mixamo animated GLB optimized for mobile; NADAOPT001: WebP 2048 q90 + KHR_mesh_quantization; LIORA-SHIELD-006: shield baked into the skin",
+  "source": "user-provided Mixamo animated GLB optimized for mobile; NADAOPT001: WebP 2048 q90 + KHR_mesh_quantization; LIORA-SHIELD-006: shield baked into the skin; ART3D001 WebP q90 + KHR_mesh_quantization",
   "assets": [
     {
       "id": "nada",
@@ -63,6 +63,22 @@
       ],
       "textureMime": "image/webp",
       "source": "../../assets-src/characters/sava/README.md"
+    },
+    {
+      "id": "art",
+      "file": "art-mobile-animated.glb",
+      "bytes": 2032788,
+      "sha256": "c7a25c48dbd9117baec08e3ff1612f4b52ece8516a521571b9b1f1b3852b2860",
+      "vertices": 13447,
+      "triangles": 14133,
+      "bones": 66,
+      "animations": 9,
+      "textureSize": [
+        2048,
+        2048
+      ],
+      "textureMime": "image/webp",
+      "source": "../../assets-src/characters/art/README.md"
     }
   ]
 }

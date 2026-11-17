@@ -51,6 +51,32 @@ const url="http://127.0.0.1:8765/";
   await second.close();
   await context.close();
 
+  // A quota failure is not a displayed payout: halt input until a fresh reload.
+  const broken=await browser.newContext({viewport:{width:844,height:390}});
+  const failedPage=await broken.newPage();
+  await failedPage.goto(url,{waitUntil:"domcontentloaded"});
+  await failedPage.waitForFunction(()=>document.getElementById("walletWriterNotice").style.display==="none",
+   null,{timeout:60000});
+  const failed=await failedPage.evaluate(()=>{
+   const key="ashes-throne.progress.v3";
+   const prior=JSON.parse(localStorage.getItem(key)).currency;
+   const original=Storage.prototype.setItem;
+   Storage.prototype.setItem=function(k,v){if(k===key)throw Error("quota");return original.call(this,k,v);};
+   progress.currency+=5;
+   const saved=persistProgress();
+   Storage.prototype.setItem=original;
+   return {prior,saved,stored:JSON.parse(localStorage.getItem(key)).currency,
+    overlay:document.getElementById("walletWriterNotice").style.display};
+  });
+  assert.equal(failed.saved,false);
+  assert.equal(failed.stored,failed.prior);
+  assert.equal(failed.overlay,"flex");
+  await failedPage.click("#walletWriterRetry");
+  await failedPage.waitForFunction(()=>document.getElementById("walletWriterNotice").style.display==="none",
+   null,{timeout:60000});
+  assert.equal(await failedPage.evaluate(()=>progress.currency),failed.prior);
+  await broken.close();
+
   // Missing browser API must block game bootstrap with no new v3 record.
   const other=await browser.newContext();
   await other.addInitScript(()=>Object.defineProperty(navigator,"locks",{configurable:true,value:undefined}));

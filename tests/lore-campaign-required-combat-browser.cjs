@@ -48,6 +48,7 @@ async function run(name,type,w,h){
  const tag=name+"-"+w+"x"+h;
  try{
   await page.goto(origin,{waitUntil:"domcontentloaded"});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await open(page);
   assert.equal(await page.locator('[data-lore-action="training-battle"]').count(),1,
    "Optional practice remains available but cannot satisfy a required story victory");

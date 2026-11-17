@@ -36,6 +36,7 @@ async function check(engine,browserType,width,height){
  const tag=engine+"-"+width+"x"+height;
  try{
   await page.goto(origin,{waitUntil:"domcontentloaded",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await openCampaign(page);
   assert.equal(await page.locator('.lore-scene').count(),0,"no story launched by default");
   assert.equal(await page.locator('.lore-map-app').count(),1);
@@ -63,6 +64,7 @@ async function check(engine,browserType,width,height){
   assert.equal(checkpoint,"notes",tag+" saved checkpoint");
   // Reload simulates Safari refresh: the authored fixture remains test-only.
   await page.reload({waitUntil:"domcontentloaded"});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await openCampaign(page);
   await mountFixture(page);
   await page.locator(".lore-story-cover").click();

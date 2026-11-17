@@ -83,8 +83,10 @@ async function check(name,browserType,width,height){
  const tag=name+"-"+width+"x"+height;
  try{
   await page.goto(origin,{waitUntil:"load",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await page.evaluate(value=>localStorage.setItem("ashes-throne.lore-campaign.v1",value),seed());
   await page.reload({waitUntil:"load"});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await enter(page);
   assert.equal(await page.locator('[data-lore-layer="return-and-records"][aria-pressed="true"]').count(),1);
   assert.match(await page.locator(".lore-map-heading").innerText(),/Акт V/);
@@ -97,6 +99,7 @@ async function check(name,browserType,width,height){
    if(i===13){
     // A checkpoint resumes after reload, without accidentally unlocking FS-14.
     await page.reload({waitUntil:"load"});
+    await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
     await enter(page);
     await page.locator('[data-lore-action="start-node"]').click();
     assert.match(await page.locator(".lore-scene-text").innerText(),/У раненого с рынка/);
@@ -112,6 +115,7 @@ async function check(name,browserType,width,height){
    if(i<15)assert.equal(record.completedNodeIds.includes("five-shadows:fs-"+String(i+1).padStart(2,"0")),false);
   }
   await page.reload({waitUntil:"load"});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await enter(page);
   await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-15"]').click();
   assert.match(await page.locator(".lore-node-detail").innerText(),/Пройдено/);

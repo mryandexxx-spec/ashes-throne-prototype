@@ -88,8 +88,10 @@ async function run(name,browserType,width,height){
  const tag=name+"-"+width+"x"+height;
  try{
   await page.goto(origin,{waitUntil:"load",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await page.evaluate(value=>localStorage.setItem("ashes-throne.lore-campaign.v1",value),seed());
   await page.reload({waitUntil:"load"});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await page.locator('#home .hq-bottom button[data-screen="campaign"]').evaluate(el=>el.click());
   await page.locator('[data-campaign-path="lore"]').click();
   await page.locator(".lore-story-cover").click();
@@ -190,6 +192,7 @@ async function run(name,browserType,width,height){
    "Replay cancel must not touch the lore save");
   assert.equal(await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-06"]').evaluate(el=>el.classList.contains("lore-state-available")),true);
   await page.reload({waitUntil:"load"});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await page.locator('#home .hq-bottom button[data-screen="campaign"]').evaluate(el=>el.click());
   await page.locator('[data-campaign-path="lore"]').click();
   await page.locator(".lore-story-cover").click();

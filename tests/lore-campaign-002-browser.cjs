@@ -16,6 +16,7 @@ async function check(engineName,browserType,width,height){
  const tag=engineName+"-"+width+"x"+height;
  try{
   await page.goto(origin,{waitUntil:"domcontentloaded",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   // HQ bottom navigation is hidden in short landscape. Invoke its existing
   // real click handler without an offscreen pointer target or panorama animation.
   await page.locator('#home .hq-bottom button[data-screen="campaign"]').evaluate(el=>el.click());

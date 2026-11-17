@@ -37,6 +37,7 @@ async function check(browserName,browserType,width,height){
  const tag=browserName+"-"+width+"x"+height;
  try{
   await page.goto(origin,{waitUntil:"domcontentloaded",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await campaign(page);
   await inject(page);
   await page.locator(".lore-story-cover").click();
@@ -61,6 +62,7 @@ async function check(browserName,browserType,width,height){
   const before=await page.evaluate(()=>JSON.parse(localStorage.getItem("ashes-throne.lore-campaign.v1")));
   assert.ok(before.stories["five-shadows"].seenEvidenceIds.includes("five-shadows:fs-01/material-a"));
   await page.reload({waitUntil:"domcontentloaded"});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await campaign(page);
   await inject(page);
   await page.locator(".lore-story-cover").click();

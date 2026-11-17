@@ -1,0 +1,37 @@
+name: Art GLB browser integration
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'dev/assets/models/art-mobile-animated.glb'
+      - 'dev/src/assets/models.js'
+      - 'art-glb-runtime.js'
+      - 'ren-card-3d.js'
+      - 'game.js'
+      - 'index.html'
+      - 'tests/art-3d-browser.cjs'
+      - 'tests/art-arena-mobile-browser.cjs'
+      - '.github/workflows/art-3d-browser.yml'
+  workflow_dispatch:
+jobs:
+  art-chromium-webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Exercise Art GLB in card and live arena with Chromium/WebKit
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/art-server.log 2>&1 &
+          sleep 2
+          node tests/art-3d-browser.cjs
+          ART_BROWSER=webkit node tests/art-3d-browser.cjs
+          node tests/art-arena-mobile-browser.cjs

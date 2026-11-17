@@ -39,5 +39,5 @@ test("SAVA3D002: arena failure banner contains the actual exception",()=>{
  assert.match(game,/notice\.hidden=false/);
  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
  assert.match(html,/id="battleLoadError"/);
- assert.match(html,/v0\.3\.179 · SAVA3D002/);
+ assert.match(html,/id="buildVersion">Прототип · v\d+\.\d+\.\d+ · [A-Z][A-Z0-9-]+/);
 });

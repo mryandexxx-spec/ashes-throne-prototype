@@ -60,6 +60,8 @@ let nadaGlbRuntime=null; // Optional Nada GLB only when she is in the party.
 let lioraGlbRuntime=null; // Optional Liora GLB (shield baked into the rig), only in party.
 let savaGlbRuntime=null; // SAVA3D001: optional skinned Sava, no gameplay ownership.
 let sava3dDisabledScene=null; // SAVA3D002: optional 3D failures must not block battle startup.
+let artGlbRuntime=null; // ART3D001: optional skinned Art, no gameplay ownership.
+let art3dDisabledScene=null; // ART3D001: do not retry a failed model in the same scene.
 let arenaCamera=null;
 // Combat-008B: allies are near the viewer, enemies farther away.
 const ARENA_VIEW=typeof ArenaStageView!=="undefined"?ArenaStageView.view:Object.freeze({alpha:-3*Math.PI/4,beta:.96,radius:12,targetY:.9});
@@ -1188,6 +1190,7 @@ function showScreen(id){
    if(nadaGlbRuntime){nadaGlbRuntime.dispose();nadaGlbRuntime=null;}
    if(lioraGlbRuntime){lioraGlbRuntime.dispose();lioraGlbRuntime=null;}
    if(savaGlbRuntime){savaGlbRuntime.dispose();savaGlbRuntime=null;}
+   if(artGlbRuntime){artGlbRuntime.dispose();artGlbRuntime=null;}
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
    scene=undefined;engine=undefined;arenaCamera=null;meshes={};encounterNpcVisualIds.clear();indicatorNodes={};combatVisual007=null;renderLoopRunning=false;
@@ -3400,7 +3403,7 @@ function renderBattleFrame(){
   if(visual.body.rotation)visual.body.rotation.z=pose.tilt;
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
   // MOBILEQA001: GLB heroes rest three-quarter to the camera, facing the enemy lane.
-  if((h.id==="ren"&&renGlbRuntime)||(h.id==="nada"&&nadaGlbRuntime)||(h.id==="liora"&&lioraGlbRuntime)||(h.id==="sava"&&savaGlbRuntime)){
+  if((h.id==="ren"&&renGlbRuntime)||(h.id==="nada"&&nadaGlbRuntime)||(h.id==="liora"&&lioraGlbRuntime)||(h.id==="sava"&&savaGlbRuntime)||(h.id==="art"&&artGlbRuntime)){
    const nadaAim=(h.id==="nada"||h.id==="sava")&&targetPosition&&["basic","special","powerful"].includes(activity.slot);
    if(nadaAim&&visual.body.rotation){
     // NADAANIM001: turn toward the target while shooting, same smoothing as the rest pose.
@@ -3416,6 +3419,7 @@ function renderBattleFrame(){
   if(h.id==="nada"&&nadaGlbRuntime)nadaGlbRuntime.update(activity);
   if(h.id==="liora"&&lioraGlbRuntime)lioraGlbRuntime.update(activity);
   if(h.id==="sava"&&savaGlbRuntime)savaGlbRuntime.update(activity);
+  if(h.id==="art"&&artGlbRuntime)artGlbRuntime.update(activity);
   if(h.id==="ren"&&renGlbRuntime){
    if(visual.body.rotation&&targetPosition&&activity.plan){
     const yaw=-Math.atan2(targetPosition.z-origin.z,targetPosition.x-origin.x);
@@ -3537,6 +3541,30 @@ function ensureSava3D(){
   console.warn("SAVA3D002: optional Sava GLB disabled for this scene",error);
   const info=$("#renModelBattleStatus"),label=$("#renModelBattleStatusText");
   if(label)label.textContent="3D Савы недоступно — бой продолжается с простой моделью.";
+  if(info){info.dataset.status="error";info.hidden=false;}
+ }
+}
+// ART3D001: optional lazy Art rig. Never abort battle because of a visual asset.
+function ensureArt3D(){
+ if(!scene||!meshes.art||typeof ArtGlbRuntime==="undefined")return;
+ const selected=presentationFighters().some(f=>f.id==="art"&&f.side==="ally");
+ if(!selected){
+  if(artGlbRuntime){artGlbRuntime.dispose();artGlbRuntime=null;}
+  return;
+ }
+ if(artGlbRuntime||art3dDisabledScene===scene)return;
+ try{
+  artGlbRuntime=ArtGlbRuntime.create(BABYLON,scene,meshes.art,(kind,message)=>{
+   const info=$("#renModelBattleStatus"),label=$("#renModelBattleStatusText");
+   if(label)label.textContent=message;
+   if(info){info.dataset.status=kind;info.hidden=false;}
+   if(kind==="error")console.warn("ART3D001: "+message);
+  });
+ }catch(error){
+  art3dDisabledScene=scene;artGlbRuntime=null;
+  console.warn("ART3D001: optional Art GLB disabled for this scene",error);
+  const info=$("#renModelBattleStatus"),label=$("#renModelBattleStatusText");
+  if(label)label.textContent="3D Арта недоступно — бой продолжается с простой моделью.";
   if(info){info.dataset.status="error";info.hidden=false;}
  }
 }
@@ -3722,6 +3750,7 @@ function updateMeshes(){
  ensureNada3D();
  ensureLiora3D();
  ensureSava3D();
+ ensureArt3D();
  const roster=presentationFighters();
  const sideMembersBySide={ally:roster.filter(f=>f.side==="ally"),enemy:roster.filter(f=>f.side==="enemy")};
  for(const h of [...COMBAT_VISUALS,...Array.from(encounterNpcVisualIds,id=>({id}))]){

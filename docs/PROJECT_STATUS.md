@@ -2,6 +2,10 @@
 
 **Актуальный снимок: 17.11.2026.** Статус описывает только проверенные факты об игровом `main`; **полная история изменений — в [CHANGELOG.md](CHANGELOG.md)**, очередь — в [ROADMAP.md](ROADMAP.md). Исторический файл до сверки сохранён отдельно в [archive/PROJECT_STATUS_SNAPSHOT_2026-11-16_BEFORE_ROADMAP.md](archive/PROJECT_STATUS_SNAPSHOT_2026-11-16_BEFORE_ROADMAP.md).
 
+**Текущая передача после REWARD007A:** [HANDOFF_2026-11-17_AFTER_REWARD007A.md](HANDOFF_2026-11-17_AFTER_REWARD007A.md) — PR #373 уже слит, следующий этап LC-008B (межвкладочный кошельковый writer). Более старый handoff GEAR-ECON-005B ниже содержит предысторию, а не актуальный старт.
+
+**[РЕАЛИЗОВАНО в main / REWARD007A]** [PR #373](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/373) слит в `main` merge-коммитом `115e21a73ca9107157a2707919c20e268878a7a2`, `v0.3.183 · REWARD007A`, **29/29 PR CI success**. Изолированный `reward-policy-core.js` и необязательные проверяемые `rewardReceipts` в `progress.v3` совместимы со старыми сохранениями. **Новые выплаты не подключены**, `reward-policy-core.js` не загружается игрой. **Критический следующий блокер:** нет общего межвкладочного writer для всех авторов `progress.v3`; пока нельзя гарантировать безопасность live-claim. [Контракт и границы](REWARD_POLICY_RECEIPTS_007A.md). Pages после merge и физический iPhone не проверялись.
+
 **Передача следующему чату (17.11.2026):** [HANDOFF после утверждения GEAR-ECON-005B](HANDOFF_2026-11-17_AFTER_GEAR_ECON_005B.md) — действующие решения, открытые PR и следующий шаг LC-008 / GEAR-REWARDS-007 (без новых выплат). Проверять свежий `main`. **Уточнение:** PR #357 (FS-13…FS-15) фактически слит в `main`; более старые строки ниже с пометкой «PR #357 не слит» — исторически устарели. В worldbuilding канон «Пяти теней» — финальная редакция 1.5.
 
 ## Направление экипировки — решение 17.11.2026

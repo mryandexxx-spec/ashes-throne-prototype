@@ -3,13 +3,14 @@
  */
 const ModelCache=(()=>{
  "use strict";
- const SW_URL="model-cache-sw.js?v=sava3d001";
+ const SW_URL="model-cache-sw.js?v=art3d001";
  const REFUSE_TYPES=new Set(["slow-2g","2g","3g"]);
  const HEROES=Object.freeze({
   "ren-meshy-mixamo-animated.glb":"ren",
   "nada-mobile-animated.glb":"nada",
   "liora-mobile-animated.glb":"liora",
-  "sava-mobile-animated.glb":"sava"
+  "sava-mobile-animated.glb":"sava",
+  "art-mobile-animated.glb":"art"
  });
  function mayWarm({connection,visible=true}={}){
   return visible&&connection?.saveData!==true&&
@@ -20,7 +21,7 @@ const ModelCache=(()=>{
    ?Math.max(0,Math.min(100,Math.floor(100*loaded/total))):0;
  }
  let started=false,warmStarted=false,cacheReady=false;
- const current={ren:"pending",nada:"pending",liora:"pending",sava:"pending"};
+ const current={ren:"pending",nada:"pending",liora:"pending",sava:"pending",art:"pending"};
  function update(asset,status,loaded,total){
   const hero=HEROES[asset];
   if(!hero)return;
@@ -31,7 +32,7 @@ const ModelCache=(()=>{
    status==="saving"?"сохраняем…":status==="missing"?"ожидает":
    status==="not-persisted"?"без кеша":status==="unavailable"?"недоступно":"ожидает";
   current[hero]=status;
-  if(label)label.textContent=(hero==="ren"?"Рен":hero==="nada"?"Нада":hero==="liora"?"Лиора":"Сава")+": "+state;
+  if(label)label.textContent=(hero==="ren"?"Рен":hero==="nada"?"Нада":hero==="liora"?"Лиора":hero==="sava"?"Сава":"Арт")+": "+state;
   if(bar)bar.style.width=(["cached","stored","saving"].includes(status)?100:status==="downloading"?percent(loaded,total):0)+"%";
   const dock=typeof document!=="undefined"?document.getElementById("cache002-indicator"):null;
   if(dock)dock.dataset.state=Object.values(current).every(s=>s==="cached"||s==="stored")?"ready":"active";

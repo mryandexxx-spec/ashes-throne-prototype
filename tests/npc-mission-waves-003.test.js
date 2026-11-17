@@ -101,9 +101,9 @@ test("NPCMISSION003: default NPC campaign waves retain costs and progression",()
  assert.match(game,/if\(battleIsCampaign&&!state.active&&!missionResultRecorded\)/);
  assert.match(game,/const ENEMIES=HEROES.filter\(h=>h.side==="enemy"\)/);
  assert.match(game,/NPC_MISSION_VISUALS=NPC_MISSION_PILOT_ENABLED/);
- assert.match(html,/v0\.3\.180 · ART3D001/);
- assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.180/);
- assert.equal(pkg.version,"0.3.180");
+ assert.match(html,/v0\.3\.181 · GEARSAFE002/);
+ assert.match(html,/npc-mission-pilot\.js\?v=0\.3\.181/);
+ assert.equal(pkg.version,"0.3.181");
 });
 test("NPCMISSION003: 45 real two-wave bouts with reachable heroes, 3-star possibility and tactical value",()=>{
  const cases=[

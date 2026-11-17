@@ -222,7 +222,8 @@ const GearData=(()=>{
  function missing(item,materials){
   if(!item||!materials)return null;
   return Object.fromEntries(Object.entries(item.ingredients).filter(([id,n])=>
-   !Number.isSafeInteger(materials[id])||materials[id]<n).map(([id,n])=>[id,Math.max(0,n-(materials[id]||0))]));
+   !Number.isSafeInteger(materials[id])||materials[id]<0||materials[id]<n).map(([id,n])=>
+    [id,n-(Number.isSafeInteger(materials[id])&&materials[id]>=0?materials[id]:0)]));
  }
  return Object.freeze({MAX_TIER,SLOTS,CLASS_IDS,MATERIALS,MATERIAL_LABELS,FUTURE_STAT_KEYS,STAT_LABELS,statOverview,FLOOR,G2_FLOOR,G3_FLOOR,COMPOSITES,ITEMS,get,offered,tierFloor,missing,flatten});
 })();

@@ -187,8 +187,8 @@ test("LOREACT5001: fifth map layer automatically opened from 12-node progress",(
  assert.equal(UI.changeLayer("two-banks"),true);
  assert.equal(UI.changeLayer("return-and-records"),true);
  const html=read("index.html"),game=read("game.js"),pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.180");
- assert.match(html,/v0\.3\.180 · ART3D001/);
+ assert.equal(pkg.version,"0.3.181");
+ assert.match(html,/v0\.3\.181 · GEARSAFE002/);
  assert.match(game,/const ActiveLoreCampaign=typeof LoreCampaignAct5/);
  const files=["lore-campaign-pilot.js","lore-campaign-act2.js","lore-campaign-trials.js",
   "lore-campaign-act3.js","lore-campaign-act4.js","lore-campaign-act5.js","game.js"];

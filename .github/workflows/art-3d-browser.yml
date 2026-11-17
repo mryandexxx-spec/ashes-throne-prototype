@@ -10,6 +10,7 @@ on:
       - 'game.js'
       - 'index.html'
       - 'tests/art-3d-browser.cjs'
+      - 'tests/art-arena-mobile-browser.cjs'
       - '.github/workflows/art-3d-browser.yml'
   workflow_dispatch:
 jobs:
@@ -33,3 +34,4 @@ jobs:
           sleep 2
           node tests/art-3d-browser.cjs
           ART_BROWSER=webkit node tests/art-3d-browser.cjs
+          node tests/art-arena-mobile-browser.cjs

@@ -890,7 +890,14 @@
     const message=document.getElementById("walletWriterMessage");
     const retry=document.getElementById("walletWriterRetry");
     const gated=[...document.querySelectorAll('script[type="text/progress-gated"]')];
-    let started=false,starting=false;
+    let started=false,starting=false,halted=false;
+    window.walletWriterHalt=()=>{
+      halted=true;
+      message.textContent="Сохранение кошелька не подтверждено. Не продолжайте игру: перезагрузите страницу и проверьте баланс, прежде чем повторять действие.";
+      notice.style.display="flex";
+      retry.textContent="Перезагрузить и проверить";
+      retry.style.display="inline-block";
+    };
     function error(code){
       const messages={
         WEB_LOCKS_UNAVAILABLE:"Безопасная запись недоступна: нужен браузер с Web Locks (Safari 15.4+ или современный Chromium/Firefox). Прогресс не изменён.",
@@ -924,7 +931,7 @@
         ProgressWriterCore.release();error("BOOT_FAILED");
       }finally{starting=false;retry.disabled=false;}
     }
-    retry.addEventListener("click",()=>{void start();});
+    retry.addEventListener("click",()=>{if(halted){location.reload();return;}void start();});
     window.addEventListener("pagehide",()=>ProgressWriterCore.release(),{once:true});
     window.addEventListener("pageshow",event=>{if(event.persisted)location.reload();});
     void start();

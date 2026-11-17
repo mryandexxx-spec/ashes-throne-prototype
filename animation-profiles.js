@@ -60,6 +60,18 @@ const AnimationProfiles=(()=>{
   hit:Object.freeze({kind:"hit",durationMs:850,amplitude:.18}),
   death:Object.freeze({kind:"death",durationMs:2000,amplitude:.85})
  }));
+ // ART3D001: planted idle/insurance; physical actions use authored Mixamo clips.
+ // Temporary visuals only — source clip names are not equipment or canon.
+ overrides.set("art",Object.freeze({
+  idle:Object.freeze({kind:"idle",durationMs:1833,amplitude:0}),
+  basic:Object.freeze({kind:"lunge",durationMs:1450,amplitude:.55}),
+  special:Object.freeze({kind:"guard",durationMs:1100,amplitude:0}),
+  powerful:Object.freeze({kind:"lunge",durationMs:1800,amplitude:.72}),
+  guard:Object.freeze({kind:"guard",durationMs:900,amplitude:0}),
+  ward:Object.freeze({kind:"ward",durationMs:900,amplitude:0}),
+  hit:Object.freeze({kind:"hit",durationMs:1150,amplitude:.12}),
+  death:Object.freeze({kind:"death",durationMs:2200,amplitude:0})
+ }));
  // SAVA3D001: no fake melee lunge; the skinned rig animates while rooted.
  overrides.set("sava",Object.freeze({
   idle:Object.freeze({kind:"idle",durationMs:4000,amplitude:0}),

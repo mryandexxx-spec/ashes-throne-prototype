@@ -1,0 +1,62 @@
+/* GEAR-UX-004 — agreed B: big hero stays in the middle; side panels carry gear. */
+#heroDetail .gear-ux-panel[hidden]{display:none!important}
+#heroDetail.gear-ux-active .hero-abilities-panel>#heroAbilitiesTitle,
+#heroDetail.gear-ux-active .hero-abilities-panel>#heroAbilityList,
+#heroDetail.gear-ux-active .hero-detail-progression> :not(#gearUxRight){display:none!important}
+#heroDetail.gear-ux-active .hero-detail-reference>.hero-abilities-panel,
+#heroDetail.gear-ux-active .hero-detail-reference>.hero-detail-progression{
+ display:flex;flex-direction:column;min-height:0;overflow:hidden
+}
+#heroDetail.gear-ux-active .gear-ux-panel{
+ display:flex;flex-direction:column;gap:6px;min-height:0;min-width:0;flex:1;
+ overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+ border:1px solid #b08b5066;background:linear-gradient(155deg,#211d22ee,#111318ed);
+ border-radius:9px;padding:9px 10px 12px;scrollbar-width:thin;scrollbar-color:#a78348 #16151b
+}
+#heroDetail.gear-ux-active .gear-ux-panel>*{flex-shrink:0;min-width:0}
+#heroDetail .gear-ux-panel h3{font:600 clamp(14px,1.7vw,19px)/1.15 Georgia,serif;
+ color:#f0ce95;margin:0;overflow-wrap:anywhere}
+#heroDetail .gear-ux-eyebrow{font:600 10px/1.25 Inter,system-ui,sans-serif;
+ letter-spacing:.08em;color:#c0a77e}
+#heroDetail .gear-ux-header{display:flex;align-items:center;justify-content:space-between;gap:4px;min-height:36px}
+#heroDetail .gear-ux-close{height:44px;width:44px;min-height:44px;min-width:44px;padding:0;font-size:22px}
+#heroDetail .gear-ux-note{font:400 11px/1.3 Inter,system-ui,sans-serif;
+ color:#d9c8b2;margin:2px 0;overflow-wrap:anywhere}
+#heroDetail .gear-ux-warning{font:500 11px/1.25 Inter,system-ui,sans-serif;
+ margin:2px 0;color:#f8bb8c;overflow-wrap:anywhere}
+#heroDetail .gear-ux-pair{display:flex;justify-content:space-between;align-items:start;
+ gap:6px;padding:4px 0;border-bottom:1px solid #b08b503d;font-size:11px;line-height:1.3}
+#heroDetail .gear-ux-pair span{color:#ddcdb4;min-width:0;overflow-wrap:anywhere}
+#heroDetail .gear-ux-pair strong{text-align:right;color:#f0ce95;white-space:nowrap}
+#heroDetail .gear-ux-materials,#heroDetail .gear-ux-sources{display:flex;flex-direction:column;gap:5px}
+#heroDetail .gear-ux-material{display:flex;justify-content:space-between;align-items:center;
+ gap:4px;min-height:48px;border-bottom:1px solid #b08b503f;padding:2px 0}
+#heroDetail .gear-ux-material-data{display:flex;flex-direction:column;min-width:0;gap:3px}
+#heroDetail .gear-ux-material-data strong{font-size:11px;color:#f0ddbf}
+#heroDetail .gear-ux-material-data small{font-size:10px;line-height:1.25;color:#b9cba5;overflow-wrap:anywhere}
+#heroDetail .gear-ux-material.is-missing small{color:#e8b0a4}
+#heroDetail .gear-ux-find{min-width:48px;min-height:44px;padding:5px 6px;font-size:11px}
+#heroDetail .gear-ux-ready{font-size:20px;color:#b2d5a5}
+#heroDetail .gear-ux-find-all,#heroDetail .gear-ux-craft{width:100%;
+ min-height:44px;margin-top:3px;padding:5px;font-size:11px;white-space:normal;line-height:1.25}
+#heroDetail .gear-ux-source{display:flex;flex-direction:column;gap:3px;
+ border:1px solid #b08b504f;border-radius:6px;padding:6px;background:#101218bb}
+#heroDetail .gear-ux-source strong{font:600 12px/1.2 Georgia,serif;color:#ebd4ac;overflow-wrap:anywhere}
+#heroDetail .gear-ux-source small{font-size:10px;line-height:1.3;color:#d1c2ab;overflow-wrap:anywhere}
+#heroDetail .gear-ux-source-actions{display:flex;flex-wrap:wrap;gap:4px}
+#heroDetail .gear-ux-source-actions button{min-height:44px;flex:1 1 85px;
+ padding:4px;font-size:10px;line-height:1.2;white-space:normal}
+#heroDetail .gear-ux-panel button:focus-visible{outline:3px solid #f0ce95;outline-offset:-3px}
+@media(orientation:landscape) and (max-height:430px){
+ #heroDetail.gear-ux-active .gear-ux-panel{padding:6px 7px 9px;gap:4px}
+ #heroDetail.gear-ux-active .hero-detail-reference{grid-template-columns:
+  minmax(168px,24%) minmax(0,1fr) minmax(182px,24%);gap:7px}
+ #heroDetail .gear-ux-note{font-size:10px}
+}
+@media(orientation:landscape) and (max-height:360px){
+ #heroDetail .gear-ux-header{min-height:28px}
+ #heroDetail .gear-ux-material{min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){
+ #heroDetail .gear-ux-panel *{animation:none!important;transition:none!important}
+}

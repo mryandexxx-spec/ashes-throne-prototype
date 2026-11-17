@@ -308,7 +308,7 @@ const LoreCampaignAct5=(()=>{
     goal("fs15-house","inspect","Проверить старый двор и договор",{evidenceIds:["fs15-sale-deed"]}),
     goal("fs15-search","compare","Отделить старый адрес от нынешнего",
      {evidenceIds:["fs15-house-trace","fs15-sale-deed","fs15-lower-crossing"],comparisonId:"fs15-house-limit"}),
-    goal("fs15-story","inspect","Сравнить книгу Ортана и список снаряжения",{evidenceIds:["fs15-ortan-book","fs15-equipment-list"]}),
+    goal("fs15-story","compare","Проверить книгу Ортана и список снаряжения",{evidenceIds:["fs15-ortan-book","fs15-equipment-list"]}),
     goal("fs15-docs","compare","Восстановить пределы публичного свидетельства",
      {evidenceIds:["fs15-ortan-book","fs15-equipment-list","fs15-old-journal","fs15-school-ledger"],comparisonId:"fs15-story-check"}),
     goal("fs15-public","choose","Определить первый шаг исправления истории",{decisionId:"fs15-public-order"}),
@@ -350,13 +350,9 @@ const LoreCampaignAct5=(()=>{
   graph.nodes.push(n);
  }
  pack.scenes.push(...scenes);
- const graphValid=Data.catalogIsValid(graph);
- const scriptsValid=Scripts.valid(pack,graph);
- if(graph.nodes.length!==15||pack.scenes.length!==15||!graphValid||!scriptsValid){
-  const diagnostic=scenes.map(x=>x.id+":"+Scripts.valid({scenes:[x]},graph)).join(",");
-  throw Error("LORE_ACT5_INVALID_GRAPH_OR_SCRIPT graph="+graphValid+
-   " scripts="+scriptsValid+" "+diagnostic);
- }
+ if(graph.nodes.length!==15||pack.scenes.length!==15||
+    !Data.catalogIsValid(graph)||!Scripts.valid(pack,graph))
+  throw Error("LORE_ACT5_INVALID_GRAPH_OR_SCRIPT");
  const deepFreeze=x=>{if(x&&typeof x==="object"&&!Object.isFrozen(x)){
   Object.values(x).forEach(deepFreeze);Object.freeze(x);
  }return x;};

@@ -39,4 +39,13 @@ const SavaModelAssets=Object.freeze({
   run:"Running",walk:"Walking"
  })
 });
+/* ART3D001: Art mobile Mixamo GLB, same layout as Sava/Nada. */
+const ArtModelAssets=Object.freeze({
+ id:"art",url:"dev/assets/models/art-mobile-animated.glb",filename:"art-mobile-animated.glb",
+ source:"dev/assets-src/characters/art/",bytes:2032788,
+ sha256:"c7a25c48dbd9117baec08e3ff1612f4b52ece8516a521571b9b1f1b3852b2860",
+ clips:Object.freeze({idle:"Idle_5",basic:"Roundhouse_Kick",special:"Idle_5",
+  powerful:"Right_Hand_Sword_Slash",guard:"Idle_5",ward:"Idle_5",
+  hit:"Hit_Reaction_1",death:"dying_backwards",run:"Running",walk:"Walking"})
+});
 if(typeof module!=="undefined"&&module.exports)module.exports=NadaModelAssets;

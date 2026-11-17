@@ -57,6 +57,7 @@ async function run(name,browserType){
   const url=new URL(origin);
   
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   assert.ok((await page.locator("#buildVersion").innerText())
    .startsWith("Прототип · v"+require("../package.json").version+" · "), "footer must match package version");
   // Unlock the preceding original challenges IN MEMORY only; do not synthesize

@@ -18,6 +18,7 @@ async function run(name,type){
   const url=new URL(origin);
   
   await page.goto(url.toString(),{waitUntil:"load",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   assert.ok((await page.locator("#buildVersion").innerText())
    .startsWith("Прототип · v"+require("../package.json").version+" · "), "footer must match package version");
   // Simulate only prerequisites in memory, not in storage or user economy.

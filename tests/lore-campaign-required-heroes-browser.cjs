@@ -57,6 +57,7 @@ async function run(name,type,w,h){
  const tag=name+"-"+w+"x"+h;
  try{
   await page.goto(origin,{waitUntil:"load",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await prepareStory(page);
   const baseline=await state(page);
   await enterRequiredSquad(page);

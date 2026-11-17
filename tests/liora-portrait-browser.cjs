@@ -13,6 +13,7 @@ fs.mkdirSync(output,{recursive:true});
    const page=await browser.newPage({viewport:{width,height}});
    const errors=[];page.on("pageerror",e=>errors.push(e.message));
    await page.goto("http://127.0.0.1:8765/",{waitUntil:"load"});
+   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
    await page.evaluate(()=>showScreen("collection"));
    const image=page.locator('#heroList [data-open-hero="liora"] .liora-collection-portrait');
    await image.waitFor();

@@ -22,6 +22,7 @@ async function main(){
    errors.push("request "+r.url()+" "+r.failure()?.errorText);
   });
   await page.goto("http://127.0.0.1:8765/",{waitUntil:"load"});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   // Deliberately never resolve import in this separate pending-state test.
   // The existing ren-glb-browser-smoke.cjs independently verifies real success.
   await page.evaluate(()=>{

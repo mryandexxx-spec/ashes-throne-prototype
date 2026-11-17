@@ -10,6 +10,7 @@ const {webkit,devices}=require("playwright");
   const page=await context.newPage();
   const errors=[];page.on("pageerror",e=>errors.push(e.message));
   await page.goto("http://127.0.0.1:8765/",{waitUntil:"load"});
+  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await page.evaluate(()=>{
    if(!squadSlots().includes("sava"))selectedPartyIds[selectedPartyIds.length-1]="sava";
    openSquad("home");

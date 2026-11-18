@@ -1,7 +1,7 @@
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const Star=require("../star-core.js"),Daily=require("../daily-core.js");
-const Login=require("../login-core.js");
+const Login=require("../login-core.js"),Skills=require("../skill-core.js");
 const Profiles=require("../hero-stats-profiles.js");
 const Core=require("../hero-stats-core.js"),Bridge=require("../hero-stats-combat-bridge.js");
 const fresh=()=>({saveVersion:3,currency:0,accountXp:0,
@@ -74,4 +74,19 @@ test("NET-007 one seal per full seven-claim calendar cycle",()=>{
  assert.equal(p.skillMaterials.seal,1);
  assert.equal(Login.claim(p,"2026-11-08").day,8);
  assert.equal(p.skillMaterials.seal,1);
+});
+
+test("NET-007 real campaign reward permits a paid skill upgrade without test grants",()=>{
+ const p=fresh(),day="2026-11-18";
+ p.levels={ren:12};
+ Daily.record(p,"campaign-battle",day);
+ assert.ok(Daily.claim(p,"campaign-battle",day));
+ assert.equal(Login.claim(p,day).day,1);
+ assert.equal(p.skillMaterials.manual1,2);
+ assert.equal(Skills.upgrade(p,"ren","basic").level,2);
+ assert.equal(Skills.upgrade(p,"ren","basic").level,3);
+ assert.equal(Skills.level(p,"ren","basic"),3);
+ assert.equal(p.skillMaterials.manual1,0);
+ assert.equal(p.currency,50);
+ assert.equal(Skills.upgrade(p,"ren","basic"),null,"no unlimited manual generation");
 });

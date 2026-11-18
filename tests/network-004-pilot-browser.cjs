@@ -186,7 +186,9 @@ async function run(name,engine,viewport){
  }finally{await browser.close();}
 }
 async function liveByDefault(){
- const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox",
+  "--use-gl=angle","--use-angle=swiftshader","--enable-webgl",
+  "--disable-dev-shm-usage"]});
  const page=await browser.newPage({viewport:{width:844,height:390}});
  try{
   await page.goto(origin,{waitUntil:"load",timeout:60000});

@@ -3,7 +3,7 @@
  */
 const NetworkPilotUI=(()=>{
  "use strict";
- let session=null,onSquad=null,mounted=false,notice="";
+ let session=null,onSquad=null,onReturnToFinder=null,mounted=false,notice="",fromFinder=false;
  const $=id=>document.getElementById(id);
  const names=Object.freeze({
   "net-route-watch":"Дозор на маршруте",
@@ -40,10 +40,31 @@ const NetworkPilotUI=(()=>{
   board.hidden=!!s?.active||!s;
   active.hidden=!s?.active||s.active.phase==="result";
   result.hidden=s?.active?.phase!=="result";
+  $("net005FinderBack").hidden=!fromFinder;
   if(!s){$("net004Meta").textContent="Ожидание сохранения…";return;}
   $("net004Meta").textContent="Сады над пропастью · "+s.board.length+"/"+s.config.capacity+
    " зацепок · влияние (проба): "+(s.influence["gardens-over-abyss"]??0);
   $("net004Refresh").disabled=busy||blocked;
+  const orderLabel=s.order?
+   (s.order.kind==="type"?(types[s.order.targetId]||s.order.targetId):
+    s.order.kind==="region"?"Сады над пропастью":s.order.targetId):
+    "Без приоритета";
+  $("net005OrderStatus").textContent="Приказ: "+orderLabel+
+   (s.order?" · без нужной зацепки: "+s.order.misses+
+    " (тестовая гарантия после "+s.config.guaranteeAfter+" поступлений)":"")+
+   ". Влияет только на новые донесения; заполненная доска не меняется.";
+  const orders=$("net005OrderChoices");orders.replaceChildren();
+  const unset=button("Снять приказ","clear-order");
+  unset.disabled=blocked||busy||!s.order;orders.append(unset);
+  for(const o of session.availableOrders()){
+   const name=o.kind==="type"?(types[o.targetId]||o.targetId):
+    o.kind==="region"?"Сады над пропастью":o.targetId;
+   const control=button(name,"order",o.kind+":"+o.targetId);
+   control.disabled=blocked||busy||
+    (s.order?.kind===o.kind&&s.order?.targetId===o.targetId);
+   control.setAttribute("aria-pressed",String(s.order?.kind===o.kind&&s.order?.targetId===o.targetId));
+   orders.append(control);
+  }
   $("net004Clues").replaceChildren();
   if(!s.board.length)$("net004Clues").append(line("Новых донесений пока нет."));
   for(const clue of s.board){
@@ -53,7 +74,12 @@ const NetworkPilotUI=(()=>{
      " · Зацепка №"+clue.id),
     line("Пробный бой. Реальные награды не назначены."));
    const start=button("Изучить", "start",clue.id);start.disabled=busy||blocked;
-   el.append(start);$("net004Clues").append(el);
+   el.append(start);
+   const mastered=session.canSimulate(clue.id);
+   const sim=button(mastered?"Симулировать · без выплат":
+    "Симуляция закрыта · требуется освоение","simulate",clue.id);
+   sim.disabled=blocked||busy||!mastered;
+   el.append(sim);$("net004Clues").append(el);
   }
   if(s.active&&s.active.phase!=="result"){
    const a=s.active;
@@ -84,11 +110,15 @@ const NetworkPilotUI=(()=>{
   $("net004History").replaceChildren();
   const recent=s.completed.slice(-3).reverse();
   if(recent.length)$("net004History").append(line("Тестовые завершения: "+
-   recent.map(e=>"№"+e.serial+" ("+(names[e.templateId]||e.templateId)+")").join(" · ")));
+   recent.map(e=>"№"+e.serial+" ("+(names[e.templateId]||e.templateId)+
+    (e.kind==="simulated"?" · симуляция":" · бой")+")").join(" · ")));
   $("net004Claim").disabled=true;
+  // Do not overwrite mastery/order-specific disabled states set above.
   document.querySelectorAll("#network [data-net-action]").forEach(el=>{
-   if(el.dataset.netAction!=="fight")el.disabled=blocked||busy||
-    (el.dataset.netAction==="finish"&&s.active?.phase!=="result");
+   const action=el.dataset.netAction;
+   if(["start","simulate","order","clear-order"].includes(action))return;
+   if(action!=="fight"&&action!=="finder-back")el.disabled=blocked||busy||
+    (action==="finish"&&s.active?.phase!=="result");
   });
  }
  async function change(action,value){
@@ -101,17 +131,31 @@ const NetworkPilotUI=(()=>{
   if(result.ok&&action==="approach"&&session.read()?.active?.phase==="battle")
    onSquad();
  }
- function mount({pilot,onOpenSquad}={}){
+ function mount({pilot,onOpenSquad,onBackToFinder}={}){
   if(mounted||!pilot||typeof onOpenSquad!=="function"||!$("network"))return false;
-  session=pilot;onSquad=onOpenSquad;mounted=true;
+  session=pilot;onSquad=onOpenSquad;
+  onReturnToFinder=onBackToFinder;mounted=true;
   $("network").addEventListener("click",event=>{
    const b=event.target.closest?.("[data-net-action]");
    if(!b||!$("network").contains(b))return;
    const action=b.dataset.netAction;
    if(action==="fight"){if(session.isReady()&&session.read()?.active?.phase==="battle")onSquad();return;}
-   if(!["refresh","start","prepare","approach","abandon","finish"].includes(action))return;
-   const arg=action==="start"?Number(b.dataset.netValue):b.dataset.netValue;
-   void change(action,arg);
+   if(action==="finder-back"){
+    if(fromFinder&&typeof onReturnToFinder==="function"){fromFinder=false;onReturnToFinder();}
+    return;
+   }
+   if(!["refresh","start","prepare","approach","abandon","finish",
+    "order","clear-order","simulate"].includes(action))return;
+   let arg=b.dataset.netValue;
+   if(action==="start"||action==="simulate")arg=Number(arg);
+   if(action==="order"){
+    const choices=session.availableOrders();
+    const selected=choices.find(o=>o.kind+":"+o.targetId===arg);
+    if(!selected)return;
+    arg=selected;
+   }
+   if(action==="clear-order")arg=null;
+   void change(action==="clear-order"?"order":action,arg);
   });
   render();
   pilot.open().then(result=>{
@@ -120,6 +164,14 @@ const NetworkPilotUI=(()=>{
   }).catch(()=>{notice="Не удалось загрузить тестовую сеть.";render();});
   return true;
  }
- return Object.freeze({mount,render});
+ function openFromFinder(materialId){
+  if(!mounted||typeof onReturnToFinder!=="function")return false;
+  fromFinder=true;
+  notice="Пробная разведсеть: для материала "+materialId+
+   " нет подтверждённого источника. Здесь не выдаются предметы и награды.";
+  render();
+  return true;
+ }
+ return Object.freeze({mount,render,openFromFinder});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=NetworkPilotUI;

@@ -4,6 +4,7 @@
 const GearUX004=(()=>{
  "use strict";
  let active=false,mode="item",materialId=null,returnContext=null,last=null;
+ let onNetworkPreview=null; // Set only by opt-in NET-005 test mode.
  const get=id=>typeof document==="undefined"?null:document.getElementById(id);
  const node=(tag,cls,content)=>{
   const e=document.createElement(tag);
@@ -138,7 +139,30 @@ const GearUX004=(()=>{
    list.append(card);
   }
   left.append(list);
+  // Only actual catalog-backed matching materials qualify as network sources.
+  // The current production catalog has no templates; pilot fixtures have no
+  // materialId. Never claim a drop quantity that no approved table defines.
+  const networkRefs=typeof GearSourceData!=="undefined"&&
+   typeof GearSourceData.findNetworkSources==="function"?
+   GearSourceData.findNetworkSources(m.id):[];
   right.append(node("h3","","Источник материала"));
+  if(networkRefs.length)right.append(node("p","gear-ux-note",
+   "Разведсеть: "+networkRefs.length+" шаблонов в каталоге. "+
+   "Доступность, количество и награды ещё не подтверждены."));
+  else right.append(node("p","gear-ux-note",
+   "Разведсеть пока не подтверждена как источник этого материала."));
+  // The pilot link must survive a race where game.js mounts the optional
+  // network screen before the GearUX004 callback becomes available. It is
+  // never exposed without the explicit pilot URL flag and mounted pilot.
+  const pilotReady=typeof window!=="undefined"&&
+   /(?:^|[?&])networkPilot=1(?:&|$)/.test(window.location.search)&&
+   typeof NetworkPilotUI!=="undefined"&&
+   typeof NetworkPilotUI.openFromFinder==="function";
+  if(typeof onNetworkPreview==="function"||pilotReady)right.append(
+   btn("Посмотреть пробную разведсеть",()=>{
+    if(typeof onNetworkPreview==="function")onNetworkPreview(m.id);
+    else if(NetworkPilotUI.openFromFinder(m.id))showScreen("network");
+   },"ghost gear-ux-find"));
   right.append(row("Материал",m.label),row("Дефицит","×"+m.missing));
   right.append(node("p","gear-ux-note",
    "Миссии и награды взяты из существующей кампании. Первый вход бесплатен, повтор требует энергии, симуляция — 3★."));
@@ -192,7 +216,10 @@ const GearUX004=(()=>{
    if(mode==="sources")showItem();else{reset();renderHeroDetail();get("gearFocusToggle")?.focus();}
   });
  }
+ function setNetworkPreview(callback){
+  onNetworkPreview=typeof callback==="function"?callback:null;
+ }
  return Object.freeze({reset,cancelReturn,openSlot,restore,render,refresh,hasReturnContext,
-  rememberMission,returnToHero,sourceStatus});
+  rememberMission,returnToHero,sourceStatus,setNetworkPreview});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=GearUX004;

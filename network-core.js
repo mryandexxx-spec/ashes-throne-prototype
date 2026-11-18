@@ -68,7 +68,8 @@ const NetworkCore=(()=>{
   return exact(e,["serial","clueId","templateId","level","regionId","score",
    "rewardRef","kind","status"])&&int(e.serial,1)&&int(e.clueId,1)&&
    id(e.templateId)&&int(e.level,1)&&e.level<=1000&&id(e.regionId)&&
-   int(e.score)&&e.score<=100&&id(e.rewardRef)&&e.kind==="manual"&&e.status==="done";
+   int(e.score)&&e.score<=100&&id(e.rewardRef)&&["manual","simulated"].includes(e.kind)&&
+   (e.kind!=="simulated"||e.score===0)&&e.status==="done";
  }
  function validMap(m,keys){
   return plain(m)&&Object.keys(m).length<=MAX_ROWS&&
@@ -260,6 +261,39 @@ const NetworkCore=(()=>{
   next.completedThrough=(s.completedThrough??0)+prune;
   return validState(next)?next:null;
  }
+ // NET-005 [ПРЕДЛОЖЕНИЕ]: pure simulation completion, NO wallet payout.
+ // The caller supplies the currently eligible, version-pinned catalog.
+ // A stored manual mastery result is mandatory; an arbitrary pilot win at
+ // score=0 never unlocks simulation or changes its threshold.
+ function simulate(s,clueId,catalog,unlocked){
+  if(!validState(s)||s.active!==null||!int(clueId,1)||
+   !Data.validateCatalog(catalog)||!Array.isArray(unlocked)||
+   s.completed.length>=MAX_ROWS||s.nextCompletionId===Number.MAX_SAFE_INTEGER)return null;
+  const i=s.board.findIndex(c=>c.id===clueId);
+  if(i<0)return null;
+  const c=s.board[i],eligible=Data.eligibleTemplates(catalog,unlocked,s.influence);
+  if(!eligible)return null;
+  const template=eligible.find(t=>t.id===c.templateId&&
+   t.revision===c.templateRevision&&t.regionId===c.regionId&&
+   t.type===c.type&&t.rewardRef===c.rewardRef&&
+   t.encounterRef===c.encounterRef&&t.materialId===c.materialId&&
+   t.heroId===c.heroId&&t.threatTag===c.threatTag&&
+   (c.modifierId===null||t.modifierIds.includes(c.modifierId))&&
+   JSON.stringify(t.preparationIds)===JSON.stringify(c.preparationIds)&&
+   JSON.stringify(t.approaches)===JSON.stringify(c.approaches)&&
+   t.levels.includes(c.level));
+  if(!template||!isMastered(s,c.templateId,c.level))return null;
+  const next=clone(s);
+  next.board.splice(i,1);
+  next.completed.push({serial:next.nextCompletionId++,clueId:c.id,
+   templateId:c.templateId,level:c.level,regionId:c.regionId,score:0,
+   rewardRef:c.rewardRef,kind:"simulated",status:"done"});
+  const influence=next.influence[c.regionId]??0;
+  if(influence===Number.MAX_SAFE_INTEGER)return null;
+  next.influence[c.regionId]=influence+1;
+  // Simulated completions never update mastery or threatIntel.
+  return validState(next)?next:null;
+ }
  function isMastered(s,templateId,level){
   if(!validState(s)||!id(templateId)||!int(level,1))return false;
   return (s.mastery[templateId+"|"+level]??-1)>=s.config.masteryScore;
@@ -309,6 +343,6 @@ const NetworkCore=(()=>{
  }
  return Object.freeze({KEY,VERSION,PHASES,validConfig,validClue,validState,
   fresh,setOrder,accrue,start,prepare,approach,battleOutcome,abandon,finish,
-  compactCompleted,isMastered,load,save});
+  compactCompleted,isMastered,simulate,load,save});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=NetworkCore;

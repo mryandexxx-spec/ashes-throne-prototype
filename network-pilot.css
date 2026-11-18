@@ -58,3 +58,19 @@
 @media(prefers-reduced-motion:reduce){
  .net004-screen *{scroll-behavior:auto!important;transition:none!important}
 }
+
+/* NET-005: compact 2D command strip, no scene or resource overhead. */
+.net005-order{
+ min-width:0;padding:8px 10px;border:1px solid rgba(183,140,80,.6);
+ border-radius:8px;background:rgba(14,15,18,.78)
+}
+.net005-order-choices{display:flex;gap:7px;flex-wrap:wrap;margin:7px 0 2px}
+.net005-order-choices button{min-width:96px;flex:0 1 auto}
+.net005-order-choices button[aria-pressed="true"]{
+ outline:2px solid #ecc78b;outline-offset:-3px
+}
+#net005FinderBack{justify-self:start}
+@media(max-height:430px) and (orientation:landscape){
+ .net005-order{padding:5px 8px}
+ .net005-order-choices{margin-top:5px;gap:5px}
+}

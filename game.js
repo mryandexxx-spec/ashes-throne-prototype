@@ -3956,8 +3956,13 @@ if(NETWORK_PILOT_ENABLED&&typeof NetworkPilotSession!=="undefined"&&
   }
  });
  if(networkPilot&&NetworkPilotUI.mount({pilot:networkPilot,
-   onOpenSquad:()=>openSquad("network")})){
+   onOpenSquad:()=>openSquad("network"),
+   onBackToFinder:()=>showScreen("heroDetail")})){
   if(entry)entry.hidden=false;
+  if(typeof GearUX004!=="undefined"&&typeof GearUX004.setNetworkPreview==="function")
+   GearUX004.setNetworkPreview(materialId=>{
+    if(NetworkPilotUI.openFromFinder(materialId))showScreen("network");
+   });
  }
 }
 

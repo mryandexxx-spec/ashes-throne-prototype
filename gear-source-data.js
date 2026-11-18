@@ -73,6 +73,26 @@ const GearSourceData=(()=>{
   }
   return Object.freeze(entries);
  }
- return Object.freeze({catalogIssues,findSources});
+ // NET-005: optional future network references. Only catalog-backed material
+ // matches are presented. No inferred drop, rate, quantity or unapproved source.
+ function findNetworkSources(materialId,catalog=null,unlockedRegions=null,influence={}){
+  const data=typeof NetworkData!=="undefined"?NetworkData:
+   typeof require==="function"?require("./network-data.js"):null;
+  if(!data||typeof GearData==="undefined"||
+   !GearData.MATERIALS.includes(materialId)||(
+    unlockedRegions!==null&&!Array.isArray(unlockedRegions)))return EMPTY;
+  const chosen=catalog??data.CATALOG;
+  if(!data.validateCatalog(chosen))return EMPTY;
+  // Without a region-unlock proof show only catalogue candidates, explicitly
+  // marked UNKNOWN: never misrepresent them as presently accessible.
+  const eligible=unlockedRegions===null?chosen.templates:
+   data.eligibleTemplates(chosen,unlockedRegions,influence);
+  if(!eligible)return EMPTY;
+  return Object.freeze(eligible.filter(t=>t.materialId===materialId)
+   .map(t=>Object.freeze({templateId:t.id,regionId:t.regionId,
+    materialId,levels:Object.freeze(t.levels.slice()),rewardRef:t.rewardRef,
+    access:unlockedRegions===null?"unknown":"eligible"})));
+ }
+ return Object.freeze({catalogIssues,findSources,findNetworkSources});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=GearSourceData;

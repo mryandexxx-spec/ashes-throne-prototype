@@ -63,7 +63,7 @@ async function run(name,engine,viewport){
   // Use the real itemized Gear Finder UI, not direct screen switching.
   assert.equal(await page.evaluate(()=>openHeroDetail("ren",0)),true);
   await page.locator("#heroDetail").waitFor({state:"visible"});
-  const find=page.locator("#gearUxLeft .gear-ux-find").first();
+  const find=page.locator("#gearUxRight .gear-ux-find").first();
   await find.waitFor({state:"visible",timeout:10000});
   await find.click();
   assert.match(await page.locator("#gearUxLeft").innerText(),/Где добыть/);

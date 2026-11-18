@@ -101,7 +101,44 @@ const NetworkData=(()=>{
  const CATALOG=buildCatalog({version:1,regions:[
   {id:"gardens-over-abyss",name:"Сады над пропастью",unlockRef:null}
  ],templates:[]});
- return Object.freeze({TYPES,ORDER_KINDS,CATALOG,validateCatalog,buildCatalog,
+ // NET-007: all content reuses existing Garden encounters, NPCs and roster IDs.
+ // Economic tiers are a trial balance, not new world canon.
+ const materialIds=["Fe","Le","Cl","Wo","Fa","Th","Gl"];
+ const heroIds=["ren","nada","liora","art","sava"];
+ const tiers=[
+  {id:"early",level:1,influence:0},
+  {id:"middle",level:20,influence:30},
+  {id:"late",level:45,influence:90}
+ ];
+ const liveTemplates=[];
+ for(const tier of tiers){
+  for(const materialId of materialIds){
+   const ref="net07-s-"+materialId.toLowerCase()+"-"+tier.id;
+   liveTemplates.push({
+    id:ref,revision:1,regionId:"gardens-over-abyss",type:"supply",
+    weight:1,minInfluence:tier.influence,levels:[tier.level],
+    preparationIds:["survey","cover"],approaches:[
+     {id:"quiet",waves:1},{id:"cordon",waves:2}],
+    modifierIds:["reinforced","rushed"],materialId,heroId:null,
+    threatTag:null,rewardRef:"reward-"+ref,encounterRef:"encounter-"+ref
+   });
+  }
+  for(const heroId of heroIds){
+   const ref="net07-r-"+heroId+"-"+tier.id;
+   liveTemplates.push({
+    id:ref,revision:1,regionId:"gardens-over-abyss",type:"recruit-intel",
+    weight:1,minInfluence:tier.influence,levels:[tier.level],
+    preparationIds:["survey","cover"],approaches:[
+     {id:"quiet",waves:1},{id:"cordon",waves:2}],
+    modifierIds:["reinforced","rushed"],materialId:null,heroId,
+    threatTag:null,rewardRef:"reward-"+ref,encounterRef:"encounter-"+ref
+   });
+  }
+ }
+ const LIVE_CATALOG=buildCatalog({version:1,regions:[
+  {id:"gardens-over-abyss",name:"Сады над пропастью",unlockRef:null}
+ ],templates:liveTemplates});
+ return Object.freeze({TYPES,ORDER_KINDS,CATALOG,LIVE_CATALOG,validateCatalog,buildCatalog,
   matchesOrder,eligibleTemplates,PROPOSAL_CATALOG});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=NetworkData;

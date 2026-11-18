@@ -5,6 +5,40 @@ const NetworkPilotUI=(()=>{
  "use strict";
  let session=null,onSquad=null,onReturnToFinder=null,mounted=false,notice="",fromFinder=false;
  const $=id=>document.getElementById(id);
+ const isLive=()=>session?.isLive?.()===true;
+ const heroLabels=Object.freeze({ren:"Рен",nada:"Нада",liora:"Лиора",art:"Арт",sava:"Сава"});
+ function clueTitle(clue){
+  if(!isLive())return names[clue.templateId]||"Неизвестная зацепка";
+  return clue.materialId?"Материалы: "+(typeof GearData!=="undefined"?
+   GearData.MATERIAL_LABELS[clue.materialId]||clue.materialId:clue.materialId):
+   clue.heroId?"Сведения: "+(heroLabels[clue.heroId]||clue.heroId):
+   "Разведывательная зацепка";
+ }
+ function rewardText(ref){
+  if(!isLive()||typeof NetworkLiveEconomy==="undefined")return "";
+  const reward=NetworkLiveEconomy.preview(ref);
+  if(!reward)return "Награда не настроена";
+  const mats=Object.entries(reward.materials).map(([k,v])=>"+"+v+" "+(
+   typeof GearData!=="undefined"?GearData.MATERIAL_LABELS[k]||k:k));
+  const shards=Object.entries(reward.heroShards||{}).map(([k,v])=>
+   "+"+v+" осколков: "+(heroLabels[k]||k));
+  return ["+"+reward.currency+" валюты","+"+reward.accountXp+" XP",...mats,...shards].join(" · ");
+ }
+ async function collectRewards(){
+  if(!isLive()||!session?.isReady())return;
+  let result;
+  try{result=await session.collect();}catch(_){result={ok:false,code:"REWARD_SYNC_FAILED"};}
+  if(result.ok&&result.paid>0){
+   notice="Получено за "+result.paid+" зацепок: +"+result.currency+
+    " валюты · +"+result.xp+" XP."+
+    (result.materials?" Материалов: +"+result.materials+".":"")+
+    (result.shards?" Осколков: +"+result.shards+".":"");
+  }else if(!result.ok){
+   notice=errorText[result.code]||"Не удалось выдать награду: "+result.code+
+    ". Выплата сохранена в очереди; попробуйте снова.";
+  }
+  render();
+ }
  const names=Object.freeze({
   "net-route-watch":"Дозор на маршруте",
   "net-lost-cargo":"След пропавшей поклажи",
@@ -21,7 +55,10 @@ const NetworkPilotUI=(()=>{
   SAVE_FAILED:"Не удалось подтвердить запись. Перезагрузите страницу, не повторяйте действие.",
   LOAD_FAILED:"Пробное сохранение повреждено или недоступно. Оно не перезаписано.",
   INVALID_TRANSITION:"Действие недоступно в текущей фазе.",
-  EXCLUSIVE_LOCK_FAILED:"Ошибка эксклюзивной записи. Перезагрузите страницу."
+  EXCLUSIVE_LOCK_FAILED:"Ошибка эксклюзивной записи. Перезагрузите страницу.",
+  SESSION_HALTED_RELOAD_REQUIRED:"Начисление приостановлено. Перезагрузите страницу.",
+  REWARD_SYNC_FAILED:"Платёж не подтверждён. Перезагрузите страницу.",
+  SAVE_OUTCOME_UNKNOWN:"Результат сохранения неизвестен. Перезагрузите страницу."
  });
  function line(text,tag="p"){const el=document.createElement(tag);el.textContent=text;return el;}
  function button(text,action,value){
@@ -35,7 +72,8 @@ const NetworkPilotUI=(()=>{
   const s=session.read(),blocked=session.isBlocked(),busy=session.isBusy();
   $("net004Notice").textContent=blocked?
    "Режим заблокирован: нет безопасной записи. Перезагрузите страницу.":
-   notice||"Пробный режим без наград и расхода энергии. Данные хранятся отдельно.";
+   notice||(isLive()?"Разведсеть: выполняйте зацепки, направляйте поиск материалов и осколков.":
+    "Пробный режим без наград и расхода энергии. Данные хранятся отдельно.");
   const board=$("net004Board"),active=$("net004Active"),result=$("net004Result");
   board.hidden=!!s?.active||!s;
   active.hidden=!s?.active||s.active.phase==="result";
@@ -43,7 +81,14 @@ const NetworkPilotUI=(()=>{
   $("net005FinderBack").hidden=!fromFinder;
   if(!s){$("net004Meta").textContent="Ожидание сохранения…";return;}
   $("net004Meta").textContent="Сады над пропастью · "+s.board.length+"/"+s.config.capacity+
-   " зацепок · влияние (проба): "+(s.influence["gardens-over-abyss"]??0);
+   " зацепок · влияние: "+(s.influence["gardens-over-abyss"]??0)+
+   (isLive()?" · новые зацепки каждые 6 часов":" (проба)");
+  const collect=$("net007Collect");
+  if(collect){const pending=session.pendingCount?.()??0;
+   collect.hidden=!isLive()||pending===0;
+   collect.disabled=blocked||busy;
+   collect.textContent="Забрать награды: "+pending;
+  }
   $("net004Refresh").disabled=busy||blocked;
   const orderLabel=s.order?
    (s.order.kind==="type"?(types[s.order.targetId]||s.order.targetId):
@@ -58,7 +103,10 @@ const NetworkPilotUI=(()=>{
   unset.disabled=blocked||busy||!s.order;orders.append(unset);
   for(const o of session.availableOrders()){
    const name=o.kind==="type"?(types[o.targetId]||o.targetId):
-    o.kind==="region"?"Сады над пропастью":o.targetId;
+    o.kind==="region"?"Сады над пропастью":o.kind==="hero"?
+    heroLabels[o.targetId]||o.targetId:o.kind==="material"&&
+    typeof GearData!=="undefined"?GearData.MATERIAL_LABELS[o.targetId]||o.targetId:
+    o.targetId;
    const control=button(name,"order",o.kind+":"+o.targetId);
    control.disabled=blocked||busy||
     (s.order?.kind===o.kind&&s.order?.targetId===o.targetId);
@@ -69,21 +117,22 @@ const NetworkPilotUI=(()=>{
   if(!s.board.length)$("net004Clues").append(line("Новых донесений пока нет."));
   for(const clue of s.board){
    const el=document.createElement("article");el.className="net004-clue";
-   el.append(line(names[clue.templateId]||"Неизвестная зацепка","h3"),
+   el.append(line(clueTitle(clue),"h3"),
     line((types[clue.type]||clue.type)+" · Уровень "+clue.level+
      " · Зацепка №"+clue.id),
-    line("Пробный бой. Реальные награды не назначены."));
+    line(isLive()?rewardText(clue.rewardRef):"Пробный бой. Реальные награды не назначены."));
    const start=button("Изучить", "start",clue.id);start.disabled=busy||blocked;
    el.append(start);
    const mastered=session.canSimulate(clue.id);
-   const sim=button(mastered?"Симулировать · без выплат":
+   const sim=button(mastered?(isLive()?"Симулировать · полная награда":
+    "Симулировать · без выплат"):
     "Симуляция закрыта · требуется освоение","simulate",clue.id);
    sim.disabled=blocked||busy||!mastered;
    el.append(sim);$("net004Clues").append(el);
   }
   if(s.active&&s.active.phase!=="result"){
    const a=s.active;
-   $("net004ActiveTitle").textContent=names[a.clue.templateId]||"Зацепка №"+a.clue.id;
+   $("net004ActiveTitle").textContent=clueTitle(a.clue);
    $("net004ActiveDetail").textContent=
     a.phase==="brief"?"Выберите подготовку. Разведка раскрывает рекомендуемую цель; прикрытие снижает атаку противника только в пробе.":
     a.phase==="approach"?"Выберите подход. Тихий — одна волна, окружение — две отдельные волны.":
@@ -115,13 +164,14 @@ const NetworkPilotUI=(()=>{
      "/100 · "+stars+"★. Волны: "+s.active.waveSummaries.map(x=>
       x.score+" ("+x.knockedOut+"/"+x.deployed+" нокаутов; "+
        x.allyActions+" действий)").join(" → ")+
-     ". Тестовые цели и норматив действий временные. Награды не начисляются.";
+     ". "+(isLive()?rewardText(s.active.clue.rewardRef):
+      "Тестовые цели и норматив действий временные. Награды не начисляются.");
    }
    $("net004Finish").disabled=blocked||busy;
   }
   $("net004History").replaceChildren();
   const recent=s.completed.slice(-3).reverse();
-  if(recent.length)$("net004History").append(line("Тестовые завершения: "+
+  if(recent.length)$("net004History").append(line((isLive()?"Завершённые зацепки: ":"Тестовые завершения: ")+
    recent.map(e=>"№"+e.serial+" ("+(names[e.templateId]||e.templateId)+
     (e.kind==="simulated"?" · симуляция":" · бой")+")").join(" · ")));
   $("net004Claim").disabled=true;
@@ -139,6 +189,9 @@ const NetworkPilotUI=(()=>{
   let result;
   try{result=await session.change(action,value);}catch(_){result={ok:false,code:"SAVE_FAILED"};}
   if(!result.ok)notice=errorText[result.code]||"Действие отклонено: "+result.code;
+  if(result.ok&&isLive()&&(action==="finish"||action==="simulate")){
+   await collectRewards();return;
+  }
   render();
   if(result.ok&&action==="approach"&&session.read()?.active?.phase==="battle")
    onSquad();
@@ -152,6 +205,7 @@ const NetworkPilotUI=(()=>{
    if(!b||!$("network").contains(b))return;
    const action=b.dataset.netAction;
    if(action==="fight"){if(session.isReady()&&session.read()?.active?.phase==="battle")onSquad();return;}
+   if(action==="collect"){void collectRewards();return;}
    if(action==="finder-back"){
     if(fromFinder&&typeof onReturnToFinder==="function"){fromFinder=false;onReturnToFinder();}
     return;
@@ -173,13 +227,16 @@ const NetworkPilotUI=(()=>{
   pilot.open().then(result=>{
    if(!result.ok)notice=errorText[result.code]||result.code;
    render();
-  }).catch(()=>{notice="Не удалось загрузить тестовую сеть.";render();});
+   if(result.ok&&isLive())void collectRewards();
+  }).catch(()=>{notice="Не удалось загрузить разведсеть.";render();});
   return true;
  }
  function openFromFinder(materialId){
   if(!mounted||typeof onReturnToFinder!=="function")return false;
   fromFinder=true;
-  notice="Пробная разведсеть: для материала "+materialId+
+  notice=isLive()?"Выберите приказ на материал "+materialId+
+   ", затем выполняйте соответствующие зацепки.":
+   "Пробная разведсеть: для материала "+materialId+
    " нет подтверждённого источника. Здесь не выдаются предметы и награды.";
   render();
   return true;

@@ -290,6 +290,7 @@ const NETWORK_PILOT_ENABLED=typeof window!=="undefined"&&
  typeof window.location?.search==="string"&&
  /(?:^|[?&])networkPilot=1(?:&|$)/.test(window.location.search);
 let networkPilot=null,battleIsNetwork=false,networkResultRecorded=false,networkResultReady=false;
+let weeklySession=null,battleIsWeekly=false,weeklyResultRecorded=false,weeklyResultReady=false;
 let battleIsCampaign=false;
 let battleIsNpcMissionPilot=false; // NPC roster, normal campaign rewards and saves.
 let battleIsLoreTraining=false; // Noncanonical combat, no costs or rewards.
@@ -689,7 +690,7 @@ function prepareLoreRequiredSlots(current){
 function setSquadSlots(slots){
  if(isLoreRequiredSquad()){
   loreSquadSlots=slots.slice(0,MAX_SQUAD);
- }else if(squadReturnScreen==="network"&&networkSquadSlots){
+ }else if(["network","weekly"].includes(squadReturnScreen)&&networkSquadSlots){
   networkSquadSlots=slots.slice(0,MAX_SQUAD);
  }else{
   selectedLeaderId=slots[0];
@@ -765,7 +766,7 @@ function hasLeaderSkill(id){
 }
 function squadSlots(){
  if(isLoreRequiredSquad()&&loreSquadSlots)return loreSquadSlots.slice();
- if(squadReturnScreen==="network"&&networkSquadSlots)return networkSquadSlots.slice();
+ if(["network","weekly"].includes(squadReturnScreen)&&networkSquadSlots)return networkSquadSlots.slice();
  return [selectedLeaderId,...selectedPartyIds];
 }
 function selectedParty(){
@@ -975,7 +976,7 @@ function disbandSquad(){
  return true;
 }
 function openSquad(returnTo="home"){
- if(returnTo==="network"){
+ if(["network","weekly"].includes(returnTo)){
   if(!networkSquadSlots)networkSquadSlots=[selectedLeaderId,...selectedPartyIds];
  }else networkSquadSlots=null;
  if(returnTo==="loreRequired"){
@@ -1102,6 +1103,7 @@ function showScreen(id){
  if(id==="challenges")renderChallenges();
  if(id==="operations")renderOperations();
  if(id==="network"&&networkPilot)NetworkPilotUI.render();
+ if(id==="network"&&weeklySession)WeeklyThreatUI.refresh();
  if(id==="operationResult")renderOperationResult();
  if(id==="signalOperations")renderSignalOperations();
  if(id==="signalOperationResult")renderSignalOperationResult();
@@ -1129,10 +1131,11 @@ function showScreen(id){
   operationBattleRunId=battleIsOperation?operationProgress.active.runId:null;
   battleIsNetwork=squadReturnScreen==="network"&&
    networkPilot?.isReady()&&networkPilot.read()?.active?.phase==="battle";
+  battleIsWeekly=squadReturnScreen==="weekly"&&weeklySession?.isReady()&&!!weeklySession.read()?.active;
   battleIsSignal=squadReturnScreen==="signalOperations"&&signalProgress.active?.phase==="battle";
   signalBattleRunId=battleIsSignal?signalProgress.active.runId:null;
   const label=$("#battleMissionLabel");
-  if(label)label.textContent=battleIsNetwork?(NETWORK_PILOT_ENABLED?"РАЗВЕДСЕТЬ · ПРОБНЫЙ БОЙ (ВНЕ КАНОНА)":
+  if(label)label.textContent=battleIsWeekly?"ГЛАВНАЯ УГРОЗА · ИСПЫТАНИЕ НЕДЕЛИ":battleIsNetwork?(NETWORK_PILOT_ENABLED?"РАЗВЕДСЕТЬ · ПРОБНЫЙ БОЙ (ВНЕ КАНОНА)":
    "РАЗВЕДСЕТЬ · ДОБЫЧА РЕСУРСОВ"):
    battleIsSignal?"РАЗВЕДОПЕРАЦИЯ · ТРЕВОЖНЫЙ СИГНАЛ":
    battleIsOperation?"РАЗВЕДОПЕРАЦИЯ · ДВА КУРЬЕРА":
@@ -1149,7 +1152,7 @@ function showScreen(id){
   const objective=$("#battleChallengeGoal");
   if(objective){
    objective.hidden=!!trial||
-   !battleIsNetwork&&!battleIsLoreRequired&&!battleIsLoreTraining&&!battleIsChallenge&&!battleIsOperation&&!battleIsSignal;
+   !battleIsWeekly&&!battleIsNetwork&&!battleIsLoreRequired&&!battleIsLoreTraining&&!battleIsChallenge&&!battleIsOperation&&!battleIsSignal;
    const def=battleIsChallenge?ChallengeCore.get(activeChallengeId):null;
    const priority=def?.kind==="tactical"?(battleIsNpcChallengePilot?
     NpcChallengePilot.spawn(activeChallengeId)?.find(e=>e.id===
@@ -1158,7 +1161,7 @@ function showScreen(id){
    const npcGoal=battleIsNpcChallengePilot?NpcChallengePilot.goal(activeChallengeId,
     selectedParty()[0]?.name):null;
    const networkPlan=battleIsNetwork?NetworkEncounterAdapter.plan(networkPilot.read()):null;
-    objective.textContent=battleIsNetwork?(networkPlan?
+    objective.textContent=battleIsWeekly?"Устраните отмеченного противника первым. Нокауты и темп влияют на оценку S1; подготовка ослабляет врагов.":battleIsNetwork?(networkPlan?
      "Оценка S1: первым победите отмеченного противника («"+
       networkPlan.first[0].name+"»). Цель +10; "+
       "темп +5 до "+Math.max(5,networkPlan.first.length*5)+
@@ -1810,7 +1813,10 @@ $("#squadStart").addEventListener("click",()=>{
   return;
  }
  if(count===0)return;
- if(squadReturnScreen==="network"&&(!networkPilot?.isReady()||
+ if(squadReturnScreen==="weekly"&&(!weeklySession?.isReady()||!weeklySession.read()?.active)){
+   const warning=$("#squadWarning");if(warning){warning.textContent="Недельная контрольная точка недоступна.";warning.hidden=false;}return;
+  }
+  if(squadReturnScreen==="network"&&(!networkPilot?.isReady()||
   networkPilot.read()?.active?.phase!=="battle")){
   const warning=$("#squadWarning");
   if(warning){warning.textContent="Нет подтверждённой контрольной точки разведсети. Вернитесь к донесениям.";
@@ -2942,7 +2948,17 @@ function syncBattleUI(){
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
   missionResultRecorded=true;
  }
- if(battleIsNetwork&&!state.active&&!networkResultRecorded){
+ if(battleIsWeekly&&!state.active&&!weeklyResultRecorded){
+   weeklyResultRecorded=true;const terminalWeekly=state;
+   void WeeklyThreatUI.finish(terminalWeekly).then(()=>{
+    weeklyResultReady=true;
+    if(battleIsWeekly&&state===terminalWeekly&&!isVisualTransition())syncBattleUI();
+   }).catch(()=>{
+    weeklyResultReady=true;
+    if(battleIsWeekly&&state===terminalWeekly&&!isVisualTransition())syncBattleUI();
+   });
+  }
+  if(battleIsNetwork&&!state.active&&!networkResultRecorded){
   networkResultRecorded=true;
   const terminalBattle=state;
   void networkPilot.complete(terminalBattle).then(()=>{
@@ -3016,7 +3032,10 @@ function syncBattleUI(){
   updateMeshes();
   return;
  }
- if(battleIsNetwork&&!state.active&&networkResultReady&&!missionResultShown){
+ if(battleIsWeekly&&!state.active&&weeklyResultReady&&!missionResultShown){
+   missionResultShown=true;showScreen("network");return;
+  }
+  if(battleIsNetwork&&!state.active&&networkResultReady&&!missionResultShown){
   missionResultShown=true;
   showScreen("network");
   return;
@@ -3229,6 +3248,7 @@ function resetBattle(){
  signalResultRecorded=false;
  networkResultRecorded=false;
  networkResultReady=false;
+ weeklyResultRecorded=false;weeklyResultReady=false;
  signalCaptureFailed=false;
  signalBattleTracker=battleIsSignal?SignalOperationCore.startTracker(signalProgress.active):null;
  challengeLastStars=0;
@@ -3237,7 +3257,14 @@ function resetBattle(){
   battleIsNpcChallengePilot?NpcChallengePilot.trackerTargets(activeChallengeId):null):null;
  lastMissionStars=0;
  selectedAbility="basic";
- if(battleIsNetwork){
+ if(battleIsWeekly){
+   const snap=weeklySession?.read();
+   const launched=snap&&WeeklyThreatCore.startBattle(snap,selectedParty(),CombatCore,squadSlots()[0]);
+   if(!launched)throw Error("NET008A_WEEKLY_CHECKPOINT_INVALID");
+   state=launched.battle;ensureEncounterNpcVisuals(launched.plan.first);
+   CombatCore.advanceToPlayerTurn(state);syncBattleUI();return;
+  }
+  if(battleIsNetwork){
   const active=networkPilot?.read();
   const launched=active&&NetworkEncounterAdapter.startBattle(active,selectedParty(),
    {combat:CombatCore,leaderId:squadSlots()[0]});
@@ -3985,7 +4012,21 @@ if(typeof NetworkPilotSession!=="undefined"&&
   if(entry){entry.hidden=false;
    entry.textContent=NETWORK_PILOT_ENABLED?"⌖ Разведсеть · пробный режим":
     "⌖ Разведсеть · добыча ресурсов";}
-  if(typeof GearUX004!=="undefined"&&typeof GearUX004.setNetworkPreview==="function")
+  if(!NETWORK_PILOT_ENABLED&&typeof WeeklyThreatCore!=="undefined"&&typeof WeeklyThreatUI!=="undefined"){
+     weeklySession=WeeklyThreatCore.create({
+      storageProvider:()=>window.localStorage,
+      exclusive:ProgressWriterCore.exclusive,ownsLock:ProgressWriterCore.isOwner,
+      now:()=>Date.now(),day:dailyDay,heroes:ALLIES,
+      onCredit:runtime=>{
+       if(!runtime||runtime.saveVersion!==3)return;
+       Object.keys(progress).forEach(key=>delete progress[key]);
+       Object.assign(progress,runtime);renderAccountHeader();renderHeroes();renderPlayerProfile();
+      }
+     });
+     if(weeklySession)WeeklyThreatUI.mount({weekly:weeklySession,
+      networkSession:networkPilot,onOpenSquad:()=>openSquad("weekly")});
+    }else if($("#net008aThreat"))$("#net008aThreat").hidden=true;
+    if(typeof GearUX004!=="undefined"&&typeof GearUX004.setNetworkPreview==="function")
    GearUX004.setNetworkPreview(materialId=>{
     if(NetworkPilotUI.openFromFinder(materialId))showScreen("network");
    });

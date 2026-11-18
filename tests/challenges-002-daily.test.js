@@ -106,7 +106,7 @@ test("claim all is atomic on overflow, missing materials and backwards clock",()
  assert.equal(JSON.stringify(p),before);
 });
 test("new daily tasks survive v3 save/load and a failed write can be rolled back",()=>{
- const {S}=vm.runInNewContext(["gear-data.js","progress-core.js","daily-core.js",
+ const {S}=vm.runInNewContext(["gear-data.js","progress-core.js","skill-core.js","daily-core.js",
   "progress-v3-core.js","save-core.js"].map(read).join("\n")+"\n({S:SaveCore})");
  const heroes=["kael","lyra","darin","medic-demo","test-area-damage"].map(id=>({id,side:"ally"}));
  const files=new Map();

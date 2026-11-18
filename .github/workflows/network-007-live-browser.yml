@@ -1,0 +1,67 @@
+name: NET-007 live network Chromium and WebKit
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'network-*.js'
+      - 'reward-policy-core.js'
+      - 'progress-*.js'
+      - 'star-core.js'
+      - 'skill-core.js'
+      - 'daily-core.js'
+      - 'login-core.js'
+      - 'game.js'
+      - 'index.html'
+      - 'package.json'
+      - 'tests/network-*.js'
+      - 'tests/network-*.cjs'
+      - '.github/workflows/network-007-live-browser.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'network-*.js'
+      - 'reward-policy-core.js'
+      - 'progress-*.js'
+      - 'star-core.js'
+      - 'skill-core.js'
+      - 'daily-core.js'
+      - 'login-core.js'
+      - 'game.js'
+      - 'index.html'
+      - 'package.json'
+      - 'tests/network-*.js'
+      - 'tests/network-*.cjs'
+      - '.github/workflows/network-007-live-browser.yml'
+concurrency:
+  group: net007-live-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  live-network-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    permissions:
+      contents: read
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Test live payouts, reloads and isolated pilot in Chromium and WebKit
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/net007.log 2>&1 &
+          sleep 2
+          node tests/network-004-pilot-browser.cjs
+          node tests/network-005-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: net007-live-browser
+          path: |
+            artifacts/net004-pilot/
+            artifacts/net005/
+          retention-days: 7
+          if-no-files-found: warn

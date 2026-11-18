@@ -284,7 +284,7 @@ const NetworkCore=(()=>{
   if(!validState(s)||s.active===null||s.active.phase==="result")return null;
   return restoreClue(s);
  }
- function finish(s){
+ function finish(s,intelKey=null){
   if(!validState(s)||s.active?.phase!=="result"||
    s.completed.length>=MAX_ROWS||s.nextCompletionId===Number.MAX_SAFE_INTEGER)return null;
   const next=clone(s),a=next.active,c=a.clue;
@@ -298,7 +298,13 @@ const NetworkCore=(()=>{
   next.mastery[key]=Math.max(next.mastery[key]??0,a.score);
   const influence=next.influence[c.regionId]??0;
   if(influence===Number.MAX_SAFE_INTEGER)return null;
-  next.influence[c.regionId]=influence+1;next.active=null;
+  next.influence[c.regionId]=influence+1;
+   // Only a manual, verified S1 clue produces intelligence for the UTC week.
+   if(c.threatTag==="weekly-gardens"&&tracked&&
+    typeof intelKey==="string"&&/^\\d{4}-\\d{2}-\\d{2}$/.test(intelKey)){
+    next.threatIntel[intelKey]=Math.min(1000000,(next.threatIntel[intelKey]??0)+1);
+   }
+   next.active=null;
   return validState(next)?next:null;
  }
  // Only compact durable completed entries that have already been paid in v3.

@@ -147,8 +147,8 @@ const GearUX004=(()=>{
    GearSourceData.findNetworkSources(m.id):[];
   right.append(node("h3","","Источник материала"));
   if(networkRefs.length)right.append(node("p","gear-ux-note",
-   "Разведсеть: "+networkRefs.length+" подходящих шаблонов в каталоге. "+
-   "Количество и награды ещё не утверждены."));
+   "Разведсеть: "+networkRefs.length+" шаблонов в каталоге. "+
+   "Доступность, количество и награды ещё не подтверждены."));
   else right.append(node("p","gear-ux-note",
    "Разведсеть пока не подтверждена как источник этого материала."));
   if(typeof onNetworkPreview==="function")right.append(

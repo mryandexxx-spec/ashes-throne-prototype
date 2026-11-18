@@ -217,7 +217,7 @@ test("NET-003 saved mid-battle checkpoint restores the SAME wave and seed",()=>{
  assert.equal(Adapter.complete(nextLoad.state,resumed.battle,3),null);
  const last=Adapter.startBattle(nextLoad.state,[hero()],{combat:C});
  win(last.battle);
- const completed=Adapter.complete(nextLoad.state,last.battle,3);
+ const completed=Adapter.complete(nextLoad.state,last.battle);
  assert.equal(Network.finish(completed).completed.length,1);
  assert.equal(db.has("ashes-throne.progress.v3"),false,"no wallet write");
 });

@@ -301,7 +301,7 @@ const NetworkCore=(()=>{
   next.influence[c.regionId]=influence+1;
    // Only a manual, verified S1 clue produces intelligence for the UTC week.
    if(c.threatTag==="weekly-gardens"&&tracked&&
-    typeof intelKey==="string"&&/^\\d{4}-\\d{2}-\\d{2}$/.test(intelKey)){
+    typeof intelKey==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(intelKey)){
     next.threatIntel[intelKey]=Math.min(1000000,(next.threatIntel[intelKey]??0)+1);
    }
    next.active=null;

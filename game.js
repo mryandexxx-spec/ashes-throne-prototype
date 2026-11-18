@@ -2508,6 +2508,49 @@ function renderLoreTrainingResult(){
 $("#loreTrainingResultBack")?.addEventListener("click",returnToLoreMap);
 $("#loreTrainingResultRetry")?.addEventListener("click",openLoreTraining);
 $("#loreTrainingResultHome")?.addEventListener("click",()=>showScreen("home"));
+// LC-008D: only Act I is live. A claimed receipt is never derived from UI state.
+function loreActOneStatus(){
+ if(saveBlocked||!saveAvailable||progress.saveVersion!==3||
+    typeof LoreActOneRewardCore==="undefined"||
+    typeof ProgressWriterCore==="undefined"||!ProgressWriterCore.isOwner())return "blocked";
+ return LoreActOneRewardCore.status({
+  storageProvider:()=>window.localStorage,heroes:ALLIES
+ });
+}
+let loreActOneClaiming=false;
+async function claimLoreActOne(){
+ if(loreActOneClaiming)return {message:"Получение награды уже выполняется."};
+ if(loreActOneStatus()!=="claimable")
+  return {message:loreActOneStatus()==="claimed"?"Эта награда уже получена.":"Для награды необходимо завершить первый акт и сохранить обязательные победы."};
+ loreActOneClaiming=true;
+ try{
+  const result=await LoreActOneRewardCore.claim({
+   storageProvider:()=>window.localStorage,heroes:ALLIES,
+   exclusive:ProgressWriterCore.exclusive,day:DailyCore.localDay()
+  });
+  if(!result.ok){
+   // Unknown write outcome or runtime mismatch: fail closed until reloaded.
+   if(["SAVE_OUTCOME_UNKNOWN","REWARD_SYNC_FAILED","EXCLUSIVE_LOCK_FAILED",
+       "STALE_WALLET","WALLET_READ_FAILED","INVALID_WALLET"].includes(result.code)){
+    window.walletWriterHalt?.();
+    return {message:"Не удалось подтвердить состояние кошелька. Перезагрузите игру перед повторной попыткой."};
+   }
+   return {message:result.code==="ALREADY_CLAIMED"?"Награда уже получена.":
+    result.code==="PROOF_NOT_PERSISTED"?"Сначала завершите акт I и сохраните все обязательные победы.":
+    "Награда не выдана ("+result.code+"). Сохранённое право на неё останется доступным."};
+  }
+  // Keep the SAME runtime object held by all UI/battle handlers. A direct
+  // RewardPolicy write has already incremented the persisted save revision.
+  Object.keys(progress).forEach(key=>delete progress[key]);
+  Object.assign(progress,result.runtime);
+  saveAvailable=true;
+  renderAccountHeader();renderPlayerProfile();renderDailyTasks();renderHeroes();
+  return {message:"Получено: 1 500 валюты, 180 Account XP, железо ×5, кожа ×6, ткань ×8, древесина ×1, крепёж ×3, прочная нить ×3."};
+ }catch(_){
+  window.walletWriterHalt?.();
+  return {message:"Нельзя подтвердить выплату. Перезагрузите игру и проверьте баланс."};
+ }finally{loreActOneClaiming=false;}
+}
 // CAMPAIGN-HUB-001: presentation-only navigation; mission IDs and saves are unchanged.
 let selectedCampaignPath=null;
 const CAMPAIGN_PATH_TITLES=Object.freeze({training:"Учебная кампания",lore:"Кампании лора",main:"Путь к престолу"});
@@ -2528,7 +2571,9 @@ function showCampaignPath(path){
   if(loreRoot&&LoreCampaignUI.mount(loreRoot,ActiveLoreCampaign.data,LoreCampaignCore,{
    pack:ActiveLoreCampaign.pack,
    onStartRequiredBattle:openLoreRequiredBattle,
-   onStartTraining:openLoreTraining
+   onStartTraining:openLoreTraining,
+   onClaimActOne:claimLoreActOne,
+   getActOneRewardStatus:loreActOneStatus
   }))LoreCampaignUI.open();
  }
 }

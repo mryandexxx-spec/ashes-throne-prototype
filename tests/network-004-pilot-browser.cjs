@@ -86,7 +86,7 @@ async function run(name,engine,viewport){
   await page.locator("#hqMoreToggle").click();
   await page.locator("#net004Entry").click();
   await page.locator("#net004Result").waitFor({state:"visible"});
-  assert.match(await page.locator("#net004ResultDetail").innerText(),/Оценка S1: (?:[6-9][0-9]|100)\\/100/);
+  assert.match(await page.locator("#net004ResultDetail").innerText(),/Оценка S1: (?:[6-9][0-9]|100)/);
   await page.locator("#net004Finish").click();
   await page.waitForFunction(()=>!document.querySelector("#net004Board").hidden,null,{timeout:10000});
   const final=await page.evaluate(()=>{

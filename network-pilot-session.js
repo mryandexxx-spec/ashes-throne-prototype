@@ -102,15 +102,13 @@ const NetworkPilotSession=(()=>{
     return persist(next);
    });
   }
-  // Call only with the current CombatCore object captured by the game.
-  // final score=0 is a visibly labelled pilot placeholder, not balance.
+  // Only the verified CombatCore battle may produce S1 scoring.
+  // Uses the same isolated pilot key; never touches wallet or live network.
   async function complete(battle){
    if(blocked)return fail("SESSION_BLOCKED_RELOAD_REQUIRED");
    if(!opened||!state||!battle)return fail("INVALID_BATTLE");
    return transaction(()=>{
-    const score=state.active?.clue?.approaches.find(x=>x.id===state.active.approach)?.waves===
-     state.active?.wave+1&&battle.winner==="ally"?0:null;
-    const next=Adapter.complete(state,battle,score);
+    const next=Adapter.complete(state,battle);
     if(!next)return fail("INVALID_BATTLE_OUTCOME");
     return persist(next);
    });

@@ -101,6 +101,70 @@ async function run(name,engine,viewport){
   assert.equal(final.wallet,begin.wallet);
   assert.equal(final.overflow,false);
   assert.deepEqual(errors.filter(x=>/TypeError|ReferenceError|Net004|NETWORK_PILOT/i.test(x)),[]);
+  // One real two-encounter UI smoke. Only Chromium 844 runs this extra journey:
+  // the four-engine baseline above remains fast; the core is covered by Node.
+  if(name==="chromium"&&viewport.width===844){
+   await page.locator('#net004Clues [data-net-action="start"]').first().click();
+   await page.locator('[data-net-action="prepare"][data-net-value="cover"]').click();
+   await page.locator('[data-net-action="approach"][data-net-value="cordon"]').click();
+   await page.locator("#squad").waitFor({state:"visible",timeout:10000});
+   await page.locator("#squadStart").click();
+   await page.locator("#battle").waitFor({state:"visible",timeout:30000});
+   const firstRoster=await page.evaluate(()=>state.fighters.filter(f=>f.side==="ally")
+    .map(f=>({id:f.id,hp:f.hp,maxHp:f.maxHp,protection:f.protection??0})));
+   assert.ok(firstRoster.length>0);
+   assert.ok(firstRoster.every(f=>f.hp===f.maxHp));
+   await page.locator("#autoBattleBtn").click();
+   await page.locator("#net004Fight").waitFor({state:"visible",timeout:125000});
+   await page.locator("#network").waitFor({state:"visible"});
+   const halfway=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem("ashes-throne.network.pilot.v1"));
+    return {phase:s.active?.phase,wave:s.active?.wave,completed:s.completed.length,
+     revision:s.revision,wallet:localStorage.getItem("ashes-throne.progress.v3")};
+   });
+   assert.equal(halfway.phase,"battle");
+   assert.equal(halfway.wave,1,"first encounter checkpoint must be wave two");
+   assert.equal(halfway.completed,1,"first encounter grants no completion");
+   assert.equal(halfway.wallet,begin.wallet,"no payouts between encounters");
+   // Reload at the checkpoint: encounter two is launched from a fresh squad.
+   await page.reload({waitUntil:"load"});
+   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
+    await page.locator('#loginCalendar [data-screen="home"]').click();
+   await page.locator("#hqMoreToggle").click();
+   await page.locator("#net004Entry").click();
+   await page.locator("#net004Fight").click();
+   await page.locator("#squad").waitFor({state:"visible"});
+   await page.locator("#squadStart").click();
+   await page.locator("#battle").waitFor({state:"visible",timeout:30000});
+   const secondRoster=await page.evaluate(()=>state.fighters.filter(f=>f.side==="ally")
+    .map(f=>({id:f.id,hp:f.hp,maxHp:f.maxHp,protection:f.protection??0,
+     specialCooldown:f.specialCooldown,effects:Object.keys(f.effects)})));
+   assert.deepEqual(secondRoster.map(f=>f.id),firstRoster.map(f=>f.id));
+   assert.ok(secondRoster.every(f=>f.hp===f.maxHp&&f.specialCooldown===0&&
+    f.effects.length===0),"second encounter starts fully restored, no old effects");
+   assert.deepEqual(secondRoster.map(f=>f.protection),firstRoster.map(f=>f.protection));
+   assert.equal(await page.evaluate(()=>state.totalWaves),1,
+    "second encounter is a separate CombatCore battle");
+   await page.locator("#autoBattleBtn").click();
+   await page.locator("#net004Result").waitFor({state:"visible",timeout:125000});
+   await page.locator("#net004Finish").click();
+   await page.waitForFunction(()=>!document.querySelector("#net004Board").hidden);
+   const done=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem("ashes-throne.network.pilot.v1"));
+    return {completed:s.completed.length,active:s.active,
+     wallet:localStorage.getItem("ashes-throne.progress.v3"),
+     liveNetwork:localStorage.getItem("ashes-throne.network.v1"),
+     overflow:document.documentElement.scrollWidth>innerWidth+1};
+   });
+   assert.equal(done.completed,2);
+   assert.equal(done.active,null);
+   assert.equal(done.wallet,begin.wallet);
+   assert.equal(done.liveNetwork,null);
+   assert.equal(done.overflow,false);
+   assert.deepEqual(errors.filter(x=>/TypeError|ReferenceError|Net004|NETWORK_PILOT/i.test(x)),[]);
+   console.log("NET004_TWO_SEPARATE_ENCOUNTERS",name,viewport.width+"x"+viewport.height,
+    "PASS",JSON.stringify({halfway,done}));
+  }
   console.log("NET004_BROWSER",name,viewport.width+"x"+viewport.height,"PASS",JSON.stringify({
    checkpoint,resultSaved:{phase:resultSaved.phase,rev:resultSaved.rev},final}));
  }catch(e){

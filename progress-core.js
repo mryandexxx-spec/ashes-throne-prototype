@@ -396,6 +396,8 @@ const ProgressCore=(()=>{
   if(level===null||level<1||level>maxLevelOf(hero.id))return null;
   // Gear-002: individual bonuses by slot; neither levels nor gear modify speed.
   const bonus=gearBonuses(progress,hero.id),baseFactor=1+(level-1)*0.04;
+  const starRank=typeof StarCore!=="undefined"?StarCore.rankOf(progress,hero.id):null;
+  const starFactor=Number.isInteger(starRank)&&starRank>=1?1+(starRank-1)*0.03:1;
   const stats=bonus.stats||{},extra={};
   // Prototype fighters also receive their real equipped effects; the
   // presentation bridge must not discard these values.
@@ -411,10 +413,11 @@ const ProgressCore=(()=>{
   const basePool=hero.protection??hero.maxProtection??0;
   const pool=hasPool?{protection:basePool+itemProtection,
    maxProtection:(hero.maxProtection??basePool)+itemProtection}:{};
-  return {...hero,...extra,...pool,level,hp:Math.round(hero.hp*(baseFactor+bonus.hp)+(stats.hp||0)),
-   atk:Math.round(hero.atk*(baseFactor+bonus.atk)+(stats.physicalAttack||0)),
-   physicalDefense:(hero.physicalDefense||0)+(stats.physicalDefense||0),
-   magicDefense:(hero.magicDefense||0)+(stats.magicDefense||0)};
+  return {...hero,...extra,...pool,level,
+   hp:Math.round(hero.hp*(baseFactor+bonus.hp+starFactor-1)+(stats.hp||0)),
+   atk:Math.round(hero.atk*(baseFactor+bonus.atk+starFactor-1)+(stats.physicalAttack||0)),
+   physicalDefense:Math.round((hero.physicalDefense||0)*starFactor+(stats.physicalDefense||0)),
+   magicDefense:Math.round((hero.magicDefense||0)*starFactor+(stats.magicDefense||0))};
  }
  function claimFirstClear(progress,missionId,battle){
   const reward=FIRST_CLEAR_REWARDS[missionId];

@@ -29,20 +29,23 @@ const makeCatalog=Data=>Data.buildCatalog({
 });
 function memory(){
  const data=new Map(),calls=[];
- let failure=null;
+ let failure=null,writeAfterFailure=0;
  const store={
   getItem(k){
    calls.push(["get",k]);
    if(failure==="read-wallet"&&k==="ashes-throne.progress.v3")throw Error("read-wallet");
    if(failure==="read-network"&&k==="ashes-throne.network.v1")throw Error("read-network");
    if(failure==="readback-wallet"&&k==="ashes-throne.progress.v3"&&
-    calls.some(x=>x[0]==="set"&&x[1]===k))return "wrong bytes";
+    writeAfterFailure>0)return "wrong bytes";
    if(failure==="readback-network"&&k==="ashes-throne.network.v1"&&
-    calls.some(x=>x[0]==="set"&&x[1]===k))return "wrong bytes";
+    writeAfterFailure>0)return "wrong bytes";
    return data.has(k)?data.get(k):null;
   },
   setItem(k,v){
    calls.push(["set",k]);
+   if(failure==="readback-wallet"&&k==="ashes-throne.progress.v3"||
+      failure==="readback-network"&&k==="ashes-throne.network.v1")
+    writeAfterFailure++;
    if(failure==="write-wallet"&&k==="ashes-throne.progress.v3")throw Error("quota");
    if(failure==="write-network"&&k==="ashes-throne.network.v1")throw Error("quota");
    data.set(k,v);
@@ -50,7 +53,7 @@ function memory(){
    if(failure==="after-write-network"&&k==="ashes-throne.network.v1")throw Error("uncertain");
   }
  };
- return {data,calls,store,provider:()=>store,fail:v=>failure=v};
+ return {data,calls,store,provider:()=>store,fail:v=>{failure=v;writeAfterFailure=0;}};
 }
 function lock(){
  let queue=Promise.resolve();
@@ -288,7 +291,14 @@ test("failed compaction never reverses a credited wallet or loses unpaid work",a
  assert.equal(wallet(s).currency,before.currency);
  assert.equal(persistedNetwork(s).completed.length,2);
  s.storage.fail(null);
- assert.equal((await compact(s)).pruned,1);
+ assert.equal(s.m.NetworkRewardCore.isHalted(),true,
+  "ambiguous compaction failure must halt until reload");
+ const recovered=createModules();
+ const recovery=await recovered.NetworkRewardCore.compact({
+  heroes,storageProvider:s.storage.provider,exclusive:s.exclusive,ownsLock:()=>true
+ });
+ assert.equal(recovery.ok,true);
+ assert.equal(recovery.pruned,1);
  assert.equal(persistedNetwork(s).completed[0].serial,2);
  assert.equal((await claim(s,2)).ok,true);
 });
@@ -304,4 +314,44 @@ test("strict legacy and new saves reject forged counters, negative ledger and un
  assert.equal(s.m.NetworkCore.compactCompleted(original,2),null);
  const broken=clone(s.n);broken.completedThrough=1;
  assert.equal(s.m.NetworkCore.validState(broken),false);
+});
+
+test("two tabs with actual ProgressWriterCore Web Lock cannot both pay serial",async()=>{
+ const s=setup();complete(s);saveNetwork(s);
+ const writer=fs.readFileSync(path.join(__dirname,"..","progress-writer-core.js"),"utf8");
+ const browserTab=()=>vm.runInNewContext(src+"\\n"+writer+
+  "\\n({NetworkRewardCore,ProgressWriterCore})",{window:{}});
+ let owner=false;
+ const manager={
+  request(name,options,fn){
+   if(owner)return Promise.resolve(fn(null));
+   owner=true;
+   return Promise.resolve(fn({name})).finally(()=>{owner=false;});
+  }
+ };
+ const one=browserTab(),two=browserTab();
+ assert.equal((await one.ProgressWriterCore.acquire(manager)).ok,true);
+ const blocked=await two.ProgressWriterCore.acquire(manager);
+ assert.equal(blocked.ok,false);
+ assert.equal(blocked.code,"WALLET_OPEN_IN_ANOTHER_TAB");
+ const rejected=await two.NetworkRewardCore.claim({
+  serial:1,source:reward(),day:DAY,heroes,storageProvider:s.storage.provider,
+  exclusive:two.ProgressWriterCore.exclusive
+ });
+ assert.equal(rejected.code,"EXCLUSIVE_LOCK_REQUIRED");
+ const credited=await one.NetworkRewardCore.claim({
+  serial:1,source:reward(),day:DAY,heroes,storageProvider:s.storage.provider,
+  exclusive:one.ProgressWriterCore.exclusive
+ });
+ assert.equal(credited.ok,true);
+ one.ProgressWriterCore.release();
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal((await two.ProgressWriterCore.acquire(manager)).ok,true);
+ const repeat=await two.NetworkRewardCore.claim({
+  serial:1,source:reward(),day:DAY,heroes,storageProvider:s.storage.provider,
+  exclusive:two.ProgressWriterCore.exclusive
+ });
+ assert.equal(repeat.code,"ALREADY_CLAIMED");
+ two.ProgressWriterCore.release();
+ assert.equal(wallet(s).currency,7);
 });

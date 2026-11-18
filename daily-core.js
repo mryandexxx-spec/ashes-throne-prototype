@@ -110,3 +110,4 @@ const DailyCore=(()=>{
  }
  return Object.freeze({TASKS,IDS,empty,valid,localDay,today,record,unclaimedCount,claim,claimAll});
 })();
+if(typeof module!=="undefined"&&module.exports)module.exports=DailyCore;

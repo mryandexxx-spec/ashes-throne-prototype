@@ -22,10 +22,16 @@ const HeroStatsCombatBridge=(()=>{
   const raw=key=>profile.combatStats[key]+
    (level-1)*(profile.growth?.level?.[key]??0)+
    (stars-1)*(profile.growth?.star?.[key]??0);
+  // NET-007: 3% of base profile per earned star after 1★; gear remains
+  // independent, speed/crit/potency/protection are not multiplied.
+  const starFactor=1+(stars-1)*0.03;
+  const bonusKeys=["hp","physicalAttack","magicAttack","physicalDefense","magicDefense"];
   const bonuses={
    hp:raw("hp")*(gear.hp??0),
    physicalAttack:raw("physicalAttack")*(gear.atk??0)
   };
+  for(const key of bonusKeys)
+   bonuses[key]=(bonuses[key]||0)+profile.combatStats[key]*(starFactor-1);
   const itemStats=progression.gearStats??{};
   if(!itemStats||typeof itemStats!=="object"||Array.isArray(itemStats)||
     Object.keys(itemStats).some(key=>!core.KEYS.includes(key)||key==="speed"||

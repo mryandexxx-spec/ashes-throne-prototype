@@ -119,10 +119,18 @@ test("NET-003 defeat, abandonment, duplicate result and wrong-run binding",()=>{
  assert.equal(defeat.board[0].id,state.active.clue.id);
  assert.deepEqual(defeat.board[0],state.active.clue);
  assert.equal(Adapter.complete(defeat,start.battle),null);
- const again=Network.approach(Network.prepare(Network.start(defeat,
+ const retry=Network.approach(Network.prepare(Network.start(defeat,
   defeat.board[0].id),"cover"),"cordon");
- assert.deepEqual(Adapter.plan(again),Adapter.plan(state),"restart has same seeded wave");
- assert.equal(Adapter.complete(again,start.battle),null,"defeat cannot turn to victory");
+ const db=new Map(),storage={getItem:k=>db.has(k)?db.get(k):null,
+  setItem:(k,v)=>db.set(k,v)};
+ // NET-004 must persist each retry checkpoint BEFORE starting the battle.
+ const stored=Network.save(retry,()=>storage,()=>true);
+ assert.equal(stored.ok,true);
+ const again=stored.state;
+ assert.equal(Adapter.plan(again).options.rngSeed,
+  Adapter.plan(state).options.rngSeed,"retry uses the same deterministic seed");
+ assert.notDeepEqual(Adapter.plan(again).binding,Adapter.plan(state).binding);
+ assert.equal(Adapter.complete(again,start.battle),null,"old attempt is stale");
  const stale=Adapter.startBattle(again,[hero()],{combat:C});
  win(stale.battle);
  const after=Adapter.complete(again,stale.battle);

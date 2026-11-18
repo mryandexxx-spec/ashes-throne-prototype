@@ -163,3 +163,32 @@ test("NET-008A only a verified manual live clue earns weekly intelligence; no re
  assert.equal(noCredit?.threatIntel?.[week],undefined,
   "unverified legacy outcomes cannot generate weekly intel");
 });
+
+
+test("NET-008A real CombatCore loss clears active checkpoint and never credits the wallet",async()=>{
+ const s=setup();
+ assert.equal((await s.session.open()).ok,true);
+ assert.equal((await s.session.begin("cover")).ok,true);
+ const weak={id:"ren",side:"ally",name:"Тестовый слабый герой",hp:1,atk:1,
+  physicalAttack:1,physicalDefense:0,magicDefense:0,speed:65};
+ const run=s.mod.WeeklyThreatCore.startBattle(s.session.read(),[weak],s.mod.CombatCore);
+ assert.ok(run?.battle);
+ const battle=run.battle;
+ s.mod.CombatCore.advanceToPlayerTurn(battle);
+ for(let i=0;i<90&&battle.active;i++){
+  if(battle.currentActor<0)s.mod.CombatCore.advanceToPlayerTurn(battle);
+  if(!battle.active)break;
+  const target=battle.fighters.findIndex(x=>x.side==="enemy"&&x.hp>0);
+  assert.ok(s.mod.CombatCore.chooseEnemy(battle,target));
+  assert.ok(s.mod.CombatCore.performPlayerAbility(battle,"basic"));
+ }
+ assert.equal(battle.winner,"enemy");
+ const result=await s.session.finish(battle);
+ assert.equal(result.ok,true);
+ assert.equal(result.win,false);
+ assert.equal(s.session.read().active,null);
+ assert.equal(s.session.read().bestScore,0);
+ assert.deepEqual(s.session.pending(),[]);
+ assert.equal((await s.session.collect()).count,0);
+ assert.equal(wallet(s).currency,0);
+});

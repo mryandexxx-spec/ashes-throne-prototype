@@ -234,8 +234,10 @@ const NetworkPilotUI=(()=>{
  function openFromFinder(materialId){
   if(!mounted||typeof onReturnToFinder!=="function")return false;
   fromFinder=true;
-  notice=isLive()?"Выберите приказ на материал "+materialId+
-   ", затем выполняйте соответствующие зацепки.":
+  if(isLive()&&session.isReady())
+   void change("order",{kind:"material",targetId:materialId});
+  notice=isLive()?"Приказ на материал "+materialId+
+   " выбран, новые зацепки будут появляться с этим приоритетом.":
    "Пробная разведсеть: для материала "+materialId+
    " нет подтверждённого источника. Здесь не выдаются предметы и награды.";
   render();

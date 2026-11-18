@@ -84,6 +84,7 @@ const RewardPolicyCore=(()=>{
    materials[key]=delta;
   }
   const heroShards=source.reward.heroShards||{};
+  let aggregateConversion=0;
   if(Object.keys(heroShards).length){
    if(typeof StarCore==="undefined")return failure("INVALID_HERO_SHARDS");
    const stars=wallet.heroStars??StarCore.fromLegacy(wallet.unlockedHeroes);
@@ -92,7 +93,9 @@ const RewardPolicyCore=(()=>{
     if(amount===0)continue;
     if(stars[heroId].rank===StarCore.MAX){
      const exchange=amount*StarCore.EXCESS_SHARD_CURRENCY;
-     if(!nonneg(exchange)||!nonneg(wallet.currency+currency+exchange))
+     aggregateConversion+=exchange;
+     if(!nonneg(exchange)||!nonneg(aggregateConversion)||
+      !nonneg(wallet.currency+currency+aggregateConversion))
       return failure("SHARD_COMPENSATION_OVERFLOW");
     }else if(!nonneg(stars[heroId].shards+amount))
      return failure("SHARD_BALANCE_OVERFLOW");

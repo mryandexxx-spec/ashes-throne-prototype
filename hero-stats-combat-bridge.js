@@ -19,9 +19,10 @@ const HeroStatsCombatBridge=(()=>{
   // percentage is applied to the newly resolved hero stats, never to demo atk.
   core.resolve(profile,{level,stars}); // validate level and rank
   // Apply equipped percent bonuses before Core rounds once.
+  // StarCore's percentage is the ONLY star stat gain in real hero combat.
+  // The older prototype growth.star points are not stacked with NET-007.
   const raw=key=>profile.combatStats[key]+
-   (level-1)*(profile.growth?.level?.[key]??0)+
-   (stars-1)*(profile.growth?.star?.[key]??0);
+   (level-1)*(profile.growth?.level?.[key]??0);
   // NET-007: 3% of base profile per earned star after 1★; gear remains
   // independent, speed/crit/potency/protection are not multiplied.
   const starFactor=1+(stars-1)*0.03;
@@ -39,7 +40,7 @@ const HeroStatsCombatBridge=(()=>{
    throw new RangeError("Invalid item stat bonuses");
   for(const [key,value] of Object.entries(itemStats))
    bonuses[key]=(bonuses[key]||0)+value;
-  const stats=core.resolve(profile,{level,stars,gearBonuses:bonuses});
+  const stats=core.resolve(profile,{level,stars:1,gearBonuses:bonuses});
   return Object.freeze({
    ...hero,
    ...stats,

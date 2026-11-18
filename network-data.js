@@ -107,8 +107,8 @@ const NetworkData=(()=>{
  const heroIds=["ren","nada","liora","art","sava"];
  const tiers=[
   {id:"early",level:1,influence:0},
-  {id:"middle",level:20,influence:30},
-  {id:"late",level:45,influence:90}
+  {id:"middle",level:20,influence:50},
+  {id:"late",level:45,influence:150}
  ];
  const liveTemplates=[];
  for(const tier of tiers){
@@ -119,7 +119,7 @@ const NetworkData=(()=>{
     weight:1,minInfluence:tier.influence,levels:[tier.level],
     preparationIds:["survey","cover"],approaches:[
      {id:"quiet",waves:1},{id:"cordon",waves:2}],
-    modifierIds:["reinforced","rushed"],materialId,heroId:null,
+    modifierIds:[],materialId,heroId:null,
     threatTag:null,rewardRef:"reward-"+ref,encounterRef:"encounter-"+ref
    });
   }
@@ -130,7 +130,7 @@ const NetworkData=(()=>{
     weight:1,minInfluence:tier.influence,levels:[tier.level],
     preparationIds:["survey","cover"],approaches:[
      {id:"quiet",waves:1},{id:"cordon",waves:2}],
-    modifierIds:["reinforced","rushed"],materialId:null,heroId,
+    modifierIds:[],materialId:null,heroId,
     threatTag:null,rewardRef:"reward-"+ref,encounterRef:"encounter-"+ref
    });
   }

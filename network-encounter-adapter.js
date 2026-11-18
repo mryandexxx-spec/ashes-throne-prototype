@@ -102,7 +102,7 @@ const NetworkEncounterAdapter=(()=>{
   }
   const seed=seedOf([state.seed,c.id,c.issuedAt,c.encounterRef,
    c.templateRevision,c.modifierId,a.preparation,a.approach,a.wave]);
-  const binding=Object.freeze({clueId:c.id,issuedAt:c.issuedAt,
+  const binding=Object.freeze({clueId:c.id,issuedAt:c.issuedAt,revision:state.revision,
    encounterRef:c.encounterRef,templateId:c.templateId,
    templateRevision:c.templateRevision,approach:a.approach,
    preparation:a.preparation,wave:a.wave,seed});

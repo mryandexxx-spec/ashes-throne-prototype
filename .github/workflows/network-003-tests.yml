@@ -1,0 +1,26 @@
+name: NET-003 stacked encounter regression
+on:
+  push:
+    branches: [feat/net-003-network-encounters]
+  pull_request:
+    branches: [feat/net-002-network-rewards]
+    paths:
+      - 'network-data.js'
+      - 'network-encounter-data.js'
+      - 'network-encounter-adapter.js'
+      - 'tests/network-003-encounters.test.js'
+      - 'package.json'
+      - '.github/workflows/network-003-tests.yml'
+jobs:
+  all-node-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Full Node syntax and regression suite
+        run: npm test

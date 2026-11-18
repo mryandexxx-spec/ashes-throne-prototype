@@ -40,15 +40,20 @@ const xpForLevel=n=>{let x=0;for(let i=1;i<n;i++)x+=Math.round(40+7*i+.28*i*i);r
 const account=xp=>{let n=1;while(n<85&&xp>=xpForLevel(n+1))n++;return n;};
 const accountCap=n=>n<=4?[0,3,8,12,14][n]:n<=15?15:Math.min(85,n);
 function stages(heroes){
+ // Actual main: five Ren/Nada/Liora/Art/Sava can reach L85;
+ // five demonstration heroes have a HARD cap L15. A future 10-hero roster
+ // with all ten reaching L85 is a separate product scenario, not current code.
  const def=(name,g,count)=>({name,materials:count===10?costs[g].ten.slice():mul(costs[g].m,count/5),
-   currency:costs[g].gear*count/5+moneyForLevel(costs[g].level)*count+
+   currency:costs[g].gear*count/5+moneyForLevel(costs[g].level)*5+
+    (count===10?moneyForLevel(15)*5:0)+
     (count===10&&g==="G13"?63000:costs[g].skills*count),level:costs[g].level});
  const a=[def("5G3","G3",5),def("5G8","G8",5)];
  if(heroes===10){
   a.push(def("10G8","G8",10));
   const g13=def("5G13","G13",5);
   a.push({name:"5G13+5G8",materials:plus(g13.materials,a[2].materials.map((n,i)=>n-a[1].materials[i])),
-    currency:a[1].currency+g13.currency,level:85});
+    currency:g13.currency+costs.G8.gear+moneyForLevel(15)*5+costs.G8.skills*5,
+    level:85});
   a.push(def("10G13","G13",10));
  }else a.push(def("5G13","G13",5));
  return a;
@@ -158,7 +163,7 @@ function selfTest(){
  requireFact(xpForLevel(85)===84661,"Account L85");
  requireFact(costs.G13.gear===552500,"G13 five heroes");
  requireFact(costs.G13.ten[6]===896,"ten real roster G13 Gl");
- requireFact(stages(10).slice(-1)[0].currency===2611780,"ten roster actual G13 skill count");
+ requireFact(stages(10).slice(-1)[0].currency===1897220,"five L85 plus five demo L15 at G13");
  requireFact(acts.reduce((n,a)=>n+a[1],0)===15500,"LC currency");
  requireFact(acts.reduce((n,a)=>n+a[2],0)===1500,"LC XP");
  requireFact(login.reduce((n,a)=>n+a[0],0)===1950,"login");

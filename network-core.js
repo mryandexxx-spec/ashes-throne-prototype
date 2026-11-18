@@ -261,7 +261,7 @@ const NetworkCore=(()=>{
    }
    const parsed=JSON.parse(raw);
    if(!validState(parsed))return {status:"blocked",blocked:true,reason:"invalid-network-v1",state:null};
-   if(config&&(!validConfig(config)||JSON.stringify(parsed.config)!==JSON.stringify(config)))
+   if(config&&(!validConfig(config)||CONFIG_KEYS.some(key=>parsed.config[key]!==config[key])))
     return {status:"blocked",blocked:true,reason:"incompatible-configuration",state:null};
    return {status:"existing",state:clone(parsed),blocked:false};
   }catch(_){return {status:"blocked",blocked:true,reason:"read-or-parse-failed",state:null};}

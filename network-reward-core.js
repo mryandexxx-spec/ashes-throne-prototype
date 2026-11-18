@@ -32,6 +32,8 @@ const NetworkRewardCore=(()=>{
   // NetworkCore.validState also enforces score=0 for simulated entries.
   return !!completed&&completed.status==="done"&&
    ["manual","simulated"].includes(completed.kind)&&
+   (completed.kind!=="simulated"||
+    Network.isMastered(state,completed.templateId,completed.level))&&
    completed.rewardRef===sourceId;
  }
  function readWallet(storage,heroes){

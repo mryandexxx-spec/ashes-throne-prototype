@@ -64,6 +64,14 @@ test("NET-005 only manual mastery at the same template AND level unlocks simulat
  assert.equal(Core.simulate(mastered,target.id,catalog,[]),null);
  const changed=clone(catalog);changed.templates[0].revision++;
  assert.equal(Core.simulate(mastered,target.id,Data.buildCatalog(changed),unlocked),null);
+ const badPreparation=clone(mastered);
+ badPreparation.board.find(c=>c.id===target.id).preparationIds=["unapproved-prep"];
+ assert.equal(Core.validState(badPreparation),true);
+ assert.equal(Core.simulate(badPreparation,target.id,catalog,unlocked),null);
+ const badModifier=clone(mastered);
+ badModifier.board.find(c=>c.id===target.id).modifierId="unknown-modifier";
+ assert.equal(Core.validState(badModifier),true);
+ assert.equal(Core.simulate(badModifier,target.id,catalog,unlocked),null);
  const blocked=Core.start(mastered,target.id);
  assert.equal(Core.simulate(blocked,blocked.board[0].id,catalog,unlocked),null);
  const tampered=clone(result);tampered.completed.at(-1).score=4;
@@ -79,6 +87,10 @@ test("NET-005 serial proof accepts only persisted manual or simulated completion
  db.values.set(Core.KEY,JSON.stringify(simulation));
  assert.equal(proof(1),true);
  assert.equal(proof(2),true);
+ const noMastery=clone(simulation);noMastery.mastery={};
+ db.values.set(Core.KEY,JSON.stringify(noMastery));
+ assert.equal(proof(2),false,"simulated proof also requires persisted mastery");
+ db.values.set(Core.KEY,JSON.stringify(simulation));
  assert.equal(Reward.prove({storage:db.local,sourceId:"wrong-source",
   kind:"serial",occurrenceId:"2",count:1}),false);
  const corrupt=clone(simulation);corrupt.completed.at(-1).score=1;

@@ -14,6 +14,10 @@ const ProgressV3Core=(()=>{
  const validDay=day=>typeof day==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(day)&&
   !Number.isNaN(Date.parse(day+"T00:00:00Z"))&&
   new Date(day+"T00:00:00Z").toISOString().slice(0,10)===day;
+ function validNetworkLedger(ledger){
+  return object(ledger)&&Object.keys(ledger).length===1&&
+   own(ledger,"claimedThrough")&&nonneg(ledger.claimedThrough);
+ }
  function validReceipts(rows){
   if(!Array.isArray(rows)||rows.length>MAX_REWARD_RECEIPTS)return false;
   const ids=new Set();
@@ -84,6 +88,7 @@ const ProgressV3Core=(()=>{
      !object(data.heroes)||!object(data.materials)||!object(data.migration))
    return null;
   if(data.rewardReceipts!==undefined&&!validReceipts(data.rewardReceipts))return null;
+  if(data.networkLedger!==undefined&&!validNetworkLedger(data.networkLedger))return null;
   if(data.migration.strategy!=="clean-heroes-v1"||
      (data.migration.sourceVersion!==2&&data.migration.sourceVersion!==null))return null;
   const known=Object.keys(ProgressCore.FIRST_CLEAR_REWARDS);
@@ -201,6 +206,7 @@ const ProgressV3Core=(()=>{
      !object(data.heroes)||!object(data.materials)||!object(data.migration)||
      !nonneg(data.revision??0))return null;
   if(data.rewardReceipts!==undefined&&!validReceipts(data.rewardReceipts))return null;
+  if(data.networkLedger!==undefined&&!validNetworkLedger(data.networkLedger))return null;
   if(data.migration.strategy!=="clean-heroes-v1"||
      (data.migration.sourceVersion!==2&&data.migration.sourceVersion!==null))return null;
   const known=Object.keys(ProgressCore.FIRST_CLEAR_REWARDS);
@@ -269,6 +275,7 @@ const ProgressV3Core=(()=>{
    energy:source.energy,claimedMissions:source.claimedMissions,
    materials:source.materials,
    ...(source.rewardReceipts!==undefined?{rewardReceipts:source.rewardReceipts}:{}),
+    ...(source.networkLedger!==undefined?{networkLedger:source.networkLedger}:{}),
    daily:source.daily,
    login:source.login,
    unlockedHeroes:source.unlockedHeroes,
@@ -310,6 +317,7 @@ const ProgressV3Core=(()=>{
    energy:p.energy,claimedMissions:p.claimedMissions,
    materials:p.materials,
    ...(p.rewardReceipts!==undefined?{rewardReceipts:p.rewardReceipts}:{}),
+    ...(p.networkLedger!==undefined?{networkLedger:p.networkLedger}:{}),
    ...(p.daily!==undefined?{daily:p.daily}:{}),
    ...(p.login!==undefined?{login:p.login}:{}),
    ...(p.unlockedHeroes!==undefined?{unlockedHeroes:p.unlockedHeroes}:{}),
@@ -351,6 +359,6 @@ const ProgressV3Core=(()=>{
    p.saveRevision=candidate.revision;return true;
   }catch(_){return false;}
  }
- return Object.freeze({KEY,SOURCE_KEY,VERSION,SLOTS,MATERIALS,TEST_CLASSES,MAX_REWARD_RECEIPTS,validReceipts,fromV2,fresh,validate,validateActive,toRuntime,fromRuntime,persist,stage});
+ return Object.freeze({KEY,SOURCE_KEY,VERSION,SLOTS,MATERIALS,TEST_CLASSES,MAX_REWARD_RECEIPTS,validReceipts,validNetworkLedger,fromV2,fresh,validate,validateActive,toRuntime,fromRuntime,persist,stage});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=ProgressV3Core;

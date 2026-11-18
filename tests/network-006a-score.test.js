@@ -154,6 +154,9 @@ test("revision, modifier, level, reward variant and corruption invalidate master
  const done=Core.finish(Adapter.complete(s,first.battle));
  const clue=done.board[0];
  assert.ok(Core.isMastered(done,clue,"quiet"));
+ assert.notEqual(Core.masteryKey(clue,"quiet"),
+  Core.masteryKey({...clue,modifierId:"none"},"quiet"),
+  "literal modifier 'none' must not alias a missing modifier");
  for(const alteration of [
   {templateRevision:clue.templateRevision+1},{level:clue.level+1},
   {modifierId:clue.modifierId==="rushed"?"reinforced":"rushed"},
@@ -176,6 +179,17 @@ test("revision, modifier, level, reward variant and corruption invalidate master
  const invalid=clone(simulated);invalid.mastery={};
  assert.equal(Reward.prove({storage:{getItem:()=>JSON.stringify(invalid)},
   sourceId:clue.rewardRef,kind:"serial",occurrenceId:"2",count:1}),false);
+});
+test("an old one-wave checkpoint can be abandoned without losing its clue",()=>{
+ const {s}=state("cordon");
+ const c=s.active.clue;
+ const old=Core.battleOutcome(s,c.id,0,true);
+ assert.ok(old&&Core.validState(old)&&old.active.wave===1);
+ assert.equal(old.active.waveSummaries,undefined,
+  "NET-005 pilot data did not contain verifiable S1 metrics");
+ const restored=Core.abandon(old);
+ assert.ok(restored&&restored.board.some(x=>x.id===c.id));
+ assert.equal(restored.completed.length,0);
 });
 test("no network scoring or combat rules change for ordinary battles",()=>{
  const b=Combat.createBattle([hero(),{id:"enemy",side:"enemy",name:"enemy",

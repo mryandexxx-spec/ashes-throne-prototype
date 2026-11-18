@@ -24,6 +24,9 @@
 
 ## 2026-11-18
 
+- **`v0.3.185 · LOREACT1REW` — LC-008D [РЕАЛИЗОВАНО в `main`]**: [PR #380](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/380), squash `2344a76c569e90f2e556433842a3a7c20071a62b`. Утверждены суммы пяти разовых пакетов; **подключён только акт I (FS-03)**, 1 500 валюты, 180 Account XP и Fe5/Le6/Cl8/Wo1/Fa3/Th3/Gl0. Ресурсная выплата подтверждается сохранённой историей и боями, поступает через Web Locks/Receipt v3, UI показывает получение на карте, после начисления синхронизируется revision runtime. Добавлены Node и Chromium/WebKit проверки двойных нажатий, второй вкладки, reload и ошибок записи. **Последний PR CI 33/33, postmerge Node CI и Pages deployment успешны; физический iPhone Safari не проверен.** [Детали и таблица](LC_008D_ACT_REWARDS_APPROVED.md).
+
+
 - **LC-008C — [РЕАЛИЗОВАНО в `main`, без live-наград]**: [PR #378](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/378), squash `c6664dc458e8ffba7fad5b2de89cba1002cdafc1`. Read-only `lore-reward-proof-core.js` и контракт [LC_008C_LORE_PROOF.md](LC_008C_LORE_PROOF.md): пять актов, сохранённые сюжетные завершения и обязательные бои; отказы для неполных/повреждённых сейвов. **726/726 Node** на PR, после merge **Node CI и GitHub Pages deployment успешны**. Награды, цифры, UI, версия игры без изменений.
 - **ENV010 — [РЕАЛИЗОВАНО в `main`]**: [PR #377](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/377), squash `0e86de9a6059b7443b3829fe8006104723c4b92c`. Ложный headless Chromium timeout из-за virtual-time заменён real-clock Chromium/WebKit проверкой полного боя и повтора; WebGL скриншоты и HUD проверяются отдельно, **3/3 CI успешно**. Производственный код не менялся.
 - **[УТОЧНЕНИЕ ПО LC-008B]** На code SHA PR #375 после завершения CI **31/32 успешны** (wallet Chromium/WebKit пройден); ENV010 оставался красным до исправления в PR #377. На `main` после #378 Node CI и Pages завершены успешно. Физический iPhone Safari не проверялся.

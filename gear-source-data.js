@@ -73,6 +73,21 @@ const GearSourceData=(()=>{
   }
   return Object.freeze(entries);
  }
- return Object.freeze({catalogIssues,findSources});
+ // NET-005: optional future network references. Only catalog-backed material
+ // matches are presented. No inferred drop, rate, quantity or unapproved source.
+ function findNetworkSources(materialId,catalog=null,unlockedRegions=[],influence={}){
+  const data=typeof NetworkData!=="undefined"?NetworkData:
+   typeof require==="function"?require("./network-data.js"):null;
+  if(!data||typeof GearData==="undefined"||
+   !GearData.MATERIALS.includes(materialId)||!Array.isArray(unlockedRegions))
+   return EMPTY;
+  const chosen=catalog??data.CATALOG;
+  const eligible=data.eligibleTemplates(chosen,unlockedRegions,influence);
+  if(!eligible)return EMPTY;
+  return Object.freeze(eligible.filter(t=>t.materialId===materialId)
+   .map(t=>Object.freeze({templateId:t.id,regionId:t.regionId,
+    materialId,levels:Object.freeze(t.levels.slice()),rewardRef:t.rewardRef})));
+ }
+ return Object.freeze({catalogIssues,findSources,findNetworkSources});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=GearSourceData;

@@ -83,7 +83,7 @@ test("LC-008D: persisted first clear pays once; subsequent normal save keeps rec
  assert.equal(c.status(args(f)),"claimable");
  const result=await c.claim(args(f));
  assert.equal(result.ok,true);assert.equal(result.receiptId,c.RECEIPT_ID);
- assert.equal(result.runtime.saveRevision,f.wallet.revision+1);
+ assert.equal(result.runtime.saveRevision,(f.wallet.revision??0)+1);
  assert.equal(result.runtime.currency,f.wallet.currency+1500);
  assert.equal(result.runtime.accountXp,f.wallet.accountXp+180);
  const saved=JSON.parse(f.map.get(f.x.ProgressV3Core.KEY));

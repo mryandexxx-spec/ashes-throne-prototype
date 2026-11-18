@@ -17,7 +17,7 @@ async function run(name,engine,viewport){
   await page.goto(origin+"?networkPilot=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   assert.match(await page.locator("#buildVersion").innerText(),
-   /v0\.3\.(188 · NET004PILOT|189 · NET005PILOT)/);
+   /v0\.3\.(188 · NET004PILOT|189 · NET005PILOT|190 · NET006ASCORE)/);
   assert.equal(await page.locator("#net004Entry").getAttribute("hidden"),null);
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
@@ -68,7 +68,7 @@ async function run(name,engine,viewport){
   await page.locator("#battle").waitFor({state:"visible",timeout:30000});
   await page.locator("#autoBattleBtn").click();
   await page.locator("#net004Result").waitFor({state:"visible",timeout:125000});
-  assert.match(await page.locator("#net004ResultDetail").innerText(),/Пробная оценка: 0/);
+  assert.match(await page.locator("#net004ResultDetail").innerText(),/Оценка S1: (?:[6-9][0-9]|100)\\/100/);
   const resultSaved=await page.evaluate(()=>{
    const s=JSON.parse(localStorage.getItem("ashes-throne.network.pilot.v1"));
    return {phase:s.active?.phase,rev:s.revision,
@@ -86,7 +86,7 @@ async function run(name,engine,viewport){
   await page.locator("#hqMoreToggle").click();
   await page.locator("#net004Entry").click();
   await page.locator("#net004Result").waitFor({state:"visible"});
-  assert.match(await page.locator("#net004ResultDetail").innerText(),/Пробная оценка: 0/);
+  assert.match(await page.locator("#net004ResultDetail").innerText(),/Оценка S1: (?:[6-9][0-9]|100)\\/100/);
   await page.locator("#net004Finish").click();
   await page.waitForFunction(()=>!document.querySelector("#net004Board").hidden,null,{timeout:10000});
   const final=await page.evaluate(()=>{

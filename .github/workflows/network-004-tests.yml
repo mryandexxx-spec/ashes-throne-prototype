@@ -1,0 +1,45 @@
+name: NET-004 stacked pilot regression
+on:
+  push:
+    branches: [feat/net-004-network-pilot-ui]
+  pull_request:
+    branches: [feat/net-003-network-encounters]
+jobs:
+  node-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Full syntax and Node regression test suite
+        run: npm test
+  pilot-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    permissions:
+      contents: read
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Feature-off and real gated battles in Chromium and WebKit
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/net004.log 2>&1 &
+          sleep 2
+          node tests/network-004-pilot-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: net004-pilot-browser
+          path: artifacts/net004-pilot/
+          retention-days: 14
+          if-no-files-found: warn

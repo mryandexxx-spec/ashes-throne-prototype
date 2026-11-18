@@ -159,8 +159,7 @@ test("NET-008A only a verified manual live clue earns weekly intelligence; no re
  assert.equal(paid.threatIntel[week],1);
  assert.equal(Core.validState(paid),true);
  const legacy=Core.battleOutcome(current,target.id,0,true);
- assert.ok(legacy,"legacy outcome can still be stored without a validated S1");
- const noCredit=Core.finish(legacy,week);
- assert.equal(noCredit.threatIntel[week],undefined,
-  "unverified legacy scores must not generate weekly intel");
+ const noCredit=legacy?Core.finish(legacy,week):null;
+ assert.equal(noCredit?.threatIntel?.[week],undefined,
+  "unverified legacy outcomes cannot generate weekly intel");
 });

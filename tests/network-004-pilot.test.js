@@ -101,16 +101,39 @@ test("NET-004 one-wave real battle -> persisted result -> finish; no money",asyn
 test("NET-004 multiwave checkpoints: reload resumes correct wave and no fake rewards",async()=>{
  const m=store(),first=factory(m).pilot;await first.open();
  await selected(first,{approach:"cordon",prepare:"cover"});
- const one=Adapter.startBattle(first.read(),[hero()],{combat:Combat});
+ const freshHero=()=>({...hero(),protection:25,maxProtection:25});
+ const one=Adapter.startBattle(first.read(),[freshHero()],{combat:Combat});
+ assert.equal(one.battle.totalWaves,1,"each encounter is an independent CombatCore battle");
+ assert.equal(one.battle.pendingWaves.length,0);
  win(one.battle);
+ const veteran=one.battle.fighters.find(f=>f.side==="ally");
+ // Surviving wounded combatants retain these values in the old battle object,
+ // but the next encounter must start from the roster's full baseline instead.
+ veteran.hp=1;
+ veteran.protection=0;
+ veteran.specialCooldown=4;
+ veteran.powerfulCooldown=3;
+ veteran.effects.testWound={stacks:2};
  assert.equal((await first.complete(one.battle)).ok,true);
+ assert.equal(first.read().completed.length,0,"wave one is not a completed operation");
  assert.equal(first.read().active.phase,"battle");
  assert.equal(first.read().active.wave,1);
  const second=factory(m).pilot;
  assert.equal((await second.open()).ok,true);
- const next=Adapter.startBattle(second.read(),[hero()],{combat:Combat});
+ const next=Adapter.startBattle(second.read(),[freshHero()],{combat:Combat});
  assert.equal(next.plan.binding.wave,1);
+ assert.equal(next.battle.totalWaves,1,"second encounter is a new battle, not an internal wave");
+ assert.equal(next.battle.pendingWaves.length,0);
  assert.notEqual(next.plan.binding.seed,one.plan.binding.seed);
+ assert.notEqual(next.battle,one.battle);
+ const rested=next.battle.fighters.find(f=>f.side==="ally");
+ assert.equal(rested.hp,5000,"full HP restored for encounter two");
+ assert.equal(rested.maxHp,5000);
+ assert.equal(rested.protection,25,"protection restored between encounters");
+ assert.equal(rested.specialCooldown,0,"special cooldown reset");
+ assert.equal(rested.powerfulCooldown,0,"powerful cooldown reset");
+ assert.deepEqual(Object.keys(rested.effects),[],"no prior status effects");
+ assert.equal(veteran.hp,1,"previous battle object is untouched");
  assert.equal((await second.complete(one.battle)).ok,false);
  win(next.battle);
  assert.equal((await second.complete(next.battle)).ok,true);

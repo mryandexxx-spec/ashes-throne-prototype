@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Приказ сети</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Inter,system-ui,sans-serif}
+.hq-bg{background-image:url(../../../assets/hq-hall-painting-mobile.webp);background-size:cover;background-position:center}
+a{color:#f0c879}a:hover{color:#fff1cf}
+button{font-family:inherit}
+</style>
+</helmet>
+<div class="hq-bg" style="width: 844px; height: 390px; position: relative; overflow: hidden; color: #f4ebd8; background-color: #0c0d12">
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(7,7,10,0.92)"></div>
+
+  <div role="dialog" aria-label="Приказ сети" style="position: absolute; left: 122px; top: 18px; width: 600px; height: 354px; box-sizing: border-box; padding: 14px 16px; border-radius: 14px; background: #1b1a1f; border: 1px solid #a78348; box-shadow: 0 20px 64px rgba(0,0,0,0.7); display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+        <div style="font-family: Georgia, serif; font-size: 18px; color: #f0c879">Приказ сети</div>
+        <div style="font-size: 12px; color: #d9c5ab">Сеть чаще приносит зацепки нужного вида. Один приказ действует, пока его не сменить.</div>
+      </div>
+      <a href="Network.dc.html" aria-label="Закрыть" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 10px; color: #f0c879; border: 1px solid rgba(167,131,72,0.5)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </a>
+    </div>
+
+    <div role="tablist" style="display: flex; gap: 6px">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+        <button type="button" role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.name}}</button>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{isMat}}" hint-placeholder-val="{{ true }}">
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{mats}}" as="m" hint-placeholder-count="7">
+          <button type="button" onClick="{{m.pick}}" aria-pressed="{{m.sel}}" style="{{m.style}}">
+            <span style="font-size: 14px; color: #f4ebd8">{{m.name}}</span>
+            <span style="{{m.needStyle}}">{{m.need}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{isHero}}" hint-placeholder-val="{{ false }}">
+      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{heroes}}" as="h" hint-placeholder-count="5">
+          <button type="button" onClick="{{h.pick}}" aria-pressed="{{h.sel}}" style="{{h.style}}">
+            <img src="{{h.src}}" alt="" style="width: 100%; height: 58px; object-fit: cover; object-position: 50% 20%; border-radius: 6px">
+            <span style="font-size: 13px; color: #f4ebd8">{{h.name}}</span>
+            <span style="font-size: 11px; color: #d9c5ab">{{h.stars}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{isRegion}}" hint-placeholder-val="{{ false }}">
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <button type="button" aria-pressed="true" style="min-height: 92px; padding: 10px 12px; border-radius: 10px; text-align: left; color: #f4ebd8; background: #332a1f; border: 2px solid #f0c879; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-family: Georgia, serif; font-size: 15px">Сады над пропастью</span>
+          <span style="font-size: 12px; color: #d9c5ab">Влияние 3 · все типы зацепок</span>
+        </button>
+        <div style="min-height: 92px; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; background: #1f1e22; border: 1px dashed #5a5046; display: flex; flex-direction: column; gap: 4px">
+          <span style="font-family: Georgia, serif; font-size: 15px; color: #bfb3a3">Второй регион</span>
+          <span style="font-size: 12px; color: #bfb3a3">Откроется актом «Пяти теней»</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="flex-grow: 1"></div>
+    <div style="display: flex; align-items: center; gap: 12px; padding-top: 10px; border-top: 1px solid rgba(167,131,72,0.35)">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 13px">{{summary}}</span>
+        <span style="font-size: 12px; color: #d9c5ab">Гарантия: нужная зацепка придёт не позже чем через 3 донесения</span>
+      </div>
+      <a href="Network.dc.html" style="min-height: 44px; padding: 0 20px; border-radius: 10px; display: flex; align-items: center; text-decoration: none; font-weight: 600; font-size: 14px; color: #1a140c; background: linear-gradient(180deg, #f0c879, #c99a55)">Отдать приказ</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'mat', mat: 'Wo', hero: 'sava' }; }
+  renderVals() {
+    const s = this.state;
+    const tile = (on) => 'min-height: 58px; box-sizing: border-box; padding: 6px 10px; border-radius: 10px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 3px; cursor: pointer; background: ' + (on ? '#332a1f' : '#232126') + '; border: ' + (on ? '2px solid #f0c879' : '1px solid rgba(167,131,72,0.35)');
+    const tabs = [['mat', 'Материал'], ['hero', 'Человек (осколки)'], ['region', 'Регион']].map(([id, name]) => ({
+      name, sel: s.tab === id ? 'true' : 'false', pick: () => this.setState({ tab: id }),
+      style: 'min-height: 40px; padding: 0 14px; border-radius: 9px; font-size: 13px; cursor: pointer; color: ' + (s.tab === id ? '#1a140c' : '#f4ebd8') + '; background: ' + (s.tab === id ? '#e0b978' : 'transparent') + '; border: 1px solid #a78348'
+    }));
+    const matRaw = [
+      ['Fe', 'Железо', 'есть 14 · хватает', false], ['Le', 'Кожа', 'есть 9 · хватает', false],
+      ['Cl', 'Ткань', 'не хватает 2', true], ['Wo', 'Древесина', 'не хватает 4 · G3 Рена', true],
+      ['Fa', 'Крепёж', 'есть 6 · хватает', false], ['Th', 'Прочная нить', 'есть 3 · хватает', false],
+      ['Gl', 'Стекло', 'не хватает 1', true]
+    ];
+    const mats = matRaw.map(([id, name, need, short]) => ({
+      name, need, sel: s.mat === id ? 'true' : 'false', pick: () => this.setState({ mat: id }),
+      style: tile(s.mat === id),
+      needStyle: 'font-size: 11px; color: ' + (short ? '#f6b29c' : '#bfb3a3')
+    }));
+    const B = '../../../assets/';
+    const heroRaw = [
+      ['ren', 'Рен', '3★ · 12/30', 'ren-portrait-roster.webp'],
+      ['nada', 'Нада', '2★ · 8/25', 'nada-portrait-roster.webp'],
+      ['liora', 'Лиора', '2★ · 20/25', 'liora-portrait-roster.webp'],
+      ['sava', 'Сава', '1★ · 4/15', 'sava-portrait-roster.webp'],
+      ['art', 'Арт', '1★ · 9/15', 'art-portrait-roster.webp']
+    ];
+    const heroes = heroRaw.map(([id, name, stars, blob]) => ({
+      name, stars, src: B + blob, sel: s.hero === id ? 'true' : 'false', pick: () => this.setState({ hero: id }),
+      style: 'box-sizing: border-box; padding: 6px; border-radius: 10px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; cursor: pointer; background: ' + (s.hero === id ? '#332a1f' : '#232126') + '; border: ' + (s.hero === id ? '2px solid #f0c879' : '1px solid rgba(167,131,72,0.35)')
+    }));
+    const matName = matRaw.find((m) => m[0] === s.mat)[1];
+    const heroName = heroRaw.find((h) => h[0] === s.hero)[1];
+    const summary = s.tab === 'hero' ? 'Приоритет: сведения о человеке — ' + heroName
+      : s.tab === 'region' ? 'Приоритет: регион Сады над пропастью'
+      : 'Приоритет: ' + matName;
+    return { tabs, mats, heroes, summary, isMat: s.tab === 'mat', isHero: s.tab === 'hero', isRegion: s.tab === 'region' };
+  }
+}
+</script>
+</body>
+</html>

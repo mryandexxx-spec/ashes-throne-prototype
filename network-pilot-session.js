@@ -10,26 +10,31 @@ const NetworkPilotSession=(()=>{
  const Adapter=typeof NetworkEncounterAdapter!=="undefined"?
   NetworkEncounterAdapter:require("./network-encounter-adapter.js");
  const KEY="ashes-throne.network.pilot.v1";
+ const LIVE_CONFIG=Object.freeze({id:"net-007-balanced-b1",capacity:16,
+  intervalMs:6*60*60*1000,guaranteeAfter:3,focusWeight:4,masteryScore:90});
  // Completely provisional parameters; the production catalog remains empty.
  const CONFIG=Object.freeze({id:"net-004-pilot-not-production",capacity:3,
   intervalMs:1000,guaranteeAfter:3,focusWeight:1,masteryScore:3});
  const clone=x=>JSON.parse(JSON.stringify(x));
  const fail=code=>Object.freeze({ok:false,code});
  function create({storageProvider,exclusive,ownsLock,now,seed,
-  catalog=Data.PROPOSAL_CATALOG}={}){
+  live=false,catalog=live?Data.LIVE_CATALOG:Data.PROPOSAL_CATALOG,
+  heroes=null,day=null,onCredit=null}={}){
   if(typeof storageProvider!=="function"||typeof exclusive!=="function"||
    typeof ownsLock!=="function"||typeof now!=="function"||
    typeof seed!=="function"||!Data.validateCatalog(catalog))return null;
   let state=null,blocked=false,busy=false,opened=false;
+  const settings=live?LIVE_CONFIG:CONFIG;
+  const storeKey=live?Core.KEY:KEY;
   function mappedProvider(){
    const raw=storageProvider();
    if(!raw||typeof raw.getItem!=="function"||typeof raw.setItem!=="function")
     throw Error("NETWORK_PILOT_STORAGE_UNAVAILABLE");
    return {
     getItem(key){if(key!==Core.KEY)throw Error("PILOT_KEY_VIOLATION");
-     return raw.getItem(KEY);},
+     return raw.getItem(storeKey);},
     setItem(key,value){if(key!==Core.KEY)throw Error("PILOT_KEY_VIOLATION");
-     return raw.setItem(KEY,value);}
+     return raw.setItem(storeKey,value);}
    };
   }
   async function transaction(fn){
@@ -69,12 +74,13 @@ const NetworkPilotSession=(()=>{
      if(!Number.isSafeInteger(instant)||instant<0||
       !Number.isInteger(random)||random<0||random>0xffffffff)
       return fail("LOAD_FAILED");
-     loaded=Core.load(mappedProvider,{seed:random,now:Math.max(0,instant-3000),
-      config:CONFIG,catalog});
+     loaded=Core.load(mappedProvider,{seed:random,
+      now:Math.max(0,instant-(live?4*settings.intervalMs:3000)),
+      config:settings,catalog});
     }catch(_){return fail("LOAD_FAILED");}
     if(loaded.blocked||!loaded.state)return fail("LOAD_FAILED");
     state=loaded.state;opened=true;
-    // A new test profile receives up to three test clues immediately.
+    // First opening provides 4 live clues (3 pilot clues), with a real timestamp.
     // Existing profiles only receive elapsed arrivals, with regular capacity limits.
     const next=Core.accrue(state,now(),catalog,["gardens-over-abyss"]);
     if(!next)return fail("LOAD_FAILED");
@@ -133,10 +139,58 @@ const NetworkPilotSession=(()=>{
    // Safe read-only dry run: never persists an unearned completion.
    return !!Core.simulate(state,clueId,catalog,["gardens-over-abyss"]);
   }
-  return Object.freeze({KEY,CONFIG,open,read,change,complete,
-   availableOrders,canSimulate,
+  // Live mode uses the existing serial wallet ledger. Completed clues remain
+  // unpaid until their exact ordered RewardPolicy claim has succeeded.
+  async function collect(){
+   if(!live)return fail("NO_LIVE_REWARDS");
+   if(blocked)return fail("SESSION_BLOCKED_RELOAD_REQUIRED");
+   if(!opened||!state)return fail("NOT_OPEN");
+   if(busy)return fail("OPERATION_IN_PROGRESS");
+   if(!Array.isArray(heroes)||typeof day!=="function"||
+    typeof NetworkRewardCore==="undefined"||
+    typeof NetworkLiveEconomy==="undefined")return fail("INVALID_LIVE_ADAPTER");
+   busy=true;
+   let paid=0,currency=0,xp=0,shards=0,materials=0;
+   try{
+    let storage=storageProvider();
+    if(!storage)return fail("STORAGE_UNAVAILABLE");
+    const raw=storage.getItem("ashes-throne.progress.v3");
+    const wallet=typeof raw==="string"?JSON.parse(raw):null;
+    const through=wallet?.networkLedger?.claimedThrough??0;
+    if(!Number.isSafeInteger(through)||through<0)return fail("INVALID_WALLET");
+    const entries=state.completed.filter(x=>x.serial>through);
+    for(const entry of entries){
+     const source=NetworkLiveEconomy.source(entry.rewardRef);
+     if(!source)return fail("UNRECOGNIZED_REWARD");
+     const result=await NetworkRewardCore.claim({serial:entry.serial,
+      source,day:day(),heroes,storageProvider,exclusive});
+     if(!result.ok){
+      if(["SAVE_OUTCOME_UNKNOWN","REWARD_SYNC_FAILED","SESSION_HALTED_RELOAD_REQUIRED",
+       "EXCLUSIVE_LOCK_FAILED"].includes(result.code))blocked=true;
+      return fail(result.code);
+     }
+     paid++;currency+=source.reward.currency;xp+=source.reward.accountXp;
+     shards+=Object.values(source.reward.heroShards||{}).reduce((s,n)=>s+n,0);
+     materials+=Object.values(source.reward.materials).reduce((s,n)=>s+n,0);
+     if(typeof onCredit==="function")onCredit(result.runtime,source.reward);
+    }
+    return Object.freeze({ok:true,paid,currency,xp,shards,materials});
+   }catch(_){blocked=true;return fail("REWARD_SYNC_FAILED");}
+   finally{busy=false;}
+  }
+  function pendingCount(){
+   if(!live||!state)return 0;
+   try{
+    const storage=storageProvider();
+    const wallet=JSON.parse(storage.getItem("ashes-throne.progress.v3"));
+    const claimed=wallet.networkLedger?.claimedThrough??0;
+    return state.completed.filter(x=>x.serial>claimed).length;
+   }catch(_){return state.completed.length;}
+  }
+  return Object.freeze({KEY:storeKey,CONFIG:settings,open,read,change,complete,
+   availableOrders,canSimulate,collect,pendingCount,isLive:()=>live,
    isBlocked:()=>blocked,isBusy:()=>busy,isReady:()=>opened&&!blocked});
  }
- return Object.freeze({KEY,CONFIG,create});
+ return Object.freeze({KEY,CONFIG,LIVE_CONFIG,create});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=NetworkPilotSession;

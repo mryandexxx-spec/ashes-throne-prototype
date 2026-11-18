@@ -102,9 +102,13 @@ const NetworkCore=(()=>{
  }
  function validMasteryMap(m){
   return plain(m)&&Object.keys(m).length<=MAX_ROWS&&
-   Object.entries(m).every(([key,value])=>int(value)&&value<=100&&
-    (validMasteryKey(key)||
-     new RegExp("^[a-z0-9][a-z0-9._-]{0,79}\\\\|[1-9][0-9]*$").test(key)));
+   Object.entries(m).every(([key,value])=>{
+    if(!int(value)||value>100)return false;
+    if(validMasteryKey(key))return true;
+    const parts=key.split("|");
+    return parts.length===2&&/^[a-z0-9][a-z0-9._-]{0,79}$/.test(parts[0])&&
+     /^[1-9][0-9]*$/.test(parts[1]);
+   });
  }
  function validState(s){
   if((!exact(s,STATE_KEYS)&&!exact(s,STATE_KEYS_WITH_OFFSET))||

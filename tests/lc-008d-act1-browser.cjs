@@ -70,9 +70,9 @@ async function run(name,type){
   try{
    const first=await wallet(page);
    const card=await focusReward(page);
-   const button=page.locator('[data-lore-action="claim-act-one"]');
+   const button=page.locator('[data-lore-action="claim-act-reward"]');
    assert.equal(await button.isEnabled(),true,name+" must show earned reward");
-   assert.match(await card.innerText(),/Первый акт завершён/);
+   assert.match(await card.innerText(),/Акт I завершён/);
    // Reward must not be pinned to every node, nor to the other four acts.
    await page.locator('[data-lore-action="choose-node"][data-lore-node="five-shadows:fs-01"]').first().click();
    assert.equal(await page.locator(".lore-act-one-reward").count(),0);
@@ -86,7 +86,7 @@ async function run(name,type){
    }
    await focusReward(page);
    await button.click();
-   await page.waitForFunction(()=>document.querySelector('[data-lore-action="claim-act-one"]')?.textContent==="Награда получена",
+   await page.waitForFunction(()=>document.querySelector('[data-lore-action="claim-act-reward"]')?.textContent==="Награда получена",
     null,{timeout:10000});
    const after=await wallet(page);
    assert.equal(after.currency-first.currency,1500);
@@ -110,7 +110,7 @@ async function run(name,type){
    assert.equal(await page.locator(".lore-layer-reward-ready").count(),0);
    await page.locator('[data-lore-action="choose-layer"]').first().click();
    await page.locator('[data-lore-action="choose-node"][data-lore-node="five-shadows:fs-03"]').first().click();
-   assert.equal(await page.locator('[data-lore-action="claim-act-one"]').isEnabled(),false);
+   assert.equal(await page.locator('[data-lore-action="claim-act-reward"]').isEnabled(),false);
    assert.match(await page.locator(".lore-act-one-reward").innerText(),/Награда получена/);
    assert.equal((await wallet(page)).rewardReceipts.length,1);
    // Existing session holds the writer lock; another tab must not start game.
@@ -134,7 +134,7 @@ async function run(name,type){
    });
    const before=await wallet(f.page);
    await focusReward(f.page);
-   await f.page.locator('[data-lore-action="claim-act-one"]').click();
+   await f.page.locator('[data-lore-action="claim-act-reward"]').click();
    await f.page.waitForFunction(()=>document.getElementById("walletWriterNotice")?.style?.display==="flex",
     null,{timeout:10000});
    assert.equal((await wallet(f.page)).currency,before.currency);
@@ -144,8 +144,8 @@ async function run(name,type){
    await f.page.locator('[data-campaign-path="lore"]').click();
    await f.page.locator(".lore-story-cover").click();
    await focusReward(f.page);
-   await f.page.locator('[data-lore-action="claim-act-one"]').click();
-   await f.page.waitForFunction(()=>document.querySelector('[data-lore-action="claim-act-one"]')?.textContent==="Награда получена",
+   await f.page.locator('[data-lore-action="claim-act-reward"]').click();
+   await f.page.waitForFunction(()=>document.querySelector('[data-lore-action="claim-act-reward"]')?.textContent==="Награда получена",
     null,{timeout:10000});
    assert.equal((await wallet(f.page)).currency,before.currency+1500);
    assert.deepEqual(f.errors,[]);

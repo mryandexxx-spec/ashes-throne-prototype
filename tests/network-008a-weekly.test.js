@@ -121,3 +121,46 @@ test("NET-008A prevents fabricated result and pays no reward before a real victo
  assert.equal((await s.session.collect()).count,0);
  assert.equal(wallet(s).currency,0);
 });
+
+
+test("NET-008A only a verified manual live clue earns weekly intelligence; no retroactive legacy credit",()=>{
+ const Data=require("../network-data.js"),Core=require("../network-core.js");
+ const Adapter=require("../network-encounter-adapter.js"),Combat=require("../combat-core.js");
+ const template=Data.LIVE_CATALOG.templates.find(t=>t.minInfluence===0&&
+  t.type==="supply"&&t.materialId==="Fe");
+ assert.ok(template&&template.threatTag==="weekly-gardens");
+ const cat=Data.buildCatalog({version:1,regions:Data.LIVE_CATALOG.regions,
+  templates:[template]});
+ const config={id:"net-008a-intel",capacity:4,intervalMs:1000,
+  guaranteeAfter:3,focusWeight:1,masteryScore:90};
+ let initial=Core.fresh(3456,0,config,cat);
+ initial=Core.accrue(initial,4000,cat,["gardens-over-abyss"]);
+ assert.ok(initial&&initial.board.length===4);
+ const target=initial.board[0];
+ let current=Core.start(initial,target.id);
+ current=Core.prepare(current,"survey");
+ current=Core.approach(current,"quiet");
+ const run=Adapter.startBattle(current,[fighter()],{combat:Combat});
+ assert.ok(run);
+ const battle=run.battle;
+ Combat.advanceToPlayerTurn(battle);
+ for(let i=0;i<70&&battle.active;i++){
+  if(battle.currentActor<0)Combat.advanceToPlayerTurn(battle);
+  if(!battle.active)break;
+  const index=battle.fighters.findIndex(x=>x.side==="enemy"&&x.hp>0);
+  assert.ok(Combat.chooseEnemy(battle,index));
+  assert.ok(Combat.performPlayerAbility(battle,"basic"));
+ }
+ assert.equal(battle.winner,"ally");
+ const finished=Adapter.complete(current,battle);
+ assert.ok(finished?.active?.waveSummaries?.length===1);
+ const week="2026-11-16";
+ const paid=Core.finish(finished,week);
+ assert.equal(paid.threatIntel[week],1);
+ assert.equal(Core.validState(paid),true);
+ const legacy=Core.battleOutcome(current,target.id,0,true);
+ assert.ok(legacy,"legacy outcome can still be stored without a validated S1");
+ const noCredit=Core.finish(legacy,week);
+ assert.equal(noCredit.threatIntel[week],undefined,
+  "unverified legacy scores must not generate weekly intel");
+});

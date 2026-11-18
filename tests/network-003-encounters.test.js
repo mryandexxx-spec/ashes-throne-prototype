@@ -150,7 +150,9 @@ test("NET-003 rejects forged or malformed combat results and arbitrary scores",(
  assert.equal(Adapter.complete(s,broken,3),null,"must actually defeat enemies");
  assert.equal(Adapter.complete(s,start.battle,3),null,"cannot settle unfinished battle");
  win(start.battle);
- assert.equal(Adapter.complete(s,start.battle),null,"final score required");
+ const scored=Adapter.complete(s,start.battle);
+ assert.ok(scored&&scored.active.score>=60&&scored.active.score<=100);
+ assert.equal(scored.active.waveSummaries.length,1,"S1 computed from actual combat");
  for(const score of [-1,1.5,101,NaN,"3"])
   assert.equal(Adapter.complete(s,start.battle,score),null);
  const good=Adapter.complete(s,start.battle,0);

@@ -31,6 +31,10 @@ async function run(name,engine,viewport){
   const checkpoint=await page.evaluate(()=>JSON.parse(
    localStorage.getItem("ashes-throne.weekly.v1")));
   assert.equal(checkpoint.active.preparation,"survey");
+  await page.locator("#squadBack").click();
+  await page.locator("#network").waitFor({state:"visible",timeout:10000});
+  await page.locator("#net008aFight").click();
+  await page.locator("#squad").waitFor({state:"visible",timeout:10000});
   const originalSquad=await page.evaluate(()=>localStorage.getItem("ashes-throne.squad.v1"));
   await page.reload({waitUntil:"load"});
   if(await page.locator("#loginCalendar").evaluate(e=>e.classList.contains("active")))

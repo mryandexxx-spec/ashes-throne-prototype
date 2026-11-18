@@ -5,9 +5,10 @@ const files=["gear-data.js","progress-core.js","skill-core.js","star-core.js",
  "save-core.js","hero-collection-core.js","progress-v3-core.js",
  "reward-policy-core.js","initiative-model.js","battle-rng.js","combat-status-core.js",
  "ability-data.js","network-data.js","network-score-core.js","network-core.js",
- "npc-enemy-data.js","weekly-threat-core.js","combat-core.js"];
+ "npc-enemy-data.js","network-encounter-data.js","network-encounter-adapter.js",
+ "weekly-threat-core.js","combat-core.js"];
 const code=files.map(x=>fs.readFileSync(path.join(__dirname,"..",x),"utf8")).join("\n");
-const m=()=>vm.runInNewContext(code+`\n({WeeklyThreatCore,NetworkCore,NetworkData,ProgressV3Core,CombatCore})`);
+const m=()=>vm.runInNewContext(code+`\n({WeeklyThreatCore,NetworkCore,NetworkData,ProgressV3Core,CombatCore,NetworkEncounterAdapter})`);
 const heroes=["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora","art","sava"].map(id=>({id,side:"ally"}));
 const store=()=>{const map=new Map();return {getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v)};};
 const fighter=()=>({id:"ren",side:"ally",name:"Рен",hp:12000,atk:1500,
@@ -124,8 +125,7 @@ test("NET-008A prevents fabricated result and pays no reward before a real victo
 
 
 test("NET-008A only a verified manual live clue earns weekly intelligence; no retroactive legacy credit",()=>{
- const Data=require("../network-data.js"),Core=require("../network-core.js");
- const Adapter=require("../network-encounter-adapter.js"),Combat=require("../combat-core.js");
+ const {NetworkData:Data,NetworkCore:Core,NetworkEncounterAdapter:Adapter,CombatCore:Combat}=m();
  const template=Data.LIVE_CATALOG.templates.find(t=>t.minInfluence===0&&
   t.type==="supply"&&t.materialId==="Fe");
  assert.ok(template&&template.threatTag==="weekly-gardens");

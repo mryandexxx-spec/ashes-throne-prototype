@@ -24,6 +24,10 @@
 
 ## 2026-11-18
 
+- **LC-008C — [РЕАЛИЗОВАНО в `main`, без live-наград]**: [PR #378](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/378), squash `c6664dc458e8ffba7fad5b2de89cba1002cdafc1`. Read-only `lore-reward-proof-core.js` и контракт [LC_008C_LORE_PROOF.md](LC_008C_LORE_PROOF.md): пять актов, сохранённые сюжетные завершения и обязательные бои; отказы для неполных/повреждённых сейвов. **726/726 Node** на PR, после merge **Node CI и GitHub Pages deployment успешны**. Награды, цифры, UI, версия игры без изменений.
+- **ENV010 — [РЕАЛИЗОВАНО в `main`]**: [PR #377](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/377), squash `0e86de9a6059b7443b3829fe8006104723c4b92c`. Ложный headless Chromium timeout из-за virtual-time заменён real-clock Chromium/WebKit проверкой полного боя и повтора; WebGL скриншоты и HUD проверяются отдельно, **3/3 CI успешно**. Производственный код не менялся.
+- **[УТОЧНЕНИЕ ПО LC-008B]** На code SHA PR #375 после завершения CI **31/32 успешны** (wallet Chromium/WebKit пройден); ENV010 оставался красным до исправления в PR #377. На `main` после #378 Node CI и Pages завершены успешно. Физический iPhone Safari не проверялся.
+
 - **`v0.3.184 · WALLET008B` — [РЕАЛИЗОВАНО в `main` (код); CI последнего коммита ожидает проверки]**, [PR #375](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/375), squash `9417338ccde41354bbf56fcd87d1a4bf774ff95d`: общий Web Locks writer для `progress.v3`, ранняя блокировка второй вкладки, защита `stage`/`persist`, отказ от вымышленного localStorage CAS, остановка дальнейших наград/расходов при неясном исходе сохранения. Добавлены Node и Chromium/WebKit регрессии конкуренции/ошибок записи; браузерные тесты адаптированы к запуску после захвата lock. **На момент merge 30/31 последних PR CI в очереди и 1 успешный; полного зелёного CI, публикации Pages и реального iPhone Safari не подтверждено.** Новые награды, баланс и игровые правила не изменялись. [Ограничения](WALLET_WRITER_008B.md).
 
 ## 2026-11-17

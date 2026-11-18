@@ -2508,48 +2508,53 @@ function renderLoreTrainingResult(){
 $("#loreTrainingResultBack")?.addEventListener("click",returnToLoreMap);
 $("#loreTrainingResultRetry")?.addEventListener("click",openLoreTraining);
 $("#loreTrainingResultHome")?.addEventListener("click",()=>showScreen("home"));
-// LC-008D: only Act I is live. A claimed receipt is never derived from UI state.
-function loreActOneStatus(){
+// LC-008F: five independently receipted lore rewards. The existing v3 wallet
+// writer remains the ONLY mutator; source/revision/proof checks are in core.
+function loreRewardStatus(act){
  if(saveBlocked||!saveAvailable||progress.saveVersion!==3||
     typeof LoreActOneRewardCore==="undefined"||
     typeof ProgressWriterCore==="undefined"||!ProgressWriterCore.isOwner())return "blocked";
- return LoreActOneRewardCore.status({
+ return LoreActOneRewardCore.statusForAct(act,{
   storageProvider:()=>window.localStorage,heroes:ALLIES
  });
 }
-let loreActOneClaiming=false;
-async function claimLoreActOne(){
- if(loreActOneClaiming)return {message:"Получение награды уже выполняется."};
- if(loreActOneStatus()!=="claimable")
-  return {message:loreActOneStatus()==="claimed"?"Эта награда уже получена.":"Для награды необходимо завершить первый акт и сохранить обязательные победы."};
- loreActOneClaiming=true;
+const loreRewardSource=act=>typeof LoreActOneRewardCore!=="undefined"?
+ LoreActOneRewardCore.sourceForAct(act):null;
+let loreRewardClaiming=false;
+async function claimLoreReward(act){
+ if(loreRewardClaiming)return {message:"Награда уже сохраняется."};
+ if(!loreRewardSource(act))return {message:"Неизвестный акт."};
+ const status=loreRewardStatus(act);
+ if(status!=="claimable")return {message:status==="claimed"?
+  "Эта награда уже получена.":"Завершите акт и необходимые бои, чтобы забрать награду."};
+ loreRewardClaiming=true;
  try{
-  const result=await LoreActOneRewardCore.claim({
+  const result=await LoreActOneRewardCore.claimForAct(act,{
    storageProvider:()=>window.localStorage,heroes:ALLIES,
    exclusive:ProgressWriterCore.exclusive,day:DailyCore.localDay()
   });
   if(!result.ok){
-   // Unknown write outcome or runtime mismatch: fail closed until reloaded.
+   // Never retry an ambiguous wallet write in the same session.
    if(["SAVE_OUTCOME_UNKNOWN","REWARD_SYNC_FAILED","EXCLUSIVE_LOCK_FAILED",
        "STALE_WALLET","WALLET_READ_FAILED","INVALID_WALLET"].includes(result.code)){
     window.walletWriterHalt?.();
-    return {message:"Не удалось подтвердить состояние кошелька. Перезагрузите игру перед повторной попыткой."};
+    return {message:"Не удалось подтвердить баланс. Перезагрузите игру и проверьте награду."};
    }
    return {message:result.code==="ALREADY_CLAIMED"?"Награда уже получена.":
-    result.code==="PROOF_NOT_PERSISTED"?"Сначала завершите акт I и сохраните все обязательные победы.":
-    "Награда не выдана ("+result.code+"). Сохранённое право на неё останется доступным."};
+    result.code==="PROOF_NOT_PERSISTED"?"Завершите акт и выиграйте обязательные бои.":
+    "Награда не выдана ("+result.code+"). После восстановления сохранения её можно будет забрать."};
   }
-  // Keep the SAME runtime object held by all UI/battle handlers. A direct
-  // RewardPolicy write has already incremented the persisted save revision.
+  // Preserve reference identity: every screen/battle handler uses this object.
   Object.keys(progress).forEach(key=>delete progress[key]);
   Object.assign(progress,result.runtime);
   saveAvailable=true;
   renderAccountHeader();renderPlayerProfile();renderDailyTasks();renderHeroes();
-  return {message:"Получено: 1 500 валюты, 180 Account XP, железо ×5, кожа ×6, ткань ×8, древесина ×1, крепёж ×3, прочная нить ×3."};
+  return {message:"Награда за акт "+(["I","II","III","IV","V"][act-1])+
+   " получена. Ресурсы зачислены в кошелёк."};
  }catch(_){
   window.walletWriterHalt?.();
-  return {message:"Нельзя подтвердить выплату. Перезагрузите игру и проверьте баланс."};
- }finally{loreActOneClaiming=false;}
+  return {message:"Не удалось подтвердить выплату. Перезагрузите игру и проверьте баланс."};
+ }finally{loreRewardClaiming=false;}
 }
 // CAMPAIGN-HUB-001: presentation-only navigation; mission IDs and saves are unchanged.
 let selectedCampaignPath=null;
@@ -2572,8 +2577,9 @@ function showCampaignPath(path){
    pack:ActiveLoreCampaign.pack,
    onStartRequiredBattle:openLoreRequiredBattle,
    onStartTraining:openLoreTraining,
-   onClaimActOne:claimLoreActOne,
-   getActOneRewardStatus:loreActOneStatus
+   onClaimActReward:claimLoreReward,
+   getActRewardStatus:loreRewardStatus,
+   getActRewardSource:loreRewardSource
   }))LoreCampaignUI.open();
  }
 }

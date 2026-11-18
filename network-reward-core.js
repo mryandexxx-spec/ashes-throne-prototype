@@ -53,7 +53,7 @@ const NetworkRewardCore=(()=>{
    return result;
   }
   const wallet=readWalletFromProvider(storageProvider,heroes);
-  if(!wallet||wallet.networkLedger?.claimedThrough<serial||
+  if(!wallet||!wallet.networkLedger||wallet.networkLedger.claimedThrough<serial||
    !int(wallet.revision??0)||(wallet.revision??0)<result.revision){
    halted=true;
    return fail("REWARD_SYNC_FAILED");

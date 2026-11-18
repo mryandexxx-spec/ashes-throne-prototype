@@ -331,3 +331,16 @@
  #campaignLoreContent .lore-act-one-reward{flex-wrap:wrap}
  #campaignLoreContent .lore-act-one-reward button{width:100%;min-width:0}
 }
+
+/* LC-008E: indicate an unclaimed act finale without repeating its reward on every node. */
+#campaignLoreContent .lore-layer-reward-ready{font-weight:700;color:#ffe0a2}
+#campaignLoreContent .lore-layer-list button:not(.is-active) .lore-layer-reward-ready{color:#e6c17e}
+#campaignLoreContent .lore-act-one-reward{margin:5px 0 9px;padding:8px 11px}
+#campaignLoreContent .lore-act-one-reward__copy{gap:2px}
+#campaignLoreContent .lore-act-one-reward__copy strong{font-size:12px}
+#campaignLoreContent .lore-act-one-reward__copy small{font-size:10.5px}
+#campaignLoreContent .lore-act-one-reward__copy span{font-size:10.5px}
+#campaignLoreContent .lore-act-one-reward button{min-height:44px}
+@media (orientation:landscape) and (max-height:540px){
+ #campaignLoreContent .lore-act-one-reward{margin:4px 0 7px;padding:6px 9px}
+}

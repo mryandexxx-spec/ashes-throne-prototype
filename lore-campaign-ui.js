@@ -7,6 +7,7 @@ const LoreCampaignUI=(()=>{
  let view="stories",storyId=null,nodeId=null,layerId=null,globalKeyRegistered=false;
  let narrativePage=0,narrativeBeatKey="",onStartTraining=null,onStartRequiredBattle=null,trainingNotice="";
  let onClaimActOne=null,getActOneRewardStatus=null,rewardBusy=false,rewardFeedback="";
+ const ACT_ONE_REWARD_NODE="five-shadows:fs-03";
  const PORTRAITS=Object.freeze({
   "Рен Терен":"assets/ren-portrait-ui.webp",
   "Нада":"assets/nada-portrait-ui.webp?v=2",
@@ -210,7 +211,12 @@ const LoreCampaignUI=(()=>{
   if(!story||!story.mapLayers.some(layer=>layer.id===id))return false;
   layerId=id;
   const nodes=data.nodesForStory(storyId,catalog).filter(n=>n.mapLayerId===id);
-  if(!nodes.some(n=>n.id===nodeId))nodeId=nodes[0]?.id||null;
+  // If the first act was cleared but its reward was missed, opening its map
+  // selects the final node rather than hiding the claim behind FS-01.
+  const unclaimedActOne=storyId==="five-shadows"&&
+   getActOneRewardStatus?.()==="claimable"&&nodes.some(n=>n.id===ACT_ONE_REWARD_NODE);
+  if(unclaimedActOne)nodeId=ACT_ONE_REWARD_NODE;
+  else if(!nodes.some(n=>n.id===nodeId))nodeId=nodes[0]?.id||null;
   render();
   return true;
  }
@@ -419,7 +425,8 @@ const LoreCampaignUI=(()=>{
  // The map exposes only the first live grant. Other four approved packages
  // remain documentation-only until their own reviewed integration.
  async function claimActOneReward(){
-  if(rewardBusy||!onClaimActOne||getActOneRewardStatus?.()!=="claimable")return;
+  if(rewardBusy||!onClaimActOne||storyId!=="five-shadows"||
+     nodeId!==ACT_ONE_REWARD_NODE||getActOneRewardStatus?.()!=="claimable")return;
   rewardBusy=true;rewardFeedback="";render();
   try{
    const outcome=await onClaimActOne();
@@ -429,20 +436,28 @@ const LoreCampaignUI=(()=>{
   }finally{rewardBusy=false;if(root)render();}
  }
  function renderActOneReward(){
-  if(storyId!=="five-shadows"||!onClaimActOne||!getActOneRewardStatus)return "";
+  // One real payout exists today. Show it at its ACT END, not as a permanent
+  // banner across all five acts and all fifteen nodes.
+  if(storyId!=="five-shadows"||nodeId!==ACT_ONE_REWARD_NODE||
+     !onClaimActOne||!getActOneRewardStatus)return "";
   const status=getActOneRewardStatus();
-  const claimed=status==="claimed";
-  const claimable=status==="claimable"&&!rewardBusy;
-  const buttonText=rewardBusy?"Сохраняем…":claimed?"Получено":
-   status==="blocked"?"Кошелёк недоступен":
-   status==="locked"?"Завершите первый акт":"Получить награду";
-  const detail=claimed?"Разовая награда уже зачислена. Повторы истории не дают новых выплат.":
-   status==="blocked"?"Проверьте доступность сохранений и перезагрузите игру.":
-   status==="locked"?"Нужны FS-01–FS-03 и все обязательные победы с подтверждённым сохранением.":
-   "Первое завершение подтверждено. Получение бесплатно и доступно один раз.";
-  return '<section class="lore-act-one-reward" aria-label="Разовая награда за акт I">'+
-   '<div class="lore-act-one-reward__copy"><strong>Награда за акт I · «Пять теней»</strong>'+
-   '<small>1 500 валюты · 180 Account XP · железо ×5 · кожа ×6 · ткань ×8 · древесина ×1 · крепёж ×3 · прочная нить ×3</small>'+
+  const step=nodeStatus(data.getNode(ACT_ONE_REWARD_NODE,catalog));
+  const claimed=status==="claimed",claimable=status==="claimable"&&!rewardBusy;
+  const buttonText=rewardBusy?"Сохраняем награду…":claimed?"Награда получена":
+   status==="blocked"?"Награда недоступна":
+   claimable?"Забрать награду":
+   step.code==="battle-pending"?"Сначала победите в бою":
+   step.code==="available"?"Пройдите эпизод":"Завершите первый акт";
+  const detail=claimed?"Вы уже забрали эту награду. За повторное прохождение она не выдаётся.":
+   status==="blocked"?"Не удалось проверить прогресс. Перезагрузите игру и откройте историю снова.":
+   claimable?"Первый акт завершён. Заберите заслуженную награду.":
+   step.code==="battle-pending"?"Остался последний шаг: победите в бою после «Имя Элы».":
+   step.code==="available"?"Завершите эпизод «Имя Элы» и выиграйте бой после него.":
+   step.code==="completed"?"Проверьте, все ли обязательные бои первого акта выиграны.":
+   "Пройдите историю до «Имя Элы» и победите в обязательных боях.";
+  return '<section class="lore-act-one-reward" aria-label="Награда за завершение первого акта">'+
+   '<div class="lore-act-one-reward__copy"><strong>Награда за первый акт</strong>'+
+   '<small>1 500 валюты · 180 опыта аккаунта · железо ×5 · кожа ×6 · ткань ×8 · древесина ×1 · крепёж ×3 · прочная нить ×3</small>'+
    '<span>'+escapeHtml(detail)+'</span>'+
    (rewardFeedback?'<p role="status">'+escapeHtml(rewardFeedback)+'</p>':"")+'</div>'+
    '<button type="button" class="primary" data-lore-action="claim-act-one"'+
@@ -546,10 +561,15 @@ const LoreCampaignUI=(()=>{
   const story=data.getStory(storyId,catalog);
   if(!story)return renderStories();
   const chapters=catalog.chapters.filter(ch=>ch.storyId===story.id);
+  const unclaimedActOne=story.id==="five-shadows"&&getActOneRewardStatus?.()==="claimable";
+  const actOneLayer=unclaimedActOne?
+   data.getNode(ACT_ONE_REWARD_NODE,catalog)?.mapLayerId:null;
   const layers=story.mapLayers.map(layer=>{
    const active=layer.id===layerId;
+   const rewardAvailable=unclaimedActOne&&layer.id===actOneLayer;
    return '<button type="button" data-lore-action="choose-layer" data-lore-layer="'+escapeHtml(layer.id)+
-    '" aria-pressed="'+(active?"true":"false")+'" class="'+(active?"is-active":"")+'">'+escapeHtml(layer.title)+'</button>';
+    '" aria-pressed="'+(active?"true":"false")+'" class="'+(active?"is-active":"")+'">'+escapeHtml(layer.title)+
+    (rewardAvailable?'<span class="lore-layer-reward-ready"> · Забрать награду</span>':"")+'</button>';
   }).join("");
   const nodes=data.nodesForStory(story.id,catalog).filter(n=>n.mapLayerId===layerId);
   const markers=nodes.map((n,i)=>nodeButton(n,i,"marker")).join("");

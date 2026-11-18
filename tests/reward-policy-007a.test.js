@@ -242,7 +242,7 @@ test("Old v2 and older v3 save round trips keep resources; receipts are opt-in",
  assert.equal(saved(other).rewardReceipts.length,1);
 });
 
-test("LC-008D build marker and gated RewardPolicy only allow Act I source",()=>{
+test("LC-008D reward sources remain gated across current builds",()=>{
  const pkg=require("../package.json");
  const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
  assert.equal(pkg.version,"0.3.187");

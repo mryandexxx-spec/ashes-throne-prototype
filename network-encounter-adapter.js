@@ -110,7 +110,7 @@ const NetworkEncounterAdapter=(()=>{
    intel:Object.freeze({priorityEnemyId:a.preparation==="survey"?first[0].id:null}),
    totalNetworkWaves:d.formations[a.approach].length};
  }
- function startBattle(state,allies,{combat,registry=Encounters.REGISTRY,npc=Npcs}={}){
+ function startBattle(state,allies,{combat,registry=Encounters.REGISTRY,npc=Npcs,leaderId=null}={}){
   const p=plan(state,{registry,npc});
   if(!p||!combat||typeof combat.createBattle!=="function"||
    !Array.isArray(allies)||allies.length<1||allies.length>5||
@@ -119,7 +119,9 @@ const NetworkEncounterAdapter=(()=>{
    new Set(allies.map(f=>f.id)).size!==allies.length||
    allies.some(f=>p.first.some(enemy=>enemy.id===f.id)))return null;
   try{
-   const battle=combat.createBattle([...allies,...p.first],[],p.options);
+   const battle=combat.createBattle([...allies,...p.first],[],{
+    ...p.options,...(leaderId===null?{}:{leaderId})
+   });
    battle.networkBinding=p.binding;
    return {plan:p,battle};
   }catch(_){return null;}

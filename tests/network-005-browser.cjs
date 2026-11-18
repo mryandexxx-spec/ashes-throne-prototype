@@ -68,7 +68,17 @@ async function run(name,engine,viewport){
   await find.click();
   assert.match(await page.locator("#gearUxLeft").innerText(),/Где добыть/);
   assert.match(await page.locator("#gearUxRight").innerText(),/Разведсеть пока не подтверждена/);
-  await page.getByRole("button",{name:"Посмотреть пробную разведсеть"}).click();
+  const preview=page.locator("#gearUxRight button").filter({hasText:"Посмотреть пробную разведсеть"});
+  const previewCount=await preview.count();
+  assert.equal(previewCount,1,"Finder pilot preview control exists: "+
+   JSON.stringify(await page.evaluate(()=>({
+    pilotFlag:typeof NETWORK_PILOT_ENABLED==="undefined"?null:NETWORK_PILOT_ENABLED,
+    entryHidden:document.getElementById("net004Entry")?.hidden,
+    buttonTexts:[...document.querySelectorAll("#gearUxRight button")]
+     .map(x=>({text:x.textContent,hidden:x.hidden,display:getComputedStyle(x).display})),
+    visibleGearPanel:getComputedStyle(document.getElementById("gearUxRight")).display
+   }))));
+  await preview.click();
   await page.locator("#network").waitFor({state:"visible"});
   await page.locator("#net005FinderBack").waitFor({state:"visible"});
   assert.match(await page.locator("#net004Notice").innerText(),/нет подтверждённого источника/);

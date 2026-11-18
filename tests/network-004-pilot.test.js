@@ -173,6 +173,8 @@ test("NET-004 feature gated, correct script order and build/cache version",()=>{
  assert.deepEqual(indices,indices.slice().sort((a,b)=>a-b));
  assert.ok(js.includes('networkPilot=1(?:&|$)'));
  assert.ok(js.includes('NetworkPilotSession.create('));
+ assert.ok(js.includes('networkSquadSlots=slots.slice(0,MAX_SQUAD)'));
+ assert.ok(js.includes('leaderId:squadSlots()[0]'));
  assert.ok(js.includes('networkPilot.complete(terminalBattle)'));
  assert.ok(js.includes('NetworkEncounterAdapter.startBattle(active,selectedParty()'));
  assert.ok(!html.includes('data-screen="network" class="hq-station"'));

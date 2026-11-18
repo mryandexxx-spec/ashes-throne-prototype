@@ -11,9 +11,9 @@ const farms=[
  {id:"M3",energy:16,currency:1360,xp:5,m:[3,3,6,0,2,1,0]}];
 const first={currency:2100,xp:300,m:[9,8,15,1,6,4,1]};
 const costs={
- G3:{m:[125,98,132,12,82,34,6],gear:33750,level:15,skills:900},
- G8:{m:[647,908,666,57,361,79,96],gear:215000,level:40,skills:3400},
- G13:{m:[1457,2268,1452,137,730,159,256],gear:552500,level:85,skills:7200}};
+ G3:{m:[125,98,132,12,82,34,6],ten:[215,189,292,28,151,82,12],gear:33750,level:15,skills:900},
+ G8:{m:[647,908,666,57,361,79,96],ten:[1085,1614,1267,292,616,409,336],gear:215000,level:40,skills:3400},
+ G13:{m:[1457,2268,1452,137,730,159,256],ten:[2435,3977,2716,722,1231,932,896],gear:552500,level:85,skills:7200}};
 const acts=[
  [3,1500,180,[5,6,8,1,3,3,0]],[10,2000,230,[5,5,10,1,4,3,1]],
  [22,3000,280,[8,7,8,2,5,4,1]],[36,4000,350,[8,8,10,2,6,5,2]],
@@ -40,14 +40,14 @@ const xpForLevel=n=>{let x=0;for(let i=1;i<n;i++)x+=Math.round(40+7*i+.28*i*i);r
 const account=xp=>{let n=1;while(n<85&&xp>=xpForLevel(n+1))n++;return n;};
 const accountCap=n=>n<=4?[0,3,8,12,14][n]:n<=15?15:Math.min(85,n);
 function stages(heroes){
- const def=(name,g,count)=>({name,materials:mul(costs[g].m,count/5),
+ const def=(name,g,count)=>({name,materials:count===10?costs[g].ten.slice():mul(costs[g].m,count/5),
    currency:costs[g].gear*count/5+moneyForLevel(costs[g].level)*count+
     costs[g].skills*count,level:costs[g].level});
  const a=[def("5G3","G3",5),def("5G8","G8",5)];
  if(heroes===10){
   a.push(def("10G8","G8",10));
   const g13=def("5G13","G13",5);
-  a.push({name:"5G13+5G8",materials:plus(a[1].materials,g13.materials),
+  a.push({name:"5G13+5G8",materials:plus(g13.materials,a[2].materials.map((n,i)=>n-a[1].materials[i])),
     currency:a[1].currency+g13.currency,level:85});
   a.push(def("10G13","G13",10));
  }else a.push(def("5G13","G13",5));
@@ -156,13 +156,14 @@ function selfTest(){
  requireFact(accountCap(5)===15,"account level 5 hero cap");
  requireFact(xpForLevel(85)===84661,"Account L85");
  requireFact(costs.G13.gear===552500,"G13 five heroes");
+ requireFact(costs.G13.ten[6]===896,"ten real roster G13 Gl");
  requireFact(acts.reduce((n,a)=>n+a[1],0)===15500,"LC currency");
  requireFact(acts.reduce((n,a)=>n+a[2],0)===1500,"LC XP");
  requireFact(login.reduce((n,a)=>n+a[0],0)===1950,"login");
  requireFact(daily.reduce((n,a)=>n+a[0],0)===1050,"daily");
  requireFact(JSON.stringify(simulate({seed:7}))===JSON.stringify(simulate({seed:7})),
   "seed repeatability");
- return "10/10 self-checks passed; research only";
+ return "11/11 self-checks passed; research only";
 }
 function report(){
  selfTest();

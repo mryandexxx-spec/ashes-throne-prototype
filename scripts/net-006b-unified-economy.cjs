@@ -38,6 +38,7 @@ const mul=(a,n)=>a.map(v=>v*n);
 const moneyForLevel=n=>{let x=0;for(let i=1;i<n;i++)x+=Math.round(35+3*i+.65*i*i);return x;};
 const xpForLevel=n=>{let x=0;for(let i=1;i<n;i++)x+=Math.round(40+7*i+.28*i*i);return x;};
 const account=xp=>{let n=1;while(n<85&&xp>=xpForLevel(n+1))n++;return n;};
+const accountCap=n=>n<=4?[0,3,8,12,14][n]:n<=15?15:Math.min(85,n);
 function stages(heroes){
  const def=(name,g,count)=>({name,materials:mul(costs[g].m,count/5),
    currency:costs[g].gear*count/5+moneyForLevel(costs[g].level)*count+
@@ -66,14 +67,14 @@ function farmChoice(s,t,random){
  const m=Math.max(...weighted);
  return m===0?farms[Math.floor(random()*3)]:farms[weighted.indexOf(m)];
 }
-function reached(s,t){return s.currency>=t.currency&&account(s.xp)>=t.level&&
+function reached(s,t){return s.currency>=t.currency&&accountCap(account(s.xp))>=t.level&&
  t.materials.every((n,i)=>s.materials[i]>=n);}
 function simulate({seed=1,activity="regular",economy="cautious",heroes=5,farmRate=1,withActs=true}={}){
  const r=prng(seed),p=play[activity],n=net[economy],goals=stages(heroes);
  if(!p||!(economy in net)||![5,10].includes(heroes))throw Error("Invalid scenario");
  const s={currency:first.currency,xp:first.xp,materials:first.m.slice(),energy:240,
   board:0,misses:0,clues:0,repeats:0,logins:0,actsClaimed:new Set()};
- const firstReached={},snapshots={};
+ const firstReached={},materialReached={},coinsReached={},levelReached={},snapshots={};
  for(let day=1;day<=180;day++){
   s.energy=Math.min(240,s.energy+(day===1?0:240));
   if(n)s.board=Math.min(16,s.board+4); // P1 four arrivals/day, no expiry
@@ -92,7 +93,8 @@ function simulate({seed=1,activity="regular",economy="cautious",heroes=5,farmRat
      const wanted=focus(s,g);
      // Proposal-only proxy: seven materials + two non-material types,
      // order x4, at most 3 arrivals until a matching targeted clue.
-     const picked=s.misses===2?wanted:r()<1/3?wanted:Math.floor(r()*9);
+     const other=Math.floor(r()*8);
+     const picked=s.misses===2?wanted:r()<1/3?wanted:other>=wanted?other+1:other;
      s.misses=picked===wanted?0:s.misses+1;
      s.board--;s.clues++;
      // Hypothetical content gates, NOT game code.
@@ -109,8 +111,14 @@ function simulate({seed=1,activity="regular",economy="cautious",heroes=5,farmRat
     award(s,{currency:f.currency,xp:f.xp,m:f.m});
    }
   }
-  for(const g of goals)if(firstReached[g.name]===undefined&&reached(s,g))
-   firstReached[g.name]=day;
+  for(const g of goals){
+   if(firstReached[g.name]===undefined&&reached(s,g))firstReached[g.name]=day;
+   if(materialReached[g.name]===undefined&&g.materials.every((n,i)=>s.materials[i]>=n))
+    materialReached[g.name]=day;
+   if(coinsReached[g.name]===undefined&&s.currency>=g.currency)coinsReached[g.name]=day;
+   if(levelReached[g.name]===undefined&&accountCap(account(s.xp))>=g.level)
+    levelReached[g.name]=day;
+  }
   if([7,30,90,180].includes(day)){
    const coverage=goals.map(g=>Math.round(100*g.materials.reduce((a,v,i)=>
     a+Math.min(v,s.materials[i]),0)/g.materials.reduce((a,b)=>a+b,0)));
@@ -118,7 +126,7 @@ function simulate({seed=1,activity="regular",economy="cautious",heroes=5,farmRat
     repeats:s.repeats,clues:s.clues,board:s.board,coverage};
   }
  }
- return {firstReached,snapshots};
+ return {firstReached,materialReached,coinsReached,levelReached,snapshots};
 }
 function pct(a,q){a.sort((x,y)=>x-y);const t=(a.length-1)*q,k=Math.floor(t);
  return a[k]+(a[Math.ceil(t)]-a[k])*(t-k);}
@@ -127,8 +135,11 @@ function ensemble(options,seeds=120){
  const milestones=stages(options.heroes||5);
  return {scenario:options,reach:Object.fromEntries(milestones.map(g=>{
   const t=rows.map(s=>s.firstReached[g.name]||181);
+  const med=key=>Math.round(pct(rows.map(s=>s[key][g.name]||181),.5));
   return [g.name,{p10:Math.round(pct(t.slice(),.1)),median:Math.round(pct(t.slice(),.5)),
-   p90:Math.round(pct(t.slice(),.9)),success:t.filter(x=>x<=180).length+"/"+seeds}];
+   p90:Math.round(pct(t.slice(),.9)),success:t.filter(x=>x<=180).length+"/"+seeds,
+   materialsDay:med("materialReached"),coinsDay:med("coinsReached"),
+   accountGateDay:med("levelReached")}];
  })),days:Object.fromEntries([7,30,90,180].map(d=>{
   const list=rows.map(x=>x.snapshots[d]);
   return [d,{accountLevel:Math.round(pct(list.map(x=>x.accountLevel),.5)),
@@ -142,6 +153,7 @@ function selfTest(){
  const requireFact=(ok,label)=>{if(!ok)throw Error("Self-test failed "+label);};
  requireFact(farms.every(f=>f.currency/f.energy===85),"85 currency/energy");
  requireFact(moneyForLevel(85)===144378,"L85 cost");
+ requireFact(accountCap(5)===15,"account level 5 hero cap");
  requireFact(xpForLevel(85)===84661,"Account L85");
  requireFact(costs.G13.gear===552500,"G13 five heroes");
  requireFact(acts.reduce((n,a)=>n+a[1],0)===15500,"LC currency");
@@ -150,7 +162,7 @@ function selfTest(){
  requireFact(daily.reduce((n,a)=>n+a[0],0)===1050,"daily");
  requireFact(JSON.stringify(simulate({seed:7}))===JSON.stringify(simulate({seed:7})),
   "seed repeatability");
- return "9/9 self-checks passed; research only";
+ return "10/10 self-checks passed; research only";
 }
 function report(){
  selfTest();

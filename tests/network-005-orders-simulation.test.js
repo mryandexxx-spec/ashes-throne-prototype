@@ -131,8 +131,12 @@ test("NET-005 configured matching material links only: no fictitious farm source
  const described=clone(catalog);described.templates[0].materialId="Fe";
  const withMaterial=Data.buildCatalog(described);
  assert.equal(Source.findNetworkSources("Fe",withMaterial,[]).length,0);
+ const unknown=Source.findNetworkSources("Fe",withMaterial);
+ assert.equal(unknown.length,1,"candidate is visible without invented unlock");
+ assert.equal(unknown[0].access,"unknown");
  const sources=Source.findNetworkSources("Fe",withMaterial,unlocked);
  assert.equal(sources.length,1);
+ assert.equal(sources[0].access,"eligible");
  assert.equal(sources[0].materialId,"Fe");
  assert.equal(sources[0].templateId,template.id);
  assert.equal(sources[0].rewardRef,template.rewardRef);

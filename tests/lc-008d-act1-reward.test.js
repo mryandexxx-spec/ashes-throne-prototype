@@ -65,7 +65,7 @@ test("LC-008D: only first act is enabled with the approved package",()=>{
  for(const [id,n] of Object.entries({Fe:5,Le:6,Cl:8,Wo:1,Fa:3,Th:3,Gl:0}))
   assert.equal(c.SOURCE.reward.materials[id],n);
  const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
- assert.match(html,/lore-act1-reward-core\.js\?v=0\.3\.185" type="text\/progress-gated"/);
+ assert.match(html,/lore-act1-reward-core\.js\?v=0\.3\.186" type="text\/progress-gated"/);
  assert.equal(html.includes("lore-act2-reward-core.js"),false);
 });
 test("LC-008D: incomplete act or missing required battle cannot earn a receipt",async()=>{

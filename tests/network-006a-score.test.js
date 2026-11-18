@@ -18,7 +18,7 @@ const config={id:"net006a-test",capacity:4,intervalMs:1000,
 const hero=(id="test-hero")=>({id,name:id,side:"ally",hp:5000,atk:999,
  physicalAttack:999,physicalDefense:30,magicDefense:30,speed:950});
 function state(approach="quiet"){
- const selected=cat.templates[0];
+ const selected={...cat.templates[0],levels:[1],modifierIds:[]};
  const single=Data.buildCatalog({version:1,regions:cat.regions,templates:[selected]});
  let s=Core.fresh(3456,0,config,single);
  s=Core.accrue(s,4000,single,unlocked);

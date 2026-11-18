@@ -76,12 +76,32 @@ const NetworkData=(()=>{
   return c.templates.filter(t=>unlockedRegions.includes(t.regionId)&&
    (influence[t.regionId]??0)>=t.minInfluence).sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
  }
+ // NET-003 [ПРЕДЛОЖЕНИЕ]: isolated, noncanonical encounter fixtures.
+ // Not referenced by the runtime CATALOG; not approved for payouts or release.
+ // All levels, weights, approaches and modifiers are testing-only assumptions.
+ const draft=(id,type,encounterRef,extra={})=>({
+  id,revision:1,regionId:"gardens-over-abyss",type,weight:1,minInfluence:0,
+  levels:[1,2],preparationIds:["survey","cover"],
+  approaches:[{id:"quiet",waves:1},{id:"cordon",waves:2}],
+  modifierIds:["reinforced","rushed"],
+  materialId:null,heroId:null,threatTag:null,
+  rewardRef:"net-proposal-no-payout-"+id,
+  encounterRef,...extra
+ });
+ const PROPOSAL_CATALOG=buildCatalog({version:1,regions:[
+  {id:"gardens-over-abyss",name:"Сады над пропастью",unlockRef:null}
+ ],templates:[
+  draft("net-route-watch","supply","net-gardens-route-v1"),
+  draft("net-lost-cargo","trophies","net-gardens-cargo-v1"),
+  draft("net-watch-trace","threat-trace","net-gardens-watch-v1",
+   {threatTag:"net-proposal-trace"})
+ ]});
  // [ПРЕДЛОЖЕНИЕ]: the first region identifier follows NETWORK-001.
  // Its narrative content and playable templates belong to NET-003 / canon review.
  const CATALOG=buildCatalog({version:1,regions:[
   {id:"gardens-over-abyss",name:"Сады над пропастью",unlockRef:null}
  ],templates:[]});
  return Object.freeze({TYPES,ORDER_KINDS,CATALOG,validateCatalog,buildCatalog,
-  matchesOrder,eligibleTemplates});
+  matchesOrder,eligibleTemplates,PROPOSAL_CATALOG});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=NetworkData;

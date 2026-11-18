@@ -18,6 +18,8 @@ async function run(name,engine,viewport){
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   assert.match(await page.locator("#buildVersion").innerText(),/v0\.3\.188 · NET004PILOT/);
   assert.equal(await page.locator("#net004Entry").getAttribute("hidden"),null);
+  if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
+   await page.locator('#loginCalendar [data-screen="home"]').click();
   await page.locator("#hqMoreToggle").click();
   await page.locator("#net004Entry").click();
   await page.locator("#network").waitFor({state:"visible"});
@@ -60,6 +62,8 @@ async function run(name,engine,viewport){
   assert.equal(resultSaved.overflow,false);
   await page.screenshot({path:path.join(dest,name+"-"+viewport.width+"-result.png")});
   await page.reload({waitUntil:"load"});
+  if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
+   await page.locator('#loginCalendar [data-screen="home"]').click();
   await page.locator("#hqMoreToggle").click();
   await page.locator("#net004Entry").click();
   await page.locator("#net004Result").waitFor({state:"visible"});

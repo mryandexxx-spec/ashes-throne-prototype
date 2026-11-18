@@ -212,9 +212,13 @@ test("shards are constrained by known roster, overflow and unresolved rank 7",as
   materials:{},heroShards:{"unknown":1}}}))).code,"REWARDS_NOT_CONFIGURED");
  const max=wallet(s);max.heroStars.lyra.rank=7;max.heroStars.lyra.shards=0;
  s.storage.data.set(s.m.ProgressV3Core.KEY,JSON.stringify(max));
- assert.equal((await claim(s,1)).code,"SHARDS_AT_MAX_RANK_UNRESOLVED");
- assert.equal(wallet(s).networkLedger,undefined);
- const atLimit=wallet(s);atLimit.heroStars.lyra.rank=1;
+ const beforeOverflow=max.currency;
+ assert.equal((await claim(s,1)).ok,true,"rank 7 payout exchanges the full shard amount");
+ assert.equal(wallet(s).currency,beforeOverflow+7+2*80);
+ assert.equal(wallet(s).heroStars.lyra.shards,0);
+ assert.equal(wallet(s).networkLedger.claimedThrough,1);
+ const atLimit=wallet(s);delete atLimit.networkLedger;
+ atLimit.heroStars.lyra.rank=1;
  atLimit.heroStars.lyra.shards=Number.MAX_SAFE_INTEGER;
  s.storage.data.set(s.m.ProgressV3Core.KEY,JSON.stringify(atLimit));
  assert.equal((await claim(s,1)).code,"SHARD_BALANCE_OVERFLOW");

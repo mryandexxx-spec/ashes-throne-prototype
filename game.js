@@ -285,7 +285,7 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
  renderPlayerProfile();
  if(typeof renderHeadquarters==="function")renderHeadquarters();
 });
-// NET-004: disabled by default; no production network data is loaded.
+// NET-007: network is now playable by default; ?networkPilot=1 keeps sandbox tests.
 const NETWORK_PILOT_ENABLED=typeof window!=="undefined"&&
  typeof window.location?.search==="string"&&
  /(?:^|[?&])networkPilot=1(?:&|$)/.test(window.location.search);
@@ -421,8 +421,10 @@ function renderDailyTasks(){
   const done=progress.daily.counts[task.id]===1,claimed=progress.daily.claimed.includes(task.id);
   const materials=Object.entries(task.materials).map(([key,qty])=>
    "+"+qty+" "+(GearData.MATERIAL_LABELS[key]||key)).join(" · ");
+  const books=Object.entries(task.skillMaterials||{}).map(([key,qty])=>
+   "+"+qty+" "+(SkillCore.LABELS[key]||key)).join(" · ");
   detail.textContent=(done?"Выполнено":"Не выполнено")+" · +"+task.currency+
-   " валюты · +"+task.xp+" Account XP · "+materials;
+   " валюты · +"+task.xp+" Account XP · "+materials+(books?" · "+books:"");
   label.append(title,detail);
   const button=document.createElement("button");button.type="button";
   button.className=claimed?"ghost":"primary";
@@ -514,7 +516,9 @@ function renderLoginCalendar(){
   const detail=document.createElement("small");
   detail.textContent="+"+reward.currency+" валюты · +"+reward.xp+" XP · "+
    Object.entries(reward.materials).map(([key,n])=>"+"+n+" "+
-    (GearData.MATERIAL_LABELS[key]||key)).join(", ");
+    (GearData.MATERIAL_LABELS[key]||key)).join(", ")+
+   Object.entries(reward.skillMaterials||{}).map(([key,n])=>
+    " · +"+n+" "+(SkillCore.LABELS[key]||key)).join("");
   cell.append(title,detail);grid.append(cell);
  }
  button.disabled=!view.available;
@@ -1097,7 +1101,7 @@ function showScreen(id){
  if(id==="campaign"){if(previousScreenId!=="campaign")showCampaignPath(null);renderCampaign();}
  if(id==="challenges")renderChallenges();
  if(id==="operations")renderOperations();
- if(id==="network"&&NETWORK_PILOT_ENABLED)NetworkPilotUI.render();
+ if(id==="network"&&networkPilot)NetworkPilotUI.render();
  if(id==="operationResult")renderOperationResult();
  if(id==="signalOperations")renderSignalOperations();
  if(id==="signalOperationResult")renderSignalOperationResult();
@@ -1123,12 +1127,13 @@ function showScreen(id){
    typeof NpcChallengePilot!=="undefined"&&!!NpcChallengePilot.get(activeChallengeId);
   battleIsOperation=squadReturnScreen==="operations"&&operationProgress.active?.phase==="battle";
   operationBattleRunId=battleIsOperation?operationProgress.active.runId:null;
-  battleIsNetwork=NETWORK_PILOT_ENABLED&&squadReturnScreen==="network"&&
+  battleIsNetwork=squadReturnScreen==="network"&&
    networkPilot?.isReady()&&networkPilot.read()?.active?.phase==="battle";
   battleIsSignal=squadReturnScreen==="signalOperations"&&signalProgress.active?.phase==="battle";
   signalBattleRunId=battleIsSignal?signalProgress.active.runId:null;
   const label=$("#battleMissionLabel");
-  if(label)label.textContent=battleIsNetwork?"РАЗВЕДСЕТЬ · ПРОБНЫЙ БОЙ (ВНЕ КАНОНА)":
+  if(label)label.textContent=battleIsNetwork?(NETWORK_PILOT_ENABLED?"РАЗВЕДСЕТЬ · ПРОБНЫЙ БОЙ (ВНЕ КАНОНА)":
+   "РАЗВЕДСЕТЬ · ДОБЫЧА РЕСУРСОВ"):
    battleIsSignal?"РАЗВЕДОПЕРАЦИЯ · ТРЕВОЖНЫЙ СИГНАЛ":
    battleIsOperation?"РАЗВЕДОПЕРАЦИЯ · ДВА КУРЬЕРА":
    battleIsLoreRequired?"ПЯТЬ ТЕНЕЙ · ОБЯЗАТЕЛЬНЫЙ БОЙ"+
@@ -1157,7 +1162,8 @@ function showScreen(id){
      "Оценка S1: первым победите отмеченного противника («"+
       networkPlan.first[0].name+"»). Цель +10; "+
       "темп +5 до "+Math.max(5,networkPlan.first.length*5)+
-      " действий союзников; без нокаутов +25. Без наград (проба).":
+      " действий союзников; без нокаутов +25."+
+      (NETWORK_PILOT_ENABLED?" Без наград (проба).":" Победа приносит ресурсы; 3★ открывают симуляцию."):
      "Данные зацепки недоступны — бой нельзя оценить."):
     npcGoal|| (battleIsLoreRequired&&trial?
      trial.goalText:
@@ -1847,8 +1853,11 @@ function renderStarPanel(id){
  $("#starPromoteButton").disabled=saveBlocked||cost===null||amount<cost;
  $("#starPromoteButton").textContent=cost===null?"Достигнут максимум 7★":"Повысить до "+(rank+1)+"★";
  $("#starNotice").textContent=saveBlocked?"Сохранение недоступно. Развитие заблокировано.":
-  (id==="ren"||id==="nada"?"Звёзды увеличивают боевые характеристики героя, но не скорость. ":"Для учебных героев звёзды пока не увеличивают характеристики. ")+
-  "Источник осколков в тестовой версии: «Тестовые ресурсы».";
+  "Каждая звезда после 1★ даёт +3% к базовым HP, атаке и защите (до +18% на 7★); скорость не меняется. "+
+  (["ren","nada","liora","art","sava"].includes(id)?
+   "Осколки добываются через приказ на героя в разведсети.":
+   "Для демонстрационного героя пока нет обычного источника осколков.")+
+  (rank===7?" Лишние осколки обмениваются по курсу 80 валюты за штуку.":"");
 }
 function showLockedHero(id){
  if(typeof StarCore==="undefined"||heroOwned(id)||!ALLIES.some(h=>h.id===id))return false;
@@ -1894,7 +1903,8 @@ function promoteStar(id,locked){
   openHeroDetail(id);
  }else{
   renderHeroDetail();
-  $("#starNotice").textContent="Герой достиг "+upgraded.rank+"★. Списано "+upgraded.spent+" осколков. Сохранено.";
+  $("#starNotice").textContent="Герой достиг "+upgraded.rank+"★. Списано "+upgraded.spent+" осколков."+
+   (upgraded.excessCurrency?" Компенсация: +"+upgraded.excessCurrency+" валюты.":"")+" Сохранено.";
  }
  return true;
 }
@@ -3945,12 +3955,20 @@ document.addEventListener("visibilitychange",()=>{
  if(document.hidden){closeFighterInspection();hideAbilityTooltip();cancelAutoTimer();stopBattleRendering();}
  else if(shouldRenderBattle()){engine.resize();startBattleRendering();queueAutoAction();}
 });
-// The test button is never visible without the explicit URL flag.
-// The session uses only a pilot namespaced key, not ashes-throne.network.v1.
-if(NETWORK_PILOT_ENABLED&&typeof NetworkPilotSession!=="undefined"&&
+// One established battle UI supports both the live economy and isolated
+// ?networkPilot=1 fixtures. Real rewards use network.v1 + progress.v3.
+if(typeof NetworkPilotSession!=="undefined"&&
  typeof NetworkPilotUI!=="undefined"&&typeof ProgressWriterCore!=="undefined"){
  const entry=$("#net004Entry");
  networkPilot=NetworkPilotSession.create({
+  live:!NETWORK_PILOT_ENABLED,
+  heroes:ALLIES,day:dailyDay,
+  onCredit:runtime=>{
+   if(!runtime||runtime.saveVersion!==3)return;
+   Object.keys(progress).forEach(key=>delete progress[key]);
+   Object.assign(progress,runtime);
+   renderAccountHeader();renderHeroes();renderPlayerProfile();
+  },
   storageProvider:()=>window.localStorage,
   exclusive:ProgressWriterCore.exclusive,
   ownsLock:ProgressWriterCore.isOwner,
@@ -3964,7 +3982,9 @@ if(NETWORK_PILOT_ENABLED&&typeof NetworkPilotSession!=="undefined"&&
  if(networkPilot&&NetworkPilotUI.mount({pilot:networkPilot,
    onOpenSquad:()=>openSquad("network"),
    onBackToFinder:()=>showScreen("heroDetail")})){
-  if(entry)entry.hidden=false;
+  if(entry){entry.hidden=false;
+   entry.textContent=NETWORK_PILOT_ENABLED?"⌖ Разведсеть · пробный режим":
+    "⌖ Разведсеть · добыча ресурсов";}
   if(typeof GearUX004!=="undefined"&&typeof GearUX004.setNetworkPreview==="function")
    GearUX004.setNetworkPreview(materialId=>{
     if(NetworkPilotUI.openFromFinder(materialId))showScreen("network");

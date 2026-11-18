@@ -1,4 +1,4 @@
-/* Stars-001: demo roster ranks/shards. No combat bonuses or economy drop tables.
+/* NET-007: rank combat growth and overflow shard exchange in the playable progression.
  * Direct mission joins award 1 star; earlier shards are never consumed by joining. */
 const StarCore=(()=>{
  "use strict";
@@ -6,6 +6,10 @@ const StarCore=(()=>{
  const START=Object.freeze(["kael","lyra","darin","ren","nada","liora","art","sava"]);
  const COST=Object.freeze([10,15,25,30,65,85,100]);
  const MAX=7, TOTAL=COST.reduce((sum,n)=>sum+n,0);
+ const STAR_BONUS_PER_RANK=0.03, EXCESS_SHARD_CURRENCY=80;
+ const COMBAT_BONUS_STATS=Object.freeze(["hp","physicalAttack","magicAttack","physicalDefense","magicDefense"]);
+ const combatMultiplier=rank=>Number.isInteger(rank)&&rank>=1&&rank<=MAX?
+  1+(rank-1)*STAR_BONUS_PER_RANK:1;
  const own=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);
  const object=value=>!!value&&typeof value==="object"&&!Array.isArray(value);
  const validCount=value=>Number.isSafeInteger(value)&&value>=0;
@@ -53,8 +57,14 @@ const StarCore=(()=>{
  // Shards may be earned before a hero joins; all shard sources will call this.
  function add(progress,id,amount){
   const current=state(progress,id);
-  if(!current||!Number.isSafeInteger(amount)||amount<=0||current.rank===MAX||
-   !Number.isSafeInteger(current.shards+amount))return false;
+  if(!current||!Number.isSafeInteger(amount)||amount<=0)return false;
+  if(current.rank===MAX){
+   const refund=amount*EXCESS_SHARD_CURRENCY;
+   if(!Number.isSafeInteger(refund)||!validCount(progress.currency)||
+    !Number.isSafeInteger(progress.currency+refund))return false;
+   progress.currency+=refund;return true;
+  }
+  if(!Number.isSafeInteger(current.shards+amount))return false;
   current.shards+=amount;return true;
  }
  function directGrant(progress,id){
@@ -70,9 +80,15 @@ const StarCore=(()=>{
   if(!current||cost===null||current.shards<cost)return null;
   if(current.rank===0&&progress.unlockedHeroes!==undefined&&
     !Array.isArray(progress.unlockedHeroes))return null;
-  current.shards-=cost;current.rank++;
+  const nextRank=current.rank+1,extra=nextRank===MAX?current.shards-cost:0;
+  const refund=extra*EXCESS_SHARD_CURRENCY;
+  if(nextRank===MAX&&(!Number.isSafeInteger(refund)||
+   !validCount(progress.currency)||!Number.isSafeInteger(progress.currency+refund)))return null;
+  current.shards=nextRank===MAX?0:current.shards-cost;current.rank=nextRank;
+  if(refund)progress.currency+=refund;
   if(current.rank===1)syncOwned(progress,id);
-  return {id,rank:current.rank,spent:cost,remainingShards:current.shards};
+  return {id,rank:current.rank,spent:cost,remainingShards:current.shards,
+   excessCurrency:refund};
  }
  // Explicitly DEBUG-only. A single click supplies the remaining full-cycle
  // shard requirement per hero; repeats cannot mint more for already-full stock.
@@ -86,7 +102,8 @@ const StarCore=(()=>{
   }
   return true;
  }
- return Object.freeze({IDS,START,COST,MAX,TOTAL,valid,fromLegacy,
+ return Object.freeze({IDS,START,COST,MAX,TOTAL,STAR_BONUS_PER_RANK,
+  EXCESS_SHARD_CURRENCY,COMBAT_BONUS_STATS,combatMultiplier,valid,fromLegacy,
   rankOf,shardsOf,costOf,remaining,usedThrough,add,directGrant,promote,refillTest});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=StarCore;

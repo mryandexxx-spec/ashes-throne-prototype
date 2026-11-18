@@ -197,5 +197,6 @@ test("no network scoring or combat rules change for ordinary battles",()=>{
  assert.equal(b.networkScoreMetrics,undefined);
  assert.equal(Score.summarize(b,0),null);
  assert.equal(Data.CATALOG.templates.length,0);
- assert.ok(!read("network-pilot-session.js").includes("NetworkRewardCore.claim"));
+ assert.ok(read("network-pilot-session.js").includes("if(!live)return fail"));
+ assert.ok(read("network-pilot-session.js").includes("NetworkRewardCore.claim"));
 });

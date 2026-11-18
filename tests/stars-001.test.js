@@ -73,7 +73,10 @@ assert.equal(paid,330);
 assert.equal(Star.rankOf(fresh2,h),7);
 assert.equal(Star.costOf(fresh2,h),null);
 assert.equal(Star.promote(fresh2,h),null);
-assert.equal(Star.add(fresh2,h,1),false,"compensation TBD: no unsupported excess reward");
+const maxCoin=fresh2.currency;
+assert.equal(Star.add(fresh2,h,1),true,"excess shards exchange to currency at 7★");
+assert.equal(fresh2.currency,maxCoin+80);
+assert.equal(Star.shardsOf(fresh2,h),0);
 assert.equal(S.save(fresh2,()=>db2.storage),true);
 assert.equal(Star.rankOf(S.load(allies,()=>db2.storage).progress,h),7);
 // Debug button floors remaining shards, never pays a real mission/drop reward.
@@ -92,7 +95,9 @@ const calcBefore=P.heroStats(debug,{id:"kael",hp:100,atk:20,speed:100});
 assert.equal(Star.add(debug,"kael",0),false);
 assert.equal(Star.promote(debug,"kael").rank,2);
 const calcAfter=P.heroStats(debug,{id:"kael",hp:100,atk:20,speed:100});
-assert.deepEqual(JSON.stringify(calcAfter),JSON.stringify(calcBefore),"stars do not modify combat stats including speed");
+assert.ok(calcAfter.hp>calcBefore.hp,"stars increase base HP");
+assert.ok(calcAfter.atk>calcBefore.atk,"stars increase base attack");
+assert.equal(calcAfter.speed,calcBefore.speed,"star ranks never change speed");
 assert.equal(debug.levels.kael,previousLevel);
 assert.equal(debug.currency,previousCurrency);
 // A v3 save without new star data migrates without losing ownership or wallet.

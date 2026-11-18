@@ -6,9 +6,9 @@ const DailyCore=(()=>{
  const TASKS=Object.freeze([
   Object.freeze({id:"hero-level",label:"Повысить уровень любого героя",currency:200,xp:15,materials:Object.freeze({Fe:2})}),
   Object.freeze({id:"equip-item",label:"Изготовить и установить предмет снаряжения",currency:200,xp:15,materials:Object.freeze({Le:2})}),
-  Object.freeze({id:"campaign-battle",label:"Завершить бой кампании",currency:250,xp:20,materials:Object.freeze({Cl:3})}),
+  Object.freeze({id:"campaign-battle",label:"Завершить бой кампании",currency:250,xp:20,materials:Object.freeze({Cl:3}),skillMaterials:Object.freeze({manual1:2})}),
   // Temporary pilot rewards reuse existing small daily bundles, not a new economy.
-  Object.freeze({id:"tactical-participation",label:"Участвовать в тактической задаче",currency:200,xp:15,materials:Object.freeze({Fe:2})}),
+  Object.freeze({id:"tactical-participation",label:"Участвовать в тактической задаче",currency:200,xp:15,materials:Object.freeze({Fe:2}),skillMaterials:Object.freeze({manual2:3})}),
   Object.freeze({id:"onslaught-participation",label:"Участвовать в Натиске",currency:200,xp:15,materials:Object.freeze({Le:2})})
  ]);
  const empty=day=>({day,counts:Object.fromEntries(IDS.map(id=>[id,0])),claimed:[]});
@@ -67,19 +67,22 @@ const DailyCore=(()=>{
   const pending=IDS.filter(id=>clone.daily.counts[id]===1&&!clone.daily.claimed.includes(id));
   if(!pending.length)return null;
   let currency=0,xp=0;
-  const materials={};
+  const materials={},skillMaterials={};
   for(const id of pending){
    const reward=claim(clone,id,day);
    if(!reward)return null;
    currency+=reward.currency;xp+=reward.xp;
    for(const [key,qty] of Object.entries(reward.materials))
     materials[key]=(materials[key]||0)+qty;
+   for(const [key,qty] of Object.entries(reward.skillMaterials||{}))
+    skillMaterials[key]=(skillMaterials[key]||0)+qty;
   }
   progress.currency=clone.currency;
   progress.accountXp=clone.accountXp;
   progress.materials=clone.materials;
+  progress.skillMaterials=clone.skillMaterials;
   progress.daily=clone.daily;
-  return {ids:pending,currency,xp,materials};
+  return {ids:pending,currency,xp,materials,skillMaterials};
  }
  function claim(progress,id,day){
   const task=TASKS.find(t=>t.id===id);
@@ -90,11 +93,21 @@ const DailyCore=(()=>{
     !progress.materials||Object.entries(task.materials).some(([key,amount])=>
      !Number.isSafeInteger(progress.materials[key])||
      !Number.isSafeInteger(progress.materials[key]+amount)))return null;
+  const skillRewards=task.skillMaterials||{};
+  const skills=progress.skillMaterials??{manual1:0,manual2:0,seal:0};
+  if(!skills||Object.entries(skillRewards).some(([key,amount])=>
+   !Number.isSafeInteger(skills[key])||!Number.isSafeInteger(skills[key]+amount)))return null;
   progress.currency+=task.currency;
   progress.accountXp+=task.xp;
   for(const [key,amount] of Object.entries(task.materials))progress.materials[key]+=amount;
+  if(Object.keys(skillRewards).length){
+   for(const [key,amount] of Object.entries(skillRewards))skills[key]+=amount;
+   progress.skillMaterials=skills;
+  }
   progress.daily.claimed.push(id);
-  return {currency:task.currency,xp:task.xp,materials:task.materials};
+  return {currency:task.currency,xp:task.xp,materials:task.materials,
+   skillMaterials:skillRewards};
  }
  return Object.freeze({TASKS,IDS,empty,valid,localDay,today,record,unclaimedCount,claim,claimAll});
 })();
+if(typeof module!=="undefined"&&module.exports)module.exports=DailyCore;

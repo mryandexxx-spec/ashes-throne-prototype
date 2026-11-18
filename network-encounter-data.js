@@ -6,7 +6,7 @@
 const NetworkEncounterData=(()=>{
  "use strict";
  const Network=typeof NetworkData!=="undefined"?NetworkData:require("./network-data.js");
- const templates=Network.PROPOSAL_CATALOG.templates;
+ const templates=[...Network.PROPOSAL_CATALOG.templates,...Network.LIVE_CATALOG.templates];
  const byId=Object.fromEntries(templates.map(t=>[t.id,t]));
  const raw=[
   {id:"net-route-watch",formations:{
@@ -19,15 +19,16 @@ const NetworkEncounterData=(()=>{
    quiet:[["npc-route-signaller","npc-watch-captain"]],
    cordon:[["npc-route-signaller","npc-trail-interceptor"],["npc-watch-captain"]]}}
  ];
- const REGISTRY=Object.freeze(Object.fromEntries(raw.map(entry=>{
-  const template=byId[entry.id];
-  if(!template)throw Error("NET003_MISSING_TEMPLATE");
+ const fixtures=Object.fromEntries(raw.map(x=>[x.id,x.formations]));
+ const REGISTRY=Object.freeze(Object.fromEntries(templates.map(template=>{
+  const fixtureId=fixtures[template.id]?template.id:
+   template.type==="recruit-intel"?"net-lost-cargo":"net-route-watch";
+  const source=fixtures[fixtureId];
+  if(!source)throw Error("NET007_MISSING_FORMATION");
   const formations={};
-  for(const [key,waves] of Object.entries(entry.formations)){
+  for(const [key,waves] of Object.entries(source))
    formations[key]=Object.freeze(waves.map(wave=>Object.freeze(wave.slice())));
-  }
-  const definition=Object.freeze({template,formations:Object.freeze(formations)});
-  return [template.encounterRef,definition];
+  return [template.encounterRef,Object.freeze({template,formations:Object.freeze(formations)})];
  })));
  return Object.freeze({REGISTRY});
 })();

@@ -13,7 +13,8 @@ const LoginCore=(()=>{
   Object.freeze({currency:250,xp:15,materials:Object.freeze({Wo:1})}),
   Object.freeze({currency:300,xp:20,materials:Object.freeze({Fa:2})}),
   Object.freeze({currency:350,xp:20,materials:Object.freeze({Th:2})}),
-  Object.freeze({currency:600,xp:35,materials:Object.freeze({Gl:1})})
+  Object.freeze({currency:600,xp:35,materials:Object.freeze({Gl:1}),
+   skillMaterials:Object.freeze({seal:1})})
  ]);
  const isDay=day=>typeof day==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(day)&&
   Number.isFinite(Date.parse(day+"T12:00:00Z"))&&
@@ -81,11 +82,20 @@ const LoginCore=(()=>{
    !progress.materials||Object.entries(reward.materials).some(([key,amount])=>
     !Number.isSafeInteger(progress.materials[key])||
     !Number.isSafeInteger(progress.materials[key]+amount)))return null;
+  const skillReward=reward.skillMaterials||{};
+  const skills=progress.skillMaterials??{manual1:0,manual2:0,seal:0};
+  if(!skills||Object.entries(skillReward).some(([key,amount])=>
+   !Number.isSafeInteger(skills[key])||!Number.isSafeInteger(skills[key]+amount)))return null;
   progress.accountXp+=reward.xp;
   progress.currency+=reward.currency;
   for(const [key,amount] of Object.entries(reward.materials))progress.materials[key]+=amount;
+  if(Object.keys(skillReward).length){
+   for(const [key,amount] of Object.entries(skillReward))skills[key]+=amount;
+   progress.skillMaterials=skills;
+  }
   progress.login={version:VERSION,month:view.month,claimed:view.nextDay,lastClaimDay:day};
   return {day:view.nextDay,...reward};
  }
  return Object.freeze({VERSION,REWARDS,daysInMonth,fresh,valid,current,rewardForDay,claim});
 })();
+if(typeof module!=="undefined"&&module.exports)module.exports=LoginCore;

@@ -1,7 +1,7 @@
 "use strict";
 const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
-const api=vm.runInNewContext(["gear-data.js","progress-core.js","daily-core.js","login-core.js",
+const api=vm.runInNewContext(["gear-data.js","progress-core.js","skill-core.js","daily-core.js","login-core.js",
  "progress-v3-core.js","save-core.js"].map(read).join("\n")+
  "\n({L:LoginCore,S:SaveCore})");
 const {L,S}=api,heroes=["kael","lyra","darin","medic-demo","test-area-damage"]

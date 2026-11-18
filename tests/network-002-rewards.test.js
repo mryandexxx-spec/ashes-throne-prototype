@@ -319,8 +319,8 @@ test("strict legacy and new saves reject forged counters, negative ledger and un
 test("two tabs with actual ProgressWriterCore Web Lock cannot both pay serial",async()=>{
  const s=setup();complete(s);saveNetwork(s);
  const writer=fs.readFileSync(path.join(__dirname,"..","progress-writer-core.js"),"utf8");
- const browserTab=()=>vm.runInNewContext(src+"\\n"+writer+
-  "\\n({NetworkRewardCore,ProgressWriterCore})",{window:{}});
+ const browserTab=()=>vm.runInNewContext(src+"\n"+writer+
+  "\n({NetworkRewardCore,ProgressWriterCore})",{window:{}});
  let owner=false;
  const manager={
   request(name,options,fn){

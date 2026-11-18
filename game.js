@@ -4024,7 +4024,8 @@ if(typeof NetworkPilotSession!=="undefined"&&
       }
      });
      if(weeklySession)WeeklyThreatUI.mount({weekly:weeklySession,
-      networkSession:networkPilot,onOpenSquad:()=>openSquad("weekly")});
+      networkSession:networkPilot,onOpenSquad:()=>openSquad("weekly"),
+      onOpenHeroes:()=>showScreen("collection")});
     }else if($("#net008aThreat"))$("#net008aThreat").hidden=true;
     if(typeof GearUX004!=="undefined"&&typeof GearUX004.setNetworkPreview==="function")
    GearUX004.setNetworkPreview(materialId=>{

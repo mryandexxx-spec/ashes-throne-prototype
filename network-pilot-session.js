@@ -94,6 +94,8 @@ const NetworkPilotSession=(()=>{
     if(step==="approach")next=Core.approach(state,arg);
     if(step==="abandon")next=Core.abandon(state);
     if(step==="finish")next=Core.finish(state);
+    if(step==="order")next=Core.setOrder(state,arg,catalog,["gardens-over-abyss"]);
+    if(step==="simulate")next=Core.simulate(state,arg,catalog,["gardens-over-abyss"]);
     if(!next)return fail("INVALID_TRANSITION");
     if(JSON.stringify(state)===JSON.stringify(next))
      return Object.freeze({ok:true,state:read()});
@@ -113,7 +115,28 @@ const NetworkPilotSession=(()=>{
     return persist(next);
    });
   }
+  function availableOrders(){
+   if(!state||blocked)return [];
+   const eligible=Data.eligibleTemplates(catalog,["gardens-over-abyss"],state.influence);
+   if(!eligible)return [];
+   const result=[],seen=new Set();
+   for(const row of eligible)for(const [kind,targetId] of [
+    ["type",row.type],["region",row.regionId],
+    ...(row.materialId?[["material",row.materialId]]:[]),
+    ...(row.heroId?[["hero",row.heroId]]:[])
+   ]){
+    const key=kind+":"+targetId;
+    if(!seen.has(key)){seen.add(key);result.push({kind,targetId});}
+   }
+   return result;
+  }
+  function canSimulate(clueId){
+   if(!state||blocked||!Number.isSafeInteger(clueId))return false;
+   // Safe read-only dry run: never persists an unearned completion.
+   return !!Core.simulate(state,clueId,catalog,["gardens-over-abyss"]);
+  }
   return Object.freeze({KEY,CONFIG,open,read,change,complete,
+   availableOrders,canSimulate,
    isBlocked:()=>blocked,isBusy:()=>busy,isReady:()=>opened&&!blocked});
  }
  return Object.freeze({KEY,CONFIG,create});

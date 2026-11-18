@@ -421,8 +421,10 @@ function renderDailyTasks(){
   const done=progress.daily.counts[task.id]===1,claimed=progress.daily.claimed.includes(task.id);
   const materials=Object.entries(task.materials).map(([key,qty])=>
    "+"+qty+" "+(GearData.MATERIAL_LABELS[key]||key)).join(" · ");
+  const books=Object.entries(task.skillMaterials||{}).map(([key,qty])=>
+   "+"+qty+" "+(SkillCore.LABELS[key]||key)).join(" · ");
   detail.textContent=(done?"Выполнено":"Не выполнено")+" · +"+task.currency+
-   " валюты · +"+task.xp+" Account XP · "+materials;
+   " валюты · +"+task.xp+" Account XP · "+materials+(books?" · "+books:"");
   label.append(title,detail);
   const button=document.createElement("button");button.type="button";
   button.className=claimed?"ghost":"primary";
@@ -514,7 +516,9 @@ function renderLoginCalendar(){
   const detail=document.createElement("small");
   detail.textContent="+"+reward.currency+" валюты · +"+reward.xp+" XP · "+
    Object.entries(reward.materials).map(([key,n])=>"+"+n+" "+
-    (GearData.MATERIAL_LABELS[key]||key)).join(", ");
+    (GearData.MATERIAL_LABELS[key]||key)).join(", ")+
+   Object.entries(reward.skillMaterials||{}).map(([key,n])=>
+    " · +"+n+" "+(SkillCore.LABELS[key]||key)).join("");
   cell.append(title,detail);grid.append(cell);
  }
  button.disabled=!view.available;

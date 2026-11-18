@@ -24,6 +24,8 @@ const NetworkCore=(()=>{
   "preparationIds","approaches"];
  const STATE_KEYS=["version","config","revision","seed","clockAt","nextClueId",
   "nextCompletionId","board","order","active","mastery","influence","threatIntel","completed"];
+ // NET-002: optional offset keeps old network.v1 files readable after queue compaction.
+ const STATE_KEYS_WITH_OFFSET=STATE_KEYS.concat("completedThrough");
  function validConfig(c){
   return exact(c,CONFIG_KEYS)&&id(c.id)&&int(c.capacity,1)&&c.capacity<=1000&&
    int(c.intervalMs,1)&&int(c.guaranteeAfter,1)&&c.guaranteeAfter<=1000&&
@@ -73,7 +75,8 @@ const NetworkCore=(()=>{
    Object.keys(m).every(k=>keys.test(k)&&int(m[k]));
  }
  function validState(s){
-  if(!exact(s,STATE_KEYS)||s.version!==VERSION||!validConfig(s.config)||
+  if((!exact(s,STATE_KEYS)&&!exact(s,STATE_KEYS_WITH_OFFSET))||
+   s.version!==VERSION||!validConfig(s.config)||
    !int(s.revision)||!int(s.seed)||s.seed>UINT32_MAX||!int(s.clockAt)||
    !int(s.nextClueId,1)||!int(s.nextCompletionId,1)||
    !Array.isArray(s.board)||s.board.length>s.config.capacity+(s.active===null?1:0)||
@@ -81,12 +84,15 @@ const NetworkCore=(()=>{
    !validMap(s.mastery,/^[a-z0-9][a-z0-9._-]{0,79}\|[1-9][0-9]*$/)||
    !validMap(s.influence,/^[a-z0-9][a-z0-9._-]{0,79}$/)||
    !validMap(s.threatIntel,/^[a-z0-9][a-z0-9._-]{0,79}$/)||
-   !Array.isArray(s.completed)||s.completed.length>MAX_ROWS||
-   !s.completed.every(validCompleted)||s.nextCompletionId!==s.completed.length+1)
+   !int(s.completedThrough??0)||!Array.isArray(s.completed)||s.completed.length>MAX_ROWS||
+   !s.completed.every(validCompleted)||
+   !int((s.completedThrough??0)+s.completed.length+1,1)||
+   s.nextCompletionId!==(s.completedThrough??0)+s.completed.length+1)
    return false;
   const clues=[...s.board,...(s.active?[s.active.clue]:[])];
   if(!unique(clues.map(x=>x.id))||clues.some(x=>x.id>=s.nextClueId))return false;
-  if(s.completed.some((x,i)=>x.serial!==i+1||x.clueId>=s.nextClueId))return false;
+  if(s.completed.some((x,i)=>x.serial!==(s.completedThrough??0)+i+1||
+   x.clueId>=s.nextClueId))return false;
   if(!unique([...clues.map(x=>x.id),...s.completed.map(x=>x.clueId)]))return false;
   if(s.order&&s.order.kind==="type"&&!Data.TYPES.includes(s.order.targetId))return false;
   return true;
@@ -96,7 +102,7 @@ const NetworkCore=(()=>{
    !Data.validateCatalog(catalog))return null;
   return {version:VERSION,config:clone(config),revision:0,seed,clockAt:now,
    nextClueId:1,nextCompletionId:1,board:[],order:null,active:null,
-   mastery:{},influence:{},threatIntel:{},completed:[]};
+   mastery:{},influence:{},threatIntel:{},completed:[],completedThrough:0};
  }
  // Fixed hash over serialization: stable regardless of reload or table ordering.
  function hash32(input){
@@ -244,6 +250,16 @@ const NetworkCore=(()=>{
   next.influence[c.regionId]=influence+1;next.active=null;
   return validState(next)?next:null;
  }
+ // Only compact durable completed entries that have already been paid in v3.
+ // The wallet's claimedThrough is the source of truth; this is not a payout.
+ function compactCompleted(s,claimedThrough){
+  if(!validState(s)||!int(claimedThrough)||claimedThrough>=s.nextCompletionId||
+   claimedThrough<(s.completedThrough??0))return null;
+  const next=clone(s),prune=next.completed.filter(x=>x.serial<=claimedThrough).length;
+  next.completed=next.completed.slice(prune);
+  next.completedThrough=(s.completedThrough??0)+prune;
+  return validState(next)?next:null;
+ }
  function isMastered(s,templateId,level){
   if(!validState(s)||!id(templateId)||!int(level,1))return false;
   return (s.mastery[templateId+"|"+level]??-1)>=s.config.masteryScore;
@@ -293,6 +309,6 @@ const NetworkCore=(()=>{
  }
  return Object.freeze({KEY,VERSION,PHASES,validConfig,validClue,validState,
   fresh,setOrder,accrue,start,prepare,approach,battleOutcome,abandon,finish,
-  isMastered,load,save});
+  compactCompleted,isMastered,load,save});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=NetworkCore;

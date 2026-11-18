@@ -213,7 +213,6 @@ const LoreCampaignUI=(()=>{
   const nodes=data.nodesForStory(storyId,catalog).filter(n=>n.mapLayerId===id);
   // If the first act was cleared but its reward was missed, opening its map
   // selects the final node rather than hiding the claim behind FS-01.
-  if(id!==layerId)throw Error("LORE_LAYER_UNEXPECTED");
   const unclaimedActOne=storyId==="five-shadows"&&
    getActOneRewardStatus?.()==="claimable"&&nodes.some(n=>n.id===ACT_ONE_REWARD_NODE);
   if(unclaimedActOne)nodeId=ACT_ONE_REWARD_NODE;
@@ -446,6 +445,7 @@ const LoreCampaignUI=(()=>{
   const claimed=status==="claimed",claimable=status==="claimable"&&!rewardBusy;
   const buttonText=rewardBusy?"Сохраняем награду…":claimed?"Награда получена":
    status==="blocked"?"Награда недоступна":
+   claimable?"Забрать награду":
    step.code==="battle-pending"?"Сначала победите в бою":
    step.code==="available"?"Пройдите эпизод":"Завершите первый акт";
   const detail=claimed?"Вы уже забрали эту награду. За повторное прохождение она не выдаётся.":

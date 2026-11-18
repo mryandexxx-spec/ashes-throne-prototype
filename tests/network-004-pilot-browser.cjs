@@ -45,6 +45,13 @@ async function run(name,engine,viewport){
   assert.equal(checkpoint.phase,"battle");
   assert.equal(checkpoint.wave,0);
   assert.equal(checkpoint.other,null);
+  const previousSquad=await page.evaluate(()=>
+   localStorage.getItem("ashes-throne.squad.v1"));
+  await page.locator("#squadDisband").evaluate(el=>el.click());
+  for(const id of ["ren","nada","liora","art","sava"])
+   await page.locator('#squadRoster [data-hero-id="'+id+'"]').evaluate(el=>el.click());
+  assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.squad.v1")),
+   previousSquad,"temporary network squad does not rewrite permanent formation");
   await page.locator("#squadStart").click();
   await page.locator("#battle").waitFor({state:"visible",timeout:30000});
   await page.locator("#autoBattleBtn").click();

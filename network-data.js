@@ -5,7 +5,7 @@ const NetworkData=(()=>{
  "use strict";
  const TYPES=Object.freeze(["supply","trophies","recruit-intel","threat-trace"]);
  const ORDER_KINDS=Object.freeze(["type","region","material","hero"]);
- const id=x=>typeof x==="string"&&/^[a-z0-9][a-z0-9._-]{0,79}$/.test(x);
+ const id=x=>typeof x==="string"&&/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/.test(x);
  const plain=x=>!!x&&typeof x==="object"&&!Array.isArray(x);
  const exact=(x,keys)=>plain(x)&&Object.keys(x).length===keys.length&&
   Object.keys(x).every(k=>keys.includes(k));

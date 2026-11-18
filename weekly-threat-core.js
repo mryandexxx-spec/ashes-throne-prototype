@@ -9,9 +9,9 @@ const WeeklyThreatCore=(()=>{
  const V3=typeof ProgressV3Core!=="undefined"?ProgressV3Core:require("./progress-v3-core.js");
  const Network=typeof NetworkCore!=="undefined"?NetworkCore:require("./network-core.js");
  const VARIANTS=Object.freeze([
-  Object.freeze({id:"watch",title:"Срыв дозорного сигнала",goal:"Сначала обезвредить сигнальщика, затем старшего дозора",enemies:["npc-route-signaller","npc-watch-captain","npc-pass-guard"]}),
-  Object.freeze({id:"supplies",title:"Перехват опасного груза",goal:"Сначала остановить полевого перевязчика",enemies:["npc-field-medic","npc-pass-guard","npc-trail-interceptor"]}),
-  Object.freeze({id:"ridge",title:"Засада на уступах",goal:"Сначала остановить сигнальщика под прикрытием пращника",enemies:["npc-route-signaller","npc-ridge-slinger","npc-watch-captain"]})
+  Object.freeze({id:"watch",title:"Срыв дозорного сигнала",goal:"Сначала обезвредить сигнальщика, затем старшего дозора",enemies:["npc-route-signaller","npc-watch-captain","npc-pass-guard","npc-ridge-slinger","npc-field-medic"]}),
+  Object.freeze({id:"supplies",title:"Перехват опасного груза",goal:"Сначала остановить полевого перевязчика",enemies:["npc-field-medic","npc-pass-guard","npc-trail-interceptor","npc-watch-captain","npc-ridge-slinger"]}),
+  Object.freeze({id:"ridge",title:"Засада на уступах",goal:"Сначала остановить сигнальщика под прикрытием пращника",enemies:["npc-route-signaller","npc-ridge-slinger","npc-watch-captain","npc-pass-guard","npc-trail-interceptor"]})
  ]);
  // Economic model B experiment; all drops are the seven existing G materials.
  const TIERS=Object.freeze([
@@ -58,7 +58,7 @@ const WeeklyThreatCore=(()=>{
  function plan(s){
   if(!valid(s)||!s.active)return null;
   const v=variant(s.weekStart),a=s.active,first=v.enemies.map((id,i)=>{
-   const unit=Npc.spawn(id,{instanceId:"npc-week-"+(i+1),level:32,stars:1,gearTier:1,skillLevel:2});
+   const unit=Npc.spawn(id,{instanceId:"npc-week-"+(i+1),level:45,stars:1,gearTier:1,skillLevel:3});
    if(!unit)return null;
    // Choice changes the battle itself. Intel deepens the chosen advantage;
    // it does not invent extra abilities or alter CombatCore's rules.

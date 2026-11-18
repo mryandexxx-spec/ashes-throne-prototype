@@ -188,7 +188,7 @@ test("NET-008A real CombatCore loss clears active checkpoint and never credits t
  assert.equal(result.win,false);
  assert.equal(s.session.read().active,null);
  assert.equal(s.session.read().bestScore,0);
- assert.deepEqual(s.session.pending(),[]);
+ assert.equal(s.session.pending().length,0);
  assert.equal((await s.session.collect()).count,0);
  assert.equal(wallet(s).currency,0);
 });

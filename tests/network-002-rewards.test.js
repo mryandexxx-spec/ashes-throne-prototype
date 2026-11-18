@@ -4,7 +4,7 @@ const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const names=["gear-data.js","progress-core.js","save-core.js",
  "hero-collection-core.js","star-core.js","progress-v3-core.js",
- "reward-policy-core.js","battle-rng.js","network-data.js","network-core.js",
+ "reward-policy-core.js","battle-rng.js","network-data.js","network-score-core.js","network-core.js",
  "network-reward-core.js"];
 const src=names.map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const MODULES="\n({SaveCore,StarCore,NetworkCore,NetworkData,RewardPolicyCore,ProgressV3Core,NetworkRewardCore})";

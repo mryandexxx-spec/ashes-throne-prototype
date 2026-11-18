@@ -129,6 +129,8 @@ test("NET-007 7-star hero receives ordinary currency in place of shards without 
  await fightOne(s,s.session.read().board[0].id);
  const claim=await s.session.collect();
  assert.equal(claim.ok,true,JSON.stringify(claim));
+ assert.equal(claim.currency,1480,"UI should report real credited currency including exchanged shards");
+ assert.equal(claim.shards,0,"exchanged shards must not be reported as retained shards");
  assert.equal(wallet(s).currency,1480,"1000 base and 6 excess shards x80");
  assert.equal(wallet(s).heroStars.ren.shards,0);
  assert.equal(wallet(s).networkLedger.claimedThrough,1);

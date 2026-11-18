@@ -297,7 +297,7 @@ test("failed compaction never reverses a credited wallet or loses unpaid work",a
  const recovery=await recovered.NetworkRewardCore.compact({
   heroes,storageProvider:s.storage.provider,exclusive:s.exclusive,ownsLock:()=>true
  });
- assert.equal(recovery.ok,true);
+ assert.equal(recovery.ok,true,JSON.stringify(recovery));
  assert.equal(recovery.pruned,1);
  assert.equal(persistedNetwork(s).completed[0].serial,2);
  assert.equal((await claim(s,2)).ok,true);

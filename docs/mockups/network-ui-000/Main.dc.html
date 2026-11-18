@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Штаб — вход в разведсеть</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Inter,system-ui,sans-serif}
+.hq-bg{background-image:url(../../../assets/hq-hall-painting-mobile.webp);background-size:cover;background-position:center}
+a{color:#f0c879}a:hover{color:#fff1cf}
+</style>
+</helmet>
+<div class="hq-bg" style="width: 844px; height: 390px; position: relative; overflow: hidden; color: #f4ebd8; background-color: #0c0d12">
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,10,14,0.55) 0%, rgba(10,10,14,0) 22%, rgba(10,10,14,0) 70%, rgba(10,10,14,0.7) 100%)"></div>
+
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 48px; display: flex; align-items: center; gap: 14px; padding: 0 22px; box-sizing: border-box">
+    <div style="font-family: Georgia, serif; font-size: 17px; color: #f0c879; letter-spacing: 0.04em">Штаб организации</div>
+    <div style="flex-grow: 1"></div>
+    <div style="display: flex; gap: 8px; align-items: center; font-size: 12px; color: #f4ebd8">
+      <span style="padding: 6px 10px; border-radius: 8px; background: rgba(14,14,18,0.78); border: 1px solid rgba(167,131,72,0.55)">Ур. аккаунта 12</span>
+      <span style="padding: 6px 10px; border-radius: 8px; background: rgba(14,14,18,0.78); border: 1px solid rgba(167,131,72,0.55)">Валюта 12 480</span>
+    </div>
+  </div>
+
+  <a href="Network.dc.html" aria-label="Открыть оперативную сводку" style="position: absolute; left: 494px; top: 78px; width: 178px; height: 106px; border-radius: 10px; border: 2px solid #f0c879; box-shadow: 0 0 0 4px rgba(240,200,121,0.18), 0 0 26px rgba(240,200,121,0.45); display: block"></a>
+  <div style="position: absolute; left: 470px; top: 190px; width: 226px; padding: 8px 12px; box-sizing: border-box; border-radius: 10px; background: rgba(14,14,18,0.9); border: 1px solid rgba(240,200,121,0.75); display: flex; flex-direction: column; gap: 2px">
+    <div style="font-family: Georgia, serif; font-size: 15px; color: #f0c879">Оперативный центр</div>
+    <div style="font-size: 12px; color: #f4ebd8">4 новых донесения · 7/10</div>
+  </div>
+
+  <div style="position: absolute; left: 196px; top: 140px; width: 270px; height: 66px; border-radius: 10px; border: 1.5px dashed rgba(224,120,90,0.85)"></div>
+  <div style="position: absolute; left: 214px; top: 212px; padding: 6px 10px; border-radius: 8px; background: rgba(14,14,18,0.9); border: 1px solid rgba(224,120,90,0.8); font-size: 12px; color: #f4ebd8">Угроза недели · сведения 3/5</div>
+
+  <div style="position: absolute; left: 22px; right: 22px; bottom: 14px; display: flex; gap: 10px; align-items: center">
+    <a href="Network.dc.html" style="min-height: 44px; padding: 0 20px; border-radius: 10px; display: flex; align-items: center; text-decoration: none; font-weight: 600; font-size: 14px; color: #1a140c; background: linear-gradient(180deg, #f0c879, #c99a55); box-shadow: 0 4px 14px rgba(0,0,0,0.5)">Разведсеть</a>
+    <button type="button" style="min-height: 44px; color: #f4ebd8; font-family: inherit; padding: 0 16px; border-radius: 10px; display: flex; align-items: center; font-size: 14px; background: rgba(14,14,18,0.82); border: 1px solid rgba(167,131,72,0.55)">Отряды</button>
+    <button type="button" style="min-height: 44px; color: #f4ebd8; font-family: inherit; padding: 0 16px; border-radius: 10px; display: flex; align-items: center; font-size: 14px; background: rgba(14,14,18,0.82); border: 1px solid rgba(167,131,72,0.55)">История</button>
+    <button type="button" style="min-height: 44px; color: #f4ebd8; font-family: inherit; padding: 0 16px; border-radius: 10px; display: flex; align-items: center; font-size: 14px; background: rgba(14,14,18,0.82); border: 1px solid rgba(167,131,72,0.55)">Учебный корпус</button>
+    <div style="flex-grow: 1"></div>
+    <span style="font-size: 11px; color: #d9c5ab; background: rgba(14,14,18,0.7); padding: 4px 8px; border-radius: 6px">Макет · вход через существующую сцену HQ-UI-008</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":844,"height":390}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

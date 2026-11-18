@@ -175,6 +175,8 @@
 
 ## 6. Интерфейс
 
+**Визуальный макет [ПРЕДЛОЖЕНИЕ]:** [mockups/network-ui-000](mockups/network-ui-000/README.md) — шесть экранов 844×390 со снимками и живыми исходниками.
+
 Все экраны следуют [UI_DESIGN_SYSTEM.md](UI_DESIGN_SYSTEM.md) и [UI_MIGRATION_PLAN.md](UI_MIGRATION_PLAN.md): landscape, safe-area, крупные цели нажатия.
 
 1. **Вход из штаба.** Отдельная точка «оперативный центр» или переосмысленный существующий вход в операции (`data-screen="operations"`). Штаб и коллекцию ради этого не перестраивать.

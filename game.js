@@ -1796,7 +1796,7 @@ $("#squadBack").addEventListener("click",()=>{
  if(squadReturnScreen==="campaign"&&typeof GearUX004!=="undefined"&&GearUX004.hasReturnContext()){
   GearUX004.returnToHero();return;
  }
- showScreen(squadReturnScreen);
+ showScreen(squadReturnScreen==="weekly"?"network":squadReturnScreen);
 });
 $("#squadDisband")?.addEventListener("click",disbandSquad);
 // If Babylon.js cannot load, show a recoverable message instead of an uncaught crash.

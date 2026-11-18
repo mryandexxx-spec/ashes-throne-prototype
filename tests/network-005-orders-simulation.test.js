@@ -151,13 +151,15 @@ test("NET-005 configured matching material links only: no fictitious farm source
 });
 test("NET-005 build is opt-in, versioned and no live reward/source table",()=>{
  const pkg=JSON.parse(read("package.json")),html=read("index.html");
- assert.equal(pkg.version,"0.3.190");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.190 · NET006ASCORE'));
+ assert.equal(pkg.version,"0.3.192");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.192 · NET007LIVE'));
  assert.ok(html.includes('id="net005OrderChoices"'));
  assert.ok(html.includes('id="net005FinderBack"'));
  assert.ok(read("network-pilot-ui.js").includes("Симуляция закрыта"));
  assert.ok(read("gear-ux-004.js").includes("Разведсеть пока не подтверждена"));
  assert.equal(Data.CATALOG.templates.length,0);
  assert.ok(Data.PROPOSAL_CATALOG.templates.every(t=>t.materialId===null));
+ assert.ok(read("index.html").includes('src="network-live-economy.js?v=0.3.192"'));
+ assert.ok(Data.LIVE_CATALOG.templates.length>=30);
  assert.ok(!read("game.js").includes("NetworkRewardCore.claim("));
 });

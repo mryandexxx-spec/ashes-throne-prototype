@@ -5,7 +5,7 @@ const RewardPolicyCore=(()=>{
  "use strict";
  const KEY="ashes-throne.progress.v3";
  const ID=/^[a-z0-9][a-z0-9._-]{0,79}$/;
- const KINDS=Object.freeze(["first-clear","best-stars","repeat"]);
+ const KINDS=Object.freeze(["first-clear","best-stars","repeat","serial"]);
  const MATERIALS=Object.freeze(["Fe","Le","Cl","Wo","Fa","Th","Gl"]);
  const own=(v,k)=>Object.prototype.hasOwnProperty.call(v,k);
  const obj=v=>v!==null&&typeof v==="object"&&!Array.isArray(v);
@@ -24,16 +24,25 @@ const RewardPolicyCore=(()=>{
     Object.keys(source.reward.materials).some(id=>!MATERIALS.includes(id)||
       !nonneg(source.reward.materials[id]))||
     !nonneg(source.energyCost)||
+    (source.kind==="serial"&&(source.energyCost!==0||source.maxPerDay!==undefined))||
+    (source.reward.heroShards!==undefined&&(source.kind!=="serial"||
+      !obj(source.reward.heroShards)||typeof StarCore==="undefined"||
+      Object.keys(source.reward.heroShards).some(id=>
+       !StarCore.IDS.includes(id)||!nonneg(source.reward.heroShards[id]))))||
     (source.maxPerDay!==undefined&&(!Number.isSafeInteger(source.maxPerDay)||source.maxPerDay<1)))
    return false;
   return source.reward.currency>0||source.reward.accountXp>0||
-   Object.values(source.reward.materials).some(n=>n>0);
+   Object.values(source.reward.materials).some(n=>n>0)||
+   Object.values(source.reward.heroShards||{}).some(n=>n>0);
  }
  function receiptId(source,occurrenceId){
   return source.kind+":"+source.sourceId+":"+occurrenceId;
  }
  function resolve({source,occurrenceId,count=1,day,wallet}={}){
   if(!validSource(source))return failure("REWARDS_NOT_CONFIGURED");
+  const serial=source.kind==="serial"?Number(occurrenceId):null;
+  if(source.kind==="serial"&&(!nonneg(serial)||serial<1||
+    String(serial)!==occurrenceId))return failure("INVALID_SERIAL");
   if(!ID.test(occurrenceId||""))return failure("INVALID_OCCURRENCE");
   if(!Number.isSafeInteger(count)||count<1||count>100||
    (source.kind!=="repeat"&&count!==1))return failure("INVALID_COUNT");
@@ -45,8 +54,15 @@ const RewardPolicyCore=(()=>{
   if(typeof ProgressV3Core==="undefined"||!ProgressV3Core.validReceipts(rows))
    return failure("INVALID_RECEIPTS");
   const id=receiptId(source,occurrenceId);
-  if(rows.some(row=>row.id===id))return failure("ALREADY_CLAIMED");
-  if(rows.length>=ProgressV3Core.MAX_REWARD_RECEIPTS)return failure("RECEIPT_CAPACITY");
+  if(source.kind==="serial"){
+   const ledger=wallet.networkLedger??{claimedThrough:0};
+   if(!ProgressV3Core.validNetworkLedger(ledger))return failure("INVALID_NETWORK_LEDGER");
+   if(serial<=ledger.claimedThrough)return failure("ALREADY_CLAIMED");
+   if(serial!==ledger.claimedThrough+1)return failure("SERIAL_OUT_OF_ORDER");
+  }else{
+   if(rows.some(row=>row.id===id))return failure("ALREADY_CLAIMED");
+   if(rows.length>=ProgressV3Core.MAX_REWARD_RECEIPTS)return failure("RECEIPT_CAPACITY");
+  }
   if(source.maxPerDay!==undefined){
    const prior=rows.filter(row=>row.sourceId===source.sourceId);
    if(prior.some(row=>row.day>day))return failure("CLOCK_ROLLBACK");
@@ -67,8 +83,22 @@ const RewardPolicyCore=(()=>{
      !nonneg(wallet.materials[key]+delta))return failure("INSUFFICIENT_OR_INVALID_BALANCE");
    materials[key]=delta;
   }
-  return Object.freeze({ok:true,receipt:Object.freeze({id,sourceId:source.sourceId,day,count}),
-   delta:Object.freeze({energy,currency,accountXp,materials})});
+  const heroShards=source.reward.heroShards||{};
+  if(Object.keys(heroShards).length){
+   if(typeof StarCore==="undefined")return failure("INVALID_HERO_SHARDS");
+   const stars=wallet.heroStars??StarCore.fromLegacy(wallet.unlockedHeroes);
+   if(!StarCore.valid(stars))return failure("INVALID_HERO_SHARDS");
+   for(const [heroId,amount] of Object.entries(heroShards)){
+    if(amount===0)continue;
+    if(stars[heroId].rank===StarCore.MAX)
+     return failure("SHARDS_AT_MAX_RANK_UNRESOLVED");
+    if(!nonneg(stars[heroId].shards+amount))
+     return failure("SHARD_BALANCE_OVERFLOW");
+   }
+  }
+  return Object.freeze({ok:true,serial,
+   receipt:source.kind==="serial"?null:Object.freeze({id,sourceId:source.sourceId,day,count}),
+   delta:Object.freeze({energy,currency,accountXp,materials,heroShards})});
  }
  /* No localStorage compare-and-swap exists. A caller-provided exclusive lock is
     mandatory; without it claim fails closed. The proof callback MUST re-read
@@ -116,14 +146,28 @@ const RewardPolicyCore=(()=>{
     next.accountXp+=d.accountXp;
     next.energy.value-=d.energy;
     for(const key of MATERIALS)next.materials[key]+=d.materials[key];
-    next.rewardReceipts=(next.rewardReceipts||[]).concat([plan.receipt]);
+    if(source.kind==="serial"){
+     next.networkLedger={claimedThrough:plan.serial};
+     if(Object.values(d.heroShards).some(amount=>amount>0)){
+      if(typeof StarCore==="undefined")return failure("INVALID_HERO_SHARDS");
+      if(next.heroStars===undefined)
+       next.heroStars=StarCore.fromLegacy(next.unlockedHeroes);
+      if(!next.heroStars)return failure("INVALID_HERO_SHARDS");
+      for(const [heroId,amount] of Object.entries(d.heroShards)){
+       if(amount>0&&!StarCore.add(next,heroId,amount))
+        return failure("INVALID_HERO_SHARDS");
+      }
+     }
+    }else next.rewardReceipts=(next.rewardReceipts||[]).concat([plan.receipt]);
     if(!ProgressV3Core.validateActive(next,heroes))return failure("INVALID_CANDIDATE");
     const encoded=JSON.stringify(next);
     try{
      storage.setItem(KEY,encoded);
      if(storage.getItem(KEY)!==encoded)return failure("SAVE_OUTCOME_UNKNOWN");
     }catch(_){return failure("SAVE_OUTCOME_UNKNOWN");}
-    return Object.freeze({ok:true,receiptId:plan.receipt.id,revision:next.revision});
+    return Object.freeze(source.kind==="serial"?
+     {ok:true,serial:plan.serial,revision:next.revision}:
+     {ok:true,receiptId:plan.receipt.id,revision:next.revision});
    });
   }catch(_){return failure("EXCLUSIVE_LOCK_FAILED");}
  }

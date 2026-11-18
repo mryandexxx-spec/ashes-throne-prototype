@@ -50,7 +50,9 @@ test("NET-006B validates account thresholds and real L85 upgrade budget",()=>{
  const full5=Model.stages(5).find(x=>x.name==="5G13");
  const full10=Model.stages(10).find(x=>x.name==="10G13");
  assert.equal(full5.currency,552500+144378*5+36000);
- assert.equal(full10.currency,1105000+144378*10+63000);
+ assert.equal(full10.currency,1105000+144378*5+Model.moneyForLevel(15)*5+63000);
+ assert.equal(ProgressCore.maxLevelOf("kael"),15);
+ assert.equal(ProgressCore.maxLevelOf("ren"),85);
 });
 test("NET-006B checks one-off act totals and temporary daily & calendar maxima",()=>{
  assert.equal(Model.acts.reduce((sum,a)=>sum+a[1],0),15500);

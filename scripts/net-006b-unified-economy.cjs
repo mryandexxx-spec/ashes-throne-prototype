@@ -9,7 +9,7 @@ const farms=[
  {id:"M1",energy:10,currency:850,xp:5,m:[2,3,4,1,2,2,0]},
  {id:"M2",energy:12,currency:1020,xp:5,m:[4,2,5,0,2,1,1]},
  {id:"M3",energy:16,currency:1360,xp:5,m:[3,3,6,0,2,1,0]}];
-const first={currency:2100,xp:300,m:[9,8,15,1,6,4,1]};
+const first={currency:5330,xp:315,m:[9,8,15,1,6,4,1]}; // three free first clears include current farm grants
 const costs={
  G3:{m:[125,98,132,12,82,34,6],ten:[215,189,292,28,151,82,12],gear:33750,level:15,skills:900},
  G8:{m:[647,908,666,57,361,79,96],ten:[1085,1614,1267,292,616,409,336],gear:215000,level:40,skills:3400},
@@ -42,7 +42,7 @@ const accountCap=n=>n<=4?[0,3,8,12,14][n]:n<=15?15:Math.min(85,n);
 function stages(heroes){
  const def=(name,g,count)=>({name,materials:count===10?costs[g].ten.slice():mul(costs[g].m,count/5),
    currency:costs[g].gear*count/5+moneyForLevel(costs[g].level)*count+
-    costs[g].skills*count,level:costs[g].level});
+    (count===10&&g==="G13"?63000:costs[g].skills*count),level:costs[g].level});
  const a=[def("5G3","G3",5),def("5G8","G8",5)];
  if(heroes===10){
   a.push(def("10G8","G8",10));
@@ -152,18 +152,20 @@ function ensemble(options,seeds=120){
 function selfTest(){
  const requireFact=(ok,label)=>{if(!ok)throw Error("Self-test failed "+label);};
  requireFact(farms.every(f=>f.currency/f.energy===85),"85 currency/energy");
+ requireFact(first.currency===5330&&first.xp===315,"first-clear total grants");
  requireFact(moneyForLevel(85)===144378,"L85 cost");
  requireFact(accountCap(5)===15,"account level 5 hero cap");
  requireFact(xpForLevel(85)===84661,"Account L85");
  requireFact(costs.G13.gear===552500,"G13 five heroes");
  requireFact(costs.G13.ten[6]===896,"ten real roster G13 Gl");
+ requireFact(stages(10).slice(-1)[0].currency===2611780,"ten roster actual G13 skill count");
  requireFact(acts.reduce((n,a)=>n+a[1],0)===15500,"LC currency");
  requireFact(acts.reduce((n,a)=>n+a[2],0)===1500,"LC XP");
  requireFact(login.reduce((n,a)=>n+a[0],0)===1950,"login");
  requireFact(daily.reduce((n,a)=>n+a[0],0)===1050,"daily");
  requireFact(JSON.stringify(simulate({seed:7}))===JSON.stringify(simulate({seed:7})),
   "seed repeatability");
- return "11/11 self-checks passed; research only";
+ return "13/13 self-checks passed; research only";
 }
 function report(){
  selfTest();
@@ -179,7 +181,7 @@ function report(){
  ];
  return cases.map(c=>ensemble(c));
 }
-if(typeof module!=="undefined")module.exports={mats,farms,costs,acts,login,daily,net,play,
+if(typeof module!=="undefined")module.exports={mats,farms,first,costs,acts,login,daily,net,play,
  moneyForLevel,xpForLevel,account,stages,simulate,ensemble,selfTest,report};
 if(typeof process!=="undefined"&&process.argv&&
  process.argv[1]&&process.argv[1].endsWith("net-006b-unified-economy.cjs")){

@@ -99,7 +99,11 @@ const NetworkPilotSession=(()=>{
     if(step==="prepare")next=Core.prepare(state,arg);
     if(step==="approach")next=Core.approach(state,arg);
     if(step==="abandon")next=Core.abandon(state);
-    if(step==="finish")next=Core.finish(state);
+    if(step==="finish"){
+      const t=new Date(now()),weekday=(t.getUTCDay()+6)%7;
+      const monday=Date.UTC(t.getUTCFullYear(),t.getUTCMonth(),t.getUTCDate()-weekday);
+      next=Core.finish(state,live?new Date(monday).toISOString().slice(0,10):null);
+     }
     if(step==="order")next=Core.setOrder(state,arg,catalog,["gardens-over-abyss"]);
     if(step==="simulate")next=Core.simulate(state,arg,catalog,["gardens-over-abyss"]);
     if(!next)return fail("INVALID_TRANSITION");

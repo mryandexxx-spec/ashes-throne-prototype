@@ -10,7 +10,7 @@ const Adapter=require("../network-encounter-adapter.js");
 const NPC=require("../npc-enemy-data.js");
 const C=vm.runInNewContext([
  "initiative-model.js","battle-rng.js","combat-status-core.js",
- "ability-data.js","combat-core.js"
+ "ability-data.js","network-score-core.js","combat-core.js"
 ].map(read).join("\n")+"\nCombatCore");
 const cat=Data.PROPOSAL_CATALOG;
 const config=()=>({id:"net-003-test-only",capacity:3,intervalMs:1000,

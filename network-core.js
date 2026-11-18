@@ -104,7 +104,7 @@ const NetworkCore=(()=>{
   return plain(m)&&Object.keys(m).length<=MAX_ROWS&&
    Object.entries(m).every(([key,value])=>int(value)&&value<=100&&
     (validMasteryKey(key)||
-     /^[a-z0-9][a-z0-9._-]{0,79}\\|[1-9][0-9]*$/.test(key)));
+     new RegExp("^[a-z0-9][a-z0-9._-]{0,79}\\\\|[1-9][0-9]*$").test(key)));
  }
  function validState(s){
   if((!exact(s,STATE_KEYS)&&!exact(s,STATE_KEYS_WITH_OFFSET))||

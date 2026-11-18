@@ -185,19 +185,26 @@ async function run(name,engine,viewport){
   throw e;
  }finally{await browser.close();}
 }
-async function disabledByDefault(){
+async function liveByDefault(){
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
  const page=await browser.newPage({viewport:{width:844,height:390}});
  try{
   await page.goto(origin,{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function");
-  assert.ok(await page.locator("#net004Entry").getAttribute("hidden")!==null);
-  assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.network.pilot.v1")),null);
-  console.log("NET004_DEFAULT_OFF PASS");
+  assert.equal(await page.locator("#net004Entry").getAttribute("hidden"),null);
+  await page.waitForFunction(()=>!!localStorage.getItem("ashes-throne.network.v1"));
+  const ready=await page.evaluate(()=>({
+   live:JSON.parse(localStorage.getItem("ashes-throne.network.v1")),
+   pilot:localStorage.getItem("ashes-throne.network.pilot.v1")
+  }));
+  assert.equal(ready.live.board.length,4);
+  assert.equal(ready.live.config.capacity,16);
+  assert.equal(ready.pilot,null);
+  console.log("NET007_LIVE_DEFAULT PASS");
  }finally{await browser.close();}
 }
 (async()=>{
- await disabledByDefault();
+ await liveByDefault();
  for(const [name,engine] of [["chromium",chromium],["webkit",webkit]])
   for(const viewport of [{width:844,height:390},{width:932,height:430}])
    await run(name,engine,viewport);

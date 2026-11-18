@@ -151,9 +151,18 @@ const GearUX004=(()=>{
    "Доступность, количество и награды ещё не подтверждены."));
   else right.append(node("p","gear-ux-note",
    "Разведсеть пока не подтверждена как источник этого материала."));
-  if(typeof onNetworkPreview==="function")right.append(
-   btn("Посмотреть пробную разведсеть",()=>onNetworkPreview(m.id),
-    "ghost gear-ux-find"));
+  // The pilot link must survive a race where game.js mounts the optional
+  // network screen before the GearUX004 callback becomes available. It is
+  // never exposed without the explicit pilot URL flag and mounted pilot.
+  const pilotReady=typeof window!=="undefined"&&
+   /(?:^|[?&])networkPilot=1(?:&|$)/.test(window.location.search)&&
+   typeof NetworkPilotUI!=="undefined"&&
+   typeof NetworkPilotUI.openFromFinder==="function";
+  if(typeof onNetworkPreview==="function"||pilotReady)right.append(
+   btn("Посмотреть пробную разведсеть",()=>{
+    if(typeof onNetworkPreview==="function")onNetworkPreview(m.id);
+    else if(NetworkPilotUI.openFromFinder(m.id))showScreen("network");
+   },"ghost gear-ux-find"));
   right.append(row("Материал",m.label),row("Дефицит","×"+m.missing));
   right.append(node("p","gear-ux-note",
    "Миссии и награды взяты из существующей кампании. Первый вход бесплатен, повтор требует энергии, симуляция — 3★."));

@@ -82,8 +82,7 @@ const WeeklyThreatCore=(()=>{
    allies.some(x=>x.side!=="ally"||!(x.hp>0)))return null;
   try{
    const battle=combat.createBattle([...allies,...p.first],[],{
-    ...p.options,...(leaderId?{leaderId}:{}),hitChecks:true,critChecks:true,
-    penetrationChecks:true,statusChecks:true});
+    ...p.options,...(leaderId?{leaderId}:{})});
    battle.weeklyBinding={...p.binding,allyIds:allies.map(x=>x.id)};
    if(!Score.attach(battle,p))return null;
    return {plan:p,battle};

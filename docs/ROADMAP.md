@@ -6,6 +6,8 @@
 
 **Старт следующего чата:** сначала [PROJECT_STATUS.md](PROJECT_STATUS.md), [NETWORK-001](NETWORK_001_CORE_LOOP_ARCHITECTURE.md) и актуальный GitHub `main`/открытый NET-001 PR. [HANDOFF после LC-008C](HANDOFF_2026-11-18_AFTER_LC008C.md) — история предыдущего этапа, не актуальный список невыполненных задач.
 
+**Статус NET-002 на рабочей ветке [В РАЗРАБОТКЕ]:** начата разработка схемы serial-выплат, доказательства из `network.v1` и `heroShards`. Ветка `feat/net-002-network-rewards` зависит от открытого PR #386 и не считается самостоятельным завершённым этапом в main. До merge — две отдельные авторизации; [технический контракт](NET_002_SERIAL_REWARD_CONTRACT.md).
+
 ## Активная очередь после LC-008F (18.11.2026)
 
 1. **[РЕАЛИЗОВАНО в main] LC-008F:** [PR #385](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/385), `71c9610b`, `v0.3.187 · LORE5REWARD`. Пять самостоятельных разовых выплат за акты с защитой от повторной выдачи; 739/739 Node и 33/33 Actions до слияния, CI/Pages после слияния успешны.

@@ -8,7 +8,7 @@ const Pilot=require("../network-pilot-session.js");
 const Adapter=require("../network-encounter-adapter.js");
 const Combat=vm.runInNewContext([
  "initiative-model.js","battle-rng.js","combat-status-core.js",
- "ability-data.js","combat-core.js"
+ "ability-data.js","network-score-core.js","combat-core.js"
 ].map(file).join("\n")+"\nCombatCore");
 const key=Pilot.KEY;
 const hero=()=>({id:"network-test-hero",name:"Пробный герой",side:"ally",

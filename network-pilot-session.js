@@ -84,6 +84,7 @@ const NetworkPilotSession=(()=>{
    });
   }
   async function change(step,arg){
+   if(blocked)return fail("SESSION_BLOCKED_RELOAD_REQUIRED");
    if(!opened||!state)return fail("NOT_OPEN");
    return transaction(()=>{
     let next=null;
@@ -102,6 +103,7 @@ const NetworkPilotSession=(()=>{
   // Call only with the current CombatCore object captured by the game.
   // final score=0 is a visibly labelled pilot placeholder, not balance.
   async function complete(battle){
+   if(blocked)return fail("SESSION_BLOCKED_RELOAD_REQUIRED");
    if(!opened||!state||!battle)return fail("INVALID_BATTLE");
    return transaction(()=>{
     const score=state.active?.clue?.approaches.find(x=>x.id===state.active.approach)?.waves===

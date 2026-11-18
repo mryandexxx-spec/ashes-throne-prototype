@@ -171,7 +171,7 @@ test("NET-004 feature gated, correct script order and build/cache version",()=>{
  const indices=scripts.map(name=>html.indexOf('src="'+name+'?v='+pkg.version+'"'));
  assert.ok(indices.every(n=>n>0));
  assert.deepEqual(indices,indices.slice().sort((a,b)=>a-b));
- assert.ok(js.includes('get("networkPilot")==="1"'));
+ assert.ok(js.includes('networkPilot=1(?:&|$)'));
  assert.ok(js.includes('NetworkPilotSession.create('));
  assert.ok(js.includes('networkPilot.complete(terminalBattle)'));
  assert.ok(js.includes('NetworkEncounterAdapter.startBattle(active,selectedParty()'));

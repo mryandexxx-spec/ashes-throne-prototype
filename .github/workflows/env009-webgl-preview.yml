@@ -66,30 +66,10 @@ jobs:
           echo "$page" | grep -q 'data-visual-status="ready"'
           test -s artifacts/env010-full-hud-844x390.png
 
-      - name: Verify real battle pinch, 4x, autobattle, battle end and replay (synthetic Chromium)
-        shell: bash
-        run: |
-          set -euo pipefail
-          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)"
-          url="http://127.0.0.1:8765/tests/fixtures/env010-interactive-smoke.html"
-          page="$(timeout --kill-after=5s 90s "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
-            --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
-            --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 \
-            --virtual-time-budget=80000 --dump-dom "$url" 2>/tmp/chrome-interactive.log)"
-          printf '%s\n' "$page" > artifacts/env010-interactive-dump.html
-          echo "$page" | grep -oE 'data-(visual-status|visual-error|pinch-test|auto-test|speed-test|replay-test)="[^"]*"' || true
-          echo "$page" | grep -q 'data-visual-status="ready"'
-          echo "$page" | grep -q 'data-pinch-test="pass"'
-          echo "$page" | grep -q 'data-auto-test="battle-finished"'
-          echo "$page" | grep -q 'data-replay-test="pass"'
-
-      - name: Upload interactive browser diagnostic
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: env010-interactive-dom
-          path: artifacts/env010-interactive-dump.html
-          if-no-files-found: ignore
+      # Real-clock pinch, autobattle, battle end and replay are strictly tested
+      # in env010-realtime-browser.yml (Chromium + WebKit via Playwright).
+      # The former --virtual-time-budget=80000 check stalled requestAnimationFrame
+      # after the first action and falsely timed out with BattleAnimation.pending=2.
       - name: Upload actual battle HUD evidence
         if: always()
         uses: actions/upload-artifact@v4

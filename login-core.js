@@ -98,3 +98,4 @@ const LoginCore=(()=>{
  }
  return Object.freeze({VERSION,REWARDS,daysInMonth,fresh,valid,current,rewardForDay,claim});
 })();
+if(typeof module!=="undefined"&&module.exports)module.exports=LoginCore;

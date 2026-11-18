@@ -13,7 +13,7 @@ const source=names.map(name=>fs.readFileSync(path.join(__dirname,"..",name),"utf
 const modules=()=>vm.runInNewContext(source+`
 \n({NetworkData,NetworkCore,NetworkLiveEconomy,NetworkPilotSession,
 NetworkRewardCore,ProgressV3Core,StarCore,NetworkEncounterAdapter,CombatCore})
-\`);
+`);
 const heroes=["kael","lyra","darin","medic-demo","test-area-damage",
  "ren","nada","liora","art","sava"].map(id=>({id,side:"ally"}));
 const field=["gardens-over-abyss"];

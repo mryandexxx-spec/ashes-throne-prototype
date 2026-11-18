@@ -252,19 +252,19 @@ const NetworkCore=(()=>{
   const create=()=>fresh(seed,now,config,catalog);
   try{
    const store=storageProvider?.();
-   if(!store)return {status:"blocked",reason:"storage-unavailable",state:null};
+   if(!store)return {status:"blocked",blocked:true,reason:"storage-unavailable",state:null};
    const raw=store.getItem(KEY);
    if(raw===null){
     const state=create();
     return state?{status:"fresh",state,blocked:false}:
-     {status:"blocked",reason:"invalid-new-profile-settings",state:null};
+     {status:"blocked",blocked:true,reason:"invalid-new-profile-settings",state:null};
    }
    const parsed=JSON.parse(raw);
-   if(!validState(parsed))return {status:"blocked",reason:"invalid-network-v1",state:null};
-   if(config&&(!validConfig(config)||parsed.config.id!==config.id))
-    return {status:"blocked",reason:"incompatible-configuration",state:null};
+   if(!validState(parsed))return {status:"blocked",blocked:true,reason:"invalid-network-v1",state:null};
+   if(config&&(!validConfig(config)||JSON.stringify(parsed.config)!==JSON.stringify(config)))
+    return {status:"blocked",blocked:true,reason:"incompatible-configuration",state:null};
    return {status:"existing",state:clone(parsed),blocked:false};
-  }catch(_){return {status:"blocked",reason:"read-or-parse-failed",state:null};}
+  }catch(_){return {status:"blocked",blocked:true,reason:"read-or-parse-failed",state:null};}
  }
  function save(s,storageProvider,ownsLock){
   // Only the active wallet writer may mutate the network key. The caller

@@ -1,0 +1,60 @@
+/* NET-004 [ПРЕДЛОЖЕНИЕ] — opt-in network pilot only. No global UI overrides. */
+.net004-screen{
+ min-height:100%;background:
+ linear-gradient(110deg,rgba(12,13,17,.96),rgba(24,21,23,.90)),
+ url("assets/hq-hall-painting-mobile.webp") center/cover;
+ color:#f4ebd8;
+}
+.net004-screen [hidden]{display:none!important}
+.net004-shell{
+ box-sizing:border-box;width:100%;max-width:1160px;margin:0 auto;
+ padding:14px max(16px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom))
+ max(16px,env(safe-area-inset-left));
+ display:grid;gap:12px;min-width:0;
+}
+.net004-head{display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+.net004-head h2{font:600 clamp(19px,3.4vw,27px)/1.15 Georgia,serif;
+ margin:3px 0 4px;color:#f3dfba}
+.net004-head p{margin:0;color:#d9c5ab;font-size:12px}
+.net004-eyebrow{display:block;color:#ecc78b;letter-spacing:.11em;font-size:10px;font-weight:700}
+.net004-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.net004-section-head h3,.net004-screen h3{font:600 17px Georgia,serif;color:#f1d2a2;margin:0}
+.net004-section-head span{font-size:12px;max-width:68ch;color:#eedcc2;line-height:1.45}
+.net004-notice{border-inline-start:3px solid #bd925b;
+ padding:7px 12px;background:rgba(12,12,16,.68);font-size:12px;line-height:1.4;
+ border-radius:4px;max-width:100%}
+.net004-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;
+ margin:10px 0 4px;min-width:0}
+.net004-clue{min-width:0;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;
+ padding:10px;border:1px solid #a78348;background:linear-gradient(145deg,rgba(46,41,42,.94),rgba(20,21,25,.95));
+ border-radius:9px;box-shadow:inset 0 1px rgba(249,218,170,.12)}
+.net004-clue h3{font-size:16px}
+.net004-clue p{font-size:12px;line-height:1.3;margin:0;color:#dfd1bb}
+.net004-clue button{margin-top:auto}
+.net004-screen button:not(.ghost){
+ min-height:44px;padding:9px 12px;border-radius:7px;
+ border:1px solid #ab8851;color:#f9ecd9;
+ background:linear-gradient(145deg,#665134,#3b322e);cursor:pointer;
+ font:600 13px system-ui,sans-serif;touch-action:manipulation
+}
+.net004-screen button:focus-visible{outline:3px solid #ffe0a0;outline-offset:2px}
+.net004-screen button:disabled{opacity:.6;cursor:not-allowed;filter:saturate(.65)}
+.net004-actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.net004-history{font-size:11px;color:#dfc8a9;margin-top:8px;min-width:0;overflow-wrap:anywhere}
+.net004-screen p{overflow-wrap:anywhere}
+@media(max-width:730px){
+ .net004-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .net004-head h2{font-size:19px}
+}
+@media(max-height:430px) and (orientation:landscape){
+ .net004-shell{gap:7px;padding-top:8px;padding-bottom:8px}
+ .net004-notice{padding:5px 10px}
+ .net004-clue{padding:8px;gap:4px}
+ .net004-cards{margin-top:6px}
+}
+@media(max-width:540px){
+ .net004-cards{grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){
+ .net004-screen *{scroll-behavior:auto!important;transition:none!important}
+}

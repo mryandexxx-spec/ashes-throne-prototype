@@ -285,6 +285,11 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
  renderPlayerProfile();
  if(typeof renderHeadquarters==="function")renderHeadquarters();
 });
+// NET-004: disabled by default; no production network data is loaded.
+const NETWORK_PILOT_ENABLED=typeof window!=="undefined"&&
+ typeof window.location?.search==="string"&&
+ /(?:^|[?&])networkPilot=1(?:&|$)/.test(window.location.search);
+let networkPilot=null,battleIsNetwork=false,networkResultRecorded=false,networkResultReady=false;
 let battleIsCampaign=false;
 let battleIsNpcMissionPilot=false; // NPC roster, normal campaign rewards and saves.
 let battleIsLoreTraining=false; // Noncanonical combat, no costs or rewards.
@@ -655,6 +660,8 @@ function requiredLoreHeroIds(){
  return [...new Set([...LORE_REQUIRED_HERO_IDS,...extra])];
 }
 let loreSquadSlots=null;
+// NET-004: pilot formation is session-only; never overwrite the player squad key.
+let networkSquadSlots=null;
 function isLoreRequiredSquad(){return squadReturnScreen==="loreRequired";}
 function prepareLoreRequiredSlots(current){
  const slots=current.slice(0,MAX_SQUAD);
@@ -678,6 +685,8 @@ function prepareLoreRequiredSlots(current){
 function setSquadSlots(slots){
  if(isLoreRequiredSquad()){
   loreSquadSlots=slots.slice(0,MAX_SQUAD);
+ }else if(squadReturnScreen==="network"&&networkSquadSlots){
+  networkSquadSlots=slots.slice(0,MAX_SQUAD);
  }else{
   selectedLeaderId=slots[0];
   selectedPartyIds=slots.slice(1);
@@ -751,8 +760,9 @@ function hasLeaderSkill(id){
  return !!hero&&!!AbilityData.get(hero,"leader");
 }
 function squadSlots(){
- return isLoreRequiredSquad()&&loreSquadSlots?
-  loreSquadSlots.slice():[selectedLeaderId,...selectedPartyIds];
+ if(isLoreRequiredSquad()&&loreSquadSlots)return loreSquadSlots.slice();
+ if(squadReturnScreen==="network"&&networkSquadSlots)return networkSquadSlots.slice();
+ return [selectedLeaderId,...selectedPartyIds];
 }
 function selectedParty(){
  // Only occupied positions enter battle, ordered by their actual slot.
@@ -961,6 +971,9 @@ function disbandSquad(){
  return true;
 }
 function openSquad(returnTo="home"){
+ if(returnTo==="network"){
+  if(!networkSquadSlots)networkSquadSlots=[selectedLeaderId,...selectedPartyIds];
+ }else networkSquadSlots=null;
  if(returnTo==="loreRequired"){
   if(!loreSquadSlots)loreSquadSlots=prepareLoreRequiredSlots([selectedLeaderId,...selectedPartyIds]);
  }else loreSquadSlots=null;
@@ -1084,6 +1097,7 @@ function showScreen(id){
  if(id==="campaign"){if(previousScreenId!=="campaign")showCampaignPath(null);renderCampaign();}
  if(id==="challenges")renderChallenges();
  if(id==="operations")renderOperations();
+ if(id==="network"&&NETWORK_PILOT_ENABLED)NetworkPilotUI.render();
  if(id==="operationResult")renderOperationResult();
  if(id==="signalOperations")renderSignalOperations();
  if(id==="signalOperationResult")renderSignalOperationResult();
@@ -1109,10 +1123,13 @@ function showScreen(id){
    typeof NpcChallengePilot!=="undefined"&&!!NpcChallengePilot.get(activeChallengeId);
   battleIsOperation=squadReturnScreen==="operations"&&operationProgress.active?.phase==="battle";
   operationBattleRunId=battleIsOperation?operationProgress.active.runId:null;
+  battleIsNetwork=NETWORK_PILOT_ENABLED&&squadReturnScreen==="network"&&
+   networkPilot?.isReady()&&networkPilot.read()?.active?.phase==="battle";
   battleIsSignal=squadReturnScreen==="signalOperations"&&signalProgress.active?.phase==="battle";
   signalBattleRunId=battleIsSignal?signalProgress.active.runId:null;
   const label=$("#battleMissionLabel");
-  if(label)label.textContent=battleIsSignal?"РАЗВЕДОПЕРАЦИЯ · ТРЕВОЖНЫЙ СИГНАЛ":
+  if(label)label.textContent=battleIsNetwork?"РАЗВЕДСЕТЬ · ПРОБНЫЙ БОЙ (ВНЕ КАНОНА)":
+   battleIsSignal?"РАЗВЕДОПЕРАЦИЯ · ТРЕВОЖНЫЙ СИГНАЛ":
    battleIsOperation?"РАЗВЕДОПЕРАЦИЯ · ДВА КУРЬЕРА":
    battleIsLoreRequired?"ПЯТЬ ТЕНЕЙ · ОБЯЗАТЕЛЬНЫЙ БОЙ"+
     (loreRequiredContext?.battleNarrative?.title?" · "+loreRequiredContext.battleNarrative.title:"")+
@@ -1127,7 +1144,7 @@ function showScreen(id){
   const objective=$("#battleChallengeGoal");
   if(objective){
    objective.hidden=!!trial||
-   !battleIsLoreRequired&&!battleIsLoreTraining&&!battleIsChallenge&&!battleIsOperation&&!battleIsSignal;
+   !battleIsNetwork&&!battleIsLoreRequired&&!battleIsLoreTraining&&!battleIsChallenge&&!battleIsOperation&&!battleIsSignal;
    const def=battleIsChallenge?ChallengeCore.get(activeChallengeId):null;
    const priority=def?.kind==="tactical"?(battleIsNpcChallengePilot?
     NpcChallengePilot.spawn(activeChallengeId)?.find(e=>e.id===
@@ -1135,7 +1152,8 @@ function showScreen(id){
     ENEMIES.find(e=>e.id===def.priorityId)):null;
    const npcGoal=battleIsNpcChallengePilot?NpcChallengePilot.goal(activeChallengeId,
     selectedParty()[0]?.name):null;
-   objective.textContent=npcGoal|| (battleIsLoreRequired&&trial?
+   objective.textContent=battleIsNetwork?"Победите текущую волну. Тестовый режим без экономических наград.":
+    npcGoal|| (battleIsLoreRequired&&trial?
      trial.goalText:
      battleIsLoreRequired?"Победите, чтобы открыть следующий эпизод. Бой относится к игровой адаптации.":battleIsLoreTraining?(NPC_PILOT_ENABLED?"Пробный состав: человек, сарх и лаун-лекарь. Вне канона, без наград, энергии и влияния на хронику.":"Учебные противники. Без наград, энергии и влияния на хронику."):battleIsSignal?signalProgress.active?.assault==="quiet"?
      "Тихий штурм: первым обезвредь связного. Два стража одним действием — сигнал подавлен.":
@@ -1780,6 +1798,13 @@ $("#squadStart").addEventListener("click",()=>{
   return;
  }
  if(count===0)return;
+ if(squadReturnScreen==="network"&&(!networkPilot?.isReady()||
+  networkPilot.read()?.active?.phase!=="battle")){
+  const warning=$("#squadWarning");
+  if(warning){warning.textContent="Нет подтверждённой контрольной точки разведсети. Вернитесь к донесениям.";
+   warning.hidden=false;}
+  return;
+ }
  if(count<eligibleSquadCount()&&!undersizedSquadConfirmed){
   undersizedSquadConfirmed=true;
   const warning=$("#squadWarning");
@@ -2901,6 +2926,17 @@ function syncBattleUI(){
    campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
   missionResultRecorded=true;
  }
+ if(battleIsNetwork&&!state.active&&!networkResultRecorded){
+  networkResultRecorded=true;
+  const terminalBattle=state;
+  void networkPilot.complete(terminalBattle).then(()=>{
+   networkResultReady=true;
+   if(battleIsNetwork&&state===terminalBattle&&!isVisualTransition())syncBattleUI();
+  }).catch(()=>{
+   networkResultReady=true;
+   if(battleIsNetwork&&state===terminalBattle&&!isVisualTransition())syncBattleUI();
+  });
+ }
  if(battleIsSignal&&!state.active&&!signalResultRecorded){
   const pending=signalProgress.active;
   const result=pending&&!signalCaptureFailed&&signalBattleTracker&&
@@ -2962,6 +2998,11 @@ function syncBattleUI(){
   renderTargetFighterHud();
   renderArenaIndicators();
   updateMeshes();
+  return;
+ }
+ if(battleIsNetwork&&!state.active&&networkResultReady&&!missionResultShown){
+  missionResultShown=true;
+  showScreen("network");
   return;
  }
  if(battleIsSignal&&!state.active&&!missionResultShown){
@@ -3170,6 +3211,8 @@ function resetBattle(){
  challengeResultRecorded=false;
  operationResultRecorded=false;
  signalResultRecorded=false;
+ networkResultRecorded=false;
+ networkResultReady=false;
  signalCaptureFailed=false;
  signalBattleTracker=battleIsSignal?SignalOperationCore.startTracker(signalProgress.active):null;
  challengeLastStars=0;
@@ -3178,6 +3221,17 @@ function resetBattle(){
   battleIsNpcChallengePilot?NpcChallengePilot.trackerTargets(activeChallengeId):null):null;
  lastMissionStars=0;
  selectedAbility="basic";
+ if(battleIsNetwork){
+  const active=networkPilot?.read();
+  const launched=active&&NetworkEncounterAdapter.startBattle(active,selectedParty(),
+   {combat:CombatCore,leaderId:squadSlots()[0]});
+  if(!launched)throw Error("NET004_ENCOUNTER_CHECKPOINT_INVALID");
+  state=launched.battle;
+  ensureEncounterNpcVisuals(launched.plan.first);
+  CombatCore.advanceToPlayerTurn(state);
+  syncBattleUI();
+  return;
+ }
  const lineup=battleLineup();
  const waves=battleFutureWaves();
  const allies=lineup.filter(f=>f.side==="ally");
@@ -3885,5 +3939,27 @@ document.addEventListener("visibilitychange",()=>{
  if(document.hidden){closeFighterInspection();hideAbilityTooltip();cancelAutoTimer();stopBattleRendering();}
  else if(shouldRenderBattle()){engine.resize();startBattleRendering();queueAutoAction();}
 });
+// The test button is never visible without the explicit URL flag.
+// The session uses only a pilot namespaced key, not ashes-throne.network.v1.
+if(NETWORK_PILOT_ENABLED&&typeof NetworkPilotSession!=="undefined"&&
+ typeof NetworkPilotUI!=="undefined"&&typeof ProgressWriterCore!=="undefined"){
+ const entry=$("#net004Entry");
+ networkPilot=NetworkPilotSession.create({
+  storageProvider:()=>window.localStorage,
+  exclusive:ProgressWriterCore.exclusive,
+  ownsLock:ProgressWriterCore.isOwner,
+  now:()=>Date.now(),
+  seed:()=>{
+   const bytes=new Uint32Array(1);
+   if(!window.crypto?.getRandomValues)throw Error("NO_CRYPTOGRAPHIC_SEED");
+   window.crypto.getRandomValues(bytes);return bytes[0];
+  }
+ });
+ if(networkPilot&&NetworkPilotUI.mount({pilot:networkPilot,
+   onOpenSquad:()=>openSquad("network")})){
+  if(entry)entry.hidden=false;
+ }
+}
+
 renderAccountHeader();renderHeroes();CombatCore.advanceToPlayerTurn(state);
 maybeOpenLoginOnEntry();

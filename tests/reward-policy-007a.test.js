@@ -242,13 +242,13 @@ test("Old v2 and older v3 save round trips keep resources; receipts are opt-in",
  assert.equal(saved(other).rewardReceipts.length,1);
 });
 
-test("LC-008D build marker and gated RewardPolicy only allow Act I source",()=>{
+test("LC-008D reward sources remain gated across current builds",()=>{
  const pkg=require("../package.json");
  const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
- assert.equal(pkg.version,"0.3.187");
- assert.match(html,/id="buildVersion"[^>]*>Прототип · v0\.3\.187 · LORE5REWARD/);
- assert.match(html,/src="reward-policy-core\.js\?v=0\.3\.187" type="text\/progress-gated"/);
- assert.match(html,/src="lore-act1-reward-core\.js\?v=0\.3\.187" type="text\/progress-gated"/);
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+pkg.version+' · '));
+ assert.ok(html.includes('src="reward-policy-core.js?v='+pkg.version+'" type="text/progress-gated"'));
+ assert.ok(html.includes('src="lore-act1-reward-core.js?v='+pkg.version+'" type="text/progress-gated"'));
  assert.doesNotMatch(html,/rewardPoolId:\s*["']/);
  const live=fs.readFileSync(path.join(__dirname,"..","lore-act1-reward-core.js"),"utf8");
  assert.equal(live.includes('sourceId:"five-shadows-act-2"'),false);

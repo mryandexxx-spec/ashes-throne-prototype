@@ -66,8 +66,11 @@ test("NET-003 proposal-only, three canonical-region settings, no production sour
   Object.values(def.formations).flat(2).every(id=>
    NPC.get(id)?.originRegionId==="gardens-over-abyss"&&
    NPC.get(id)?.speciesId==="human")));
- assert.ok(!read("index.html").includes("network-encounter-adapter.js"));
- assert.ok(!read("game.js").includes("NetworkEncounterAdapter"));
+ assert.ok(read("index.html").includes('network-encounter-adapter.js?v='));
+ assert.ok(read("index.html").includes('type="text/progress-gated"'));
+ assert.ok(read("game.js").includes('get("networkPilot")')||
+  read("game.js").includes("networkPilot=1"));
+ assert.ok(read("game.js").includes("NETWORK_PILOT_ENABLED"));
  assert.ok(!read("network-encounter-adapter.js").includes("localStorage"));
 });
 test("NET-003 every template/choice/modifier makes valid, uniquely identified waves",()=>{

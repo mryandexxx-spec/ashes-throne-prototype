@@ -12,7 +12,7 @@ const LoreCampaignUI=(()=>{
  const ACT_LABELS=Object.freeze(["I","II","III","IV","V"]);
  const REWARD_MATERIAL_LABELS=Object.freeze({Fe:"железо",Le:"кожа",Cl:"ткань",
   Wo:"древесина",Fa:"крепёж",Th:"прочная нить",Gl:"стекло"});
- const formatRewardCount=n=>String(n).replace(/\\B(?=(\\d{3})+(?!\\d))/g," ");
+ const formatRewardCount=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g," ");
  const actForRewardNode=id=>ACT_REWARD_NODES.indexOf(id)+1;
  const PORTRAITS=Object.freeze({
   "Рен Терен":"assets/ren-portrait-ui.webp",

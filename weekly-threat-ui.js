@@ -1,7 +1,7 @@
 /* NET-008A: compact 2D weekly threat control; no extra Babylon scene. */
 const WeeklyThreatUI=(()=>{
  "use strict";
- let session=null,onSquad=null,network=null,mounted=false,notice="";
+ let session=null,onSquad=null,onDevelop=null,network=null,mounted=false,notice="";
  const $=id=>document.getElementById(id);
  const labels={Fe:"Железо",Le:"Кожа",Cl:"Ткань",Wo:"Древесина",
   Fa:"Волокно",Th:"Нить",Gl:"Стекло"};
@@ -58,13 +58,14 @@ const WeeklyThreatUI=(()=>{
   }else notice="Результат боя не записан: "+r.code+". Перезагрузите страницу и повторите попытку.";
   render();return r;
  }
- function mount({weekly,onOpenSquad,networkSession}={}){
+ function mount({weekly,onOpenSquad,onOpenHeroes,networkSession}={}){
   if(mounted||!weekly||typeof onOpenSquad!=="function"||!$("net008aThreat"))return false;
-  session=weekly;onSquad=onOpenSquad;network=networkSession;mounted=true;
+  session=weekly;onSquad=onOpenSquad;onDevelop=onOpenHeroes;network=networkSession;mounted=true;
   $("net008aThreat").addEventListener("click",async event=>{
    const b=event.target.closest?.("button[data-week-action]");
    if(!b||b.disabled)return;
    const action=b.dataset.weekAction;
+   if(action==="develop"){if(typeof onDevelop==="function")onDevelop();return;}
    if(action==="fight"){if(session.isReady()&&session.read()?.active)onSquad();return;}
    if(action==="collect"){await collect();return;}
    const r=action==="abandon"?await session.abandon():

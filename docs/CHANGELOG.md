@@ -24,6 +24,8 @@
 
 ## 2026-11-18
 
+- **NETWORK-001 / NETWORK-UI-000 — [УТВЕРЖДЕНО: концепция и решения §9 (1–4); остальное — ПРЕДЛОЖЕНИЕ]**: [PR #383](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/383), squash `e452e907e5bec7c1b4f2de4103eb08ab23ad11cb`. Только документация: [разведсеть как центральный игровой цикл](NETWORK_001_CORE_LOOP_ARCHITECTURE.md) (зацепки, недельная угроза, вербовка), архитектура `network.v1`, расширение RewardPolicy, этапы NET-001…NET-009; [макет шести экранов](mockups/network-ui-000/README.md) со снимками и офлайн-исходниками. Игра, экономика и сохранения не изменены; после слияния Node CI и Pages — success. **Разработка NET-001 не начата** по решению владельца — ждёт отдельной команды.
+
 - **`v0.3.185 · LOREACT1REW` — LC-008D [РЕАЛИЗОВАНО в `main`]**: [PR #380](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/380), squash `2344a76c569e90f2e556433842a3a7c20071a62b`. Утверждены суммы пяти разовых пакетов; **подключён только акт I (FS-03)**, 1 500 валюты, 180 Account XP и Fe5/Le6/Cl8/Wo1/Fa3/Th3/Gl0. Ресурсная выплата подтверждается сохранённой историей и боями, поступает через Web Locks/Receipt v3, UI показывает получение на карте, после начисления синхронизируется revision runtime. Добавлены Node и Chromium/WebKit проверки двойных нажатий, второй вкладки, reload и ошибок записи. **Последний PR CI 33/33, postmerge Node CI и Pages deployment успешны; физический iPhone Safari не проверен.** [Детали и таблица](LC_008D_ACT_REWARDS_APPROVED.md).
 
 

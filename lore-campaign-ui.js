@@ -6,6 +6,7 @@ const LoreCampaignUI=(()=>{
  let root=null,data=null,core=null,catalog=null,progress=null,sceneRuntime=null,scenePack=null,notice="";
  let view="stories",storyId=null,nodeId=null,layerId=null,globalKeyRegistered=false;
  let narrativePage=0,narrativeBeatKey="",onStartTraining=null,onStartRequiredBattle=null,trainingNotice="";
+ let onClaimActOne=null,getActOneRewardStatus=null,rewardBusy=false,rewardFeedback="";
  const PORTRAITS=Object.freeze({
   "Рен Терен":"assets/ren-portrait-ui.webp",
   "Нада":"assets/nada-portrait-ui.webp?v=2",
@@ -117,12 +118,19 @@ const LoreCampaignUI=(()=>{
     onStartTraining=typeof options.onStartTraining==="function"?options.onStartTraining:null;
    if(Object.prototype.hasOwnProperty.call(options,"onStartRequiredBattle"))
     onStartRequiredBattle=typeof options.onStartRequiredBattle==="function"?options.onStartRequiredBattle:null;
+   if(Object.prototype.hasOwnProperty.call(options,"onClaimActOne"))
+    onClaimActOne=typeof options.onClaimActOne==="function"?options.onClaimActOne:null;
+   if(Object.prototype.hasOwnProperty.call(options,"getActOneRewardStatus"))
+    getActOneRewardStatus=typeof options.getActOneRewardStatus==="function"?options.getActOneRewardStatus:null;
    return true;
   }
   if(root){root.removeEventListener("click",onClick);root.removeEventListener("keydown",onKeydown);}
   root=element;data=d;core=c;catalog=d.catalog();
   onStartTraining=typeof options.onStartTraining==="function"?options.onStartTraining:null;
   onStartRequiredBattle=typeof options.onStartRequiredBattle==="function"?options.onStartRequiredBattle:null;
+  onClaimActOne=typeof options.onClaimActOne==="function"?options.onClaimActOne:null;
+  getActOneRewardStatus=typeof options.getActOneRewardStatus==="function"?options.getActOneRewardStatus:null;
+  rewardBusy=false;rewardFeedback="";
   try{sceneRuntime=initializeScenes(options);}
   catch(error){sceneRuntime=null;notice="Не удалось открыть сценарный модуль: "+String(error?.message||error);}
   syncProgress();
@@ -385,6 +393,7 @@ const LoreCampaignUI=(()=>{
   else if(action==="back")back();
   else if(action==="start-node")startScene();
   else if(action==="training-battle"&&onStartTraining)onStartTraining();
+  else if(action==="claim-act-one")void claimActOneReward();
   else if(action==="required-battle"||action==="replay-battle")startRequiredBattle();
   else if(action==="leave-scene"||action==="leave-result")back();
   else if(action==="scene-page-next"){narrativePage++;render();}
@@ -406,6 +415,39 @@ const LoreCampaignUI=(()=>{
   if(event.key==="Escape"&&["map","scene","result"].includes(view)){
    event.preventDefault();event.stopPropagation();back();
   }
+ }
+ // The map exposes only the first live grant. Other four approved packages
+ // remain documentation-only until their own reviewed integration.
+ async function claimActOneReward(){
+  if(rewardBusy||!onClaimActOne||getActOneRewardStatus?.()!=="claimable")return;
+  rewardBusy=true;rewardFeedback="";render();
+  try{
+   const outcome=await onClaimActOne();
+   rewardFeedback=outcome?.message||"Результат выплаты не определён. Проверьте кошелёк.";
+  }catch(_){
+   rewardFeedback="Не удалось проверить результат. Перезагрузите игру и проверьте баланс.";
+  }finally{rewardBusy=false;if(root)render();}
+ }
+ function renderActOneReward(){
+  if(storyId!=="five-shadows"||!onClaimActOne||!getActOneRewardStatus)return "";
+  const status=getActOneRewardStatus();
+  const claimed=status==="claimed";
+  const claimable=status==="claimable"&&!rewardBusy;
+  const buttonText=rewardBusy?"Сохраняем…":claimed?"Получено":
+   status==="blocked"?"Кошелёк недоступен":
+   status==="locked"?"Завершите первый акт":"Получить награду";
+  const detail=claimed?"Разовая награда уже зачислена. Повторы истории не дают новых выплат.":
+   status==="blocked"?"Проверьте доступность сохранений и перезагрузите игру.":
+   status==="locked"?"Нужны FS-01–FS-03 и все обязательные победы с подтверждённым сохранением.":
+   "Первое завершение подтверждено. Получение бесплатно и доступно один раз.";
+  return '<section class="lore-act-one-reward" aria-label="Разовая награда за акт I">'+
+   '<div class="lore-act-one-reward__copy"><strong>Награда за акт I · «Пять теней»</strong>'+
+   '<small>1 500 валюты · 180 Account XP · железо ×5 · кожа ×6 · ткань ×8 · древесина ×1 · крепёж ×3 · прочная нить ×3</small>'+
+   '<span>'+escapeHtml(detail)+'</span>'+
+   (rewardFeedback?'<p role="status">'+escapeHtml(rewardFeedback)+'</p>':"")+'</div>'+
+   '<button type="button" class="primary" data-lore-action="claim-act-one"'+
+    (!claimable?' disabled aria-disabled="true"':"")+'>'+escapeHtml(buttonText)+'</button>'+
+   '</section>';
  }
  function renderStories(){
   const cards=catalog.stories.map(story=>{
@@ -522,6 +564,7 @@ const LoreCampaignUI=(()=>{
      '<button type="button" class="ghost lore-map-training-action" data-lore-action="training-battle">'+
      '⚔ Тактический бой <small>Вне канона · без энергии</small></button>':'')+'</div>'+
    '<nav class="lore-layer-list" aria-label="Слои карты">'+layers+'</nav>'+
+   renderActOneReward()+
    '<div class="lore-map-layout">'+
    '<div class="lore-map-surface" role="group" aria-label="Схема последовательности узлов. Не географическая карта.">'+
    edgeSvg(nodes)+markers+

@@ -158,6 +158,12 @@ const NetworkPilotSession=(()=>{
     const wallet=typeof raw==="string"?JSON.parse(raw):null;
     const through=wallet?.networkLedger?.claimedThrough??0;
     if(!Number.isSafeInteger(through)||through<0)return fail("INVALID_WALLET");
+    // Track effective balance changes, not only catalog promises: rank-7 shard
+    // compensation becomes currency instead of hero shards.
+    let beforeCurrency=wallet.currency, beforeXp=wallet.accountXp;
+    let previousStars=wallet.heroStars??{};
+    if(!Number.isSafeInteger(beforeCurrency)||!Number.isSafeInteger(beforeXp))
+     return fail("INVALID_WALLET");
     const entries=state.completed.filter(x=>x.serial>through);
     for(const entry of entries){
      const source=NetworkLiveEconomy.source(entry.rewardRef);
@@ -169,10 +175,19 @@ const NetworkPilotSession=(()=>{
        "EXCLUSIVE_LOCK_FAILED"].includes(result.code))blocked=true;
       return fail(result.code);
      }
-     paid++;currency+=source.reward.currency;xp+=source.reward.accountXp;
-     shards+=Object.values(source.reward.heroShards||{}).reduce((s,n)=>s+n,0);
+     const next=result.runtime;
+     if(!Number.isSafeInteger(next.currency)||!Number.isSafeInteger(next.accountXp)||
+      next.currency<beforeCurrency||next.accountXp<beforeXp)
+      throw Error("NET007_INVALID_CREDITED_BALANCE");
+     paid++;currency+=next.currency-beforeCurrency;xp+=next.accountXp-beforeXp;
+     beforeCurrency=next.currency;beforeXp=next.accountXp;
+     for(const heroId of Object.keys(source.reward.heroShards||{})){
+      shards+=Math.max(0,(next.heroStars?.[heroId]?.shards??0)-
+       (previousStars[heroId]?.shards??0));
+     }
+     previousStars=next.heroStars??{};
      materials+=Object.values(source.reward.materials).reduce((s,n)=>s+n,0);
-     if(typeof onCredit==="function")onCredit(result.runtime,source.reward);
+     if(typeof onCredit==="function")onCredit(next,source.reward);
     }
     return Object.freeze({ok:true,paid,currency,xp,shards,materials});
    }catch(_){blocked=true;return fail("REWARD_SYNC_FAILED");}

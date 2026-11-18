@@ -17,7 +17,7 @@ async function run(name,engine,viewport){
   await page.goto(origin+"?networkPilot=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   assert.match(await page.locator("#buildVersion").innerText(),
-   /v0\.3\.(188 · NET004PILOT|189 · NET005PILOT|190 · NET006ASCORE)/);
+   /v0\.3\.(188 · NET004PILOT|189 · NET005PILOT|190 · NET006ASCORE|191 · NET007PROG|192 · NET007LIVE)/);
   assert.equal(await page.locator("#net004Entry").getAttribute("hidden"),null);
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
@@ -200,7 +200,57 @@ async function liveByDefault(){
   assert.equal(ready.live.board.length,4);
   assert.equal(ready.live.config.capacity,16);
   assert.equal(ready.pilot,null);
-  console.log("NET007_LIVE_DEFAULT PASS");
+  // An ordinary player can earn an actual network reward without dev grants.
+  if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
+   await page.locator('#loginCalendar [data-screen="home"]').click();
+  await page.locator("#hqMoreToggle").click();
+  await page.locator("#net004Entry").click();
+  await page.locator("#network").waitFor({state:"visible",timeout:15000});
+  const start=await page.evaluate(()=>{
+   const state=JSON.parse(localStorage.getItem("ashes-throne.network.v1"));
+   const wallet=JSON.parse(localStorage.getItem("ashes-throne.progress.v3"));
+   const clue=state.board[0];
+   return {clue,currency:wallet.currency,xp:wallet.accountXp,
+    source:NetworkLiveEconomy.source(clue.rewardRef)};
+  });
+  assert.ok(start.source);
+  await page.locator('#net004Clues [data-net-action="start"]').first().click();
+  await page.locator('[data-net-action="prepare"][data-net-value="survey"]').click();
+  await page.locator('[data-net-action="approach"][data-net-value="quiet"]').click();
+  await page.locator("#squad").waitFor({state:"visible",timeout:15000});
+  await page.locator("#squadStart").click();
+  await page.locator("#battle").waitFor({state:"visible",timeout:30000});
+  await page.locator("#autoBattleBtn").click();
+  await page.locator("#net004Result").waitFor({state:"visible",timeout:125000});
+  await page.locator("#net004Finish").click();
+  await page.waitForFunction(()=>{
+   try{return JSON.parse(localStorage.getItem("ashes-throne.progress.v3"))
+    .networkLedger?.claimedThrough===1;}catch(_){return false;}
+  },null,{timeout:20000});
+  const paid=await page.evaluate(()=>{
+   const wallet=JSON.parse(localStorage.getItem("ashes-throne.progress.v3"));
+   const state=JSON.parse(localStorage.getItem("ashes-throne.network.v1"));
+   return {currency:wallet.currency,xp:wallet.accountXp,materials:wallet.materials,
+    heroStars:wallet.heroStars,through:wallet.networkLedger.claimedThrough,
+    completed:state.completed.length,overflow:document.documentElement.scrollWidth>innerWidth+1};
+  });
+  assert.equal(paid.currency,start.currency+start.source.reward.currency);
+  assert.equal(paid.xp,start.xp+start.source.reward.accountXp);
+  for(const [id,amount] of Object.entries(start.source.reward.materials))
+   assert.ok(paid.materials[id]>=amount);
+  for(const [id,amount] of Object.entries(start.source.reward.heroShards||{}))
+   assert.ok(paid.heroStars[id].shards>=amount);
+  assert.equal(paid.completed,1);
+  assert.equal(paid.overflow,false);
+  await page.reload({waitUntil:"load"});
+  await page.waitForFunction(()=>typeof showScreen==="function");
+  const persisted=await page.evaluate(()=>{
+   const wallet=JSON.parse(localStorage.getItem("ashes-throne.progress.v3"));
+   return {currency:wallet.currency,through:wallet.networkLedger.claimedThrough};
+  });
+  assert.equal(persisted.currency,paid.currency,"reload never doubles the serial reward");
+  assert.equal(persisted.through,1);
+  console.log("NET007_LIVE_REAL_BATTLE_REWARD_RELOAD PASS");
  }finally{await browser.close();}
 }
 (async()=>{

@@ -1853,8 +1853,11 @@ function renderStarPanel(id){
  $("#starPromoteButton").disabled=saveBlocked||cost===null||amount<cost;
  $("#starPromoteButton").textContent=cost===null?"Достигнут максимум 7★":"Повысить до "+(rank+1)+"★";
  $("#starNotice").textContent=saveBlocked?"Сохранение недоступно. Развитие заблокировано.":
-  (id==="ren"||id==="nada"?"Звёзды увеличивают боевые характеристики героя, но не скорость. ":"Для учебных героев звёзды пока не увеличивают характеристики. ")+
-  "Источник осколков в тестовой версии: «Тестовые ресурсы».";
+  "Каждая звезда после 1★ даёт +3% к базовым HP, атаке и защите (до +18% на 7★); скорость не меняется. "+
+  (["ren","nada","liora","art","sava"].includes(id)?
+   "Осколки добываются через приказ на героя в разведсети.":
+   "Для демонстрационного героя пока нет обычного источника осколков.")+
+  (rank===7?" Лишние осколки обмениваются по курсу 80 валюты за штуку.":"");
 }
 function showLockedHero(id){
  if(typeof StarCore==="undefined"||heroOwned(id)||!ALLIES.some(h=>h.id===id))return false;
@@ -1900,7 +1903,8 @@ function promoteStar(id,locked){
   openHeroDetail(id);
  }else{
   renderHeroDetail();
-  $("#starNotice").textContent="Герой достиг "+upgraded.rank+"★. Списано "+upgraded.spent+" осколков. Сохранено.";
+  $("#starNotice").textContent="Герой достиг "+upgraded.rank+"★. Списано "+upgraded.spent+" осколков."+
+   (upgraded.excessCurrency?" Компенсация: +"+upgraded.excessCurrency+" валюты.":"")+" Сохранено.";
  }
  return true;
 }

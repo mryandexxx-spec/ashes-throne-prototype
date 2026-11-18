@@ -47,9 +47,9 @@ jobs:
             timeout 65s "$chrome" "${flags[@]}" --screenshot="$PWD/artifacts/env017-$view-hud-844x390.png" "$url" 2>"/tmp/env017-$view.log"
             page="$(timeout 65s "$chrome" "${flags[@]}" --dump-dom "$url" 2>>"/tmp/env017-$view.log")"
             printf '%s\n' "$page" > "artifacts/env017-$view-dom.html"
-            echo "$page" | grep -q 'data-visual-status="ready"'
-            echo "$page" | grep -q 'data-environment="ENV017"'
-            echo "$page" | grep -q 'data-webgl="true"'
+            grep -q 'data-visual-status="ready"' "artifacts/env017-$view-dom.html"
+            grep -q 'data-environment="ENV017"' "artifacts/env017-$view-dom.html"
+            grep -q 'data-webgl="true"' "artifacts/env017-$view-dom.html"
             grep -o 'data-camera="[^"]*"' "artifacts/env017-$view-dom.html" || true
             test -s "artifacts/env017-$view-hud-844x390.png"
           done

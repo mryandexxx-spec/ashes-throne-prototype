@@ -27,7 +27,11 @@ const NetworkRewardCore=(()=>{
   const state=readNetwork(storage);
   if(!state)return false;
   const completed=state.completed.find(x=>x.serial===serial);
-  return !!completed&&completed.status==="done"&&completed.kind==="manual"&&
+  // Both legitimate manually won and mastered-clue simulated completions
+  // use the same ordered serial ledger. No reward is configured in NET-005.
+  // NetworkCore.validState also enforces score=0 for simulated entries.
+  return !!completed&&completed.status==="done"&&
+   ["manual","simulated"].includes(completed.kind)&&
    completed.rewardRef===sourceId;
  }
  function readWallet(storage,heroes){

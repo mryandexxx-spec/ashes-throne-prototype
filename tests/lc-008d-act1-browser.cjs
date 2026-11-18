@@ -86,7 +86,7 @@ async function run(name,type){
    }
    await focusReward(page);
    await button.click();
-   await page.waitForFunction(()=>document.querySelector('[data-lore-action="claim-act-one"]')?.textContent==="Получено",
+   await page.waitForFunction(()=>document.querySelector('[data-lore-action="claim-act-one"]')?.textContent==="Награда получена",
     null,{timeout:10000});
    const after=await wallet(page);
    assert.equal(after.currency-first.currency,1500);
@@ -145,7 +145,7 @@ async function run(name,type){
    await f.page.locator(".lore-story-cover").click();
    await focusReward(f.page);
    await f.page.locator('[data-lore-action="claim-act-one"]').click();
-   await f.page.waitForFunction(()=>document.querySelector('[data-lore-action="claim-act-one"]')?.textContent==="Получено",
+   await f.page.waitForFunction(()=>document.querySelector('[data-lore-action="claim-act-one"]')?.textContent==="Награда получена",
     null,{timeout:10000});
    assert.equal((await wallet(f.page)).currency,before.currency+1500);
    assert.deepEqual(f.errors,[]);

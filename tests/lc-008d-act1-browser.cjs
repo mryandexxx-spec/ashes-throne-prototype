@@ -6,7 +6,7 @@ const Core=require("../lore-campaign-core.js"),Scenes=require("../lore-campaign-
 const SceneCore=require("../lore-campaign-scene-core.js"),Save=require("../lore-campaign-scene-save.js");
 const Runtime=require("../lore-campaign-scene-runtime.js"),Act=require("../lore-campaign-act5.js");
 const origin=process.env.GAME_ORIGIN||"http://127.0.0.1:8765/";
-function savedAct(){
+function savedAct({skipFinalBattle=false}={}){
  const map=new Map(),storage={getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,String(v))};
  const graph=Act.data.catalog(),r=Runtime.create({graph,graphCore:Core,pack:Act.pack,
   scriptData:Scenes,sceneCore:SceneCore,saveModule:Save,storage});
@@ -25,7 +25,7 @@ function savedAct(){
    else assert.fail("Stuck "+id);
   }
   const node=graph.nodes[n-1];
-  if(node.requiredBattleId){
+  if(node.requiredBattleId&&!(skipFinalBattle&&n===3)){
    const b=r.beginRequiredBattle(id);assert.equal(b.ok,true);
    assert.equal(r.recordBattleVictory(id,b.battleId).ok,true);
   }
@@ -50,14 +50,41 @@ async function opened(browser,storySave){
 async function wallet(page){
  return page.evaluate(()=>JSON.parse(localStorage.getItem("ashes-throne.progress.v3")));
 }
+// A claim is presented only on the final node; the act tab remains discoverable
+// when the campaign naturally opens on the next act.
+async function focusReward(page){
+ const tab=page.locator('[data-lore-action="choose-layer"]').filter({hasText:"Забрать награду"});
+ assert.equal(await tab.count(),1,"only act I can have a live unclaimed reward indicator");
+ await tab.click();
+ assert.equal(await page.evaluate(()=>LoreCampaignUI.snapshot().nodeId),"five-shadows:fs-03");
+ const card=page.locator(".lore-act-one-reward");
+ assert.equal(await card.count(),1);
+ assert.equal(await card.locator("small").textContent().then(s=>s.includes("опыта аккаунта")),true);
+ assert.equal((await card.innerText()).includes("FS-01"),false,"player copy must not expose technical node IDs");
+ return card;
+}
 async function run(name,type){
  const browser=await type.launch({headless:true}),storySave=savedAct();
  try{
   const {ctx,page,errors}=await opened(browser,storySave);
   try{
    const first=await wallet(page);
+   const card=await focusReward(page);
    const button=page.locator('[data-lore-action="claim-act-one"]');
    assert.equal(await button.isEnabled(),true,name+" must show earned reward");
+   assert.match(await card.innerText(),/Первый акт завершён/);
+   // Reward must not be pinned to every node, nor to the other four acts.
+   await page.locator('[data-lore-action="choose-node"][data-lore-node="five-shadows:fs-01"]').first().click();
+   assert.equal(await page.locator(".lore-act-one-reward").count(),0);
+   await page.locator('[data-lore-action="choose-node"][data-lore-node="five-shadows:fs-03"]').first().click();
+   assert.equal(await button.isEnabled(),true);
+   const tabs=page.locator('[data-lore-action="choose-layer"]');
+   assert.equal(await tabs.count(),5);
+   for(let i=1;i<5;i++){
+    await tabs.nth(i).click();
+    assert.equal(await page.locator(".lore-act-one-reward").count(),0,"no act-I banner on layer "+(i+1));
+   }
+   await focusReward(page);
    await button.click();
    await page.waitForFunction(()=>document.querySelector('[data-lore-action="claim-act-one"]')?.textContent==="Получено",
     null,{timeout:10000});
@@ -79,7 +106,12 @@ async function run(name,type){
    await page.locator('#home .hq-bottom button[data-screen="campaign"]').evaluate(el=>el.click());
    await page.locator('[data-campaign-path="lore"]').click();
    await page.locator(".lore-story-cover").click();
+   // Claimed rewards do not make a stale "claim" marker on the act tab.
+   assert.equal(await page.locator(".lore-layer-reward-ready").count(),0);
+   await page.locator('[data-lore-action="choose-layer"]').first().click();
+   await page.locator('[data-lore-action="choose-node"][data-lore-node="five-shadows:fs-03"]').first().click();
    assert.equal(await page.locator('[data-lore-action="claim-act-one"]').isEnabled(),false);
+   assert.match(await page.locator(".lore-act-one-reward").innerText(),/Награда получена/);
    assert.equal((await wallet(page)).rewardReceipts.length,1);
    // Existing session holds the writer lock; another tab must not start game.
    const second=await ctx.newPage();
@@ -101,6 +133,7 @@ async function run(name,type){
     };
    });
    const before=await wallet(f.page);
+   await focusReward(f.page);
    await f.page.locator('[data-lore-action="claim-act-one"]').click();
    await f.page.waitForFunction(()=>document.getElementById("walletWriterNotice")?.style?.display==="flex",
     null,{timeout:10000});
@@ -110,13 +143,29 @@ async function run(name,type){
    await f.page.locator('#home .hq-bottom button[data-screen="campaign"]').evaluate(el=>el.click());
    await f.page.locator('[data-campaign-path="lore"]').click();
    await f.page.locator(".lore-story-cover").click();
+   await focusReward(f.page);
    await f.page.locator('[data-lore-action="claim-act-one"]').click();
    await f.page.waitForFunction(()=>document.querySelector('[data-lore-action="claim-act-one"]')?.textContent==="Получено",
     null,{timeout:10000});
    assert.equal((await wallet(f.page)).currency,before.currency+1500);
    assert.deepEqual(f.errors,[]);
   }finally{await f.ctx.close();}
-  process.stdout.write(name+": LC-008D first reward, reload, writer lock and denied write passed\n");
+  // Same state as the report: FS-03 narration finished, required combat pending.
+  const unfinished=await opened(browser,savedAct({skipFinalBattle:true}));
+  try{
+   const tab=unfinished.page.locator('[data-lore-action="choose-layer"]').first();
+   await tab.click();
+   await unfinished.page.locator('[data-lore-action="choose-node"][data-lore-node="five-shadows:fs-03"]').first().click();
+   const card=unfinished.page.locator(".lore-act-one-reward");
+   assert.equal(await card.count(),1);
+   assert.match(await card.innerText(),/победите в бою после «Имя Элы»/i);
+   assert.equal((await card.innerText()).includes("FS-03"),false);
+   assert.equal(await card.locator("button").isEnabled(),false);
+   await unfinished.page.locator('[data-lore-action="choose-layer"]').nth(2).click();
+   assert.equal(await unfinished.page.locator(".lore-act-one-reward").count(),0);
+   assert.deepEqual(unfinished.errors,[]);
+  }finally{await unfinished.ctx.close();}
+  process.stdout.write(name+": LC-008E contextual reward, claim, reload, lock and failure passed\n");
  }finally{await browser.close();}
 }
 (async()=>{await run("chromium",chromium);await run("webkit",webkit);})().catch(e=>{

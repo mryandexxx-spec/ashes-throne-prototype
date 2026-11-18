@@ -94,7 +94,7 @@ const DailyCore=(()=>{
      !Number.isSafeInteger(progress.materials[key])||
      !Number.isSafeInteger(progress.materials[key]+amount)))return null;
   const skillRewards=task.skillMaterials||{};
-  const skills=progress.skillMaterials??(typeof SkillCore!=="undefined"?SkillCore.freshMaterials():null);
+  const skills=progress.skillMaterials??{manual1:0,manual2:0,seal:0};
   if(!skills||Object.entries(skillRewards).some(([key,amount])=>
    !Number.isSafeInteger(skills[key])||!Number.isSafeInteger(skills[key]+amount)))return null;
   progress.currency+=task.currency;

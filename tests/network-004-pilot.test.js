@@ -85,7 +85,9 @@ test("NET-004 one-wave real battle -> persisted result -> finish; no money",asyn
  const result=await pilot.complete(run.battle);
  assert.equal(result.ok,true);
  assert.equal(pilot.read().active.phase,"result");
- assert.equal(pilot.read().active.score,0,"pilot test score, NOT accepted balance");
+ assert.ok(pilot.read().active.score>=60&&pilot.read().active.score<=100,
+  "real S1 score, without any economy payouts");
+ assert.equal(pilot.read().active.waveSummaries.length,1);
  assert.equal((await pilot.complete(run.battle)).code,"INVALID_BATTLE_OUTCOME",
   "one battle cannot be accepted twice");
  assert.equal((await pilot.change("finish")).ok,true);

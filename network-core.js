@@ -59,6 +59,7 @@ const NetworkCore=(()=>{
    (a.preparation!==null&&!a.clue.preparationIds.includes(a.preparation))||
    (a.approach!==null&&!a.clue.approaches.some(x=>x.id===a.approach))||
    !int(a.wave)||(a.score!==null&&(!int(a.score)||a.score>100)))return false;
+  if(own(a,"waveSummaries")&&["brief","approach"].includes(a.phase))return false;
   if(a.phase==="brief")return a.preparation===null&&a.approach===null&&a.wave===0&&a.score===null;
   if(a.phase==="approach")return a.preparation!==null&&a.approach===null&&a.wave===0&&a.score===null;
   const waves=a.clue.approaches.find(x=>x.id===a.approach)?.waves;
@@ -78,11 +79,11 @@ const NetworkCore=(()=>{
   const p=key.split("|");
   return p.length===8&&id(p[0])&&int(Number(p[1]),1)&&String(Number(p[1]))===p[1]&&
    int(Number(p[2]),1)&&String(Number(p[2]))===p[2]&&
-   [p[3],p[4],p[5],p[6]].every(id)&&p[7]==="s1";
+   (p[3]==="-"||id(p[3]))&&[p[4],p[5],p[6]].every(id)&&p[7]==="s1";
  }
  function masteryKey(c,approach){
   return validClue(c)&&c.approaches.some(a=>a.id===approach)?
-   [c.templateId,c.templateRevision,c.level,c.modifierId??"none",
+   [c.templateId,c.templateRevision,c.level,c.modifierId??"-",
     c.encounterRef,c.rewardRef,approach,"s1"].join("|"):null;
  }
  function validCompleted(e){

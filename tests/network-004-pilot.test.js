@@ -188,7 +188,7 @@ test("NET-004 fail closed on lock denial, corrupt pilot data, stale and uncertai
 });
 test("NET-004 feature gated, correct script order and build/cache version",()=>{
  const html=file("index.html"),js=file("game.js"),pkg=JSON.parse(file("package.json"));
- assert.ok(/^0\.3\.(188|189)$/.test(pkg.version));
+ assert.ok(/^0\.3\.(188|189|190)$/.test(pkg.version));
  assert.ok(html.includes('id="buildVersion">Прототип · v'+pkg.version+
   ' · '+(pkg.version==="0.3.188"?"NET004PILOT":pkg.version==="0.3.189"?"NET005PILOT":"NET006ASCORE")));
  assert.ok(html.includes('id="net004Entry" data-screen="network" hidden'));

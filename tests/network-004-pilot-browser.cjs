@@ -45,13 +45,24 @@ async function run(name,engine,viewport){
   assert.equal(checkpoint.phase,"battle");
   assert.equal(checkpoint.wave,0);
   assert.equal(checkpoint.other,null);
+  // Verify the temporary formation truly changes without mutating the player's
+  // saved squad; then restore the initial battle-tested team before the smoke.
+  // Selecting every 3D story hero at L1 makes this an unrelated balance/perf test.
+  const originalIds=await page.evaluate(()=>squadSlots().filter(Boolean));
   const previousSquad=await page.evaluate(()=>
    localStorage.getItem("ashes-throne.squad.v1"));
+  assert.equal(originalIds.length,5);
   await page.locator("#squadDisband").evaluate(el=>el.click());
-  for(const id of ["ren","nada","liora","art","sava"])
-   await page.locator('#squadRoster [data-hero-id="'+id+'"]').evaluate(el=>el.click());
+  await page.locator('#squadRoster [data-hero-id="ren"]').evaluate(el=>el.click());
+  assert.deepEqual(await page.evaluate(()=>squadSlots().filter(Boolean)),["ren"]);
   assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.squad.v1")),
-   previousSquad,"temporary network squad does not rewrite permanent formation");
+   previousSquad,"temporary formation must not touch the permanent saved squad");
+  await page.locator("#squadDisband").evaluate(el=>el.click());
+  for(const id of originalIds)
+   await page.locator('#squadRoster [data-hero-id="'+id+'"]').evaluate(el=>el.click());
+  assert.deepEqual(await page.evaluate(()=>squadSlots().filter(Boolean)),originalIds);
+  assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.squad.v1")),
+   previousSquad,"return to original formation also must not save");
   await page.locator("#squadStart").click();
   await page.locator("#battle").waitFor({state:"visible",timeout:30000});
   await page.locator("#autoBattleBtn").click();
@@ -93,7 +104,18 @@ async function run(name,engine,viewport){
   console.log("NET004_BROWSER",name,viewport.width+"x"+viewport.height,"PASS",JSON.stringify({
    checkpoint,resultSaved:{phase:resultSaved.phase,rev:resultSaved.rev},final}));
  }catch(e){
-  console.error("NET004_BROWSER_FAIL",name,viewport,errors);
+  const diagnostic=await page.evaluate(()=>({
+   screen:document.querySelector(".screen.active")?.id,
+   battleActive:typeof state==="undefined"?null:state.active,
+   battleWinner:typeof state==="undefined"?null:state.winner,
+   battleMessage:typeof state==="undefined"?null:state.message,
+   savedPhase:(()=>{try{return JSON.parse(localStorage.getItem(
+    "ashes-throne.network.pilot.v1"))?.active?.phase;}catch(_){return "invalid";}})(),
+   networkNotice:document.querySelector("#net004Notice")?.textContent,
+   squad:typeof squadSlots==="function"?squadSlots():null,
+   finished:typeof networkResultRecorded==="undefined"?null:networkResultRecorded
+  })).catch(()=>null);
+  console.error("NET004_BROWSER_FAIL",name,viewport,{errors,diagnostic});
   await page.screenshot({path:path.join(dest,name+"-"+viewport.width+"-failed.png"),fullPage:true}).catch(()=>{});
   throw e;
  }finally{await browser.close();}

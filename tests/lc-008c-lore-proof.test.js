@@ -1,6 +1,6 @@
 "use strict";
-/* LC-008C: real persisted Five Shadows act proof; all reward values TEST-ONLY.
- * No module is loaded by index.html and no live payout is enabled. */
+/* LC-008C: persisted proof for five acts; synthetic values below are test-only.
+ * LC-008D wires only Act I separately; this proof remains read-only. */
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const Core=require("../lore-campaign-core.js");
@@ -65,11 +65,12 @@ const proofArgs=(storage,act=1,overrides={})=>({
  storage,kind:"first-clear",sourceId:Proof.SOURCE_IDS[act-1],
  occurrenceId:"once",count:1,...overrides
 });
-test("LC-008C: exact five act IDs, no live script, no catalogue",()=>{
+test("LC-008C: proof keeps five IDs; LC-008D wires only first live source",()=>{
  assert.deepEqual([...Proof.SOURCE_IDS],Array.from({length:5},(_,i)=>"five-shadows-act-"+(i+1)));
  const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
- assert.equal(html.includes('src="lore-reward-proof-core.js'),false);
- assert.equal(html.includes('src="reward-policy-core.js'),false);
+ assert.equal(html.includes('src="lore-reward-proof-core.js'),true);
+ assert.equal(html.includes('src="reward-policy-core.js'),true);
+ assert.equal(html.includes('src="lore-act1-reward-core.js'),true);
  const src=fs.readFileSync(path.join(__dirname,"..","lore-reward-proof-core.js"),"utf8");
  assert.equal(src.includes(".setItem("),false,"proof must not write domain or wallet");
  assert.equal(src.includes("RewardPolicyCore.claim("),false,"no live claim");

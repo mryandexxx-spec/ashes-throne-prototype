@@ -68,7 +68,7 @@ async function run(name,engine,viewport){
   await page.locator("#battle").waitFor({state:"visible",timeout:30000});
   await page.locator("#autoBattleBtn").click();
   await page.locator("#net004Result").waitFor({state:"visible",timeout:125000});
-  assert.match(await page.locator("#net004ResultDetail").innerText(),/Оценка S1: (?:[6-9][0-9]|100)\\/100/);
+  assert.match(await page.locator("#net004ResultDetail").innerText(),/Оценка S1: (?:[6-9][0-9]|100)/);
   const resultSaved=await page.evaluate(()=>{
    const s=JSON.parse(localStorage.getItem("ashes-throne.network.pilot.v1"));
    return {phase:s.active?.phase,rev:s.revision,

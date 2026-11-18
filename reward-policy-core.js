@@ -90,9 +90,11 @@ const RewardPolicyCore=(()=>{
    if(!StarCore.valid(stars))return failure("INVALID_HERO_SHARDS");
    for(const [heroId,amount] of Object.entries(heroShards)){
     if(amount===0)continue;
-    if(stars[heroId].rank===StarCore.MAX)
-     return failure("SHARDS_AT_MAX_RANK_UNRESOLVED");
-    if(!nonneg(stars[heroId].shards+amount))
+    if(stars[heroId].rank===StarCore.MAX){
+     const exchange=amount*StarCore.EXCESS_SHARD_CURRENCY;
+     if(!nonneg(exchange)||!nonneg(wallet.currency+currency+exchange))
+      return failure("SHARD_COMPENSATION_OVERFLOW");
+    }else if(!nonneg(stars[heroId].shards+amount))
      return failure("SHARD_BALANCE_OVERFLOW");
    }
   }

@@ -660,6 +660,8 @@ function requiredLoreHeroIds(){
  return [...new Set([...LORE_REQUIRED_HERO_IDS,...extra])];
 }
 let loreSquadSlots=null;
+// NET-004: pilot formation is session-only; never overwrite the player squad key.
+let networkSquadSlots=null;
 function isLoreRequiredSquad(){return squadReturnScreen==="loreRequired";}
 function prepareLoreRequiredSlots(current){
  const slots=current.slice(0,MAX_SQUAD);
@@ -683,6 +685,8 @@ function prepareLoreRequiredSlots(current){
 function setSquadSlots(slots){
  if(isLoreRequiredSquad()){
   loreSquadSlots=slots.slice(0,MAX_SQUAD);
+ }else if(squadReturnScreen==="network"&&networkSquadSlots){
+  networkSquadSlots=slots.slice(0,MAX_SQUAD);
  }else{
   selectedLeaderId=slots[0];
   selectedPartyIds=slots.slice(1);
@@ -756,8 +760,9 @@ function hasLeaderSkill(id){
  return !!hero&&!!AbilityData.get(hero,"leader");
 }
 function squadSlots(){
- return isLoreRequiredSquad()&&loreSquadSlots?
-  loreSquadSlots.slice():[selectedLeaderId,...selectedPartyIds];
+ if(isLoreRequiredSquad()&&loreSquadSlots)return loreSquadSlots.slice();
+ if(squadReturnScreen==="network"&&networkSquadSlots)return networkSquadSlots.slice();
+ return [selectedLeaderId,...selectedPartyIds];
 }
 function selectedParty(){
  // Only occupied positions enter battle, ordered by their actual slot.
@@ -966,6 +971,9 @@ function disbandSquad(){
  return true;
 }
 function openSquad(returnTo="home"){
+ if(returnTo==="network"){
+  if(!networkSquadSlots)networkSquadSlots=[selectedLeaderId,...selectedPartyIds];
+ }else networkSquadSlots=null;
  if(returnTo==="loreRequired"){
   if(!loreSquadSlots)loreSquadSlots=prepareLoreRequiredSlots([selectedLeaderId,...selectedPartyIds]);
  }else loreSquadSlots=null;
@@ -3216,7 +3224,7 @@ function resetBattle(){
  if(battleIsNetwork){
   const active=networkPilot?.read();
   const launched=active&&NetworkEncounterAdapter.startBattle(active,selectedParty(),
-   {combat:CombatCore,leaderId:selectedLeaderId});
+   {combat:CombatCore,leaderId:squadSlots()[0]});
   if(!launched)throw Error("NET004_ENCOUNTER_CHECKPOINT_INVALID");
   state=launched.battle;
   ensureEncounterNpcVisuals(launched.plan.first);

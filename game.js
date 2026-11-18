@@ -287,7 +287,8 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
 });
 // NET-004: disabled by default; no production network data is loaded.
 const NETWORK_PILOT_ENABLED=typeof window!=="undefined"&&
- new URLSearchParams(window.location.search).get("networkPilot")==="1";
+ typeof window.location?.search==="string"&&
+ /(?:^|[?&])networkPilot=1(?:&|$)/.test(window.location.search);
 let networkPilot=null,battleIsNetwork=false,networkResultRecorded=false,networkResultReady=false;
 let battleIsCampaign=false;
 let battleIsNpcMissionPilot=false; // NPC roster, normal campaign rewards and saves.
@@ -3930,8 +3931,6 @@ document.addEventListener("visibilitychange",()=>{
  if(document.hidden){closeFighterInspection();hideAbilityTooltip();cancelAutoTimer();stopBattleRendering();}
  else if(shouldRenderBattle()){engine.resize();startBattleRendering();queueAutoAction();}
 });
-renderAccountHeader();renderHeroes();CombatCore.advanceToPlayerTurn(state);
-maybeOpenLoginOnEntry();
 // The test button is never visible without the explicit URL flag.
 // The session uses only a pilot namespaced key, not ashes-throne.network.v1.
 if(NETWORK_PILOT_ENABLED&&typeof NetworkPilotSession!=="undefined"&&
@@ -3953,3 +3952,6 @@ if(NETWORK_PILOT_ENABLED&&typeof NetworkPilotSession!=="undefined"&&
   if(entry)entry.hidden=false;
  }
 }
+
+renderAccountHeader();renderHeroes();CombatCore.advanceToPlayerTurn(state);
+maybeOpenLoginOnEntry();

@@ -300,7 +300,10 @@ test("failed compaction never reverses a credited wallet or loses unpaid work",a
  assert.equal(recovery.ok,true,JSON.stringify(recovery));
  assert.equal(recovery.pruned,1);
  assert.equal(persistedNetwork(s).completed[0].serial,2);
- assert.equal((await claim(s,2)).ok,true);
+ assert.equal((await recovered.NetworkRewardCore.claim({
+  serial:2,source:reward(),day:DAY,heroes,storageProvider:s.storage.provider,
+  exclusive:s.exclusive
+ })).ok,true);
 });
 test("strict legacy and new saves reject forged counters, negative ledger and unknown metadata",()=>{
  const s=setup();complete(s);saveNetwork(s);

@@ -74,7 +74,7 @@ const NetworkData=(()=>{
   if(unlockedRegions.some(x=>!regionIds.has(x)))return null;
   if(!plain(influence)||Object.values(influence).some(v=>!integer(v)))return null;
   return c.templates.filter(t=>unlockedRegions.includes(t.regionId)&&
-   (influence[t.regionId]??0)>=t.minInfluence).sort((a,b)=>a.id.localeCompare(b.id));
+   (influence[t.regionId]??0)>=t.minInfluence).sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
  }
  // [ПРЕДЛОЖЕНИЕ]: the first region identifier follows NETWORK-001.
  // Its narrative content and playable templates belong to NET-003 / canon review.

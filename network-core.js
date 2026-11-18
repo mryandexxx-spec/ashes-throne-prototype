@@ -6,6 +6,7 @@ const NetworkCore=(()=>{
  "use strict";
  const Data=typeof NetworkData!=="undefined"?NetworkData:require("./network-data.js");
  const Rng=typeof BattleRng!=="undefined"?BattleRng:require("./battle-rng.js");
+ const Score=typeof NetworkScoreCore!=="undefined"?NetworkScoreCore:require("./network-score-core.js");
  const KEY="ashes-throne.network.v1",VERSION=1;
  const UINT32_MAX=0xffffffff,MAX_ROWS=10000;
  const own=(x,k)=>Object.prototype.hasOwnProperty.call(x,k);
@@ -50,23 +51,48 @@ const NetworkCore=(()=>{
    Data.ORDER_KINDS.includes(o.kind)&&id(o.targetId)&&
    int(o.misses)&&o.misses<c.guaranteeAfter);
  }
+ const ACTIVE_KEYS=["clue","phase","preparation","approach","wave","score"];
  function validActive(a){
   if(a===null)return true;
-  if(!exact(a,["clue","phase","preparation","approach","wave","score"])||
+  if((!exact(a,ACTIVE_KEYS)&&!exact(a,ACTIVE_KEYS.concat("waveSummaries")))||
    !validClue(a.clue)||!PHASES.includes(a.phase)||
    (a.preparation!==null&&!a.clue.preparationIds.includes(a.preparation))||
    (a.approach!==null&&!a.clue.approaches.some(x=>x.id===a.approach))||
    !int(a.wave)||(a.score!==null&&(!int(a.score)||a.score>100)))return false;
+  if(own(a,"waveSummaries")&&["brief","approach"].includes(a.phase))return false;
   if(a.phase==="brief")return a.preparation===null&&a.approach===null&&a.wave===0&&a.score===null;
   if(a.phase==="approach")return a.preparation!==null&&a.approach===null&&a.wave===0&&a.score===null;
   const waves=a.clue.approaches.find(x=>x.id===a.approach)?.waves;
   if(a.preparation===null||!waves)return false;
+  if(own(a,"waveSummaries")){
+   if(!Array.isArray(a.waveSummaries)||a.waveSummaries.length!==a.wave||
+    !a.waveSummaries.every((s,i)=>Score.validSummary(s)&&s.wave===i))return false;
+   if(a.phase==="result"&&Score.finalScore(a.waveSummaries)!==a.score)return false;
+  }
   if(a.phase==="battle")return a.wave<waves&&a.score===null;
   return a.wave===waves&&a.score!==null;
  }
+ const COMPLETED_KEYS=["serial","clueId","templateId","level","regionId","score",
+  "rewardRef","kind","status"];
+ function validMasteryKey(key){
+  if(typeof key!=="string")return false;
+  const p=key.split("|");
+  return p.length===8&&id(p[0])&&int(Number(p[1]),1)&&String(Number(p[1]))===p[1]&&
+   int(Number(p[2]),1)&&String(Number(p[2]))===p[2]&&
+   (p[3]==="-"||id(p[3]))&&[p[4],p[5],p[6]].every(id)&&p[7]==="s1";
+ }
+ function masteryKey(c,approach){
+  return validClue(c)&&c.approaches.some(a=>a.id===approach)?
+   [c.templateId,c.templateRevision,c.level,c.modifierId??"-",
+    c.encounterRef,c.rewardRef,approach,"s1"].join("|"):null;
+ }
  function validCompleted(e){
-  return exact(e,["serial","clueId","templateId","level","regionId","score",
-   "rewardRef","kind","status"])&&int(e.serial,1)&&int(e.clueId,1)&&
+  if(!exact(e,COMPLETED_KEYS)&&!exact(e,COMPLETED_KEYS.concat("masteryKey")))return false;
+  if(own(e,"masteryKey")&&(!validMasteryKey(e.masteryKey)||
+   e.masteryKey.split("|")[0]!==e.templateId||
+   Number(e.masteryKey.split("|")[2])!==e.level||
+   e.masteryKey.split("|")[5]!==e.rewardRef))return false;
+  return int(e.serial,1)&&int(e.clueId,1)&&
    id(e.templateId)&&int(e.level,1)&&e.level<=1000&&id(e.regionId)&&
    int(e.score)&&e.score<=100&&id(e.rewardRef)&&["manual","simulated"].includes(e.kind)&&
    (e.kind!=="simulated"||e.score===0)&&e.status==="done";
@@ -75,6 +101,16 @@ const NetworkCore=(()=>{
   return plain(m)&&Object.keys(m).length<=MAX_ROWS&&
    Object.keys(m).every(k=>keys.test(k)&&int(m[k]));
  }
+ function validMasteryMap(m){
+  return plain(m)&&Object.keys(m).length<=MAX_ROWS&&
+   Object.entries(m).every(([key,value])=>{
+    if(!int(value)||value>100)return false;
+    if(validMasteryKey(key))return true;
+    const parts=key.split("|");
+    return parts.length===2&&/^[a-z0-9][a-z0-9._-]{0,79}$/.test(parts[0])&&
+     /^[1-9][0-9]*$/.test(parts[1]);
+   });
+ }
  function validState(s){
   if((!exact(s,STATE_KEYS)&&!exact(s,STATE_KEYS_WITH_OFFSET))||
    s.version!==VERSION||!validConfig(s.config)||
@@ -82,7 +118,7 @@ const NetworkCore=(()=>{
    !int(s.nextClueId,1)||!int(s.nextCompletionId,1)||
    !Array.isArray(s.board)||s.board.length>s.config.capacity+(s.active===null?1:0)||
    !s.board.every(validClue)||!validOrder(s.order,s.config)||!validActive(s.active)||
-   !validMap(s.mastery,/^[a-z0-9][a-z0-9._-]{0,79}\|[1-9][0-9]*$/)||
+   !validMasteryMap(s.mastery)||
    !validMap(s.influence,/^[a-z0-9][a-z0-9._-]{0,79}$/)||
    !validMap(s.threatIntel,/^[a-z0-9][a-z0-9._-]{0,79}$/)||
    !int(s.completedThrough??0)||!Array.isArray(s.completed)||s.completed.length>MAX_ROWS||
@@ -210,12 +246,23 @@ const NetworkCore=(()=>{
   const next=clone(s);next.active.phase="battle";next.active.approach=choice;
   return next;
  }
- function battleOutcome(s,clueId,wave,win,score=null){
+ function battleOutcome(s,clueId,wave,win,score=null,summary=null){
   if(!validState(s)||s.active?.phase!=="battle"||
    s.active.clue.id!==clueId||s.active.wave!==wave||typeof win!=="boolean")return null;
-  if(!win)return restoreClue(s);
+  if(!win){
+   if(score!==null||summary!==null)return null;
+   return restoreClue(s);
+  }
   const next=clone(s);
   const total=next.active.clue.approaches.find(a=>a.id===next.active.approach).waves;
+  if(summary!==null){
+   if(!Score.validSummary(summary)||summary.wave!==wave||
+    (wave>0&&!Array.isArray(next.active.waveSummaries)))return null;
+   const summaries=[...(next.active.waveSummaries??[]),clone(summary)];
+   if(summaries.length!==wave+1)return null;
+   next.active.waveSummaries=summaries;
+   if(wave+1===total?score!==Score.finalScore(summaries):score!==null)return null;
+  }else if(own(next.active,"waveSummaries"))return null; // cannot mix scored and legacy waves
   next.active.wave++;
   if(next.active.wave===total){
    if(!int(score)||score>100)return null;
@@ -241,10 +288,13 @@ const NetworkCore=(()=>{
   if(!validState(s)||s.active?.phase!=="result"||
    s.completed.length>=MAX_ROWS||s.nextCompletionId===Number.MAX_SAFE_INTEGER)return null;
   const next=clone(s),a=next.active,c=a.clue;
+  const tracked=Array.isArray(a.waveSummaries);
+  const key=tracked?masteryKey(c,a.approach):c.templateId+"|"+c.level;
+  if(!key)return null;
   next.completed.push({serial:next.nextCompletionId++,clueId:c.id,
    templateId:c.templateId,level:c.level,regionId:c.regionId,
-   score:a.score,rewardRef:c.rewardRef,kind:"manual",status:"done"});
-  const key=c.templateId+"|"+c.level;
+   score:a.score,rewardRef:c.rewardRef,kind:"manual",status:"done",
+   ...(tracked?{masteryKey:key}:{})});
   next.mastery[key]=Math.max(next.mastery[key]??0,a.score);
   const influence=next.influence[c.regionId]??0;
   if(influence===Number.MAX_SAFE_INTEGER)return null;
@@ -282,21 +332,33 @@ const NetworkCore=(()=>{
    JSON.stringify(t.preparationIds)===JSON.stringify(c.preparationIds)&&
    JSON.stringify(t.approaches)===JSON.stringify(c.approaches)&&
    t.levels.includes(c.level));
-  if(!template||!isMastered(s,c.templateId,c.level))return null;
+  if(!template)return null;
+  const masteredApproach=c.approaches.find(a=>isMastered(s,c,a.id));
+  if(!masteredApproach)return null;
+  const key=masteryKey(c,masteredApproach.id);
+  if(!key)return null;
   const next=clone(s);
   next.board.splice(i,1);
   next.completed.push({serial:next.nextCompletionId++,clueId:c.id,
    templateId:c.templateId,level:c.level,regionId:c.regionId,score:0,
-   rewardRef:c.rewardRef,kind:"simulated",status:"done"});
+   rewardRef:c.rewardRef,kind:"simulated",status:"done",masteryKey:key});
   const influence=next.influence[c.regionId]??0;
   if(influence===Number.MAX_SAFE_INTEGER)return null;
   next.influence[c.regionId]=influence+1;
   // Simulated completions never update mastery or threatIntel.
   return validState(next)?next:null;
  }
- function isMastered(s,templateId,level){
-  if(!validState(s)||!id(templateId)||!int(level,1))return false;
-  return (s.mastery[templateId+"|"+level]??-1)>=s.config.masteryScore;
+ function isMastered(s,templateOrClue,levelOrApproach){
+  if(!validState(s))return false;
+  // Read-only legacy overload; NEVER used by simulation or reward proof.
+  if(typeof templateOrClue==="string"&&id(templateOrClue)&&int(levelOrApproach,1))
+   return (s.mastery[templateOrClue+"|"+levelOrApproach]??-1)>=s.config.masteryScore;
+  const key=masteryKey(templateOrClue,levelOrApproach);
+  return !!key&&(s.mastery[key]??-1)>=Math.max(90,s.config.masteryScore);
+ }
+ function hasMasteryKey(s,key){
+  return validState(s)&&validMasteryKey(key)&&
+   (s.mastery[key]??-1)>=Math.max(90,s.config.masteryScore);
  }
  function load(storageProvider,{seed,now,config,catalog=Data.CATALOG}={}){
   const create=()=>fresh(seed,now,config,catalog);
@@ -343,6 +405,6 @@ const NetworkCore=(()=>{
  }
  return Object.freeze({KEY,VERSION,PHASES,validConfig,validClue,validState,
   fresh,setOrder,accrue,start,prepare,approach,battleOutcome,abandon,finish,
-  compactCompleted,isMastered,simulate,load,save});
+  compactCompleted,masteryKey,isMastered,hasMasteryKey,simulate,load,save});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=NetworkCore;

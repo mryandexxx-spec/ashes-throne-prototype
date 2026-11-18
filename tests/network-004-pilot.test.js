@@ -8,7 +8,7 @@ const Pilot=require("../network-pilot-session.js");
 const Adapter=require("../network-encounter-adapter.js");
 const Combat=vm.runInNewContext([
  "initiative-model.js","battle-rng.js","combat-status-core.js",
- "ability-data.js","combat-core.js"
+ "ability-data.js","network-score-core.js","combat-core.js"
 ].map(file).join("\n")+"\nCombatCore");
 const key=Pilot.KEY;
 const hero=()=>({id:"network-test-hero",name:"Пробный герой",side:"ally",
@@ -85,7 +85,9 @@ test("NET-004 one-wave real battle -> persisted result -> finish; no money",asyn
  const result=await pilot.complete(run.battle);
  assert.equal(result.ok,true);
  assert.equal(pilot.read().active.phase,"result");
- assert.equal(pilot.read().active.score,0,"pilot test score, NOT accepted balance");
+ assert.ok(pilot.read().active.score>=60&&pilot.read().active.score<=100,
+  "real S1 score, without any economy payouts");
+ assert.equal(pilot.read().active.waveSummaries.length,1);
  assert.equal((await pilot.complete(run.battle)).code,"INVALID_BATTLE_OUTCOME",
   "one battle cannot be accepted twice");
  assert.equal((await pilot.change("finish")).ok,true);
@@ -186,11 +188,11 @@ test("NET-004 fail closed on lock denial, corrupt pilot data, stale and uncertai
 });
 test("NET-004 feature gated, correct script order and build/cache version",()=>{
  const html=file("index.html"),js=file("game.js"),pkg=JSON.parse(file("package.json"));
- assert.ok(/^0\.3\.(188|189)$/.test(pkg.version));
+ assert.ok(/^0\.3\.(188|189|190)$/.test(pkg.version));
  assert.ok(html.includes('id="buildVersion">Прототип · v'+pkg.version+
-  ' · '+(pkg.version==="0.3.188"?"NET004PILOT":"NET005PILOT")));
+  ' · '+(pkg.version==="0.3.188"?"NET004PILOT":pkg.version==="0.3.189"?"NET005PILOT":"NET006ASCORE")));
  assert.ok(html.includes('id="net004Entry" data-screen="network" hidden'));
- const scripts=["network-data.js","network-core.js","network-encounter-data.js",
+ const scripts=["network-data.js","network-score-core.js","network-core.js","network-encounter-data.js",
  "network-encounter-adapter.js","network-pilot-session.js","network-pilot-ui.js","game.js"];
  const indices=scripts.map(name=>html.indexOf('src="'+name+'?v='+pkg.version+'"'));
  assert.ok(indices.every(n=>n>0));

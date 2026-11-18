@@ -18,12 +18,18 @@ function initial(){
  const first=Core.fresh(123,0,config,catalog);
  return Core.accrue(first,4000,catalog,unlocked);
 }
-function manual(s,score=3){
+function manual(s,quality=3){
  const c=s.board[0];
  let next=Core.start(s,c.id);
  next=Core.prepare(next,"survey");
  next=Core.approach(next,"quiet");
- next=Core.battleOutcome(next,c.id,0,true,score);
+ // A synthetic S1 summary tests the strict state machine; real battles are
+ // independently exercised via NetworkEncounterAdapter/CombatCore.
+ const great=quality===3;
+ const summary={version:1,wave:0,deployed:1,knockedOut:great?0:1,
+  allyActions:great?1:20,paceBudget:5,objectiveEnemyId:"npc-test",
+  objectiveDone:great,score:great?100:60};
+ next=Core.battleOutcome(next,c.id,0,true,summary.score,summary);
  return Core.finish(next);
 }
 function store(){
@@ -40,11 +46,11 @@ test("NET-005 only manual mastery at the same template AND level unlocks simulat
  const s=initial(),c=s.board[1];
  assert.equal(Core.simulate(s,c.id,catalog,unlocked),null,"no manual mastery");
  const low=manual(s,2);
- assert.equal(Core.isMastered(low,c.templateId,c.level),false);
+ assert.equal(Core.isMastered(low,c,"quiet"),false);
  assert.equal(Core.simulate(low,c.id,catalog,unlocked),null);
  const mastered=manual(s,3),target=mastered.board[0];
- assert.equal(Core.isMastered(mastered,target.templateId,target.level),true);
- assert.equal(Core.isMastered(mastered,target.templateId,target.level+1),false);
+ assert.equal(Core.isMastered(mastered,target,"quiet"),true);
+ assert.equal(Core.isMastered(mastered,{...target,level:target.level+1},"quiet"),false);
  const before=clone(mastered);
  const result=Core.simulate(mastered,target.id,catalog,unlocked);
  assert.ok(Core.validState(result));
@@ -145,8 +151,8 @@ test("NET-005 configured matching material links only: no fictitious farm source
 });
 test("NET-005 build is opt-in, versioned and no live reward/source table",()=>{
  const pkg=JSON.parse(read("package.json")),html=read("index.html");
- assert.equal(pkg.version,"0.3.189");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.189 · NET005PILOT'));
+ assert.equal(pkg.version,"0.3.190");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.190 · NET006ASCORE'));
  assert.ok(html.includes('id="net005OrderChoices"'));
  assert.ok(html.includes('id="net005FinderBack"'));
  assert.ok(read("network-pilot-ui.js").includes("Симуляция закрыта"));

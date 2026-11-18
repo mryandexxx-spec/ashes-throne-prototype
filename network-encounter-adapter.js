@@ -7,6 +7,7 @@ const NetworkEncounterAdapter=(()=>{
  "use strict";
  const Network=typeof NetworkCore!=="undefined"?NetworkCore:require("./network-core.js");
  const Data=typeof NetworkData!=="undefined"?NetworkData:require("./network-data.js");
+ const Score=typeof NetworkScoreCore!=="undefined"?NetworkScoreCore:require("./network-score-core.js");
  const Encounters=typeof NetworkEncounterData!=="undefined"?
   NetworkEncounterData:require("./network-encounter-data.js");
  const Npcs=typeof NpcEnemyData!=="undefined"?NpcEnemyData:require("./npc-enemy-data.js");
@@ -123,12 +124,15 @@ const NetworkEncounterAdapter=(()=>{
     ...p.options,...(leaderId===null?{}:{leaderId})
    });
    battle.networkBinding=p.binding;
+   if(!Score.attach(battle,p))return null;
    return {plan:p,battle};
   }catch(_){return null;}
  }
- // No scoring rule is invented here. NET-004/006 must supply the verified
- // per-wave/final score; an intermediate wave cannot award completion.
- function complete(state,battle,score=null,{registry=Encounters.REGISTRY,npc=Npcs}={}){
+ // Real S1 score is derived from a battle's persistent network-only death
+ // observations. An explicit numeric score is a legacy test-only path; it
+ // never creates S1 mastery and must not be used by NetworkPilotSession.
+ function complete(state,battle,legacyScore=undefined,
+  {registry=Encounters.REGISTRY,npc=Npcs}={}){
   const p=plan(state,{registry,npc});
   if(!p||!plain(battle)||!equal(battle.networkBinding,p.binding)||
    battle.active!==false||!["ally","enemy"].includes(battle.winner)||
@@ -147,10 +151,20 @@ const NetworkEncounterAdapter=(()=>{
   if(win?foes.some(f=>!(f.hp<=0))||!friends.some(f=>f.hp>0):
    friends.some(f=>f.hp>0))return null;
   const last=state.active.wave===p.totalNetworkWaves-1;
-  if(!win&&score!==null)return null;
-  if(win&&(last?(!integer(score)||score>100):score!==null))return null;
-  return Network.battleOutcome(state,p.binding.clueId,p.binding.wave,win,
-   win&&last?score:null);
+  if(legacyScore!==undefined){
+   if(!win&&legacyScore!==null)return null;
+   if(win&&(last?(!integer(legacyScore)||legacyScore>100):legacyScore!==null))
+    return null;
+   return Network.battleOutcome(state,p.binding.clueId,p.binding.wave,win,
+    win&&last?legacyScore:null);
+  }
+  if(!win)return Network.battleOutcome(state,p.binding.clueId,p.binding.wave,false);
+  const summary=Score.summarize(battle,p.binding.wave);
+  if(!summary)return null;
+  const scores=[...(state.active.waveSummaries??[]),summary];
+  const score=last?Score.finalScore(scores):null;
+  if(last&&score===null)return null;
+  return Network.battleOutcome(state,p.binding.clueId,p.binding.wave,true,score,summary);
  }
  return Object.freeze({validDefinition,validRegistry,plan,startBattle,complete});
 })();

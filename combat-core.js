@@ -219,6 +219,8 @@ const CombatCore = (() => {
     if(protector.hp===0){
       protector.guardHits=0;protector.weakenAttacks=0;
       battle.events.push({type:"death",targetId:protector.id});
+      if(typeof NetworkScoreCore!=="undefined")
+       NetworkScoreCore.observe(battle,"death",protector.id);
     }else if(Number.isFinite(insurance.afterMeter)&&insurance.afterMeter>0){
       protector.meter=Math.min(1000,protector.meter+insurance.afterMeter);
     }
@@ -477,6 +479,9 @@ const CombatCore = (() => {
     "wave-start","battle-end"]);
   function emit(battle, type, properties) {
     battle.events.push({type, ...properties});
+    // NET-006A: network-only compact KO/death history. No normal combat change.
+    if(type==="death"&&typeof NetworkScoreCore!=="undefined")
+     NetworkScoreCore.observe(battle,type,properties.targetId);
     // LIORA001: an emergency guard is a bounded reaction to damage,
     // not a new recursive action. Derived effects never emit again.
     if(type==="damage"){

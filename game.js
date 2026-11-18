@@ -1152,7 +1152,13 @@ function showScreen(id){
     ENEMIES.find(e=>e.id===def.priorityId)):null;
    const npcGoal=battleIsNpcChallengePilot?NpcChallengePilot.goal(activeChallengeId,
     selectedParty()[0]?.name):null;
-   objective.textContent=battleIsNetwork?"Победите текущую волну. Тестовый режим без экономических наград.":
+   const networkPlan=battleIsNetwork?NetworkEncounterAdapter.plan(networkPilot.read()):null;
+    objective.textContent=battleIsNetwork?(networkPlan?
+     "Оценка S1: первым победите отмеченного противника («"+
+      networkPlan.first[0].name+"»). Цель +10; "+
+      "темп +5 до "+Math.max(5,networkPlan.first.length*5)+
+      " действий союзников; без нокаутов +25. Без наград (проба).":
+     "Данные зацепки недоступны — бой нельзя оценить."):
     npcGoal|| (battleIsLoreRequired&&trial?
      trial.goalText:
      battleIsLoreRequired?"Победите, чтобы открыть следующий эпизод. Бой относится к игровой адаптации.":battleIsLoreTraining?(NPC_PILOT_ENABLED?"Пробный состав: человек, сарх и лаун-лекарь. Вне канона, без наград, энергии и влияния на хронику.":"Учебные противники. Без наград, энергии и влияния на хронику."):battleIsSignal?signalProgress.active?.assault==="quiet"?

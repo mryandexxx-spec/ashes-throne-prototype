@@ -33,7 +33,8 @@ const NetworkRewardCore=(()=>{
   return !!completed&&completed.status==="done"&&
    ["manual","simulated"].includes(completed.kind)&&
    (completed.kind!=="simulated"||
-    Network.isMastered(state,completed.templateId,completed.level))&&
+    (typeof completed.masteryKey==="string"&&
+     Network.hasMasteryKey(state,completed.masteryKey)))&&
    completed.rewardRef===sourceId;
  }
  function readWallet(storage,heroes){

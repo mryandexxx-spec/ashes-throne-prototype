@@ -10,7 +10,7 @@ const Adapter=require("../network-encounter-adapter.js");
 const NPC=require("../npc-enemy-data.js");
 const C=vm.runInNewContext([
  "initiative-model.js","battle-rng.js","combat-status-core.js",
- "ability-data.js","combat-core.js"
+ "ability-data.js","network-score-core.js","combat-core.js"
 ].map(read).join("\n")+"\nCombatCore");
 const cat=Data.PROPOSAL_CATALOG;
 const config=()=>({id:"net-003-test-only",capacity:3,intervalMs:1000,
@@ -150,7 +150,9 @@ test("NET-003 rejects forged or malformed combat results and arbitrary scores",(
  assert.equal(Adapter.complete(s,broken,3),null,"must actually defeat enemies");
  assert.equal(Adapter.complete(s,start.battle,3),null,"cannot settle unfinished battle");
  win(start.battle);
- assert.equal(Adapter.complete(s,start.battle),null,"final score required");
+ const scored=Adapter.complete(s,start.battle);
+ assert.ok(scored&&scored.active.score>=60&&scored.active.score<=100);
+ assert.equal(scored.active.waveSummaries.length,1,"S1 computed from actual combat");
  for(const score of [-1,1.5,101,NaN,"3"])
   assert.equal(Adapter.complete(s,start.battle,score),null);
  const good=Adapter.complete(s,start.battle,0);
@@ -215,7 +217,7 @@ test("NET-003 saved mid-battle checkpoint restores the SAME wave and seed",()=>{
  assert.equal(Adapter.complete(nextLoad.state,resumed.battle,3),null);
  const last=Adapter.startBattle(nextLoad.state,[hero()],{combat:C});
  win(last.battle);
- const completed=Adapter.complete(nextLoad.state,last.battle,3);
+ const completed=Adapter.complete(nextLoad.state,last.battle);
  assert.equal(Network.finish(completed).completed.length,1);
  assert.equal(db.has("ashes-throne.progress.v3"),false,"no wallet write");
 });

@@ -89,7 +89,11 @@ const NetworkPilotUI=(()=>{
     a.phase==="approach"?"Выберите подход. Тихий — одна волна, окружение — две отдельные волны.":
     "Контрольная точка: волна "+(a.wave+1)+"/"+
       a.clue.approaches.find(x=>x.id===a.approach).waves+
-      ". Состав героев и бой будут начаты заново при перезагрузке.";
+      ". Состав героев и бой будут начаты заново при перезагрузке."+
+      (a.wave>0&&!Array.isArray(a.waveSummaries)?
+       " Старый контрольный пункт без отчёта S1: отмените вылазку и начните заново. Исходная зацепка сохранится.":
+       a.waveSummaries?.length?" Предыдущая волна: "+
+        a.waveSummaries.at(-1).score+" баллов (S1).":"");
    const slot=$("net004Choices");slot.replaceChildren();
    if(a.phase==="brief")for(const id of a.clue.preparationIds)
     slot.append(button(prep[id]||id,"prepare",id));
@@ -97,14 +101,22 @@ const NetworkPilotUI=(()=>{
     slot.append(button((approach[choice.id]||choice.id)+" · "+choice.waves+
      (choice.waves===1?" волна":" волны"),"approach",choice.id));
    $("net004Fight").hidden=a.phase!=="battle";
-   $("net004Fight").disabled=busy||blocked;
+   $("net004Fight").disabled=busy||blocked||(a.wave>0&&!Array.isArray(a.waveSummaries));
    $("net004Cancel").disabled=busy||blocked;
   }
   if(s.active?.phase==="result"){
    $("net004ResultTitle").textContent="Зацепка пройдена";
-   $("net004ResultDetail").textContent="Пробная оценка: "+s.active.score+
-    " (технический placeholder; не утверждённый баланс). "+
-    "Завершение сохранит тестовый результат, но не начислит награду.";
+   if(!Array.isArray(s.active.waveSummaries)){
+    $("net004ResultDetail").textContent="Результат старого пилота: "+s.active.score+
+     ". Оценка S1 не вычислялась; освоение не перенесено. Наград нет.";
+   }else{
+    const stars=s.active.score>=90?3:s.active.score>=75?2:1;
+    $("net004ResultDetail").textContent="Оценка S1: "+s.active.score+
+     "/100 · "+stars+"★. Волны: "+s.active.waveSummaries.map(x=>
+      x.score+" ("+x.knockedOut+"/"+x.deployed+" нокаутов; "+
+       x.allyActions+" действий)").join(" → ")+
+     ". Тестовые цели и норматив действий временные. Награды не начисляются.";
+   }
    $("net004Finish").disabled=blocked||busy;
   }
   $("net004History").replaceChildren();

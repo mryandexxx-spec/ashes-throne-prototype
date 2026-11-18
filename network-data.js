@@ -120,7 +120,7 @@ const NetworkData=(()=>{
     preparationIds:["survey","cover"],approaches:[
      {id:"quiet",waves:1},{id:"cordon",waves:2}],
     modifierIds:[],materialId,heroId:null,
-    threatTag:null,rewardRef:"reward-"+ref,encounterRef:"encounter-"+ref
+    threatTag:"weekly-gardens",rewardRef:"reward-"+ref,encounterRef:"encounter-"+ref
    });
   }
   for(const heroId of heroIds){
@@ -131,7 +131,7 @@ const NetworkData=(()=>{
     preparationIds:["survey","cover"],approaches:[
      {id:"quiet",waves:1},{id:"cordon",waves:2}],
     modifierIds:[],materialId:null,heroId,
-    threatTag:null,rewardRef:"reward-"+ref,encounterRef:"encounter-"+ref
+    threatTag:"weekly-gardens",rewardRef:"reward-"+ref,encounterRef:"encounter-"+ref
    });
   }
  }

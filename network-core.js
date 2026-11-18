@@ -13,7 +13,7 @@ const NetworkCore=(()=>{
  const exact=(x,keys)=>plain(x)&&Object.keys(x).length===keys.length&&
   Object.keys(x).every(k=>keys.includes(k));
  const int=(n,min=0)=>Number.isSafeInteger(n)&&n>=min;
- const id=x=>typeof x==="string"&&/^[a-z0-9][a-z0-9._-]{0,79}$/.test(x);
+ const id=x=>typeof x==="string"&&/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/.test(x);
  const maybeId=x=>x===null||id(x);
  const unique=xs=>new Set(xs).size===xs.length;
  const clone=x=>JSON.parse(JSON.stringify(x));

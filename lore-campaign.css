@@ -312,3 +312,22 @@
 #campaignLoreContent .lore-list-node.lore-state-battle-pending{border-color:#a9844a}
 #campaignLoreContent .lore-list-node.lore-state-battle-pending small{color:#ffdfad}
 #campaignLoreContent .lore-legend .lore-state-battle-pending{color:#ffdfad}
+
+
+/* LC-008D: first-act claim is a compact map card, not a new fullscreen overlay. */
+#campaignLoreContent .lore-act-one-reward{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 12px;padding:10px 12px;border:1px solid #926f45;border-radius:9px;background:linear-gradient(115deg,#282b2c,#171d23);color:#f1e3c9;min-width:0}
+#campaignLoreContent .lore-act-one-reward__copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+#campaignLoreContent .lore-act-one-reward__copy strong{font-size:13px;color:#f3d5a2}
+#campaignLoreContent .lore-act-one-reward__copy small{font-size:11px;line-height:1.35;overflow-wrap:anywhere}
+#campaignLoreContent .lore-act-one-reward__copy span{font-size:11px;color:#c9bfae;line-height:1.35}
+#campaignLoreContent .lore-act-one-reward__copy p{font-size:12px;margin:3px 0 0;color:#f3d5a2}
+#campaignLoreContent .lore-act-one-reward button{flex:0 0 auto;min-height:44px;min-width:150px;padding:7px 10px;white-space:normal}
+#campaignLoreContent .lore-act-one-reward button:disabled{opacity:.65}
+@media (orientation:landscape) and (max-height:540px){
+ #campaignLoreContent .lore-act-one-reward{padding:7px 10px;gap:8px}
+ #campaignLoreContent .lore-act-one-reward button{min-width:128px}
+}
+@media (max-width:600px){
+ #campaignLoreContent .lore-act-one-reward{flex-wrap:wrap}
+ #campaignLoreContent .lore-act-one-reward button{width:100%;min-width:0}
+}

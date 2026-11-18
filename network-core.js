@@ -278,6 +278,9 @@ const NetworkCore=(()=>{
    t.type===c.type&&t.rewardRef===c.rewardRef&&
    t.encounterRef===c.encounterRef&&t.materialId===c.materialId&&
    t.heroId===c.heroId&&t.threatTag===c.threatTag&&
+   (c.modifierId===null||t.modifierIds.includes(c.modifierId))&&
+   JSON.stringify(t.preparationIds)===JSON.stringify(c.preparationIds)&&
+   JSON.stringify(t.approaches)===JSON.stringify(c.approaches)&&
    t.levels.includes(c.level));
   if(!template||!isMastered(s,c.templateId,c.level))return null;
   const next=clone(s);

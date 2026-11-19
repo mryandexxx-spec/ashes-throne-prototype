@@ -182,6 +182,7 @@ const NetworkPilotUI=(()=>{
    if(action!=="fight"&&action!=="finder-back")el.disabled=blocked||busy||
     (action==="finish"&&s.active?.phase!=="result");
   });
+  if(typeof WeeklyThreatUI!=="undefined")WeeklyThreatUI.render();
  }
  async function change(action,value){
   if(!session||session.isBlocked())return;

@@ -17,7 +17,7 @@ async function run(name,engine,viewport){
   await page.goto(origin+"?networkPilot=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   assert.match(await page.locator("#buildVersion").innerText(),
-   /v0\.3\.(188 · NET004PILOT|189 · NET005PILOT|190 · NET006ASCORE|191 · NET007PROG|192 · NET007LIVE)/);
+   /v0\.3\.(188 · NET004PILOT|189 · NET005PILOT|190 · NET006ASCORE|191 · NET007PROG|192 · NET007LIVE|193 · NET008AWEEKLY)/);
   assert.equal(await page.locator("#net004Entry").getAttribute("hidden"),null);
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();

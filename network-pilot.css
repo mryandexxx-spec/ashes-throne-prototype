@@ -74,3 +74,21 @@
  .net005-order{padding:5px 8px}
  .net005-order-choices{margin-top:5px;gap:5px}
 }
+
+/* NET-008A: weekly command board; no WebGL assets or new scroll container. */
+.net008a-panel{
+ min-width:0;display:grid;gap:7px;padding:12px 14px;
+ border:1px solid rgba(219,165,91,.75);border-radius:10px;
+ background:linear-gradient(125deg,rgba(60,43,37,.95),rgba(21,24,30,.96));
+ box-shadow:inset 0 1px rgba(255,231,185,.16);
+}
+.net008a-panel h3{margin:0;color:#f4d5aa}
+.net008a-panel p{font-size:12px;line-height:1.45;margin:0;overflow-wrap:anywhere}
+.net008a-panel summary{cursor:pointer;padding:6px 0;min-height:30px;color:#eec58f}
+.net008a-panel details{min-width:0;overflow-wrap:anywhere}
+.net008a-panel .net004-actions{margin:2px 0;display:flex;gap:8px;flex-wrap:wrap}
+.net008a-panel .net004-actions button{flex:0 1 auto;min-width:145px}
+@media(max-height:430px) and (orientation:landscape){
+ .net008a-panel{padding:7px 9px;gap:4px}
+ .net008a-panel .net004-actions button{min-height:44px}
+}

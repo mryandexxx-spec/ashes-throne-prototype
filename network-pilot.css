@@ -278,9 +278,9 @@
 .net004-screen .netux-tabs .netux-training{font-size:11px}
 .net004-screen .netux-clues-view{display:flex;flex:1;flex-direction:column;overflow:hidden;gap:5px}
 .net004-screen #net004Board{display:flex;flex:1;flex-direction:column;min-height:0;gap:5px}
-.net004-screen .netux-board-heading{flex:none;min-height:28px;flex-wrap:nowrap}
+.net004-screen .netux-board-heading{flex:none;min-height:44px;flex-wrap:nowrap}
 .net004-screen .netux-board-heading h3{font-size:15px}
-.net004-screen #net004Refresh{min-height:28px;padding:3px 11px;font-size:11px;flex:none}
+.net004-screen #net004Refresh{min-height:44px;padding:3px 11px;font-size:11px;flex:none}
 .net004-screen #net004Clues{
  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:minmax(82px,auto);
  flex:1;min-height:0;min-width:0;gap:7px;align-content:start;
@@ -353,5 +353,5 @@
 }
 @media(orientation:landscape) and (max-height:430px) and (min-width:731px){
  .net004-screen .netux-region-engraving{display:none}
- .net004-screen .netux-history{display:none}
+ .net004-screen .netux-history{max-height:45px;overflow-y:auto}
 }

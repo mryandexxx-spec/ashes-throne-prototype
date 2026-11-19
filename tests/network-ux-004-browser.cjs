@@ -30,7 +30,7 @@ async function check(name,engine,viewport){
     tabs:rect("#network .netux-tabs"),action:rect("#network .netux-board-selection"),
     picks:[...document.querySelectorAll("#net004Clues .netux-clue-pick")]
      .map(el=>({height:el.getBoundingClientRect().height,width:el.getBoundingClientRect().width})),
-    controls:[...document.querySelectorAll("#network .netux-tabs button:not([hidden]), #netuxStartSelected, #netuxSimulateSelected, #netuxThreatShortcut, #netuxOrderDetails summary")]
+    controls:[...document.querySelectorAll("#network .netux-tabs button:not([hidden]), #netuxStartSelected, #netuxSimulateSelected, #netuxThreatShortcut, #netuxOrderDetails summary, #net004Refresh")]
      .filter(el=>!el.hidden).map(el=>el.getBoundingClientRect().height)
    };
   });
@@ -40,7 +40,7 @@ async function check(name,engine,viewport){
   assert.ok(geom.board.width>300&&geom.board.height>=90,"board occupies useful landscape space");
   assert.ok(geom.action.bottom<=viewport.height+1,"primary action remains visible");
   assert.ok(geom.picks.every(rect=>rect.height>=44&&rect.width>=44),"cards have touch targets");
-  assert.ok(geom.controls.every(h=>h>=28),"refresh may be compact; primary touch controls remain 44");
+  assert.ok(geom.controls.every(h=>h>=44),"all board controls need 44px touch targets");
   assert.ok((await page.locator("#netuxOrderDetails").evaluate(x=>x.open))===false,
    "order options should be collapsed by default");
   await page.locator("#netuxOrderDetails summary").click();

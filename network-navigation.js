@@ -40,7 +40,7 @@ const NetworkNavigation=(()=>{
   if(!mounted){
    root.addEventListener("click",event=>{
     const shortcut=event.target.closest?.("button[data-net-quick]");
-    if(shortcut&&root.contains(shortcut)&&!shortcut.hidden&&!shortcut.disabled){
+    if(shortcut?.dataset?.netQuick==="threat"&&root.contains(shortcut)&&!shortcut.hidden&&!shortcut.disabled){
      select(shortcut.dataset.netQuick);return;
     }
     const button=event.target.closest?.("button[data-net-view]");

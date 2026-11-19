@@ -15,7 +15,7 @@ async function run(name,engine,viewport){
  try{
   await page.goto(origin+"?networkPilot=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function");
-  assert.match(await page.locator("#buildVersion").innerText(),/v0\.3\.(190 · NET006ASCORE|192 · NET007LIVE|193 · NET008AWEEKLY|194 · ARENAVIS001|195 · NETUXFIX001|196 · NETUXNAV002|197 · NETUXDAILY003)/);
+  assert.match(await page.locator("#buildVersion").innerText(),/v0\.3\.(190 · NET006ASCORE|192 · NET007LIVE|193 · NET008AWEEKLY|194 · ARENAVIS001|195 · NETUXFIX001|196 · NETUXNAV002|197 · NETUXDAILY003|198 · NETUXBOARD004)/);
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
   await page.locator('#home .hq-bottom [data-screen="network"]').click();
@@ -28,8 +28,9 @@ async function run(name,engine,viewport){
   }));
   assert.equal(before.board,3);
   assert.equal(before.network,null);
-  assert.equal(await page.locator('#net004Clues [data-net-action="simulate"]').count(),3);
-  assert.equal(await page.locator('#net004Clues [data-net-action="simulate"]:disabled').count(),3);
+  assert.equal(await page.locator("#net004Clues .netux-clue-pick").count(),3);
+  assert.equal(await page.locator("#netuxSimulateSelected").isDisabled(),true);
+  await page.locator("#netuxOrderDetails summary").click();
   const desired=page.locator('[data-net-action="order"][data-net-value="type:trophies"]');
   await desired.click();
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem(
@@ -54,10 +55,11 @@ async function run(name,engine,viewport){
   await page.locator('#home .hq-bottom [data-screen="network"]').click();
   await page.locator("#network").waitFor({state:"visible"});
   assert.match(await page.locator("#net005OrderStatus").innerText(),/Трофеи/);
+  await page.locator("#netuxOrderDetails summary").click();
   await page.locator('[data-net-action="clear-order"]').click();
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem(
    "ashes-throne.network.pilot.v1"))?.order===null);
-  assert.equal(await page.locator('#net004Clues [data-net-action="simulate"]:disabled').count(),3);
+  assert.equal(await page.locator("#netuxSimulateSelected").isDisabled(),true);
   // Use the real itemized Gear Finder UI, not direct screen switching.
   assert.equal(await page.evaluate(()=>openHeroDetail("ren",0)),true);
   await page.locator("#heroDetail").waitFor({state:"visible"});

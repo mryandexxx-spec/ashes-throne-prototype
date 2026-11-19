@@ -3,7 +3,7 @@
  */
 const NetworkPilotUI=(()=>{
  "use strict";
- let session=null,onSquad=null,onReturnToFinder=null,mounted=false,notice="",fromFinder=false;
+ let session=null,onSquad=null,onReturnToFinder=null,mounted=false,notice="",fromFinder=false,selectedClueId=null;
  const $=id=>document.getElementById(id);
  const isLive=()=>session?.isLive?.()===true;
  const heroLabels=Object.freeze({ren:"Рен",nada:"Нада",liora:"Лиора",art:"Арт",sava:"Сава"});
@@ -82,6 +82,25 @@ const NetworkPilotUI=(()=>{
   el.dataset.netAction=action;if(value!==undefined)el.dataset.netValue=String(value);
   return el;
  }
+ function updateSelection(s,blocked,busy){
+  const selected=s?.board?.find(c=>c.id===selectedClueId);
+  const title=$("netuxSelectedTitle"),start=$("netuxStartSelected"),sim=$("netuxSimulateSelected");
+  if(title)title.textContent=selected?clueTitle(selected)+" · ур. "+selected.level:
+   "Нет доступных донесений";
+  if(start)start.disabled=!selected||blocked||busy;
+  if(sim){
+   const mastered=selected&&!blocked&&session.canSimulate(selected.id);
+   sim.disabled=!mastered||busy;
+   sim.textContent=mastered?"Симулировать":"Не освоено";
+   sim.title=mastered?"Симулировать выбранную освоенную зацепку":
+    "Симуляция откроется после освоения в ручном бою";
+  }
+  $("net004Clues")?.querySelectorAll(".net004-clue").forEach(item=>{
+   const pressed=Number(item.querySelector("[data-net-value]")?.dataset.netValue)===selectedClueId;
+   item.dataset.selected=String(pressed);
+   item.querySelector("button")?.setAttribute("aria-pressed",String(pressed));
+  });
+ }
  function render(){
   if(!mounted)return;
   const s=session.read(),blocked=session.isBlocked(),busy=session.isBusy();
@@ -95,9 +114,9 @@ const NetworkPilotUI=(()=>{
   result.hidden=s?.active?.phase!=="result";
   $("net005FinderBack").hidden=!fromFinder;
   if(!s){$("net004Meta").textContent="Ожидание сохранения…";return;}
-  $("net004Meta").textContent="Сады над пропастью · "+s.board.length+"/"+s.config.capacity+
-   " зацепок · влияние: "+(s.influence["gardens-over-abyss"]??0)+
-   (isLive()?" · новые зацепки каждые 6 часов":" (проба)");
+  $("net004Meta").textContent="Донесения "+s.board.length+"/"+s.config.capacity+
+   (isLive()?" · каждые "+Math.round(s.config.intervalMs/3600000)+" ч":" · проба");
+  $("netuxInfluence").textContent="Влияние: "+(s.influence["gardens-over-abyss"]??0);
   const collect=$("net007Collect");
   if(collect){const pending=session.pendingCount?.()??0;
    collect.hidden=!isLive()||pending===0;
@@ -128,23 +147,36 @@ const NetworkPilotUI=(()=>{
    control.setAttribute("aria-pressed",String(s.order?.kind===o.kind&&s.order?.targetId===o.targetId));
    orders.append(control);
   }
-  $("net004Clues").replaceChildren();
-  if(!s.board.length)$("net004Clues").append(line("Новых донесений пока нет."));
+  const cluesEl=$("net004Clues");cluesEl.replaceChildren();
+  if(!s.board.length)cluesEl.append(line("Новых донесений пока нет."));
+  if(!s.board.some(c=>c.id===selectedClueId))selectedClueId=s.board[0]?.id??null;
   for(const clue of s.board){
    const el=document.createElement("article");el.className="net004-clue";
-   el.append(line(clueTitle(clue),"h3"),
-    line((types[clue.type]||clue.type)+" · Уровень "+clue.level+
-     " · Зацепка №"+clue.id),
-    line(isLive()?rewardText(clue.rewardRef):"Пробный бой. Реальные награды не назначены."));
-   const start=button("Изучить", "start",clue.id);start.disabled=busy||blocked;
-   el.append(start);
-   const mastered=session.canSimulate(clue.id);
-   const sim=button(mastered?(isLive()?"Симулировать · полная награда":
-    "Симулировать · без выплат"):
-    "Симуляция закрыта · требуется освоение","simulate",clue.id);
-   sim.disabled=blocked||busy||!mastered;
-   el.append(sim);$("net004Clues").append(el);
+   el.dataset.selected=String(clue.id===selectedClueId);
+   const choice=button("","pick",clue.id);choice.className="netux-clue-pick";
+   choice.setAttribute("aria-pressed",String(clue.id===selectedClueId));
+   choice.disabled=busy||blocked;
+   const top=document.createElement("div");top.className="netux-clue-top";
+   const kind=line(types[clue.type]||clue.type,"span");kind.className="netux-clue-kind";
+   const lvl=line("Ур. "+clue.level,"span");lvl.className="netux-clue-level";
+   top.append(kind,lvl);
+   const title=line(clueTitle(clue),"strong");
+   const fullReward=isLive()?rewardText(clue.rewardRef):
+    "Пробный бой. Реальные награды не назначены.";
+   const reward=line(fullReward,"span");reward.className="netux-clue-reward";
+   const tags=document.createElement("div");tags.className="netux-clue-tags";
+   if(session.canSimulate(clue.id))tags.append(line("Освоено","span"));
+   if(clue.threatTag){
+    const threat=line("След угрозы","span");threat.className="netux-threat-tag";
+    tags.append(threat);
+   }
+   choice.title=clueTitle(clue)+" · "+fullReward;
+   choice.setAttribute("aria-label",clueTitle(clue)+", уровень "+clue.level+
+    ". "+fullReward+(session.canSimulate(clue.id)?". Освоено":"")+
+    (clue.threatTag?". След угрозы":""));
+   choice.append(top,title,reward,tags);el.append(choice);cluesEl.append(el);
   }
+  updateSelection(s,blocked,busy);
   if(s.active&&s.active.phase!=="result"){
    const a=s.active;
    $("net004ActiveTitle").textContent=clueTitle(a.clue);
@@ -194,7 +226,7 @@ const NetworkPilotUI=(()=>{
   // Do not overwrite mastery/order-specific disabled states set above.
   document.querySelectorAll("#network [data-net-action]").forEach(el=>{
    const action=el.dataset.netAction;
-   if(["start","simulate","order","clear-order"].includes(action))return;
+   if(["start","simulate","order","clear-order","start-selected","simulate-selected","pick"].includes(action))return;
    if(action!=="fight"&&action!=="finder-back")el.disabled=blocked||busy||
     (action==="finish"&&s.active?.phase!=="result");
   });
@@ -221,6 +253,20 @@ const NetworkPilotUI=(()=>{
    const b=event.target.closest?.("[data-net-action]");
    if(!b||!$("network").contains(b))return;
    const action=b.dataset.netAction;
+   if(b.disabled)return;
+   if(action==="pick"){
+    const id=Number(b.dataset.netValue),state=session.read();
+    if(state?.board.some(c=>c.id===id)){
+     selectedClueId=id;updateSelection(state,session.isBlocked(),session.isBusy());
+    }
+    return;
+   }
+   if(action==="start-selected"||action==="simulate-selected"){
+    const state=session.read();
+    if(!state?.board.some(c=>c.id===selectedClueId))return;
+    void change(action==="start-selected"?"start":"simulate",selectedClueId);
+    return;
+   }
    if(action==="fight"){if(session.isReady()&&session.read()?.active?.phase==="battle")onSquad();return;}
    if(action==="collect"){void collectRewards();return;}
    if(action==="finder-back"){

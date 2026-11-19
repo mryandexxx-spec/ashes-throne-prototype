@@ -11,6 +11,11 @@ const NetworkNavigation=(()=>{
   clues.hidden=currentView!=="clues";
   threat.hidden=currentView!=="threat";
   if(daily)daily.hidden=currentView!=="daily";
+  const quick=$("netuxThreatShortcut");
+  if(quick){
+   quick.hidden=!threatAvailable;
+   quick.setAttribute("aria-pressed",String(currentView==="threat"));
+  }
   root.querySelectorAll("[data-net-view]").forEach(button=>{
    const active=button.dataset.netView===currentView;
    button.setAttribute("aria-pressed",String(active));
@@ -34,6 +39,10 @@ const NetworkNavigation=(()=>{
   if(!root)return false;
   if(!mounted){
    root.addEventListener("click",event=>{
+    const shortcut=event.target.closest?.("button[data-net-quick]");
+    if(shortcut&&root.contains(shortcut)&&!shortcut.hidden&&!shortcut.disabled){
+     select(shortcut.dataset.netQuick);return;
+    }
     const button=event.target.closest?.("button[data-net-view]");
     if(!button||!root.contains(button)||button.hidden||button.disabled)return;
     select(button.dataset.netView);

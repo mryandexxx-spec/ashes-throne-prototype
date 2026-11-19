@@ -16,6 +16,8 @@ test("NET-UX-004: compact board reuses live engine, ids and view navigation",()=
  assert.match(html,/data-net-view="threat"/);
  assert.match(html,/data-net-action="start-selected"/);
  assert.match(html,/data-net-action="simulate-selected"/);
+ assert.match(html,/id="netuxThreatShortcut" data-net-quick="threat"/);
+ assert.match(read("network-navigation.js"),/shortcut\.dataset\.netQuick/);
  assert.match(js,/selectedClueId=/);
  assert.match(js,/function updateSelection\(/);
  assert.match(js,/if\(action==="pick"\)/);

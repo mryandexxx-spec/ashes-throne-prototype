@@ -4498,3 +4498,10 @@ body:has(#storyDemo.active)::before{
 @media (orientation:landscape) and (max-height:390px){
  .battle-screen .fighter-inspect-abilities{font-size:11px;line-height:1.4;margin-top:6px;padding-top:6px}
 }
+
+/* NET-UX-001: keep the scoring hint within the top HUD on short landscape.
+   Full scoring rules belong in briefing (NET-UX-006), not over fighter names. */
+.battle-screen #battleChallengeGoal:not([hidden]){
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+ max-height:2.4em;overflow:hidden;
+}

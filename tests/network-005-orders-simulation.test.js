@@ -151,9 +151,9 @@ test("NET-005 configured matching material links only: no fictitious farm source
 });
 test("NET-005 build is opt-in, versioned and no live reward/source table",()=>{
  const pkg=JSON.parse(read("package.json")),html=read("index.html");
- assert.match(pkg.version,/^0\.3\.(192|193|194|195|196)$/);
+ assert.match(pkg.version,/^0\.3\.(192|193|194|195|196|197)$/);
  assert.ok(html.includes('id="buildVersion">Прототип · v'+pkg.version+
-   ' · '+(pkg.version==="0.3.193"?"NET008AWEEKLY":pkg.version==="0.3.194"?"ARENAVIS001":pkg.version==="0.3.195"?"NETUXFIX001":pkg.version==="0.3.196"?"NETUXNAV002":"NET007LIVE")));
+   ' · '+(pkg.version==="0.3.193"?"NET008AWEEKLY":pkg.version==="0.3.194"?"ARENAVIS001":pkg.version==="0.3.195"?"NETUXFIX001":pkg.version==="0.3.196"?"NETUXNAV002":pkg.version==="0.3.197"?"NETUXDAILY003":"NET007LIVE")));
  assert.ok(html.includes('id="net005OrderChoices"'));
  assert.ok(html.includes('id="net005FinderBack"'));
  assert.ok(read("network-pilot-ui.js").includes("Симуляция закрыта"));

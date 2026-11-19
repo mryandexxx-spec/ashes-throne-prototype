@@ -102,7 +102,7 @@
 
 /* NET-UX-002: one lightweight navigation rail; the two modes retain state. */
 .netux-tabs{
- display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;
  gap:7px;align-items:stretch;min-width:0;
 }
 .net004-screen .netux-tabs button{
@@ -129,10 +129,88 @@
 .netux-clues-view{display:grid;gap:9px;min-width:0}
 @media(max-width:650px){
  .netux-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
- .net004-screen .netux-tabs .netux-training{grid-column:1/-1}
 }
 @media(max-height:430px) and (orientation:landscape){
  .netux-tabs{gap:5px}
  .net004-screen .netux-tabs button{padding:6px 8px}
  .netux-clues-view{gap:6px}
 }
+
+/* NET-UX-003: daily tasks are a third network view, not a second reward engine. */
+#netuxCluesPanel[hidden],#netuxDailyPanel[hidden]{display:none!important}
+#network:has(#netuxDailyPanel:not([hidden])) #net004Notice,
+#network:has(#netuxDailyPanel:not([hidden])) #net007Collect{display:none!important}
+.netux-daily-badge:not([hidden]){
+ display:inline-grid;place-items:center;min-width:19px;min-height:19px;
+ margin-left:5px;padding:0 5px;border-radius:20px;
+ color:#241b13;background:#e7c38b;font-size:11px
+}
+.netux-daily-panel{
+ display:grid;gap:8px;min-width:0;padding:12px;
+ border:1px solid #bb925c77;border-radius:11px;
+ background:linear-gradient(155deg,#322a2bfa,#1b1c22fa);
+ box-shadow:inset 0 1px #edc68a42,0 10px 25px #0808098a
+}
+.netux-daily-head{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0}
+.netux-daily-head>div{min-width:0}
+.netux-daily-head h3{margin:0;font:600 clamp(18px,2.5vw,24px)/1.15 Georgia,serif;color:#f7e5c6}
+.netux-daily-head p{margin:4px 0 0;font-size:11px;color:#dfc3a0}
+.netux-daily-head #netuxDailyProgress{color:#f2d7a8;font-weight:650}
+.net004-screen #netuxDailyClaimAll{
+ min-height:44px;min-width:122px;padding:7px 11px;flex-shrink:0;
+ background:linear-gradient(160deg,#dabb84,#a97c47);color:#241b14;
+ border:1px solid #f4d59a;border-radius:8px;font-weight:750
+}
+.net004-screen #netuxDailyClaimAll:disabled{opacity:.52;filter:saturate(.5)}
+.netux-daily-hint{margin:0;font-size:11px;color:#d5bf9f;line-height:1.3}
+.netux-daily-list{
+ display:grid;gap:7px;min-width:0;max-height:min(410px,calc(100dvh - 245px));
+ min-height:70px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+ -webkit-overflow-scrolling:touch;touch-action:pan-y;padding:2px 3px 5px 0
+}
+.netux-daily-task{
+ display:grid;grid-template-columns:minmax(0,1fr) auto;
+ align-items:center;gap:6px 13px;min-width:0;padding:9px 11px;
+ border:1px solid #bb93634d;border-radius:8px;
+ background:linear-gradient(120deg,#38302fff,#242228ff)
+}
+.netux-daily-task>div:first-child{min-width:0}
+.netux-daily-task strong{display:block;color:#f7e5c7;font:600 14px/1.25 Georgia,serif;overflow-wrap:anywhere}
+.netux-daily-task small{display:block;margin-top:4px;color:#ddc9ad;font-size:10px;line-height:1.3;overflow-wrap:anywhere}
+.netux-daily-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;min-width:0}
+.net004-screen .netux-daily-actions button{
+ min-height:44px;min-width:96px;max-width:100%;padding:7px 10px;
+ border:1px solid #c49b66;border-radius:8px;
+ background:linear-gradient(155deg,#493c34,#28262c);color:#f2d9ae;
+ font-size:12px;white-space:normal;touch-action:manipulation
+}
+.net004-screen .netux-daily-actions button[data-daily-claim]:not(:disabled){
+ background:linear-gradient(155deg,#e1be82,#ad7f48);color:#231912;font-weight:750
+}
+.net004-screen .netux-daily-actions button:disabled{opacity:.58}
+#netuxDailyTaskNotice{min-height:1.2em;margin:0;color:#f3d19c;font-size:11px;overflow-wrap:anywhere}
+.net004-screen #netuxDailyPanel button:focus-visible,.netux-daily-return:focus-visible,
+.netux-daily-list:focus-visible{outline:3px solid #ffe1a2;outline-offset:2px}
+.netux-daily-return:not([hidden]){
+ min-height:44px;min-width:130px;flex:0 0 auto;
+ padding:8px 12px;border:1px solid #c99e65;border-radius:8px;
+ color:#ffebc9;background:linear-gradient(155deg,#554031,#29262b);
+ font:650 12px/1.2 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ touch-action:manipulation
+}
+#netuxDailyReturn[hidden]{display:none!important}
+.screen>.netux-daily-return:not([hidden]){margin:0 0 10px}
+@media(orientation:landscape) and (max-height:430px){
+ .netux-daily-panel{gap:6px;padding:8px 10px}
+ .netux-daily-list{max-height:calc(100dvh - 218px)}
+ .netux-daily-head h3{font-size:17px}
+ .netux-daily-head p,.netux-daily-hint{font-size:10px}
+ .netux-daily-task{padding:6px 9px}
+ .netux-daily-task strong{font-size:12px}
+ .netux-daily-task small{font-size:10px}
+}
+@media(max-width:650px){
+ .netux-daily-task{grid-template-columns:minmax(0,1fr)}
+ .netux-daily-actions{justify-content:flex-start}
+}
+@media(prefers-reduced-motion:reduce){.netux-daily-panel *{transition:none!important}}

@@ -403,74 +403,140 @@ function renderDailyClaimBadge(){
  button.setAttribute("aria-label","Задания дня"+
   (count?" · наград к получению: "+count:" · нет незабранных наград"));
 }
-function renderDailyTasks(){
- const list=$("#dailyTaskList"),notice=$("#dailyTaskNotice");
- if(!list)return;
- const day=dailyDay();
- if(progress.saveVersion!==3||saveBlocked||!day||!DailyCore.today(progress,day)){
-  list.textContent="Ежедневные задания недоступны: проверь сохранение или дату на устройстве.";
-  const all=$("#dailyClaimAll");if(all)all.disabled=true;
-  if(notice)notice.textContent="Награды не начисляются, пока состояние недоступно.";
-  return;
- }
- $("#dailyDay").textContent="День: "+day;
- const all=$("#dailyClaimAll");
- if(all)all.disabled=DailyCore.unclaimedCount(progress,day)===0;
- list.replaceChildren();
- for(const task of DailyCore.TASKS){
-  const row=document.createElement("div");row.className="daily-task";
-  const label=document.createElement("div");
-  const title=document.createElement("strong");title.textContent=task.label;
-  const detail=document.createElement("small");
-  const done=progress.daily.counts[task.id]===1,claimed=progress.daily.claimed.includes(task.id);
-  const materials=Object.entries(task.materials).map(([key,qty])=>
-   "+"+qty+" "+(GearData.MATERIAL_LABELS[key]||key)).join(" · ");
-  const books=Object.entries(task.skillMaterials||{}).map(([key,qty])=>
-   "+"+qty+" "+(SkillCore.LABELS[key]||key)).join(" · ");
-  detail.textContent=(done?"Выполнено":"Не выполнено")+" · +"+task.currency+
-   " валюты · +"+task.xp+" Account XP · "+materials+(books?" · "+books:"");
-  label.append(title,detail);
-  const button=document.createElement("button");button.type="button";
-  button.className=claimed?"ghost":"primary";
-  button.textContent=claimed?"Получено":done?"Получить":"Выполни задание";
-  button.disabled=claimed||!done;button.dataset.dailyClaim=task.id;
-  row.append(label,button);list.append(row);
+// NET-UX-003: the network and legacy screen render the SAME DailyCore ledger.
+// Navigation never records a task, creates a reward or changes network.v1.
+let dailyNavigationOrigin=false;
+function dailyNotify(message){
+ for(const id of ["dailyTaskNotice","netuxDailyTaskNotice"]){
+  const notice=$("#"+id);if(notice)notice.textContent=message;
  }
 }
-$("#dailyTaskList")?.addEventListener("click",event=>{
- const button=event.target.closest?.("[data-daily-claim]");
- if(!button||!$("#dailyTaskList").contains(button)||saveBlocked)return;
- const snapshot=JSON.stringify(progress),day=dailyDay();
- const reward=DailyCore.claim(progress,button.dataset.dailyClaim,day);
- if(!reward)return;
- if(!persistProgress()){
-  Object.keys(progress).forEach(key=>delete progress[key]);
-  Object.assign(progress,JSON.parse(snapshot));
-  $("#dailyTaskNotice").textContent="Не удалось сохранить награду. Валюта и XP не начислены.";
-  renderDailyTasks();return;
+function renderDailyTasks(){
+ const lists=["dailyTaskList","netuxDailyTaskList"].map(id=>$("#"+id)).filter(Boolean);
+ if(!lists.length)return;
+ const day=dailyDay();
+ if(progress.saveVersion!==3||saveBlocked||!day||!DailyCore.today(progress,day)){
+  for(const list of lists)list.textContent="Ежедневные задания недоступны: проверь сохранение или дату на устройстве.";
+  for(const id of ["dailyClaimAll","netuxDailyClaimAll"]){const button=$("#"+id);if(button)button.disabled=true;}
+  const summary=$("#netuxDailyProgress");if(summary)summary.textContent="Прогресс временно недоступен";
+  const badge=$("#netuxDailyBadge");if(badge)badge.hidden=true;
+  dailyNotify("Награды не начисляются, пока состояние недоступно.");
+  return;
  }
- $("#dailyTaskNotice").textContent="Награда получена: +"+reward.currency+
-  " валюты, +"+reward.xp+" Account XP, "+
-  Object.entries(reward.materials).map(([key,qty])=>
-   "+"+qty+" "+(GearData.MATERIAL_LABELS[key]||key)).join(", ")+".";
- renderDailyTasks();renderDailyClaimBadge();renderAccountHeader();renderPlayerProfile();renderHeroes();
-});
-$("#dailyClaimAll")?.addEventListener("click",()=>{
- if(saveBlocked||progress.saveVersion!==3)return;
- const snapshot=JSON.stringify(progress),day=dailyDay();
- if(!day)return;
- const batch=DailyCore.claimAll(progress,day);
- if(!batch)return;
- if(!persistProgress()){
-  Object.keys(progress).forEach(key=>delete progress[key]);
-  Object.assign(progress,JSON.parse(snapshot));
-  $("#dailyTaskNotice").textContent="Не удалось сохранить все награды. Начисление отменено.";
-  renderDailyTasks();renderDailyClaimBadge();return;
+ const oldDay=$("#dailyDay");if(oldDay)oldDay.textContent="День: "+day;
+ const netDay=$("#netuxDailyDay");if(netDay)netDay.textContent="День: "+day;
+ const total=DailyCore.TASKS.length;
+ const completed=DailyCore.TASKS.filter(t=>progress.daily.counts[t.id]===1).length;
+ const pending=DailyCore.unclaimedCount(progress,day);
+ const summary=$("#netuxDailyProgress");
+ if(summary)summary.textContent="Выполнено "+completed+" из "+total+" · наград к получению: "+pending;
+ const badge=$("#netuxDailyBadge");
+ if(badge){badge.hidden=pending===0;badge.textContent=String(pending);}
+ for(const id of ["dailyClaimAll","netuxDailyClaimAll"]){
+  const all=$("#"+id);if(all)all.disabled=DailyCore.unclaimedCount(progress,day)===0;
  }
- $("#dailyTaskNotice").textContent="Получено наград: "+batch.ids.length+
-  " · +"+batch.currency+" валюты · +"+batch.xp+" Account XP.";
- renderDailyTasks();renderDailyClaimBadge();renderAccountHeader();renderPlayerProfile();renderHeroes();
+ for(const list of lists){
+  const networkList=list.id==="netuxDailyTaskList";
+  list.replaceChildren();
+  for(const task of DailyCore.TASKS){
+   const row=document.createElement("div");
+   row.className=networkList?"netux-daily-task":"daily-task";
+   const label=document.createElement("div");
+   const title=document.createElement("strong");title.textContent=task.label;
+   const detail=document.createElement("small");
+   const done=progress.daily.counts[task.id]===1,claimed=progress.daily.claimed.includes(task.id);
+   const materials=Object.entries(task.materials).map(([key,qty])=>
+    "+"+qty+" "+(GearData.MATERIAL_LABELS[key]||key)).join(" · ");
+   const books=Object.entries(task.skillMaterials||{}).map(([key,qty])=>
+    "+"+qty+" "+(SkillCore.LABELS[key]||key)).join(" · ");
+   detail.textContent="Прогресс "+(done?"1/1":"0/1")+" · "+
+    (claimed?"Награда получена":done?"Готово к получению":"Не выполнено")+
+    " · +"+task.currency+" валюты · +"+task.xp+" Account XP · "+materials+(books?" · "+books:"");
+   label.append(title,detail);
+   const claimButton=document.createElement("button");claimButton.type="button";
+   claimButton.className=claimed?"ghost":"primary";
+   claimButton.textContent=claimed?"Получено":done?"Получить":"Ещё не выполнено";
+   claimButton.disabled=claimed||!done;claimButton.dataset.dailyClaim=task.id;
+   if(networkList){
+    const actions=document.createElement("div");actions.className="netux-daily-actions";
+    if(!done){
+     const go=document.createElement("button");go.type="button";go.className="ghost";
+     go.dataset.dailyGo=task.id;go.textContent="Перейти";
+     go.setAttribute("aria-label","Перейти к заданию: "+task.label);
+     actions.append(go);
+    }
+    actions.append(claimButton);row.append(label,actions);
+   }else row.append(label,claimButton);
+   list.append(row);
+  }
+ }
+}
+function openDailyActivity(id){
+ const destination={
+  "hero-level":"collection","equip-item":"collection","campaign-battle":"campaign",
+  "tactical-participation":"challenges","onslaught-participation":"challenges"
+ }[id];
+ if(!destination||!DailyCore.IDS.includes(id))return false;
+ dailyNavigationOrigin=true;
+ if(id==="tactical-participation")selectedChallengeKind="tactical";
+ if(id==="onslaught-participation")selectedChallengeKind="onslaught";
+ showScreen(destination);
+ return true;
+}
+function updateDailyReturn(id){
+ const back=$("#netuxDailyReturn");if(!back)return;
+ back.hidden=true;
+ if(!dailyNavigationOrigin)return;
+ if(!["collection","heroDetail","campaign","challenges","challengeResult","campaignResult"].includes(id))return;
+ const host=$("#"+id);
+ if(!host)return;
+ (host.querySelector(".section-heading")||host).append(back);
+ back.hidden=false;
+}
+$("#netuxDailyReturn")?.addEventListener("click",()=>{
+ if(dailyNavigationOrigin)showScreen("network");
 });
+for(const listId of ["dailyTaskList","netuxDailyTaskList"]){
+ const list=$("#"+listId);
+ list?.addEventListener("click",event=>{
+  const go=event.target.closest?.("[data-daily-go]");
+  if(go&&list.contains(go)){openDailyActivity(go.dataset.dailyGo);return;}
+  const button=event.target.closest?.("[data-daily-claim]");
+  if(!button||!list.contains(button)||saveBlocked||button.disabled)return;
+  const snapshot=JSON.stringify(progress),day=dailyDay();
+  const reward=DailyCore.claim(progress,button.dataset.dailyClaim,day);
+  if(!reward)return;
+  if(!persistProgress()){
+   Object.keys(progress).forEach(key=>delete progress[key]);
+   Object.assign(progress,JSON.parse(snapshot));
+   dailyNotify("Не удалось сохранить награду. Валюта и XP не начислены.");
+   renderDailyTasks();renderDailyClaimBadge();return;
+  }
+  dailyNotify("Награда получена: +"+reward.currency+
+   " валюты, +"+reward.xp+" Account XP, "+
+   Object.entries(reward.materials).map(([key,qty])=>
+    "+"+qty+" "+(GearData.MATERIAL_LABELS[key]||key)).join(", ")+".");
+  renderDailyTasks();renderDailyClaimBadge();renderAccountHeader();renderPlayerProfile();renderHeroes();
+ });
+}
+for(const buttonId of ["dailyClaimAll","netuxDailyClaimAll"]){
+ $("#"+buttonId)?.addEventListener("click",()=>{
+  if(saveBlocked||progress.saveVersion!==3)return;
+  const snapshot=JSON.stringify(progress),day=dailyDay();
+  if(!day)return;
+  const batch=DailyCore.claimAll(progress,day);
+  if(!batch)return;
+  if(!persistProgress()){
+   Object.keys(progress).forEach(key=>delete progress[key]);
+   Object.assign(progress,JSON.parse(snapshot));
+   dailyNotify("Не удалось сохранить все награды. Начисление отменено.");
+   renderDailyTasks();renderDailyClaimBadge();return;
+  }
+  dailyNotify("Получено наград: "+batch.ids.length+
+   " · +"+batch.currency+" валюты · +"+batch.xp+" Account XP.");
+  renderDailyTasks();renderDailyClaimBadge();renderAccountHeader();renderPlayerProfile();renderHeroes();
+ });
+}
 // UI-only visit marker: never grants rewards and never rewrites progress.v3.
 const LOGIN_CALENDAR_SEEN_KEY="ashes-throne.login-calendar-seen.v1";
 let loginCalendarSeenDay=null;
@@ -1082,6 +1148,8 @@ function showScreen(id){
  const previousScreenId=document.querySelector(".screen.active")?.id||null;
  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
  $("#"+id).classList.add("active");
+ if(id==="home")dailyNavigationOrigin=false;
+ updateDailyReturn(id);
  // MOBILEQA001: a new screen opens at its top, not at the previous screen's
  // scroll offset (e.g. squad header hidden after the long campaign list).
  // The roster keeps its own return-to-position behaviour below.
@@ -1111,8 +1179,11 @@ function showScreen(id){
  if(id==="network"&&typeof NetworkNavigation!=="undefined"){
   // Return from a weekly/clue squad or battle to the exact parent view.
   const fromCombat=previousScreenId==="battle"||previousScreenId==="squad";
-  NetworkNavigation.select(fromCombat&&squadReturnScreen==="weekly"?"threat":"clues");
+  NetworkNavigation.select(dailyNavigationOrigin?"daily":
+   fromCombat?(squadReturnScreen==="weekly"?"threat":"clues"):"clues");
+  dailyNavigationOrigin=false;
  }
+ if(id==="network")renderDailyTasks();
  if(id==="network"&&networkPilot)NetworkPilotUI.render();
  if(id==="network"&&weeklySession)WeeklyThreatUI.refresh();
  if(id==="operationResult")renderOperationResult();
@@ -4048,6 +4119,11 @@ if(typeof NetworkPilotSession!=="undefined"&&
    });
  }
 }
+// Fresh display when returning to this view without a full screen transition.
+$("#network")?.addEventListener("click",event=>{
+ const tab=event.target.closest?.('button[data-net-view="daily"]');
+ if(tab&&$("#network").contains(tab)&&!tab.hidden)renderDailyTasks();
+});
 // One navigation controller for the daily network and weekly challenge.
 if(typeof NetworkNavigation!=="undefined")NetworkNavigation.mount({
  threatAvailable:!NETWORK_PILOT_ENABLED&&!!weeklySession

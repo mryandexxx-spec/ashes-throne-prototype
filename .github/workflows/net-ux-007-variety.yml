@@ -1,0 +1,60 @@
+name: NET-UX-007 encounter variety Node and mobile Chromium WebKit
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'network-*.js'
+      - 'index.html'
+      - 'package.json'
+      - 'tests/network-*'
+      - '.github/workflows/net-ux-007-variety.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'network-*.js'
+      - 'index.html'
+      - 'package.json'
+      - 'tests/network-*'
+      - '.github/workflows/net-ux-007-variety.yml'
+concurrency:
+  group: netux007-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Full Node regression
+        run: npm test
+  mobile-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Live operation selection, real combat, return, result and reload at 844x390 and 932x430
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/netux007.log 2>&1 &
+          sleep 2
+          node tests/network-ux-007-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: netux007-mobile-browser
+          path: artifacts/netux007/
+          retention-days: 7
+          if-no-files-found: warn

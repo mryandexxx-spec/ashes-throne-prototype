@@ -3,14 +3,14 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","gear-data.js","progress-core.js","save-core.js","progress-v3-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const src=["initiative-model.js","ability-data.js","combat-core.js","gear-data.js","gear-material-ui.js","progress-core.js","save-core.js","progress-v3-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
  "startBattle","devResourcesGrant","devResourcesNotice","accountStatus","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","gearTier","gearSlots","gearMaterial","gearWallet","gearPrice","gearPriceLabel","gearStatBonus","gearStatBonusLabel","gearEquipNext","gearNotice","gearPromotionDialog","gearPromotionTitle","gearPromotionLevel","gearPromotionCost","gearPromotionStats","gearPromotionClose"];
 function element(id=""){
- return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
+ return {id,insertAdjacentHTML(position,html){this.innerHTML+=html;},dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
    remove(x){this[x]=false},toggle(x,v){this[x]=!!v}},
   addEventListener(type,fn){(this.handlers[type]??=[]).push(fn)}
@@ -86,7 +86,7 @@ assert.equal(elements.gearTier.textContent,"G1 · 0/6");
 assert.match(elements.gearSlots.innerHTML,/data-gear-slot="0"/);
 assert.match(elements.gearSlots.innerHTML,/Оружие/);
 assert.match(elements.gearSlots.innerHTML,/Снаряжение/);
-assert.match(elements.gearMaterial.textContent,/Железо 0/);
+assert.match(elements.gearMaterial.innerHTML,/Железо ×0/);
 assert.equal(elements.gearEquipNext.disabled,true,"not enough raw components");
 assert.match(elements.gearNotice.textContent,/Недостаточно компонентов/);
 // Existing resource button refills both the old test economy and the new G1 parts.
@@ -99,11 +99,12 @@ assert.equal(p.materials.Fa,15);
 assert.equal(p.materials.Th,20);
 assert.equal(p.materials.Gl,0);
 assert.equal(p.currency,5000);
-assert.match(elements.devResourcesNotice.textContent,/G1: Железо 20/);
+assert.match(elements.devResourcesNotice.textContent,/Компоненты G1/);
+assert.match(elements.devResourcesNotice.innerHTML,/Железо ×20/);
 api.openHeroDetail("kael");
 assert.equal(elements.gearEquipNext.disabled,false);
 assert.match(elements.gearPrice.textContent,/Короткий клинок/);
-assert.match(elements.gearPrice.textContent,/Железо ×2/);
+assert.match(elements.gearPrice.innerHTML,/data-material="Fe" data-need="2"/);
 assert.match(elements.gearStatBonus.textContent,/ATK \+3%/);
 const balanceBefore=p.currency,ironBefore=p.materials.Fe,woodBefore=p.materials.Wo;
 click(elements.gearEquipNext);

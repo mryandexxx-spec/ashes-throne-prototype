@@ -88,23 +88,13 @@ const GearUX004=(()=>{
    right.append(node("p","gear-ux-note","Предмет уже установлен. Выберите другой слот."));
    return;
   }
-  const list=node("div","gear-ux-materials");
-  for(const material of plan.materials){
-   const wrap=node("div","gear-ux-material"+(material.missing?" is-missing":""));
-   const detail=node("div","gear-ux-material-data");
-   detail.append(node("strong","",material.label),
-    node("small","", "Есть "+material.have+" / нужно "+material.need+
-      (material.missing?" · не хватает "+material.missing:" · готово")));
-   wrap.append(detail);
-   if(material.missing)wrap.append(btn("Найти",()=>showSources(material.id),"ghost gear-ux-find"));
-   else wrap.append(node("span","gear-ux-ready","✓"));
-   list.append(wrap);
-  }
+  const list=node("div","gear-ux-materials material-group");
+  list.innerHTML=plan.materials.map(m=>GearMaterialUI.tile(m.id,m.have,m.need)).join("");
   right.append(list,row("Стоимость",plan.currency.need+" валюты"),row("Баланс",plan.currency.have+" валюты"));
   if(plan.currency.missing)
    right.append(node("p","gear-ux-warning","Не хватает "+plan.currency.missing+" валюты."));
   const missing=plan.materials.find(m=>m.missing>0);
-  if(missing)right.append(btn("Где добыть",()=>showSources(missing.id),"ghost gear-ux-find-all"));
+  if(missing)right.append(btn("Где добыть",()=>showSources(missing.id),"ghost gear-ux-find gear-ux-find-all"));
   right.append(btn("Изготовить и установить",()=>get("gearEquipNext")?.click(),
    "primary gear-ux-craft",saveBlocked||!plan.canCraft));
   if(saveBlocked)right.append(node("p","gear-ux-warning","Сохранение недоступно. Покупки заблокированы."));
@@ -123,9 +113,9 @@ const GearUX004=(()=>{
    const energyKnown=Number.isSafeInteger(last.progress.energy?.value);
    const warning=lacksEnergy?(energyKnown?" · не хватает энергии":" · запас энергии не определён"):"";
    card.append(node("strong","",source.title),
-    node("small","", "За победу: "+source.quantity+" × "+m.label+
-     " · "+source.currencyPerVictory+" валюты"),
+    node("small","", "За победу · "+source.currencyPerVictory+" валюты"),
     node("small","",sourceStatus(source)+warning));
+   GearMaterialUI.append(card,{[m.id]:source.quantity});
    const actions=node("div","gear-ux-source-actions");
    if(source.access==="first-clear"||source.access==="repeat"){
     actions.append(btn(source.access==="first-clear"?"В бой · бесплатно":"В бой · "+source.energyCost+" ⚡",
@@ -139,18 +129,12 @@ const GearUX004=(()=>{
    list.append(card);
   }
   left.append(list);
-  // Only actual catalog-backed matching materials qualify as network sources.
-  // The current production catalog has no templates; pilot fixtures have no
-  // materialId. Never claim a drop quantity that no approved table defines.
-  const networkRefs=typeof GearSourceData!=="undefined"&&
-   typeof GearSourceData.findNetworkSources==="function"?
-   GearSourceData.findNetworkSources(m.id):[];
+  const live=typeof networkPilot!=="undefined"&&networkPilot?.isLive();
   right.append(node("h3","","Источник материала"));
-  if(networkRefs.length)right.append(node("p","gear-ux-note",
-   "Разведсеть: "+networkRefs.length+" шаблонов в каталоге. "+
-   "Доступность, количество и награды ещё не подтверждены."));
-  else right.append(node("p","gear-ux-note",
-   "Разведсеть пока не подтверждена как источник этого материала."));
+  if(live){
+   const templates=NetworkData.LIVE_CATALOG.templates.filter(t=>t.materialId===m.id);
+   if(templates.length)right.append(node("p","gear-ux-note","Материал дают зацепки снабжения. Приказ повышает приоритет будущих донесений."));
+  }else right.append(node("p","gear-ux-note","Разведсеть пока не подтверждена как источник этого материала в пробном режиме."));
   // The pilot link must survive a race where game.js mounts the optional
   // network screen before the GearUX004 callback becomes available. It is
   // never exposed without the explicit pilot URL flag and mounted pilot.
@@ -159,7 +143,7 @@ const GearUX004=(()=>{
    typeof NetworkPilotUI!=="undefined"&&
    typeof NetworkPilotUI.openFromFinder==="function";
   if(typeof onNetworkPreview==="function"||pilotReady)right.append(
-   btn("Посмотреть пробную разведсеть",()=>{
+   btn(live?"Отдать приказ на материал":"Посмотреть пробную разведсеть",()=>{
     if(typeof onNetworkPreview==="function")onNetworkPreview(m.id);
     else if(NetworkPilotUI.openFromFinder(m.id))showScreen("network");
    },"ghost gear-ux-find"));
@@ -219,7 +203,7 @@ const GearUX004=(()=>{
  function setNetworkPreview(callback){
   onNetworkPreview=typeof callback==="function"?callback:null;
  }
- return Object.freeze({reset,cancelReturn,openSlot,restore,render,refresh,hasReturnContext,
+ return Object.freeze({showSources,reset,cancelReturn,openSlot,restore,render,refresh,hasReturnContext,
   rememberMission,returnToHero,sourceStatus,setNetworkPreview});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=GearUX004;

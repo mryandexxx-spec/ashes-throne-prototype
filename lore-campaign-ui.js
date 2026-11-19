@@ -10,8 +10,6 @@ const LoreCampaignUI=(()=>{
  let rewardBusy=false,rewardBusyAct=0,rewardFeedback="",rewardFeedbackAct=0;
  const ACT_REWARD_NODES=Object.freeze([3,6,9,12,15].map(n=>"five-shadows:fs-"+String(n).padStart(2,"0")));
  const ACT_LABELS=Object.freeze(["I","II","III","IV","V"]);
- const REWARD_MATERIAL_LABELS=Object.freeze({Fe:"железо",Le:"кожа",Cl:"ткань",
-  Wo:"древесина",Fa:"крепёж",Th:"прочная нить",Gl:"стекло"});
  const formatRewardCount=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g," ");
  const actForRewardNode=id=>ACT_REWARD_NODES.indexOf(id)+1;
  const PORTRAITS=Object.freeze({
@@ -471,13 +469,10 @@ const LoreCampaignUI=(()=>{
    step.code==="completed"?"Проверьте, все ли обязательные бои этого и предыдущих актов выиграны.":
    "Продолжайте историю до "+finale+" и выигрывайте обязательные бои.";
   const reward=source.reward;
-  const materials=Object.entries(REWARD_MATERIAL_LABELS).filter(([id])=>reward.materials[id]>0).
-   map(([id,label])=>label+" ×"+reward.materials[id]);
-  const preview=[formatRewardCount(reward.currency)+" валюты",
-   formatRewardCount(reward.accountXp)+" опыта аккаунта",...materials].join(" · ");
+  const preview=formatRewardCount(reward.currency)+" валюты · "+formatRewardCount(reward.accountXp)+" опыта аккаунта";
   return '<section class="lore-act-one-reward" aria-label="Награда за завершение акта '+actLabel+'">'+
    '<div class="lore-act-one-reward__copy"><strong>Награда за акт '+actLabel+'</strong>'+
-   '<small>'+escapeHtml(preview)+'</small>'+
+   '<small>'+escapeHtml(preview)+'</small>'+GearMaterialUI.group(reward.materials)+
    '<span>'+escapeHtml(detail)+'</span>'+
    (rewardFeedbackAct===act&&rewardFeedback?'<p role="status">'+escapeHtml(rewardFeedback)+'</p>':"")+'</div>'+
    '<button type="button" class="primary" data-lore-action="claim-act-reward" data-lore-act="'+act+'"'+

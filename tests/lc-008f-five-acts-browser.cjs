@@ -94,7 +94,13 @@ async function run(name,engine){
     assert.match(text,new RegExp("Награда за акт "+["I","II","III","IV","V"][act-1]));
     assert.equal(text.includes("FS-"),false,"no internal IDs in player text");
     assert.match(text,/Забрать награду/);
-    assert.equal(await card.locator("button").isEnabled(),true);
+    const tiles=card.locator("[data-material]");
+    const components=await tiles.evaluateAll(list=>list.map(el=>el.dataset.material));
+    const expectedIds=["Fe","Le","Cl","Wo","Fa","Th","Gl"].filter(id=>materials[id]>0);
+    assert.deepEqual(components,expectedIds);
+    await tiles.first().click();
+    await f.page.locator("#materialClose").click();
+    assert.equal(await card.locator('[data-lore-action="claim-act-reward"]').isEnabled(),true);
     // Only its finale shows the card; ordinary nodes must not carry it.
     const firstNode="five-shadows:fs-"+String(act*3-2).padStart(2,"0");
     await f.page.locator('[data-lore-action="choose-node"][data-lore-node="'+firstNode+'"]').first().click();
@@ -132,7 +138,7 @@ async function run(name,engine){
    for(let act=1;act<=5;act++){
     const card=await focus(f.page,act,{eligible:false});
     assert.match(await card.innerText(),/Награда получена/);
-    assert.equal(await card.locator("button").isEnabled(),false);
+    assert.equal(await card.locator('[data-lore-action="claim-act-reward"]').isEnabled(),false);
    }
    const reloaded=await wallet(f.page);
    assert.equal(reloaded.rewardReceipts.length,5);

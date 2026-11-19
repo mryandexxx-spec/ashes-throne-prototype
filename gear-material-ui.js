@@ -40,7 +40,7 @@ const GearMaterialUI=(()=>{
   const sections=[];
   const add=(title,lines)=>{if(lines.length)sections.push({title,lines});};
   const missions=GearSourceData.findSources(id,campaign,profile.energy?.value);
-  add("Миссии кампании",missions.map(s=>{
+  add("Учебная кампания",missions.map(s=>{
    const gate=s.access==="locked"?"сначала «"+s.missingPrerequisites.map(m=>MissionData.get(m).title).join("», «")+"»":
     s.access==="first-clear"?"первый вход бесплатно":s.access==="repeat"?"повтор за "+s.energyCost+" ⚡":"за победу";
    return s.title+" · ×"+s.quantity+" · "+gate;
@@ -106,6 +106,7 @@ const GearMaterialUI=(()=>{
    if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();
   });
   dialog.addEventListener("close",()=>{
+   if(dialog.open)return;
    if(origin?.isConnected)origin.focus({preventScroll:true});
    origin=null;
   });

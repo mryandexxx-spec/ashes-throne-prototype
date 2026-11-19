@@ -29,10 +29,16 @@ const NetworkPilotUI=(()=>{
   let result;
   try{result=await session.collect();}catch(_){result={ok:false,code:"REWARD_SYNC_FAILED"};}
   if(result.ok&&result.paid>0){
-   notice="Получено за "+result.paid+" зацепок: +"+result.currency+
-    " валюты · +"+result.xp+" XP."+
-    (result.materials?" Материалов: +"+result.materials+".":"")+
-    (result.shards?" Осколков: +"+result.shards+".":"");
+   const n=result.paid,part=n%10===1&&n%100!==11?"зацепку":
+    n%10>=2&&n%10<=4&&(n%100<12||n%100>14)?"зацепки":"зацепок";
+   const materials=Object.entries(result.materialBreakdown||{}).map(([id,count])=>
+    "+"+count+" "+(typeof GearData!=="undefined"?GearData.MATERIAL_LABELS[id]||id:id));
+   const shards=Object.entries(result.shardBreakdown||{}).map(([id,count])=>
+    "+"+count+" осколков ("+(heroLabels[id]||id)+")");
+   notice="Получено за "+n+" "+part+": +"+result.currency+
+    " валюты · +"+result.xp+" XP"+
+    (materials.length?" · "+materials.join(", "):"")+
+    (shards.length?" · "+shards.join(", "):"")+".";
   }else if(!result.ok){
    notice=errorText[result.code]||"Не удалось выдать награду: "+result.code+
     ". Выплата сохранена в очереди; попробуйте снова.";
@@ -44,6 +50,15 @@ const NetworkPilotUI=(()=>{
   "net-lost-cargo":"След пропавшей поклажи",
   "net-watch-trace":"Сведения о дозоре"
  });
+ function completedTitle(templateId){
+  if(!isLive())return names[templateId]||"Пробная операция";
+  const t=typeof NetworkData!=="undefined"?
+   NetworkData.LIVE_CATALOG.templates.find(entry=>entry.id===templateId):null;
+  if(!t)return "Завершённая операция";
+  if(t.materialId)return "Материалы: "+(typeof GearData!=="undefined"?
+   GearData.MATERIAL_LABELS[t.materialId]||t.materialId:t.materialId);
+  return t.heroId?"Сведения: "+(heroLabels[t.heroId]||t.heroId):"Операция";
+ }
  const types=Object.freeze({supply:"Снабжение",trophies:"Трофеи",
   "threat-trace":"След угрозы","recruit-intel":"Сведения о человеке"});
  const prep=Object.freeze({survey:"Разведать",cover:"Подготовить прикрытие"});
@@ -96,7 +111,7 @@ const NetworkPilotUI=(()=>{
     "Без приоритета";
   $("net005OrderStatus").textContent="Приказ: "+orderLabel+
    (s.order?" · без нужной зацепки: "+s.order.misses+
-    " (тестовая гарантия после "+s.config.guaranteeAfter+" поступлений)":"")+
+    " (гарантия после "+s.config.guaranteeAfter+" поступлений)":"")+
    ". Влияет только на новые донесения; заполненная доска не меняется.";
   const orders=$("net005OrderChoices");orders.replaceChildren();
   const unset=button("Снять приказ","clear-order");
@@ -160,19 +175,20 @@ const NetworkPilotUI=(()=>{
      ". Оценка S1 не вычислялась; освоение не перенесено. Наград нет.";
    }else{
     const stars=s.active.score>=90?3:s.active.score>=75?2:1;
-    $("net004ResultDetail").textContent="Оценка S1: "+s.active.score+
+    $("net004ResultDetail").textContent=(isLive()?"Результат: ":"Оценка S1: ")+s.active.score+
      "/100 · "+stars+"★. Волны: "+s.active.waveSummaries.map(x=>
       x.score+" ("+x.knockedOut+"/"+x.deployed+" нокаутов; "+
        x.allyActions+" действий)").join(" → ")+
      ". "+(isLive()?rewardText(s.active.clue.rewardRef):
       "Тестовые цели и норматив действий временные. Награды не начисляются.");
    }
+   $("net004Finish").textContent=isLive()?"Забрать":"Завершить испытание";
    $("net004Finish").disabled=blocked||busy;
   }
   $("net004History").replaceChildren();
   const recent=s.completed.slice(-3).reverse();
   if(recent.length)$("net004History").append(line((isLive()?"Завершённые зацепки: ":"Тестовые завершения: ")+
-   recent.map(e=>"№"+e.serial+" ("+(names[e.templateId]||e.templateId)+
+   recent.map(e=>"№"+e.serial+" ("+completedTitle(e.templateId)+
     (e.kind==="simulated"?" · симуляция":" · бой")+")").join(" · ")));
   $("net004Claim").disabled=true;
   // Do not overwrite mastery/order-specific disabled states set above.

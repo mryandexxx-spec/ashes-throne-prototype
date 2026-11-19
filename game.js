@@ -620,8 +620,11 @@ function heroUnlockLabel(id){
  return ["ren","nada","liora","art","sava"].includes(id)?"Доступен с начала (тест)":mission?(MissionData.get(mission)?.title||"миссия"):"сюжетное прохождение";
 }
 function defaultSquad(){
- const ids=ALLIES.filter(h=>heroOwned(h.id)).slice(0,MAX_SQUAD).map(h=>h.id);
- return {leaderId:ids[0]??null,regularIds:ids.slice(1)};
+ // Prefer the five playable heroes, not demonstration capsules on a new profile.
+ const preferred=["ren","nada","liora","sava","art"];
+ const ids=preferred.filter(id=>ALLIES.some(h=>h.id===id)&&heroOwned(id));
+ if(!ids.length)ids.push(...ALLIES.filter(h=>heroOwned(h.id)).slice(0,MAX_SQUAD).map(h=>h.id));
+ return {leaderId:ids[0]??null,regularIds:ids.slice(1,MAX_SQUAD)};
 }
 function loadSquad(){
  const fallback=defaultSquad();
@@ -1161,12 +1164,8 @@ function showScreen(id){
    const npcGoal=battleIsNpcChallengePilot?NpcChallengePilot.goal(activeChallengeId,
     selectedParty()[0]?.name):null;
    const networkPlan=battleIsNetwork?NetworkEncounterAdapter.plan(networkPilot.read()):null;
-    objective.textContent=battleIsWeekly?"Устраните отмеченного противника первым. Нокауты и темп влияют на оценку S1; подготовка ослабляет врагов.":battleIsNetwork?(networkPlan?
-     "Оценка S1: первым победите отмеченного противника («"+
-      networkPlan.first[0].name+"»). Цель +10; "+
-      "темп +5 до "+Math.max(5,networkPlan.first.length*5)+
-      " действий союзников; без нокаутов +25."+
-      (NETWORK_PILOT_ENABLED?" Без наград (проба).":" Победа приносит ресурсы; 3★ открывают симуляцию."):
+    objective.textContent=battleIsWeekly?"Первая цель — отмеченный противник. Берегите отряд.":battleIsNetwork?(networkPlan?
+     "Первая цель: «"+networkPlan.first[0].name+"». Берегите отряд.":
      "Данные зацепки недоступны — бой нельзя оценить."):
     npcGoal|| (battleIsLoreRequired&&trial?
      trial.goalText:

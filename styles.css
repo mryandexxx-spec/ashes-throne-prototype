@@ -4510,3 +4510,10 @@ body:has(#storyDemo.active)::before{
 /* A successful model load is not news during a fight; loading/errors stay visible. */
 .battle-screen.arena-vis-001 #renModelBattleStatus[data-status="ready"]{display:none}
 .battle-screen.arena-vis-001 .arena-utility{top:calc(58px + env(safe-area-inset-top,0px))}
+
+/* NET-UX-001: keep the scoring hint within the top HUD on short landscape.
+   Full scoring rules belong in briefing (NET-UX-006), not over fighter names. */
+.battle-screen #battleChallengeGoal:not([hidden]){
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+ max-height:2.4em;overflow:hidden;
+}

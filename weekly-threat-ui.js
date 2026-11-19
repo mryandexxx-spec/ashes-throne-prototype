@@ -13,7 +13,8 @@ const WeeklyThreatUI=(()=>{
    week=WeeklyThreatCore.weekId(s.weekStart),
    intel=Math.min(3,network?.read()?.threatIntel?.[week]??0),
    pend=session.pending(),blocked=!session.isReady(),busy=session.isBusy();
-  $("net008aTitle").textContent=def.title+" · "+week+" (UTC)";
+  $("net008aTitle").textContent=def.title+" · неделя с "+
+   new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"long",timeZone:"UTC"}).format(new Date(s.weekStart));
   $("net008aGoal").textContent=def.goal+
    ". Первый отмеченный противник должен погибнуть первым. Нокауты и число ходов влияют на оценку.";
   $("net008aStatus").textContent=notice||(session.isClockBack()?
@@ -42,19 +43,24 @@ const WeeklyThreatUI=(()=>{
  }
  async function collect(){
   if(!session?.isReady())return;
+  // A new profile has not earned any weekly reward; do not imply a previous claim.
+  if(session.pending().length===0){
+   notice=session.read()?.bestScore>0?"Награды за достигнутые ступени уже получены.":"";
+   render();return;
+  }
   const r=await session.collect().catch(()=>({ok:false,code:"COLLECT_FAILED"}));
   notice=r.ok?(r.count?"Получено: "+r.count+" наградных ступеней, +"+r.currency+
-   " валюты, +"+r.xp+" XP, +"+r.materials+" материалов.":"Все доступные награды уже получены."):
+   " валюты, +"+r.xp+" XP, +"+r.materials+" материалов.":""):
    "Выплата не подтверждена: "+r.code+". Не запускайте повторную выдачу без проверки.";
   render();
  }
  async function finish(battle){
   const r=await session.finish(battle).catch(()=>({ok:false,code:"FINISH_FAILED"}));
   if(r.ok){
-   notice=r.win?"Победа! S1 "+r.score+"/100. Результат сохранён; можно улучшить оценку.":
+   notice=r.win?"Победа! Оценка "+r.score+"/100. Результат сохранён; можно улучшить оценку.":
     "Поражение. Попытка завершена; можно изменить тактику и повторить.";
    await collect();
-   if(r.ok&&r.win)notice="Победа: S1 "+r.score+"/100. "+notice;
+   if(r.ok&&r.win)notice="Победа: оценка "+r.score+"/100. "+notice;
   }else notice="Результат боя не записан: "+r.code+". Перезагрузите страницу и повторите попытку.";
   render();return r;
  }
@@ -76,7 +82,7 @@ const WeeklyThreatUI=(()=>{
   });
   void session.open().then(r=>{
    if(!r.ok)notice="Недельный режим: "+r.code;
-   render();if(r.ok)void collect();
+   render();if(r.ok&&session.pending().length>0)void collect();
   }).catch(()=>{notice="Не удалось загрузить недельную угрозу.";render();});
   return true;
  }

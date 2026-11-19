@@ -17,7 +17,7 @@ async function run(name,engine,viewport){
   await page.goto(origin+"?networkPilot=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   assert.match(await page.locator("#buildVersion").innerText(),
-   /v0\.3\.(188 · NET004PILOT|189 · NET005PILOT|190 · NET006ASCORE|191 · NET007PROG|192 · NET007LIVE|193 · NET008AWEEKLY|194 · ARENAVIS001)/);
+   /v0\.3\.(188 · NET004PILOT|189 · NET005PILOT|190 · NET006ASCORE|191 · NET007PROG|192 · NET007LIVE|193 · NET008AWEEKLY|194 · ARENAVIS001|195 · NETUXFIX001)/);
   assert.equal(await page.locator("#net004Entry").getAttribute("hidden"),null);
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
@@ -64,8 +64,16 @@ async function run(name,engine,viewport){
   assert.deepEqual(await page.evaluate(()=>squadSlots().filter(Boolean)),originalIds);
   assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.squad.v1")),
    previousSquad,"return to original formation also must not save");
+  // Keep the five playable heroes; battle balance is tested separately.
   await page.locator("#squadStart").click();
   await page.locator("#battle").waitFor({state:"visible",timeout:30000});
+  await page.evaluate(()=>{
+   for(const ally of state.fighters.filter(f=>f.side==="ally")){
+    ally.hp=40000;ally.maxHp=40000;
+    ally.physicalAttack=7000;ally.magicAttack=7000;ally.atk=7000;
+    ally.physicalDefense=2000;ally.magicDefense=2000;
+   }
+  });
   await page.locator("#autoBattleBtn").click();
   await page.locator("#net004Result").waitFor({state:"visible",timeout:125000});
   assert.match(await page.locator("#net004ResultDetail").innerText(),/Оценка S1: (?:[6-9][0-9]|100)/);
@@ -115,7 +123,14 @@ async function run(name,engine,viewport){
     .map(f=>({id:f.id,hp:f.hp,maxHp:f.maxHp,protection:f.protection??0})));
    assert.ok(firstRoster.length>0);
    assert.ok(firstRoster.every(f=>f.hp===f.maxHp));
-   await page.locator("#autoBattleBtn").click();
+   await page.evaluate(()=>{
+   for(const ally of state.fighters.filter(f=>f.side==="ally")){
+    ally.hp=40000;ally.maxHp=40000;
+    ally.physicalAttack=7000;ally.magicAttack=7000;ally.atk=7000;
+    ally.physicalDefense=2000;ally.magicDefense=2000;
+   }
+  });
+  await page.locator("#autoBattleBtn").click();
    await page.locator("#net004Fight").waitFor({state:"visible",timeout:125000});
    await page.locator("#network").waitFor({state:"visible"});
    const halfway=await page.evaluate(()=>{
@@ -146,7 +161,14 @@ async function run(name,engine,viewport){
    assert.deepEqual(secondRoster.map(f=>f.protection),firstRoster.map(f=>f.protection));
    assert.equal(await page.evaluate(()=>state.totalWaves),1,
     "second encounter is a separate CombatCore battle");
-   await page.locator("#autoBattleBtn").click();
+   await page.evaluate(()=>{
+   for(const ally of state.fighters.filter(f=>f.side==="ally")){
+    ally.hp=40000;ally.maxHp=40000;
+    ally.physicalAttack=7000;ally.magicAttack=7000;ally.atk=7000;
+    ally.physicalDefense=2000;ally.magicDefense=2000;
+   }
+  });
+  await page.locator("#autoBattleBtn").click();
    await page.locator("#net004Result").waitFor({state:"visible",timeout:125000});
    await page.locator("#net004Finish").click();
    await page.waitForFunction(()=>!document.querySelector("#net004Board").hidden);
@@ -202,7 +224,7 @@ async function liveByDefault(){
   assert.equal(ready.live.board.length,4);
   assert.equal(ready.live.config.capacity,16);
   assert.equal(ready.pilot,null);
-  // An ordinary player can earn an actual network reward without dev grants.
+  // This verifies the live payout lifecycle, not provisional five-hero L1 balance.
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
   await page.locator("#hqMoreToggle").click();
@@ -222,8 +244,35 @@ async function liveByDefault(){
   await page.locator("#squad").waitFor({state:"visible",timeout:15000});
   await page.locator("#squadStart").click();
   await page.locator("#battle").waitFor({state:"visible",timeout:30000});
+   // Transient battle-only boost; real combat and wallet receipts remain in play.
+   await page.evaluate(()=>{
+    for(const ally of state.fighters.filter(f=>f.side==="ally")){
+     ally.hp=40000;ally.maxHp=40000;
+     ally.physicalAttack=7000;ally.magicAttack=7000;ally.atk=7000;
+     ally.physicalDefense=2000;ally.magicDefense=2000;
+    }
+   });
   await page.locator("#autoBattleBtn").click();
-  await page.locator("#net004Result").waitFor({state:"visible",timeout:125000});
+   try{
+    await page.locator("#net004Result").waitFor({state:"visible",timeout:125000});
+   }catch(e){
+    const diagnostic=await page.evaluate(()=>({
+     screen:document.querySelector(".screen.active")?.id,
+     active:typeof state!=="undefined"?state.active:null,
+     winner:typeof state!=="undefined"?state.winner:null,
+     message:typeof state!=="undefined"?state.message:null,
+     allies:typeof state!=="undefined"?state.fighters.filter(x=>x.side==="ally").map(x=>({id:x.id,hp:x.hp})):null,
+     enemies:typeof state!=="undefined"?state.fighters.filter(x=>x.side==="enemy").map(x=>({id:x.id,hp:x.hp})):null,
+     resultReady:typeof networkResultReady!=="undefined"?networkResultReady:null,
+     transition:typeof visualTransition!=="undefined"?visualTransition:null,
+     animationPending:typeof BattleAnimation!=="undefined"?BattleAnimation.pending():null,
+     recorded:typeof networkResultRecorded!=="undefined"?networkResultRecorded:null,
+     auto:typeof autoBattle!=="undefined"?autoBattle:null
+    })).catch(()=>null);
+    console.error("NET007_LIVE_BATTLE_TIMEOUT",diagnostic);
+    await page.screenshot({path:path.join(dest,"net007-live-timeout.png"),fullPage:true}).catch(()=>{});
+    throw e;
+   }
   await page.locator("#net004Finish").click();
   await page.waitForFunction(()=>{
    try{return JSON.parse(localStorage.getItem("ashes-throne.progress.v3"))

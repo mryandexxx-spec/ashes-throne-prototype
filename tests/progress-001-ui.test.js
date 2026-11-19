@@ -65,6 +65,9 @@ const savedData=new Map();
 savedData.set("ashes-throne.progress.v2",JSON.stringify({version:2,accountXp:80,currency:500,
  levels:{kael:1,lyra:1,darin:1,"medic-demo":1,"test-area-damage":1},claimedMissions:["black-pass-ambush"]}));
 const localStorage={getItem:k=>savedData.has(k)?savedData.get(k):null,setItem:(k,v)=>savedData.set(k,v)};
+// This progression test deliberately uses the original five-hero fixture.
+savedData.set("ashes-throne.squad.v1",JSON.stringify({version:1,leaderId:"kael",
+ regularIds:["lyra","darin","medic-demo","test-area-damage"]}));
 const api=vm.runInNewContext(src+
  "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getProgress:()=>progress,getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI})",
  {document,window:{addEventListener(){},localStorage},BABYLON});

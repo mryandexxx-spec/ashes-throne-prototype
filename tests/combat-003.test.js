@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const root = path.join(__dirname,"..");
-const scripts = ["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"]
+const scripts = ["initiative-model.js","battle-rng.js","combat-status-core.js","ability-data.js","combat-core.js","progress-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"]
  .map(name=>fs.readFileSync(path.join(root,name),"utf8")).join("\n");
 const ids=["heroList","combatants","battleStatus","turnChip","actionTitle","actionHint",
  "battleRetryBtn","basicAbilityBtn","specialAbilityBtn","battleMessage","battle",
@@ -25,6 +25,8 @@ const ctx=vm.createContext({document,window});
 const {getBattle,resetBattle,CombatCore}=vm.runInContext(scripts+
  "\n({getBattle:()=>state,resetBattle,CombatCore})",ctx);
 
+// This cooldown test intentionally targets the original sandbox formation.
+vm.runInContext('selectedLeaderId="kael";selectedPartyIds=["lyra","darin","medic-demo","test-area-damage"];',ctx);
 resetBattle();
 assert.equal(getBattle().fighters[getBattle().currentActor].id,"lyra");
 assert.equal(elements.specialAbilityBtn.disabled,false);

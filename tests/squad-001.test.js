@@ -75,7 +75,15 @@ assert.equal(elements.squad.classList.active,true);
 assert.equal(elements.battle.classList.active,false);
 assert.equal(count(),"5/5");
 assert.match(elements.squadSlots.innerHTML,/squad-slot-leader filled/);
-assert.match(elements.squadSlots.innerHTML,/Каэль/);
+assert.match(elements.squadSlots.innerHTML,/Рен Терен/);
+for(const name of ["Нада","Лиора Вель","Сава","Арт"])
+ assert.ok(elements.squadSlots.innerHTML.includes(name),"default formation includes "+name);
+// The rest of this legacy test verifies the original sandbox fighters' slot
+// and camera contracts. Select them explicitly rather than assuming defaults.
+click(elements.squadDisband);
+for(const id of ["kael","lyra","darin","medic-demo","test-area-damage"])
+ assert.equal(api.toggleSquadHero(id),true);
+assert.equal(count(),"5/5");
 assert.equal(api.getBattle().leaderId,null,"initial sandbox battle is still legacy");
 assert.match(elements.squadHint.textContent,/нет лидерской способности/);
 assert.equal(api.toggleSquadHero("kael"),true,"regular click removes first-slot leader");

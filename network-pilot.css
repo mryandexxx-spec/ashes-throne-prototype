@@ -92,3 +92,9 @@
  .net008a-panel{padding:7px 9px;gap:4px}
  .net008a-panel .net004-actions button{min-height:44px}
 }
+
+/* NET-UX-001: Cyrillic-capable native fallbacks when Inter is unavailable. */
+.net004-screen .net004-notice,.net004-screen .net004-clue,
+.net004-screen .net004-history,.net004-screen .net004-section-head span{
+ font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+}

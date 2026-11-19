@@ -21,7 +21,7 @@ async function run(name,engine,viewport){
   await page.locator("#hqMoreToggle").click();
   await page.locator("#net004Entry").click();
   await page.locator("#net008aThreat").waitFor({state:"visible"});
-  assert.match(await page.locator("#net008aTitle").innerText(),/2026-|2027-/);
+  assert.match(await page.locator("#net008aTitle").innerText(),/неделя с \d{1,2} [а-яё]+/i);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   await page.screenshot({path:path.join(dest,name+"-"+viewport.width+"-threat.png")});
   // A real browser battle; boosting the demo party isolates the lifecycle
@@ -57,7 +57,10 @@ async function run(name,engine,viewport){
    try{return JSON.parse(localStorage.getItem("ashes-throne.weekly.v1")).bestScore>=60;}
    catch(_){return false;}
   },null,{timeout:125000});
-  await page.locator("#network").waitFor({state:"visible",timeout:15000});
+  // The wallet receipt is committed at battle termination; the visible screen
+  // changes only after Babylon has drawn the final attack/death animations.
+  // Real five-hero WebGL in SwiftShader may take longer than a fixed 15s.
+  await page.locator("#network").waitFor({state:"visible",timeout:60000});
   const paid=await page.evaluate(()=>{
    const week=JSON.parse(localStorage.getItem("ashes-throne.weekly.v1"));
    const wallet=JSON.parse(localStorage.getItem("ashes-throne.progress.v3"));
@@ -83,7 +86,17 @@ async function run(name,engine,viewport){
   console.log("NET008A_BROWSER",name,viewport.width+"x"+viewport.height,"PASS",
    JSON.stringify({score:paid.week.bestScore,paid:rewards.length}));
  }catch(e){
-  console.error("NET008A_BROWSER_FAIL",name,viewport,errors);
+  const diagnostic=await page.evaluate(()=>({
+   screen:document.querySelector(".screen.active")?.id,
+   active:typeof state!=="undefined"?state.active:null,
+   winner:typeof state!=="undefined"?state.winner:null,
+   weeklyReady:typeof weeklyResultReady!=="undefined"?weeklyResultReady:null,
+   transition:typeof visualTransition!=="undefined"?visualTransition:null,
+   pending:typeof BattleAnimation!=="undefined"?BattleAnimation.pending():null,
+   renderLoop:typeof renderLoopRunning!=="undefined"?renderLoopRunning:null,
+   display:document.querySelector("#battleMessage")?.textContent
+  })).catch(()=>null);
+  console.error("NET008A_BROWSER_FAIL",name,viewport,errors,diagnostic);
   await page.screenshot({path:path.join(dest,name+"-"+viewport.width+"-fail.png"),
    fullPage:true}).catch(()=>{});
   throw e;

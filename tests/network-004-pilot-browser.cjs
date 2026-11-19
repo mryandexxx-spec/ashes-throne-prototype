@@ -17,7 +17,7 @@ async function run(name,engine,viewport){
   await page.goto(origin+"?networkPilot=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   assert.match(await page.locator("#buildVersion").innerText(),
-   /v0\.3\.(188 · NET004PILOT|189 · NET005PILOT|190 · NET006ASCORE|191 · NET007PROG|192 · NET007LIVE|193 · NET008AWEEKLY|194 · ARENAVIS001|195 · NETUXFIX001|196 · NETUXNAV002|197 · NETUXDAILY003)/);
+   /v0\.3\.(188 · NET004PILOT|189 · NET005PILOT|190 · NET006ASCORE|191 · NET007PROG|192 · NET007LIVE|193 · NET008AWEEKLY|194 · ARENAVIS001|195 · NETUXFIX001|196 · NETUXNAV002|197 · NETUXDAILY003|198 · NETUXBOARD004)/);
   assert.equal(await page.locator('#home .hq-bottom [data-screen="network"]').getAttribute("hidden"),null);
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
@@ -33,7 +33,7 @@ async function run(name,engine,viewport){
   assert.ok(begin.pilot&&JSON.parse(begin.pilot).board.length===3);
   assert.equal(begin.overflow,false);
   await page.screenshot({path:path.join(dest,name+"-"+viewport.width+"-board.png")});
-  await page.locator('#net004Clues [data-net-action="start"]').first().click();
+  await page.locator('#netuxStartSelected').first().click();
   await page.locator('[data-net-action="prepare"][data-net-value="survey"]').click();
   await page.locator('[data-net-action="approach"][data-net-value="quiet"]').click();
   await page.locator("#squad").waitFor({state:"visible",timeout:10000});
@@ -111,7 +111,7 @@ async function run(name,engine,viewport){
   // One real two-encounter UI smoke. Only Chromium 844 runs this extra journey:
   // the four-engine baseline above remains fast; the core is covered by Node.
   if(name==="chromium"&&viewport.width===844){
-   await page.locator('#net004Clues [data-net-action="start"]').first().click();
+   await page.locator('#netuxStartSelected').first().click();
    await page.locator('[data-net-action="prepare"][data-net-value="cover"]').click();
    await page.locator('[data-net-action="approach"][data-net-value="cordon"]').click();
    await page.locator("#squad").waitFor({state:"visible",timeout:10000});
@@ -234,7 +234,7 @@ async function liveByDefault(){
     source:NetworkLiveEconomy.source(clue.rewardRef)};
   });
   assert.ok(start.source);
-  await page.locator('#net004Clues [data-net-action="start"]').first().click();
+  await page.locator('#netuxStartSelected').first().click();
   await page.locator('[data-net-action="prepare"][data-net-value="survey"]').click();
   await page.locator('[data-net-action="approach"][data-net-value="quiet"]').click();
   await page.locator("#squad").waitFor({state:"visible",timeout:15000});

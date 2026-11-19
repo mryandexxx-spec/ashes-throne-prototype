@@ -214,3 +214,144 @@
  .netux-daily-actions{justify-content:flex-start}
 }
 @media(prefers-reduced-motion:reduce){.netux-daily-panel *{transition:none!important}}
+
+/* NET-UX-004: compact NETWORK-UI-000 board. UI only: no economy/save changes. */
+.net004-screen.active{padding:8px 0 10px}
+.net004-screen .netux-board-shell{
+ width:100%;max-width:1280px;height:calc(100dvh - 104px - env(safe-area-inset-bottom,0px));
+ min-height:250px;display:grid;grid-template-columns:clamp(205px,26%,270px) minmax(0,1fr);
+ gap:10px;padding:0 max(5px,env(safe-area-inset-right,0px)) 0 max(5px,env(safe-area-inset-left,0px));
+}
+.net004-screen .netux-rail,.net004-screen .netux-workspace{min-width:0;min-height:0}
+.net004-screen .netux-rail{
+ display:flex;flex-direction:column;gap:7px;overflow-y:auto;overscroll-behavior:contain;
+ padding:7px 9px;border:1px solid #a7834877;border-radius:11px;background:rgba(19,18,22,.94)
+}
+.net004-screen .net004-head{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:6px;align-items:start}
+.net004-screen .net004-head h2{font-size:19px;margin:1px 0}
+.net004-screen .net004-head p{font-size:10px;line-height:1.25}
+.net004-screen .netux-home-back{width:44px;height:44px;min-height:44px;padding:0;display:grid;place-items:center;font-size:22px}
+.net004-screen .netux-region{
+ position:relative;display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:48px;
+ padding:5px 9px;border:1px solid #8d734c80;border-radius:8px;background:#282329;
+ overflow:hidden
+}
+.net004-screen .netux-region small{color:#dcb779;font-size:9px;letter-spacing:.12em}
+.net004-screen .netux-region strong{position:relative;font:600 15px/1.2 Georgia,serif;color:#f4e0bc}
+.net004-screen #netuxInfluence{position:relative;font-size:11px;color:#d9c5ab}
+.netux-region-engraving{
+ position:absolute;right:0;top:0;width:33%;height:100%;opacity:.28;pointer-events:none;
+ background:repeating-radial-gradient(ellipse at right,#c7a36855 0 1px,transparent 2px 9px)
+}
+.net004-screen .net005-order{position:relative;padding:0;border:1px solid #a7834877;border-radius:8px;background:#262329}
+.net004-screen .net005-order summary{
+ display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:44px;
+ padding:5px 9px;box-sizing:border-box;cursor:pointer;list-style:none
+}
+.net004-screen .net005-order summary::-webkit-details-marker{display:none}
+.net004-screen .net005-order summary strong{font:600 13px Georgia,serif;color:#e0b978}
+.net004-screen .net005-order summary small{
+ display:block;max-width:100%;font-size:10px;white-space:nowrap;text-overflow:ellipsis;
+ overflow:hidden;color:#d9c5ab
+}
+.net004-screen .net005-order summary::after{content:"▾";position:absolute;right:18px;color:#d7b680}
+.net004-screen .net005-order[open] summary::after{content:"▴"}
+.net004-screen .net005-order .net005-order-choices{
+ max-height:140px;overflow-y:auto;overflow-x:hidden;margin:0;padding:7px 8px;
+ border-top:1px solid #a7834850;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))
+}
+.net004-screen .net005-order-choices button{min-width:0;padding:5px 6px;font-size:10px;min-height:44px}
+.net004-screen .netux-threat-shortcut{
+ display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;
+ min-height:44px;width:100%;padding:6px 10px;text-align:left;
+ border-color:#a65f4d;background:linear-gradient(120deg,#432820,#292327)
+}
+.netux-threat-shortcut strong{font:600 13px Georgia,serif}
+.netux-threat-shortcut small{font-size:10px;color:#eac2af}
+.net004-screen .net004-notice{
+ font-size:10px;line-height:1.3;padding:5px 7px;overflow-wrap:anywhere
+}
+.net004-screen #net007Collect{width:100%;min-height:44px;margin:0}
+.net004-screen .netux-workspace{display:flex;flex-direction:column;gap:7px;overflow:hidden}
+.net004-screen .netux-tabs{flex:none;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:5px}
+.net004-screen .netux-tabs button{min-height:44px;padding:5px 8px;font-size:12px}
+.net004-screen .netux-tabs .netux-training{font-size:11px}
+.net004-screen .netux-clues-view{display:flex;flex:1;flex-direction:column;overflow:hidden;gap:5px}
+.net004-screen #net004Board{display:flex;flex:1;flex-direction:column;min-height:0;gap:5px}
+.net004-screen .netux-board-heading{flex:none;min-height:44px;flex-wrap:nowrap}
+.net004-screen .netux-board-heading h3{font-size:15px}
+.net004-screen #net004Refresh{min-height:44px;padding:3px 11px;font-size:11px;flex:none}
+.net004-screen #net004Clues{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:minmax(82px,auto);
+ flex:1;min-height:0;min-width:0;gap:7px;align-content:start;
+ overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+ margin:0;padding:1px 3px 2px 0;touch-action:pan-y
+}
+.net004-screen #net004Clues .net004-clue{
+ display:flex;min-height:82px;padding:0;gap:0;background:#211f23;overflow:hidden;
+ border:1px solid #a7834866;box-shadow:none
+}
+.net004-screen #net004Clues .net004-clue[data-selected="true"]{
+ border-color:#f0c879;box-shadow:inset 0 0 0 1px #f0c879,0 0 14px #f0c8792b;
+ background:#31271f
+}
+.net004-screen #net004Clues .netux-clue-pick{
+ min-width:0;min-height:82px;width:100%;margin:0;padding:7px 9px;
+ display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;
+ text-align:left;gap:4px;background:transparent;border:0;box-shadow:none;
+ font:400 11px/1.15 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+.netux-clue-top,.netux-clue-tags{display:flex;align-items:center;gap:5px;justify-content:space-between;min-width:0}
+.netux-clue-kind{color:#e8c98f;font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.netux-clue-level{font-size:10px;color:#d9c5ab;white-space:nowrap;flex:none}
+.net004-screen .netux-clue-pick strong{font:600 13px/1.1 Georgia,serif;color:#f8e8ce;overflow-wrap:anywhere}
+.netux-clue-reward{font-size:10px;line-height:1.15;color:#d9cbb7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.netux-clue-tags{justify-content:flex-start;flex-wrap:wrap}
+.netux-clue-tags span{font-size:9px;padding:2px 5px;border-radius:4px;color:#a5e2c8;background:#1c382f}
+.netux-clue-tags span.netux-threat-tag{color:#f5baa9;background:#4d302b}
+.net004-screen .netux-board-selection{
+ display:flex;align-items:center;gap:8px;min-width:0;min-height:48px;
+ border:1px solid #a7834880;border-radius:9px;background:#241f23;
+ padding:2px 4px 2px 9px;box-sizing:border-box
+}
+.netux-selected-copy{display:flex;flex:1;flex-direction:column;gap:1px;min-width:0}
+.netux-selected-copy small{font-size:9px;letter-spacing:.08em;color:#c9a86d}
+.netux-selected-copy span{display:block;font-size:12px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;color:#f4ebd8}
+.netux-board-controls{display:flex;gap:5px;flex:none}
+.net004-screen .netux-board-controls button{min-height:44px;padding:5px 9px;font-size:11px}
+.net004-screen #netuxStartSelected{color:#231a12;border-color:#e8c78d;background:linear-gradient(155deg,#f0c879,#c99a55)}
+.net004-screen #netuxSimulateSelected:not(:disabled){background:linear-gradient(155deg,#38564c,#203a33);border-color:#87bca7}
+.net004-screen .netux-history{flex:none;font-size:11px;color:#d9c5ab}
+.net004-screen .netux-history summary{cursor:pointer;font-size:10px;min-height:22px}
+.net004-screen .netux-history .net004-history{margin:2px 0;max-height:55px;overflow-y:auto}
+.net004-screen #net004Active,.net004-screen #net004Result{
+ flex:1;min-height:0;overflow-y:auto;padding:10px;border:1px solid #a783485d;
+ border-radius:10px;background:rgba(25,23,28,.93)
+}
+.net004-screen .net008a-panel,.net004-screen .netux-daily-panel{
+ flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain
+}
+.net004-screen .netux-rail summary:focus-visible,.net004-screen .netux-history summary:focus-visible{
+ outline:3px solid #ffe0a0;outline-offset:-3px
+}
+@media(orientation:landscape) and (max-height:430px){
+ .net004-screen.active{padding:4px 0 6px}
+ .net004-screen .netux-board-shell{height:calc(100dvh - 91px - env(safe-area-inset-bottom,0px));gap:7px}
+ .net004-screen .netux-rail{gap:5px;padding:5px 7px}
+ .net004-screen .net004-head h2{font-size:18px}
+ .net004-screen .netux-region{min-height:42px;padding:3px 8px}
+ .net004-screen .netux-workspace{gap:4px}
+ .net004-screen #net004Clues{gap:5px;grid-auto-rows:minmax(78px,auto)}
+ .net004-screen #net004Clues .net004-clue,.net004-screen #net004Clues .netux-clue-pick{min-height:78px}
+}
+@media(max-width:730px){
+ .net004-screen .netux-board-shell{grid-template-columns:minmax(0,1fr);height:auto;max-height:none;overflow:visible}
+ .net004-screen .netux-rail{overflow:visible}
+ .net004-screen #net004Clues{grid-template-columns:repeat(2,minmax(0,1fr));max-height:55dvh}
+ .net004-screen .netux-workspace{overflow:visible}
+ .net004-screen .netux-clues-view{overflow:visible}
+}
+@media(orientation:landscape) and (max-height:430px) and (min-width:731px){
+ .net004-screen .netux-region-engraving{display:none}
+ .net004-screen .netux-history{max-height:45px;overflow-y:auto}
+}

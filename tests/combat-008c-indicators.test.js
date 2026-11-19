@@ -15,7 +15,7 @@ assert.match(css,/\.battle-screen \.arena-indicators\s*\{[^}]*pointer-events:non
 assert.match(css,/\.battle-screen \.arena-indicator\s*\{[^}]*pointer-events:none/,
  "each fighter label must ignore pointer input");
 assert.match(game,/radius:12,targetY:\.9/,"initial camera starts at former maximum zoom");
-assert.match(game,/lowerRadiusLimit=12;arenaCamera.upperRadiusLimit=21/,"zoom limits unchanged");
+assert.match(game,/lowerRadiusLimit=ARENA_VIEW.minRadius\?\?12;arenaCamera.upperRadiusLimit=ARENA_VIEW.maxRadius\?\?21/,"zoom limits come from the arena view");
 assert.match(game,/Math\.min\(100,Math\.max\(0,\(h\.meter\|\|0\)\/10\)\)/,
  "initiative display uses real fighter meter, 0..1000");
 assert.match(game,/renderArenaIndicators\(\)/);

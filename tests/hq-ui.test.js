@@ -30,7 +30,7 @@ test("HQ image is small, self-contained, and not a new 3D scene",()=>{
 
 test("HQ-UI-004 painted landmarks are full clickable buttons with readable captions",()=>{
  const home=html.slice(html.indexOf('<section id="home"'),html.indexOf('<section id="dailyTasks"'));
- for(const [zone,target] of [["heroes","collection"],["campaign","campaign"],["operations","operations"],["challenges","challenges"]]){
+ for(const [zone,target] of [["heroes","collection"],["campaign","campaign"],["operations","network"],["challenges","challenges"]]){
   const match=home.match(new RegExp('<button[^>]*class="hq-station hq-station-'+zone+'"[^>]*data-screen="'+target+'"'));
   assert.ok(match,zone+" direct navigation");
  }

@@ -64,6 +64,16 @@ async function run(name,engine,viewport){
   assert.deepEqual(await page.evaluate(()=>squadSlots().filter(Boolean)),originalIds);
   assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.squad.v1")),
    previousSquad,"return to original formation also must not save");
+  // The realistic five-hero default is intentionally tested above. For this
+  // lifecycle smoke use the original deterministic sandbox fighters so victory
+  // timing does not depend on provisional hero balance or 3D model load.
+  await page.locator("#squadDisband").evaluate(el=>el.click());
+  const smokeIds=["kael","lyra","darin","medic-demo","test-area-damage"];
+  for(const id of smokeIds)
+   await page.locator('#squadRoster [data-hero-id="'+id+'"]').evaluate(el=>el.click());
+  assert.deepEqual(await page.evaluate(()=>squadSlots().filter(Boolean)),smokeIds);
+  assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.squad.v1")),
+   previousSquad,"smoke formation must not overwrite permanent squad");
   await page.locator("#squadStart").click();
   await page.locator("#battle").waitFor({state:"visible",timeout:30000});
   await page.locator("#autoBattleBtn").click();

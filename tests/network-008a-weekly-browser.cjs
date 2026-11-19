@@ -21,7 +21,7 @@ async function run(name,engine,viewport){
   await page.locator("#hqMoreToggle").click();
   await page.locator("#net004Entry").click();
   await page.locator("#net008aThreat").waitFor({state:"visible"});
-  assert.match(await page.locator("#net008aTitle").innerText(),/2026-|2027-/);
+  assert.match(await page.locator("#net008aTitle").innerText(),/неделя с \d{1,2} [а-яё]+/i);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   await page.screenshot({path:path.join(dest,name+"-"+viewport.width+"-threat.png")});
   // A real browser battle; boosting the demo party isolates the lifecycle

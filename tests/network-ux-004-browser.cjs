@@ -30,7 +30,7 @@ async function check(name,engine,viewport){
     tabs:rect("#network .netux-tabs"),action:rect("#network .netux-board-selection"),
     picks:[...document.querySelectorAll("#net004Clues .netux-clue-pick")]
      .map(el=>({height:el.getBoundingClientRect().height,width:el.getBoundingClientRect().width})),
-    controls:[...document.querySelectorAll("#network .netux-tabs button:not([hidden]), #netuxStartSelected, #netuxSimulateSelected, #netuxThreatShortcut, #netuxOrderOpen, #net004Refresh")]
+    controls:[...document.querySelectorAll("#network .netux-tabs button:not([hidden]), #netuxStartSelected, #netuxSimulateSelected, #netuxOrderOpen, #net004Refresh")]
      .filter(el=>!el.hidden).map(el=>el.getBoundingClientRect().height)
    };
   });

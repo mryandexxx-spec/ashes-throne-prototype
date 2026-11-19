@@ -103,7 +103,7 @@ const NetworkPilotUI=(()=>{
    " · не позже "+remaining+" нов. донесени"+(remaining===1?"я":"й"):
    "Приоритет не выбран";
   $("net005OrderStatus").textContent=orderLabel(active);
-  $("netuxOrderProgress").textContent=active?progress:"Поиск без направления · изменить";
+  $("netuxOrderProgress").textContent=active?progress:"";
   $("netuxOrderOpen").disabled=blocked||busy||orderSubmitting;
   $("netuxOrderCurrent").textContent=orderLabel(active);
   $("netuxOrderCurrentProgress").textContent=active?progress+" · совпадение сбрасывает счётчик":
@@ -195,7 +195,7 @@ const NetworkPilotUI=(()=>{
   const s=session.read(),blocked=session.isBlocked(),busy=session.isBusy();
   $("net004Notice").textContent=blocked?
    "Режим заблокирован: нет безопасной записи. Перезагрузите страницу.":
-   notice||(isLive()?"Разведсеть: выполняйте зацепки, направляйте поиск материалов и осколков.":
+   notice||(isLive()?"":
     "Пробный режим без наград и расхода энергии. Данные хранятся отдельно.");
   const board=$("net004Board"),active=$("net004Active"),result=$("net004Result");
   board.hidden=!!s?.active||!s;
@@ -253,9 +253,9 @@ const NetworkPilotUI=(()=>{
    $("netuxBriefStage").textContent=a.phase==="brief"?"1 · ПОДГОТОВКА":
     a.phase==="approach"?"2 · ВЫБОР ПОДХОДА":"3 · ВЫЛАЗКА";
    $("net004ActiveDetail").textContent=a.phase==="brief"?
-    "Выберите один способ подготовки. После подтверждения откроются подходы.":
+    "":
     a.phase==="approach"?"Подготовка: "+(prep[a.preparation]||a.preparation)+
-     ". Выберите подход: он определит число отдельных схваток.":
+     ".":
     "Контрольная точка · волна "+(a.wave+1)+"/"+chosen.waves+
      ". Каждая волна проходит отдельным боем с полным восстановлением отряда."+
      (a.wave>0&&!Array.isArray(a.waveSummaries)?
@@ -273,11 +273,10 @@ const NetworkPilotUI=(()=>{
    $("netuxBriefReward").textContent=isLive()?rewardText(c.rewardRef):
     "Пробный режим · реальных наград нет.";
    $("netuxBriefThreat").textContent=c.threatTag?
-    "След угрозы: сведение учитывается только после ручного завершения зацепки.":
-    "Нет отметки недельной угрозы.";
+    "Сведения об угрозе за ручное прохождение.":"";
    const slot=$("net004Choices");slot.replaceChildren();
-   const descriptions={survey:"Первый противник будет отмечен как приоритетная цель.",
-    cover:"Снижает физическую атаку противников.",
+   const descriptions={survey:"Отметить первую цель в бою.",
+    cover:"Ослабить физические атаки врагов.",
     quiet:story?.quiet||"Одна отдельная схватка.",
     cordon:story?.cordon||"Две отдельные схватки, отряд восстанавливается между ними."};
    if(a.phase==="brief")for(const id of c.preparationIds){
@@ -291,6 +290,7 @@ const NetworkPilotUI=(()=>{
     choice.append(line(descriptions[route.id]||"Выбрать подход","small"));
     slot.append(choice);
    }
+   $("net004Fight").textContent=a.wave>0?"Продолжить вылазку":"Выбрать отряд";
    $("net004Fight").hidden=a.phase!=="battle";
    $("net004Fight").disabled=busy||blocked||(a.wave>0&&!Array.isArray(a.waveSummaries));
    $("net004Cancel").disabled=busy||blocked;
@@ -359,6 +359,7 @@ const NetworkPilotUI=(()=>{
    if(!b||!$("network").contains(b))return;
    const action=b.dataset.netAction;
    if(b.disabled)return;
+   if(action==="open-report"){$("netuxReportDialog").showModal();return;}
    if(action==="open-order"){openOrder();return;}
    if(action==="close-order"){$("netuxOrderDialog").close();return;}
    if(action==="order-tab"){

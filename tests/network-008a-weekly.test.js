@@ -74,7 +74,9 @@ test("NET-008A true CombatCore result pays each earned tier once and restores fr
  assert.equal(r.currency,10000);
  assert.equal(wallet(s).currency,10000);
  assert.equal(wallet(s).materials.Gl,30);
- assert.equal(wallet(s).networkLedger.claimedThrough,0);
+ assert.equal(wallet(s).networkLedger,undefined,"weekly rewards do not mutate the optional NET-007 ledger");
+  assert.deepEqual(wallet(s).rewardReceipts.filter(x=>x.id.startsWith("first-clear:net008a-stage-"))
+   .map(x=>x.id).sort(),[1,2,3].map(n=>"first-clear:net008a-stage-"+n+":2026-11-16"));
  assert.equal((await s.session.collect()).count,0);
  const again=s.mod.WeeklyThreatCore.create({
   storageProvider:()=>s.storage,exclusive:fn=>Promise.resolve().then(fn),

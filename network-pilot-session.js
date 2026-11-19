@@ -9,6 +9,8 @@ const NetworkPilotSession=(()=>{
  const Data=typeof NetworkData!=="undefined"?NetworkData:require("./network-data.js");
  const Adapter=typeof NetworkEncounterAdapter!=="undefined"?
   NetworkEncounterAdapter:require("./network-encounter-adapter.js");
+ const Encounters=typeof NetworkEncounterData!=="undefined"?
+  NetworkEncounterData:require("./network-encounter-data.js");
  const KEY="ashes-throne.network.pilot.v1";
  const LIVE_CONFIG=Object.freeze({id:"net-007-balanced-b1",capacity:16,
   intervalMs:6*60*60*1000,guaranteeAfter:3,focusWeight:4,masteryScore:90});
@@ -95,8 +97,7 @@ const NetworkPilotSession=(()=>{
    if(!live||!state)return catalog;
    const clue=state.board.find(c=>c.id===clueId);
    if(!clue||clue.templateRevision!==1)return catalog;
-   const entry=typeof NetworkEncounterData!=="undefined"?
-    NetworkEncounterData.REGISTRY[clue.encounterRef]:null;
+   const entry=Encounters.REGISTRY[clue.encounterRef];
    if(!entry||entry.template.id!==clue.templateId||
     entry.template.revision!==clue.templateRevision)return catalog;
    const region=catalog.regions.find(r=>r.id===clue.regionId);

@@ -18,8 +18,8 @@ async function run(name,engine,viewport){
   await page.waitForFunction(()=>!!localStorage.getItem("ashes-throne.weekly.v1"),null,{timeout:15000});
   if(await page.locator("#loginCalendar").evaluate(e=>e.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
-  await page.locator("#hqMoreToggle").click();
-  await page.locator("#net004Entry").click();
+  await page.locator('#home .hq-bottom [data-screen="network"]').click();
+  await page.locator('#network [data-net-view="threat"]').click();
   await page.locator("#net008aThreat").waitFor({state:"visible"});
   assert.match(await page.locator("#net008aTitle").innerText(),/неделя с \d{1,2} [а-яё]+/i);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
@@ -39,8 +39,8 @@ async function run(name,engine,viewport){
   await page.reload({waitUntil:"load"});
   if(await page.locator("#loginCalendar").evaluate(e=>e.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
-  await page.locator("#hqMoreToggle").click();
-  await page.locator("#net004Entry").click();
+  await page.locator('#home .hq-bottom [data-screen="network"]').click();
+  await page.locator('#network [data-net-view="threat"]').click();
   await page.locator("#net008aFight").click();
   await page.locator("#squad").waitFor({state:"visible"});
   await page.locator("#squadStart").click();

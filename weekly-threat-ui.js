@@ -17,6 +17,22 @@ const WeeklyThreatUI=(()=>{
    new Intl.DateTimeFormat("ru-RU",{day:"numeric",month:"long",timeZone:"UTC"}).format(new Date(s.weekStart));
   $("net008aGoal").textContent=def.goal+
    ". Первый отмеченный противник должен погибнуть первым. Нокауты и число ходов влияют на оценку.";
+  $("netuxWeeklyIntel").textContent=intel+"/3";
+  $("netuxWeeklyIntelMeter").value=intel;
+  $("netuxWeeklyAttempts").textContent=String(s.attempts);
+  $("netuxWeeklyBest").textContent=s.bestScore?
+   s.bestScore+"/100 · "+WeeklyThreatCore.TIERS.filter(t=>s.bestScore>=t.score).length+"★":"Нет";
+  WeeklyThreatCore.TIERS.forEach((tier,i)=>{
+   const el=$("netuxWeeklyTier"+(i+1));if(!el)return;
+   const won=s.bestScore>=tier.score,
+    due=pend.some(x=>x.weekStart===s.weekStart&&x.stage===i+1);
+   el.dataset.status=won?(due?"pending":"paid"):"locked";
+   el.textContent=(i+1)+"★ · от "+tier.score+"/100 · "+
+    (won?(due?"К получению":"Получено"):"Пока не достигнуто")+
+    " · +"+tier.currency+" валюты · +"+tier.xp+" XP · "+
+    Object.entries(tier.materials).map(([id,n])=>"+"+n+" "+
+     (typeof GearData!=="undefined"?GearData.MATERIAL_LABELS[id]||id:labels[id])).join(", ");
+  });
   $("net008aStatus").textContent=notice||(session.isClockBack()?
    "Часы устройства переведены назад: недельные действия приостановлены. Верните правильное время.":
    "Разведданные этой недели: "+intel+"/3 · попыток: "+s.attempts+
@@ -33,10 +49,12 @@ const WeeklyThreatUI=(()=>{
   $("net008aFight").hidden=!s.active;
   $("net008aAbandon").hidden=!s.active;
   $("net008aContinue").textContent=s.active?
-   "Подготовка: "+(s.active.preparation==="survey"?"изучить цель":"укрыть отряд")+
-   " · разведданные "+s.active.intel+"/3 · попытка "+s.active.attempt:
-   "Выберите способ подготовки. Разведка ослабит главную цель, прикрытие — урон противников. "+
-   "После двух донесений преимущество усиливается.";
+   "Текущая попытка №"+s.active.attempt+" · "+
+   (s.active.preparation==="survey"?"Разведка: главная цель ослаблена.":
+    "Прикрытие: физическая атака противников снижена.")+
+   " Учтено сведений при начале: "+s.active.intel+"/3.":
+   "Выберите подготовку: разведка снижает HP первой цели, прикрытие — физическую атаку врагов."+
+   " От 2 сведений эффект сильнее; сведения дают завершённые вручную зацепки с меткой угрозы.";
   $("net008aCollect").textContent="Забрать награды: "+pend.length;
   $("net008aCollect").hidden=pend.length===0;
   root.querySelectorAll("button[data-week-action]").forEach(b=>b.disabled=blocked||busy);

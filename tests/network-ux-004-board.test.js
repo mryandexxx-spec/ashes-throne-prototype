@@ -7,7 +7,7 @@ test("NET-UX-004: compact board reuses live engine, ids and view navigation",()=
  for(const id of ["network","netuxCluesPanel","net004Board","net004Active",
   "net004Result","net004Clues","netuxSelectedTitle","netuxStartSelected",
   "netuxSimulateSelected","netuxOrderDetails","net005OrderChoices",
-  "net007Collect","net008aThreat","netuxDailyPanel","netuxThreatShortcut",
+  "net007Collect","net008aThreat","netuxDailyPanel",
   "netuxInfluence"])
    assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1,id);
  assert.match(html,/class="netux-rail"/);
@@ -16,8 +16,7 @@ test("NET-UX-004: compact board reuses live engine, ids and view navigation",()=
  assert.match(html,/data-net-view="threat"/);
  assert.match(html,/data-net-action="start-selected"/);
  assert.match(html,/data-net-action="simulate-selected"/);
- assert.match(html,/id="netuxThreatShortcut" data-net-quick="threat"/);
- assert.match(read("network-navigation.js"),/shortcut\.dataset\.netQuick/);
+ assert.equal((html.match(/data-net-view="threat"/g)||[]).length,1);
  assert.match(js,/selectedClueId=/);
  assert.match(js,/function updateSelection\(/);
  assert.match(js,/if\(action==="pick"\)/);
@@ -29,8 +28,8 @@ test("NET-UX-004: compact board reuses live engine, ids and view navigation",()=
  assert.match(css,/safe-area-inset-right/);
  assert.match(css,/min-height:44px/);
  const pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.201");
- assert.match(html,/id="buildVersion">Прототип · v0\.3\.201 · NETUXVAR007/);
+ assert.equal(pkg.version,"0.3.202");
+ assert.match(html,/id="buildVersion">Прототип · v0\.3\.202 · NETUXFIT/);
 });
 test("NET-UX-004: core, reward and daily files stay untouched by UI stage",()=>{
  const source=read("network-pilot-ui.js");

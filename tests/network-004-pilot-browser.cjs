@@ -17,12 +17,11 @@ async function run(name,engine,viewport){
   await page.goto(origin+"?networkPilot=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   assert.match(await page.locator("#buildVersion").innerText(),
-   /v0\.3\.(188 · NET004PILOT|189 · NET005PILOT|190 · NET006ASCORE|191 · NET007PROG|192 · NET007LIVE|193 · NET008AWEEKLY|194 · ARENAVIS001|195 · NETUXFIX001)/);
-  assert.equal(await page.locator("#net004Entry").getAttribute("hidden"),null);
+   /v0\.3\.(188 · NET004PILOT|189 · NET005PILOT|190 · NET006ASCORE|191 · NET007PROG|192 · NET007LIVE|193 · NET008AWEEKLY|194 · ARENAVIS001|195 · NETUXFIX001|196 · NETUXNAV002)/);
+  assert.equal(await page.locator('#home .hq-bottom [data-screen="network"]').getAttribute("hidden"),null);
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
-  await page.locator("#hqMoreToggle").click();
-  await page.locator("#net004Entry").click();
+  await page.locator('#home .hq-bottom [data-screen="network"]').click();
   await page.locator("#network").waitFor({state:"visible"});
   const begin=await page.evaluate(()=>({
    wallet:localStorage.getItem("ashes-throne.progress.v3"),
@@ -91,8 +90,7 @@ async function run(name,engine,viewport){
   await page.reload({waitUntil:"load"});
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
-  await page.locator("#hqMoreToggle").click();
-  await page.locator("#net004Entry").click();
+  await page.locator('#home .hq-bottom [data-screen="network"]').click();
   await page.locator("#net004Result").waitFor({state:"visible"});
   assert.match(await page.locator("#net004ResultDetail").innerText(),/Оценка S1: (?:[6-9][0-9]|100)/);
   await page.locator("#net004Finish").click();
@@ -146,8 +144,7 @@ async function run(name,engine,viewport){
    await page.reload({waitUntil:"load"});
    if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
     await page.locator('#loginCalendar [data-screen="home"]').click();
-   await page.locator("#hqMoreToggle").click();
-   await page.locator("#net004Entry").click();
+   await page.locator('#home .hq-bottom [data-screen="network"]').click();
    await page.locator("#net004Fight").click();
    await page.locator("#squad").waitFor({state:"visible"});
    await page.locator("#squadStart").click();
@@ -215,7 +212,7 @@ async function liveByDefault(){
  try{
   await page.goto(origin,{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function");
-  assert.equal(await page.locator("#net004Entry").getAttribute("hidden"),null);
+  assert.equal(await page.locator('#home .hq-bottom [data-screen="network"]').getAttribute("hidden"),null);
   await page.waitForFunction(()=>!!localStorage.getItem("ashes-throne.network.v1"));
   const ready=await page.evaluate(()=>({
    live:JSON.parse(localStorage.getItem("ashes-throne.network.v1")),
@@ -227,8 +224,7 @@ async function liveByDefault(){
   // This verifies the live payout lifecycle, not provisional five-hero L1 balance.
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
-  await page.locator("#hqMoreToggle").click();
-  await page.locator("#net004Entry").click();
+  await page.locator('#home .hq-bottom [data-screen="network"]').click();
   await page.locator("#network").waitFor({state:"visible",timeout:15000});
   const start=await page.evaluate(()=>{
    const state=JSON.parse(localStorage.getItem("ashes-throne.network.v1"));

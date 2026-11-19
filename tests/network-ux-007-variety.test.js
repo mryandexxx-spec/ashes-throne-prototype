@@ -164,3 +164,37 @@ test("NET-UX-007: two revised encounters, full checkpoint, defeat retry and one 
   assert.equal(retry.board[0].encounterRef,t.encounterRef);
  }
 });
+
+test("NET-UX-007: mastered rev1 saved board can still simulate after rev2 rollout",async()=>{
+ const original=clone(Data.LIVE_CATALOG.templates[0]);
+ original.revision=1;original.encounterRef="encounter-"+original.id;
+ const oldCatalog=Data.buildCatalog({version:1,regions:Data.LIVE_CATALOG.regions,
+  templates:[original]});
+ let state=Core.fresh(787,0,config,oldCatalog);
+ state=Core.accrue(state,4*config.intervalMs,oldCatalog,location);
+ assert.equal(state.board.length,4);
+ state=Core.approach(Core.prepare(Core.start(state,state.board[0].id),"survey"),"quiet");
+ const start=Adapter.startBattle(state,[hero()],{combat});
+ assert.ok(start);
+ const finished=Adapter.complete(state,win(start.battle));
+ state=Core.finish(finished);
+ assert.equal(state.completed.length,1);
+ assert.ok(Core.isMastered(state,original,state.completed[0]?.approach||"quiet")||
+  Core.isMastered(state,state.board[0],"quiet"));
+ const db=new Map(),storage={getItem:k=>db.get(k)??null,
+  setItem:(k,v)=>db.set(k,v)};
+ assert.ok(Core.save(state,()=>storage,()=>true).ok);
+ const Session=require("../network-pilot-session.js");
+ const session=Session.create({live:true,storageProvider:()=>storage,
+  exclusive:fn=>Promise.resolve().then(fn),ownsLock:()=>true,
+  now:()=>4*config.intervalMs,seed:()=>787});
+ assert.ok(session);
+ assert.equal((await session.open()).ok,true);
+ const clueId=session.read().board[0].id;
+ assert.equal(session.read().board[0].templateRevision,1);
+ assert.equal(session.canSimulate(clueId),true,"old mastery stays useful");
+ assert.equal((await session.change("simulate",clueId)).ok,true);
+ assert.equal(session.read().completed.length,2);
+ assert.equal(db.get("ashes-throne.progress.v3"),undefined,"no wallet write");
+ assert.equal(session.canSimulate(999999),false,"no fabricated clue");
+});

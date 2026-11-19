@@ -4119,6 +4119,11 @@ if(typeof NetworkPilotSession!=="undefined"&&
    });
  }
 }
+// Fresh display when returning to this view without a full screen transition.
+$("#network")?.addEventListener("click",event=>{
+ const tab=event.target.closest?.('button[data-net-view="daily"]');
+ if(tab&&$("#network").contains(tab)&&!tab.hidden)renderDailyTasks();
+});
 // One navigation controller for the daily network and weekly challenge.
 if(typeof NetworkNavigation!=="undefined")NetworkNavigation.mount({
  threatAvailable:!NETWORK_PILOT_ENABLED&&!!weeklySession

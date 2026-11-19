@@ -21,7 +21,7 @@ test("RENSTANCE012: real GLB contains all articulated stance joints",()=>{
 test("RENSTANCE012: build and browser include new stance",()=>{
  const html=fs.readFileSync("index.html","utf8");
  const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
- assert.ok(/^0\.3\.(?:11[3-9]|1[2-9]\d)$/.test(pkg.version));
+ assert.ok(/^0\.3\.(?:11[3-9]|1[2-9]\d|2\d\d)$/.test(pkg.version));
  assert.ok(html.includes("v"+pkg.version+" ·"));
  assert.ok(html.includes("RENSTANCE012"));
  assert.ok(html.includes("RENSTANCE013"));

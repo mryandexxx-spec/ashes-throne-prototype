@@ -25,13 +25,13 @@ const WeeklyThreatUI=(()=>{
   WeeklyThreatCore.TIERS.forEach((tier,i)=>{
    const el=$("netuxWeeklyTier"+(i+1));if(!el)return;
    const won=s.bestScore>=tier.score,
-    due=pend.some(x=>x.weekStart===s.weekStart&&x.stage===i+1);
+    due=pend.some(x=>x.weekStart===s.weekStart&&x.stage===i+1),
+    materialCount=Object.values(tier.materials).reduce((sum,n)=>sum+n,0);
    el.dataset.status=won?(due?"pending":"paid"):"locked";
    el.textContent=(i+1)+"★ · от "+tier.score+"/100 · "+
     (won?(due?"К получению":"Получено"):"Пока не достигнуто")+
     " · +"+tier.currency+" валюты · +"+tier.xp+" XP · "+
-    Object.entries(tier.materials).map(([id,n])=>"+"+n+" "+
-     (typeof GearData!=="undefined"?GearData.MATERIAL_LABELS[id]||id:labels[id])).join(", ");
+    materialCount+" материалов ("+Object.keys(tier.materials).length+" видов)";
   });
   $("net008aStatus").textContent=notice||(session.isClockBack()?
    "Часы устройства переведены назад: недельные действия приостановлены. Верните правильное время.":

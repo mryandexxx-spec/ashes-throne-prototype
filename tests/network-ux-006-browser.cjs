@@ -85,6 +85,13 @@ async function check(name,engine,viewport){
   g=await geometry("#net008aThreat");assert.equal(g.overflow,false);
   assert.ok(g.rect.left>=-1&&g.rect.right<=viewport.width+1);
   assert.ok(g.buttons.every(x=>x.h>=44&&x.w>=44));
+  const action=await page.evaluate(()=>{
+   const b=document.getElementById("net008aSurvey").getBoundingClientRect(),
+    v=document.querySelector(".netux-weekly-plan").getBoundingClientRect();
+   return {top:b.top,bottom:b.bottom,containerTop:v.top,containerBottom:v.bottom};
+  });
+  assert.ok(action.top>=action.containerTop-1&&action.bottom<=action.containerBottom+1,
+   "weekly preparation must be visible without scrolling the plan");
   await page.screenshot({path:path.join(dir,name+"-"+viewport.width+"-weekly.png")});
   await page.locator("#net008aSurvey").click();
   await page.locator("#squad").waitFor({state:"visible"});

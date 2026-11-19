@@ -23,7 +23,7 @@ test("NET-UX-006: briefing, result and weekly layouts retain existing actions an
  assert.match(ui,/session\.canSimulate\(selected\.id\)/);
  assert.match(ui,/a\.phase==="brief"/);
  assert.match(ui,/a\.phase==="approach"/);
- assert.match(ui,/a\.phase==="battle"/);
+ assert.match(ui,/a\.phase!=="battle"/);
  assert.match(ui,/s\.active\?\.phase==="result"/);
  assert.match(weekUi,/WeeklyThreatCore\.TIERS\.forEach/);
  assert.match(weekUi,/session\.pending\(\)/);

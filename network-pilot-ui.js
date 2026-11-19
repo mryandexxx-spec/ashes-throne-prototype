@@ -8,12 +8,16 @@ const NetworkPilotUI=(()=>{
  const $=id=>document.getElementById(id);
  const isLive=()=>session?.isLive?.()===true;
  const heroLabels=Object.freeze({ren:"Рен",nada:"Нада",liora:"Лиора",art:"Арт",sava:"Сава"});
+ const operationStory=clue=>isLive()&&typeof NetworkEncounterData!=="undefined"?
+  NetworkEncounterData.brief(clue.encounterRef):null;
  function clueTitle(clue){
   if(!isLive())return names[clue.templateId]||"Неизвестная зацепка";
-  return clue.materialId?"Материалы: "+(typeof GearData!=="undefined"?
+  const subject=clue.materialId?"Материалы: "+(typeof GearData!=="undefined"?
    GearData.MATERIAL_LABELS[clue.materialId]||clue.materialId:clue.materialId):
    clue.heroId?"Сведения: "+(heroLabels[clue.heroId]||clue.heroId):
    "Разведывательная зацепка";
+  const story=operationStory(clue);
+  return story?story.title+" · "+subject:subject;
  }
  function rewardText(ref){
   if(!isLive()||typeof NetworkLiveEconomy==="undefined")return "";
@@ -233,7 +237,8 @@ const NetworkPilotUI=(()=>{
     const threat=line("След угрозы","span");threat.className="netux-threat-tag";
     tags.append(threat);
    }
-   choice.title=clueTitle(clue)+" · "+fullReward;
+   const story=operationStory(clue);
+   choice.title=clueTitle(clue)+" · "+(story?story.context+" · ":"")+fullReward;
    choice.setAttribute("aria-label",clueTitle(clue)+", уровень "+clue.level+
     ". "+fullReward+(session.canSimulate(clue.id)?". Освоено":"")+
     (clue.threatTag?". След угрозы":""));
@@ -241,7 +246,7 @@ const NetworkPilotUI=(()=>{
   }
   updateSelection(s,blocked,busy);
   if(s.active&&s.active.phase!=="result"){
-   const a=s.active,c=a.clue;
+   const a=s.active,c=a.clue,story=operationStory(c);
    const chosen=a.approach&&c.approaches.find(x=>x.id===a.approach);
    $("net004ActiveTitle").textContent=clueTitle(c);
    $("netuxBriefMeta").textContent=(types[c.type]||c.type)+" · ур. "+c.level;
@@ -258,7 +263,7 @@ const NetworkPilotUI=(()=>{
       a.waveSummaries?.length?" Предыдущая волна: "+a.waveSummaries.at(-1).score+"/100 S1.":"");
    const routes=c.approaches.map(x=>(approach[x.id]||x.id)+
     " — "+x.waves+(x.waves===1?" волна":" волны")).join(" · ");
-   $("netuxBriefIntel").textContent=(chosen?
+   $("netuxBriefIntel").textContent=(story?story.context+" "+story.tactic+" ":"")+(chosen?
     (approach[chosen.id]||chosen.id)+" · "+chosen.waves+
     (chosen.waves===1?" отдельный бой":" отдельных боя"):
     "Доступные пути: "+routes)+". "+
@@ -273,7 +278,8 @@ const NetworkPilotUI=(()=>{
    const slot=$("net004Choices");slot.replaceChildren();
    const descriptions={survey:"Первый противник будет отмечен как приоритетная цель.",
     cover:"Снижает физическую атаку противников.",
-    quiet:"Одна отдельная схватка.",cordon:"Две отдельные схватки, отряд восстанавливается между ними."};
+    quiet:story?.quiet||"Одна отдельная схватка.",
+    cordon:story?.cordon||"Две отдельные схватки, отряд восстанавливается между ними."};
    if(a.phase==="brief")for(const id of c.preparationIds){
     const choice=button(prep[id]||id,"prepare",id);
     choice.append(line(descriptions[id]||"Выбрать подготовку","small"));
@@ -298,7 +304,8 @@ const NetworkPilotUI=(()=>{
     "Оценка S1: "+score+"/100 · Ручная операция · "+(approach[a.approach]||a.approach)+
     " · "+a.waveSummaries.length+(a.waveSummaries.length===1?" волна":" волны")+
     ". Оценка по волнам: "+a.waveSummaries.map(x=>x.score+"/100").join(" → ")+
-    ". Учитываются потери и действия отряда.":
+    ". Учитываются потери и действия отряда."+
+    (operationStory(c)?" "+operationStory(c).success:""):
     "Старое пробное завершение: оценка S1 недоступна. Не считать освоением.";
    $("netuxResultMastery").textContent=!tracked?
     "Нет подтверждённого ручного освоения.":

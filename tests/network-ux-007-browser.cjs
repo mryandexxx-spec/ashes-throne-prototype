@@ -21,7 +21,7 @@ async function run(name,engine,viewport){
  const enter=async()=>{
   await login();
   await page.locator('#home .hq-bottom [data-screen="network"]').click();
-  await page.locator("#net004Clues .netux-clue-pick").first().waitFor({state:"visible"});
+  await page.locator("#network").waitFor({state:"visible"});
  };
  const saved=()=>page.evaluate(()=>({
   state:JSON.parse(localStorage.getItem("ashes-throne.network.v1")),

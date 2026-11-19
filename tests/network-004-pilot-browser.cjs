@@ -224,7 +224,7 @@ async function liveByDefault(){
   assert.equal(ready.live.board.length,4);
   assert.equal(ready.live.config.capacity,16);
   assert.equal(ready.pilot,null);
-  // An ordinary player can earn an actual network reward without dev grants.
+  // This verifies the live payout lifecycle, not provisional five-hero L1 balance.
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
   await page.locator("#hqMoreToggle").click();
@@ -244,8 +244,35 @@ async function liveByDefault(){
   await page.locator("#squad").waitFor({state:"visible",timeout:15000});
   await page.locator("#squadStart").click();
   await page.locator("#battle").waitFor({state:"visible",timeout:30000});
+   // Transient battle-only boost; real combat and wallet receipts remain in play.
+   await page.evaluate(()=>{
+    for(const ally of state.fighters.filter(f=>f.side==="ally")){
+     ally.hp=40000;ally.maxHp=40000;
+     ally.physicalAttack=7000;ally.magicAttack=7000;ally.atk=7000;
+     ally.physicalDefense=2000;ally.magicDefense=2000;
+    }
+   });
   await page.locator("#autoBattleBtn").click();
-  await page.locator("#net004Result").waitFor({state:"visible",timeout:125000});
+   try{
+    await page.locator("#net004Result").waitFor({state:"visible",timeout:125000});
+   }catch(e){
+    const diagnostic=await page.evaluate(()=>({
+     screen:document.querySelector(".screen.active")?.id,
+     active:typeof state!=="undefined"?state.active:null,
+     winner:typeof state!=="undefined"?state.winner:null,
+     message:typeof state!=="undefined"?state.message:null,
+     allies:typeof state!=="undefined"?state.fighters.filter(x=>x.side==="ally").map(x=>({id:x.id,hp:x.hp})):null,
+     enemies:typeof state!=="undefined"?state.fighters.filter(x=>x.side==="enemy").map(x=>({id:x.id,hp:x.hp})):null,
+     resultReady:typeof networkResultReady!=="undefined"?networkResultReady:null,
+     transition:typeof visualTransition!=="undefined"?visualTransition:null,
+     animationPending:typeof BattleAnimation!=="undefined"?BattleAnimation.pending():null,
+     recorded:typeof networkResultRecorded!=="undefined"?networkResultRecorded:null,
+     auto:typeof autoBattle!=="undefined"?autoBattle:null
+    })).catch(()=>null);
+    console.error("NET007_LIVE_BATTLE_TIMEOUT",diagnostic);
+    await page.screenshot({path:path.join(dest,"net007-live-timeout.png"),fullPage:true}).catch(()=>{});
+    throw e;
+   }
   await page.locator("#net004Finish").click();
   await page.waitForFunction(()=>{
    try{return JSON.parse(localStorage.getItem("ashes-throne.progress.v3"))

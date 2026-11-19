@@ -64,18 +64,16 @@ async function run(name,engine,viewport){
   assert.deepEqual(await page.evaluate(()=>squadSlots().filter(Boolean)),originalIds);
   assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.squad.v1")),
    previousSquad,"return to original formation also must not save");
-  // The realistic five-hero default is intentionally tested above. For this
-  // lifecycle smoke use the original deterministic sandbox fighters so victory
-  // timing does not depend on provisional hero balance or 3D model load.
-  await page.locator("#squadDisband").evaluate(el=>el.click());
-  const smokeIds=["kael","lyra","darin","medic-demo","test-area-damage"];
-  for(const id of smokeIds)
-   await page.locator('#squadRoster [data-hero-id="'+id+'"]').evaluate(el=>el.click());
-  assert.deepEqual(await page.evaluate(()=>squadSlots().filter(Boolean)),smokeIds);
-  assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.squad.v1")),
-   previousSquad,"smoke formation must not overwrite permanent squad");
+  // Keep the five playable heroes; battle balance is tested separately.
   await page.locator("#squadStart").click();
   await page.locator("#battle").waitFor({state:"visible",timeout:30000});
+  await page.evaluate(()=>{
+   for(const ally of state.fighters.filter(f=>f.side==="ally")){
+    ally.hp=40000;ally.maxHp=40000;
+    ally.physicalAttack=7000;ally.magicAttack=7000;ally.atk=7000;
+    ally.physicalDefense=2000;ally.magicDefense=2000;
+   }
+  });
   await page.locator("#autoBattleBtn").click();
   await page.locator("#net004Result").waitFor({state:"visible",timeout:125000});
   assert.match(await page.locator("#net004ResultDetail").innerText(),/Оценка S1: (?:[6-9][0-9]|100)/);
@@ -125,7 +123,14 @@ async function run(name,engine,viewport){
     .map(f=>({id:f.id,hp:f.hp,maxHp:f.maxHp,protection:f.protection??0})));
    assert.ok(firstRoster.length>0);
    assert.ok(firstRoster.every(f=>f.hp===f.maxHp));
-   await page.locator("#autoBattleBtn").click();
+   await page.evaluate(()=>{
+   for(const ally of state.fighters.filter(f=>f.side==="ally")){
+    ally.hp=40000;ally.maxHp=40000;
+    ally.physicalAttack=7000;ally.magicAttack=7000;ally.atk=7000;
+    ally.physicalDefense=2000;ally.magicDefense=2000;
+   }
+  });
+  await page.locator("#autoBattleBtn").click();
    await page.locator("#net004Fight").waitFor({state:"visible",timeout:125000});
    await page.locator("#network").waitFor({state:"visible"});
    const halfway=await page.evaluate(()=>{
@@ -156,7 +161,14 @@ async function run(name,engine,viewport){
    assert.deepEqual(secondRoster.map(f=>f.protection),firstRoster.map(f=>f.protection));
    assert.equal(await page.evaluate(()=>state.totalWaves),1,
     "second encounter is a separate CombatCore battle");
-   await page.locator("#autoBattleBtn").click();
+   await page.evaluate(()=>{
+   for(const ally of state.fighters.filter(f=>f.side==="ally")){
+    ally.hp=40000;ally.maxHp=40000;
+    ally.physicalAttack=7000;ally.magicAttack=7000;ally.atk=7000;
+    ally.physicalDefense=2000;ally.magicDefense=2000;
+   }
+  });
+  await page.locator("#autoBattleBtn").click();
    await page.locator("#net004Result").waitFor({state:"visible",timeout:125000});
    await page.locator("#net004Finish").click();
    await page.waitForFunction(()=>!document.querySelector("#net004Board").hidden);

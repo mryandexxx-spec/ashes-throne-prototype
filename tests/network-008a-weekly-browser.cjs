@@ -18,9 +18,16 @@ async function run(name,engine,viewport){
   await page.waitForFunction(()=>!!localStorage.getItem("ashes-throne.weekly.v1"),null,{timeout:15000});
   if(await page.locator("#loginCalendar").evaluate(e=>e.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
-  await page.locator("#hqMoreToggle").click();
-  await page.locator("#net004Entry").click();
+  await page.locator('#home .hq-bottom [data-screen="network"]').click();
+  await page.locator("#netuxCluesPanel").waitFor({state:"visible"});
+  // Existing tutorial operations remain reachable, but no longer gate daily play.
+  await page.locator('#network [data-screen="operations"]').click();
+  await page.locator("#operations").waitFor({state:"visible"});
+  await page.locator('#operations [data-screen="network"]').click();
+  await page.locator("#netuxCluesPanel").waitFor({state:"visible"});
+  await page.locator('#network [data-net-view="threat"]').click();
   await page.locator("#net008aThreat").waitFor({state:"visible"});
+  assert.equal(await page.locator("#netuxCluesPanel").isVisible(),false);
   assert.match(await page.locator("#net008aTitle").innerText(),/неделя с \d{1,2} [а-яё]+/i);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   await page.screenshot({path:path.join(dest,name+"-"+viewport.width+"-threat.png")});
@@ -32,15 +39,16 @@ async function run(name,engine,viewport){
    localStorage.getItem("ashes-throne.weekly.v1")));
   assert.equal(checkpoint.active.preparation,"survey");
   await page.locator("#squadBack").click();
-  await page.locator("#network").waitFor({state:"visible",timeout:10000});
+  await page.locator("#net008aThreat").waitFor({state:"visible",timeout:10000});
+  assert.equal(await page.locator("#netuxCluesPanel").isVisible(),false);
   await page.locator("#net008aFight").click();
   await page.locator("#squad").waitFor({state:"visible",timeout:10000});
   const originalSquad=await page.evaluate(()=>localStorage.getItem("ashes-throne.squad.v1"));
   await page.reload({waitUntil:"load"});
   if(await page.locator("#loginCalendar").evaluate(e=>e.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
-  await page.locator("#hqMoreToggle").click();
-  await page.locator("#net004Entry").click();
+  await page.locator('#home .hq-bottom [data-screen="network"]').click();
+  await page.locator('#network [data-net-view="threat"]').click();
   await page.locator("#net008aFight").click();
   await page.locator("#squad").waitFor({state:"visible"});
   await page.locator("#squadStart").click();

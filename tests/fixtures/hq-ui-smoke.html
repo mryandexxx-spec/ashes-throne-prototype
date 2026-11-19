@@ -30,7 +30,7 @@ async function run(){
   more.click();if(menu.hidden)throw Error("More menu cannot open");
   more.click();if(!menu.hidden)throw Error("More menu cannot close");
   // HQ-UI-004: the illustrated landmarks are the buttons, with no nested cards.
-  for(const [zone,target] of [["heroes","collection"],["campaign","campaign"],["operations","operations"],["challenges","challenges"]]){
+  for(const [zone,target] of [["heroes","collection"],["campaign","campaign"],["operations","network"],["challenges","challenges"]]){
    const hotspot=home.querySelector(".hq-station-"+zone);
    if(!hotspot||hotspot.tagName!=="BUTTON"||hotspot.dataset.screen!==target)throw Error("Non-interactive landmark: "+zone);
    const box=hotspot.getBoundingClientRect();

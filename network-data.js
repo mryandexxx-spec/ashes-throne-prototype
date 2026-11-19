@@ -101,7 +101,9 @@ const NetworkData=(()=>{
  const CATALOG=buildCatalog({version:1,regions:[
   {id:"gardens-over-abyss",name:"Сады над пропастью",unlockRef:null}
  ],templates:[]});
- // NET-007: all content reuses existing Garden encounters, NPCs and roster IDs.
+ // NET-UX-007: revision 2 pins varied authored formations; old revision 1 refs
+ // remain in NetworkEncounterData for clues saved before deployment.
+ // All content reuses existing Garden encounters, NPCs and roster IDs.
  // Economic tiers are a trial balance, not new world canon.
  const materialIds=["Fe","Le","Cl","Wo","Fa","Th","Gl"];
  const heroIds=["ren","nada","liora","art","sava"];
@@ -115,23 +117,23 @@ const NetworkData=(()=>{
   for(const materialId of materialIds){
    const ref="net07-s-"+materialId.toLowerCase()+"-"+tier.id;
    liveTemplates.push({
-    id:ref,revision:1,regionId:"gardens-over-abyss",type:"supply",
+    id:ref,revision:2,regionId:"gardens-over-abyss",type:"supply",
     weight:1,minInfluence:tier.influence,levels:[tier.level],
     preparationIds:["survey","cover"],approaches:[
      {id:"quiet",waves:1},{id:"cordon",waves:2}],
     modifierIds:[],materialId,heroId:null,
-    threatTag:"weekly-gardens",rewardRef:"reward-"+ref,encounterRef:"encounter-"+ref
+    threatTag:"weekly-gardens",rewardRef:"reward-"+ref,encounterRef:"encounter-"+ref+"-v2"
    });
   }
   for(const heroId of heroIds){
    const ref="net07-r-"+heroId+"-"+tier.id;
    liveTemplates.push({
-    id:ref,revision:1,regionId:"gardens-over-abyss",type:"recruit-intel",
+    id:ref,revision:2,regionId:"gardens-over-abyss",type:"recruit-intel",
     weight:1,minInfluence:tier.influence,levels:[tier.level],
     preparationIds:["survey","cover"],approaches:[
      {id:"quiet",waves:1},{id:"cordon",waves:2}],
     modifierIds:[],materialId:null,heroId,
-    threatTag:"weekly-gardens",rewardRef:"reward-"+ref,encounterRef:"encounter-"+ref
+    threatTag:"weekly-gardens",rewardRef:"reward-"+ref,encounterRef:"encounter-"+ref+"-v2"
    });
   }
  }

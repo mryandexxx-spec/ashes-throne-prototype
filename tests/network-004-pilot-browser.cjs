@@ -33,7 +33,7 @@ async function run(name,engine,viewport){
   assert.ok(begin.pilot&&JSON.parse(begin.pilot).board.length===3);
   assert.equal(begin.overflow,false);
   await page.screenshot({path:path.join(dest,name+"-"+viewport.width+"-board.png")});
-  await page.locator('#netuxStartSelected]').first().click();
+  await page.locator('#netuxStartSelected').first().click();
   await page.locator('[data-net-action="prepare"][data-net-value="survey"]').click();
   await page.locator('[data-net-action="approach"][data-net-value="quiet"]').click();
   await page.locator("#squad").waitFor({state:"visible",timeout:10000});
@@ -111,7 +111,7 @@ async function run(name,engine,viewport){
   // One real two-encounter UI smoke. Only Chromium 844 runs this extra journey:
   // the four-engine baseline above remains fast; the core is covered by Node.
   if(name==="chromium"&&viewport.width===844){
-   await page.locator('#netuxStartSelected]').first().click();
+   await page.locator('#netuxStartSelected').first().click();
    await page.locator('[data-net-action="prepare"][data-net-value="cover"]').click();
    await page.locator('[data-net-action="approach"][data-net-value="cordon"]').click();
    await page.locator("#squad").waitFor({state:"visible",timeout:10000});
@@ -234,7 +234,7 @@ async function liveByDefault(){
     source:NetworkLiveEconomy.source(clue.rewardRef)};
   });
   assert.ok(start.source);
-  await page.locator('#netuxStartSelected]').first().click();
+  await page.locator('#netuxStartSelected').first().click();
   await page.locator('[data-net-action="prepare"][data-net-value="survey"]').click();
   await page.locator('[data-net-action="approach"][data-net-value="quiet"]').click();
   await page.locator("#squad").waitFor({state:"visible",timeout:15000});

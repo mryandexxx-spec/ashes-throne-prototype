@@ -295,7 +295,7 @@ const NetworkPilotUI=(()=>{
    $("net004ResultTitle").textContent=clueTitle(c);
    $("netuxResultRating").textContent=tracked?stars+"★ · "+score+"/100":"Оценка не подтверждена";
    $("net004ResultDetail").textContent=tracked?
-    "Ручная операция · "+(approach[a.approach]||a.approach)+
+    "Оценка S1: "+score+"/100 · Ручная операция · "+(approach[a.approach]||a.approach)+
     " · "+a.waveSummaries.length+(a.waveSummaries.length===1?" волна":" волны")+
     ". Оценка по волнам: "+a.waveSummaries.map(x=>x.score+"/100").join(" → ")+
     ". Учитываются потери и действия отряда.":

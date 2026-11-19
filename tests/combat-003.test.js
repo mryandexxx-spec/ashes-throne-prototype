@@ -25,6 +25,8 @@ const ctx=vm.createContext({document,window});
 const {getBattle,resetBattle,CombatCore}=vm.runInContext(scripts+
  "\n({getBattle:()=>state,resetBattle,CombatCore})",ctx);
 
+// This cooldown test intentionally targets the original sandbox formation.
+vm.runInContext('selectedLeaderId="kael";selectedPartyIds=["lyra","darin","medic-demo","test-area-damage"];',ctx);
 resetBattle();
 assert.equal(getBattle().fighters[getBattle().currentActor].id,"lyra");
 assert.equal(elements.specialAbilityBtn.disabled,false);

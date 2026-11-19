@@ -365,10 +365,13 @@ function renderHeadquarters(){
  set("#hqCampaignStatus","Пройдено: "+completed+" / "+missions.length);
  set("#hqCampaignStars","Звёзд: "+stars+" / "+missions.length*3);
  const campBar=$("#hqCampaignFill");if(campBar)campBar.style.width=(missions.length?100*completed/missions.length:0)+"%";
- const ops=operationProgress.active||signalProgress.active;
- set("#hqOperationStatus",ops?"Операция в работе":"Нет активных операций");
- const opsFlag=$("#hqOperationFlag");if(opsFlag)opsFlag.classList.toggle("is-active",!!ops);
- set("#hqOperationText",ops?"Активна":"Готово к запуску");
+ const networkState=networkPilot?.isReady()?networkPilot.read():null;
+ const networkActive=!!networkState?.active;
+ set("#hqOperationStatus",networkState?
+  "Донесений: "+networkState.board.length+" / "+networkState.config.capacity:
+  "Донесения и недельная угроза");
+ const opsFlag=$("#hqOperationFlag");if(opsFlag)opsFlag.classList.toggle("is-active",networkActive);
+ set("#hqOperationText",networkActive?"Вылазка в работе":networkState?"Открыть донесения":"Открыть сеть");
  const challengeDone=Object.values(challengeProgress.bestStars||{}).filter(n=>n>0).length;
  const challengeTotal=ChallengeCore.all().length;
  set("#hqChallengeStatus","Пройдено: "+challengeDone+" / "+challengeTotal);
@@ -1105,6 +1108,11 @@ function showScreen(id){
  if(id==="campaign"){if(previousScreenId!=="campaign")showCampaignPath(null);renderCampaign();}
  if(id==="challenges")renderChallenges();
  if(id==="operations")renderOperations();
+ if(id==="network"&&typeof NetworkNavigation!=="undefined"){
+  // Return from a weekly/clue squad or battle to the exact parent view.
+  const fromCombat=previousScreenId==="battle"||previousScreenId==="squad";
+  NetworkNavigation.select(fromCombat&&squadReturnScreen==="weekly"?"threat":"clues");
+ }
  if(id==="network"&&networkPilot)NetworkPilotUI.render();
  if(id==="network"&&weeklySession)WeeklyThreatUI.refresh();
  if(id==="operationResult")renderOperationResult();
@@ -3997,7 +4005,6 @@ document.addEventListener("visibilitychange",()=>{
 // ?networkPilot=1 fixtures. Real rewards use network.v1 + progress.v3.
 if(typeof NetworkPilotSession!=="undefined"&&
  typeof NetworkPilotUI!=="undefined"&&typeof ProgressWriterCore!=="undefined"){
- const entry=$("#net004Entry");
  networkPilot=NetworkPilotSession.create({
   live:!NETWORK_PILOT_ENABLED,
   heroes:ALLIES,day:dailyDay,
@@ -4020,9 +4027,6 @@ if(typeof NetworkPilotSession!=="undefined"&&
  if(networkPilot&&NetworkPilotUI.mount({pilot:networkPilot,
    onOpenSquad:()=>openSquad("network"),
    onBackToFinder:()=>showScreen("heroDetail")})){
-  if(entry){entry.hidden=false;
-   entry.textContent=NETWORK_PILOT_ENABLED?"⌖ Разведсеть · пробный режим":
-    "⌖ Разведсеть · добыча ресурсов";}
   if(!NETWORK_PILOT_ENABLED&&typeof WeeklyThreatCore!=="undefined"&&typeof WeeklyThreatUI!=="undefined"){
      weeklySession=WeeklyThreatCore.create({
       storageProvider:()=>window.localStorage,
@@ -4044,6 +4048,10 @@ if(typeof NetworkPilotSession!=="undefined"&&
    });
  }
 }
+// One navigation controller for the daily network and weekly challenge.
+if(typeof NetworkNavigation!=="undefined")NetworkNavigation.mount({
+ threatAvailable:!NETWORK_PILOT_ENABLED&&!!weeklySession
+});
 
 renderAccountHeader();renderHeroes();CombatCore.advanceToPlayerTurn(state);
 maybeOpenLoginOnEntry();

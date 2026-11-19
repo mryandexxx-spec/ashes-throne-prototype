@@ -93,7 +93,7 @@ const NetworkPilotUI=(()=>{
    sim.disabled=!mastered||busy;
    sim.textContent=mastered?"Симулировать":"Не освоено";
    sim.title=mastered?"Симулировать выбранную освоенную зацепку":
-    "Симуляция откроется после освоения в ручном бою";
+    "Симуляция закрыта · требуется освоение";
   }
   $("net004Clues")?.querySelectorAll(".net004-clue").forEach(item=>{
    const pressed=Number(item.querySelector("[data-net-value]")?.dataset.netValue)===selectedClueId;

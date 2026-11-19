@@ -243,7 +243,7 @@
  position:absolute;right:0;top:0;width:33%;height:100%;opacity:.28;pointer-events:none;
  background:repeating-radial-gradient(ellipse at right,#c7a36855 0 1px,transparent 2px 9px)
 }
-.net004-screen .net005-order{padding:0;border:1px solid #a7834877;border-radius:8px;background:#262329}
+.net004-screen .net005-order{position:relative;padding:0;border:1px solid #a7834877;border-radius:8px;background:#262329}
 .net004-screen .net005-order summary{
  display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:44px;
  padding:5px 9px;box-sizing:border-box;cursor:pointer;list-style:none

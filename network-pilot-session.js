@@ -155,6 +155,7 @@ const NetworkPilotSession=(()=>{
     typeof NetworkLiveEconomy==="undefined")return fail("INVALID_LIVE_ADAPTER");
    busy=true;
    let paid=0,currency=0,xp=0,shards=0,materials=0;
+   const materialBreakdown={},shardBreakdown={};
    try{
     let storage=storageProvider();
     if(!storage)return fail("STORAGE_UNAVAILABLE");
@@ -186,14 +187,21 @@ const NetworkPilotSession=(()=>{
      paid++;currency+=next.currency-beforeCurrency;xp+=next.accountXp-beforeXp;
      beforeCurrency=next.currency;beforeXp=next.accountXp;
      for(const heroId of Object.keys(source.reward.heroShards||{})){
-      shards+=Math.max(0,(next.heroStars?.[heroId]?.shards??0)-
+      const credited=Math.max(0,(next.heroStars?.[heroId]?.shards??0)-
        (previousStars[heroId]?.shards??0));
+      shards+=credited;
+      if(credited)shardBreakdown[heroId]=(shardBreakdown[heroId]||0)+credited;
      }
      previousStars=next.heroStars??{};
-     materials+=Object.values(source.reward.materials).reduce((s,n)=>s+n,0);
+     for(const [materialId,amount] of Object.entries(source.reward.materials)){
+      materials+=amount;
+      materialBreakdown[materialId]=(materialBreakdown[materialId]||0)+amount;
+     }
      if(typeof onCredit==="function")onCredit(next,source.reward);
     }
-    return Object.freeze({ok:true,paid,currency,xp,shards,materials});
+    return Object.freeze({ok:true,paid,currency,xp,shards,materials,
+     materialBreakdown:Object.freeze(materialBreakdown),
+     shardBreakdown:Object.freeze(shardBreakdown)});
    }catch(_){blocked=true;return fail("REWARD_SYNC_FAILED");}
    finally{busy=false;}
   }

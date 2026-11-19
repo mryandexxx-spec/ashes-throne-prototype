@@ -102,6 +102,8 @@ test("NET-007 manual battle pays once, and mastered simulation pays same base cu
  assert.equal(firstCredit.paid,1);
  assert.equal(firstCredit.currency,1000);
  assert.equal(firstCredit.materials,8);
+ assert.equal(firstCredit.materialBreakdown.Fe,8,"named material is reported only after credit");
+ assert.equal(Object.keys(firstCredit.shardBreakdown).length,0);
  assert.equal(wallet(s).currency,1000);
  assert.equal(wallet(s).materials.Fe,8);
  assert.equal(wallet(s).networkLedger.claimedThrough,1);
@@ -131,6 +133,7 @@ test("NET-007 7-star hero receives ordinary currency in place of shards without 
  assert.equal(claim.ok,true,JSON.stringify(claim));
  assert.equal(claim.currency,1480,"UI should report real credited currency including exchanged shards");
  assert.equal(claim.shards,0,"exchanged shards must not be reported as retained shards");
+ assert.equal(Object.keys(claim.shardBreakdown).length,0,"exchanged shards have no fake hero payout");
  assert.equal(wallet(s).currency,1480,"1000 base and 6 excess shards x80");
  assert.equal(wallet(s).heroStars.ren.shards,0);
  assert.equal(wallet(s).networkLedger.claimedThrough,1);

@@ -1,4 +1,4 @@
-/* NET-UX-002: presentation-only navigation for the live network and weekly threat.
+/* NET-UX-003: presentation-only navigation for clues, weekly threat and daily tasks.
  * Switching views never starts an operation, writes a save, or loads a 3D scene.
  */
 const NetworkNavigation=(()=>{
@@ -6,10 +6,11 @@ const NetworkNavigation=(()=>{
  let mounted=false,threatAvailable=false,currentView="clues";
  const $=id=>document.getElementById(id);
  function apply(){
-  const root=$("network"),clues=$("netuxCluesPanel"),threat=$("net008aThreat");
+  const root=$("network"),clues=$("netuxCluesPanel"),threat=$("net008aThreat"),daily=$("netuxDailyPanel");
   if(!root||!clues||!threat)return false;
   clues.hidden=currentView!=="clues";
   threat.hidden=currentView!=="threat";
+  if(daily)daily.hidden=currentView!=="daily";
   root.querySelectorAll("[data-net-view]").forEach(button=>{
    const active=button.dataset.netView===currentView;
    button.setAttribute("aria-pressed",String(active));
@@ -18,7 +19,7 @@ const NetworkNavigation=(()=>{
   return true;
  }
  function select(view){
-  if(view!=="clues"&&view!=="threat")return false;
+  if(!["clues","threat","daily"].includes(view))return false;
   if(view==="threat"&&!threatAvailable)return false;
   currentView=view;
   return apply();

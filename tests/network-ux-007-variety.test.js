@@ -126,7 +126,8 @@ test("NET-UX-007: previously issued revision 1 clues and mid-operation checkpoin
  assert.equal(finished.active.phase,"result");
  const settled=Core.finish(finished);
  assert.equal(settled.completed.length,1);
- assert.equal(settled.completed[0].encounterRef,old.encounterRef);
+ assert.equal(restored.state.active.clue.encounterRef,old.encounterRef);
+ assert.equal(settled.completed[0].rewardRef,old.rewardRef);
 });
 test("NET-UX-007: two revised encounters, full checkpoint, defeat retry and one completion",()=>{
  const a=Data.LIVE_CATALOG.templates.find(t=>t.heroId==="ren"&&t.levels[0]===1);

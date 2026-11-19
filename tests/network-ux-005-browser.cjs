@@ -81,6 +81,17 @@ async function run(name,engine,viewport){
   await page.locator("#netuxOrderOpen").waitFor({state:"visible"});
   assert.match(await page.locator("#net005OrderStatus").innerText(),/Материал/);
   assert.match(await page.locator("#netuxOrderProgress").innerText(),/0\/3/);
+  // Synthetic but valid persisted miss count: the UI must read the live guarantee.
+  await page.evaluate(()=>{
+   const key="ashes-throne.network.v1",state=JSON.parse(localStorage.getItem(key));
+   state.order.misses=2;localStorage.setItem(key,JSON.stringify(state));
+  });
+  await page.reload({waitUntil:"load",timeout:60000});
+  await page.waitForFunction(()=>typeof showScreen==="function");await login();
+  await page.locator('#home .hq-bottom [data-screen="network"]').click();
+  await page.locator("#netuxOrderOpen").waitFor({state:"visible"});
+  assert.match(await page.locator("#netuxOrderProgress").innerText(),/2\/3/);
+  assert.match(await page.locator("#netuxOrderProgress").innerText(),/1 нов/);
   assert.equal(JSON.stringify((await getState()).board),board);
   assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.progress.v3")),wallet);
   assert.deepEqual(errors.filter(e=>/TypeError|ReferenceError|NETUX/i.test(e)),[]);

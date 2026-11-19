@@ -65,3 +65,18 @@ test("NET-UX-005: failed save is blocked, old order and board persist",async()=>
  assert.deepEqual(pilot.read(),before);
  assert.equal((await pilot.change("order",null)).ok,false);
 });
+
+test("NET-UX-005: an actually full live board is not rerolled and cannot consume guarantees",()=>{
+ const Data=require("../network-data.js"),region=["gardens-over-abyss"],config=Pilot.LIVE_CONFIG;
+ const empty=Core.fresh(123,0,config,Data.LIVE_CATALOG);
+ const filled=Core.accrue(empty,(config.capacity+1)*config.intervalMs,Data.LIVE_CATALOG,region);
+ assert.equal(filled.board.length,config.capacity);
+ const material=Data.eligibleTemplates(Data.LIVE_CATALOG,region,filled.influence)
+  .find(row=>row.materialId)?.materialId;
+ assert.ok(material);
+ const ordered=Core.setOrder(filled,{kind:"material",targetId:material},Data.LIVE_CATALOG,region);
+ const before=JSON.stringify(ordered.board);
+ const after=Core.accrue(ordered,filled.clockAt+config.intervalMs,Data.LIVE_CATALOG,region);
+ assert.equal(JSON.stringify(after.board),before);
+ assert.equal(after.order.misses,0);
+});

@@ -2,6 +2,11 @@
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path");
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
+const freshNavigation=()=>{
+ const id=require.resolve("../network-navigation.js");
+ delete require.cache[id];
+ return require(id);
+};
 function fixture(){
  const registered=[];
  const tab=view=>({
@@ -16,39 +21,37 @@ function fixture(){
   contains(x){return tabs.includes(x)}};
  const elements={network:root,netuxCluesPanel:clues,net008aThreat:threat};
  global.document={getElementById(id){return elements[id]||null}};
- const click=(item)=>registered[0][1]({target:{closest:()=>item}});
+ const click=item=>registered[0][1]({target:{closest:()=>item}});
  return {root,tabs,clues,threat,registered,click};
 }
-test("NET-UX-002 main navigation: mobile tap, return and no loss of game state",()=>{
- const f=fixture(),nav=require("../network-navigation.js");
+test("NET-UX-002 tabs: touch selection, squad return, saved states and idempotent mount",()=>{
+ const f=fixture(),nav=freshNavigation();
  assert.equal(nav.mount({threatAvailable:true}),true);
- assert.equal(f.registered.length,1,"exactly one delegated listener");
+ assert.equal(f.registered.length,1);
  assert.equal(nav.current(),"clues");
  assert.equal(f.clues.hidden,false);
  assert.equal(f.threat.hidden,true);
  assert.equal(f.tabs[0].attrs["aria-pressed"],"true");
- const savedClue=f.clues.saved,savedThreat=f.threat.saved;
+ const oldClue=f.clues.saved,oldThreat=f.threat.saved;
  f.click(f.tabs[1]);
  assert.equal(nav.current(),"threat");
  assert.equal(f.clues.hidden,true);
  assert.equal(f.threat.hidden,false);
  assert.equal(f.tabs[1].attrs["aria-pressed"],"true");
  assert.equal(f.tabs[0].attrs["aria-pressed"],"false");
- // A weekly squad/battle returns to the weekly parent instead of the clue board.
- assert.equal(nav.select("threat"),true);
- // A clue squad/battle returns to the exact ongoing clue phase.
- assert.equal(nav.select("clues"),true);
- assert.strictEqual(f.clues.saved,savedClue);
- assert.strictEqual(f.threat.saved,savedThreat);
+ assert.equal(nav.select("threat"),true,"weekly squad/battle return");
+ assert.equal(nav.select("clues"),true,"clue squad/battle return");
+ assert.strictEqual(f.clues.saved,oldClue);
+ assert.strictEqual(f.threat.saved,oldThreat);
  assert.equal(nav.select("unknown"),false);
  assert.equal(nav.current(),"clues");
  nav.mount({threatAvailable:true});
- assert.equal(f.registered.length,1,"re-entering never registers another listener");
+ assert.equal(f.registered.length,1,"no duplicate listeners on re-entry");
  delete global.document;
 });
-test("NET-UX-002 isolated pilot cannot open weekly; external taps are ignored",()=>{
- const f=fixture(),nav=require("../network-navigation.js");
- assert.equal(nav.setThreatAvailable(false),true);
+test("NET-UX-002 pilot mode hides weekly and ignores disabled/external taps",()=>{
+ const f=fixture(),nav=freshNavigation();
+ nav.mount({threatAvailable:false});
  assert.equal(nav.select("threat"),false);
  assert.equal(f.tabs[1].hidden,true);
  assert.equal(f.threat.hidden,true);
@@ -56,26 +59,37 @@ test("NET-UX-002 isolated pilot cannot open weekly; external taps are ignored",(
  assert.equal(nav.current(),"clues");
  f.click({dataset:{netView:"threat"},hidden:false,disabled:false});
  assert.equal(nav.current(),"clues");
+ nav.setThreatAvailable(true);
+ assert.equal(f.tabs[1].hidden,false);
+ f.click(f.tabs[1]);
+ assert.equal(nav.current(),"threat");
+ nav.setThreatAvailable(false);
+ assert.equal(nav.current(),"clues");
  assert.equal(f.clues.hidden,false);
+ assert.equal(f.threat.hidden,true);
  delete global.document;
 });
-test("NET-UX-002 actual app wiring and version contract",()=>{
+test("NET-UX-002 app routes, existing game systems and release contract",()=>{
  const html=read("index.html"),game=read("game.js"),css=read("network-pilot.css");
- assert.match(html,/class="hq-station hq-station-operations" data-screen="network"/);
- assert.match(html,/<button data-screen="network"><span aria-hidden="true">⌖<\\/span>Разведсеть<\\/button>/);
- assert.match(html,/id="netuxCluesPanel"/);
- assert.match(html,/data-net-view="clues"/);
- assert.match(html,/data-net-view="threat"/);
- assert.match(html,/data-screen="operations" aria-label="Открыть учебные разведоперации"/);
- assert.match(html,/network-navigation\\.js\\?v=0\\.3\\.196" type="text\\/progress-gated"/);
- assert.match(game,/NetworkNavigation\\.mount\\(/);
- assert.match(game,/squadReturnScreen==="weekly"\\?"threat":"clues"/);
- assert.match(css,/\\.netux-tabs/);
- assert.match(css,/min-height:44px/);
+ for(const needle of [
+  'class="hq-station hq-station-operations" data-screen="network"',
+  '<button data-screen="network"><span aria-hidden="true">⌖</span>Разведсеть</button>',
+  'id="netuxCluesPanel"',
+  'data-net-view="clues"',
+  'data-net-view="threat"',
+  'data-screen="operations" aria-label="Открыть учебные разведоперации"',
+  'network-navigation.js?v=0.3.196" type="text/progress-gated"',
+  'id="buildVersion">Прототип · v0.3.196 · NETUXNAV002'
+ ])assert.ok(html.includes(needle),needle);
+ for(const needle of [
+  'NetworkNavigation.mount(',
+  'squadReturnScreen==="weekly"?"threat":"clues"',
+  'NetworkPilotSession.create(',
+  'WeeklyThreatUI.mount(',
+  'battleIsNetwork=squadReturnScreen==="network"',
+  'showScreen(squadReturnScreen==="weekly"?"network":squadReturnScreen)'
+ ])assert.ok(game.includes(needle),needle);
+ assert.ok(css.includes(".netux-tabs"));
+ assert.ok(css.includes("min-height:44px"));
  assert.equal(JSON.parse(read("package.json")).version,"0.3.196");
- assert.match(html,/id="buildVersion">Прототип · v0\\.3\\.196 · NETUXNAV002/);
- // NET-UX-002 changes navigation only; reward and combat entrypoints remain.
- assert.match(game,/NetworkPilotSession\\.create\\(/);
- assert.match(game,/WeeklyThreatUI\\.mount\\(/);
- assert.match(game,/battleIsNetwork=squadReturnScreen==="network"/);
 });

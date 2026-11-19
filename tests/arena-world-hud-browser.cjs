@@ -39,8 +39,9 @@ const fs=require("node:fs"),assert=require("node:assert/strict");
    assert.equal(result.fighters,10);
    assert.equal(result.tracked,10);
    if(result.stage){
-    assert.ok(Math.abs(result.camera.radius-15.5)<.05,"approved camera radius");
-    assert.ok(Math.abs(result.camera.fov*180/Math.PI-34)<.01,"approved FOV");
+    // ARENA-VIS-001: SWGOH-style over-the-shoulder shot (owner, 19.11.2026).
+    assert.ok(Math.abs(result.camera.radius-7.6)<.05,"approved camera radius");
+    assert.ok(Math.abs(result.camera.fov-.85)<.001,"approved FOV");
    }
    assert.ok(result.engineFrames>2);
    assert.deepEqual(errors,[]);

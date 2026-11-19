@@ -188,11 +188,11 @@ test("NET-004 fail closed on lock denial, corrupt pilot data, stale and uncertai
 });
 test("NET-004 feature gated, correct script order and build/cache version",()=>{
  const html=file("index.html"),js=file("game.js"),pkg=JSON.parse(file("package.json"));
- assert.ok(/^0\.3\.(188|189|190|191|192|193|194)$/.test(pkg.version));
+ assert.ok(/^0\.3\.(188|189|190|191|192|193|194|195)$/.test(pkg.version));
  assert.ok(html.includes('id="buildVersion">Прототип · v'+pkg.version+
   ' · '+(pkg.version==="0.3.188"?"NET004PILOT":pkg.version==="0.3.189"?"NET005PILOT":
    pkg.version==="0.3.190"?"NET006ASCORE":pkg.version==="0.3.191"?"NET007PROG":
-   pkg.version==="0.3.193"?"NET008AWEEKLY":pkg.version==="0.3.194"?"NETUXFIX001":"NET007LIVE")));
+   pkg.version==="0.3.193"?"NET008AWEEKLY":pkg.version==="0.3.194"?"ARENAVIS001":pkg.version==="0.3.195"?"NETUXFIX001":"NET007LIVE")));
  assert.ok(html.includes('id="net004Entry" data-screen="network" hidden'));
  const scripts=["network-data.js","network-score-core.js","network-core.js","network-encounter-data.js",
  "network-encounter-adapter.js","network-pilot-session.js","network-pilot-ui.js","game.js"];

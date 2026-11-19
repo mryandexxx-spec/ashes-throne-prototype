@@ -12,13 +12,14 @@ test("MOBILEQA001: enemies are on the allies' screen-right under the arena camer
  const a=centre("ally"),e=centre("enemy");
  assert.ok(dot({x:e.x-a.x,z:e.z-a.z},Stage.screenRight)>0);
 });
-test("MOBILEQA001: resting GLB heroes face the camera three-quarter, toward the opposing lane",()=>{
+test("ARENA-VIS-001: resting teams face each other (allies turned away from the camera)",()=>{
  for(const side of ["ally","enemy"]){
   const f=Stage.idleFacing(side);
   assert.ok(Math.abs(Math.hypot(f.x,f.z)-1)<1e-9);
-  assert.ok(dot(f,Stage.toCamera)>0.2,side+" must not show its back to the camera");
-  const lane=dot(f,Stage.screenRight);
-  assert.ok(side==="ally"?lane>0.8:lane<-0.8,side+" turned toward opponents");
+  const away=dot(f,Stage.toCamera);
+  assert.ok(side==="ally"?away<-0.5:away>0.5,side+" faces the opposing team in depth");
+  const a=centre("ally"),e=centre("enemy"),to=side==="ally"?{x:e.x-a.x,z:e.z-a.z}:{x:a.x-e.x,z:a.z-e.z};
+  assert.ok(dot(f,to)/Math.hypot(to.x,to.z)>0.99,side+" turned toward opponents");
   // game.js maps body yaw y to body-local +X direction (cos y, -sin y).
   const y=Stage.idleYaw(side);
   assert.ok(Math.abs(Math.cos(y)-f.x)<1e-9&&Math.abs(-Math.sin(y)-f.z)<1e-9);

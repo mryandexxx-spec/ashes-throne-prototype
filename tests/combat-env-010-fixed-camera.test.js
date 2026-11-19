@@ -148,7 +148,7 @@ test("fixed camera ignores single-finger rotation, retains 12..21 pinch and clea
  assert.equal(camera.radius,old);
  assert.match(source,/lowerAlphaLimit=ARENA_VIEW.alpha;arenaCamera.upperAlphaLimit=ARENA_VIEW.alpha/);
  assert.match(source,/lowerBetaLimit=ARENA_VIEW.beta;arenaCamera.upperBetaLimit=ARENA_VIEW.beta/);
- assert.match(source,/arenaCamera.lowerRadiusLimit=12;arenaCamera.upperRadiusLimit=21/);
+ assert.match(source,/arenaCamera.lowerRadiusLimit=ARENA_VIEW.minRadius\?\?12;arenaCamera.upperRadiusLimit=ARENA_VIEW.maxRadius\?\?21/);
  assert.match(source,/canvas.addEventListener\("pointercancel",cancelInspectionGesture\)/);
 });
 test("candidate build and visual comparison preserve current game wiring",()=>{

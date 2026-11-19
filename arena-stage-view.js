@@ -1,50 +1,52 @@
-/* ARENA-ENGINE-002: camera and 3+2 formation extracted into one presentation-only
-   contract, based on Dune v94 and owner-reviewed Ashes A/B WebGL previews.
-   No gameplay ownership, Babylon dependency or new render loop. */
+/* ARENA-VIS-001: SWGOH-style battle shot, owner direction 19.11.2026.
+   The camera sits behind and above the player's squad: allies are large in the
+   lower half of the frame, facing away from the viewer toward the enemy line,
+   enemies stand in a wider line deeper in the frame, facing the squad.
+   Presentation only: no gameplay ownership, Babylon dependency or render loop.
+   Positions are authored in camera space (L = screen-right, D = toward camera)
+   and chosen so that no fighter hides another at 844x390. */
 const ArenaStageView=(()=>{
  "use strict";
  const radians=degrees=>degrees*Math.PI/180;
- // The approved Ashes close-up (PR #278), turned -8 deg after visual review.
- const NEAR_X=-11.5, NEAR_Z=10;
- const AZIMUTH=Math.atan2(NEAR_Z,NEAR_X)-radians(8);
- const RADIUS=15.5;
+ // Same azimuth as ARENA-ENGINE-002 (scene/background orientation unchanged).
+ const AZIMUTH=Math.atan2(10,-11.5)-radians(8);
  const VIEW=Object.freeze({
    alpha:AZIMUTH,
-   beta:Math.acos(3.3/RADIUS),
-   radius:RADIUS,
-   targetY:1.35,
-   fov:radians(34),
-   minRadius:12,
-   maxRadius:21
+   beta:1.12,          // ~26 deg above the horizon: over-the-shoulder view
+   radius:7.6,
+   targetY:1.0,
+   fov:.85,            // vertical field of view, radians
+   minRadius:6.6,
+   maxRadius:10.5
  });
- const span=Math.hypot(NEAR_X,NEAR_Z);
- const near=Object.freeze({x:NEAR_X/span,z:NEAR_Z/span});
- const tangent=Object.freeze({x:near.z,z:-near.x});
+ const toCamera=Object.freeze({x:Math.cos(VIEW.alpha),z:Math.sin(VIEW.alpha)});
+ const screenRight=Object.freeze({x:-toCamera.z,z:toCamera.x});
+ // Allies: leader nearest the enemy, then flanks; the nearest fighters stand
+ // to the sides so they never cover the enemy line.
+ const ALLY_SLOTS=Object.freeze([[.5,.6],[-1.8,.6],[-.5,2.5],[-3.2,2],[1.8,2.8]]);
+ // Enemies: one receding line, left to right. Smaller teams use a centred window.
+ const ENEMY_LINE=Object.freeze([[1.9,-2.7],[3.3,-3],[4.7,-3.3],[6.1,-3.6],[7.5,-3.9]]);
+ const world=([L,D])=>({x:screenRight.x*L+toCamera.x*D,z:screenRight.z*L+toCamera.z*D});
 
  function formation(side,slot,count){
    if(side!=="ally"&&side!=="enemy")throw Error("arena: invalid team side");
    if(!Number.isInteger(count)||count<1||count>5)throw Error("arena: party size must be 1..5");
    if(!Number.isInteger(slot)||slot<0||slot>=count)throw Error("arena: invalid formation slot");
-   const front=Math.min(3,count),back=count-front,isBack=slot>=front;
-   const rank=isBack?slot-front:slot,rowSize=isBack?back:front;
-   const signed=side==="ally"?1:-1;
-   const depth=signed*(2.65+(isBack?1.10:-.55));
-   // Give ally and enemy lanes opposite screen-space halves, without crowding.
-   const lateral=(side==="ally"?3.45:-3.45)+(rank-(rowSize-1)/2)*2.35;
-   return {x:near.x*depth+tangent.x*lateral,z:near.z*depth+tangent.z*lateral};
+   if(side==="ally")return world(ALLY_SLOTS[slot]);
+   return world(ENEMY_LINE[Math.floor((5-count)/2)+slot]);
  }
- // MOBILEQA001 [ПРЕДЛОЖЕНИЕ]: resting GLB heroes stand three-quarter to the
- // viewer, turned toward the opposing lane, instead of world +X (which under the
- // ARENA-ENGINE-003 camera shows their backs). Body-local +X is the model front,
- // matching the existing attack yaw -atan2(dz,dx) in game.js.
- const IDLE_TURN=radians(70);
- const toCamera=Object.freeze({x:Math.cos(VIEW.alpha),z:Math.sin(VIEW.alpha)});
- const screenRight=Object.freeze({x:-toCamera.z,z:toCamera.x});
+ function centroid(points){
+   const p=points.map(world);
+   return {x:p.reduce((s,v)=>s+v.x,0)/p.length,z:p.reduce((s,v)=>s+v.z,0)/p.length};
+ }
+ const allyCenter=centroid(ALLY_SLOTS),enemyCenter=centroid(ENEMY_LINE);
+ // Each team faces the other team (body-local +X is the model front,
+ // matching the attack yaw -atan2(dz,dx) in game.js).
  function idleFacing(side){
    if(side!=="ally"&&side!=="enemy")throw Error("arena: invalid team side");
-   const sign=side==="ally"?1:-1;
-   return {x:Math.cos(IDLE_TURN)*toCamera.x+sign*Math.sin(IDLE_TURN)*screenRight.x,
-    z:Math.cos(IDLE_TURN)*toCamera.z+sign*Math.sin(IDLE_TURN)*screenRight.z};
+   const from=side==="ally"?allyCenter:enemyCenter,to=side==="ally"?enemyCenter:allyCenter;
+   const dx=to.x-from.x,dz=to.z-from.z,len=Math.hypot(dx,dz);
+   return {x:dx/len,z:dz/len};
  }
  function idleYaw(side){const d=idleFacing(side);return -Math.atan2(d.z,d.x);}
  return Object.freeze({view:VIEW,formation,idleFacing,idleYaw,screenRight,toCamera});

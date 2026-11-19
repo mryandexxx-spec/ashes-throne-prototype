@@ -30,7 +30,7 @@ async function check(name,engine,viewport){
     tabs:rect("#network .netux-tabs"),action:rect("#network .netux-board-selection"),
     picks:[...document.querySelectorAll("#net004Clues .netux-clue-pick")]
      .map(el=>({height:el.getBoundingClientRect().height,width:el.getBoundingClientRect().width})),
-    controls:[...document.querySelectorAll("#network .netux-tabs button:not([hidden]), #netuxStartSelected, #netuxSimulateSelected, #netuxThreatShortcut, #netuxOrderDetails summary, #net004Refresh")]
+    controls:[...document.querySelectorAll("#network .netux-tabs button:not([hidden]), #netuxStartSelected, #netuxSimulateSelected, #netuxThreatShortcut, #netuxOrderOpen, #net004Refresh")]
      .filter(el=>!el.hidden).map(el=>el.getBoundingClientRect().height)
    };
   });
@@ -41,12 +41,12 @@ async function check(name,engine,viewport){
   assert.ok(geom.action.bottom<=viewport.height+1,"primary action remains visible");
   assert.ok(geom.picks.every(rect=>rect.height>=44&&rect.width>=44),"cards have touch targets");
   assert.ok(geom.controls.every(h=>h>=44),"all board controls need 44px touch targets");
-  assert.ok((await page.locator("#netuxOrderDetails").evaluate(x=>x.open))===false,
-   "order options should be collapsed by default");
-  await page.locator("#netuxOrderDetails summary").click();
+  assert.equal(await page.locator("#netuxOrderDialog").evaluate(x=>x.open),false,
+   "order dialog must be closed by default");
+  await page.locator("#netuxOrderOpen").click();
   assert.ok(await page.locator("#net005OrderChoices button").count()>0,
-   "original order controls remain available");
-  await page.locator("#netuxOrderDetails summary").click();
+   "PR5 must keep actual available order choices");
+  await page.locator('#netuxOrderDialog [data-net-action="close-order"]').first().click();
   const saved=await page.evaluate(()=>({
    wallet:localStorage.getItem("ashes-throne.progress.v3"),
    network:localStorage.getItem("ashes-throne.network.v1")

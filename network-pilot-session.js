@@ -89,6 +89,21 @@ const NetworkPilotSession=(()=>{
     return persist(next);
    });
   }
+  // NET-UX-007: keep mastery-based simulation of saved revision-1 clues.
+  // Legacy definitions are for old board items only, never new arrivals.
+  function catalogForSimulation(clueId){
+   if(!live||!state)return catalog;
+   const clue=state.board.find(c=>c.id===clueId);
+   if(!clue||clue.templateRevision!==1)return catalog;
+   const entry=typeof NetworkEncounterData!=="undefined"?
+    NetworkEncounterData.REGISTRY[clue.encounterRef]:null;
+   if(!entry||entry.template.id!==clue.templateId||
+    entry.template.revision!==clue.templateRevision)return catalog;
+   const region=catalog.regions.find(r=>r.id===clue.regionId);
+   if(!region)return catalog;
+   return Data.buildCatalog({version:1,regions:[region],
+    templates:[entry.template]})||catalog;
+  }
   async function change(step,arg){
    if(blocked)return fail("SESSION_BLOCKED_RELOAD_REQUIRED");
    if(!opened||!state)return fail("NOT_OPEN");
@@ -105,7 +120,7 @@ const NetworkPilotSession=(()=>{
       next=Core.finish(state,live?new Date(monday).toISOString().slice(0,10):null);
      }
     if(step==="order")next=Core.setOrder(state,arg,catalog,["gardens-over-abyss"]);
-    if(step==="simulate")next=Core.simulate(state,arg,catalog,["gardens-over-abyss"]);
+    if(step==="simulate")next=Core.simulate(state,arg,catalogForSimulation(arg),["gardens-over-abyss"]);
     if(!next)return fail("INVALID_TRANSITION");
     if(JSON.stringify(state)===JSON.stringify(next))
      return Object.freeze({ok:true,state:read()});
@@ -141,7 +156,7 @@ const NetworkPilotSession=(()=>{
   function canSimulate(clueId){
    if(!state||blocked||!Number.isSafeInteger(clueId))return false;
    // Safe read-only dry run: never persists an unearned completion.
-   return !!Core.simulate(state,clueId,catalog,["gardens-over-abyss"]);
+   return !!Core.simulate(state,clueId,catalogForSimulation(clueId),["gardens-over-abyss"]);
   }
   // Live mode uses the existing serial wallet ledger. Completed clues remain
   // unpaid until their exact ordered RewardPolicy claim has succeeded.

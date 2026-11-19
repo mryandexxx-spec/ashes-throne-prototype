@@ -57,10 +57,10 @@ const WeeklyThreatUI=(()=>{
  async function finish(battle){
   const r=await session.finish(battle).catch(()=>({ok:false,code:"FINISH_FAILED"}));
   if(r.ok){
-   notice=r.win?"Победа! S1 "+r.score+"/100. Результат сохранён; можно улучшить оценку.":
+   notice=r.win?"Победа! Оценка "+r.score+"/100. Результат сохранён; можно улучшить оценку.":
     "Поражение. Попытка завершена; можно изменить тактику и повторить.";
    await collect();
-   if(r.ok&&r.win)notice="Победа: S1 "+r.score+"/100. "+notice;
+   if(r.ok&&r.win)notice="Победа: оценка "+r.score+"/100. "+notice;
   }else notice="Результат боя не записан: "+r.code+". Перезагрузите страницу и повторите попытку.";
   render();return r;
  }

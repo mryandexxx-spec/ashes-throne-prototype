@@ -15,11 +15,10 @@ async function run(name,engine,viewport){
  try{
   await page.goto(origin+"?networkPilot=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function");
-  assert.match(await page.locator("#buildVersion").innerText(),/v0\.3\.(190 · NET006ASCORE|192 · NET007LIVE|193 · NET008AWEEKLY|194 · ARENAVIS001|195 · NETUXFIX001)/);
+  assert.match(await page.locator("#buildVersion").innerText(),/v0\.3\.(190 · NET006ASCORE|192 · NET007LIVE|193 · NET008AWEEKLY|194 · ARENAVIS001|195 · NETUXFIX001|196 · NETUXNAV002)/);
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
-  await page.locator("#hqMoreToggle").click();
-  await page.locator("#net004Entry").click();
+  await page.locator('#home .hq-bottom [data-screen="network"]').click();
   await page.locator("#network").waitFor({state:"visible"});
   const before=await page.evaluate(()=>({
    wallet:localStorage.getItem("ashes-throne.progress.v3"),
@@ -52,8 +51,7 @@ async function run(name,engine,viewport){
   await page.reload({waitUntil:"load"});
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();
-  await page.locator("#hqMoreToggle").click();
-  await page.locator("#net004Entry").click();
+  await page.locator('#home .hq-bottom [data-screen="network"]').click();
   await page.locator("#network").waitFor({state:"visible"});
   assert.match(await page.locator("#net005OrderStatus").innerText(),/Трофеи/);
   await page.locator('[data-net-action="clear-order"]').click();
@@ -73,7 +71,7 @@ async function run(name,engine,viewport){
   assert.equal(previewCount,1,"Finder pilot preview control exists: "+
    JSON.stringify(await page.evaluate(()=>({
     pilotFlag:typeof NETWORK_PILOT_ENABLED==="undefined"?null:NETWORK_PILOT_ENABLED,
-    entryHidden:document.getElementById("net004Entry")?.hidden,
+    networkNav:document.querySelector('#home .hq-bottom [data-screen="network"]')?.textContent,
     buttonTexts:[...document.querySelectorAll("#gearUxRight button")]
      .map(x=>({text:x.textContent,hidden:x.hidden,display:getComputedStyle(x).display})),
     visibleGearPanel:getComputedStyle(document.getElementById("gearUxRight")).display

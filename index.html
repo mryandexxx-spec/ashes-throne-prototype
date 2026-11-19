@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Пепельный престол — прототип</title>
-  <link rel="stylesheet" href="styles.css?v=0.3.198">
-  <link rel="stylesheet" href="hero-card.css?v=0.3.198">
-  <link rel="stylesheet" href="gear-ux-004.css?v=0.3.198">
-  <link rel="stylesheet" href="lore-campaign.css?v=0.3.198">
-  <link rel="stylesheet" href="network-pilot.css?v=0.3.198">
+  <link rel="stylesheet" href="styles.css?v=0.3.199">
+  <link rel="stylesheet" href="hero-card.css?v=0.3.199">
+  <link rel="stylesheet" href="gear-ux-004.css?v=0.3.199">
+  <link rel="stylesheet" href="lore-campaign.css?v=0.3.199">
+  <link rel="stylesheet" href="network-pilot.css?v=0.3.199">
   <!-- Fixed Babylon.js release: no unversioned CDN updates during prototype development. -->
   <script src="https://cdn.babylonjs.com/v9.33.2/babylon.js"></script>
 </head>
@@ -344,10 +344,14 @@
             <span id="netuxInfluence">Влияние: —</span>
             <div class="netux-region-engraving" aria-hidden="true"></div>
           </div>
-          <details class="net005-order" id="netuxOrderDetails">
-            <summary><strong>Приказ сети</strong><small id="net005OrderStatus">Приоритет не задан</small></summary>
-            <div id="net005OrderChoices" class="net005-order-choices"></div>
-          </details>
+          <div class="net005-order netux-order-card" id="netuxOrderDetails">
+            <button type="button" id="netuxOrderOpen" class="netux-order-open" data-net-action="open-order"
+              aria-haspopup="dialog" aria-controls="netuxOrderDialog">
+              <span class="netux-order-kicker">ПРИКАЗ СЕТИ <span>Изменить ›</span></span>
+              <strong id="net005OrderStatus">Без приказа</strong>
+              <small id="netuxOrderProgress">Задайте направление поиска</small>
+            </button>
+          </div>
           <button type="button" class="netux-threat-shortcut" id="netuxThreatShortcut" data-net-quick="threat" aria-controls="net008aThreat" aria-pressed="false" hidden>
             <strong>Угроза недели</strong><small>Перейти к подготовке →</small>
           </button>
@@ -421,6 +425,31 @@
         </div>
         </div>
       </div>
+      <dialog id="netuxOrderDialog" class="netux-order-dialog" aria-labelledby="netuxOrderHeading"
+        aria-describedby="netuxOrderExplanation">
+        <div class="netux-order-inner">
+          <header class="netux-order-dialog-head">
+            <div><span>ОПЕРАТИВНЫЙ ЦЕНТР</span><h3 id="netuxOrderHeading">Приказ разведсети</h3></div>
+            <button type="button" class="netux-order-close" data-net-action="close-order" aria-label="Закрыть без изменений">✕</button>
+          </header>
+          <p id="netuxOrderExplanation">Приоритет повышает вес подходящих зацепок при новых поступлениях. Уже полученные донесения не изменятся. Действует один приказ за раз.</p>
+          <div class="netux-order-current" aria-label="Действующий приказ и гарантия">
+            <span>СЕЙЧАС <strong id="netuxOrderCurrent">Без приказа</strong></span>
+            <small id="netuxOrderCurrentProgress">Гарантия включается после выбора приоритета.</small>
+          </div>
+          <div class="netux-order-tabs" id="netuxOrderTabs" role="tablist" aria-label="Направление поиска"></div>
+          <div id="net005OrderChoices" class="net005-order-choices netux-order-options" role="group" aria-label="Доступные цели приказа"></div>
+          <div class="netux-order-footer">
+            <p id="netuxOrderPreview" aria-live="polite">Выберите направление будущего поиска.</p>
+            <div class="netux-order-actions">
+              <button type="button" data-net-action="close-order">Отмена</button>
+              <button type="button" id="netuxOrderClear" data-net-action="clear-order">Снять приказ</button>
+              <button type="button" id="netuxOrderApply" data-net-action="apply-order">Отдать приказ</button>
+            </div>
+            <p id="netuxOrderMessage" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </dialog>
     </section>
     <section id="operations" class="screen operations-screen" aria-label="Разведывательные операции">
       <div class="section-heading">
@@ -880,7 +909,7 @@
     </dialog>
     <!-- Previous build tokens remain non-rendered for old test contracts; full history in docs/BUILD_HISTORY.md. -->
     <template id="legacyBuildMilestones">Прототип · v0.3.147 · UIHUD001 + OPSHELP + RENPLAY + REN3D003 + ENV010 + ENV017-MASSING + ENV022-DEFAULT + RENGLB003 + RENLOAD005 + RENAN008 + RENCARD009 + MELEE009 + RENIDLE010 + RENPOSE011 + RENSTANCE012 + RENSTANCE013 + RENRETARGET014 + RENIDLE015 + RENPOSE016 + RENMESH017 + RENPACE018 + RENQUEUE019 + HEROCARD001 + RENMOVE020+ RENCHOR021 + RENBYTES001 + RENBYTES002 + NADAART001 + NADAPLAY001 + NADAPORTRAIT002 + NADAROSTER001</template>
-    <footer><span id="buildVersion">Прототип · v0.3.198 · NETUXBOARD004</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.199 · NETUXORDER005</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -897,16 +926,16 @@
   <script src="combat-core.js"></script>
   <script src="auto-decision.js"></script>
   <script src="enemy-decision.js"></script>
-  <script src="npc-enemy-data.js?v=0.3.198"></script>
-  <script src="npc-mission-pilot.js?v=0.3.198"></script>
-  <script src="npc-challenge-pilot.js?v=0.3.198"></script>
-   <script src="npc-story-ops-adapter.js?v=0.3.198"></script>
-   <script src="npc-battle-intel.js?v=0.3.198"></script>
+  <script src="npc-enemy-data.js?v=0.3.199"></script>
+  <script src="npc-mission-pilot.js?v=0.3.199"></script>
+  <script src="npc-challenge-pilot.js?v=0.3.199"></script>
+   <script src="npc-story-ops-adapter.js?v=0.3.199"></script>
+   <script src="npc-battle-intel.js?v=0.3.199"></script>
   <script src="combat-log.js"></script>
   <script src="gear-data.js"></script>
-  <script src="hero-stats-core.js?v=0.3.198"></script>
-  <script src="hero-stats-profiles.js?v=0.3.198"></script>
-  <script src="hero-stats-combat-bridge.js?v=0.3.198"></script>
+  <script src="hero-stats-core.js?v=0.3.199"></script>
+  <script src="hero-stats-profiles.js?v=0.3.199"></script>
+  <script src="hero-stats-combat-bridge.js?v=0.3.199"></script>
   <script src="progress-core.js"></script>
   <script src="save-core.js"></script>
   <script src="daily-core.js"></script>
@@ -918,28 +947,28 @@
   <script src="mission-data.js"></script>
   <script src="campaign-core.js"></script>
   <script src="campaign-data.js"></script>
-  <script src="gear-source-data.js?v=0.3.198"></script>
-  <script src="gear-planning-core.js?v=0.3.198"></script>
-  <script src="lore-campaign-data.js?v=0.3.198"></script>
-  <script src="lore-campaign-core.js?v=0.3.198"></script>
-  <script src="lore-campaign-scenes.js?v=0.3.198"></script>
-  <script src="lore-campaign-pilot.js?v=0.3.198"></script>
-  <script src="lore-campaign-act2.js?v=0.3.198"></script>
-  <script src="lore-campaign-trials.js?v=0.3.198"></script>
-  <script src="lore-campaign-act3.js?v=0.3.198"></script>
-  <script src="lore-campaign-act4.js?v=0.3.198"></script>
-  <script src="lore-campaign-act5.js?v=0.3.198"></script>
-  <script src="lore-campaign-scene-core.js?v=0.3.198"></script>
-  <script src="lore-campaign-scene-save.js?v=0.3.198"></script>
-  <script src="lore-campaign-scene-runtime.js?v=0.3.198"></script>
-  <script src="lore-campaign-ui.js?v=0.3.198"></script>
+  <script src="gear-source-data.js?v=0.3.199"></script>
+  <script src="gear-planning-core.js?v=0.3.199"></script>
+  <script src="lore-campaign-data.js?v=0.3.199"></script>
+  <script src="lore-campaign-core.js?v=0.3.199"></script>
+  <script src="lore-campaign-scenes.js?v=0.3.199"></script>
+  <script src="lore-campaign-pilot.js?v=0.3.199"></script>
+  <script src="lore-campaign-act2.js?v=0.3.199"></script>
+  <script src="lore-campaign-trials.js?v=0.3.199"></script>
+  <script src="lore-campaign-act3.js?v=0.3.199"></script>
+  <script src="lore-campaign-act4.js?v=0.3.199"></script>
+  <script src="lore-campaign-act5.js?v=0.3.199"></script>
+  <script src="lore-campaign-scene-core.js?v=0.3.199"></script>
+  <script src="lore-campaign-scene-save.js?v=0.3.199"></script>
+  <script src="lore-campaign-scene-runtime.js?v=0.3.199"></script>
+  <script src="lore-campaign-ui.js?v=0.3.199"></script>
    <script src="challenge-core.js"></script>
   <script src="operation-core.js"></script>
   <script src="signal-operation-core.js"></script>
   <script src="battle-speed.js"></script>
-  <script src="animation-profiles.js?v=0.3.198"></script>
-  <script src="ren-choreography.js?v=0.3.198"></script>
-  <script src="battle-animation.js?v=0.3.198"></script>
+  <script src="animation-profiles.js?v=0.3.199"></script>
+  <script src="ren-choreography.js?v=0.3.199"></script>
+  <script src="battle-animation.js?v=0.3.199"></script>
   <script src="player-profile-core.js"></script>
   <script src="hero-profile-data.js"></script>
   <script src="story-trial-data.js"></script>
@@ -949,42 +978,42 @@
   <script src="combat-environment-017.js"></script>
   <script src="combat-visual-007.js"></script>
   <script src="ren-visual-model.js"></script>
-  <script src="ren-glb-runtime.js?v=0.3.198"></script>
-  <script src="dev/src/assets/models.js?v=0.3.198"></script>
-  <script src="nada-glb-runtime.js?v=0.3.198"></script>
-   <script src="liora-glb-runtime.js?v=0.3.198"></script>
-   <script src="sava-glb-runtime.js?v=0.3.198"></script>
-   <script src="art-glb-runtime.js?v=0.3.198"></script>
-  <script src="ren-idle-kinemiq.js?v=0.3.198"></script>
-  <script src="ren-kinemiq-retarget-data.js?v=0.3.198"></script>
-  <script src="ren-motion-retarget.js?v=0.3.198"></script>
-  <script src="ren-card-pose.js?v=0.3.198"></script>
-  <script src="ren-card-3d.js?v=0.3.198"></script>
-  <script src="arena-world-hud.js?v=0.3.198"></script>
-  <script src="arena-stage-view.js?v=0.3.198"></script>
-  <script src="arena-vis-001.js?v=0.3.198"></script>
+  <script src="ren-glb-runtime.js?v=0.3.199"></script>
+  <script src="dev/src/assets/models.js?v=0.3.199"></script>
+  <script src="nada-glb-runtime.js?v=0.3.199"></script>
+   <script src="liora-glb-runtime.js?v=0.3.199"></script>
+   <script src="sava-glb-runtime.js?v=0.3.199"></script>
+   <script src="art-glb-runtime.js?v=0.3.199"></script>
+  <script src="ren-idle-kinemiq.js?v=0.3.199"></script>
+  <script src="ren-kinemiq-retarget-data.js?v=0.3.199"></script>
+  <script src="ren-motion-retarget.js?v=0.3.199"></script>
+  <script src="ren-card-pose.js?v=0.3.199"></script>
+  <script src="ren-card-3d.js?v=0.3.199"></script>
+  <script src="arena-world-hud.js?v=0.3.199"></script>
+  <script src="arena-stage-view.js?v=0.3.199"></script>
+  <script src="arena-vis-001.js?v=0.3.199"></script>
   <!-- Game must initialize only AFTER wallet exclusivity has been granted. -->
-  <script src="progress-writer-core.js?v=0.3.198"></script>
+  <script src="progress-writer-core.js?v=0.3.199"></script>
   <!-- All five one-time lore act rewards are gated by the exclusive wallet writer. -->
-  <script src="lore-reward-proof-core.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="reward-policy-core.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="lore-act1-reward-core.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="network-data.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="network-score-core.js?v=0.3.198" type="text/progress-gated"></script>
-   <script src="network-core.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="network-encounter-data.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="network-encounter-adapter.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="network-live-economy.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="network-reward-core.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="weekly-threat-core.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="network-pilot-session.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="network-pilot-ui.js?v=0.3.198" type="text/progress-gated"></script>
-   <script src="network-navigation.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="weekly-threat-ui.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="game.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="hero-card-ui.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="gear-ux-004.js?v=0.3.198" type="text/progress-gated"></script>
-  <script src="model-cache-client.js?v=0.3.198"></script>
+  <script src="lore-reward-proof-core.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="reward-policy-core.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="lore-act1-reward-core.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="network-data.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="network-score-core.js?v=0.3.199" type="text/progress-gated"></script>
+   <script src="network-core.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="network-encounter-data.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="network-encounter-adapter.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="network-live-economy.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="network-reward-core.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="weekly-threat-core.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="network-pilot-session.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="network-pilot-ui.js?v=0.3.199" type="text/progress-gated"></script>
+   <script src="network-navigation.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="weekly-threat-ui.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="game.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="hero-card-ui.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="gear-ux-004.js?v=0.3.199" type="text/progress-gated"></script>
+  <script src="model-cache-client.js?v=0.3.199"></script>
   <!-- Competing tabs and unsupported browsers never initialize wallet-mutating UI. -->
   <aside id="walletWriterNotice" role="alertdialog" aria-modal="true" aria-label="Доступ к сохранению"
     style="position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;background:#101821f5;color:#f7e7cb;text-align:center">

@@ -355,3 +355,81 @@
  .net004-screen .netux-region-engraving{display:none}
  .net004-screen .netux-history{max-height:45px;overflow-y:auto}
 }
+
+
+/* NET-UX-005: order detail in a top-layer dialog, PR4 board geometry untouched. */
+.net004-screen .netux-order-card{padding:0;overflow:hidden}
+.net004-screen .netux-order-open{
+ display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+ gap:3px;width:100%;min-height:56px;min-width:0;text-align:left;padding:7px 10px;
+ background:linear-gradient(120deg,#383026,#242128);border:0;box-shadow:none
+}
+.netux-order-kicker{display:flex;justify-content:space-between;gap:8px;width:100%;
+ color:#e0b978;font-size:10px;letter-spacing:.055em;font-weight:700}
+.netux-order-kicker span{color:#f0d59e;letter-spacing:0;font-weight:500}
+.net004-screen .netux-order-open strong{max-width:100%;font:600 14px/1.15 Georgia,serif;
+ color:#f5e6cd;overflow-wrap:anywhere}
+.net004-screen .netux-order-open small{font:400 10px/1.25 system-ui,sans-serif;
+ color:#d9c5ab;overflow-wrap:anywhere}
+.net004-screen .netux-order-dialog:not([open]){display:none}
+.net004-screen .netux-order-dialog{
+ position:fixed;inset:0;margin:auto;box-sizing:border-box;
+ width:min(650px,calc(100vw - 24px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px)));
+ max-width:650px;height:min(380px,calc(100dvh - 18px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)));
+ max-height:none;padding:0;border:1px solid #b9945a;border-radius:13px;
+ background:#1c1b20;color:#f4ebd8;box-shadow:0 20px 64px #000c;
+ overflow:hidden
+}
+.net004-screen .netux-order-dialog::backdrop{background:rgba(7,7,10,.89)}
+.netux-order-inner{box-sizing:border-box;height:100%;min-height:0;padding:10px 14px;
+ display:flex;flex-direction:column;gap:6px}
+.netux-order-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none}
+.netux-order-dialog-head span{display:block;font-size:9px;letter-spacing:.12em;color:#cba979}
+.net004-screen .netux-order-dialog h3{font:600 19px/1.2 Georgia,serif;color:#f0c879;margin:1px 0}
+.net004-screen .netux-order-dialog .netux-order-close{
+ width:44px;min-width:44px;min-height:44px;padding:0;background:#29252b;
+ font-size:17px;border-color:#a7834880
+}
+.net004-screen #netuxOrderExplanation{font-size:11px;line-height:1.35;color:#dcc9b2;
+ margin:0;flex:none}
+.netux-order-current{display:flex;align-items:center;justify-content:space-between;
+ gap:7px;padding:6px 9px;background:#29242a;border:1px solid #a7834855;border-radius:8px;
+ flex-wrap:wrap;flex:none}
+.netux-order-current span{font-size:10px;color:#cba979}
+.netux-order-current strong{font-size:12px;color:#f4ebd8;margin-left:5px}
+.netux-order-current small{font-size:10px;color:#e4d0b4}
+.netux-order-tabs{display:flex;gap:5px;flex:none;overflow-x:auto;min-height:44px}
+.net004-screen .netux-order-tabs button{min-height:44px;padding:5px 11px;
+ font-size:12px;flex:none;background:#28262b;border-color:#9c7a4c}
+.net004-screen .netux-order-tabs button[aria-selected="true"]{background:#b68e57;color:#161316}
+.net004-screen .netux-order-options{flex:1;min-height:42px;margin:0;
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;
+ align-content:start;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:2px}
+.net004-screen .netux-order-options button{
+ min-width:0;min-height:48px;display:flex;flex-direction:column;align-items:flex-start;
+ justify-content:center;gap:3px;text-align:left;padding:5px 9px;
+ background:#29262c;font-size:12px;overflow-wrap:anywhere
+}
+.net004-screen .netux-order-options button[aria-pressed="true"]{
+ border-color:#f0c879;background:#3a3024;box-shadow:inset 0 0 0 1px #f0c879
+}
+.netux-order-options button small{font-size:10px;color:#d9c5ab}
+.netux-order-footer{flex:none;border-top:1px solid #a7834855;padding-top:6px;display:grid;gap:5px}
+.netux-order-footer p{margin:0;font-size:11px;line-height:1.3;color:#d9c5ab;overflow-wrap:anywhere}
+.netux-order-actions{display:flex;justify-content:flex-end;align-items:center;gap:6px;flex-wrap:wrap}
+.net004-screen .netux-order-actions button{min-height:44px;padding:6px 11px;font-size:11px}
+.net004-screen #netuxOrderApply:not(:disabled){background:linear-gradient(155deg,#f0c879,#c99a55);color:#25190e}
+.net004-screen #netuxOrderClear:not(:disabled){background:#4c3030;border-color:#b58b78}
+.netux-order-footer #netuxOrderMessage{font-size:10px;color:#f5baa9}
+.netux-order-footer #netuxOrderMessage:empty{display:none}
+@media(orientation:landscape) and (max-height:430px){
+ .netux-order-inner{padding:6px 10px;gap:4px}
+ .net004-screen .netux-order-dialog h3{font-size:17px}
+ .net004-screen #netuxOrderExplanation{font-size:10px;line-height:1.25}
+ .netux-order-current{padding:4px 7px}
+ .net004-screen .netux-order-options button{min-height:44px}
+}
+@media(max-width:620px){
+ .net004-screen .netux-order-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .net004-screen .netux-order-dialog{width:calc(100vw - 12px)}
+}

@@ -4,6 +4,7 @@
 const NetworkPilotUI=(()=>{
  "use strict";
  let session=null,onSquad=null,onReturnToFinder=null,mounted=false,notice="",fromFinder=false,selectedClueId=null;
+ let orderDraftKey=null,orderTab="material",orderSubmitting=false,orderFeedback="";
  const $=id=>document.getElementById(id);
  const isLive=()=>session?.isLive?.()===true;
  const heroLabels=Object.freeze({ren:"Рен",nada:"Нада",liora:"Лиора",art:"Арт",sava:"Сава"});
@@ -82,6 +83,90 @@ const NetworkPilotUI=(()=>{
   el.dataset.netAction=action;if(value!==undefined)el.dataset.netValue=String(value);
   return el;
  }
+ function orderLabel(o){
+  if(!o)return "Без приказа";
+  const target=o.kind==="type"?(types[o.targetId]||o.targetId):
+   o.kind==="region"?"Сады над пропастью":
+   o.kind==="hero"?(heroLabels[o.targetId]||o.targetId):
+   (typeof GearData!=="undefined"?GearData.MATERIAL_LABELS[o.targetId]||o.targetId:o.targetId);
+  return (o.kind==="type"?"Вид · ":o.kind==="material"?"Материал · ":
+   o.kind==="hero"?"Осколки · ":"Регион · ")+target;
+ }
+ const orderKey=o=>o?o.kind+":"+o.targetId:null;
+ function renderOrder(s,blocked,busy){
+  const active=s.order,limit=s.config.guaranteeAfter,remaining=active?limit-active.misses:null;
+  const progress=active?"Без совпадения: "+active.misses+"/"+limit+
+   " · не позже "+remaining+" нов. донесени"+(remaining===1?"я":"й"):
+   "Приоритет не выбран";
+  $("net005OrderStatus").textContent=orderLabel(active);
+  $("netuxOrderProgress").textContent=active?progress:"Поиск без направления · изменить";
+  $("netuxOrderOpen").disabled=blocked||busy||orderSubmitting;
+  $("netuxOrderCurrent").textContent=orderLabel(active);
+  $("netuxOrderCurrentProgress").textContent=active?progress+" · совпадение сбрасывает счётчик":
+   "Гарантия работает только с действующим приказом.";
+  const all=session.availableOrders(),tabs=$("netuxOrderTabs"),choices=$("net005OrderChoices");
+  const tabNames={material:"Материал",hero:"Человек (осколки)",region:"Регион",type:"Вид зацепки"};
+  const kinds=["material","hero","region","type"].filter(k=>all.some(o=>o.kind===k));
+  if(!kinds.includes(orderTab))orderTab=kinds[0]||"type";
+  tabs.replaceChildren();
+  for(const kind of kinds){
+   const b=button(tabNames[kind],"order-tab",kind);
+   b.setAttribute("role","tab");b.setAttribute("aria-selected",String(kind===orderTab));
+   b.disabled=orderSubmitting;
+   tabs.append(b);
+  }
+  choices.replaceChildren();
+  for(const o of all.filter(o=>o.kind===orderTab)){
+   const key=orderKey(o),b=button(orderLabel(o).split(" · ").slice(1).join(" · "),"select-order",key);
+   b.setAttribute("aria-pressed",String(key===orderDraftKey));
+   b.disabled=blocked||busy||orderSubmitting;
+   const hint=line(o.kind==="region"?"Все зацепки региона":
+    o.kind==="hero"?"Осколки персонажа":
+    o.kind==="material"?"Материалы":"Тип донесения","small");
+   b.append(hint);choices.append(b);
+  }
+  if(!all.length)choices.append(line("Сейчас нет доступных направлений поиска."));
+  const draft=all.find(o=>orderKey(o)===orderDraftKey)||null;
+  const actual=orderKey(active),changed=orderKey(draft)!==actual;
+  const preview=draft?"После подтверждения: "+orderLabel(draft)+
+   ". Вес подходящих шаблонов ×"+s.config.focusWeight+
+   ". Гарантия: не позже "+limit+" новых донесений (счётчик начнётся заново при смене).":
+   "Без приказа новые зацепки поступают без направленного приоритета.";
+  $("netuxOrderPreview").textContent=preview+" Уже лежащие на доске донесения не изменятся.";
+  $("netuxOrderApply").disabled=blocked||busy||orderSubmitting||!changed||!draft;
+  $("netuxOrderClear").disabled=blocked||busy||orderSubmitting||!active;
+  $("netuxOrderMessage").textContent=orderFeedback;
+  $("netuxOrderDialog").setAttribute("aria-busy",String(orderSubmitting));
+ }
+ function openOrder(){
+  if(!session?.isReady()||orderSubmitting)return;
+  const s=session.read(),all=session.availableOrders();
+  orderDraftKey=orderKey(s.order);orderTab=s.order?.kind||
+   (all.some(o=>o.kind==="material")?"material":all[0]?.kind||"type");
+  orderFeedback="";renderOrder(s,session.isBlocked(),session.isBusy());
+  const dialog=$("netuxOrderDialog");
+  if(!dialog.open)dialog.showModal();
+  const active=dialog.querySelector('#net005OrderChoices [aria-pressed="true"]');
+  (active||dialog.querySelector('#netuxOrderTabs [aria-selected="true"]'))?.focus();
+ }
+ async function submitOrder(next){
+  if(orderSubmitting||!session?.isReady()||session.isBusy())return;
+  const before=session.read()?.order;
+  if(orderKey(before)===orderKey(next))return;
+  orderSubmitting=true;orderFeedback="";
+  renderOrder(session.read(),session.isBlocked(),session.isBusy());
+  const result=await change("order",next);
+  orderSubmitting=false;
+  if(result?.ok){
+   $("netuxOrderDialog").close();
+   orderFeedback="";
+   notice=next?"Приказ отдан: "+orderLabel(next)+". Новые поступления будут учитывать приоритет.":
+    "Приказ отменён. Будущие зацепки поступают без приоритета.";
+  }else{
+   orderFeedback=errorText[result?.code]||"Приказ не подтверждён. Проверьте сохранение.";
+  }
+  render();
+ }
  function updateSelection(s,blocked,busy){
   const selected=s?.board?.find(c=>c.id===selectedClueId);
   const title=$("netuxSelectedTitle"),start=$("netuxStartSelected"),sim=$("netuxSimulateSelected");
@@ -124,29 +209,7 @@ const NetworkPilotUI=(()=>{
    collect.textContent="Забрать награды: "+pending;
   }
   $("net004Refresh").disabled=busy||blocked;
-  const orderLabel=s.order?
-   (s.order.kind==="type"?(types[s.order.targetId]||s.order.targetId):
-    s.order.kind==="region"?"Сады над пропастью":s.order.targetId):
-    "Без приоритета";
-  $("net005OrderStatus").textContent="Приказ: "+orderLabel+
-   (s.order?" · без нужной зацепки: "+s.order.misses+
-    " (гарантия после "+s.config.guaranteeAfter+" поступлений)":"")+
-   ". Влияет только на новые донесения; заполненная доска не меняется.";
-  const orders=$("net005OrderChoices");orders.replaceChildren();
-  const unset=button("Снять приказ","clear-order");
-  unset.disabled=blocked||busy||!s.order;orders.append(unset);
-  for(const o of session.availableOrders()){
-   const name=o.kind==="type"?(types[o.targetId]||o.targetId):
-    o.kind==="region"?"Сады над пропастью":o.kind==="hero"?
-    heroLabels[o.targetId]||o.targetId:o.kind==="material"&&
-    typeof GearData!=="undefined"?GearData.MATERIAL_LABELS[o.targetId]||o.targetId:
-    o.targetId;
-   const control=button(name,"order",o.kind+":"+o.targetId);
-   control.disabled=blocked||busy||
-    (s.order?.kind===o.kind&&s.order?.targetId===o.targetId);
-   control.setAttribute("aria-pressed",String(s.order?.kind===o.kind&&s.order?.targetId===o.targetId));
-   orders.append(control);
-  }
+  renderOrder(s,blocked,busy);
   const cluesEl=$("net004Clues");cluesEl.replaceChildren();
   if(!s.board.length)cluesEl.append(line("Новых донесений пока нет."));
   if(!s.board.some(c=>c.id===selectedClueId))selectedClueId=s.board[0]?.id??null;
@@ -226,24 +289,26 @@ const NetworkPilotUI=(()=>{
   // Do not overwrite mastery/order-specific disabled states set above.
   document.querySelectorAll("#network [data-net-action]").forEach(el=>{
    const action=el.dataset.netAction;
-   if(["start","simulate","order","clear-order","start-selected","simulate-selected","pick"].includes(action))return;
+   if(["start","simulate","order","clear-order","open-order","close-order",
+    "order-tab","select-order","apply-order","start-selected","simulate-selected","pick"].includes(action))return;
    if(action!=="fight"&&action!=="finder-back")el.disabled=blocked||busy||
     (action==="finish"&&s.active?.phase!=="result");
   });
   if(typeof WeeklyThreatUI!=="undefined")WeeklyThreatUI.render();
  }
  async function change(action,value){
-  if(!session||session.isBlocked())return;
+  if(!session||session.isBlocked())return {ok:false,code:"SESSION_BLOCKED_RELOAD_REQUIRED"};
   notice="";
   let result;
   try{result=await session.change(action,value);}catch(_){result={ok:false,code:"SAVE_FAILED"};}
   if(!result.ok)notice=errorText[result.code]||"Действие отклонено: "+result.code;
   if(result.ok&&isLive()&&(action==="finish"||action==="simulate")){
-   await collectRewards();return;
+   await collectRewards();return result;
   }
   render();
   if(result.ok&&action==="approach"&&session.read()?.active?.phase==="battle")
    onSquad();
+  return result;
  }
  function mount({pilot,onOpenSquad,onBackToFinder}={}){
   if(mounted||!pilot||typeof onOpenSquad!=="function"||!$("network"))return false;
@@ -254,6 +319,24 @@ const NetworkPilotUI=(()=>{
    if(!b||!$("network").contains(b))return;
    const action=b.dataset.netAction;
    if(b.disabled)return;
+   if(action==="open-order"){openOrder();return;}
+   if(action==="close-order"){$("netuxOrderDialog").close();return;}
+   if(action==="order-tab"){
+    orderTab=b.dataset.netValue;orderFeedback="";
+    renderOrder(session.read(),session.isBlocked(),session.isBusy());
+    $("netuxOrderTabs").querySelector('[aria-selected="true"]')?.focus();return;
+   }
+   if(action==="select-order"){
+    orderDraftKey=b.dataset.netValue;orderFeedback="";
+    renderOrder(session.read(),session.isBlocked(),session.isBusy());
+    [...$("net005OrderChoices").querySelectorAll("button")].find(x=>
+     x.dataset.netValue===orderDraftKey)?.focus();return;
+   }
+   if(action==="apply-order"){
+    const target=session.availableOrders().find(o=>orderKey(o)===orderDraftKey);
+    if(target)void submitOrder(target);return;
+   }
+   if(action==="clear-order"){void submitOrder(null);return;}
    if(action==="pick"){
     const id=Number(b.dataset.netValue),state=session.read();
     if(state?.board.some(c=>c.id===id)){
@@ -274,17 +357,10 @@ const NetworkPilotUI=(()=>{
     return;
    }
    if(!["refresh","start","prepare","approach","abandon","finish",
-    "order","clear-order","simulate"].includes(action))return;
+    "simulate"].includes(action))return;
    let arg=b.dataset.netValue;
    if(action==="start"||action==="simulate")arg=Number(arg);
-   if(action==="order"){
-    const choices=session.availableOrders();
-    const selected=choices.find(o=>o.kind+":"+o.targetId===arg);
-    if(!selected)return;
-    arg=selected;
-   }
-   if(action==="clear-order")arg=null;
-   void change(action==="clear-order"?"order":action,arg);
+   void change(action,arg);
   });
   render();
   pilot.open().then(result=>{
@@ -297,12 +373,17 @@ const NetworkPilotUI=(()=>{
  function openFromFinder(materialId){
   if(!mounted||typeof onReturnToFinder!=="function")return false;
   fromFinder=true;
-  if(isLive()&&session.isReady())
-   void change("order",{kind:"material",targetId:materialId});
-  notice=isLive()?"Приказ на материал "+materialId+
-   " выбран, новые зацепки будут появляться с этим приоритетом.":
-   "Пробная разведсеть: для материала "+materialId+
-   " нет подтверждённого источника. Здесь не выдаются предметы и награды.";
+  if(isLive()&&session.isReady()){
+   void change("order",{kind:"material",targetId:materialId}).then(result=>{
+    if(result?.ok)notice="Приказ на материал "+
+     (typeof GearData!=="undefined"?GearData.MATERIAL_LABELS[materialId]||materialId:materialId)+
+     " подтверждён. Он влияет на будущие зацепки.";
+    render();
+   }); 
+  }else{
+   notice="Пробная разведсеть: для материала "+materialId+
+    " нет подтверждённого источника. Здесь не выдаются предметы и награды.";
+  }
   render();
   return true;
  }

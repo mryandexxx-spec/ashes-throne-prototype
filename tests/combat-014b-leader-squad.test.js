@@ -76,6 +76,9 @@ const localStorage={
  getItem(key){return storageData.has(key)?storageData.get(key):null},
  setItem(key,value){storageData.set(key,value)}
 };
+// Exercise leader aura and stable slots with an explicit legacy formation.
+storageData.set("ashes-throne.squad.v1",JSON.stringify({version:1,leaderId:"kael",
+ regularIds:["lyra","darin","medic-demo","test-area-damage"]}));
 const api=vm.runInNewContext(src+
  "\n({getBattle:()=>state,selectedParty:()=>selectedParty().map(h=>h.id),showScreen,openSquad,renderSquad,toggleSquadHero,CombatCore})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
@@ -183,13 +186,13 @@ const legacy=vm.runInNewContext(src+
 assert.equal(legacy.leaderId,null);
 assert.deepEqual(Array.from(legacy.regularIds),["lyra","kael",null,null]);
 
-// A malformed formation still recovers the first five roster fighters.
+// A malformed formation recovers the current default five playable heroes.
 storageData.set("ashes-throne.squad.v1",
  '{"version":1,"leaderId":"missing","regularIds":["kael"]}');
 const recovered=vm.runInNewContext(src+
  "\n({leaderId:selectedLeaderId,selectedParty:()=>selectedParty().map(h=>h.id)})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
-assert.equal(recovered.leaderId,"kael");
+assert.equal(recovered.leaderId,"ren");
 assert.equal(recovered.selectedParty().length,5);
 
 // A smaller unlocked roster, when fully selected, needs no warning.

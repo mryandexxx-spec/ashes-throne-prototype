@@ -19,6 +19,7 @@ function ready(template,approach="quiet",preparation="survey"){
   templates:[template]});
  let state=Core.fresh(787,0,config,catalog);
  assert.ok(state);
+ state.influence[template.regionId]=template.minInfluence;
  state=Core.accrue(state,config.intervalMs,catalog,location);
  assert.ok(state&&state.board.length===1);
  state=Core.start(state,state.board[0].id);

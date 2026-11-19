@@ -241,43 +241,76 @@ const NetworkPilotUI=(()=>{
   }
   updateSelection(s,blocked,busy);
   if(s.active&&s.active.phase!=="result"){
-   const a=s.active;
-   $("net004ActiveTitle").textContent=clueTitle(a.clue);
-   $("net004ActiveDetail").textContent=
-    a.phase==="brief"?"Выберите подготовку. Разведка раскрывает рекомендуемую цель; прикрытие снижает атаку противника только в пробе.":
-    a.phase==="approach"?"Выберите подход. Тихий — одна волна, окружение — две отдельные волны.":
-    "Контрольная точка: волна "+(a.wave+1)+"/"+
-      a.clue.approaches.find(x=>x.id===a.approach).waves+
-      ". Состав героев и бой будут начаты заново при перезагрузке."+
-      (a.wave>0&&!Array.isArray(a.waveSummaries)?
-       " Старый контрольный пункт без отчёта S1: отмените вылазку и начните заново. Исходная зацепка сохранится.":
-       a.waveSummaries?.length?" Предыдущая волна: "+
-        a.waveSummaries.at(-1).score+" баллов (S1).":"");
+   const a=s.active,c=a.clue;
+   const chosen=a.approach&&c.approaches.find(x=>x.id===a.approach);
+   $("net004ActiveTitle").textContent=clueTitle(c);
+   $("netuxBriefMeta").textContent=(types[c.type]||c.type)+" · ур. "+c.level;
+   $("netuxBriefStage").textContent=a.phase==="brief"?"1 · ПОДГОТОВКА":
+    a.phase==="approach"?"2 · ВЫБОР ПОДХОДА":"3 · ВЫЛАЗКА";
+   $("net004ActiveDetail").textContent=a.phase==="brief"?
+    "Выберите один способ подготовки. После подтверждения откроются подходы.":
+    a.phase==="approach"?"Подготовка: "+(prep[a.preparation]||a.preparation)+
+     ". Выберите подход: он определит число отдельных схваток.":
+    "Контрольная точка · волна "+(a.wave+1)+"/"+chosen.waves+
+     ". Каждая волна проходит отдельным боем с полным восстановлением отряда."+
+     (a.wave>0&&!Array.isArray(a.waveSummaries)?
+      " Старое сохранение без отчёта S1: отмените вылазку, чтобы вернуть зацепку.":
+      a.waveSummaries?.length?" Предыдущая волна: "+a.waveSummaries.at(-1).score+"/100 S1.":"");
+   const routes=c.approaches.map(x=>(approach[x.id]||x.id)+
+    " — "+x.waves+(x.waves===1?" волна":" волны")).join(" · ");
+   $("netuxBriefIntel").textContent=(chosen?
+    (approach[chosen.id]||chosen.id)+" · "+chosen.waves+
+    (chosen.waves===1?" отдельный бой":" отдельных боя"):
+    "Доступные пути: "+routes)+". "+
+    (a.preparation==="survey"?"Разведка отмечает первого противника как приоритетную цель.":
+     a.preparation==="cover"?"Прикрытие снижает физическую атаку противников.":
+     "Разведка отмечает приоритетную цель, прикрытие ослабляет физические атаки.");
+   $("netuxBriefReward").textContent=isLive()?rewardText(c.rewardRef):
+    "Пробный режим · реальных наград нет.";
+   $("netuxBriefThreat").textContent=c.threatTag?
+    "След угрозы: сведение учитывается только после ручного завершения зацепки.":
+    "Нет отметки недельной угрозы.";
    const slot=$("net004Choices");slot.replaceChildren();
-   if(a.phase==="brief")for(const id of a.clue.preparationIds)
-    slot.append(button(prep[id]||id,"prepare",id));
-   if(a.phase==="approach")for(const choice of a.clue.approaches)
-    slot.append(button((approach[choice.id]||choice.id)+" · "+choice.waves+
-     (choice.waves===1?" волна":" волны"),"approach",choice.id));
+   const descriptions={survey:"Первый противник будет отмечен как приоритетная цель.",
+    cover:"Снижает физическую атаку противников.",
+    quiet:"Одна отдельная схватка.",cordon:"Две отдельные схватки, отряд восстанавливается между ними."};
+   if(a.phase==="brief")for(const id of c.preparationIds){
+    const choice=button(prep[id]||id,"prepare",id);
+    choice.append(line(descriptions[id]||"Выбрать подготовку","small"));
+    slot.append(choice);
+   }
+   if(a.phase==="approach")for(const route of c.approaches){
+    const choice=button((approach[route.id]||route.id)+" · "+route.waves+
+     (route.waves===1?" волна":" волны"),"approach",route.id);
+    choice.append(line(descriptions[route.id]||"Выбрать подход","small"));
+    slot.append(choice);
+   }
    $("net004Fight").hidden=a.phase!=="battle";
    $("net004Fight").disabled=busy||blocked||(a.wave>0&&!Array.isArray(a.waveSummaries));
    $("net004Cancel").disabled=busy||blocked;
   }
   if(s.active?.phase==="result"){
-   $("net004ResultTitle").textContent="Зацепка пройдена";
-   if(!Array.isArray(s.active.waveSummaries)){
-    $("net004ResultDetail").textContent="Результат старого пилота: "+s.active.score+
-     ". Оценка S1 не вычислялась; освоение не перенесено. Наград нет.";
-   }else{
-    const stars=s.active.score>=90?3:s.active.score>=75?2:1;
-    $("net004ResultDetail").textContent=(isLive()?"Результат: ":"Оценка S1: ")+s.active.score+
-     "/100 · "+stars+"★. Волны: "+s.active.waveSummaries.map(x=>
-      x.score+" ("+x.knockedOut+"/"+x.deployed+" нокаутов; "+
-       x.allyActions+" действий)").join(" → ")+
-     ". "+(isLive()?rewardText(s.active.clue.rewardRef):
-      "Тестовые цели и норматив действий временные. Награды не начисляются.");
-   }
-   $("net004Finish").textContent=isLive()?"Забрать":"Завершить испытание";
+   const a=s.active,c=a.clue,tracked=Array.isArray(a.waveSummaries);
+   const score=a.score,stars=score>=90?3:score>=75?2:1;
+   $("net004ResultTitle").textContent=clueTitle(c);
+   $("netuxResultRating").textContent=tracked?stars+"★ · "+score+"/100":"Оценка не подтверждена";
+   $("net004ResultDetail").textContent=tracked?
+    "Оценка S1: "+score+"/100 · Ручная операция · "+(approach[a.approach]||a.approach)+
+    " · "+a.waveSummaries.length+(a.waveSummaries.length===1?" волна":" волны")+
+    ". Оценка по волнам: "+a.waveSummaries.map(x=>x.score+"/100").join(" → ")+
+    ". Учитываются потери и действия отряда.":
+    "Старое пробное завершение: оценка S1 недоступна. Не считать освоением.";
+   $("netuxResultMastery").textContent=!tracked?
+    "Нет подтверждённого ручного освоения.":
+    score>=s.config.masteryScore?
+     "Освоение: после завершения станет доступна симуляция этого шаблона на этом уровне.":
+     "Освоение пока закрыто: требуется "+s.config.masteryScore+"/100 за ручную операцию.";
+   $("netuxResultIntel").textContent=c.threatTag==="weekly-gardens"&&tracked?
+    "След угрозы: после завершения +1 сведение для текущей UTC-недели.":
+    "Дополнительных сведений об угрозе эта операция не добавит.";
+   $("netuxResultReward").textContent=isLive()?rewardText(c.rewardRef):
+    "Пробный режим · награды не начисляются.";
+   $("net004Finish").textContent=isLive()?"Завершить и получить":"Завершить испытание";
    $("net004Finish").disabled=blocked||busy;
   }
   $("net004History").replaceChildren();

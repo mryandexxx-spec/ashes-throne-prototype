@@ -6,7 +6,7 @@ test("NET-UX-001 first weekly open does not report already-claimed rewards",asyn
  const root={addEventListener(){},querySelectorAll(){return []}};
  global.document={getElementById(id){
   if(id==="net008aThreat")return root;
-  if(!nodes.has(id))nodes.set(id,{textContent:"",hidden:false,disabled:false});
+  if(!nodes.has(id))nodes.set(id,{textContent:"",hidden:false,disabled:false,dataset:{},value:0});
   return nodes.get(id);
  }};
  global.WeeklyThreatCore={

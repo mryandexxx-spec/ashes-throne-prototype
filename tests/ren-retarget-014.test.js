@@ -45,7 +45,7 @@ test("RENRETARGET014: rare body gesture fades and core combat is untouched",()=>
  assert.ok(card.includes("if(retargetIdle)retargetIdle(idleMs)"));
  assert.ok(card.includes("else if(kinemiqIdle)kinemiqIdle(idleMs)"));
  assert.doesNotMatch(game,/RenMotionRetarget/);
- assert.ok(/^0\.3\.(?:11[5-9]|1[2-9]\d)$/.test(pkg.version));
+ assert.ok(/^0\.3\.(?:11[5-9]|1[2-9]\d|2\d\d)$/.test(pkg.version));
  assert.ok(html.includes("v"+pkg.version+" ·"));
  assert.ok(html.includes("RENRETARGET014"));
  assert.ok(html.indexOf("ren-kinemiq-retarget-data.js?v=")<html.indexOf("ren-motion-retarget.js?v="));

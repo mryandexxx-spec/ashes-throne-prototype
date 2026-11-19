@@ -59,10 +59,10 @@
     pointer("pointerdown",1,100,100);
     pointer("pointerdown",2,250,100);
     pointer("pointermove",2,200,100);
-    assert(camera.radius>radius&&camera.radius<=21,"pinch-in did not zoom out");
+    assert(camera.radius>radius&&camera.radius<=camera.upperRadiusLimit,"pinch-in did not zoom out");
     const zoomOut=camera.radius;
     pointer("pointermove",2,270,100);
-    assert(camera.radius<zoomOut&&camera.radius>=12,"pinch-out did not zoom in");
+    assert(camera.radius<zoomOut&&camera.radius>=camera.lowerRadiusLimit,"pinch-out did not zoom in");
     pointer("pointercancel",2,270,100);
     pointer("pointerup",1,100,100);
     assert(camera.alpha===alpha&&camera.beta===beta,"pinch altered locked angles");

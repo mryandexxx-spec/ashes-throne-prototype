@@ -3554,6 +3554,7 @@ function renderBattleFrame(){
  if(!scene)return;
  // Animation speed is shared with the auto scheduler, never alters combat state.
  const dt=engine&&typeof engine.getDeltaTime==="function"?engine.getDeltaTime():16;
+ if(arenaResolution&&ArenaVis001.adapt(engine,arenaResolution,dt))positionArenaIndicators();
  const hadPending=visualActionPending();
  BattleAnimation.tick(dt,BattleSpeed.multiplier());
  // Consume hit markers regardless of whether optional visuals are available.
@@ -3814,27 +3815,35 @@ function ensureEncounterNpcVisuals(fighters){
   const head=BABYLON.MeshBuilder.CreateSphere("npc_head_"+i,{diameter:.62,segments:12},scene);
   head.position=new BABYLON.Vector3(0,1.8,0);
   head.material=mat;
-  const base=BABYLON.MeshBuilder.CreateCylinder("npc_base_"+i,{diameter:1.15,height:.12,tessellation:24},scene);
-  base.position=new BABYLON.Vector3(0,.08,0);
-  const baseMat=new BABYLON.StandardMaterial("npc_base_mat_"+i,scene);
-  baseMat.diffuseColor=new BABYLON.Color3(.4,.18,.18);
-  base.material=baseMat;
+  const base=arenaVisReady()?ArenaVis001.createBase(BABYLON,scene,"npc_base_"+i,0,0):legacyBase("npc_base_"+i,0,0,"enemy");
   for(const part of [body,head,base])part.metadata={fighterId:f.id};
   meshes[f.id]={body,head,base};
   encounterNpcVisualIds.add(f.id);
  }
 }
+// ARENA-VIS-001: soft contact shadow + ring; the old disc stays as a fallback.
+function arenaVisReady(){return typeof ArenaVis001!=="undefined"&&ArenaVis001.supported(BABYLON);}
+function legacyBase(name,x,z,side){
+ const base=BABYLON.MeshBuilder.CreateCylinder(name,{diameter:1.15,height:.12,tessellation:24},scene);
+ base.position=new BABYLON.Vector3(x,.08,z);
+ const bm=new BABYLON.StandardMaterial(name+"_mat",scene);
+ bm.diffuseColor=side==="ally"?new BABYLON.Color3(.65,.48,.2):new BABYLON.Color3(.4,.18,.18);
+ base.material=bm;return base;
+}
+let arenaResolution=null; // ARENA-VIS-001 adaptive render scale state.
 // Reuse the scene rather than re-creating permanent hero meshes on each battle.
 function initBabylon(){
  const canvas=$("#renderCanvas");
  // Transparent WebGL is required for a real CSS image to show BEHIND 3D actors.
  engine=new BABYLON.Engine(canvas,true,{stencil:true,alpha:ENV022_CONCEPT_PREVIEW});
+ if(typeof ArenaVis001!=="undefined")arenaResolution=ArenaVis001.configureEngine(engine,window);
+ if(typeof ArenaVis001!=="undefined"&&$("#battle")?.classList?.add)$("#battle").classList.add("arena-vis-001");
  scene=new BABYLON.Scene(engine);
  scene.clearColor=new BABYLON.Color4(.035,.045,.065,ENV022_CONCEPT_PREVIEW?0:1);
  if(ENV022_CONCEPT_PREVIEW && $("#battle")?.classList?.add)
   $("#battle").classList.add("env022-concept-preview");
  arenaCamera=new BABYLON.ArcRotateCamera("camera",ARENA_VIEW.alpha,ARENA_VIEW.beta,ARENA_VIEW.radius,new BABYLON.Vector3(0,ARENA_VIEW.targetY,0),scene);
- arenaCamera.lowerRadiusLimit=12;arenaCamera.upperRadiusLimit=21;
+ arenaCamera.lowerRadiusLimit=ARENA_VIEW.minRadius??12;arenaCamera.upperRadiusLimit=ARENA_VIEW.maxRadius??21;
  if(ARENA_VIEW.fov)arenaCamera.fov=ARENA_VIEW.fov;
  // Lock orientation to the established three-quarter view; preserve radius zoom 12–21.
  arenaCamera.lowerAlphaLimit=ARENA_VIEW.alpha;arenaCamera.upperAlphaLimit=ARENA_VIEW.alpha;
@@ -3847,6 +3856,7 @@ function initBabylon(){
  installArenaPointerCamera(canvas,arenaCamera);
  const hemi=new BABYLON.HemisphericLight("hemi",new BABYLON.Vector3(0,1,0),scene);hemi.intensity=.8;
  const key=new BABYLON.DirectionalLight("key",new BABYLON.Vector3(-.5,-1,.5),scene);key.intensity=1.1;
+ if(typeof ArenaVis001!=="undefined")ArenaVis001.configureLighting(BABYLON,scene,hemi,key);
  // CV007 creates a passive, non-pickable test arena and a small hit-FX pool.
  // Legacy geometry remains a safe fallback for headless fixtures or GPU issues.
  combatVisual007=null;
@@ -3880,7 +3890,7 @@ function initBabylon(){
     h.side==="ally"?new BABYLON.Color3(.28,.55,.76):new BABYLON.Color3(.72,.25,.23);mat.emissiveColor=h.side==="ally"?new BABYLON.Color3(.02,.06,.09):new BABYLON.Color3(.08,.015,.01);body.material=mat;
    head=BABYLON.MeshBuilder.CreateSphere("head_"+i,{diameter:.62,segments:12},scene);head.position=new BABYLON.Vector3(x,1.8,z);head.material=mat;
   }
-  const base=BABYLON.MeshBuilder.CreateCylinder("base_"+i,{diameter:1.15,height:.12,tessellation:24},scene);base.position=new BABYLON.Vector3(x,.08,z);const bm=new BABYLON.StandardMaterial("basemat_"+i,scene);bm.diffuseColor=h.side==="ally"?new BABYLON.Color3(.65,.48,.2):new BABYLON.Color3(.4,.18,.18);base.material=bm;
+  const base=arenaVisReady()?ArenaVis001.createBase(BABYLON,scene,"base_"+i,x,z):legacyBase("base_"+i,x,z,h.side);
   for(const part of [body,head,base])part.metadata={fighterId:h.id};
    meshes[h.id]={body,head,base};
  });
@@ -3968,7 +3978,9 @@ function updateMeshes(){
    const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
     const targetSide=actor?CombatCore.abilityTargetSide(state,selectedAbility):null;
     const selected=member.side===targetSide&&h.id===state.fighters[targetSide==="ally"?state.selectedAlly:state.selectedEnemy]?.id;
-    if(mesh.base.material&&BABYLON.Color3)mesh.base.material.emissiveColor=selected
+    if(mesh.base.av001Ring&&typeof ArenaVis001!=="undefined")
+     ArenaVis001.setMark(mesh.base,selected?(targetSide==="ally"?"ally":"enemy"):actor?.id===h.id?"active":null,BABYLON,scene);
+    else if(mesh.base.material&&BABYLON.Color3)mesh.base.material.emissiveColor=selected
      ?new BABYLON.Color3(.48,.37,.12):new BABYLON.Color3(0,0,0);
     mesh.body.position.y=.8;
    mesh.head.position.y=1.8;

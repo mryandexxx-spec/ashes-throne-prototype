@@ -21,8 +21,14 @@ const ArenaVis001=(()=>{
   m.diffuseTexture=texture;m.useAlphaFromDiffuseTexture=true;m.disableLighting=true;
   m.emissiveColor=new B.Color3(1,1,1);m.backFaceCulling=false;return m;
  }
+ // Shared by every fighter base: callers must never dispose these (see isShared).
+ // A set whose material left the scene is rebuilt instead of handed out disposed.
+ function alive(m,scene){
+  const list=scene?.materials;
+  return !Array.isArray(list)||Object.values(m).every(x=>list.includes(x));
+ }
  function materials(B,scene){
-  let m=cache.get(scene);if(m)return m;
+  let m=cache.get(scene);if(m&&alive(m,scene))return m;
   const shadow=new B.StandardMaterial("av001_shadow",scene);
   shadow.diffuseTexture=radialTexture(B,scene,"av001_shadow_tex",c=>{
    const g=c.createRadialGradient(64,64,4,64,64,62);
@@ -35,6 +41,7 @@ const ArenaVis001=(()=>{
    c.beginPath();c.arc(64,64,50,0,Math.PI*2);c.stroke();
   }));
   m={shadow,active:ring("active","#f2c46a"),enemy:ring("enemy","#ff4b3a"),ally:ring("ally","#6fe08a")};
+  for(const x of Object.values(m))x.av001Shared=true;
   cache.set(scene,m);return m;
  }
  // Returns the fighter "base": a pickable ground decal carrying fighter metadata.
@@ -47,12 +54,17 @@ const ArenaVis001=(()=>{
   base.av001Ring=ring; // game.js replaces base.metadata with {fighterId}
   return base;
  }
+ function isShared(material){return !!material?.av001Shared;}
  // kind: null | "active" | "enemy" | "ally"
+ // Also re-attaches the live shadow: a base left holding a disposed material
+ // renders as a flat light square.
  function setMark(base,kind,B,scene){
   const ring=base?.av001Ring;
   if(!ring)return false;
+  const mats=materials(B,scene);
+  if(base.material!==mats.shadow)base.material=mats.shadow;
   if(!kind){ring.setEnabled(false);return true;}
-  ring.material=materials(B,scene)[kind];ring.setEnabled(true);return true;
+  ring.material=mats[kind];ring.setEnabled(true);return true;
  }
  function configureEngine(engine,win){
   const dpr=Math.max(1,Math.min(MAX_DPR,Number(win?.devicePixelRatio)||1));
@@ -83,7 +95,7 @@ const ArenaVis001=(()=>{
    ip.contrast=1.15;ip.exposure=1.25;
   }
  }
- return Object.freeze({supported,createBase,setMark,configureEngine,adapt,configureLighting,
+ return Object.freeze({supported,createBase,setMark,isShared,configureEngine,adapt,configureLighting,
   constants:Object.freeze({MAX_DPR,LOW_FPS,SAMPLE_MS})});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=ArenaVis001;

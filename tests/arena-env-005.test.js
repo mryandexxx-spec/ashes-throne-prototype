@@ -51,11 +51,11 @@ test("transparent WebGL over the CSS art is unchanged (no 3D scenery, same camer
  assert.equal(view.beta,1.12);assert.equal(view.radius,7.6);assert.equal(view.fov,.85);
 });
 
-test("build label v0.3.212 · ARENAENV005",()=>{
+test("build label follows the current build",()=>{
  const pkg=JSON.parse(read("package.json"));
  const html=read("index.html");
- assert.equal(pkg.version,"0.3.212");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.212 · ARENAENV005'));
- assert.ok(html.includes('src="game.js?v=0.3.212"'));
+ assert.equal(pkg.version,"0.3.213");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.213 · ARENAFIX001'));
+ assert.ok(html.includes('src="game.js?v=0.3.213"'));
  assert.ok(!html.includes("?v=0.3.211"));
 });

@@ -4074,7 +4074,9 @@ function clearEncounterNpcVisuals(){
   const visual=meshes[id];
   if(!visual)continue;
   const parts=[visual.body,visual.head,visual.base];
-  const materials=new Set(parts.map(x=>x.material).filter(Boolean));
+  // ARENA-VIS-001 shadow/ring materials are shared by every base in the reused
+  // scene; disposing them turned all shadows into squares from the 2nd battle.
+  const materials=new Set(parts.map(x=>x.material).filter(m=>m&&!m.av001Shared));
   for(const part of parts)part.dispose();
   for(const mat of materials)mat.dispose();
   delete meshes[id];

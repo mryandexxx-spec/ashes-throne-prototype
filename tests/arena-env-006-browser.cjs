@@ -71,6 +71,12 @@ async function resume(page){
   document.querySelectorAll("#battle .arena-wrap > :not(canvas)").forEach(el=>el.style.visibility="");
   startBattleRendering();});
 }
+// Only the WebGL frame matters for ENV-006B measurements: hide every battle DOM element
+// (top buttons may animate via CSS) except the canvas and its ancestors; restore after.
+const hideDom=page=>page.evaluate(()=>{const canvas=document.querySelector("#battle canvas");
+ window.__env006bDom=[...document.querySelectorAll("#battle *")].filter(el=>el!==canvas&&!el.contains(canvas)&&el.style.visibility!=="hidden");
+ window.__env006bDom.forEach(el=>el.style.visibility="hidden");});
+const showDom=page=>page.evaluate(()=>{(window.__env006bDom||[]).forEach(el=>el.style.visibility="");delete window.__env006bDom;});
 // Two frames with the background clock 0 s and 2 s (scene otherwise frozen, HUD hidden) and a
 // fighter-body mask (environment, ground shadows and rings hidden, opaque magenta clear).
 // Returns per-zone change (% of pixels with diff > 6, mean diff), the max diff on fighter
@@ -79,11 +85,12 @@ async function measureMotion(page){
  // scene.render() also advances Babylon animation groups (fighters' idle) by real time:
  // freeze them so only the background clock differs between the frames.
  await page.evaluate(()=>{scene.animationsEnabled=false;});
- const shot=async t=>{await page.evaluate(t=>arenaEnv006.setClock(t),t);await still(page,7.6,false);return page.screenshot();};
+ const shot=async t=>{await page.evaluate(t=>arenaEnv006.setClock(t),t);await still(page,7.6,false);
+  await hideDom(page);const s=await page.screenshot();await showDom(page);return s;};
  const a=await shot(0),b=await shot(2);
  // Static identity: the shader with effects off vs the ENV-006 StandardMaterial on the same mesh.
  await page.evaluate(()=>{scene.getMeshByName("env006_terrace").material.setFloat("uOn",0);});
- await still(page,7.6,false);const shaderOff=await page.screenshot();
+ await still(page,7.6,false);await hideDom(page);const shaderOff=await page.screenshot();await showDom(page);
  await page.evaluate(()=>{
   const mesh=scene.getMeshByName("env006_terrace"),shader=mesh.material;
   const mat=new BABYLON.StandardMaterial("env006b_probe",scene);
@@ -94,7 +101,7 @@ async function measureMotion(page){
   window.__env006bShader=shader;window.__env006bProbe=mat;mesh.material=mat;
  });
  await page.waitForFunction(()=>window.__env006bProbe.isReady(scene.getMeshByName("env006_terrace")),null,{timeout:15000});
- await still(page,7.6,false);const standard=await page.screenshot();
+ await still(page,7.6,false);await hideDom(page);const standard=await page.screenshot();await showDom(page);
  await page.evaluate(()=>{const mesh=scene.getMeshByName("env006_terrace");mesh.material=window.__env006bShader;
   window.__env006bProbe.dispose();window.__env006bShader.setFloat("uOn",1);delete window.__env006bProbe;delete window.__env006bShader;});
  await page.evaluate(()=>{
@@ -103,7 +110,7 @@ async function measureMotion(page){
   window.__env006bHidden=[...floor].filter(m=>m.isEnabled());window.__env006bHidden.forEach(m=>m.setEnabled(false));
   window.__env006bClear=scene.clearColor.clone();scene.clearColor.set(1,0,1,1);scene.render();
  });
- const m=await page.screenshot();
+ await hideDom(page);const m=await page.screenshot();await showDom(page);
  await page.evaluate(()=>{scene.clearColor.copyFrom(window.__env006bClear);window.__env006bHidden.forEach(m=>m.setEnabled(true));
   scene.getMeshByName("env006_terrace").setEnabled(true);scene.render();});
  const pair=(p,q)=>page.evaluate(async([p,q])=>{
@@ -154,7 +161,8 @@ async function reducedRun(browser){
   const info=await page.evaluate(()=>({animation:arenaEnv006.animation(),stats:arenaEnv006.stats,
    material:scene.getMeshByName("env006_terrace").material.getClassName()}));
   await page.evaluate(()=>{scene.animationsEnabled=false;}); // fighters' idle frozen, see measureMotion
-  const shot=async ms=>{await page.evaluate(ms=>{arenaEnv006.tick(ms);arenaEnv006.setClock(ms/1000);},ms);await still(page,7.6,false);return page.screenshot();};
+  const shot=async ms=>{await page.evaluate(ms=>{arenaEnv006.tick(ms);arenaEnv006.setClock(ms/1000);},ms);await still(page,7.6,false);
+   await hideDom(page);const s=await page.screenshot();await showDom(page);return s;};
   const a=await shot(0),b=await shot(2000);
   const same=Buffer.compare(a,b)===0;
   return {info,same,mask:urls.some(u=>/arena-env006b-anim-mask/.test(u))};

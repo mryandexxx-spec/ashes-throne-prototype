@@ -83,29 +83,33 @@ const AnimationProfiles=(()=>{
   hit:Object.freeze({kind:"hit",durationMs:1150,amplitude:.12}),
   death:Object.freeze({kind:"death",durationMs:2200,amplitude:0})
  }));
- // ARENA-ART-004C: enemy GLB profiles by archetypeId (dev/src/assets/npc-models.js).
+ // ARENA-ART-004C/004D: enemy GLB profiles by archetypeId (dev/src/assets/npc-models.js).
  // Shared Meshy clip lengths: Combat_Stance 1.70s, Thrust_Slash 3.03s, Over_Shoulder_Throw 4.33s,
  // Crouch_Charge_and_Throw 7.70s, Triple_Combo_Attack 4.37s, Block1 3.50s,
  // Charged_Spell_Cast 2.70s, Hit_Reaction 1.67s, dying_backwards 2.23s.
- // Durations are defaults that keep battle pace (clips run 1.3-3x faster than authored);
- // contactFraction and clip windows are measured in ARENA-ART-004D.
+ // ARENA-ART-004D: each slot shows a measured part of its clip (NpcGlbRuntime.WINDOWS);
+ // contactFraction equals that window's contact knot, so hit reactions and HUD numbers
+ // start when the blow lands or the throw leaves the hand. Durations keep the 004C pace
+ // or shorten it: guard raise 1300 -> 900 ms, death 2000 -> 1400 ms.
  // rooted: thrown/cast from the fighter's place, no visual approach (like Nada's shots).
- // Skinned bodies must not hop or tilt under guard/ward/death: amplitude 0 there.
+ // Skinned bodies must not hop or tilt under guard/ward/death: amplitude 0 there, and
+ // clipFall on death: dying_backwards already falls, so no extra template tilt.
  // Battle fighters carry instance ids, so link(instanceId, archetypeId) maps them while
  // the model is shown; a capsule fallback keeps the templates.
  {
   const idle=Object.freeze({kind:"idle",durationMs:1700,amplitude:0});
-  const slash=Object.freeze({kind:"lunge",durationMs:1600,amplitude:.55});
-  const combo=Object.freeze({kind:"lunge",durationMs:2200,amplitude:.55});
-  const throwShot=Object.freeze({kind:"lunge",durationMs:1800,amplitude:0,rooted:true});
-  const chargedThrow=Object.freeze({kind:"lunge",durationMs:2600,amplitude:0,rooted:true});
+  const slash=Object.freeze({kind:"lunge",durationMs:1600,amplitude:.55,contactFraction:.42});
+  const combo=Object.freeze({kind:"lunge",durationMs:2200,amplitude:.55,contactFraction:.6});
+  const throwShot=Object.freeze({kind:"lunge",durationMs:1800,amplitude:0,rooted:true,contactFraction:.78});
+  const chargedThrow=Object.freeze({kind:"lunge",durationMs:2600,amplitude:0,rooted:true,contactFraction:.75});
   const block=Object.freeze({kind:"guard",durationMs:1300,amplitude:0});
+  const raise=Object.freeze({kind:"guard",durationMs:900,amplitude:0});
   const cast=Object.freeze({kind:"guard",durationMs:1500,amplitude:0});
-  const gesture=Object.freeze({kind:"lunge",durationMs:1500,amplitude:0,rooted:true});
+  const gesture=Object.freeze({kind:"lunge",durationMs:1500,amplitude:0,rooted:true,contactFraction:.78});
   const ward=Object.freeze({kind:"ward",durationMs:900,amplitude:0});
   const hit=Object.freeze({kind:"hit",durationMs:800,amplitude:.18});
-  const death=Object.freeze({kind:"death",durationMs:2000,amplitude:0});
-  const common={idle,guard:block,ward,hit,death};
+  const death=Object.freeze({kind:"death",durationMs:1400,amplitude:0,clipFall:true});
+  const common={idle,guard:raise,ward,hit,death};
   const tank=Object.freeze({...common,basic:slash,special:block,powerful:block});
   const support=Object.freeze({...common,basic:slash,special:gesture,powerful:cast,guard:cast});
   for(const [id,slots] of [

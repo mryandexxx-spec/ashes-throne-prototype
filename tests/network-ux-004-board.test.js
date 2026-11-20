@@ -28,8 +28,8 @@ test("NET-UX-004: compact board reuses live engine, ids and view navigation",()=
  assert.match(css,/safe-area-inset-right/);
  assert.match(css,/min-height:44px/);
  const pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.207");
- assert.match(html,/id="buildVersion">Прототип · v0\.3\.207 · ARENAART004C/);
+ assert.equal(pkg.version,"0.3.208");
+ assert.match(html,/id="buildVersion">Прототип · v0\.3\.208 · ARENAART004D/);
 });
 test("NET-UX-004: core, reward and daily files stay untouched by UI stage",()=>{
  const source=read("network-pilot-ui.js");

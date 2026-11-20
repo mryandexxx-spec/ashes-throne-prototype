@@ -3802,7 +3802,8 @@ function renderBattleFrame(){
     const aim=-Math.atan2(targetPosition.z-origin.z,targetPosition.x-origin.x),cur=visual.body.rotation.y||0;
     visual.body.rotation.y=cur+Math.atan2(Math.sin(aim-cur),Math.cos(aim-cur))*.25;
    }else if(visual.body.rotation&&!(h.id==="ren"&&targetPosition&&activity.plan)&&typeof ArenaStageView!=="undefined"&&ArenaStageView.idleYaw){
-    const rest=ArenaStageView.idleYaw(h.side),cur=visual.body.rotation.y||0;
+    // ARENA-ART-004D: enemy-model stance is side-on; turn it toward the camera at rest.
+    const rest=ArenaStageView.idleYaw(h.side)+(npcGlb?.isReady?NpcGlbRuntime.STANCE_YAW?.[h.side]||0:0),cur=visual.body.rotation.y||0;
     const diff=Math.atan2(Math.sin(rest-cur),Math.cos(rest-cur));
     visual.body.rotation.y=Math.abs(diff)<.002?rest:cur+diff*.18;
     if(h.id==="ren")visual.renPlan=null;
@@ -4010,6 +4011,13 @@ function clearEncounterNpcVisuals(){
 function ensureEncounterNpcVisuals(fighters){
  if(!scene)return;
  for(const f of fighters){
+  // ARENA-ART-004D: training enemies and capsule heroes borrow a tinted enemy model on
+  // their permanent capsule; disposeNpcGlbRuntimes() hands the capsule back.
+  const standIn=typeof NpcGlbRuntime!=="undefined"?NpcGlbRuntime.standIn?.(f?.id):null;
+  if(standIn&&meshes[f.id]&&!encounterNpcVisualIds.has(f.id)){
+   ensureEncounterNpcModel({id:f.id,archetypeId:standIn.archetypeId},meshes[f.id],standIn.tint);
+   continue;
+  }
   if(f?.side!=="enemy"||!f.archetypeId?.startsWith("npc-")||meshes[f.id])continue;
   const i=100+encounterNpcVisualIds.size;
   const body=BABYLON.MeshBuilder.CreateCapsule("npc_body_"+i,{height:1.5,radius:.42},scene);
@@ -4030,11 +4038,11 @@ function ensureEncounterNpcVisuals(fighters){
 }
 // ARENA-ART-004C: the capsule above stays as fallback; the GLB hides it once loaded.
 // No manifest entry (sarkh) -> create() returns null and the capsule is the visual.
-function ensureEncounterNpcModel(f,visual){
+function ensureEncounterNpcModel(f,visual,tint){
  if(typeof NpcGlbRuntime==="undefined"||npcGlbRuntimes.has(f.id))return;
  let runtime=null;
  try{
-  runtime=NpcGlbRuntime.create(BABYLON,scene,visual,{archetypeId:f.archetypeId,fighterId:f.id,
+  runtime=NpcGlbRuntime.create(BABYLON,scene,visual,{archetypeId:f.archetypeId,fighterId:f.id,tint,
    onStatus:(kind,message)=>{if(kind==="error")console.warn("ARENA-ART-004C: "+message,f.archetypeId);}});
  }catch(error){console.warn("ARENA-ART-004C: enemy model disabled",f.archetypeId,error);}
  if(!runtime)return;

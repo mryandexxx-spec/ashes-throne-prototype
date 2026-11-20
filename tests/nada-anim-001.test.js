@@ -32,6 +32,8 @@ test("NADAANIM001: powerful uses mage_soell_cast; death shows the fall, not the 
 });
 test("NADAANIM001: Nada shoots from her place without a melee lunge",()=>{
  const game=fs.readFileSync(path.join(__dirname,"../game.js"),"utf8");
- assert.match(game,/const approach=\(h\.id==="nada"\|\|h\.id==="sava"\)\?\{x:0,z:0\}:BattleAnimation\.approach\(/);
+ // ARENA-ART-004C: rooted shooters also include enemy throws/casts (profile flag).
+ assert.match(game,/const rooted=h\.id==="nada"\|\|h\.id==="sava"\|\|/);
+ assert.match(game,/const approach=rooted\?\{x:0,z:0\}:BattleAnimation\.approach\(/);
  for(const slot of ["basic","special","powerful"])assert.equal(P.resolve("nada",slot).amplitude,0,slot);
 });

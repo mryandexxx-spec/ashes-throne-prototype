@@ -76,6 +76,9 @@ async function resume(page){
 // Returns per-zone change (% of pixels with diff > 6, mean diff), the max diff on fighter
 // bodies (mask eroded by 2 px for anti-aliased edges) and the change outside the zones.
 async function measureMotion(page){
+ // scene.render() also advances Babylon animation groups (fighters' idle) by real time:
+ // freeze them so only the background clock differs between the frames.
+ await page.evaluate(()=>{scene.animationsEnabled=false;});
  const shot=async t=>{await page.evaluate(t=>arenaEnv006.setClock(t),t);await still(page,7.6,false);return page.screenshot();};
  const a=await shot(0),b=await shot(2);
  // Static identity: the shader with effects off vs the ENV-006 StandardMaterial on the same mesh.
@@ -138,6 +141,7 @@ async function measureMotion(page){
   x.putImageData(img,0,0);out.map=c.toDataURL("image/png").split(",")[1];
   return out;
  },[a.toString("base64"),b.toString("base64"),m.toString("base64")]);
+ await page.evaluate(()=>{scene.animationsEnabled=true;});
  result.identity=identity;return result;
 }
 // prefers-reduced-motion: the static ENV-006 frame, no mask download, frames 2 s apart equal.
@@ -149,6 +153,7 @@ async function reducedRun(browser){
   await openBattle(page,"?environment=env3d");await start(page,true);
   const info=await page.evaluate(()=>({animation:arenaEnv006.animation(),stats:arenaEnv006.stats,
    material:scene.getMeshByName("env006_terrace").material.getClassName()}));
+  await page.evaluate(()=>{scene.animationsEnabled=false;}); // fighters' idle frozen, see measureMotion
   const shot=async ms=>{await page.evaluate(ms=>{arenaEnv006.tick(ms);arenaEnv006.setClock(ms/1000);},ms);await still(page,7.6,false);return page.screenshot();};
   const a=await shot(0),b=await shot(2000);
   const same=Buffer.compare(a,b)===0;

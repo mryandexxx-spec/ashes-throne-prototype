@@ -9,6 +9,9 @@ const NpcEnemyData=require("../npc-enemy-data.js");
 const SLOTS=["idle","basic","special","powerful","guard","ward","hit","death","run","walk"];
 const HUMANOIDS=["npc-pass-guard","npc-trail-interceptor","npc-ridge-slinger","npc-field-medic",
  "npc-route-signaller","npc-watch-captain","npc-laun-ford-guard","npc-laun-physician"];
+// ARENA-ART-004E: SmartRig snakes with clips carried over from a humanoid (tools/build-sarkh-rig.mjs).
+const SARKH=["npc-sarkh-convoy-guard","npc-sarkh-land-courier"];
+const ALL=[...HUMANOIDS,...SARKH];
 
 function glbJson(buf){
  assert.equal(buf.readUInt32LE(0),0x46546c67,"GLB magic");
@@ -18,13 +21,13 @@ function glbJson(buf){
  return JSON.parse(buf.subarray(20,20+len).toString("utf8"));
 }
 
-test("manifest covers exactly the 8 humanoids; sarkh stay capsules until step 5",()=>{
- assert.deepEqual(Object.keys(NpcModelAssets.models).sort(),[...HUMANOIDS].sort());
+test("manifest covers the 8 humanoids and the 2 sarkh",()=>{
+ assert.deepEqual(Object.keys(NpcModelAssets.models).sort(),[...ALL].sort());
  assert.ok([1024,2048].includes(NpcModelAssets.baseColorSize));
- for(const id of HUMANOIDS)assert.ok(NpcEnemyData.get(id),`${id} exists in npc-enemy-data.js`);
+ for(const id of ALL)assert.ok(NpcEnemyData.get(id),`${id} exists in npc-enemy-data.js`);
 });
 
-for(const id of HUMANOIDS){
+for(const id of ALL){
  test(`${id}: file, size, sha256, skin, clips and texture match the manifest`,()=>{
   const m=NpcModelAssets.models[id];
   assert.equal(m.id,id);

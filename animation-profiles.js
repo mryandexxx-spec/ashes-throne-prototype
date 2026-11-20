@@ -120,7 +120,11 @@ const AnimationProfiles=(()=>{
    ["npc-ridge-slinger",{...common,basic:throwShot,special:throwShot,powerful:chargedThrow}],
    ["npc-field-medic",support],
    ["npc-laun-physician",support],
-   ["npc-route-signaller",support]
+   ["npc-route-signaller",support],
+   // ARENA-ART-004E: sarkh clips come from the same Meshy set (moments measured on the snakes
+   // match the humanoid table), so the slots reuse the measured profiles.
+   ["npc-sarkh-convoy-guard",tank],
+   ["npc-sarkh-land-courier",{...common,basic:throwShot,special:throwShot,powerful:throwShot}]
   ])overrides.set(id,Object.freeze({...slots}));
  }
  const links=new Map();

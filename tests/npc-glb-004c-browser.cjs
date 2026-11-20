@@ -6,6 +6,8 @@
  *    to victory, retry reopens the battle without growth of scene resources.
  * 3) ARENA-ART-004D: shown frames follow the measured clip windows; an enemy blow puts
  *    the damage number at its contact moment; tinted stand-ins on permanent capsules.
+ * 4) ARENA-ART-004E: the sarkh go through part 1 like everyone else; in addition their baked
+ *    tail moves between slots while the coil base stays, and they stand on their upright body.
  * Local cloud run: NPC_CHROME=/usr/bin/google-chrome NPC_BABYLON_LOCAL=1 (Babylon from
  * node_modules via page.route). CI uses the Playwright image and the real CDN. */
 const assert=require("node:assert/strict");
@@ -79,13 +81,26 @@ const census=()=>({meshes:scene.meshes.length,materials:scene.materials.length,t
       windows.push({slot,p,err:Math.abs(frame-want)});
      }
     }
+    // ARENA-ART-004E: tail tip turns between idle and the attack contact; the coil base barely moves.
+    let tail=null;
+    const tailNodes=scene.transformNodes.filter(n=>/^Tail_0_/.test(n.name)).sort((a,b)=>a.name.localeCompare(b.name));
+    if(tailNodes.length){
+     const tip=tailNodes[tailNodes.length-1],base=tailNodes[0];
+     const pose=(slot,p)=>{rt.update({slot,progress:p});return [base,tip].map(n=>n.rotationQuaternion.clone());};
+     const ang=(a,b)=>2*Math.acos(Math.min(1,Math.abs(B.Quaternion.Dot(a,b))));
+     const idle=pose("idle",0),idleLater=pose("idle",.25),hit=pose("basic",NpcGlbRuntime.contactFor(id,"basic")??.5);
+     const snake=scene.transformNodes.find(n=>n.name==="SnakeBody");
+     snake.computeWorldMatrix(true);const at=snake.getAbsolutePosition();
+     tail={bones:tailNodes.length,idleTip:ang(idle[1],idleLater[1]),attackTip:ang(idle[1],hit[1]),
+      attackBase:ang(idle[0],hit[0]),bodyOffset:Math.hypot(at.x-body.position.x,at.z-body.position.z)};
+    }
     const parts=scene.meshes.filter(m=>m.metadata?.fighterId==="qa-"+id&&m.getTotalVertices?.()>0);
     const box=parts.reduce((a,m)=>{m.computeWorldMatrix(true);const b=m.getBoundingInfo().boundingBox;
      return {min:Math.min(a.min,b.minimumWorld.y),max:Math.max(a.max,b.maximumWorld.y)};},{min:Infinity,max:-Infinity});
     const hidden=!body.isVisible&&!head.isVisible;
     const loaded=count();
     rt.dispose();
-    rows.push({id,ok,hidden,drift:+drift.toFixed(5),height:+(box.max-box.min).toFixed(2),
+    rows.push({id,ok,hidden,tail,drift:+drift.toFixed(5),height:+(box.max-box.min).toFixed(2),
      windowErr:Math.max(...windows.map(w=>w.err)),wantHeight:NpcGlbRuntime.heightFor(id),
      restored:body.isVisible&&head.isVisible,before,loaded,after:count(),leftover:extra(),
      brdf:scene.environmentBRDFTexture?.name||null});
@@ -105,9 +120,18 @@ const census=()=>({meshes:scene.meshes.length,materials:scene.materials.length,t
    const [a,b]=[r.after,r.before].map(x=>x.split("/").filter((_,i)=>i!==2).join("/"));
    assert.equal(a,b,r.id+" dispose leaves no meshes/materials/skeletons/groups/nodes");
   }
+  // ARENA-ART-004E: both sarkh are loaded models with a living tail on a still coil base.
+  for(const id of ["npc-sarkh-convoy-guard","npc-sarkh-land-courier"]){
+   const r=isolated.find(x=>x.id===id);
+   assert.ok(r&&r.tail,id+" is in the manifest and has Tail_* bones");
+   assert.ok(r.tail.idleTip>.002,id+" idle tail tip moves, "+r.tail.idleTip);
+   assert.ok(r.tail.attackTip>.01,id+" tail tip moves on the attack, "+r.tail.attackTip);
+   assert.ok(r.tail.attackBase<r.tail.attackTip,id+" coil base moves less than the tip");
+   assert.ok(r.tail.bodyOffset<.02,id+" stands on its upright body, offset "+r.tail.bodyOffset);
+  }
   // Texture count grows by the shared BRDF only once, never per model.
-  assert.ok(isolated.slice(1).every(r=>r.after===isolated[1].after),"no growth across 8 load/dispose cycles");
-  console.log("ARENAART004C isolated brdf="+isolated[0].brdf,isolated.map(r=>r.id.replace("npc-","")+" h="+r.height+" "+r.before+"→"+r.loaded+"→"+r.after).join("; "));
+  assert.ok(isolated.slice(1).every(r=>r.after===isolated[1].after),"no growth across "+isolated.length+" load/dispose cycles");
+  console.log("ARENAART004C isolated brdf="+isolated[0].brdf,isolated.map(r=>r.id.replace("npc-","")+" h="+r.height+" "+r.before+"→"+r.loaded+"→"+r.after+(r.tail?" tail="+JSON.stringify(Object.fromEntries(Object.entries(r.tail).map(([k,v])=>[k,+v.toFixed(3)]))):"")).join("; "));
   // --- 2. Real mission: slinger + medic.
   await page.evaluate(()=>{campaignProgress.completed["black-pass-ambush"]=true;campaignProgress.bestStars["black-pass-ambush"]=1;});
   await page.locator('#home .hq-bottom button[data-screen="campaign"]').evaluate(el=>el.click());

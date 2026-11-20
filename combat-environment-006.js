@@ -10,7 +10,16 @@
  * grows with the fighters, the far plane barely moves. One mesh, one unlit
  * material, one WebP texture: one draw call, no shadow map, no post-process.
  * Everything is non-pickable and is disposed by dispose(). Pure geometry math
- * is exported for Node tests; Babylon is touched only in create(). */
+ * is exported for Node tests; Babylon is touched only in create().
+ * ARENA-ENV-006B — background animation inside the same draw call (ShaderMaterial):
+ *   leaf   — dappled leaf shade on the tiles sways: the shade map S, estimated from the
+ *            art, is resampled with a small wind offset and the painting is relit by
+ *            S(uv+d)/S(uv) — tiles and seams stay put, only the light patches move;
+ *   mist   — white spray at the waterfall drifts (two-phase flow over the art);
+ *   flower — corner flowers sway a few pixels.
+ * Masks come from one small baked texture (tools/build-arena-env006b-anim-mask.py).
+ * Clock: tick(dt) from renderBattleFrame only; no own loop. Reduced motion keeps the
+ * ENV-006 static StandardMaterial path and does not load the mask. */
 const CombatEnvironment006=(()=>{
  "use strict";
  const TEXTURE_URL="assets/arena-env006-terrace-projection.webp";
@@ -36,6 +45,28 @@ const CombatEnvironment006=(()=>{
  ]);
  const GRID=Object.freeze({columns:64,side:6,far:6,wall:8,floor:40,margin:6});
  const FLAG=/(?:^|[?&])environment=env3d(?:&|$)/;
+ // ENV-006B. Mask atlas: same UV layout as the projection texture at half resolution.
+ // R = shade map S (lit tile = 1), G = leaf-shade weight, B = motion weight
+ // (mist above image y=MOTION_SPLIT_Y, flower sway below it; the zones never overlap).
+ const ANIM_MASK_URL="assets/arena-env006b-anim-mask.webp";
+ const ANIM_MASK=Object.freeze({width:1024,height:512});
+ const MOTION_SPLIT_Y=430;
+ // Zones in painting px: ellipses [cx, cy, rx, ry]; the bake script uses them as limits.
+ const ZONES=Object.freeze({
+  leaf:Object.freeze({ellipse:Object.freeze([420,725,450,300]),minY:455}),
+  // Mist stays above the back enemies' heads (image y ≥317 at 1–5 enemies).
+  mist:Object.freeze({ellipse:Object.freeze([1340,262,125,48])}),
+  flowers:Object.freeze([Object.freeze([60,680,170,150]),Object.freeze([1660,600,120,140])])
+ });
+ // Amplitudes in painting px (x0.505 on the 844x390 reference screen).
+ const ANIM=Object.freeze({
+  leafAmplitude:7,      // max shade offset ≈ 3.5 screen px
+  leafRatio:Object.freeze([.45,2.2]),
+  mistSweep:20,mistSpeed:.1,   // spray travels 20 px per 10 s cycle
+  mistWisps:.06,               // ± brightness of the drifting wisps
+  flowerAmplitude:3,
+  maxStepMs:100          // clamp: no jump after a stalled frame
+ });
 
  const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
  const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
@@ -144,6 +175,52 @@ const CombatEnvironment006=(()=>{
 
  const enabled=search=>FLAG.test(String(search||""));
  function supported(B){return !!(B?.Mesh&&B.VertexData&&B.StandardMaterial&&B.Texture&&B.Color3);}
+ function animationSupported(B){return !!B?.ShaderMaterial;}
+
+ // ENV-006B shaders. Atlas px == painting px in the middle band (LAYOUT), so offsets in
+ // painting px are (dx/2048, -dy/1024) in UV; painting y = texTop + (1-v)*1024.
+ const VERTEX=`precision highp float;
+attribute vec3 position;attribute vec2 uv;
+uniform mat4 worldViewProjection;varying vec2 vUV;
+void main(){vUV=uv;gl_Position=worldViewProjection*vec4(position,1.0);}`;
+ const f=n=>Number(n).toFixed(4);
+ const FRAGMENT=`precision highp float;
+varying vec2 vUV;uniform sampler2D art;uniform sampler2D anim;uniform float uTime;uniform float uOn;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
+ return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),f.x),mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),f.x),f.y);}
+vec2 px(vec2 d){return vec2(d.x/${f(LAYOUT.texture.width)},-d.y/${f(LAYOUT.texture.height)});}
+void main(){
+ vec4 c=texture2D(art,vUV);
+ if(uOn>0.5){
+  float t=uTime;
+  vec2 img=vec2(vUV.x*${f(LAYOUT.texture.width)}-${f(LAYOUT.texLeft)},${f(LAYOUT.texTop)}+(1.0-vUV.y)*${f(LAYOUT.texture.height)});
+  vec3 m=texture2D(anim,vUV).rgb;
+  float below=step(${f(MOTION_SPLIT_Y)},img.y);
+  float sway=m.b*below,mist=m.b*(1.0-below);
+  if(sway>0.004){
+   vec2 o=vec2(${f(ANIM.flowerAmplitude)}*sin(t*1.5+img.y*0.035+img.x*0.01),0.35*${f(ANIM.flowerAmplitude)}*sin(t*1.1+img.x*0.03));
+   c=texture2D(art,vUV+px(o*sway));
+  }
+  if(mist>0.004){
+   float p1=fract(t*${f(ANIM.mistSpeed)}),p2=fract(p1+0.5),w=abs(2.0*p1-1.0);
+   vec2 dir=vec2(0.95,-0.3)*${f(ANIM.mistSweep)};
+   vec3 a1=texture2D(art,vUV-px(dir*(p1-0.5))).rgb,a2=texture2D(art,vUV-px(dir*(p2-0.5))).rgb;
+   c.rgb=mix(c.rgb,mix(a1,a2,w),mist);
+   // Drifting wisps: soft value noise moving with the spray, brightness ±${f(ANIM.mistWisps)}.
+   float n=noise(img*vec2(0.035,0.06)-vec2(0.95,-0.3)*t*${f(ANIM.mistSpeed*ANIM.mistSweep*.35)});
+   c.rgb+=mist*${f(ANIM.mistWisps*2)}*(n-0.5);
+  }
+  if(m.g>0.004){
+   float gust=0.7+0.3*sin(t*0.37);
+   vec2 d=${f(ANIM.leafAmplitude)}*gust*vec2(0.65*sin(t*1.25+img.x*0.011+img.y*0.004)+0.35*sin(t*2.1+img.y*0.017+1.3),
+    0.5*(0.6*sin(t*1.05+img.x*0.007+2.0)+0.4*sin(t*1.9+img.x*0.015)));
+   float s0=max(m.r,0.3),s1=max(texture2D(anim,vUV+px(d)).r,0.3);
+   c.rgb*=mix(1.0,clamp(s1/s0,${f(ANIM.leafRatio[0])},${f(ANIM.leafRatio[1])}),m.g);
+  }
+ }
+ gl_FragColor=vec4(c.rgb,1.0);
+}`;
 
  function create(B,scene,options={}){
   if(!supported(B)||!scene)throw Error("ENV006 requires Babylon geometry and a Scene");
@@ -153,6 +230,8 @@ const CombatEnvironment006=(()=>{
   const resources=[];
   const own=v=>{resources.push(v);return v;};
   let state="loading",disposed=false;
+  // ENV-006B clock (seconds) and the animated material; plain fields, tick allocates nothing.
+  let clock=0,shader=null,animState="off";
   const report=next=>{
    state=next;
    if(typeof document!=="undefined"&&document.documentElement){
@@ -170,23 +249,44 @@ const CombatEnvironment006=(()=>{
    mesh.isPickable=false;mesh.checkCollisions=false;mesh.receiveShadows=false;
    mesh.alwaysSelectAsActiveMesh=true; // one big static mesh: skip per-frame culling work
    mesh.setEnabled(false);              // hidden until the texture is decoded (CSS art shows)
-   const mat=own(new B.StandardMaterial("env006_mat",scene));
-   // The painting already carries its light: unlit, untinted, no fog, no tone mapping
-   // (the fighters keep ArenaVis001 ACES; the backdrop must match ENV-005 colours).
-   mat.disableLighting=true;mat.emissiveColor=new B.Color3(1,1,1);
-   mat.specularColor=new B.Color3(0,0,0);mat.fogEnabled=false;mat.backFaceCulling=false;
-   if(B.ImageProcessingConfiguration){
-    const ip=new B.ImageProcessingConfiguration();
-    ip.toneMappingEnabled=false;ip.contrast=1;ip.exposure=1;ip.vignetteEnabled=false;
-    mat.imageProcessingConfiguration=ip;
-   }
    const url=options.url||TEXTURE_URL;
    const texture=own(new B.Texture(url,scene,false,true,B.Texture.TRILINEAR_SAMPLINGMODE??3,
     ()=>{if(disposed)return;mesh.setEnabled(true);report("ready");},
     message=>{if(disposed)return;report("error");console.warn("ENV006 texture failed",message);}));
    texture.wrapU=texture.wrapV=B.Texture.CLAMP_ADDRESSMODE??0;
    if("anisotropicFilteringLevel" in texture)texture.anisotropicFilteringLevel=4;
-   mat.diffuseTexture=texture;
+   const animate=!options.reducedMotion&&animationSupported(B);
+   let mat;
+   if(animate){
+    // ENV-006B: same unlit output (raw texel, no tone mapping, no fog) plus the effects.
+    mat=own(new B.ShaderMaterial("env006_mat",scene,{vertexSource:VERTEX,fragmentSource:FRAGMENT},
+     {attributes:["position","uv"],uniforms:["worldViewProjection","uTime","uOn"],samplers:["art","anim"]}));
+    mat.backFaceCulling=false;
+    mat.setTexture("art",texture);mat.setTexture("anim",texture); // placeholder until the mask loads
+    mat.setFloat("uTime",0);mat.setFloat("uOn",0);
+    // onLoad may fire synchronously for a cached texture: apply after both exist.
+    let mask=null,maskLoaded=false;
+    const applyMask=()=>{if(disposed||!mask||!maskLoaded)return;mat.setTexture("anim",mask);mat.setFloat("uOn",1);animState="running";};
+    shader=mat;animState="loading";
+    mask=own(new B.Texture(options.maskUrl||ANIM_MASK_URL,scene,false,true,B.Texture.BILINEAR_SAMPLINGMODE??2,
+     ()=>{maskLoaded=true;applyMask();},
+     message=>{if(disposed)return;animState="static";console.warn("ENV006B mask failed, static backdrop",message);}));
+    mask.wrapU=mask.wrapV=B.Texture.CLAMP_ADDRESSMODE??0;
+    applyMask();
+   }else{
+    mat=own(new B.StandardMaterial("env006_mat",scene));
+    // The painting already carries its light: unlit, untinted, no fog, no tone mapping
+    // (the fighters keep ArenaVis001 ACES; the backdrop must match ENV-005 colours).
+    mat.disableLighting=true;mat.emissiveColor=new B.Color3(1,1,1);
+    mat.specularColor=new B.Color3(0,0,0);mat.fogEnabled=false;mat.backFaceCulling=false;
+    if(B.ImageProcessingConfiguration){
+     const ip=new B.ImageProcessingConfiguration();
+     ip.toneMappingEnabled=false;ip.contrast=1;ip.exposure=1;ip.vignetteEnabled=false;
+     mat.imageProcessingConfiguration=ip;
+    }
+    mat.diffuseTexture=texture;
+    animState=options.reducedMotion?"reduced":"static";
+   }
    mesh.material=mat;
    mesh.freezeWorldMatrix?.();
    report("loading");
@@ -204,10 +304,21 @@ const CombatEnvironment006=(()=>{
      document.documentElement.dataset.environment="ENV022-CONCEPT-PREVIEW";
    }
   }
-  return Object.freeze({dispose,state:()=>state,
-   stats:Object.freeze({meshes:1,materials:1,textures:1,vertices:g.vertices,triangles:g.triangles})});
+  // Called once per rendered battle frame with the engine delta (ms). Real time:
+  // ignores hit-stop and battle speed (wind is not game time); stops with the render loop.
+  function tick(dt){
+   if(shader===null||disposed)return;
+   clock+=(dt>0?(dt<ANIM.maxStepMs?dt:ANIM.maxStepMs):0)*.001;
+   if(clock>=3600)clock-=3600;
+   shader.setFloat("uTime",clock);
+  }
+  // Test/evidence hook: set the clock directly (seconds).
+  function setClock(seconds){if(shader===null||disposed)return;clock=+seconds||0;shader.setFloat("uTime",clock);}
+  return Object.freeze({dispose,tick,setClock,state:()=>state,animation:()=>animState,clock:()=>clock,
+   stats:Object.freeze({meshes:1,materials:1,textures:shader?2:1,vertices:g.vertices,triangles:g.triangles})});
  }
  return Object.freeze({create,supported,enabled,geometry,camera,toScreen,ray,
-  imageToScreen,screenToImage,edgeAt,texU,texV,columns,TEXTURE_URL,IMAGE,REF,LAYOUT,EDGE,GRID,FAR_DEPTH});
+  imageToScreen,screenToImage,edgeAt,texU,texV,columns,TEXTURE_URL,IMAGE,REF,LAYOUT,EDGE,GRID,FAR_DEPTH,
+  animationSupported,ANIM_MASK_URL,ANIM_MASK,MOTION_SPLIT_Y,ZONES,ANIM,VERTEX,FRAGMENT});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=CombatEnvironment006;

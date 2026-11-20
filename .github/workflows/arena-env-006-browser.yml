@@ -1,10 +1,11 @@
-name: ARENA-ENV-006 3D terrace experiment (browser)
+name: ARENA-ENV-006/006B 3D terrace experiment (browser)
 on:
   pull_request:
-    branches: [main]
+    branches: [main, 'exp/**']
     paths:
       - 'combat-environment-006.js'
       - 'assets/arena-env006-terrace-projection.webp'
+      - 'assets/arena-env006b-anim-mask.webp'
       - 'arena-stage-view.js'
       - 'game.js'
       - 'index.html'
@@ -27,7 +28,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --no-save --ignore-scripts playwright@1.56.1
-      - name: Flag on, frame matches 2D, victory, re-entry without leaks; flag off untouched
+      - name: Flag on, frame matches 2D, background animation zones, reduced motion, victory, re-entry without leaks; flag off untouched
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/env006-server.log 2>&1 &
           sleep 2

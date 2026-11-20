@@ -151,7 +151,7 @@ test("NET-005 configured matching material links only: no fictitious farm source
 });
 test("NET-005 build is opt-in, versioned and no live reward/source table",()=>{
  const pkg=JSON.parse(read("package.json")),html=read("index.html");
- assert.ok(html.includes('id="buildVersion">Прототип · v'+pkg.version+' · ARENAENV006'));
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+pkg.version+' · ARENAENV006B'));
  assert.ok(html.includes('id="net005OrderChoices"'));
  assert.ok(html.includes('id="net005FinderBack"'));
  assert.ok(read("network-pilot-ui.js").includes("Симуляция закрыта"));

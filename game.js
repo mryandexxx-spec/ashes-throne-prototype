@@ -62,7 +62,9 @@ const ARENA_ENV006_3D=typeof location!=="undefined"&&typeof CombatEnvironment006
 let arenaEnv006=null;
 function ensureArenaEnv006(){
  if(!ARENA_ENV006_3D||arenaEnv006||!scene||!CombatEnvironment006.supported(BABYLON))return;
- try{arenaEnv006=CombatEnvironment006.create(BABYLON,scene);}
+ // ENV-006B: background animation off under prefers-reduced-motion (static ENV-006 frame).
+ try{arenaEnv006=CombatEnvironment006.create(BABYLON,scene,{reducedMotion:typeof window.matchMedia==="function"&&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches});}
  catch(error){console.warn("ENV006 3D arena unavailable, 2D backdrop stays",error);arenaEnv006=null;}
 }
 function disposeArenaEnv006(){if(arenaEnv006){arenaEnv006.dispose();arenaEnv006=null;}}
@@ -3827,6 +3829,8 @@ function renderBattleFrame(){
  // ARENA-VIS-002: hit-stop pauses the animation clock only; the frame still renders.
  const animationDt=arenaFeedback?arenaFeedback.animationDelta(dt):dt;
  BattleAnimation.tick(animationDt,BattleSpeed.multiplier());
+ // ENV-006B background clock: real dt, not hit-stop or battle speed (see ARENA_ENV_006_PLAN).
+ arenaEnv006?.tick(dt);
  // Consume hit markers regardless of whether optional visuals are available.
  const visualCues=BattleAnimation.drainStarted();
  const feedbackCues=BattleAnimation.drainFeedback();

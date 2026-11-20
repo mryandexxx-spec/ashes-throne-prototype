@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/env022-concept-webgl.yml"
-      - "assets/env022-canyon-concept.svg"
+      - "assets/arena-env005-terrace.webp"
       - "game.js"
       - "combat-visual-007.js"
       - "styles.css"
@@ -42,7 +42,7 @@ jobs:
               >"artifacts/env022-$radius.dom.html" 2>>"/tmp/env022-chrome-$radius.log"
             grep -q 'data-visual-status="ready"' "artifacts/env022-$radius.dom.html"
             grep -q 'data-canvas-alpha="0"' "artifacts/env022-$radius.dom.html"
-            grep -q 'data-backdrop="embedded-webp-svg"' "artifacts/env022-$radius.dom.html"
+            grep -q 'data-backdrop="env005-terrace-webp"' "artifacts/env022-$radius.dom.html"
             test -s "artifacts/env022-$radius.png"
             file "artifacts/env022-$radius.png"
           done

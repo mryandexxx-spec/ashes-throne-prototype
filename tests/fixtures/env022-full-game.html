@@ -41,7 +41,7 @@ const watchdog=setInterval(()=>{
   if(!battle.classList.contains("env022-concept-preview"))
    throw Error("concept CSS is not applied to battle");
   const image=win.getComputedStyle(battle.querySelector(".arena-wrap")).backgroundImage;
-  if(!image.includes("env022-canyon-concept.svg"))
+  if(!image.includes("arena-env005-terrace.webp"))
    throw Error("concept art image missing from arena CSS");
   const engine=win.eval("engine"),scene=win.eval("scene"),camera=win.eval("arenaCamera");
   if(!engine||!scene||!camera||scene.clearColor.a!==0)
@@ -58,7 +58,7 @@ const watchdog=setInterval(()=>{
   document.documentElement.dataset.visibleFighters=String(people);
   document.documentElement.dataset.fighterIndicators=String(indicators.childElementCount);
   document.documentElement.dataset.cameraRadius=String(camera.radius);
-  document.documentElement.dataset.backdrop="embedded-webp-svg";
+  document.documentElement.dataset.backdrop="env005-terrace-webp";
  }catch(e){fail(e.message)}
 },125);
 </script>

@@ -1,79 +1,65 @@
-/* ARENA-ENGINE-001: isolated screen-space layout adapted from Dune v94's world-hud.js.
-   No Babylon, combat state or 3D model dependencies. No measurements in a render frame.
-   The overlay and each indicator are measured asynchronously by ResizeObserver. */
+/* ARENA-ENGINE-001 → ARENA-UI-003B: screen-space layout of the labels over
+   fighters. Labels are pinned to their fighter (SWGOH): each one sits over its
+   head anchor and may move at most MAX_SHIFT_X / MAX_SHIFT_Y to clear another
+   label or a fixed HUD control. The former free "packer" (Dune v94) is gone:
+   it moved labels far from their owners. No Babylon, combat state or 3D model
+   dependencies. No measurements in a render frame: the overlay and each label
+   are measured asynchronously by ResizeObserver. */
 const ArenaWorldHud = (() => {
   "use strict";
-  const GAP = 5;
+  const GAP = 4;            // minimum clear space between two labels (as the browser checks)
+  const LIFT = 4;           // label bottom sits this far above the head anchor
+  const MAX_SHIFT_X = 16;   // [ПРЕДЛОЖЕНИЕ] px, either side
+  const MAX_SHIFT_Y = 12;   // [ПРЕДЛОЖЕНИЕ] px, up or down
+  const NAME_BELOW = 13;    // an enemy target's name hangs under its bars (out of flow)
   const clamp = (v,lo,hi)=>Math.max(lo,Math.min(hi,v));
-  const intersects = (a,b)=>a.x < b.x+b.w+GAP && a.x+a.w+GAP > b.x &&
-    a.y < b.y+b.h+GAP && a.y+a.h+GAP > b.y;
+  const intersects = (a,b,gap=GAP)=>a.x < b.x+b.w+gap && a.x+a.w+gap > b.x &&
+    a.y < b.y+b.h+gap && a.y+a.h+gap > b.y;
+  const area = (a,b)=>Math.max(0,Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x))*
+    Math.max(0,Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y));
+  const STEPS_X=[0,-4,4,-8,8,-12,12,-16,16].filter(v=>Math.abs(v)<=MAX_SHIFT_X);
+  const STEPS_Y=[0,-4,-8,-12,4,8,12].filter(v=>Math.abs(v)<=MAX_SHIFT_Y);
 
-  // MOBILEQA001: obstacles are fixed HUD controls (Автобой, 1×, target card...)
-  // in overlay coordinates; indicators must not hide under them.
-  function pack(rows,width,height,insets={left:8,right:8,top:8,bottom:8},obstacles=[]) {
+  // rows: {id, ax, ay, w, h} in overlay CSS px. Writes x, y (top-left), shiftX/Y
+  // (shift from the pinned position) and crowded (no clear spot within reach).
+  function anchor(rows,width,height,insets={left:8,right:8,top:8,bottom:8},obstacles=[]) {
     if(!rows.length || width<=0 || height<=0)return rows;
-    const left=insets.left,right=width-insets.right;
-    // Reserve the fixed battle title above and action bar below (Dune v94).
-    // Scale the reserve down on unusually short embedded arena viewports.
-    const top=Math.max(insets.top,Math.min(60,Math.floor(height*.16)));
-    const bottom=height-Math.max(insets.bottom,Math.min(100,Math.floor(height*.25)));
+    const left=insets.left,right=width-insets.right,top=insets.top,bottom=height-insets.bottom;
     const blocks=(obstacles||[]).filter(o=>o&&o.w>0&&o.h>0);
     const placed=[];
-    let crowded=false;
-    const ordered=[...rows].sort((a,b)=>b.ay-a.ay||String(a.id).localeCompare(String(b.id)));
+    // Deterministic: an enemy target with a hanging name first (its name band
+    // is wide), then nearer fighters (lower on screen) keep their exact spot.
+    const ordered=[...rows].sort((a,b)=>(b.nameW>0)-(a.nameW>0)||b.ay-a.ay||String(a.id).localeCompare(String(b.id)));
     for(const r of ordered){
-      const nx=clamp(r.ax-r.w/2,left,Math.max(left,right-r.w));
-      const ny=clamp(r.ay-r.h-8,top,Math.max(top,bottom-r.h));
-      const xs=[nx],ys=[ny,top];
-      for(const p of [...placed,...blocks]){
-        xs.push(clamp(p.x-r.w-GAP,left,Math.max(left,right-r.w)),
-          clamp(p.x+p.w+GAP,left,Math.max(left,right-r.w)));
-        ys.push(p.y-r.h-GAP,p.y+p.h+GAP);
+      const px=clamp(r.ax-r.w/2,left,Math.max(left,right-r.w));
+      const py=clamp(r.ay-r.h-LIFT,top,Math.max(top,bottom-r.h));
+      // A hidden label (its fighter ran out to strike) takes no room.
+      if(r.ghost){r.x=px;r.y=py;r.shiftX=0;r.shiftY=0;r.crowded=false;continue;}
+      let best=null,cost=Infinity,fallback=null,least=Infinity;
+      for(const dy of STEPS_Y)for(const dx of STEPS_X){
+        const box={x:clamp(px+dx,left,Math.max(left,right-r.w)),y:clamp(py+dy,top,Math.max(top,bottom-r.h)),w:r.w,h:r.h};
+        const others=[...placed,...blocks];
+        // Hysteresis: keep last frame's choice while it is still clear, so a
+        // label does not hop when its neighbour sways during a hit.
+        const keep=Number.isFinite(r.shiftX)?((box.x-px)-r.shiftX)**2+((box.y-py)-r.shiftY)**2:0;
+        const score=dx*dx*2+dy*dy*(dy>0?3:1)+keep*1.5;
+        if(!others.some(p=>intersects(box,p,p.block?0:GAP))){
+          if(score<cost){best=box;cost=score;}
+        }else if(!best){
+          const lost=others.reduce((sum,p)=>sum+area(box,p),0)*1000+score;
+          if(lost<least){fallback=box;least=lost;}
+        }
       }
-      let best=null,cost=Infinity;
-      for(const x of xs)for(const y of ys){
-        if(y<top||y+r.h>bottom)continue;
-        const box={x,y,w:r.w,h:r.h};
-        if(placed.some(p=>intersects(box,p))||blocks.some(p=>intersects(box,p)))continue;
-        const dx=x-nx,dy=y-ny;
-        const score=dx*dx*2+dy*dy*(dy>0?8:1);
-        if(score<cost){best=box;cost=score;}
-      }
-      if(!best)crowded=true;
-      r.x=best?best.x:nx;r.y=best?best.y:ny;
+      const box=best||fallback||{x:px,y:py,w:r.w,h:r.h};
+      r.x=box.x;r.y=box.y;r.shiftX=box.x-px;r.shiftY=box.y-py;r.crowded=!best;
       placed.push({x:r.x,y:r.y,w:r.w,h:r.h});
+      // The name hanging under an enemy target's bars is wider than the bars:
+      // neighbours must clear it too.
+      if(r.nameW>0)placed.push({x:r.x+r.w/2-r.nameW/2,y:r.y+r.h,w:r.nameW,h:NAME_BELOW});
     }
-    if(!crowded)return rows;
-    // Dune's deterministic shelf fallback: retry the whole group, never quietly
-    // accept partial overlaps if the available viewport can fit the rectangles.
-    const cellW=Math.max(...rows.map(r=>r.w))+GAP;
-    const cols=Math.max(1,Math.floor((right-left+GAP)/cellW));
-    const shelves=[...rows].sort((a,b)=>a.ay-b.ay||String(a.id).localeCompare(String(b.id)));
-    const groups=[];
-    for(let i=0;i<shelves.length;i+=cols)groups.push(shelves.slice(i,i+cols));
-    const heights=groups.map(g=>Math.max(...g.map(r=>r.h)));
-    const total=heights.reduce((sum,h)=>sum+h+GAP,-GAP);
-    if(total>bottom-top)return rows; // Not enough space: no false zero-overlap claim.
-    const shelf=y0=>{
-      let y=y0;
-      for(let i=0;i<groups.length;i++){
-        const group=groups[i].sort((a,b)=>a.ax-b.ax||String(a.id).localeCompare(String(b.id)));
-        const span=group.length*cellW-GAP;
-        const x0=left+(right-left-span)/2;
-        group.forEach((r,n)=>{r.x=x0+n*cellW+(cellW-GAP-r.w)/2;r.y=y;});
-        y+=heights[i]+GAP;
-      }
-      return rows.every(r=>!blocks.some(b=>intersects(r,b)));
-    };
-    const preferred=clamp(rows.reduce((sum,r)=>sum+r.ay,0)/rows.length-total/2,top,bottom-total);
-    if(shelf(preferred))return rows;
-    // Slide the shelf vertically until it clears the fixed controls, if possible.
-    for(let step=4;step<=bottom-top;step+=4)
-      for(const y of [preferred+step,preferred-step])
-        if(y>=top&&y<=bottom-total&&shelf(y))return rows;
-    shelf(preferred);
     return rows;
   }
+  const marked=list=>list.map(o=>({...o,block:true}));
 
   class Layout {
     constructor(overlay){
@@ -127,11 +113,19 @@ const ArenaWorldHud = (() => {
       }).filter(o=>o.w>0&&o.h>0);
     }
     begin(){for(const row of this.rows.values())row.seen=false;}
-    track(id,el,ax,ay){
+    // ghost: the label is hidden (fighter away from its place) and takes no room.
+    track(id,el,ax,ay,ghost=false){
       if(!el||!Number.isFinite(ax)||!Number.isFinite(ay))return;
       let row=this.rows.get(id);
       if(!row){row={id,w:96,h:40};this.rows.set(id,row);this.dirty=true;}
       row.seen=true;
+      if(row.ghost!==!!ghost){row.ghost=!!ghost;this.dirty=true;}
+      // Class names only (no layout read): the enemy target's name hangs below.
+      const cls=el.classList;
+      const hanging=!!(cls?.contains?.("enemy")&&cls?.contains?.("named"));
+      row.extraBottom=hanging?NAME_BELOW:0;
+      const nameW=hanging?Math.max(row.w||0,Number(el.dataset?.nameW)||100):0;
+      if(row.nameW!==nameW){row.nameW=nameW;this.dirty=true;}
       if(row.el!==el){
         if(this.observer&&row.el)this.observer.unobserve(row.el);
         row.el=el;row.dx=NaN;row.dy=NaN;this.nodes.set(el,row);
@@ -151,7 +145,7 @@ const ArenaWorldHud = (() => {
       this.dirty=false;
       const rows=[...this.rows.values()];
       if(this.obstaclesDirty)this.measureObstacles();
-      pack(rows,this.width,this.height,this.insets,this.obstacles);
+      anchor(rows,this.width,this.height,this.insets,marked(this.obstacles));
       for(const row of rows){
         const dx=row.x+row.w/2-row.ax,dy=row.y+row.h-row.ay;
         if(Math.abs(dx-row.dx)<.05&&Math.abs(dy-row.dy)<.05)continue;
@@ -162,11 +156,16 @@ const ArenaWorldHud = (() => {
         row.el.style.setProperty("--arena-hud-y",dy.toFixed(1)+"px");
       }
     }
+    // Bottom edge of a placed label (overlay px): floating numbers stay below it.
+    bottomOf(id){
+      const row=this.rows.get(id);
+      return row&&Number.isFinite(row.y)?row.y+row.h+(row.extraBottom||0):null;
+    }
     dispose(){
       if(this.observer)this.observer.disconnect();
       this.rows.clear();this.nodes=new WeakMap();
     }
   }
-  return {pack,Layout};
+  return {anchor,Layout,MAX_SHIFT_X,MAX_SHIFT_Y,LIFT,NAME_BELOW};
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=ArenaWorldHud;

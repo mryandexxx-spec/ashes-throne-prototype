@@ -32,18 +32,19 @@ test("MOBILEQA001: game.js applies idle facing to Ren and Nada GLB bodies only w
  assert.match(g,/\(h\.id==="ren"&&renGlbRuntime\)\|\|\(h\.id==="nada"&&nadaGlbRuntime\)/);
  assert.match(g,/!\(h\.id==="ren"&&targetPosition&&activity\.plan\)/);
 });
-test("MOBILEQA001: world HUD packing avoids fixed control rectangles",()=>{
- // Indicator anchored exactly under an "Автобой"-like control at the top right.
- const control={x:480,y:76,w:63,h:44};
- const rows=[{id:"ves",ax:511,ay:150,w:96,h:30},{id:"shade",ax:420,ay:150,w:96,h:30}];
- Hud.pack(rows,734,343,{left:8,right:8,top:8,bottom:8},[control]);
+test("MOBILEQA001 / ARENAUI003B: world labels clear fixed control rectangles within the shift limit",()=>{
+ // A label anchored just under an "Автобой"-like control: it moves down a few px, stays on its fighter.
+ const control={x:480,y:76,w:63,h:44,block:true};
+ const rows=[{id:"ves",ax:511,ay:136,w:52,h:12},{id:"shade",ax:440,ay:150,w:52,h:12}];
+ Hud.anchor(rows,734,343,{left:8,right:8,top:8,bottom:8},[control]);
  const hit=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
  for(const r of rows)assert.equal(hit(r,control),false,r.id);
  assert.equal(hit(rows[0],rows[1]),false);
- // Without obstacles the original behaviour is unchanged.
+ for(const r of rows)assert.ok(Math.abs(r.shiftX)<=Hud.MAX_SHIFT_X&&Math.abs(r.shiftY)<=Hud.MAX_SHIFT_Y);
+ // Without obstacles a label sits exactly over its anchor.
  const plain=[{id:"a",ax:300,ay:200,w:90,h:30}];
- Hud.pack(plain,734,343);
- assert.equal(plain[0].x,255);assert.equal(plain[0].y,162);
+ Hud.anchor(plain,734,343);
+ assert.equal(plain[0].x,255);assert.equal(plain[0].y,200-30-Hud.LIFT);
 });
 test("MOBILEQA001: arena layout registers fixed controls as obstacles",()=>{
  const g=read("game.js");

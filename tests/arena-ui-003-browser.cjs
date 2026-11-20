@@ -82,6 +82,50 @@ async function run(name,type,[W,H]){
   for(let i=0;i<600;i++)if(!(await ev(`(__step(1),BattleAnimation.pending())`)))break;
   await ev(`__step(20)`);
   assert.equal(await ev(`document.querySelector("#turnQueue li").dataset.fighterId===state.fighters[state.currentActor].id`),true);
+  // ARENA-UI-003B: labels pinned to fighters; floating numbers never cover a label.
+  await ev(`state=CombatCore.createBattle([...HEROES.filter(f=>f.side==="ally").slice(0,5),...HEROES.filter(f=>f.side==="enemy").slice(0,5)]);
+   CombatCore.advanceToPlayerTurn(state);syncBattleUI();updateMeshes();__step(6);`);
+  await page.waitForTimeout(400);await ev(`__step(4)`);
+  const plates=`[...document.querySelectorAll("#arenaIndicators .arena-indicator")].filter(n=>n.style.display!=="none"&&!n.classList.contains("away")).map(n=>{
+    const b=n.getBoundingClientRect(),name=n.querySelector(".arena-indicator-name");const nb=name?.getBoundingClientRect();
+    return {id:n.dataset.fighterId,x:b.x,y:b.y,w:b.width,h:b.height,named:!!name,name:nb?{x:nb.x,y:nb.y,w:nb.width,h:nb.height}:null,
+     ax:parseFloat(n.style.left),ay:parseFloat(n.style.top)};})`;
+  const pinned=await ev(`(()=>{const p=${plates};const actor=state.fighters[state.currentActor].id,target=state.fighters[state.selectedEnemy].id;
+   return {p,actor,target,named:p.filter(x=>x.named).map(x=>x.id).sort()};})()`);
+  assert.equal(pinned.p.length,10);
+  assert.deepEqual(pinned.named,[pinned.actor,pinned.target].sort(),"names only over the acting hero and the target");
+  for(const r of pinned.p){
+   assert.ok(Math.abs(r.x+r.w/2-r.ax)<=17,r.id+" label centred over its fighter");
+   assert.ok(r.y+r.h<=r.ay+13,r.id+" label above its head anchor");
+  }
+  const ov=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
+  for(let i=0;i<pinned.p.length;i++)for(let j=0;j<i;j++)
+   assert.equal(ov(pinned.p[i],pinned.p[j]),false,"labels collide "+pinned.p[i].id+"/"+pinned.p[j].id);
+  for(const a of pinned.p)if(a.name)for(const b of pinned.p)if(b!==a)
+   assert.equal(ov(a.name,b),false,"name of "+a.id+" covers the label of "+b.id);
+  // Target the farthest enemy (the old packer moved its label under the numbers) and strike.
+  await ev(`(()=>{const e=state.fighters.map((f,i)=>[f,i]).filter(([f])=>f.side==="enemy"&&f.hp>0);
+   const far=e.reduce((a,b)=>(meshes[b[0].id].head.position.z<meshes[a[0].id].head.position.z?b:a));
+   CombatCore.chooseEnemy(state,far[1]);syncBattleUI();__step(2);})()`);
+  await page.waitForTimeout(200);await ev(`__step(2)`);
+  const farLabels=await ev(`${plates}`);
+  for(const a of farLabels)if(a.name)for(const b of farLabels)if(b!==a)
+   assert.equal(ov(a.name,b),false,"far target name covers "+b.id);
+  assert.equal(await ev(`applyManualAbility("basic")`),true);
+  let seen=0,away=false;const clashes=[];
+  for(let i=0;i<500;i++){
+   const f=await ev(`(()=>{__step(1);const fl=[...document.querySelectorAll("#arenaFloaters .arena-floater.on")].map(n=>{const b=n.getBoundingClientRect();return {x:b.x,y:b.y,w:b.width,h:b.height,t:n.textContent};});
+    return {fl,p:${plates},away:!!document.querySelector("#arenaIndicators .arena-indicator.away"),pending:BattleAnimation.pending()};})()`);
+   away=away||f.away;
+   for(const n of f.fl){seen++;for(const r of f.p){if(ov(n,r)||(r.name&&ov(n,r.name))){clashes.push(n.t+"/"+r.id);if(process.env.DEBUG_UI003)console.log(JSON.stringify({n,r,target:await ev("state.fighters[state.selectedEnemy]?.id")}));}}}
+   if(!f.pending&&seen&&!f.fl.length)break;
+  }
+  assert.ok(seen>0,"a number was shown");
+  assert.deepEqual([...new Set(clashes)],[],"floating numbers cover a label");
+  assert.equal(away,true,"the striker's label hides while it is away");
+  await ev(`__step(40)`);
+  assert.equal(await ev(`document.querySelectorAll("#arenaIndicators .arena-indicator.away").length`),0,"label returns with its fighter");
+  await page.screenshot({path:path.join(out,`${name}-${W}x${H}-5v5-labels.png`)});
   assert.deepEqual(errors,[]);
   assert.deepEqual(failed.filter(u=>!/fonts\.g/.test(u)),[],"no failed requests (no icon 404s)");
   console.log("ARENA_UI_003_PASS",name,W+"x"+H,JSON.stringify({queue:layout.queue,hero:layout.heroName}));

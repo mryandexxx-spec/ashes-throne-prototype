@@ -4696,3 +4696,27 @@ body:has(#storyDemo.active)::before{
  #battle.battle-screen .turn-queue-item{width:36px;height:36px}
  #battle.battle-screen .turn-queue-item.now{width:48px;height:48px}
 }
+
+/* ARENA-UI-003B: labels pinned to their fighter (SWGOH). Narrow bars, the name
+   only over the acting hero and the selected target; a battle-intel mark stays
+   as an icon. ArenaWorldHud.anchor moves a label at most 16 / 12 px. A fighter
+   who ran out to strike hides its label until it is back. [ПРЕДЛОЖЕНИЕ] sizes. */
+#battle.battle-screen .arena-indicator{width:clamp(42px,5.6vw,54px);max-width:54px;gap:1px;
+ transition:opacity .12s linear}
+#battle.battle-screen .arena-indicator.away{opacity:0}
+#battle.battle-screen .arena-indicator-name{align-self:center;width:max-content;max-width:140px;
+ font-size:10px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#battle.battle-screen .arena-indicator.targeted .arena-indicator-name{color:#ffb4aa}
+/* Enemy line sits under the top HUD: the target's name hangs below its bars
+   (out of flow, ArenaWorldHud.NAME_BELOW) instead of growing the label up. */
+#battle.battle-screen .arena-indicator.enemy{position:absolute}
+#battle.battle-screen .arena-indicator.enemy.named .arena-indicator-name{position:absolute;top:100%;left:50%;
+ transform:translateX(-50%);margin-top:1px}
+#battle.battle-screen .arena-health{height:5px}
+#battle.battle-screen .arena-protection,#battle.battle-screen .arena-initiative{height:3px}
+#battle.battle-screen .arena-effects{min-height:0;gap:2px;flex-wrap:wrap}
+#battle.battle-screen .arena-effect{min-width:16px;height:12px;font-size:9px;padding:0 2px}
+#battle.battle-screen .arena-effect.mark{color:#2a1a0c;background:#f5c781;border-color:#ffe0a8;font-weight:800}
+#battle.battle-screen .arena-effect.mark.assault-hunter{color:#fff;background:#b8343a;border-color:#f4a49c}
+#battle.battle-screen .arena-focus-cursor{height:14px;line-height:14px;font-size:15px}
+@media (prefers-reduced-motion:reduce){#battle.battle-screen .arena-indicator{transition:none}}

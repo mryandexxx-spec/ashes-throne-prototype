@@ -300,7 +300,7 @@ const cursorTargets=kind=>[...elements.arenaIndicators.innerHTML.matchAll(
  /data-fighter-id="([^"]+)"[^>]*>\s*<div class="arena-focus-cursor (available|locked)"/g)]
  .filter(m=>!kind||m[2]===kind).map(m=>m[1]);
 assert.deepEqual(cursorTargets("locked"),[firstEnemy.id],"scene cursor marks the initially selected target");
-assert.match(elements.arenaIndicators.innerHTML,new RegExp('data-fighter-id="'+firstEnemy.id+'" aria-label="[^"]*здоровье '+firstEnemy.hp+' из '+firstEnemy.maxHp));
+assert.match(elements.arenaIndicators.innerHTML,new RegExp('data-fighter-id="'+firstEnemy.id+'"( data-name-w="[0-9]+")? aria-label="[^"]*здоровье '+firstEnemy.hp+' из '+firstEnemy.maxHp));
 assert.equal(elements.activeHero.hidden,false,"acting hero is shown bottom-left");
 assert.equal(elements.activeHeroName.textContent,first.fighters[first.currentActor].name);
 assert.ok(elements.turnQueue.innerHTML.startsWith('<li class="turn-queue-item ally now" data-fighter-id="'+first.fighters[first.currentActor].id+'"'),

@@ -149,9 +149,57 @@ test("ARENAUI003A: CSS — 44pt targets, ≥56px round abilities, safe-area, sco
 });
 
 test("ARENAUI003A: build version and script order",()=>{
- assert.equal(pkg.version,"0.3.205");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.205 · ARENAUI003A'));
+ assert.equal(pkg.version,"0.3.206");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.206 · ARENAUI003B'));
  assert.ok(pkg.scripts.test.includes("node --check arena-ui-003.js"));
- const at=html.indexOf('src="arena-ui-003.js?v=0.3.205"');
- assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.205"'));
+ const at=html.indexOf('src="arena-ui-003.js?v=0.3.206"');
+ assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.206"'));
+});
+
+// ---------------- ARENA-UI-003B: labels and numbers ----------------
+const Vis=require("../arena-vis-002.js");
+function fakeDom(){
+ const make=()=>{const el={children:[],style:{},className:"",textContent:"",hidden:false,
+  appendChild(c){this.children.push(c);return c;},setAttribute(){} };return el;};
+ return {container:make(),doc:{createElement:make}};
+}
+const centreY=el=>Number(/translate3d\([^,]+,(-?[\d.]+)px/.exec(el.style.transform)[1]);
+test("ARENAUI003B: a number never rises into its target's label, even when the label moves",()=>{
+ const {container,doc}=fakeDom();
+ let floor=80;
+ const f=Vis.createFloaters(container,doc,{floor:id=>id==="ves"?floor:null});
+ // Shoulder point just under the label: the old layer drew the number over the bars.
+ assert.equal(f.spawn("ves",[{cls:"damage",text:"−31"}],{x:500,y:84}),1);
+ const node=container.children[0];
+ const pad=Vis.constants.FLOOR_PAD_PX;
+ for(let t=0;t<Vis.constants.FLOAT_MS;t+=16){
+  f.tick(16);
+  if(!node.className.includes("on"))break;
+  assert.ok(centreY(node)>=floor+pad-1e-6,`t=${t}: ${centreY(node)} under ${floor}+${pad}`);
+  if(t===160){floor=92;f.relayout();assert.ok(centreY(node)>=floor+pad,"follows a label that moved down");}
+ }
+ // A target without a label (or before layout) keeps the VIS-002 behaviour.
+ const g=Vis.createFloaters(fakeDom().container,fakeDom().doc,{});
+ assert.equal(g.spawn("x",[{cls:"damage",text:"−1"}],{x:10,y:84}),1);
+ assert.equal(typeof f.relayout,"function");
+});
+test("ARENAUI003B: labels show names only for the acting hero and the target; marks stay as icons",()=>{
+ assert.match(game,/const targeted=!!actor&&h\.hp>0&&!support&&h\.side==="enemy"&&state\.fighters\[state\.selectedEnemy\]\?\.id===h\.id;/);
+ assert.match(game,/const named=active\|\|targeted;/);
+ assert.match(game,/\$\{named\?`<div class="arena-indicator-name">\$\{h\.name\}<\/div>`:""\}/);
+ assert.match(game,/const markIcon=!named&&markClass\?`<span class="arena-effect mark \$\{markClass\}"/);
+ // Labels are pinned (bounded shift), the free packer is gone.
+ const hud=read("arena-world-hud.js");
+ assert.doesNotMatch(hud,/function pack\(|shelf/);
+ assert.match(hud,/anchor\(rows,this\.width,this\.height,this\.insets,marked\(this\.obstacles\)\)/);
+ // A striker's label hides while it is away and takes no room.
+ assert.match(game,/visual\.av003Away=Math\.hypot\(approach\.x\|\|0,approach\.z\|\|0\)>\.45;/);
+ assert.match(game,/arenaHudLayout\.track\(id,node,ax,ay,away\)/);
+ // Numbers read the label bottom, and are re-placed after the labels in the same frame.
+ assert.match(game,/floor:id=>arenaHudLayout\?\.bottomOf\?\.\(id\)\?\?null/);
+ assert.match(game,/positionArenaIndicators\(\);\n \/\/ ARENA-UI-003B[^\n]*\n arenaFeedback\?\.floaters\?\.relayout\?\.\(\);\n scene\.render\(\);/);
+ const block=css.slice(css.indexOf("/* ARENA-UI-003B"));
+ assert.match(block,/\.arena-indicator\.away\{opacity:0\}/);
+ assert.match(block,/\.arena-indicator\.enemy\.named \.arena-indicator-name\{position:absolute;top:100%/);
+ assert.doesNotMatch(block,/#battle\s|backdrop-filter|blur\(/);
 });

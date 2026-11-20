@@ -134,8 +134,10 @@ test("HUDSYNC001: the HUD draws displayed values and redraws when they change",(
  const game=read("game.js");
  assert.match(game,/const view=BattleAnimation\.displayed\(h\);\s*\n\s*const health=Math\.min\(100,Math\.max\(0,view\.hp/);
  assert.match(game,/title="HP \$\{Math\.max\(0,view\.hp\)\}/);
- assert.match(game,/const view=BattleAnimation\.displayed\(target\);\s*\n\s*hp\.textContent="HP "\+Math\.max\(0,view\.hp\)/);
+ // ARENA-UI-003 removed the target card; the labels (above) are the only HP readout.
+ assert.doesNotMatch(game,/renderTargetFighterHud/);
+ assert.match(game,/aria-label="\$\{h\.name\}[\s\S]{0,120}здоровье \$\{Math\.max\(0,view\.hp\)\}/);
  assert.match(game,/BattleAnimation\.displayRevision\(\)!==hudDisplayRevision/);
- assert.match(game,/if\(landed\)renderTargetFighterHud\(\);/);
+ assert.match(game,/if\(landed\|\|Object\.keys\(indicatorNodes\)/);
  assert.doesNotMatch(game,/arena-health" title="HP \$\{Math\.max\(0,h\.hp\)\}/);
 });

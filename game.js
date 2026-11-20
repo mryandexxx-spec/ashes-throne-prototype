@@ -1252,6 +1252,9 @@ function showScreen(id){
     battleIsOperation?"Перехватить подлинный пакет.":!def?"":def.kind==="tactical"?
     "Цель: "+(priority?.name||"отмеченный враг")+" должен погибнуть первым и отдельно от остальных.":
     "Цель: пройти "+(def.futureWaves.length+1)+" волны, сохранив отряд.");
+   // ARENA-UI-003: a new battle starts with the one-line objective.
+   objective.classList?.remove?.("expanded");
+   objective.setAttribute?.("aria-expanded","false");
   }
   const tacticalGoalCard=$("#tacticalGoalCard");
   const npcHold=battleIsNpcChallengePilot&&activeChallengeId==="T-04";
@@ -2917,8 +2920,6 @@ function renderBattleLog(){
  summary.textContent="Журнал боя · "+lines.length+" событий";
  content.textContent=lines.length?lines.map((line,i)=>(i+1)+". "+line).join("\n"):"Пока нет событий.";
 }
-// Combat-008D: the top-right card follows the valid selected target,
-// including allied support targets. It never shows the current turn owner.
 // NPCUX004: this marker is based on the battle objective or EARNED
 // SignalOperationCore intel only. Never read run.signalId directly.
 function npcCombatMarker(fighter){
@@ -2928,40 +2929,74 @@ function npcCombatMarker(fighter){
   SignalOperationCore.intel(signalProgress.active)?.signalId:null;
  return NpcBattleIntel.marker(fighter,state,knownSignal);
 }
-function renderTargetFighterHud(){
- const panel=$("#targetFighterHud");
- if(!panel)return;
- const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
- const sideToPick=actor?CombatCore.abilityTargetSide(state,selectedAbility):null;
- const targetIndex=sideToPick==="ally"?state.selectedAlly:state.selectedEnemy;
- const target=actor?state.fighters[targetIndex]:null;
- const valid=!!target&&target.hp>0&&target.side===sideToPick;
- const side=$("#targetFighterSide"),level=$("#targetFighterLevel");
- const name=$("#targetFighterName"),hp=$("#targetFighterHp");
- const stats=$("#targetFighterStats"),fill=$("#targetFighterHealthFill");
- panel.classList.toggle("enemy",valid&&target.side==="enemy");
- if(!valid){
-  side.textContent=isVisualTransition()?"ПЕРЕХОД":"ВЫБРАННАЯ ЦЕЛЬ";
-  level.textContent="";
-  name.textContent=isVisualTransition()?"Завершение действий":state.active?"Выбери цель":"Бой завершён";
-  hp.textContent="";stats.textContent="";fill.style.width="0%";
-  return;
+// ARENA-UI-003: SWGOH-style HUD. The target is shown on the scene (ring and
+// cursor), so the old target card is gone. Turn order, the acting hero and
+// round ability icons are drawn from CombatCore state; nothing here changes it.
+let turnQueueSignature="",turnQueueCollapsed=false;
+try{turnQueueCollapsed=window.localStorage?.getItem?.("ashes-throne.arena-queue-collapsed")==="1";}catch(e){}
+function renderTurnQueue(){
+ const list=$("#turnQueue"),bar=$("#turnQueueBar");
+ if(!list||typeof ArenaUI003==="undefined")return;
+ const live=!!state.active&&!isVisualTransition();
+ const ids=live?ArenaUI003.forecast(state,ArenaUI003.QUEUE_SIZE,{
+  speedOf:f=>CombatCore.effectiveStat(state,f,"speed")}):[];
+ const signature=ids.join("|");
+ if(signature!==turnQueueSignature){
+  turnQueueSignature=signature;
+  list.innerHTML=ArenaUI003.queueHtml(state,ids);
+  list.setAttribute?.("aria-label",ArenaUI003.queueLabel(state,ids));
  }
- const mark=npcCombatMarker(target);
- side.textContent=typeof NpcBattleIntel!=="undefined"&&mark?
-  NpcBattleIntel.markerLabel(mark):
-  target.side==="ally"?"ЦЕЛЬ: СОЮЗНИК":"ЦЕЛЬ: ПРОТИВНИК";
- const npcRole=typeof NpcBattleIntel!=="undefined"?NpcBattleIntel.role(target):null;
- const targetLevel=Number.isInteger(target.level)&&target.level>0?"Ур. "+target.level:"";
- level.textContent=[npcRole,targetLevel].filter(Boolean).join(" · ");
- name.textContent=target.name;
- // HUDSYNC001: numbers follow the drawn blows, not the already-resolved CombatCore state.
- const view=BattleAnimation.displayed(target);
- hp.textContent="HP "+Math.max(0,view.hp)+"/"+target.maxHp;
- stats.textContent="АТК "+target.atk+" · СКР "+target.speed+
-  (Number.isFinite(target.maxProtection)&&target.maxProtection>0?
-    " · PR "+view.protection+"/"+target.maxProtection:"");
- fill.style.width=Math.max(0,Math.min(100,view.hp/Math.max(1,target.maxHp)*100))+"%";
+ if(bar){bar.hidden=!ids.length;bar.classList?.toggle("collapsed",turnQueueCollapsed);}
+ const wave=$("#turnQueueWave");
+ if(wave){wave.hidden=!(state.totalWaves>1);wave.textContent=state.totalWaves>1?"Волна "+state.wave+"/"+state.totalWaves:"";}
+ const toggle=$("#turnQueueToggle");
+ if(toggle){
+  toggle.setAttribute?.("aria-expanded",String(!turnQueueCollapsed));
+  toggle.setAttribute?.("aria-label",turnQueueCollapsed?"Развернуть очередь ходов":"Свернуть очередь ходов");
+ }
+}
+$("#turnQueueToggle")?.addEventListener("click",()=>{
+ turnQueueCollapsed=!turnQueueCollapsed;
+ try{window.localStorage?.setItem?.("ashes-throne.arena-queue-collapsed",turnQueueCollapsed?"1":"0");}catch(e){}
+ renderTurnQueue();
+ arenaHudLayout?.avoid?.(arenaHudObstacles());
+});
+// The objective line expands on tap; it never blocks the arena below it.
+$("#battleChallengeGoal")?.addEventListener("click",()=>{
+ const goal=$("#battleChallengeGoal");
+ const open=goal.getAttribute?.("aria-expanded")!=="true";
+ goal.setAttribute?.("aria-expanded",String(open));
+ goal.classList?.toggle("expanded",open);
+});
+function renderActiveHero(actor){
+ const box=$("#activeHero");
+ if(!box)return;
+ box.hidden=!actor;
+ if(!actor)return;
+ const name=$("#activeHeroName");
+ if(name)name.textContent=actor.name;
+ const pic=$("#activeHeroPortrait");
+ if(pic&&pic.dataset?.fighterId!==actor.id){
+  pic.dataset.fighterId=actor.id;
+  const src=typeof ArenaUI003!=="undefined"?ArenaUI003.portrait(actor):null;
+  pic.innerHTML=src?`<img src="${src}" alt="" draggable="false">`:
+   `<span>${typeof ArenaUI003!=="undefined"?ArenaUI003.initials(actor.name):""}</span>`;
+ }
+}
+// One round button: icon or temporary pictogram, cooldown on top, name for
+// screen readers and long-press help. The DOM is rebuilt only on change.
+function renderAbilityButton(button,actor,abilityId,definition,cooldown,stateName){
+ if(!button)return;
+ const name=definition?.name||{basic:"Базовая атака",special:"Особая способность",powerful:"Мощная способность"}[abilityId];
+ const label=name+(cooldown>0?" · перезарядка "+cooldown:"");
+ button.setAttribute?.("aria-label",label);
+ const data=button.dataset||(button.dataset={});
+ data.state=stateName;
+ if(typeof ArenaUI003==="undefined"){button.textContent=name+(cooldown>0?" · "+cooldown:"");return;}
+ const face=ArenaUI003.abilityFace(actor?.id,abilityId,definition||{name},cooldown);
+ const signature=[actor?.id,abilityId,name,cooldown].join("|");
+ if(data.face!==signature){data.face=signature;button.innerHTML=face.html;}
+ data.accent=face.accent;
 }
 function npcBattleMessage(){
  if(battleIsNpcChallengePilot&&activeChallengeId==="T-04"){
@@ -3091,9 +3126,10 @@ function syncBattleUI(){
   missionResultRecorded=true;
  }
  if(isVisualTransition()){
-  $("#battleStatus").textContent=visualTransition==="wave"?"Завершение волны…":"Завершение боя…";
-  $("#actionTitle").textContent="Анимация завершается";
-  $("#actionHint").textContent="Следующий этап появится после завершения действий.";
+  const transitionStatus=$("#battleStatus");
+  if(transitionStatus)transitionStatus.textContent=visualTransition==="wave"?"Завершение волны":"Завершение боя";
+  const transitionHint=$("#actionHint");
+  if(transitionHint){transitionHint.hidden=true;transitionHint.textContent="";}
   $("#battleRetryBtn").hidden=true;
   $("#abilityControls")?.classList.remove("battle-finished");
   $("#basicAbilityBtn").disabled=true;
@@ -3106,7 +3142,8 @@ function syncBattleUI(){
   if(speedControl)speedControl.disabled=!state.active;
   $("#battleMessage").textContent=npcBattleMessage();
   renderBattleLog();
-  renderTargetFighterHud();
+  renderTurnQueue();
+  renderActiveHero(null);
   renderArenaIndicators();
   updateMeshes();
   return;
@@ -3179,11 +3216,12 @@ function syncBattleUI(){
  const target=state.active?fighters[targetIndex]:null;
  const validTarget=!!target&&target.hp>0&&target.side===(supportTarget?"ally":"enemy")&&
   !(needsOtherAlly&&target.id===actor.id);
- $("#battleStatus").textContent=visualBusy?"Действие выполняется…":actor?"Ход: "+actor.name:"Бой завершён";
- $("#turnChip").textContent=(state.totalWaves>1?"Волна "+state.wave+"/"+state.totalWaves+" · ":"")+"Ход "+state.turn;
- $("#actionTitle").textContent=visualBusy?"Анимация действия":actor?(supportTarget?"Выбери союзника":"Способности: "+actor.name):"Бой завершён";
- $("#basicAbilityBtn").disabled=!actor||autoBattle||visualBusy;
- $("#specialAbilityBtn").disabled=!specialReady||autoBattle||visualBusy;
+ // ARENA-UI-003: no service text on screen. Status stays for screen readers.
+ const status=$("#battleStatus");
+ if(status)status.textContent=actor?"Ход: "+actor.name:"Бой завершён";
+ const basicButton=$("#basicAbilityBtn"),specialButton=$("#specialAbilityBtn");
+ basicButton.disabled=!actor||autoBattle||visualBusy;
+ specialButton.disabled=!specialReady||autoBattle||visualBusy;
  const powerfulSlot=$("#powerfulAbilitySlot");
  if(powerfulSlot)powerfulSlot.hidden=!powerful;
  $("#abilityOptions")?.classList.toggle("has-powerful",!!powerful);
@@ -3198,20 +3236,30 @@ function syncBattleUI(){
  }
  const speedButton=$("#autoSpeedBtn");
  if(speedButton){speedButton.disabled=!state.active;speedButton.textContent=BattleSpeed.get()+"×";speedButton.setAttribute("aria-label","Скорость боя "+BattleSpeed.get()+"×. Нажми, чтобы изменить");}
- $("#basicAbilityBtn").textContent=actor&&["art","sava"].includes(actor.id)?AbilityData.get(actor,"basic")?.name:"Базовая атака";
- $("#specialAbilityBtn").textContent=actor?CombatCore.specialName(actor)+(actor.specialCooldown>0?" · "+actor.specialCooldown:""):"Особая способность";
- if(powerfulButton)powerfulButton.textContent=powerful?powerful.name+(actor.powerfulCooldown>0?" · "+actor.powerfulCooldown:""):"Мощная способность";
- $("#basicAbilityBtn").classList.toggle("selected",false);
- $("#specialAbilityBtn").classList.toggle("selected",supportTarget);
- $("#actionHint").textContent=visualBusy?"Завершается предыдущее действие.":autoBattle?"Автобой активен. Нажми «Ручной бой», чтобы управлять.":
-  supportTarget?(needsOtherAlly?"Коснись другого союзника: себя выбрать нельзя.":"Коснись союзника с курсором, чтобы применить способность."):
-  actor&&CombatCore.abilityTargetSide(state,"special")==="all-enemies"?"Курсор отмечает основную цель. Учебный широкий удар поражает всех живых врагов.":
-  validTarget?"В фокусе: "+target.name+". Нажми на нужную способность.":"Коснись противника, чтобы выбрать цель.";
+ // ready: can be pressed; wait: the previous action is still on screen;
+ // cooldown / locked: unavailable now (dimmed); auto: autoplay owns the turn.
+ const slotState=(ready,cooldown)=>!actor?"locked":autoBattle?"auto":visualBusy&&ready?"wait":
+  ready?"ready":cooldown>0?"cooldown":"locked";
+ renderAbilityButton(basicButton,actor,"basic",actor?AbilityData.get(actor,"basic"):null,0,slotState(!!actor,0));
+ renderAbilityButton(specialButton,actor,"special",actor?AbilityData.get(actor,"special"):null,
+  actor?.specialCooldown||0,slotState(specialReady,actor?.specialCooldown||0));
+ if(powerfulButton)renderAbilityButton(powerfulButton,actor,"powerful",powerful,
+  actor?.powerfulCooldown||0,slotState(powerfulReady,actor?.powerfulCooldown||0));
+ basicButton.classList.toggle("selected",false);
+ specialButton.classList.toggle("selected",supportTarget);
+ // A hint appears only when the next tap is not the obvious "tap an enemy".
+ const hintText=autoBattle?"Автобой. Нажми «Ручной бой», чтобы управлять.":
+  supportTarget?(needsOtherAlly?"Коснись другого союзника: себя выбрать нельзя.":"Коснись союзника, чтобы применить способность."):
+  actor&&!visualBusy&&CombatCore.abilityTargetSide(state,"special")==="all-enemies"?"Курсор отмечает основную цель. Учебный широкий удар поражает всех живых врагов.":
+  actor&&!visualBusy&&!validTarget?"Коснись противника, чтобы выбрать цель.":"";
+ const hint=$("#actionHint");
+ if(hint){hint.textContent=hintText;hint.hidden=!hintText;}
+ renderActiveHero(actor);
+ renderTurnQueue();
  const retry=$("#battleRetryBtn");if(retry)retry.hidden=!!state.active;
  $("#abilityControls")?.classList.toggle("battle-finished",!state.active);
  $("#battleMessage").textContent=npcBattleMessage();
  renderBattleLog();
- renderTargetFighterHud();
  renderArenaIndicators();
  updateMeshes();
  queueAutoAction();
@@ -3271,6 +3319,11 @@ function renderArenaIndicators(){
   indicatorNodes[node.dataset.fighterId]=node;
  positionArenaIndicators();
 }
+// MOBILEQA001 / ARENA-UI-003: fixed HUD zones the world labels must not hide under.
+function arenaHudObstacles(){
+ return document.querySelectorAll?.(
+  "#battle .battle-top>[data-screen], #battle .arena-utility, #renModelBattleStatus, #turnQueueBar, #battleChallengeGoal, #tacticalGoalCard, #activeHero, #autoBattleBtn, #autoSpeedBtn, #actionHint, #battle .ability-options")||[];
+}
 // Projection is presentation-only. Babylon pointer picking stays on the canvas.
 function positionArenaIndicators(){
  if(!scene||!engine||!arenaCamera||!BABYLON.Vector3?.Project||
@@ -3284,8 +3337,7 @@ function positionArenaIndicators(){
  if(!arenaHudLayout && typeof ArenaWorldHud!=="undefined"){
   arenaHudLayout=new ArenaWorldHud.Layout(overlay);
   // MOBILEQA001: keep health/initiative indicators clear of fixed HUD controls.
-  arenaHudLayout.avoid?.(document.querySelectorAll(
-   "#battle .battle-top>[data-screen], #targetFighterHud, #autoBattleBtn, #autoSpeedBtn, #turnChip, #renModelBattleStatus, #battleMessage, #battle .arena-utility, #battle .action-panel"));
+  arenaHudLayout.avoid?.(arenaHudObstacles());
  }
  const cssWidth=arenaHudLayout?arenaHudLayout.width:(overlay.clientWidth||width);
  const cssHeight=arenaHudLayout?arenaHudLayout.height:(overlay.clientHeight||height);
@@ -3312,6 +3364,13 @@ function positionArenaIndicators(){
  if(arenaHudLayout)arenaHudLayout.place();
 }
 function resetBattle(){
+ // ARENA-UI-003: owner ability art is listed once per session; redraw on arrival.
+ if(typeof ArenaUI003!=="undefined"&&typeof fetch==="function")
+  void ArenaUI003.loadManifest().then(found=>{
+   if(!found)return;
+   for(const id of ["basicAbilityBtn","specialAbilityBtn","powerfulAbilityBtn"]){const b=$("#"+id);if(b?.dataset)b.dataset.face="";}
+   if(state?.active&&$("#battle")?.classList?.contains("active"))syncBattleUI();
+  });
  closeFighterInspection();hideAbilityTooltip();
  cancelAutoTimer();
  cancelVisualTransition();
@@ -3688,7 +3747,6 @@ function renderBattleFrame(){
   const fighter=presentationFighters().find(f=>f.id===id);
   return !fighter||fighter.hp<=0&&!BattleAnimation.isDying(id);
  }))renderArenaIndicators();
- if(landed)renderTargetFighterHud();
  const roster=presentationFighters();
  const sides={ally:roster.filter(f=>f.side==="ally"),enemy:roster.filter(f=>f.side==="enemy")};
  for(const h of roster){

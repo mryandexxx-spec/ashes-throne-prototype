@@ -1,35 +1,39 @@
 const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
+// Combat-008D introduced the selected-target card. ARENA-UI-003 replaced it:
+// the target is shown on the scene (cursor + red ring), the acting hero
+// bottom-left, the controls in the upper and lower HUD rows.
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
 const read=f=>fs.readFileSync(path.join(__dirname,"..",f),"utf8");
 const html=read("index.html"),styles=read("styles.css"),game=read("game.js");
 const battle=html.split('<section id="battle"')[1]?.split("</section>")[0];
 assert.ok(battle);
 for(const id of ["targetFighterHud","targetFighterSide","targetFighterLevel",
-  "targetFighterName","targetFighterHp","targetFighterStats","targetFighterHealthFill"]){
- assert.match(battle,new RegExp('id="'+id+'"'),id+" inside the arena");
+  "targetFighterName","targetFighterHp","targetFighterStats","targetFighterHealthFill"])
+ assert.doesNotMatch(html,new RegExp('id="'+id+'"'),id+" removed with the target card");
+assert.doesNotMatch(game,/function renderTargetFighterHud\(\)/);
+// The selected target is still derived from the real selection and side of the pending ability.
+assert.match(game,/h\.side==="enemy"&&state\.fighters\[state\.selectedEnemy\]\?\.id===h\.id/);
+assert.match(game,/arena-focus-cursor \$\{support\?"available":"locked"\}/);
+assert.match(game,/state\.selectedAlly/);
+// Acting hero: one block bottom-left, from state.currentActor.
+for(const id of ["activeHero","activeHeroPortrait","activeHeroName"]){
+ assert.match(battle,new RegExp('id="'+id+'"'),id);
  assert.equal((html.match(new RegExp('id="'+id+'"',"g"))||[]).length,1,id+" unique");
 }
-assert.match(styles,/\.battle-screen \.target-fighter-hud\s*\{[^}]*top:calc\(/);
-assert.match(styles,/\.battle-screen \.target-fighter-hud\s*\{[^}]*right:max\(/);
-assert.match(styles,/pointer-events:none/);
-assert.match(game,/state\.fighters\[state\.currentActor\]/);
-assert.match(game,/Number\.isInteger\(target\.level\)/);
-assert.match(game,/CombatCore\.abilityTargetSide\(state,selectedAbility\)/);
-assert.match(game,/state\.selectedAlly/);
-assert.match(game,/state\.selectedEnemy/);
-assert.match(game,/function renderTargetFighterHud\(\)/);
-// The target HUD is now the third child of the upper row; controls live below.
+assert.match(game,/const actor=state\.active\?fighters\[state\.currentActor\]:null;/);
+assert.match(game,/renderActiveHero\(actor\);/);
+// Controls: menu and log top-left, queue top, Автобой/1× bottom-left beside the hero.
 const top=battle.indexOf('class="battle-top arena-hud"');
-const target=battle.indexOf('id="targetFighterHud"');
-const topEnd=battle.indexOf('</div>\n        <div class="battle-top-controls arena-hud"',top);
-const controls=battle.indexOf('class="battle-top-controls arena-hud"');
-assert.ok(top>=0&&target>top&&controls>target,"target is in upper row, controls below");
-assert.match(battle,/class="battle-top-controls arena-hud"/);
+const queue=battle.indexOf('class="battle-queue arena-hud"');
+const hero=battle.indexOf('class="battle-hero arena-hud"');
+assert.ok(top>=0&&queue>top&&hero>queue,"top row, queue, hero row in order");
+assert.ok(battle.indexOf('id="autoBattleBtn"')>hero&&battle.indexOf('id="autoSpeedBtn"')>hero,"autoplay controls beside the hero");
+assert.doesNotMatch(battle,/class="battle-top-controls/);
 assert.doesNotMatch(battle,/class="arena-roster"/);
 assert.doesNotMatch(battle,/id="combatants"/);
 assert.doesNotMatch(game,/function renderCombatants\(\)/,"unused roster renderer removed");
-assert.match(styles,/\.battle-screen \.battle-top>\.target-fighter-hud\s*\{[^}]*position:relative/);
-assert.match(styles,/\.battle-screen \.battle-top-controls\.arena-hud\s*\{[^}]*position:absolute/);
+assert.match(styles,/#battle\.battle-screen \.battle-hero\{[^}]*bottom:max\(/);
+assert.match(styles,/#battle\.battle-screen \.battle-queue\{[^}]*top:max\(/);
 assert.match(html,/v\d+[.]\d+[.]\d+ · UIHUD001/);
-console.log("Combat-008D selected-target panel structure and version passed");
+console.log("Combat-008D → ARENA-UI-003 target on scene, acting hero and control rows passed");

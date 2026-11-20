@@ -17,8 +17,8 @@ test("UIHUD001 is a contained bronze-graphite skin over existing 3D battle",()=>
  assert.match(css, /body\.battle-mode\{overflow:hidden;height:100dvh\}/);
 });
 test("UIHUD001 retains the action buttons, focus, disabled and auto states",()=>{
- for(const id of ["battle","renderCanvas","arenaIndicators","targetFighterHud","battleStatus",
-  "autoBattleBtn","autoSpeedBtn","turnChip","abilityOptions","basicAbilityBtn",
+ for(const id of ["battle","renderCanvas","arenaIndicators","activeHero","battleStatus",
+  "autoBattleBtn","autoSpeedBtn","turnQueue","abilityOptions","basicAbilityBtn",
   "specialAbilityBtn","powerfulAbilitySlot","powerfulAbilityBtn","abilityTooltip",
   "battleRetryBtn","battleLog","battleReward","battleMessage","fighterInspect","inspectClose"])
   assert.ok(html.includes('id="'+id+'"'),id+" retained");

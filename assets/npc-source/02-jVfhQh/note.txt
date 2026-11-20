@@ -1,0 +1,8 @@
+ARENA-ART-004 — исходник Meshy (не для рантайма, оптимизация на шаге 2).
+Ссылка: https://www.meshy.ai/s/jVfhQh
+Модель Meshy (image-to-3d): 01a1e9ac-858c-76a9-825f-336bd231cc23
+Риг Meshy: 01a1f867-9a8d-72ae-bdf2-8499ab5d5ace
+Внешность: пожилая женщина, тёмно-красный плащ, доспех.
+Файл: 4.3 МБ, 7671 треуг., 1 меш, 1 материал, текстура цвет PNG 2048.
+Кости: 24 (Hips…), ось вперёд +Z, корень Armature масштаб 0.01.
+Клипы: Combat_Stance 1.7с, Thrust_Slash 3.03с, Over_Shoulder_Throw 4.33с, Block1 3.5с, Charged_Spell_Cast 2.7с, Hit_Reaction 1.67с, dying_backwards 2.23с, walking_man 1.07с, running 0.67с

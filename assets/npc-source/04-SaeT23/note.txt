@@ -1,0 +1,8 @@
+ARENA-ART-004 — исходник Meshy (не для рантайма, оптимизация на шаге 2).
+Ссылка: https://www.meshy.ai/s/SaeT23
+Модель Meshy (image-to-3d): 01a1e9ac-608d-7318-9ea5-a285acdd46a1
+Риг Meshy: 01a1f867-bb07-7733-ba1a-8a5c0bd8d676
+Внешность: мужчина с усами, красный плащ, предмет у плеча.
+Файл: 4.09 МБ, 6469 треуг., 1 меш, 1 материал, текстура цвет PNG 2048.
+Кости: 24 (Hips…), ось вперёд +Z, корень Armature масштаб 0.01.
+Клипы: Combat_Stance 1.7с, Thrust_Slash 3.03с, Over_Shoulder_Throw 4.33с, Block1 3.5с, Charged_Spell_Cast 2.7с, Hit_Reaction 1.67с, dying_backwards 2.23с, walking_man 1.07с, running 0.67с

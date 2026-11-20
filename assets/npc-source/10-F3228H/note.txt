@@ -1,0 +1,8 @@
+ARENA-ART-004 — исходник Meshy (не для рантайма, оптимизация на шаге 2).
+Ссылка: https://www.meshy.ai/s/F3228H
+Модель Meshy (image-to-3d): 01a1e9aa-e282-7554-84d6-f43c3c82f41e
+Риг Meshy: 01a1f868-0e1e-75cd-8cf6-c6a744c9a44c
+Внешность: мужчина в шлеме-капеллине, стёганая одежда.
+Файл: 4.81 МБ, 7283 треуг., 1 меш, 1 материал, текстура цвет PNG 2048.
+Кости: 24 (Hips…), ось вперёд +Z, корень Armature масштаб 0.01.
+Клипы: Combat_Stance 1.7с, Thrust_Slash 3.03с, Over_Shoulder_Throw 4.33с, Block1 3.5с, Charged_Spell_Cast 2.7с, Hit_Reaction 1.67с, dying_backwards 2.23с, walking_man 1.07с, running 0.67с

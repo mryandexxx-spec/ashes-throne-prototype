@@ -44,7 +44,9 @@ const CombatEnvironment006=(()=>{
   [1300,350,328],[1400,366,348],[1500,386,364],[1560,398,366],[1600,426,352],[1672,430,352]
  ]);
  const GRID=Object.freeze({columns:64,side:6,far:6,wall:8,floor:40,margin:6});
- const FLAG=/(?:^|[?&])environment=env3d(?:&|$)/;
+ // ARENA-ENV-006C: the 3D terrace is the default arena (owner, 20.11.2026). ?environment=env2d
+ // returns the flat ENV-005 picture; env017/env010 keep their own legacy arenas.
+ const OPT_OUT=/(?:^|[?&])environment=(?:env2d|env017|env010)(?:&|$)/;
  // ENV-006B. Mask atlas: same UV layout as the projection texture at half resolution.
  // R = shade map S (lit tile = 1), G = leaf-shade weight, B = motion weight
  // (mist above image y=MOTION_SPLIT_Y, flower sway below it; the zones never overlap).
@@ -60,11 +62,11 @@ const CombatEnvironment006=(()=>{
  });
  // Amplitudes in painting px (x0.505 on the 844x390 reference screen).
  const ANIM=Object.freeze({
-  leafAmplitude:7,      // max shade offset ≈ 3.5 screen px
+  leafAmplitude:12,     // max shade offset ≈ 6 screen px (ENV-006C: ×1.7, owner asked for visible motion)
   leafRatio:Object.freeze([.45,2.2]),
-  mistSweep:20,mistSpeed:.1,   // spray travels 20 px per 10 s cycle
-  mistWisps:.06,               // ± brightness of the drifting wisps
-  flowerAmplitude:3,
+  mistSweep:34,mistSpeed:.1,   // spray travels 34 px per 10 s cycle
+  mistWisps:.1,                // ± brightness of the drifting wisps
+  flowerAmplitude:5,
   maxStepMs:100          // clamp: no jump after a stalled frame
  });
 
@@ -173,7 +175,7 @@ const CombatEnvironment006=(()=>{
   return {positions,uvs,indices,vertices:positions.length/3,triangles:indices.length/3,camera:cam};
  }
 
- const enabled=search=>FLAG.test(String(search||""));
+ const enabled=search=>!OPT_OUT.test(String(search||""));
  function supported(B){return !!(B?.Mesh&&B.VertexData&&B.StandardMaterial&&B.Texture&&B.Color3);}
  function animationSupported(B){return !!B?.ShaderMaterial;}
 

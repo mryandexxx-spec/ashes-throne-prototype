@@ -8,10 +8,10 @@ const E=require("../combat-environment-006.js");
 const V=require("../arena-stage-view.js");
 const read=f=>fs.readFileSync(f,"utf8");
 
-test("flag: only ?environment=env3d turns the experiment on",()=>{
- assert.equal(E.enabled("?environment=env3d"),true);
- assert.equal(E.enabled("?x=1&environment=env3d&y=2"),true);
- for(const q of ["","?environment=env017","?environment=env010","?environment=env3dx","?environment=concept"])
+test("ENV-006C: 3D arena is the default; env2d/env017/env010 opt out",()=>{
+ for(const q of ["","?environment=env3d","?x=1&environment=env3d&y=2","?environment=env2dx","?networkPilot=1"])
+  assert.equal(E.enabled(q),true,q);
+ for(const q of ["?environment=env2d","?x=1&environment=env2d","?environment=env017","?environment=env010"])
   assert.equal(E.enabled(q),false,q);
 });
 
@@ -98,18 +98,18 @@ test("game wiring: flag-only, built on battle entry, disposed on exit; 2D stays 
  // ENV-005 behaviour is untouched: transparent canvas + CSS art (also the 3D loading fallback).
  assert.ok(game.includes("!/(?:^|[?&])environment=(?:env017|env010)(?:&|$)/.test(location.search)"));
  assert.match(game,/alpha:ENV022_CONCEPT_PREVIEW/);
- const at=html.indexOf('src="combat-environment-006.js?v=0.3.216"');
- assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.216"'));
+ const at=html.indexOf('src="combat-environment-006.js?v=0.3.217"');
+ assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.217"'));
  const src=read("combat-environment-006.js");
  assert.match(src,/isPickable=false/);
  assert.ok(!/ShadowGenerator|PostProcess|DefaultRenderingPipeline/.test(src),"no shadow map, no post-process");
 });
 
-test("build label v0.3.216 · ASSETLOAD001",()=>{
+test("build label v0.3.217 · ARENAENV006C",()=>{
  const pkg=JSON.parse(read("package.json")),html=read("index.html");
- assert.equal(pkg.version,"0.3.216");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.216 · ASSETLOAD001'));
- assert.ok(html.includes('src="game.js?v=0.3.216"'));
+ assert.equal(pkg.version,"0.3.217");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.217 · ARENAENV006C'));
+ assert.ok(html.includes('src="game.js?v=0.3.217"'));
  assert.ok(!html.includes("?v=0.3.214"));
  assert.ok(pkg.scripts.test.includes("node --check combat-environment-006.js"));
 });

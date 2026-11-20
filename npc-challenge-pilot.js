@@ -67,11 +67,14 @@ const NpcChallengePilot=(()=>{
    ])])
   }),
   // N-02 escalates from two harassers to a guarded field medic.
+  // ARENA-ART-004G (owner, variant A): the first harasser is a sarkh land
+  // courier instead of the ridge slinger. The instance id, HP and protection
+  // stay, so saved N-02 trackers keep matching.
   "N-02":Object.freeze({
    id:"N-02",kind:"onslaught",label:"NPC-ПРОБА · смена караула",
    encounterTag:"noncanonical-demo-training",
    enemyIds:Object.freeze([
-    unit("npc-ridge-slinger","npc-n02-slinger",60,5),
+    unit("npc-sarkh-land-courier","npc-n02-slinger",60,5),
     unit("npc-route-signaller","npc-n02-signaller",52,4)
    ]),
    priorityId:null,

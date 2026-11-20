@@ -93,8 +93,9 @@ test("007: exact T-04/N-04 rosters and original v1 contracts",()=>{
   "npc-n04-interceptor","npc-n04-slinger"]);
  assert.equal(P.visuals().length,27);
  assert.equal(new Set(P.visuals().map(x=>x.id)).size,27);
- assert.ok(P.visuals().every(x=>x.originRegionId==="gardens-over-abyss"&&
-  x.speciesId==="human"&&x.factionId===null));
+ assert.ok(P.visuals().every(x=>x.factionId===null&&(x.id==="npc-n02-slinger"?
+  x.speciesId==="sarkh"&&x.originRegionId==="changing-rivers": // ARENA-ART-004G
+  x.originRegionId==="gardens-over-abyss"&&x.speciesId==="human")));
  assert.equal(Q.KEY,"ashes-throne.challenges.v1");
  assert.equal(Q.VERSION,1);
  assert.equal(Q.get("T-04").priorityId,"shade-2");

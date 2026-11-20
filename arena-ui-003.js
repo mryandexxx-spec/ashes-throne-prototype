@@ -90,7 +90,8 @@ const ArenaUI003=(()=>{
   return String(text).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  }
  function initials(name){
-  const words=String(name||"?").split(/\s+/).filter(Boolean);
+  // Words with a letter only: "Сарх — сухопутный курьер" -> "СС", not "С—".
+  const words=String(name||"?").split(/\s+/).filter(w=>/\p{L}/u.test(w));
   return (words.length>1?words[0][0]+words[1][0]:words[0]?.slice(0,2)||"?").toUpperCase();
  }
  function portrait(fighter){

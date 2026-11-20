@@ -48,7 +48,11 @@ async function run(name,type,[W,H]){
   for(const k of ["menu","log","auto","speed"])assert.ok(z[k].w>=44&&z[k].h>=44,k+" ≥44");
   for(const k of ["basic","special"])assert.ok(z[k].w>=56&&z[k].h>=56,k+" ≥56");
   for(const [k,v] of Object.entries(z))if(v&&v.w)assert.ok(v.x>=0&&v.y>=0&&v.r<=layout.vw+1&&v.b<=layout.vh+1,k+" on screen");
-  assert.ok(Math.abs(z.queue.x+z.queue.w/2-layout.vw/2)<4,"queue is centred at the top");
+  // ARENA-ART-004G: the queue is a vertical column at the left, under the top row;
+  // menu, log, Автобой and 1× share the top-left row.
+  assert.ok(z.queue.x<layout.vw*0.12&&z.queue.h>z.queue.w*2,"queue is a vertical column at the left");
+  assert.ok(z.queue.y>=z.menu.b&&z.queue.b<=z.hero.y,"queue between the top row and the hero");
+  for(const k of ["log","auto","speed"])assert.ok(Math.abs(z[k].y-z.menu.y)<2&&z[k].x>z.menu.x&&z[k].r<layout.vw/2,k+" in the top-left row");
   assert.ok(z.hero.x<layout.vw/3&&z.hero.b>layout.vh*0.75,"hero bottom-left");
   assert.ok(z.abilities.r>layout.vw*0.8&&z.abilities.b>layout.vh*0.75,"abilities bottom-right");
   assert.equal(layout.queue[0],layout.actor,"queue starts with the acting hero");

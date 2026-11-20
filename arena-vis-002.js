@@ -4,7 +4,8 @@
    - hit-stop 60-90 ms (the animation clock pauses, the frame keeps rendering);
    - short camera shake on powerful / critical blows;
    - white flash of the target (~80 ms, Babylon overlay, no material changes);
-   - camera push-in on powerful abilities, off in 4x autobattle.
+   - no camera push-in: removed by the owner in ARENA-ART-004G (it was on
+     powerful abilities); the camera only shakes.
    Presentation only: reads cues from BattleAnimation, never the rules engine.
    No render loop, timers or network. Every part is optional and fail-safe. */
 const ArenaVis002=(()=>{
@@ -16,10 +17,6 @@ const ArenaVis002=(()=>{
   FLASH_ALPHA:.75,
   SHAKE_MS:200,
   SHAKE_PX:7,            // peak screen offset, CSS-independent (camera units below)
-  PUSH_IN_MS:400,
-  PUSH_OUT_MS:400,
-  PUSH_FACTOR:.84,       // camera radius during a powerful ability
-  PUSH_MAX_HOLD_MS:2600, // safety: never stay zoomed in
   FLOAT_MS:950,
   FLOAT_RISE_PX:34,
   MAX_FLOATERS:10,
@@ -55,7 +52,6 @@ const ArenaVis002=(()=>{
  function createController(options={}){
   const reduced=options.reducedMotion===true;
   let stopMs=0,shakeMs=0,shakeTotal=0,seed=9137;
-  const push={phase:"idle",t:0,hold:0};
   const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296*2-1;};
   function hitStop(ms){if(Number.isFinite(ms)&&ms>0)stopMs=Math.max(stopMs,ms);}
   // Real frame time in, animation time out: the clock pauses during hit-stop.
@@ -65,18 +61,7 @@ const ArenaVis002=(()=>{
    const used=Math.min(dt,stopMs);stopMs-=used;return dt-used;
   }
   function shake(ms){if(!reduced&&ms>0){shakeMs=Math.max(shakeMs,ms);shakeTotal=Math.max(shakeTotal,shakeMs);}}
-  function startPush(){
-   if(reduced)return false;
-   if(push.phase==="idle"||push.phase==="out"){
-    // Resume from the current zoom when a new powerful action interrupts a zoom-out.
-    const factor=push.phase==="out"?1-push.t/C.PUSH_OUT_MS:0;
-    push.phase="in";push.t=factor*C.PUSH_IN_MS;
-   }
-   push.hold=0;return true;
-  }
-  const ease=u=>u*u*(3-2*u);
-  // holding: the powerful action batch is still being drawn.
-  function step(dt,holding){
+  function step(dt){
    dt=Number.isFinite(dt)&&dt>0?Math.min(dt,100):0;
    let ox=0,oy=0;
    if(shakeMs>0){
@@ -85,21 +70,10 @@ const ArenaVis002=(()=>{
     ox=rand()*C.SHAKE_PX*k;oy=rand()*C.SHAKE_PX*.6*k;
     if(shakeMs===0)shakeTotal=0;
    }
-   if(push.phase==="in"){
-    push.t+=dt;if(push.t>=C.PUSH_IN_MS){push.t=0;push.phase="hold";}
-   }else if(push.phase==="hold"){
-    push.hold+=dt;
-    if(!holding||push.hold>=C.PUSH_MAX_HOLD_MS){push.phase="out";push.t=0;}
-   }else if(push.phase==="out"){
-    push.t+=dt;if(push.t>=C.PUSH_OUT_MS){push.t=0;push.phase="idle";}
-   }
-   const amount=push.phase==="in"?ease(push.t/C.PUSH_IN_MS):push.phase==="hold"?1:
-    push.phase==="out"?1-ease(push.t/C.PUSH_OUT_MS):0;
-   return {offsetX:ox,offsetY:oy,radiusFactor:1-(1-C.PUSH_FACTOR)*amount,pushPhase:push.phase};
+   return {offsetX:ox,offsetY:oy};
   }
-  function reset(){stopMs=0;shakeMs=0;shakeTotal=0;push.phase="idle";push.t=0;push.hold=0;}
-  return Object.freeze({hitStop,animationDelta,shake,startPush,step,reset,
-   stopping:()=>stopMs>0,pushPhase:()=>push.phase});
+  function reset(){stopMs=0;shakeMs=0;shakeTotal=0;}
+  return Object.freeze({hitStop,animationDelta,shake,step,reset,stopping:()=>stopMs>0});
  }
  // DOM floaters: fixed pool, transform/opacity only, positions computed in JS
  // so they follow battle speed and hit-stop. No layout reads per frame.
@@ -210,15 +184,14 @@ const ArenaVis002=(()=>{
   const controller=createController({reducedMotion:reduced});
   const floaters=createFloaters(options.container||null,options.document||null,{reducedMotion:reduced,floor:options.floor});
   const flash=createFlash(B);
-  let base=null; // camera values owned by the player (pinch zoom) while we push in
-  // ctx: {multiplier, cameraMotion:boolean, project(id)->{x,y}|null, meshesFor(id)->Mesh[]}
+  // ctx: {multiplier, project(id)->{x,y}|null, meshesFor(id)->Mesh[]}
   function handle(cues,ctx={}){
    if(!Array.isArray(cues)||!cues.length)return;
    const multiplier=Number.isFinite(ctx.multiplier)&&ctx.multiplier>0?ctx.multiplier:1;
    const scale=1/Math.sqrt(multiplier); // 4x autobattle keeps the beat but shorter
    for(const cue of cues){
     if(!cue||typeof cue.id!=="string")continue;
-    if(cue.kind==="power"){if(ctx.cameraMotion!==false)controller.startPush();continue;}
+    if(cue.kind==="power")continue; // ARENA-ART-004G: no camera push-in
     const specs=floatSpecs(cue);
     if(specs.length&&typeof ctx.project==="function")floaters.spawn(cue.id,specs,ctx.project(cue.id));
     if(cue.kind==="damage"){
@@ -229,19 +202,11 @@ const ArenaVis002=(()=>{
     }
    }
   }
-  // Applies shake / push to an ArcRotateCamera; restores exact values afterwards.
-  function frame(dt,camera,holding){
-   const s=controller.step(dt,holding);
+  // Applies the shake to an ArcRotateCamera; the radius is never touched.
+  function frame(dt,camera){
+   const s=controller.step(dt);
    floaters.tick(dt);flash.tick(dt);
    if(!camera)return s;
-   const zooming=s.radiusFactor<1;
-   if(zooming&&!base)base={radius:camera.radius,lower:camera.lowerRadiusLimit};
-   if(base){
-    const r=base.radius*s.radiusFactor;
-    if(Number.isFinite(camera.lowerRadiusLimit))camera.lowerRadiusLimit=Math.min(base.lower,r);
-    camera.radius=r;
-    if(!zooming){camera.radius=base.radius;camera.lowerRadiusLimit=base.lower;base=null;}
-   }
    const off=camera.targetScreenOffset;
    // View-space units: at radius 7.6 and fov .85 one CSS pixel of a 390 px frame is ~.018.
    if(off){off.x=s.offsetX*.017;off.y=s.offsetY*.017;}
@@ -249,8 +214,6 @@ const ArenaVis002=(()=>{
   }
   function clear(camera){
    controller.reset();floaters.clear();flash.clear();
-   if(camera&&base){camera.radius=base.radius;camera.lowerRadiusLimit=base.lower;}
-   base=null;
    if(camera?.targetScreenOffset){camera.targetScreenOffset.x=0;camera.targetScreenOffset.y=0;}
   }
   return Object.freeze({handle,frame,clear,animationDelta:dt=>controller.animationDelta(dt),

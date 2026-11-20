@@ -47,34 +47,23 @@ test("hit-stop pauses only the animation clock, 60-90 ms, overlapping hits do no
  assert.equal(c.animationDelta(-1),0);assert.equal(c.animationDelta(NaN),0);
 });
 
-test("shake decays to zero; push-in goes in, holds while the action draws, returns exactly",()=>{
+test("shake decays to zero; there is no camera push-in (ARENA-ART-004G)",()=>{
  const c=Vis.createController();
  c.shake(C.SHAKE_MS);
- const first=c.step(16,false);
+ const first=c.step(16);
  assert.ok(Math.abs(first.offsetX)>0||Math.abs(first.offsetY)>0);
  assert.ok(Math.abs(first.offsetX)<=C.SHAKE_PX);
- let s;for(let t=0;t<C.SHAKE_MS;t+=16)s=c.step(16,false);
+ let s;for(let t=0;t<C.SHAKE_MS;t+=16)s=c.step(16);
  assert.equal(s.offsetX,0);assert.equal(s.offsetY,0);
- assert.equal(c.startPush(),true);
- s=c.step(C.PUSH_IN_MS/2,true);
- assert.ok(s.radiusFactor<1&&s.radiusFactor>C.PUSH_FACTOR,"easing in");
- for(let t=0;t<C.PUSH_IN_MS;t+=50)s=c.step(50,true);
- assert.equal(s.radiusFactor,C.PUSH_FACTOR);assert.equal(s.pushPhase,"hold");
- for(let i=0;i<10;i++)s=c.step(50,true);
- assert.equal(s.radiusFactor,C.PUSH_FACTOR,"holds while the powerful action is being drawn");
- s=c.step(16,false);assert.equal(s.pushPhase,"out");
- for(let t=0;t<=C.PUSH_OUT_MS;t+=50)s=c.step(50,false);
- assert.equal(s.radiusFactor,1);assert.equal(s.pushPhase,"idle");
- // Safety: a stuck "holding" flag cannot keep the camera zoomed in.
- c.startPush();for(let t=0;t<C.PUSH_IN_MS+C.PUSH_MAX_HOLD_MS+C.PUSH_OUT_MS+200;t+=50)s=c.step(50,true);
- assert.equal(s.radiusFactor,1);
+ assert.equal(c.startPush,undefined,"push-in removed by the owner");
+ assert.equal(Object.keys(C).some(k=>/^PUSH_/.test(k)),false);
 });
 
-test("prefers-reduced-motion: no shake, no push-in; numbers and hit-stop remain",()=>{
+test("prefers-reduced-motion: no shake; numbers and hit-stop remain",()=>{
  const c=Vis.createController({reducedMotion:true});
- c.shake(200);assert.equal(c.startPush(),false);
- const s=c.step(16,true);
- assert.equal(s.offsetX,0);assert.equal(s.radiusFactor,1);
+ c.shake(200);
+ const s=c.step(16);
+ assert.equal(s.offsetX,0);
  c.hitStop(65);assert.equal(c.animationDelta(16),0);
 });
 
@@ -124,38 +113,33 @@ test("white flash uses per-mesh overlay for ~80 ms and restores the meshes",()=>
  flash.start("ves",meshes);flash.clear();assert.ok(meshes.every(m=>!m.renderOverlay));
 });
 
-test("controller wiring: damage => hit-stop + flash + number; power push respects 4x autobattle",()=>{
+test("controller wiring: damage => hit-stop + flash + number; powerful blow shakes, radius untouched",()=>{
  class Color3{constructor(r,g,b){Object.assign(this,{r,g,b});}}
  const {container,document}=fakeDom();
  const fx=Vis.create({Color3},{container,document});
  const camera={radius:7.6,lowerRadiusLimit:6.6,targetScreenOffset:{x:0,y:0}};
  const body={renderOverlay:false};
- const ctx={multiplier:1,cameraMotion:true,project:()=>({x:200,y:100}),meshesFor:id=>id==="ves"?[body]:[]};
+ const ctx={multiplier:1,project:()=>({x:200,y:100}),meshesFor:id=>id==="ves"?[body]:[]};
  fx.handle([{id:"ves",kind:"damage",amount:26}],ctx);
  assert.equal(body.renderOverlay,true);
  assert.equal(fx.animationDelta(16),0,"hit-stop started");
  assert.equal(container.children.length,1);
  fx.frame(16,camera,false);
  assert.equal(camera.targetScreenOffset.x,0,"ordinary hit: no shake");
- // Powerful blow: push-in + shake.
+ // Powerful blow: shake only. ARENA-ART-004G: the camera never pushes in.
  fx.handle([{id:"ren",kind:"power"},{id:"ves",kind:"damage",amount:42,power:true}],ctx);
- let s;for(let i=0;i<30;i++)s=fx.frame(16,camera,true);
- assert.ok(camera.radius<7.6&&camera.radius>=7.6*C.PUSH_FACTOR-1e-9);
- assert.ok(camera.lowerRadiusLimit<=camera.radius,"pinch limit cannot clamp the push");
- for(let i=0;i<40;i++)fx.frame(16,camera,false);
- assert.equal(camera.radius,7.6);assert.equal(camera.lowerRadiusLimit,6.6);
+ let shook=false;for(let i=0;i<30;i++){fx.frame(16,camera);shook=shook||camera.targetScreenOffset.x!==0;
+  assert.equal(camera.radius,7.6);assert.equal(camera.lowerRadiusLimit,6.6);}
+ assert.ok(shook,"powerful blow shakes");
+ for(let i=0;i<40;i++)fx.frame(16,camera);
  assert.equal(camera.targetScreenOffset.x,0);assert.equal(camera.targetScreenOffset.y,0);
- // 4x autobattle: game passes cameraMotion:false; push never starts. Hit-stop is shorter.
- const fast=Vis.create({Color3},{container,document});
- fast.handle([{id:"ren",kind:"power"},{id:"ves",kind:"damage",amount:42,power:true}],{...ctx,multiplier:4,cameraMotion:false});
- for(let i=0;i<20;i++)fast.frame(16,camera,true);
- assert.equal(camera.radius,7.6);
+ // 4x autobattle: hit-stop is shorter.
  const fastStop=Vis.create({Color3},{});fastStop.handle([{id:"ves",kind:"damage",amount:1}],{multiplier:4});
  let paused=0;for(let i=0;i<10;i++)paused+=16-fastStop.animationDelta(16);
  assert.ok(paused<C.HIT_STOP_MS&&paused>=C.HIT_STOP_MS/2-1,"4x keeps the beat but shorter");
- // clear() mid-push restores the camera.
- fx.handle([{id:"ren",kind:"power"}],ctx);for(let i=0;i<10;i++)fx.frame(16,camera,true);
- fx.clear(camera);assert.equal(camera.radius,7.6);assert.equal(camera.lowerRadiusLimit,6.6);
+ // clear() mid-shake returns the offset to zero.
+ fx.handle([{id:"ves",kind:"damage",amount:42,power:true}],ctx);fx.frame(16,camera);
+ fx.clear(camera);assert.equal(camera.radius,7.6);assert.equal(camera.targetScreenOffset.x,0);
 });
 
 test("BattleAnimation emits feedback at the moment each blow is drawn",()=>{
@@ -210,8 +194,8 @@ test("ARENA-VIS-002 is presentation only and wired into the existing frame",()=>
  assert.doesNotMatch(src,/CombatCore|state\.fighters|runRenderLoop|setInterval|setTimeout|requestAnimationFrame|\bfetch\(|XMLHttpRequest|Math\.random|innerHTML/);
  assert.match(game,/const animationDt=arenaFeedback\?arenaFeedback\.animationDelta\(dt\):dt;\n BattleAnimation\.tick\(animationDt,BattleSpeed\.multiplier\(\)\);/);
  assert.match(game,/BattleAnimation\.drainFeedback\(\)/);
- assert.match(game,/cameraMotion:!\(autoBattle&&BattleSpeed\.get\(\)>=4\)/,"no push-in in 4x autobattle");
- assert.match(game,/arenaFeedback\.frame\(dt,arenaCamera,visualActionPending\(\)\)/);
+ assert.doesNotMatch(game,/cameraMotion/,"ARENA-ART-004G: no push-in at any speed");
+ assert.match(game,/arenaFeedback\.frame\(dt,arenaCamera\)/);
  assert.match(game,/arenaFeedback\?\.clear\(arenaCamera\)/);
  assert.match(game,/prefers-reduced-motion: reduce\)"\)\.matches;\n   arenaFeedback=ArenaVis002\.create/);
  assert.match(game,/combatVisual007\.tick\(dt,BattleSpeed\.multiplier\(\)\)/,"sparks keep real time during hit-stop");
@@ -222,6 +206,6 @@ test("ARENA-VIS-002 is presentation only and wired into the existing frame",()=>
  assert.match(css,/\.battle-screen \.arena-floaters\{[^}]*pointer-events:none/);
  assert.match(css,/\.battle-screen \.arena-floater\.crit\{[^}]*font-size:31px/);
  assert.ok(pkg.scripts.test.includes("node --check arena-vis-002.js"));
- assert.equal(pkg.version,"0.3.210");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.210 · ARENAART004F'));
+ assert.equal(pkg.version,"0.3.211");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.211 · ARENAART004G'));
 });

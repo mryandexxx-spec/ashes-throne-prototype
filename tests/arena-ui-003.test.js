@@ -149,11 +149,11 @@ test("ARENAUI003A: CSS — 44pt targets, ≥56px round abilities, safe-area, sco
 });
 
 test("ARENAUI003A: build version and script order",()=>{
- assert.equal(pkg.version,"0.3.206");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.206 · ARENAUI003B'));
+ assert.equal(pkg.version,"0.3.207");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.207 · ARENAART004C'));
  assert.ok(pkg.scripts.test.includes("node --check arena-ui-003.js"));
- const at=html.indexOf('src="arena-ui-003.js?v=0.3.206"');
- assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.206"'));
+ const at=html.indexOf('src="arena-ui-003.js?v=0.3.207"');
+ assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.207"'));
 });
 
 // ---------------- ARENA-UI-003B: labels and numbers ----------------

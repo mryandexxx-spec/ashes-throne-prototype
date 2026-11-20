@@ -58,6 +58,8 @@ let combatVisual007=null; // One optional visual layer per Babylon Scene.
 let arenaFeedback=null; // ARENA-VIS-002: numbers, hit-stop, flash, camera beat.
 let renGlbRuntime=null; // Default Ren GLB visual, no gameplay ownership.
 let nadaGlbRuntime=null; // Optional Nada GLB only when she is in the party.
+// ARENA-ART-004C: enemy GLBs by fighter id; only for encountered NPCs with a model.
+const npcGlbRuntimes=new Map();
 let lioraGlbRuntime=null; // Optional Liora GLB (shield baked into the rig), only in party.
 let savaGlbRuntime=null; // SAVA3D001: optional skinned Sava, no gameplay ownership.
 let sava3dDisabledScene=null; // SAVA3D002: optional 3D failures must not block battle startup.
@@ -1306,6 +1308,7 @@ function showScreen(id){
    if(lioraGlbRuntime){lioraGlbRuntime.dispose();lioraGlbRuntime=null;}
    if(savaGlbRuntime){savaGlbRuntime.dispose();savaGlbRuntime=null;}
    if(artGlbRuntime){artGlbRuntime.dispose();artGlbRuntime=null;}
+   disposeNpcGlbRuntimes();
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
    scene=undefined;engine=undefined;arenaCamera=null;meshes={};encounterNpcVisualIds.clear();indicatorNodes={};combatVisual007=null;arenaFeedback=null;renderLoopRunning=false;
@@ -3778,7 +3781,10 @@ function renderBattleFrame(){
   const targetSlot=target?opponents.findIndex(f=>f.id===target.id):-1;
   const targetPosition=targetSlot>=0?formationPosition(target.side,targetSlot,opponents.length):null;
   // NADAANIM001: Nada is an archer — she shoots from her place, no melee lunge.
-  const approach=(h.id==="nada"||h.id==="sava")?{x:0,z:0}:BattleAnimation.approach(activity,origin,targetPosition);
+  const npcGlb=npcGlbRuntimes.get(h.id)||null;
+  // ARENA-ART-004C: throws and casts of enemy models are rooted too.
+  const rooted=h.id==="nada"||h.id==="sava"||(npcGlb?.isReady&&AnimationProfiles.resolve(h.id,activity.slot)?.rooted===true);
+  const approach=rooted?{x:0,z:0}:BattleAnimation.approach(activity,origin,targetPosition);
   const offset=pose.x*(h.side==="ally"?1:-1);
   // ARENA-UI-003B: a fighter who ran out to strike hides its label until back home.
   visual.av003Away=Math.hypot(approach.x||0,approach.z||0)>.45;
@@ -3789,8 +3795,8 @@ function renderBattleFrame(){
   if(visual.body.rotation)visual.body.rotation.z=pose.tilt;
   if(visual.head.rotation)visual.head.rotation.z=pose.tilt;
   // MOBILEQA001: GLB heroes rest three-quarter to the camera, facing the enemy lane.
-  if((h.id==="ren"&&renGlbRuntime)||(h.id==="nada"&&nadaGlbRuntime)||(h.id==="liora"&&lioraGlbRuntime)||(h.id==="sava"&&savaGlbRuntime)||(h.id==="art"&&artGlbRuntime)){
-   const nadaAim=(h.id==="nada"||h.id==="sava")&&targetPosition&&["basic","special","powerful"].includes(activity.slot);
+  if((h.id==="ren"&&renGlbRuntime)||(h.id==="nada"&&nadaGlbRuntime)||(h.id==="liora"&&lioraGlbRuntime)||(h.id==="sava"&&savaGlbRuntime)||(h.id==="art"&&artGlbRuntime)||npcGlb?.isReady){
+   const nadaAim=(h.id==="nada"||h.id==="sava"||!!npcGlb)&&targetPosition&&["basic","special","powerful"].includes(activity.slot);
    if(nadaAim&&visual.body.rotation){
     // NADAANIM001: turn toward the target while shooting, same smoothing as the rest pose.
     const aim=-Math.atan2(targetPosition.z-origin.z,targetPosition.x-origin.x),cur=visual.body.rotation.y||0;
@@ -3806,6 +3812,7 @@ function renderBattleFrame(){
   if(h.id==="liora"&&lioraGlbRuntime)lioraGlbRuntime.update(activity);
   if(h.id==="sava"&&savaGlbRuntime)savaGlbRuntime.update(activity);
   if(h.id==="art"&&artGlbRuntime)artGlbRuntime.update(activity);
+  if(npcGlb)npcGlb.update(activity);
   if(h.id==="ren"&&renGlbRuntime){
    if(visual.body.rotation&&targetPosition&&activity.plan){
     const yaw=-Math.atan2(targetPosition.z-origin.z,targetPosition.x-origin.x);
@@ -3978,7 +3985,17 @@ function ensureNada3D(){
 }
 // NPCROLLOUT001: create only encountered NPC capsules. A whole eight-stage
 // catalog at once would allocate 27*3 meshes plus unused materials on iPhone.
+function disposeNpcGlbRuntimes(){
+ for(const [id,runtime] of npcGlbRuntimes){
+  try{runtime.dispose();}catch(error){console.warn("ARENA-ART-004C: dispose",error);}
+  if(typeof AnimationProfiles!=="undefined")AnimationProfiles.unlink?.(id);
+ }
+ npcGlbRuntimes.clear();
+}
 function clearEncounterNpcVisuals(){
+ // GLB first: disposing the capsule would take the model root but leak its
+ // skeleton and animation groups.
+ disposeNpcGlbRuntimes();
  for(const id of encounterNpcVisualIds){
   const visual=meshes[id];
   if(!visual)continue;
@@ -4008,7 +4025,24 @@ function ensureEncounterNpcVisuals(fighters){
   for(const part of [body,head,base])part.metadata={fighterId:f.id};
   meshes[f.id]={body,head,base};
   encounterNpcVisualIds.add(f.id);
+  ensureEncounterNpcModel(f,meshes[f.id]);
  }
+}
+// ARENA-ART-004C: the capsule above stays as fallback; the GLB hides it once loaded.
+// No manifest entry (sarkh) -> create() returns null and the capsule is the visual.
+function ensureEncounterNpcModel(f,visual){
+ if(typeof NpcGlbRuntime==="undefined"||npcGlbRuntimes.has(f.id))return;
+ let runtime=null;
+ try{
+  runtime=NpcGlbRuntime.create(BABYLON,scene,visual,{archetypeId:f.archetypeId,fighterId:f.id,
+   onStatus:(kind,message)=>{if(kind==="error")console.warn("ARENA-ART-004C: "+message,f.archetypeId);}});
+ }catch(error){console.warn("ARENA-ART-004C: enemy model disabled",f.archetypeId,error);}
+ if(!runtime)return;
+ npcGlbRuntimes.set(f.id,runtime);
+ runtime.ready.then(ok=>{
+  // Profiles (clip-length timing) apply only while the model is shown.
+  if(ok&&npcGlbRuntimes.get(f.id)===runtime)AnimationProfiles.link(f.id,f.archetypeId);
+ });
 }
 // ARENA-VIS-001: soft contact shadow + ring; the old disc stays as a fallback.
 function arenaVisReady(){return typeof ArenaVis001!=="undefined"&&ArenaVis001.supported(BABYLON);}

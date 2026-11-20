@@ -1,0 +1,42 @@
+name: Enemy GLB runtime browser (ARENA-ART-004C)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'dev/assets/models/npc-*.glb'
+      - 'dev/src/assets/npc-models.js'
+      - 'npc-glb-runtime.js'
+      - 'animation-profiles.js'
+      - 'battle-animation.js'
+      - 'game.js'
+      - 'index.html'
+      - 'tests/npc-glb-004c-browser.cjs'
+      - '.github/workflows/npc-glb-004c-browser.yml'
+  workflow_dispatch:
+jobs:
+  npc-glb-chromium-webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Enemy models load, fight, win and reopen without leaks
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/npc-server.log 2>&1 &
+          sleep 2
+          node tests/npc-glb-004c-browser.cjs
+          NPC_BROWSER=webkit node tests/npc-glb-004c-browser.cjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arena-art-004c-browser
+          path: artifacts/npc-glb-004c
+          if-no-files-found: ignore

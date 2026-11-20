@@ -83,6 +83,48 @@ const AnimationProfiles=(()=>{
   hit:Object.freeze({kind:"hit",durationMs:1150,amplitude:.12}),
   death:Object.freeze({kind:"death",durationMs:2200,amplitude:0})
  }));
+ // ARENA-ART-004C: enemy GLB profiles by archetypeId (dev/src/assets/npc-models.js).
+ // Shared Meshy clip lengths: Combat_Stance 1.70s, Thrust_Slash 3.03s, Over_Shoulder_Throw 4.33s,
+ // Crouch_Charge_and_Throw 7.70s, Triple_Combo_Attack 4.37s, Block1 3.50s,
+ // Charged_Spell_Cast 2.70s, Hit_Reaction 1.67s, dying_backwards 2.23s.
+ // Durations are defaults that keep battle pace (clips run 1.3-3x faster than authored);
+ // contactFraction and clip windows are measured in ARENA-ART-004D.
+ // rooted: thrown/cast from the fighter's place, no visual approach (like Nada's shots).
+ // Skinned bodies must not hop or tilt under guard/ward/death: amplitude 0 there.
+ // Battle fighters carry instance ids, so link(instanceId, archetypeId) maps them while
+ // the model is shown; a capsule fallback keeps the templates.
+ {
+  const idle=Object.freeze({kind:"idle",durationMs:1700,amplitude:0});
+  const slash=Object.freeze({kind:"lunge",durationMs:1600,amplitude:.55});
+  const combo=Object.freeze({kind:"lunge",durationMs:2200,amplitude:.55});
+  const throwShot=Object.freeze({kind:"lunge",durationMs:1800,amplitude:0,rooted:true});
+  const chargedThrow=Object.freeze({kind:"lunge",durationMs:2600,amplitude:0,rooted:true});
+  const block=Object.freeze({kind:"guard",durationMs:1300,amplitude:0});
+  const cast=Object.freeze({kind:"guard",durationMs:1500,amplitude:0});
+  const gesture=Object.freeze({kind:"lunge",durationMs:1500,amplitude:0,rooted:true});
+  const ward=Object.freeze({kind:"ward",durationMs:900,amplitude:0});
+  const hit=Object.freeze({kind:"hit",durationMs:800,amplitude:.18});
+  const death=Object.freeze({kind:"death",durationMs:2000,amplitude:0});
+  const common={idle,guard:block,ward,hit,death};
+  const tank=Object.freeze({...common,basic:slash,special:block,powerful:block});
+  const support=Object.freeze({...common,basic:slash,special:gesture,powerful:cast,guard:cast});
+  for(const [id,slots] of [
+   ["npc-pass-guard",tank],
+   ["npc-laun-ford-guard",tank],
+   ["npc-watch-captain",{...tank,powerful:combo}],
+   ["npc-trail-interceptor",{...common,basic:slash,special:slash,powerful:combo}],
+   ["npc-ridge-slinger",{...common,basic:throwShot,special:throwShot,powerful:chargedThrow}],
+   ["npc-field-medic",support],
+   ["npc-laun-physician",support],
+   ["npc-route-signaller",support]
+  ])overrides.set(id,Object.freeze({...slots}));
+ }
+ const links=new Map();
+ function link(instanceId,profileId){
+  if(typeof instanceId!=="string"||!instanceId||!overrides.has(profileId))return false;
+  links.set(instanceId,profileId);return true;
+ }
+ function unlink(instanceId){links.delete(instanceId);}
  function register(heroId,slots){
   if(typeof heroId!=="string"||!heroId.trim()||!slots||typeof slots!=="object"||Array.isArray(slots))
    throw Error("Invalid character animation profile");
@@ -103,10 +145,10 @@ const AnimationProfiles=(()=>{
  }
  function resolve(heroId,slot){
   if(!SLOTS.includes(slot))return null;
-  const custom=overrides.get(heroId)?.[slot];
+  const custom=(overrides.get(heroId)||overrides.get(links.get(heroId)))?.[slot];
   return custom||templates[slot];
  }
- function isCustom(heroId,slot){return !!overrides.get(heroId)?.[slot];}
- return Object.freeze({slots:SLOTS,register,resolve,isCustom});
+ function isCustom(heroId,slot){return !!(overrides.get(heroId)||overrides.get(links.get(heroId)))?.[slot];}
+ return Object.freeze({slots:SLOTS,register,resolve,isCustom,link,unlink});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=AnimationProfiles;

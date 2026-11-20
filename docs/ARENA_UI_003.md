@@ -40,6 +40,7 @@
 ### Проверки
 - Node: **852/852** (`npm test`).
 - Chromium (headless, программный WebGL): `arena-stage-real-heroes`, `arena-world-hud-browser`, `env010-realtime-browser` (автобой 4×, повтор), `ren-game-choreography-webgl`, Chromium-части `arena-vis-002-browser`, `lore-fs05-tactical-browser`, `npc-challenge-007-browser`. WebKit — только в GitHub CI.
+- Новый `tests/arena-ui-003-browser.cjs` (workflow `arena-ui-003-browser.yml`): в реальном бою 844×390 и 932×430 зоны HUD не пересекаются и не выходят за экран, нет горизонтальной прокрутки, кнопки ≥ 44 и ≥ 56 px, лента начинается с активного героя и сдвигается после настоящего нажатия, сворачивание запоминается, долгое нажатие показывает описание, перезарядка рисуется и затемняет иконку, нет запросов с ошибкой. Локально Chromium; WebKit (DPR 3) — в CI.
 - Кадры реального боя 844×390 и 932×430, DPR 2: `docs/evidence/arena-ui-003/` (01–03 — до, 11–18 — после).
 - **Физический iPhone Safari, FPS и нагрев не проверены.**
 

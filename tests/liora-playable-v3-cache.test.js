@@ -86,12 +86,13 @@ test("Liora GLB and caching are wired without shield assets",()=>{
  assert.match(main,/lioraGlbRuntime\.update\(activity\)/);
  assert.match(card,/liora-native-idle/);
  assert.match(index,/liora-glb-runtime\.js/);
- assert.match(sw,/liora-mobile-animated\.glb/);
- assert.match(sw,/2117776/);
- assert.match(sw,/liora-aeb64b8d/);
- assert.ok(client.includes('"liora-mobile-animated.glb":"liora"')); // third asset registration
- assert.match(client,/model-cache-sw\.js\?v=art3d001/);
- assert.match(index,/cache002-liora/);
+ // ASSETLOAD001: one manifest feeds the device cache and the loading bar.
+ const liora=require("../asset-manifest.js").get("hero:liora");
+ assert.equal(liora.url,"dev/assets/models/liora-mobile-animated.glb");
+ assert.equal(liora.bytes,2117776);
+ assert.match(sw,/importScripts\("asset-manifest\.js/);
+ assert.match(client,/model-cache-sw\.js/);
+ assert.match(index,/id="assetLoadDock"/);
  assert.doesNotMatch(runtime,/LioraShieldAttachment|LioraShieldAssets|liora-shield-mobile/);
  // LIORA-SHIELD-006: shield clips drive the combat slots; the shield mesh is part of the GLB.
  const LioraGlbRuntime=require("../liora-glb-runtime.js");

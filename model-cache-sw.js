@@ -1,131 +1,137 @@
-/* CACHE001 — persistent, versioned model-only cache for the browser RPG.
- * Never cache HTML, JS, player data or partial HTTP responses.
- * Bump CACHE_NAME when any GLB changes (RENOPT001, NADAOPT001, LIORAPLAY001, LIORA-SHIELD-006).
+/* ASSETLOAD001 — persistent device cache for every heavy game asset (3D models + arena art).
+ * The list lives in asset-manifest.js (generated from the real files). Never caches HTML,
+ * JS, player data, third-party or partial (Range) responses.
+ * Cache keys carry the file's sha256 prefix (url?rev=xxxxxxxx): a changed GLB gets a new key,
+ * old bytes are deleted on activate, and unchanged files survive updates without re-download.
+ * History: CACHE001 (persistent hero GLBs), CACHE002 (byte progress) — superseded here.
  */
 "use strict";
-const CACHE_PREFIX="ashes-models-";
-const CACHE_NAME=CACHE_PREFIX+"ren-a15fd00f_nada-4c8b29b8_liora-aeb64b8d_sava-f88842d6_art-c7a25c48_v1";
-const MODEL_PATHS=[
- "assets/ren-meshy-mixamo-animated.glb",
- "dev/assets/models/nada-mobile-animated.glb",
- "dev/assets/models/liora-mobile-animated.glb",
- "dev/assets/models/sava-mobile-animated.glb",
- "dev/assets/models/art-mobile-animated.glb"
-];
-const MODEL_URLS=MODEL_PATHS.map(path=>new URL(path,self.registration.scope).href);
+const SELF_REV=new URL(self.location.href).searchParams.get("rev")||"dev";
+importScripts("asset-manifest.js?rev="+encodeURIComponent(SELF_REV));
+const CACHE_NAME="ashes-assets-v1";
+const LEGACY_PREFIX="ashes-models-"; // CACHE001/002 caches: plain URL keys, hero GLBs only
+const SCOPE=self.registration.scope;
+const ENTRIES=AssetManifest.ASSETS.map(asset=>{
+ const url=new URL(asset.url,SCOPE).href;
+ return Object.freeze({...asset,absolute:url,key:url+"?rev="+asset.rev});
+});
+const BY_URL=new Map(ENTRIES.map(e=>[e.absolute,e]));
+const BY_ID=new Map(ENTRIES.map(e=>[e.id,e]));
 const inflight=new Map();
+const PARALLEL=3;
 
-function modelUrl(request){
+function entryFor(request){
  const url=new URL(request.url);
  if(url.origin!==self.location.origin||url.search||url.hash)return null;
- return MODEL_URLS.includes(url.href)?url.href:null;
+ return BY_URL.get(url.href)||null;
 }
-async function openCache(){return caches.open(CACHE_NAME);}
-async function getOrFetch(url){
- const cache=await openCache();
- const hit=await cache.match(url);
- if(hit)return {response:hit,persisted:Promise.resolve(true)};
- if(!inflight.has(url)){
+const openCache=()=>caches.open(CACHE_NAME);
+async function cached(entry){return (await (await openCache()).match(entry.key))||null;}
+// One network transfer per file, shared by Babylon/CSS requests and the loading bar.
+async function getOrFetch(entry){
+ const hit=await cached(entry);
+ if(hit)return {response:hit,persisted:Promise.resolve(true),fromCache:true};
+ if(!inflight.has(entry.key)){
   const pending=(async()=>{
-   // Do not block Babylon's download progress on CacheStorage writing the GLB.
-   const response=await fetch(url,{cache:"no-store"});
-   const persisted=response.ok&&response.type!=="opaque"&&response.status===200
-    ?cache.put(url,response.clone()).then(()=>true).catch(error=>{
-      console.warn("CACHE001: model not persisted",error);return false;
+   const response=await fetch(entry.absolute,{cache:"no-store"});
+   const persisted=response.ok&&response.status===200&&response.type!=="opaque"
+    ?openCache().then(cache=>cache.put(entry.key,response.clone())).then(()=>true).catch(error=>{
+      console.warn("ASSETLOAD001: not persisted",entry.id,error);return false;
      })
     :Promise.resolve(false);
-   return {response,persisted};
+   return {response,persisted,fromCache:false};
   })();
-  inflight.set(url,pending);
-  // Share a single network transfer even if Babylon opens the model while
-  // background warming is in progress. Every caller gets its own body stream.
+  inflight.set(entry.key,pending);
   void pending.then(({persisted})=>persisted).catch(()=>{})
-   .finally(()=>{if(inflight.get(url)===pending)inflight.delete(url);});
+   .finally(()=>{if(inflight.get(entry.key)===pending)inflight.delete(entry.key);});
  }
- const {response,persisted}=await inflight.get(url);
- return {response:response.clone(),persisted};
+ const item=await inflight.get(entry.key);
+ return {...item,response:item.response.clone()};
+}
+async function sha8(buffer){
+ const digest=new Uint8Array(await crypto.subtle.digest("SHA-256",buffer));
+ return Array.from(digest.slice(0,4),b=>b.toString(16).padStart(2,"0")).join("");
 }
 self.addEventListener("install",event=>event.waitUntil(self.skipWaiting()));
 self.addEventListener("activate",event=>event.waitUntil((async()=>{
- const names=await caches.keys();
- // Reuse matching Ren/Nada cached bytes, avoiding re-download on new SW.
- const previous=names.filter(name=>name.startsWith(CACHE_PREFIX)&&name!==CACHE_NAME);
  const current=await openCache();
- for(const name of previous){
+ const names=await caches.keys();
+ // Migrate CACHE001/002 hero GLBs only if their bytes still match the current revision.
+ for(const name of names.filter(n=>n.startsWith(LEGACY_PREFIX))){
   const old=await caches.open(name);
-  for(const url of MODEL_URLS){
-   if(!(await current.match(url))){
-    const hit=await old.match(url);
-    if(hit)await current.put(url,hit.clone());
-   }
+  for(const entry of ENTRIES){
+   if(await current.match(entry.key))continue;
+   const hit=await old.match(entry.absolute);
+   if(!hit)continue;
+   try{
+    const buffer=await hit.clone().arrayBuffer();
+    if(buffer.byteLength===entry.bytes&&await sha8(buffer)===entry.rev)
+     await current.put(entry.key,new Response(buffer,{status:200,headers:hit.headers}));
+   }catch(error){console.warn("ASSETLOAD001: legacy migration skipped",entry.id,error);}
   }
+  await caches.delete(name);
  }
- await Promise.all(previous.map(name=>caches.delete(name)));
+ // Drop every key that is not a current asset revision (changed or removed files).
+ const valid=new Set(ENTRIES.map(e=>e.key));
+ for(const request of await current.keys())if(!valid.has(request.url))await current.delete(request);
  await self.clients.claim();
 })()));
 self.addEventListener("fetch",event=>{
  if(event.request.method!=="GET"||event.request.headers.has("range"))return;
- const url=modelUrl(event.request);
- if(!url)return;
- const task=getOrFetch(url);
+ const entry=entryFor(event.request);
+ if(!entry)return;
+ const task=getOrFetch(entry);
  event.respondWith(task.then(item=>item.response).catch(()=>fetch(event.request)));
  event.waitUntil(task.then(item=>item.persisted).catch(()=>{}));
 });
-// CACHE002: exact downloadable GLB sizes; progress is based on bytes actually
-// consumed from the response stream, not a timer or a simulated percentage.
-const MODEL_BYTES=[2862860,1462284,2117776,1498852,2032788];
-async function reportCacheStatus(port){
- const cache=await openCache();
- const results=[];
- for(let i=0;i<MODEL_URLS.length;i++){
-  const stored=!!(await cache.match(MODEL_URLS[i]));
-  const asset=MODEL_PATHS[i].split("/").pop();
-  const status=stored?"cached":"missing";
-  results.push({asset,status});
-  port?.postMessage({type:"CACHE002_ASSET",asset,status,loaded:stored?MODEL_BYTES[i]:0,total:MODEL_BYTES[i]});
+
+// Status of the requested ids (default: all). No network.
+async function reportStatus(port,ids){
+ const items=[];
+ for(const entry of select(ids)){
+  const status=(await cached(entry))?"cached":"missing";
+  items.push({id:entry.id,status,loaded:status==="cached"?entry.bytes:0,total:entry.bytes});
  }
- port?.postMessage({type:"CACHE002_STATUS_DONE",results});
+ port?.postMessage({type:"ASSET_STATUS_DONE",items});
 }
-async function warmCache(port){
- const results=[];
- for(let i=0;i<MODEL_URLS.length;i++){
-  const url=MODEL_URLS[i],asset=MODEL_PATHS[i].split("/").pop(),total=MODEL_BYTES[i];
-  try{
-   const existing=await (await openCache()).match(url);
-   if(existing){
-    results.push({asset,status:"cached"});
-    port?.postMessage({type:"CACHE002_ASSET",asset,status:"cached",loaded:total,total});
-    continue;
-   }
-   port?.postMessage({type:"CACHE002_ASSET",asset,status:"downloading",loaded:0,total});
-   const {response,persisted}=await getOrFetch(url);
-   if(!response.ok||!response.body)throw Error("Model response unavailable");
-   // Read a dedicated cloned stream; CacheStorage writes its own clone in
-   // parallel. No extra network request, GPU engine or full-file arrayBuffer.
-   const reader=response.body.getReader();
-   let loaded=0;
-   while(true){
-    const {done,value}=await reader.read();
-    if(done)break;
-    loaded+=value.byteLength;
-    port?.postMessage({type:"CACHE002_ASSET",asset,status:"downloading",loaded,total});
-   }
-   port?.postMessage({type:"CACHE002_ASSET",asset,status:"saving",loaded,total});
-   const stored=await persisted;
-   const status=stored?"stored":"not-persisted";
-   results.push({asset,status});
-   port?.postMessage({type:"CACHE002_ASSET",asset,status,loaded,total});
-  }catch(error){
-   results.push({asset,status:"unavailable"});
-   port?.postMessage({type:"CACHE002_ASSET",asset,status:"unavailable",loaded:0,total});
+function select(ids){
+ return Array.isArray(ids)&&ids.length?ids.map(id=>BY_ID.get(id)).filter(Boolean):ENTRIES;
+}
+// Download + store; progress = bytes actually read from the response stream.
+async function fetchOne(entry,port){
+ const send=(status,loaded)=>port?.postMessage({type:"ASSET_PROGRESS",id:entry.id,status,loaded,total:entry.bytes});
+ try{
+  const {response,persisted,fromCache}=await getOrFetch(entry);
+  if(fromCache){send("cached",entry.bytes);return {id:entry.id,status:"cached"};}
+  if(!response.ok||!response.body)throw Error("HTTP "+response.status);
+  send("downloading",0);
+  const reader=response.body.getReader();
+  let loaded=0,lastSent=0;
+  for(;;){
+   const {done,value}=await reader.read();
+   if(done)break;
+   loaded+=value.byteLength;
+   // ~64 KB granularity keeps the message rate low on slow phones.
+   if(loaded-lastSent>=65536){lastSent=loaded;send("downloading",loaded);}
   }
+  send("saving",loaded);
+  const status=(await persisted)?"stored":"not-persisted";
+  send(status,loaded);
+  return {id:entry.id,status};
+ }catch(error){
+  send("error",0);
+  return {id:entry.id,status:"error"};
  }
- port?.postMessage({type:"CACHE001_DONE",results});
+}
+async function fetchAll(port,ids){
+ const queue=select(ids).slice(),results=[];
+ const worker=async()=>{while(queue.length){const entry=queue.shift();results.push(await fetchOne(entry,port));}};
+ await Promise.all(Array.from({length:Math.min(PARALLEL,queue.length)},worker));
+ port?.postMessage({type:"ASSET_DONE",results});
 }
 self.addEventListener("message",event=>{
- const type=event.data?.type;
- if(type!=="CACHE001_WARM"&&type!=="CACHE002_STATUS")return;
- const port=event.ports?.[0];
- event.waitUntil((type==="CACHE002_STATUS"?reportCacheStatus(port):warmCache(port))
-  .catch(()=>port?.postMessage({type:"CACHE002_ERROR"})));
+ const type=event.data?.type,ids=event.data?.ids,port=event.ports?.[0];
+ if(type!=="ASSET_STATUS"&&type!=="ASSET_FETCH")return;
+ event.waitUntil((type==="ASSET_STATUS"?reportStatus(port,ids):fetchAll(port,ids))
+  .catch(()=>port?.postMessage({type:"ASSET_ERROR"})));
 });

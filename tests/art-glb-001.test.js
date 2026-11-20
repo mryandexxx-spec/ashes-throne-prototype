@@ -27,5 +27,5 @@ test("ART3D001: Art is wired to card, arena and cache",()=>{
  const game=read("game.js").toString(),card=read("ren-card-3d.js").toString(),html=read("index.html").toString();
  assert.match(game,/ensureArt3D\(\)/);assert.match(game,/artGlbRuntime\.update\(activity\)/);
  assert.match(card,/isArt/);assert.match(html,/art-glb-runtime\.js/);
- assert.match(read("model-cache-sw.js").toString(),/art-mobile-animated\.glb/);
+ assert.ok(require("../asset-manifest.js").forPath("dev/assets/models/art-mobile-animated.glb"),"Art GLB is in the device cache list");
 });

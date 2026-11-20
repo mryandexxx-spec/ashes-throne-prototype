@@ -68,6 +68,111 @@ function ensureArenaEnv006(){
  catch(error){console.warn("ENV006 3D arena unavailable, 2D backdrop stays",error);arenaEnv006=null;}
 }
 function disposeArenaEnv006(){if(arenaEnv006){arenaEnv006.dispose();arenaEnv006=null;}}
+// ASSETLOAD001: one gate over the arena until this fight's models and art are downloaded
+// (device cache via AssetLoader/model-cache-sw.js) and placed in the scene. Nothing in the
+// battle moves before the first player command, so the gate never hides an enemy turn.
+// Shown only if loading takes longer than GATE_SHOW_MS (cached repeats open instantly).
+const GATE_SHOW_MS=300,GATE_SKIP_MS=8000;
+let battleAssetGate=null;
+function battleAssetPlan(){
+ const plan=new Map(); // assetId -> {ready():true|false|null}
+ const add=(assetId,ready)=>{
+  if(typeof AssetManifest==="undefined"||!AssetManifest.get(assetId))return;
+  const prev=plan.get(assetId);
+  // Several fighters may share one file: ready only when every copy has settled.
+  plan.set(assetId,{ready:prev?()=>{const a=prev.ready(),b=ready();return a===false||b===false?false:a&&b?true:null;}:ready});
+ };
+ const fromRuntime=runtime=>{
+  let settled=null;
+  void runtime.ready?.then(ok=>{settled=!!ok;},()=>{settled=false;});
+  return ()=>runtime.isReady?true:settled;
+ };
+ const heroes={ren:renGlbRuntime,nada:nadaGlbRuntime,liora:lioraGlbRuntime,sava:savaGlbRuntime,art:artGlbRuntime};
+ for(const f of presentationFighters())
+  if(f.side==="ally"&&heroes[f.id])add("hero:"+f.id,fromRuntime(heroes[f.id]));
+ for(const runtime of npcGlbRuntimes.values())add("npc:"+runtime.archetypeId,fromRuntime(runtime));
+ if(arenaEnv006){
+  add("arena:env006",()=>arenaEnv006?.state?.()==="ready"?true:arenaEnv006?.state?.()==="error"?false:null);
+  if(arenaEnv006.animation?.()!=="off")add("arena:env006b",()=>true);
+ }else if(ENV022_CONCEPT_PREVIEW)add("arena:env005",()=>true);
+ return plan;
+}
+function closeBattleAssetGate(){
+ const gate=battleAssetGate;
+ battleAssetGate=null;
+ if(!gate)return;
+ clearInterval(gate.timer);clearTimeout(gate.showTimer);clearTimeout(gate.skipTimer);gate.unsubscribe?.();
+ const el=$("#battleAssetGate");
+ if(el){el.hidden=true;el.dataset.closing="";el.setAttribute("aria-busy","false");}
+}
+function openBattleAssetGate(){
+ closeBattleAssetGate();
+ const el=$("#battleAssetGate");
+ const plan=battleAssetPlan();
+ if(!el||!plan.size||typeof AssetLoader==="undefined")return;
+ const ids=[...plan.keys()];
+ const gate={ids,plan,timer:null,showTimer:null,skipTimer:null,unsubscribe:null,shown:false,finishing:false};
+ battleAssetGate=gate;
+ // Downloads go through the worker, which shares one transfer with Babylon's own request.
+ void AssetLoader.load(ids);
+ const describe=(it,ready)=>{
+  if(ready===true)return ["готово","ready"];
+  if(ready===false||it.status==="error")return ["простая модель","error"];
+  if(it.status==="downloading")return [AssetLoader.percent(it.loaded,it.total)+"%","active"];
+  if(it.status==="saving")return ["сохраняем…","active"];
+  if(AssetLoader.isOk(it.status))return ["размещаем…","active"];
+  return ["ожидает","wait"];
+ };
+ const render=()=>{
+  if(battleAssetGate!==gate)return;
+  const sum=AssetLoader.summary(ids);
+  let settled=0;
+  const rows=sum.items.map(it=>{
+   const ready=plan.get(it.id).ready();
+   if(ready!==null)settled++;
+   const [text,stateName]=describe(it,ready);
+   return {label:it.label,text,stateName};
+  });
+  // 85% = bytes really received, 15% = models placed in the scene.
+  const fraction=(sum.total>0?.85*sum.loaded/sum.total:.85)+.15*settled/ids.length;
+  const pct=Math.min(100,Math.floor(fraction*100));
+  const bar=$("#battleAssetGateBar"),percent=$("#battleAssetGatePercent"),caption=$("#battleAssetGateCaption"),list=$("#battleAssetGateList");
+  if(bar)bar.style.width=pct+"%";
+  if(percent)percent.textContent=pct+"%";
+  const left=rows.filter(r=>r.stateName==="wait"||r.stateName==="active").map(r=>r.label);
+  if(caption)caption.textContent=sum.complete
+   ?(left.length?"Размещаем на арене: "+left.join(", "):"Готово")
+   :AssetLoader.formatMB(sum.loaded)+" из "+AssetLoader.formatMB(sum.total)+" МБ · осталось "+left.length+" из "+rows.length;
+  if(list){
+   list.textContent="";
+   for(const r of rows){
+    const li=document.createElement("li");li.dataset.state=r.stateName;
+    const a=document.createElement("span");a.textContent=r.label;
+    const b=document.createElement("span");b.textContent=r.text;
+    li.append(a,b);list.append(li);
+   }
+  }
+  if(settled===ids.length&&sum.complete&&!gate.finishing){
+   gate.finishing=true;
+   if(!gate.shown){closeBattleAssetGate();return;}
+   el.dataset.closing="1";
+   setTimeout(()=>{if(battleAssetGate===gate)closeBattleAssetGate();},220);
+  }
+ };
+ gate.unsubscribe=AssetLoader.subscribe(render);
+ gate.timer=setInterval(render,120);
+ gate.showTimer=setTimeout(()=>{
+  if(battleAssetGate!==gate||gate.finishing)return;
+  gate.shown=true;el.dataset.closing="";el.hidden=false;el.setAttribute("aria-busy","true");render();
+ },GATE_SHOW_MS);
+ const skip=$("#battleAssetGateSkip");
+ if(skip){
+  skip.hidden=true;
+  skip.onclick=()=>closeBattleAssetGate(); // models keep loading; capsules swap as they arrive
+  gate.skipTimer=setTimeout(()=>{if(battleAssetGate===gate)skip.hidden=false;},GATE_SKIP_MS);
+ }
+ render();
+}
 let combatVisual007=null; // One optional visual layer per Babylon Scene.
 let arenaFeedback=null; // ARENA-VIS-002: numbers, hit-stop, flash, camera beat.
 let renGlbRuntime=null; // Default Ren GLB visual, no gameplay ownership.
@@ -1152,7 +1257,7 @@ function showScreen(id){
   if(typeof cancelHQTooltip==="function")cancelHQTooltip();
  }
  if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();closeBattleMenu();}
- if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();arenaFeedback?.clear(arenaCamera);stopBattleRendering();disposeArenaEnv006();}
+ if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();arenaFeedback?.clear(arenaCamera);closeBattleAssetGate();stopBattleRendering();disposeArenaEnv006();}
  if(id!=="heroDetail"&&typeof RenCard3D!=="undefined")RenCard3D.dispose();
  // Combat-008A: release the document scroll while the arena owns the viewport.
  // Guard document.body for headless DOM tests and embedded integrations.
@@ -1313,6 +1418,7 @@ function showScreen(id){
    resetBattle();
    updateMeshes();
    startBattleRendering();
+   openBattleAssetGate();
    const notice=$("#battleLoadError");
    if(notice)notice.hidden=true;
   } catch(error) {
@@ -1320,6 +1426,7 @@ function showScreen(id){
    missionEntryPaid=false;
    cancelAutoTimer();autoBattle=false;
    console.error("Не удалось запустить 3D-арену:",error);
+   closeBattleAssetGate();
    stopBattleRendering();
    if(renGlbRuntime){renGlbRuntime.dispose();renGlbRuntime=null;}
    if(nadaGlbRuntime){nadaGlbRuntime.dispose();nadaGlbRuntime=null;}

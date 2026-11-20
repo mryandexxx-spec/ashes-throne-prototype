@@ -188,7 +188,7 @@ test("NET-004 fail closed on lock denial, corrupt pilot data, stale and uncertai
 });
 test("NET-004 feature gated, correct script order and build/cache version",()=>{
  const html=file("index.html"),js=file("game.js"),pkg=JSON.parse(file("package.json"));
- assert.ok(html.includes('id="buildVersion">Прототип · v'+pkg.version+' · ARENAENV006B'));
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+pkg.version+' · ASSETLOAD001'));
  assert.ok(html.includes('class="hq-station hq-station-operations" data-screen="network"'));
  const scripts=["network-data.js","network-score-core.js","network-core.js","network-encounter-data.js",
  "network-encounter-adapter.js","network-pilot-session.js","network-pilot-ui.js","network-navigation.js","game.js"];

@@ -13,7 +13,10 @@ test("RENQUEUE019: controls and auto scheduler cannot start another turn while v
  assert.match(game,/if\(autoBattle\|\|isVisualTransition\(\)\|\|visualActionPending\(\)\|\|!CombatCore\.abilityReady/);
  assert.match(game,/if\(!state\.active\|\|autoBattle\|\|isVisualTransition\(\)\|\|visualActionPending\(\)\|\|!CombatCore\.abilityReady/);
  assert.match(game,/if\(hadPending&&!visualActionPending\(\)&&state\.active&&!isVisualTransition\(\)\)syncBattleUI\(\)/);
- assert.match(game,/visualBusy\?"Действие выполняется…"/);
+ // ARENA-UI-003: the busy state is shown on the buttons (data-state="wait"),
+ // not as the service text "Действие выполняется…" / "Анимация действия".
+ assert.doesNotMatch(game,/Действие выполняется|Анимация действия|Анимация завершается/);
+ assert.match(game,/visualBusy&&ready\?"wait"/);
  for(const button of ["basicAbilityBtn","specialAbilityBtn"]){
   assert.ok(game.includes('$("#'+button+'").disabled=')&&game.includes('||visualBusy;'),button);
  }

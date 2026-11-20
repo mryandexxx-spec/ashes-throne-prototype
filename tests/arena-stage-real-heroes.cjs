@@ -40,11 +40,16 @@ const assert=require("node:assert/strict"),fs=require("node:fs");
      // and the battle message must not sit under the action panel.
      const rect=e=>{const b=e.getBoundingClientRect();return {x:b.x,y:b.y,w:b.width,h:b.height};};
      const hit=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
-     const controls=["#autoBattleBtn","#autoSpeedBtn","#turnChip","#targetFighterHud"].map(s=>document.querySelector(s)).filter(e=>e&&e.getBoundingClientRect().width>0);
+     // ARENA-UI-003: every fixed HUD zone of the new frame.
+     const controls=["#autoBattleBtn","#autoSpeedBtn","#turnQueueBar","#activeHero","#battle .ability-options",
+      "#battle .battle-menu-btn","#battle .arena-utility"].map(s=>document.querySelector(s)).filter(e=>e&&e.getBoundingClientRect().width>0);
+     const controlCount=controls.length;
      const controlHits=[];
      for(const a of r)for(const c of controls)if(hit(a,rect(c)))controlHits.push(a.id+"/"+c.id);
-     const messageUnderPanel=hit(rect(document.querySelector("#battleMessage")),rect(document.querySelector("#battle .action-panel")));
-     return {count:state.fighters.length,visibleHud:r.length,collisions,controlHits,messageUnderPanel,renReady:renGlbRuntime?.isReady,
+     // The message line is for screen readers only; it must not cover the scene.
+     const messageVisual=rect(document.querySelector("#battleMessage"));
+     const messageHidden=messageVisual.w<=1&&messageVisual.h<=1;
+     return {count:state.fighters.length,visibleHud:r.length,collisions,controlHits,controlCount,messageHidden,renReady:renGlbRuntime?.isReady,
       nadaReady:nadaGlbRuntime?.isReady,
       renMeshes:scene.meshes.filter(m=>m.metadata?.fighterId==="ren"&&m.getTotalVertices?.()>0).length,
       nadaMeshes:scene.meshes.filter(m=>m.metadata?.fighterId==="nada"&&m.getTotalVertices?.()>0).length,
@@ -58,7 +63,8 @@ const assert=require("node:assert/strict"),fs=require("node:fs");
    assert.equal(info.nadaReady,true);assert.ok(info.renMeshes>0);assert.ok(info.nadaMeshes>0);
    assert.deepEqual(info.collisions,[]);
    assert.deepEqual(info.controlHits,[],"world HUD under fixed controls");
-   assert.equal(info.messageUnderPanel,false,"battle message hidden by action panel");
+   assert.equal(info.controlCount,7,"all fixed HUD zones are measured");
+   assert.equal(info.messageHidden,true,"service message is not drawn over the arena");
   }
   assert.deepEqual(errors,[]);
   fs.writeFileSync("artifacts/arena-stage-real-heroes/report.json",JSON.stringify({report,errors},null,2));

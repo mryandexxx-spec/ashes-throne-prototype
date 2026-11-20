@@ -3,12 +3,12 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-status-core.js","battle-rng.js","combat-core.js","auto-decision.js","enemy-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","challenge-core.js","battle-speed.js","animation-profiles.js","ren-choreography.js","battle-animation.js","hero-profile-data.js","story-trial-data.js","story-demo-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const src=["initiative-model.js","ability-data.js","combat-status-core.js","battle-rng.js","combat-core.js","auto-decision.js","enemy-decision.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","challenge-core.js","battle-speed.js","animation-profiles.js","arena-ui-003.js","ren-choreography.js","battle-animation.js","hero-profile-data.js","story-trial-data.js","story-demo-core.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","challenges","challengeResult","challengeList","challengeModes","challengeModeBack","challengeModeTitle","challengeSaveStatus","dailyClaimAll","challengeResultName","challengeResultTitle","challengeResultText","challengeResultStars","challengeResultRetry","challengeResultBack","challengeResultHome","battleChallengeGoal","storyDemo","storyDemoOpen","storyDemoBack","storyDemoSpeaker","storyDemoText","storyDemoNext","storyDemoChoices","storyDemoChoiceA","storyDemoChoiceB","storyDemoFight","storyDemoTrialFight","storyDemoNotice","storyDemoAgain","storyRenTags","storyRenBiography","heroBiographyDialog","heroBiographyPortrait","heroBiographyTitle","heroBiographyTags","heroBiographyText","heroBiographyNote","heroBiographyClose","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn","arenaIndicators","orientationPrompt",
  "basicAbilitySlot","specialAbilitySlot","abilityTooltip","abilityTooltipTitle","abilityTooltipText",
  "fighterInspect","inspectClose","inspectSide","inspectName","inspectRole","inspectStats","inspectEffects",
- "targetFighterHud","targetFighterSide","targetFighterLevel","targetFighterName","targetFighterHp","targetFighterStats","targetFighterHealthFill",
+ "turnQueue","turnQueueBar","turnQueueWave","turnQueueToggle","activeHero","activeHeroName","activeHeroPortrait",
  "basicAbilityBtn","specialAbilityBtn","autoBattleBtn","autoSpeedBtn","battleMessage","renderCanvas",
  "startBattle","campaignBattle","campaignMissions","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","squadWarning","squadDisband","squadCount","heroDetail","detailName","detailRole","detailTags","detailBiography","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","campaignMissionStatus","campaignMissionStars","campaignChapterProgress","campaignSaveStatus","energyRefresh","energyRefreshStatus","simulationDialog","simulationTitle","simulationSetup","simulationResults","simulationCount","simulationQuantity","simulationCost","simulationAvailable","simulationConfirm","simulationText","simulationRewards","simulationClose","missionResult","missionResultTitle","missionResultText","missionResultStars","missionResultBack","missionResultRetry","missionResultHome"];
@@ -120,7 +120,7 @@ function tickAfterVisual(){
  tick();
 }
 const api=vm.runInNewContext(src+
- "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getEnergy:()=>progress.energy.value,getEnergyState:()=>progress.energy,getGearMaterials:()=>progress.gearMaterials,getAccountXp:()=>progress.accountXp,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=['kael','lyra','darin'];},getCampaignProgress:()=>campaignProgress,getChallengeProgress:()=>challengeProgress,getChallengeState:()=>({id:activeChallengeId,tracker:challengeTracker}),openChallenge,renderChallenges,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderTargetFighterHud, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), enemyTemplates:()=>ENEMIES, configuredLineup:()=>battleLineup(), setAutoSpeed})",
+ "\n({getBattle:()=>state,getCurrency:()=>progress.currency,getEnergy:()=>progress.energy.value,getEnergyState:()=>progress.energy,getGearMaterials:()=>progress.gearMaterials,getAccountXp:()=>progress.accountXp,getCampaignCompleted:()=>campaignProgress.completed[CampaignCore.MISSION_ID],getLevel:id=>ProgressCore.levelOf(progress,id),selectedParty:()=>selectedPartyIds.slice(),resetLegacySquad:()=>{selectedLeaderId=null;selectedPartyIds=['kael','lyra','darin'];},getCampaignProgress:()=>campaignProgress,getChallengeProgress:()=>challengeProgress,getChallengeState:()=>({id:activeChallengeId,tracker:challengeTracker}),openChallenge,renderChallenges,CombatCore,showScreen,openSquad,openHeroDetail,renderSquad,syncBattleUI, isAuto:()=>autoBattle, getSpeed:()=>BattleSpeed.get(), getAnimationSpeed:()=>BattleSpeed.multiplier(), getMotion:()=>BattleAnimation, getMeshes:()=>meshes, getArenaCamera:()=>arenaCamera, formationPosition, renderBattleFrame, isVisualTransition, getVisualFighters:()=>presentationFighters(), enemyTemplates:()=>ENEMIES, configuredLineup:()=>battleLineup(), setAutoSpeed})",
  {document,window:liveWindow,BABYLON,setTimeout:fakeSetTimeout,clearTimeout:fakeClearTimeout});
 // Campaign regression fixture: preserve historical three-hero combat expectations.
 api.resetLegacySquad();
@@ -294,12 +294,18 @@ const first=api.getBattle();
 assert.ok(first.fighters.filter(h=>h.side==="enemy").every(h=>!h.aiProfile),
  "profiles are not hardcoded into mission templates");
 const firstEnemy=first.fighters[first.selectedEnemy];
-assert.equal(elements.targetFighterName.textContent,firstEnemy.name,"top-right shows the initially selected target");
-assert.equal(elements.targetFighterLevel.textContent,"","enemy level is not invented");
-assert.match(elements.targetFighterHp.textContent,/HP [0-9]+\/[0-9]+/);
-assert.match(elements.targetFighterStats.textContent,/АТК [0-9]+ · СКР [0-9]+/);
-assert.equal(elements.targetFighterHealthFill.style.width,"100%");
-assert.equal(elements.targetFighterSide.textContent,"ЦЕЛЬ: ПРОТИВНИК");
+// ARENA-UI-003: no target card; the selected target carries the scene cursor
+// and its own label keeps the real health numbers.
+const cursorTargets=kind=>[...elements.arenaIndicators.innerHTML.matchAll(
+ /data-fighter-id="([^"]+)"[^>]*>\s*<div class="arena-focus-cursor (available|locked)"/g)]
+ .filter(m=>!kind||m[2]===kind).map(m=>m[1]);
+assert.deepEqual(cursorTargets("locked"),[firstEnemy.id],"scene cursor marks the initially selected target");
+assert.match(elements.arenaIndicators.innerHTML,new RegExp('data-fighter-id="'+firstEnemy.id+'" aria-label="[^"]*здоровье '+firstEnemy.hp+' из '+firstEnemy.maxHp));
+assert.equal(elements.activeHero.hidden,false,"acting hero is shown bottom-left");
+assert.equal(elements.activeHeroName.textContent,first.fighters[first.currentActor].name);
+assert.ok(elements.turnQueue.innerHTML.startsWith('<li class="turn-queue-item ally now" data-fighter-id="'+first.fighters[first.currentActor].id+'"'),
+ "queue starts with the acting hero");
+assert.equal((elements.turnQueue.innerHTML.match(/turn-queue-item/g)||[]).length,6,"six fighters in the queue");
 assert.equal(typeof pointerListener,"function","arena pointer listener registered");
 assert.ok(elements.renderCanvas.handlers.pointerdown?.length,"fixed-view pinch pointerdown registered");
 assert.ok(elements.renderCanvas.handlers.pointermove?.length,"fixed-view pinch pointermove registered");
@@ -331,8 +337,7 @@ api.getArenaCamera().radius=originalRadius;
 const secondEnemy=first.fighters.filter(f=>f.side==="enemy")[1];
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[secondEnemy.id].body}});
 assert.equal(first.fighters[first.selectedEnemy].id,secondEnemy.id,"arena tap selects enemy");
-assert.equal(elements.targetFighterName.textContent,secondEnemy.name,"target card follows arena selection");
-assert.equal(elements.targetFighterHud.classList.enemy,true);
+assert.deepEqual(cursorTargets("locked"),[secondEnemy.id],"scene cursor follows arena selection");
 assert.equal((elements.arenaIndicators.innerHTML.match(/arena-focus-cursor/g)||[]).length,1,"one attack focus cursor");
 assert.match(elements.arenaIndicators.innerHTML,/arena-focus-cursor locked/);
 // Holding an ability previews the actual effect without applying it.
@@ -418,13 +423,14 @@ assert.equal(first.allyActions,allyActionsBefore,"arming support has no effect")
 assert.equal((elements.arenaIndicators.innerHTML.match(/arena-focus-cursor available/g)||[]).length,3,"all living allies show cursor");
 assert.equal(elements.arenaIndicators.innerHTML.includes("arena-focus-cursor locked"),false,"enemy cursor hides during support");
 const allyTarget=first.fighters.find(f=>f.id==="lyra");
-assert.equal(elements.targetFighterSide.textContent,"ЦЕЛЬ: СОЮЗНИК");
+assert.equal(elements.actionHint.hidden,false,"support targeting explains the next tap");
+assert.match(elements.actionHint.textContent,/Коснись союзника/);
 pointerListener({type:1,pickInfo:{pickedMesh:api.getMeshes()[allyTarget.id].head}});
 assert.equal(first.fighters[first.selectedAlly].id,allyTarget.id);
 assert.equal(first.allyActions,allyActionsBefore+1,"tapping ally casts support immediately");
 assert.equal(allyTarget.guardHits,2);
-assert.equal(elements.targetFighterName.textContent,secondEnemy.name,"after casting, focus returns to enemy");
-assert.equal(elements.targetFighterHud.classList.enemy,true);
+assert.deepEqual(cursorTargets("locked"),[secondEnemy.id],"after casting, focus returns to enemy");
+assert.deepEqual(cursorTargets("available"),[],"ally cursors are gone after the cast");
 first.fighters[first.currentActor].meter=previousKaelMeter;
 first.currentActor=originalIndex;
 api.syncBattleUI();
@@ -448,8 +454,9 @@ assert.match(elements.arenaIndicators.innerHTML,/width:90%/,"HP percent reflects
 first.active=false;first.winner="enemy";
 api.syncBattleUI();
 assert.equal(elements.missionResult.classList.active,true,"defeat must show result screen");
-assert.equal(elements.targetFighterName.textContent,"Бой завершён","finished battle clears stale actor");
-assert.equal(elements.targetFighterLevel.textContent,"","finished battle clears level");
+assert.equal(elements.activeHero.hidden,true,"finished battle clears stale actor");
+assert.equal(elements.turnQueue.innerHTML,"","finished battle clears the turn queue");
+assert.equal(elements.turnQueueBar.hidden,true);
 assert.equal(document.body.classList.contains("battle-mode"),false,"leaving battle restores document scroll");
 assert.match(elements.missionResultTitle.textContent,/не пройдена/);
 assert.equal(api.getCurrency(),0);
@@ -543,7 +550,7 @@ assert.equal(waveBattle.totalWaves,2);
 assert.equal(waveBattle.fighters.filter(h=>h.side==="enemy").length,2);
 assert.ok(waveBattle.fighters.filter(h=>h.side==="enemy").every(h=>!h.aiProfile),
  "third mission uses no per-mission AI profiles");
-assert.match(elements.turnChip.textContent,/Волна 1\/2/);
+assert.match(elements.turnQueueWave.textContent,/Волна 1\/2/);assert.equal(elements.turnQueueWave.hidden,false,"wave counter beside the queue");
 const currencyBeforeWaves=api.getCurrency();
 const heroBeforeWave=waveBattle.fighters.find(f=>f.side==="ally");
 heroBeforeWave.hp-=3;
@@ -557,7 +564,7 @@ assert.equal(waveBattle.winner,null);
 assert.equal(waveBattle.fighters.filter(f=>f.side==="enemy").length,3);
 assert.ok(waveBattle.fighters.filter(h=>h.side==="enemy").every(h=>!h.aiProfile),
  "future waves use no per-mission AI profiles");
-assert.match(elements.turnChip.textContent,/Волна 2\/2/);
+assert.match(elements.turnQueueWave.textContent,/Волна 2\/2/);
 assert.equal(waveBattle.fighters.find(f=>f.id===heroBeforeWave.id).hp,health);
 assert.equal(api.getCurrency(),currencyBeforeWaves,"first wave cannot grant reward");
 assert.equal(elements.battle.classList.active,true,"do not show mission result between waves");

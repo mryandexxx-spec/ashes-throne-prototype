@@ -47,10 +47,15 @@ test("MOBILEQA001: world HUD packing avoids fixed control rectangles",()=>{
 });
 test("MOBILEQA001: arena layout registers fixed controls as obstacles",()=>{
  const g=read("game.js");
- const m=g.match(/arenaHudLayout\.avoid\?\.\(document\.querySelectorAll\(\s*"([^"]+)"/);
- assert.ok(m,"avoid() call present");
- for(const s of ["#autoBattleBtn","#autoSpeedBtn","#turnChip","#targetFighterHud","#battleMessage",".action-panel"])
+ assert.match(g,/arenaHudLayout\.avoid\?\.\(arenaHudObstacles\(\)\)/,"avoid() call present");
+ const m=g.match(/function arenaHudObstacles\(\)\{\s*return document\.querySelectorAll\?\.\(\s*"([^"]+)"/);
+ assert.ok(m,"obstacle list present");
+ // ARENA-UI-003: every fixed HUD zone, including the new queue, hero block and round abilities.
+ for(const s of ["#autoBattleBtn","#autoSpeedBtn","#turnQueueBar","#activeHero","#battleChallengeGoal",
+   "#tacticalGoalCard","#actionHint",".ability-options",".arena-utility","[data-screen]"])
   assert.ok(m[1].includes(s),s);
+ // Collapsing the queue frees its zone for the labels.
+ assert.match(g,/turnQueueCollapsed=!turnQueueCollapsed;[\s\S]{0,200}arenaHudLayout\?\.avoid\?\.\(arenaHudObstacles\(\)\)/);
  assert.match(read("arena-world-hud.js"),/measureObstacles\(\)/);
 });
 test("MOBILEQA001: a new screen opens scrolled to top except the roster return",()=>{

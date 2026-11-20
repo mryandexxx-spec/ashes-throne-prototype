@@ -13,10 +13,13 @@ assert.ok(battle,"battle screen section exists");
 assert.match(battle,/<div class="arena-wrap">\s*<canvas id="renderCanvas"/);
 const required=[
  "battleMissionLabel","battleStatus","autoBattleBtn","autoSpeedBtn",
- "turnChip","battleMessage","battleReward","targetFighterHud","battleLog",
- "battleLogSummary","battleLogEntries","actionTitle","actionHint",
+ "turnQueue","turnQueueToggle","activeHero","battleMessage","battleReward","battleLog",
+ "battleLogSummary","battleLogEntries","actionHint",
  "basicAbilityBtn","specialAbilityBtn","battleRetryBtn"
 ];
+// ARENA-UI-003: the target card, turn chip and action title are gone from the arena.
+for(const id of ["targetFighterHud","turnChip","actionTitle"])
+ assert.doesNotMatch(html,new RegExp('id="'+id+'"'),id+" removed");
 for(const id of required){
  assert.match(battle,new RegExp('id="'+id+'"'),id+" must be inside arena");
  assert.equal((html.match(new RegExp('id="'+id+'"',"g"))||[]).length,1,id+" unique");

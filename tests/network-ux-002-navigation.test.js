@@ -78,8 +78,8 @@ test("NET-UX-002 app routes, existing game systems and release contract",()=>{
   'data-net-view="clues"',
   'data-net-view="threat"',
   'data-screen="operations" aria-label="Открыть учебные разведоперации"',
-  'network-navigation.js?v=0.3.213" type="text/progress-gated"',
-  'id="buildVersion">Прототип · v0.3.213 · ARENAFIX001'
+  'network-navigation.js?v=0.3.215" type="text/progress-gated"',
+  'id="buildVersion">Прототип · v0.3.215 · ARENAENV006B'
  ])assert.ok(html.includes(needle),needle);
  for(const needle of [
   'NetworkNavigation.mount(',
@@ -91,5 +91,5 @@ test("NET-UX-002 app routes, existing game systems and release contract",()=>{
  ])assert.ok(game.includes(needle),needle);
  assert.ok(css.includes(".netux-tabs"));
  assert.ok(css.includes("min-height:44px"));
- assert.equal(JSON.parse(read("package.json")).version,"0.3.213");
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.215");
 });

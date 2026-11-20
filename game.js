@@ -54,6 +54,20 @@ const $=s=>document.querySelector(s);
 const ENV022_CONCEPT_PREVIEW=typeof location!=="undefined" &&
  !/(?:^|[?&])environment=(?:env017|env010)(?:&|$)/.test(location.search);
 let engine, scene, meshes={};
+// ARENA-ENV-006 (EXPERIMENT, only with ?environment=env3d): the ENV-005 terrace art
+// projected onto a light 3D proxy; built on battle entry, disposed on exit.
+// The CSS art stays underneath as the loading/failure fallback.
+const ARENA_ENV006_3D=typeof location!=="undefined"&&typeof CombatEnvironment006!=="undefined"&&
+ CombatEnvironment006.enabled(location.search);
+let arenaEnv006=null;
+function ensureArenaEnv006(){
+ if(!ARENA_ENV006_3D||arenaEnv006||!scene||!CombatEnvironment006.supported(BABYLON))return;
+ // ENV-006B: background animation off under prefers-reduced-motion (static ENV-006 frame).
+ try{arenaEnv006=CombatEnvironment006.create(BABYLON,scene,{reducedMotion:typeof window.matchMedia==="function"&&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches});}
+ catch(error){console.warn("ENV006 3D arena unavailable, 2D backdrop stays",error);arenaEnv006=null;}
+}
+function disposeArenaEnv006(){if(arenaEnv006){arenaEnv006.dispose();arenaEnv006=null;}}
 let combatVisual007=null; // One optional visual layer per Babylon Scene.
 let arenaFeedback=null; // ARENA-VIS-002: numbers, hit-stop, flash, camera beat.
 let renGlbRuntime=null; // Default Ren GLB visual, no gameplay ownership.
@@ -1138,7 +1152,7 @@ function showScreen(id){
   if(typeof cancelHQTooltip==="function")cancelHQTooltip();
  }
  if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();closeBattleMenu();}
- if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();arenaFeedback?.clear(arenaCamera);stopBattleRendering();}
+ if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();arenaFeedback?.clear(arenaCamera);stopBattleRendering();disposeArenaEnv006();}
  if(id!=="heroDetail"&&typeof RenCard3D!=="undefined")RenCard3D.dispose();
  // Combat-008A: release the document scroll while the arena owns the viewport.
  // Guard document.body for headless DOM tests and embedded integrations.
@@ -1287,6 +1301,7 @@ function showScreen(id){
    if(typeof BABYLON==="undefined" || !BABYLON.Engine || !BABYLON.Scene)
     throw new Error("Babylon.js is unavailable");
    if(!engine)initBabylon();
+   ensureArenaEnv006();
    resetArenaCamera(); // Start every encounter from the approved perspective.
    engine.resize();
    if(battleIsCampaign&&!battleIsNpcMissionPilot&&!freeStoryEntry){
@@ -1312,6 +1327,7 @@ function showScreen(id){
    if(savaGlbRuntime){savaGlbRuntime.dispose();savaGlbRuntime=null;}
    if(artGlbRuntime){artGlbRuntime.dispose();artGlbRuntime=null;}
    disposeNpcGlbRuntimes();
+   disposeArenaEnv006();
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
    scene=undefined;engine=undefined;arenaCamera=null;meshes={};encounterNpcVisualIds.clear();indicatorNodes={};combatVisual007=null;arenaFeedback=null;renderLoopRunning=false;
@@ -3813,6 +3829,8 @@ function renderBattleFrame(){
  // ARENA-VIS-002: hit-stop pauses the animation clock only; the frame still renders.
  const animationDt=arenaFeedback?arenaFeedback.animationDelta(dt):dt;
  BattleAnimation.tick(animationDt,BattleSpeed.multiplier());
+ // ENV-006B background clock: real dt, not hit-stop or battle speed (see ARENA_ENV_006_PLAN).
+ arenaEnv006?.tick(dt);
  // Consume hit markers regardless of whether optional visuals are available.
  const visualCues=BattleAnimation.drainStarted();
  const feedbackCues=BattleAnimation.drainFeedback();

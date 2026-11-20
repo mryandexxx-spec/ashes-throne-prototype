@@ -102,7 +102,7 @@ async function run(name,type,[W,H]){
   for(let i=0;i<pinned.p.length;i++)for(let j=0;j<i;j++)
    assert.equal(ov(pinned.p[i],pinned.p[j]),false,"labels collide "+pinned.p[i].id+"/"+pinned.p[j].id);
   for(const a of pinned.p)if(a.name)for(const b of pinned.p)if(b!==a)
-   assert.equal(ov(a.name,b),false,"name of "+a.id+" covers the label of "+b.id);
+   assert.equal(ov(a.name,b),false,"name of "+a.id+" covers the label of "+b.id+" "+JSON.stringify({a,b}));
   // Target the farthest enemy (the old packer moved its label under the numbers) and strike.
   await ev(`(()=>{const e=state.fighters.map((f,i)=>[f,i]).filter(([f])=>f.side==="enemy"&&f.hp>0);
    const far=e.reduce((a,b)=>(meshes[b[0].id].head.position.z<meshes[a[0].id].head.position.z?b:a));
@@ -110,7 +110,8 @@ async function run(name,type,[W,H]){
   await page.waitForTimeout(200);await ev(`__step(2)`);
   const farLabels=await ev(`${plates}`);
   for(const a of farLabels)if(a.name)for(const b of farLabels)if(b!==a)
-   assert.equal(ov(a.name,b),false,"far target name covers "+b.id);
+   assert.equal(ov(a.name,b),false,"far target name covers "+b.id+" "+JSON.stringify({a,b,
+    rows:await ev(`JSON.stringify([...arenaHudLayout.rows.values()].map(r=>[r.id,Math.round(r.x),Math.round(r.y),r.w,r.h,r.nameW,r.shiftX,r.shiftY,r.crowded]))`)}));
   assert.equal(await ev(`applyManualAbility("basic")`),true);
   let seen=0,away=false;const clashes=[];
   for(let i=0;i<500;i++){

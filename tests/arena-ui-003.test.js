@@ -201,6 +201,6 @@ test("ARENAUI003B: labels show names only for the acting hero and the target; ma
  assert.match(game,/positionArenaIndicators\(\);\n \/\/ ARENA-UI-003B[^\n]*\n arenaFeedback\?\.floaters\?\.relayout\?\.\(\);\n scene\.render\(\);/);
  const block=css.slice(css.indexOf("/* ARENA-UI-003B"));
  assert.match(block,/\.arena-indicator\.away\{opacity:0\}/);
- assert.match(block,/\.arena-indicator\.enemy\.named \.arena-indicator-name\{position:absolute;top:100%/);
+ assert.match(block,/\.arena-indicator\.enemy\.named \.arena-indicator-name\{position:absolute;top:100%;[^}]*height:12px;line-height:12px\}/,"name fits the reserved band");
  assert.doesNotMatch(block,/#battle\s|backdrop-filter|blur\(/);
 });

@@ -4711,7 +4711,7 @@ body:has(#storyDemo.active)::before{
    (out of flow, ArenaWorldHud.NAME_BELOW) instead of growing the label up. */
 #battle.battle-screen .arena-indicator.enemy{position:absolute}
 #battle.battle-screen .arena-indicator.enemy.named .arena-indicator-name{position:absolute;top:100%;left:50%;
- transform:translateX(-50%);margin-top:1px}
+ transform:translateX(-50%);margin-top:0;height:12px;line-height:12px} /* = NAME_BELOW − 1 */
 #battle.battle-screen .arena-health{height:5px}
 #battle.battle-screen .arena-protection,#battle.battle-screen .arena-initiative{height:3px}
 #battle.battle-screen .arena-effects{min-height:0;gap:2px;flex-wrap:wrap}

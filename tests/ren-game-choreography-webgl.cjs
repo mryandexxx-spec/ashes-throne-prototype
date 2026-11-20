@@ -9,6 +9,8 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await page.evaluate(()=>{selectedLeaderId=null;selectedPartyIds=['ren'];battleIsCampaign=false;battleIsStoryDemo=false;showScreen('battle');});
   await page.waitForFunction(()=>renGlbRuntime?.isReady,{timeout:90000});
+  // ARENA-ART-004D: ves/shade now carry tinted stand-in models; count after they load.
+  await page.waitForFunction(()=>[...npcGlbRuntimes.values()].every(r=>r.isReady),null,{timeout:90000});
   await page.evaluate(()=>{stopBattleRendering();engine.getDeltaTime=()=>0;state.fighters.forEach(f=>{f.hp=f.maxHp=10000;});syncBattleUI();});
   const initial=await page.evaluate(()=>({meshes:scene.meshes.length,groups:scene.animationGroups.length}));
   const records=[];
@@ -45,6 +47,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   assert.equal(finished.active,false);assert.equal(finished.pending,0);assert.equal(finished.transition,false);assert.equal(finished.winner,'ally');
   await page.locator('#battleRetryBtn').click();await page.locator('#squadStart').click();
   if(await page.locator('#squadWarning').isVisible())await page.locator('#squadStart').click();
+  await page.waitForFunction(()=>npcGlbRuntimes.size>0&&[...npcGlbRuntimes.values()].every(r=>r.isReady),null,{timeout:90000});
   const restarted=await page.evaluate(()=>{stopBattleRendering();return {active:state.active,pending:BattleAnimation.pending(),meshes:scene.meshes.length,groups:scene.animationGroups.length};});
   assert.equal(restarted.active,true);assert.equal(restarted.pending,0);assert.equal(restarted.meshes,initial.meshes);assert.equal(restarted.groups,initial.groups);
   await page.evaluate(()=>showScreen('home'));

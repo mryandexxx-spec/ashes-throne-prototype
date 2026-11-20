@@ -119,6 +119,8 @@ async function run(name,type,w,h){
   assert.equal(combat.gpu,true);
   assert.ok(combat.fighters.includes("ren")&&combat.fighters.includes("nada"));
   assert.equal(new Set(combat.fighters).size,combat.fighters.length);
+  // ARENA-ART-004D: ves/shade stand-in models play real clip lengths; auto battle at x4.
+  await page.evaluate(()=>setAutoSpeed(4));
   await page.locator("#autoBattleBtn").click();
   await page.locator("#loreRequiredBattleResult").waitFor({state:"visible",timeout:145000});
   assert.equal(await page.locator("#loreRequiredResultTitle").innerText(),"Бой выигран");

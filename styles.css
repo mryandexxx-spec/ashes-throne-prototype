@@ -2379,12 +2379,18 @@ body:has(#heroDetail.active)::before{
 /* ENV022: optional static art guide behind live 3D combat via ?environment=concept.
    The actual Babylon canvas remains on top for fighters, pointer picking and FX.
    Safe rollback: remove query flag to restore the original fully 3D arena. */
+/* ARENA-ENV-005: owner-supplied terrace art (1672x941 WebP, far plane softened
+   in the file). Anchored to the bottom so the horizon sits at/above the frame top,
+   like the 3D camera (pitch 26 deg, half FOV 24 deg). The top shade keeps HUD
+   labels readable over the bright sky. */
 .battle-screen.env022-concept-preview .arena-wrap{
- background-color:#aaa19c;
- background-image:url("assets/env022-canyon-concept.svg");
- background-position:center center;
+ background-color:#b59a78;
+ background-image:
+  linear-gradient(180deg,#14100c66 0%,#14100c1f 22%,#14100c00 40%),
+  url("assets/arena-env005-terrace.webp");
+ background-position:center center,center bottom;
  background-repeat:no-repeat;
- background-size:cover;
+ background-size:cover,cover;
 }
 
 

@@ -5,17 +5,6 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
 
-test("bundled placeholder decodes to compact actual WebP, not an external URL",()=>{
-  const svg=fs.readFileSync("assets/env022-canyon-concept.svg","utf8");
-  const match=svg.match(/href="data:image\/webp;base64,([A-Za-z0-9+/=]+)"/);
-  assert.ok(match,"Self-contained image is required for offline battle");
-  const webp=Buffer.from(match[1],"base64");
-  assert.ok(webp.length>4000&&webp.length<20000);
-  assert.equal(webp.toString("ascii",0,4),"RIFF");
-  assert.equal(webp.toString("ascii",8,12),"WEBP");
-  assert.match(svg,/viewBox="0 0 480 222"/);
-});
-
 test("ENV022 is the default; explicit legacy scene overrides are kept",()=>{
   const game=fs.readFileSync("game.js","utf8");
   const styles=fs.readFileSync("styles.css","utf8");
@@ -25,7 +14,7 @@ test("ENV022 is the default; explicit legacy scene overrides are kept",()=>{
   assert.match(game,/CombatVisual007\.create\(BABYLON,scene,\{conceptBackdrop:ENV022_CONCEPT_PREVIEW\}\)/);
   assert.match(game,/!combatVisual007 && !ENV022_CONCEPT_PREVIEW/);
   assert.match(styles,/\.env022-concept-preview \.arena-wrap/);
-  assert.match(styles,/assets\/env022-canyon-concept\.svg/);
+  assert.match(styles,/assets\/arena-env005-terrace\.webp/); // ARENA-ENV-005 art
   assert.match(game,/radius:12,targetY:\.9/);
 });
 

@@ -31,8 +31,8 @@ test("NET-UX-006: briefing, result and weekly layouts retain existing actions an
  assert.match(css,/\.netux-weekly-facts/);
  assert.match(css,/min-height:44px/);
  assert.match(css,/overflow-y:auto/);
- assert.equal(JSON.parse(read("package.json")).version,"0.3.211");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.211 · ARENAART004G'));
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.212");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.212 · ARENAENV005'));
 });
 test("NET-UX-006: reward and combat engine files remain unchanged by UI workflow",()=>{
  const ui=read("network-pilot-ui.js"),week=read("weekly-threat-ui.js");

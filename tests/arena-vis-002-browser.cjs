@@ -46,7 +46,7 @@ async function run(name,type){
   await ev(`__step(70)`);
   assert.equal(await ev(`document.querySelectorAll("#arenaFloaters .arena-floater.on").length`),0,"numbers expire");
   assert.equal(await ev(`combatVisual007.pending()`),0);
-  // 2) Powerful ability: push-in, shake, exact camera restore. Cooldown reset is a test harness step.
+  // 2) Powerful ability: shake, no push-in (ARENA-ART-004G), exact camera restore. Cooldown reset is a test harness step.
   await ev(`(()=>{const a=state.fighters[state.currentActor];a.powerfulCooldown=0;})()`);
   const powered=await ev(`applyManualAbility("powerful")`);
   if(powered){
@@ -54,11 +54,11 @@ async function run(name,type){
    for(let i=0;i<400;i++){
     const s=await ev(`(()=>{__step(1);return {r:arenaCamera.radius,o:Math.abs(arenaCamera.targetScreenOffset.x)+Math.abs(arenaCamera.targetScreenOffset.y),p:BattleAnimation.pending()};})()`);
     minRadius=Math.min(minRadius,s.r);shook=shook||s.o>0;
-    if(i===24)await shot(name+"-powerful-push.png");
+    if(i===24)await shot(name+"-powerful.png");
     if(!s.p&&i>40)break;
    }
    await ev(`__step(40)`);
-   assert.ok(minRadius<radius0-.3,"camera pushed in: "+minRadius);
+   assert.equal(minRadius,radius0,"ARENA-ART-004G: no camera push-in");
    const end=await ev(`({r:arenaCamera.radius,x:arenaCamera.targetScreenOffset.x,y:arenaCamera.targetScreenOffset.y,lower:arenaCamera.lowerRadiusLimit})`);
    assert.equal(end.r,radius0);assert.equal(end.x,0);assert.equal(end.y,0);
    assert.equal(end.lower,await ev("ARENA_VIEW.minRadius"));

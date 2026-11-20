@@ -84,8 +84,11 @@ test("NPCCHALLENGE006: opt-in plans add three+five distinct human NPCs, preserve
  const all=P.visuals();
  assert.equal(all.length,27);
  assert.equal(new Set(all.map(x=>x.id)).size,27);
- assert.ok(all.every(x=>x.side==="enemy"&&x.speciesId==="human"&&
-  x.originRegionId==="gardens-over-abyss"&&x.factionId===null));
+ // ARENA-ART-004G: the only non-human is the N-02 sarkh courier (owner, variant A).
+ const sarkh=all.filter(x=>x.speciesId!=="human");
+ assert.deepEqual(Array.from(sarkh,x=>[x.id,x.speciesId,x.originRegionId]),[["npc-n02-slinger","sarkh","changing-rivers"]]);
+ assert.ok(all.every(x=>x.side==="enemy"&&x.factionId===null&&
+  (x.speciesId==="human"&&x.originRegionId==="gardens-over-abyss"||x.id==="npc-n02-slinger")));
  assert.equal(N.get("npc-watch-captain").stats.hp,178);
  assert.equal(N.get("npc-field-medic").stats.hp,103);
  assert.equal(Q.get("T-03").priorityId,"ves-2");

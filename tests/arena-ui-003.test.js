@@ -97,6 +97,7 @@ test("ARENAUI003A: icon faces use owner art when present and data-driven pictogr
  assert.equal(UI.escapeHtml('<b a="1">'),"&lt;b a=&quot;1&quot;&gt;");
  assert.equal(UI.initials("Вестник Конклава"),"ВК");
  assert.equal(UI.initials("Арт"),"АР");
+ assert.equal(UI.initials("Сарх — сухопутный курьер"),"СС","ARENA-ART-004G: dash is not an initial");
  for(const src of Object.values(UI.PORTRAITS))assert.ok(fs.existsSync(path.join(__dirname,"..",src.split("?")[0])),src);
 });
 
@@ -149,11 +150,11 @@ test("ARENAUI003A: CSS — 44pt targets, ≥56px round abilities, safe-area, sco
 });
 
 test("ARENAUI003A: build version and script order",()=>{
- assert.equal(pkg.version,"0.3.210");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.210 · ARENAART004F'));
+ assert.equal(pkg.version,"0.3.211");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.211 · ARENAART004G'));
  assert.ok(pkg.scripts.test.includes("node --check arena-ui-003.js"));
- const at=html.indexOf('src="arena-ui-003.js?v=0.3.210"');
- assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.210"'));
+ const at=html.indexOf('src="arena-ui-003.js?v=0.3.211"');
+ assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.211"'));
 });
 
 // ---------------- ARENA-UI-003B: labels and numbers ----------------

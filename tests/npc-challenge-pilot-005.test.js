@@ -72,7 +72,8 @@ test("NPCCHALLENGE005: legacy T-02/N-02 plans remain inside nineteen distinct op
  assert.deepEqual(Array.from(P.spawn("T-02"),x=>[x.hp,x.protection]),[[70,6],[78,12]]);
  assert.equal(t.futureWaves.length,0);
  assert.deepEqual(Array.from(n.enemyIds,x=>x.archetypeId),
-  ["npc-ridge-slinger","npc-route-signaller"]);
+  ["npc-sarkh-land-courier","npc-route-signaller"]); // ARENA-ART-004G: sarkh courier, same id/HP/protection
+ assert.equal(n.enemyIds[0].instanceId,"npc-n02-slinger");
  assert.deepEqual(Array.from(n.futureWaves[0],x=>x.archetypeId),
   ["npc-watch-captain","npc-field-medic"]);
  assert.deepEqual(Array.from(P.spawn("N-02"),x=>[x.hp,x.protection]),[[60,5],[52,4]]);
@@ -82,8 +83,9 @@ test("NPCCHALLENGE005: legacy T-02/N-02 plans remain inside nineteen distinct op
  assert.equal(mobs.length,27);
  const ids=mobs.map(x=>x.id);
  assert.equal(new Set(ids).size,ids.length);
- assert.ok(mobs.every(x=>x.side==="enemy"&&x.speciesId==="human"&&
-  x.originRegionId==="gardens-over-abyss"&&x.factionId===null));
+ assert.ok(mobs.every(x=>x.side==="enemy"&&x.factionId===null&&(x.id==="npc-n02-slinger"?
+  x.speciesId==="sarkh"&&x.originRegionId==="changing-rivers": // ARENA-ART-004G
+  x.speciesId==="human"&&x.originRegionId==="gardens-over-abyss")));
  assert.notEqual(P.spawn("N-02")[0],P.spawn("N-02")[0]);
  for(const [id,hp] of [["npc-watch-captain",178],["npc-field-medic",103],
   ["npc-route-signaller",105],["npc-trail-interceptor",96]])

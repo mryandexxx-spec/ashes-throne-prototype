@@ -76,7 +76,9 @@ async function check(name,type){
   assert.equal(await page.locator(".lore-map-marker").count(),3);
   // Verify direct quit midfight returns to the lore map, not main menu.
   await startFight(page);
-  await page.locator('#battle .battle-top button[data-screen="home"]').click();
+  // ARENA-ART-004G: the ✕ became a menu; «Отступить» keeps the old exit.
+  await page.locator("#battleMenuBtn").click();
+  await page.locator("#battleMenuRetreat").click();
   assert.equal(await page.locator("#campaignLoreContent").isVisible(),true);
   assert.equal(await page.locator(".lore-map-marker").count(),3);
   const last=await page.evaluate(()=>({

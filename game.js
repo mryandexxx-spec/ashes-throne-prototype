@@ -1137,7 +1137,7 @@ function showScreen(id){
   if(typeof closeHQMenu==="function")closeHQMenu();
   if(typeof cancelHQTooltip==="function")cancelHQTooltip();
  }
- if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();}
+ if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();closeBattleMenu();}
  if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();arenaFeedback?.clear(arenaCamera);stopBattleRendering();}
  if(id!=="heroDetail"&&typeof RenCard3D!=="undefined")RenCard3D.dispose();
  // Combat-008A: release the document scroll while the arena owns the viewport.
@@ -1254,14 +1254,17 @@ function showScreen(id){
     battleIsOperation?"Перехватить подлинный пакет.":!def?"":def.kind==="tactical"?
     "Цель: "+(priority?.name||"отмеченный враг")+" должен погибнуть первым и отдельно от остальных.":
     "Цель: пройти "+(def.futureWaves.length+1)+" волны, сохранив отряд.");
-   // ARENA-UI-003: a new battle starts with the one-line objective.
+   // ARENA-ART-004G: a new battle starts with the objective folded in its corner.
    objective.classList?.remove?.("expanded");
    objective.setAttribute?.("aria-expanded","false");
+   objective.setAttribute?.("aria-label","Цель боя: "+objective.textContent);
   }
   const tacticalGoalCard=$("#tacticalGoalCard");
   const npcHold=battleIsNpcChallengePilot&&activeChallengeId==="T-04";
   if(tacticalGoalCard){
    tacticalGoalCard.hidden=!trial&&!npcHold;
+   tacticalGoalCard.classList?.add?.("collapsed");
+   $("#tacticalGoalToggle")?.setAttribute?.("aria-expanded","false");
    if(trial){
     tacticalGoalCard.querySelector("strong").textContent=trial.goalTitle;
     tacticalGoalCard.querySelector("p").textContent=trial.goalText;
@@ -2964,12 +2967,75 @@ $("#turnQueueToggle")?.addEventListener("click",()=>{
  renderTurnQueue();
  arenaHudLayout?.avoid?.(arenaHudObstacles());
 });
-// The objective line expands on tap; it never blocks the arena below it.
-$("#battleChallengeGoal")?.addEventListener("click",()=>{
+// ARENA-ART-004G: the objective sits folded in the top-right corner and opens on
+// tap (or from the battle menu); it never covers the middle of the arena.
+function setBattleGoalOpen(open){
  const goal=$("#battleChallengeGoal");
- const open=goal.getAttribute?.("aria-expanded")!=="true";
- goal.setAttribute?.("aria-expanded",String(open));
- goal.classList?.toggle("expanded",open);
+ if(goal){
+  goal.setAttribute?.("aria-expanded",String(open));
+  goal.classList?.toggle("expanded",open);
+ }
+ const card=$("#tacticalGoalCard");
+ if(card){
+  card.classList?.toggle("collapsed",!open);
+  $("#tacticalGoalToggle")?.setAttribute?.("aria-expanded",String(open));
+ }
+ arenaHudLayout?.avoid?.(arenaHudObstacles());
+}
+function battleGoalOpen(){
+ const goal=$("#battleChallengeGoal"),card=$("#tacticalGoalCard");
+ return !!(goal&&!goal.hidden&&goal.getAttribute?.("aria-expanded")==="true"||
+  card&&!card.hidden&&!card.classList?.contains("collapsed"));
+}
+function battleHasGoal(){
+ return !!($("#battleChallengeGoal")&&!$("#battleChallengeGoal").hidden||
+  $("#tacticalGoalCard")&&!$("#tacticalGoalCard").hidden);
+}
+$("#battleChallengeGoal")?.addEventListener("click",()=>setBattleGoalOpen(!battleGoalOpen()));
+$("#tacticalGoalToggle")?.addEventListener("click",()=>setBattleGoalOpen(!battleGoalOpen()));
+// ARENA-ART-004G: the top-left ✕ became a menu: goal, replay, retreat.
+function closeBattleMenu(){
+ const menu=$("#battleMenu");
+ if(menu)menu.hidden=true;
+ $("#battleMenuBtn")?.setAttribute?.("aria-expanded","false");
+}
+function openBattleMenu(){
+ const menu=$("#battleMenu");
+ if(!menu)return;
+ const goal=$("#battleMenuGoal"),retry=$("#battleMenuRetry");
+ if(goal)goal.disabled=!battleHasGoal();
+ if(retry)retry.disabled=!state.active;
+ menu.hidden=false;
+ $("#battleMenuBtn")?.setAttribute?.("aria-expanded","true");
+ (menu.querySelector?.(".battle-menu-item:not(:disabled)"))?.focus?.();
+}
+$("#battleMenuBtn")?.addEventListener("click",()=>{
+ if($("#battleMenu")?.hidden===false)closeBattleMenu();else openBattleMenu();
+});
+$("#battleMenuGoal")?.addEventListener("click",()=>{closeBattleMenu();setBattleGoalOpen(true);});
+// Replay = the same mode and squad from the start, through the normal squad
+// start (energy, checkpoints and warnings stay where they are). If a check
+// fails, the player stays on the squad screen with its warning.
+function replayBattle(){
+ closeBattleMenu();
+ if(!state.active)return false;
+ const mode=squadReturnScreen||"home";
+ openSquad(mode);
+ undersizedSquadConfirmed=true; // this squad was already confirmed for the fight
+ $("#squadStart")?.click?.();
+ return true;
+}
+$("#battleMenuRetry")?.addEventListener("click",replayBattle);
+// Retreat keeps the old ✕ behaviour: the shared [data-screen] handler below.
+$("#battleMenuRetreat")?.addEventListener("click",closeBattleMenu);
+document.addEventListener("pointerdown",event=>{
+ const menu=$("#battleMenu");
+ if(!menu||menu.hidden)return;
+ if(event.target?.closest?.("#battleMenu, #battleMenuBtn"))return;
+ closeBattleMenu();
+});
+document.addEventListener("keydown",event=>{
+ if(event.key==="Escape"&&$("#battleMenu")?.hidden===false){closeBattleMenu();$("#battleMenuBtn")?.focus?.();}
 });
 function renderActiveHero(actor){
  const box=$("#activeHero");
@@ -3334,7 +3400,7 @@ function renderArenaIndicators(){
 // MOBILEQA001 / ARENA-UI-003: fixed HUD zones the world labels must not hide under.
 function arenaHudObstacles(){
  return document.querySelectorAll?.(
-  "#battle .battle-top>[data-screen], #battle .arena-utility, #renModelBattleStatus, #turnQueueBar, #battleChallengeGoal, #tacticalGoalCard, #activeHero, #autoBattleBtn, #autoSpeedBtn, #actionHint, #battle .ability-options")||[];
+  "#battleMenuBtn, #battleMenu, #battle .arena-utility, #renModelBattleStatus, #turnQueueBar, #battleChallengeGoal, #tacticalGoalCard, #activeHero, #autoBattleBtn, #autoSpeedBtn, #actionHint, #battle .ability-options")||[];
 }
 // Projection is presentation-only. Babylon pointer picking stays on the canvas.
 function positionArenaIndicators(){
@@ -3385,7 +3451,7 @@ function resetBattle(){
    for(const id of ["basicAbilityBtn","specialAbilityBtn","powerfulAbilityBtn"]){const b=$("#"+id);if(b?.dataset)b.dataset.face="";}
    if(state?.active&&$("#battle")?.classList?.contains("active"))syncBattleUI();
   });
- closeFighterInspection();hideAbilityTooltip();
+ closeFighterInspection();hideAbilityTooltip();closeBattleMenu();
  cancelAutoTimer();
  cancelVisualTransition();
  BattleAnimation.clear();
@@ -3600,6 +3666,15 @@ function renderFighterInspection(){
  }
  $("#inspectSide").textContent=fighter.side==="ally"?"СОЮЗНИК":"ПРОТИВНИК";
  $("#inspectName").textContent=fighter.name;
+ // ARENA-ART-004G: the same portrait as the turn queue and the acting-hero card.
+ const portrait=$("#inspectPortrait");
+ if(portrait&&portrait.dataset?.fighterId!==fighter.id){
+  portrait.dataset.fighterId=fighter.id;
+  const src=typeof ArenaUI003!=="undefined"?ArenaUI003.portrait(fighter):null;
+  portrait.classList?.toggle("enemy",fighter.side!=="ally");
+  portrait.innerHTML=src?`<img src="${src}" alt="" draggable="false">`:
+   `<span>${typeof ArenaUI003!=="undefined"?ArenaUI003.initials(fighter.name):""}</span>`;
+ }
  const npcRole=typeof NpcBattleIntel!=="undefined"?NpcBattleIntel.role(fighter):null;
  const mark=npcCombatMarker(fighter);
  $("#inspectRole").textContent=(npcRole||fighter.role)+
@@ -3747,10 +3822,8 @@ function renderBattleFrame(){
  }
  if(arenaFeedback){
   arenaFeedback.handle(feedbackCues,{multiplier:BattleSpeed.multiplier(),
-   // Owner requirement: no camera push-in during 4x autobattle.
-   cameraMotion:!(autoBattle&&BattleSpeed.get()>=4),
    project:arenaFeedbackPoint,meshesFor:arenaFlashMeshes});
-  arenaFeedback.frame(dt,arenaCamera,visualActionPending());
+  arenaFeedback.frame(dt,arenaCamera);
  }
  // Death animation may end without a new combat action. Retire stale
  // indicators immediately instead of waiting for the following turn.

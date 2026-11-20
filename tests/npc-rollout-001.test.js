@@ -42,8 +42,9 @@ test("001 all eight challenges have NPC rosters, distinct goals and matching wav
   const all=[...first,...waves.flat()];
   assert.equal(all.length,plan.enemyIds.length+plan.futureWaves.flat().length);
   assert.equal(new Set(all.map(x=>x.id)).size,all.length,id+" IDs");
+  // ARENA-ART-004G: N-02 wave 1 has the sarkh courier (owner, variant A).
   assert.ok(all.every(x=>x.archetypeId.startsWith("npc-")&&x.side==="enemy"&&
-   x.speciesId==="human"&&x.factionId===null));
+   (x.speciesId==="human"||id==="N-02"&&x.id==="npc-n02-slinger"&&x.speciesId==="sarkh")&&x.factionId===null));
   assert.ok(P.title(id));
   assert.equal(waves.length,Q.get(id).futureWaves.length);
  }

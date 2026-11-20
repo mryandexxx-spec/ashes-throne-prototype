@@ -53,7 +53,7 @@ test("MOBILEQA001: arena layout registers fixed controls as obstacles",()=>{
  assert.ok(m,"obstacle list present");
  // ARENA-UI-003: every fixed HUD zone, including the new queue, hero block and round abilities.
  for(const s of ["#autoBattleBtn","#autoSpeedBtn","#turnQueueBar","#activeHero","#battleChallengeGoal",
-   "#tacticalGoalCard","#actionHint",".ability-options",".arena-utility","[data-screen]"])
+   "#tacticalGoalCard","#actionHint",".ability-options",".arena-utility","#battleMenuBtn","#battleMenu"])
   assert.ok(m[1].includes(s),s);
  // Collapsing the queue frees its zone for the labels.
  assert.match(g,/turnQueueCollapsed=!turnQueueCollapsed;[\s\S]{0,200}arenaHudLayout\?\.avoid\?\.\(arenaHudObstacles\(\)\)/);

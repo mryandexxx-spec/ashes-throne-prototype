@@ -23,17 +23,17 @@ for(const id of ["activeHero","activeHeroPortrait","activeHeroName"]){
 }
 assert.match(game,/const actor=state\.active\?fighters\[state\.currentActor\]:null;/);
 assert.match(game,/renderActiveHero\(actor\);/);
-// Controls: menu and log top-left, queue top, Автобой/1× bottom-left beside the hero.
+// Controls: menu, log, Автобой/1× top-left (ARENA-ART-004G), queue under them, hero bottom-left.
 const top=battle.indexOf('class="battle-top arena-hud"');
 const queue=battle.indexOf('class="battle-queue arena-hud"');
 const hero=battle.indexOf('class="battle-hero arena-hud"');
 assert.ok(top>=0&&queue>top&&hero>queue,"top row, queue, hero row in order");
-assert.ok(battle.indexOf('id="autoBattleBtn"')>hero&&battle.indexOf('id="autoSpeedBtn"')>hero,"autoplay controls beside the hero");
+assert.ok(battle.indexOf('id="autoBattleBtn"')>top&&battle.indexOf('id="autoSpeedBtn"')<queue,"autoplay controls in the top row");
 assert.doesNotMatch(battle,/class="battle-top-controls/);
 assert.doesNotMatch(battle,/class="arena-roster"/);
 assert.doesNotMatch(battle,/id="combatants"/);
 assert.doesNotMatch(game,/function renderCombatants\(\)/,"unused roster renderer removed");
 assert.match(styles,/#battle\.battle-screen \.battle-hero\{[^}]*bottom:max\(/);
-assert.match(styles,/#battle\.battle-screen \.battle-queue\{[^}]*top:max\(/);
+assert.match(styles,/#battle\.battle-screen \.battle-queue\{[^}]*top:calc\(max\(/);
 assert.match(html,/v\d+[.]\d+[.]\d+ · UIHUD001/);
 console.log("Combat-008D → ARENA-UI-003 target on scene, acting hero and control rows passed");

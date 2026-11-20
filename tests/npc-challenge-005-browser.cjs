@@ -139,6 +139,25 @@ async function run(name,browserType){
   assert.equal(nFirst.limit,null);
   assert.ok(nFirst.meshes.every(m=>m.visible&&m.marker===m.id));
   assert.equal(nFirst.overflow,false);
+  // ARENA-ART-004G (owner, variant A): the first N-02 harasser is the sarkh courier,
+  // with its own name over the fighter and its own GLB, not a slinger or a capsule.
+  await page.waitForFunction(()=>!!npcGlbRuntimes.get("npc-n02-slinger")?.isReady,null,{timeout:90000});
+  const courier=await page.evaluate(()=>{
+   const f=state.fighters.find(x=>x.id==="npc-n02-slinger");
+   const label=document.querySelector('#arenaIndicators .arena-indicator[data-fighter-id="npc-n02-slinger"] .arena-indicator-name');
+   return {archetypeId:f.archetypeId,speciesId:f.speciesId,name:f.name,hp:f.maxHp,protection:f.maxProtection,
+    label:label?.textContent||"",capsuleHidden:meshes[f.id].body.isVisible===false,
+    rt:npcGlbRuntimes.get(f.id)?.archetypeId,
+    texts:document.querySelector("#battle").textContent};
+  });
+  assert.equal(courier.archetypeId,"npc-sarkh-land-courier");
+  assert.equal(courier.speciesId,"sarkh");
+  assert.equal(courier.rt,"npc-sarkh-land-courier");
+  assert.equal(courier.capsuleHidden,true);
+  assert.equal(courier.name,"Сарх — сухопутный курьер");
+  assert.ok(!courier.label||courier.label===courier.name,"label is the courier's name");
+  assert.deepEqual([courier.hp,courier.protection],[60,5]);
+  assert.doesNotMatch(courier.texts,/Пращник уступа/,"no stale slinger name in the battle HUD");
   await page.screenshot({path:path.join(out,name+"-n02-wave1.png"),fullPage:true});
   await page.locator("#autoSpeedBtn").click();
   await page.locator("#autoSpeedBtn").click();

@@ -10,13 +10,18 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { resample, prune, dedup, quantize, textureCompress } from '@gltf-transform/functions';
 import sharp from 'sharp';
 
-const [, , input, output] = process.argv;
-if (!input || !output) throw new Error('usage: node tools/optimize-hero-glb.mjs input.glb output.glb');
+// ARENA-ART-004B: optional `--base-color=1024` lowers only the base colour size (enemy models); default stays 2048.
+const args = process.argv.slice(2);
+const [input, output] = args.filter((a) => !a.startsWith('--'));
+const baseColorArg = args.find((a) => a.startsWith('--base-color='));
+const baseColor = baseColorArg ? Number(baseColorArg.split('=')[1]) : 2048;
+if (!input || !output) throw new Error('usage: node tools/optimize-hero-glb.mjs input.glb output.glb [--base-color=2048|1024]');
+if (![512, 1024, 2048].includes(baseColor)) throw new Error('--base-color must be 512, 1024 or 2048');
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
 const doc = await io.read(input);
 await doc.transform(
   prune(), resample(), dedup(), prune(),
-  textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [2048, 2048], quality: 90, slots: /^baseColor/ }),
+  textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [baseColor, baseColor], quality: 90, slots: /^baseColor/ }),
   textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [1024, 1024], quality: 95, slots: /^normal/ }),
   textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [1024, 1024], quality: 92, slots: /^metallicRoughness/ }),
   quantize({ quantizePosition: 14, quantizeNormal: 16, quantizeTexcoord: 14, quantizeWeight: 8 }),

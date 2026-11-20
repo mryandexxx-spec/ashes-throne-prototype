@@ -107,7 +107,9 @@ const AnimationProfiles=(()=>{
   const cast=Object.freeze({kind:"guard",durationMs:1500,amplitude:0});
   const gesture=Object.freeze({kind:"lunge",durationMs:1500,amplitude:0,rooted:true,contactFraction:.78});
   const ward=Object.freeze({kind:"ward",durationMs:900,amplitude:0});
-  const hit=Object.freeze({kind:"hit",durationMs:800,amplitude:.18});
+  // ARENA-ART-004F: Hit_Reaction window (NpcGlbRuntime.WINDOWS) throws the body back 96 ms
+  // after contact; the template push-back peaks there too (peak .12 instead of .42).
+  const hit=Object.freeze({kind:"hit",durationMs:800,amplitude:.18,peak:.12});
   const death=Object.freeze({kind:"death",durationMs:1400,amplitude:0,clipFall:true});
   const common={idle,guard:raise,ward,hit,death};
   const tank=Object.freeze({...common,basic:slash,special:block,powerful:block});

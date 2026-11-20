@@ -1,4 +1,4 @@
-name: Enemy GLB runtime browser (ARENA-ART-004C)
+name: Enemy GLB runtime browser (ARENA-ART-004)
 on:
   pull_request:
     branches: [main]
@@ -10,8 +10,8 @@ on:
       - 'battle-animation.js'
       - 'game.js'
       - 'index.html'
-      - 'tests/npc-glb-004c-browser.cjs'
-      - '.github/workflows/npc-glb-004c-browser.yml'
+      - 'tests/npc-glb-browser.cjs'
+      - '.github/workflows/npc-glb-browser.yml'
   workflow_dispatch:
 jobs:
   npc-glb-chromium-webkit:
@@ -32,11 +32,11 @@ jobs:
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/npc-server.log 2>&1 &
           sleep 2
-          node tests/npc-glb-004c-browser.cjs
-          NPC_BROWSER=webkit node tests/npc-glb-004c-browser.cjs
+          node tests/npc-glb-browser.cjs
+          NPC_BROWSER=webkit node tests/npc-glb-browser.cjs
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: arena-art-004c-browser
-          path: artifacts/npc-glb-004c
+          name: npc-glb-browser
+          path: artifacts/npc-glb-browser
           if-no-files-found: ignore

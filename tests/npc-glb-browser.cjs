@@ -8,12 +8,15 @@
  *    the damage number at its contact moment; tinted stand-ins on permanent capsules.
  * 4) ARENA-ART-004E: the sarkh go through part 1 like everyone else; in addition their baked
  *    tail moves between slots while the coil base stays, and they stand on their upright body.
+ * 5) ARENA-ART-004F: Hit_Reaction follows its window too; a throw (Over_Shoulder_Throw,
+ *    Crouch_Charge_and_Throw) ends blended into the stance, so the first idle frame after it
+ *    does not jump (head gap at slot end vs idle). Renamed from npc-glb-004c-browser.cjs.
  * Local cloud run: NPC_CHROME=/usr/bin/google-chrome NPC_BABYLON_LOCAL=1 (Babylon from
  * node_modules via page.route). CI uses the Playwright image and the real CDN. */
 const assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path");
 let pw;try{pw=require("playwright");}catch{pw=require("playwright-core");}
-const out=path.join(process.cwd(),"artifacts","npc-glb-004c");
+const out=path.join(process.cwd(),"artifacts","npc-glb-browser");
 fs.mkdirSync(out,{recursive:true});
 const origin=process.env.GAME_ORIGIN||"http://127.0.0.1:8765/";
 const useWebkit=process.env.NPC_BROWSER==="webkit";
@@ -71,7 +74,7 @@ const census=()=>({meshes:scene.meshes.length,materials:scene.materials.length,t
       drift=Math.max(drift,Math.abs(hips.position.x-bind.x),Math.abs(hips.position.z-bind.z));}
     // ARENA-ART-004D: the frame shown at slot progress p is the window's clip fraction.
     const windows=[];
-    for(const slot of ["basic","powerful","guard","ward","death"]){
+    for(const slot of ["basic","powerful","guard","ward","hit","death"]){
      const contact=NpcGlbRuntime.contactFor(id,slot);
      for(const p of [0,contact??.5,1]){
       rt.update({slot,progress:p});
@@ -80,6 +83,16 @@ const census=()=>({meshes:scene.meshes.length,materials:scene.materials.length,t
       const want=g.from+(g.to-g.from)*NpcGlbRuntime.clipFraction(id,slot,p);
       windows.push({slot,p,err:Math.abs(frame-want)});
      }
+    }
+    // ARENA-ART-004F: head gap between the end of an attack slot and the next idle frame.
+    const headNode=scene.transformNodes.find(n=>n.name==="Head"&&n.parent);
+    const headAt=(slot,p)=>{rt.update({slot,progress:p});scene.render();headNode.computeWorldMatrix(true);return headNode.getAbsolutePosition().clone();};
+    const exits={};
+    for(const slot of ["basic","powerful"]){
+     const clip=NpcGlbRuntime.clipFor(id,slot);
+     const end=headAt(slot,1),pre=headAt(slot,.78),idle=headAt("idle",0);
+     exits[slot]={clip,blend:NpcGlbRuntime.stanceBlend(id,slot,1),gap:+B.Vector3.Distance(end,idle).toFixed(4),
+      lunge:+B.Vector3.Distance(pre,idle).toFixed(4)};
     }
     // ARENA-ART-004E: tail tip turns between idle and the attack contact; the coil base barely moves.
     let tail=null;
@@ -100,7 +113,7 @@ const census=()=>({meshes:scene.meshes.length,materials:scene.materials.length,t
     const hidden=!body.isVisible&&!head.isVisible;
     const loaded=count();
     rt.dispose();
-    rows.push({id,ok,hidden,tail,drift:+drift.toFixed(5),height:+(box.max-box.min).toFixed(2),
+    rows.push({id,ok,hidden,tail,exits,drift:+drift.toFixed(5),height:+(box.max-box.min).toFixed(2),
      windowErr:Math.max(...windows.map(w=>w.err)),wantHeight:NpcGlbRuntime.heightFor(id),
      restored:body.isVisible&&head.isVisible,before,loaded,after:count(),leftover:extra(),
      brdf:scene.environmentBRDFTexture?.name||null});
@@ -120,6 +133,13 @@ const census=()=>({meshes:scene.meshes.length,materials:scene.materials.length,t
    const [a,b]=[r.after,r.before].map(x=>x.split("/").filter((_,i)=>i!==2).join("/"));
    assert.equal(a,b,r.id+" dispose leaves no meshes/materials/skeletons/groups/nodes");
   }
+  // ARENA-ART-004F: throws hand over to the stance without a jump of the head.
+  for(const r of isolated)for(const [slot,e] of Object.entries(r.exits)){
+   if(!/Throw/.test(e.clip))continue;
+   assert.equal(e.blend,1,r.id+" "+slot+" "+e.clip+" ends fully in the stance pose");
+   assert.ok(e.gap<.01,r.id+" "+slot+" head gap at the hand-over "+e.gap);
+  }
+  console.log("ARENAART004F exits",isolated.map(r=>r.id.replace("npc-","")+":"+Object.entries(r.exits).filter(([,e])=>/Throw/.test(e.clip)).map(([s,e])=>s+"="+e.lunge+"→"+e.gap).join(",")).filter(x=>!x.endsWith(":")).join(" "));
   // ARENA-ART-004E: both sarkh are loaded models with a living tail on a still coil base.
   for(const id of ["npc-sarkh-convoy-guard","npc-sarkh-land-courier"]){
    const r=isolated.find(x=>x.id===id);

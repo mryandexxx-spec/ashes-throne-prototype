@@ -141,7 +141,9 @@ const BattleAnimation=(()=>{
  const empty=()=>({x:0,y:0,tilt:0});
  function motion(profile,progress){
   const a=profile.amplitude;
-  const pulse=progress<.42?progress/.42:(1-progress)/.58;
+  // ARENA-ART-004F: a profile may move the pulse peak (enemy models recoil right at contact).
+  const k=Number.isFinite(profile.peak)&&profile.peak>0&&profile.peak<1?profile.peak:.42;
+  const pulse=progress<k?progress/k:(1-progress)/(1-k);
   switch(profile.kind){
    case "idle":return empty(); // Feet stay planted; breathing belongs to the skeleton.
    case "lunge":return {x:a*pulse,y:.07*pulse,tilt:-.14*pulse};

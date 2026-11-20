@@ -6,6 +6,7 @@
  * skinned bounds in the idle pose (world units, feet to top).
  * Run: python3 -m http.server 8765 & NPC_CHROME=/usr/bin/google-chrome NPC_BABYLON_LOCAL=1
  *      node tools/npc-stance-sheet.cjs [deg,deg,...]
+ * ARENA-ART-004F: NPC_YAW_SIDE=ally sweeps the ally stand-ins (allies with an enemy model).
  * ARENA-ART-004E — pose sheet in an isolated scene (no battle): NPC_POSES=<id|url>,… renders every
  * combat clip at a few fractions, front 3/4 and side, one PNG per model plus a contact sheet:
  *   NPC_POSES=npc-sarkh-convoy-guard,npc-sarkh-land-courier node tools/npc-stance-sheet.cjs
@@ -17,6 +18,52 @@ const origin=process.env.GAME_ORIGIN||"http://127.0.0.1:8765/";
 const out=path.join(process.cwd(),"artifacts",process.env.NPC_OUT||"npc-glb-004d");
 fs.mkdirSync(out,{recursive:true});
 const offsets=(process.argv[2]||"0,-35,35").split(",").map(Number);
+// ARENA-ART-004F: NPC_POSE_SLOT=<slot> renders through NpcGlbRuntime itself (windows and the
+// blend into the stance) at slot progress NPC_POSE_FRACTIONS; "idle" is appended as the next
+// frame. NPC_RUNTIME_FILE=<path> serves another npc-glb-runtime.js (e.g. the one from main) for
+// a before/after sheet: git show origin/main:npc-glb-runtime.js > /tmp/old.js
+async function slotSheet(page){
+ const models=process.env.NPC_POSES.split(","),slot=process.env.NPC_POSE_SLOT;
+ const fractions=(process.env.NPC_POSE_FRACTIONS||"0.7,0.78,0.85,0.9,0.95,1").split(",").map(Number);
+ const cell=240;
+ const shots=await page.evaluate(async({models,slot,fractions,cell})=>{
+  await NpcGlbRuntime.ensureLoader();
+  const B=BABYLON,canvas=document.createElement("canvas");canvas.width=cell;canvas.height=cell;
+  document.body.appendChild(canvas);
+  const engine=new B.Engine(canvas,true,{preserveDrawingBuffer:true}),scene=new B.Scene(engine);
+  scene.clearColor=new B.Color4(.33,.33,.42,1);
+  new B.HemisphericLight("h",new B.Vector3(.3,1,-.4),scene).intensity=1.1;
+  const ground=B.MeshBuilder.CreateGround("g",{width:4,height:4},scene);
+  const gm=new B.StandardMaterial("gm",scene);gm.diffuseColor=new B.Color3(.24,.24,.3);ground.material=gm;
+  const cam=new B.ArcRotateCamera("c",-Math.PI/2-.9,1.25,4.4,new B.Vector3(0,1.05,0),scene);scene.activeCamera=cam;
+  const out={};
+  for(const id of models){
+   const body=B.MeshBuilder.CreateBox("b",{size:.1},scene),head=B.MeshBuilder.CreateBox("h",{size:.1},scene);
+   body.position.y=.8;
+   const rt=NpcGlbRuntime.create(B,scene,{body,head},{archetypeId:id,fighterId:"sheet"});
+   await rt.ready;await scene.whenReadyAsync();
+   const row=[];
+   for(const p of [...fractions.map(p=>[slot,p]),["idle",0]]){
+    rt.update({slot:p[0],progress:p[1]});
+    for(const m of scene.meshes)m.refreshBoundingInfo?.({applySkeleton:true});
+    scene.render();scene.render();row.push(canvas.toDataURL("image/png"));
+   }
+   rt.dispose();body.dispose();head.dispose();
+   out[id]=row;
+  }
+  scene.dispose();engine.dispose();
+  return out;
+ },{models,slot,fractions,cell});
+ const sharp=require("sharp");
+ const label=(text,w,h)=>Buffer.from(`<svg width="${w}" height="${h}"><rect width="100%" height="100%" fill="#222"/><text x="6" y="${h-7}" font-family="sans-serif" font-size="14" fill="#eee">${text}</text></svg>`);
+ const W=(fractions.length+1)*cell,H=models.length*(cell+20)+24;
+ const parts=[{input:label((process.env.NPC_POSE_TITLE||slot)+" · progress "+fractions.join(" / ")+" → idle",W,24),top:0,left:0}];
+ models.forEach((id,i)=>{const top=24+i*(cell+20);parts.push({input:label(id,W,20),top,left:0});
+  shots[id].forEach((d,j)=>parts.push({input:Buffer.from(d.split(",")[1],"base64"),top:top+20,left:j*cell}));});
+ const file=path.join(out,"slot_"+slot+(process.env.NPC_POSE_TAG?"_"+process.env.NPC_POSE_TAG:"")+".png");
+ await sharp({create:{width:W,height:H,channels:3,background:"#222"}}).composite(parts).png().toFile(file);
+ console.log("SLOT",file);
+}
 async function poseSheet(page){
  const models=process.env.NPC_POSES.split(",");
  const clips=(process.env.NPC_POSE_CLIPS||"Combat_Stance,Thrust_Slash,Over_Shoulder_Throw,Block1,Charged_Spell_Cast,Hit_Reaction,dying_backwards").split(",");
@@ -94,8 +141,11 @@ async function poseSheet(page){
   return u.hostname==="cdn.babylonjs.com"&&map[u.pathname]
    ?route.fulfill({path:path.join(process.cwd(),map[u.pathname]),contentType:"text/javascript"}):route.abort();
  });
+ if(process.env.NPC_RUNTIME_FILE)await page.route(/\/npc-glb-runtime\.js(\?|$)/,route=>
+  route.fulfill({path:process.env.NPC_RUNTIME_FILE,contentType:"text/javascript"}));
  await page.goto(origin,{waitUntil:"load",timeout:60000});
  await page.waitForFunction(()=>typeof showScreen==="function"&&typeof NpcGlbRuntime!=="undefined",null,{timeout:60000});
+ if(process.env.NPC_POSES&&process.env.NPC_POSE_SLOT){await slotSheet(page);await browser.close();return;}
  if(process.env.NPC_POSES){await poseSheet(page);await browser.close();return;}
  await page.evaluate(()=>{campaignProgress.completed["black-pass-ambush"]=true;campaignProgress.bestStars["black-pass-ambush"]=1;});
  await page.locator('#home .hq-bottom button[data-screen="campaign"]').evaluate(el=>el.click());
@@ -147,12 +197,15 @@ async function poseSheet(page){
  });
  console.log("HEIGHTS",JSON.stringify(heights));
  for(const deg of offsets){
-  await page.evaluate(deg=>{
-   for(const f of state.fighters)if(f.side==="enemy"&&meshes[f.id])
-    meshes[f.id].body.rotation.y=ArenaStageView.idleYaw("enemy")+deg*Math.PI/180;
+  // ARENA-ART-004F: NPC_YAW_SIDE=ally turns the allies that wear an enemy model (stand-ins
+  // for the capsule heroes, e.g. NPC_SQUAD=kael,lyra,darin,ren,nada) instead of the enemies.
+  const side=process.env.NPC_YAW_SIDE||"enemy";
+  await page.evaluate(({deg,side})=>{
+   for(const f of state.fighters)if(f.side===side&&meshes[f.id]&&(side==="enemy"||npcGlbRuntimes.get(f.id)?.isReady))
+    meshes[f.id].body.rotation.y=ArenaStageView.idleYaw(side)+deg*Math.PI/180;
    scene.render();
-  },deg);
-  await page.screenshot({path:path.join(out,"yaw_"+deg+".png")});
+  },{deg,side});
+  await page.screenshot({path:path.join(out,(side==="enemy"?"yaw_":side+"_yaw_")+deg+".png")});
  }
  await browser.close();
 })().catch(e=>{console.error(e);process.exitCode=1;});

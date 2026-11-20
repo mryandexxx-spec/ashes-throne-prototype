@@ -3308,11 +3308,14 @@ function renderArenaIndicators(){
   // everyone else shows bars and effect icons. A battle-intel mark stays as an icon.
   const targeted=!!actor&&h.hp>0&&!support&&h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id;
   const named=active||targeted;
+  // The band reserved for an enemy target's hanging name; the name is capped to
+  // it (ellipsis), so a wider system font can never spill over a neighbour.
+  const nameW=Math.min(150,Math.round(h.name.length*7+10));
   const markClass=npcMark==="first"||npcMark==="signal"?"must-first":npcMark==="hunter"?"assault-hunter":"";
   const markIcon=!named&&markClass?`<span class="arena-effect mark ${markClass}" title="${NpcBattleIntel.markerLabel(npcMark)}">${markClass==="must-first"?"①":"!"}</span>`:"";
-  return `<div class="arena-indicator ${h.side} ${active?"acting":""} ${targeted?"targeted":""} ${named?"named":""} ${markClass}" data-fighter-id="${h.id}"${named&&h.side==="enemy"?` data-name-w="${Math.min(140,Math.round(h.name.length*6.2+8))}"`:""} aria-label="${h.name}${npcMark?", "+NpcBattleIntel.markerLabel(npcMark):""}: здоровье ${Math.max(0,view.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
+  return `<div class="arena-indicator ${h.side} ${active?"acting":""} ${targeted?"targeted":""} ${named?"named":""} ${markClass}" data-fighter-id="${h.id}"${named&&h.side==="enemy"?` data-name-w="${nameW}"`:""} aria-label="${h.name}${npcMark?", "+NpcBattleIntel.markerLabel(npcMark):""}: здоровье ${Math.max(0,view.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
    ${focused?`<div class="arena-focus-cursor ${support?"available":"locked"}" aria-hidden="true">▼</div>`:""}
-   ${named?`<div class="arena-indicator-name">${h.name}</div>`:""}
+   ${named?`<div class="arena-indicator-name"${h.side==="enemy"?` style="max-width:${nameW}px"`:""}>${h.name}</div>`:""}
    ${protectionLine}
    <div class="arena-health" title="HP ${Math.max(0,view.hp)} / ${h.maxHp}"><span style="width:${health}%"></span></div>
    <div class="arena-initiative" title="Инициатива ${Math.round(h.meter||0)} / 1000"><span style="width:${initiative}%"></span></div>

@@ -186,7 +186,8 @@ test("ARENAUI003B: a number never rises into its target's label, even when the l
 test("ARENAUI003B: labels show names only for the acting hero and the target; marks stay as icons",()=>{
  assert.match(game,/const targeted=!!actor&&h\.hp>0&&!support&&h\.side==="enemy"&&state\.fighters\[state\.selectedEnemy\]\?\.id===h\.id;/);
  assert.match(game,/const named=active\|\|targeted;/);
- assert.match(game,/\$\{named\?`<div class="arena-indicator-name">\$\{h\.name\}<\/div>`:""\}/);
+ assert.match(game,/\$\{named\?`<div class="arena-indicator-name"\$\{h\.side==="enemy"\?` style="max-width:\$\{nameW\}px"`:""\}>\$\{h\.name\}<\/div>`:""\}/);
+ assert.match(game,/data-name-w="\$\{nameW\}"/,"the reserved band and the name cap are the same number");
  assert.match(game,/const markIcon=!named&&markClass\?`<span class="arena-effect mark \$\{markClass\}"/);
  // Labels are pinned (bounded shift), the free packer is gone.
  const hud=read("arena-world-hud.js");

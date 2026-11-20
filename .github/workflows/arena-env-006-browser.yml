@@ -1,0 +1,42 @@
+name: ARENA-ENV-006 3D terrace experiment (browser)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'combat-environment-006.js'
+      - 'assets/arena-env006-terrace-projection.webp'
+      - 'arena-stage-view.js'
+      - 'game.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'tests/arena-env-006-browser.cjs'
+      - '.github/workflows/arena-env-006-browser.yml'
+  workflow_dispatch:
+jobs:
+  env006-chromium-webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Flag on, frame matches 2D, victory, re-entry without leaks; flag off untouched
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/env006-server.log 2>&1 &
+          sleep 2
+          mkdir -p artifacts/arena-env-006/chromium artifacts/arena-env-006/webkit
+          ENV006_SHOTS=artifacts/arena-env-006/chromium node tests/arena-env-006-browser.cjs
+          ENV006_BROWSER=webkit ENV006_SHOTS=artifacts/arena-env-006/webkit node tests/arena-env-006-browser.cjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arena-env-006-browser
+          path: artifacts/arena-env-006
+          if-no-files-found: ignore

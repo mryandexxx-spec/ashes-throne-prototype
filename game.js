@@ -54,7 +54,7 @@ const $=s=>document.querySelector(s);
 const ENV022_CONCEPT_PREVIEW=typeof location!=="undefined" &&
  !/(?:^|[?&])environment=(?:env017|env010)(?:&|$)/.test(location.search);
 let engine, scene, meshes={};
-// ARENA-ENV-006 (EXPERIMENT, only with ?environment=env3d): the ENV-005 terrace art
+// ARENA-ENV-006 (default since ENV-006C; ?environment=env2d opts out): the ENV-005 terrace art
 // projected onto a light 3D proxy; built on battle entry, disposed on exit.
 // The CSS art stays underneath as the loading/failure fallback.
 const ARENA_ENV006_3D=typeof location!=="undefined"&&typeof CombatEnvironment006!=="undefined"&&

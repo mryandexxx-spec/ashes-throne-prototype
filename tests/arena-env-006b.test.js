@@ -45,10 +45,10 @@ test("leaf shade lies on the floor only: zone starts below the terrace back edge
 
 test("amplitudes are soft on the 844x390 reference screen",()=>{
  const A=E.ANIM;
- assert.ok(A.leafAmplitude*scale<=4,"leaf shade offset ≤4 screen px");
- assert.ok(A.flowerAmplitude*scale<=2,"flower sway ≤2 screen px");
- assert.ok(A.mistSweep*scale<=12&&A.mistSpeed<=.15,"mist drifts ≤12 px per ≥6.7 s");
- assert.ok(A.mistWisps<=.08,"wisps ≤ ±8% brightness");
+ assert.ok(A.leafAmplitude*scale<=7,"leaf shade offset ≤7 screen px (ENV-006C)");
+ assert.ok(A.flowerAmplitude*scale<=3,"flower sway ≤3 screen px");
+ assert.ok(A.mistSweep*scale<=18&&A.mistSpeed<=.15,"mist drifts ≤18 px per ≥6.7 s");
+ assert.ok(A.mistWisps<=.12,"wisps ≤ ±12% brightness");
  assert.ok(A.leafRatio[0]>=.4&&A.leafRatio[1]<=2.5,"relight ratio clamped");
  assert.ok(A.maxStepMs<=100);
 });

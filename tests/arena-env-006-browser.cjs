@@ -162,8 +162,8 @@ async function reducedRun(browser){
   try{bytes[r.url().replace(/^.*\//,"")]=(await r.body()).length;}catch(_){}});
  try{
   await routeBabylon(page);
-  // --- 4. Default (no flag): 2D ENV-005, no ENV006 objects. Reference frame for 1).
-  await openBattle(page,"");
+  // --- 4. Opt-out ?environment=env2d: 2D ENV-005, no ENV006 objects. Reference frame for 1).
+  await openBattle(page,"?environment=env2d");
   await start(page,false);
   const plain=await page.evaluate(()=>({flag:ARENA_ENV006_3D,env:arenaEnv006,c:{meshes:scene.meshes.filter(m=>/^env006/.test(m.name)).length},
    css:getComputedStyle(document.querySelector("#battle .arena-wrap")).backgroundImage.includes("arena-env005-terrace")}));

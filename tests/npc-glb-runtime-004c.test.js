@@ -14,7 +14,7 @@ const glbJson=file=>{
 test("ARENA-ART-004C: interface mirrors NadaGlbRuntime and reads the manifest",()=>{
  for(const key of ["create","CLIPS","WINDOWS","clipFor","windowFor","assetUrl","has"])
   assert.ok(key in runtime,"missing "+key);
- assert.equal(ids.length,8);
+ assert.equal(ids.length,10); // 8 humanoids + 2 sarkh (ARENA-ART-004E)
  for(const id of ids){
   assert.equal(runtime.has(id),true);
   assert.equal(runtime.assetUrl(id),NpcModelAssets.models[id].url);
@@ -22,8 +22,8 @@ test("ARENA-ART-004C: interface mirrors NadaGlbRuntime and reads the manifest",(
   for(const slot of runtime.SLOTS)assert.equal(runtime.clipFor(id,slot),NpcModelAssets.models[id].clips[slot]);
   assert.deepEqual(runtime.windowFor(id,"idle"),[0,1]); // windows: ARENA-ART-004D test
  }
- // Sarkh have no model until step 5: create() returns null, the capsule stays.
- for(const id of ["npc-sarkh-convoy-guard","npc-sarkh-land-courier","ves",undefined,"__proto__"]){
+ // No manifest entry: create() returns null, the capsule stays (sarkh have models since 004E).
+ for(const id of ["npc-unknown","ves",undefined,"__proto__"]){
   assert.equal(runtime.has(id),false);
   assert.equal(runtime.create({},{},{body:{},head:{}},{archetypeId:id,fighterId:"e1"}),null);
  }
@@ -57,7 +57,7 @@ test("ARENA-ART-004C: archetype profiles apply only through link() and keep sane
  assert.equal(profiles.resolve("e-test","powerful"),profiles.resolve("npc-watch-captain","powerful"));
  profiles.unlink("e-test");
  assert.equal(profiles.resolve("e-test","basic"),template);
- assert.equal(profiles.link("e-test","npc-sarkh-convoy-guard"),false);
+ assert.equal(profiles.link("e-test","npc-unknown"),false);
 });
 test("ARENA-ART-004C: game.js keeps the capsule fallback and disposes enemy GLBs",()=>{
  const game=read("game.js"),page=read("index.html");

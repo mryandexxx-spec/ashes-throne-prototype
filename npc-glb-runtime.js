@@ -1,8 +1,10 @@
 /* ARENA-ART-004C — on-demand skinned enemy models in combat. No gameplay ownership.
- * One runtime for every humanoid enemy archetype: url, bytes and clips per slot come
+ * One runtime for every enemy archetype: url, bytes and clips per slot come
  * from NpcModelAssets.models[archetypeId] (dev/src/assets/npc-models.js, generated).
  * Same contract as NadaGlbRuntime: create(...) -> {ready,isReady,update,dispose}.
- * No manifest entry (sarkh until ARENA-ART-004E) or any load error -> capsule stays.
+ * ARENA-ART-004E: the sarkh are in the manifest too; their tail wave is baked into the
+ * clips (tools/build-sarkh-rig.mjs), so they need no per-frame code here.
+ * No manifest entry or any load error -> capsule stays.
  * Never throw into battle flow.
  */
 const NpcGlbRuntime=(()=>{
@@ -72,8 +74,9 @@ const NpcGlbRuntime=(()=>{
  const WINDOWS=Object.freeze({
   Thrust_Slash:Object.freeze({basic:slashWindow,special:slashWindow}),
   Triple_Combo_Attack:Object.freeze({powerful:W([[0,0],[.3,.15],[.6,.52],[1,.85]],.6)}),
+  // powerful: sarkh courier's «Скорый выстрел» (ARENA-ART-004E) reuses the throw.
   Over_Shoulder_Throw:Object.freeze({basic:W([[0,.1],[.78,.8],[1,.9]],.78),
-   special:W([[0,.1],[.78,.8],[1,.9]],.78)}),
+   special:W([[0,.1],[.78,.8],[1,.9]],.78),powerful:W([[0,.1],[.78,.8],[1,.9]],.78)}),
   Crouch_Charge_and_Throw:Object.freeze({powerful:W([[0,0],[.25,.15],[.55,.62],[.75,.70],[1,.92]],.75)}),
   // Guard raises the block and ends raised; the ward cue then holds it (as Liora).
   Block1:Object.freeze({guard:W([[0,.12],[1,.36]]),ward:W([[0,.34],[1,.42]]),
@@ -151,10 +154,16 @@ const NpcGlbRuntime=(()=>{
    const height=max.y-min.y;
    if(!Number.isFinite(height)||height<=0)throw Error("Invalid NPC GLB height: "+archetypeId);
    const scale=heightFor(archetypeId)/height;
+   // ARENA-ART-004E: a sarkh coil spreads far behind the body, so the fighter's place is its
+   // upright body (SnakeBody bone), not the middle of the bounds; humanoids keep the bounds.
+   const body=result.transformNodes.find(node=>node.name==="SnakeBody");
+   if(body)body.computeWorldMatrix(true);
+   const anchor=body?body.getAbsolutePosition():null;
+   const cx=anchor?anchor.x:(min.x+max.x)*.5,cz=anchor?anchor.z:(min.z+max.z)*.5;
    // Meshy faces +Z; body-local +X is the battlefield front (ArenaStageView.idleFacing).
    root.scaling.set(scale,scale,scale);
    root.rotation.y=Math.PI/2;
-   root.position.set(-(min.z+max.z)*.5*scale,.14-.8-min.y*scale,(min.x+max.x)*.5*scale);
+   root.position.set(-cz*scale,.14-.8-min.y*scale,cx*scale);
    root.parent=visual.body;
    root.metadata={fighterId,archetypeId};
    for(const mesh of result.meshes){

@@ -1,0 +1,196 @@
+{
+ "npc-sarkh-convoy-guard": {
+  "Combat_Stance": {
+   "len": 1.7,
+   "speedPeaks": [
+    0.049,
+    0.225,
+    0.324,
+    0.402,
+    0.5,
+    0.569,
+    0.755
+   ],
+   "speedPeak": 0.755,
+   "reachPeak": 0.902,
+   "shoulderYaw": -51.4,
+   "feetYaw": 0,
+   "chestFromForward": -51.4
+  },
+  "Thrust_Slash": {
+   "len": 3.03,
+   "speedPeaks": [
+    0.247,
+    0.286
+   ],
+   "speedPeak": 0.247,
+   "reachPeak": 0.121
+  },
+  "Over_Shoulder_Throw": {
+   "len": 4.33,
+   "speedPeaks": [
+    0.2,
+    0.45,
+    0.554,
+    0.754,
+    0.808
+   ],
+   "speedPeak": 0.808,
+   "reachPeak": 0.231
+  },
+  "Block1": {
+   "len": 3.5,
+   "speedPeaks": [
+    0.324,
+    0.476
+   ],
+   "speedPeak": 0.324,
+   "reachPeak": 0.562,
+   "raised90": 0.324,
+   "wristRange": [
+    0.7,
+    1
+   ],
+   "heldUntil": 0.4
+  },
+  "Charged_Spell_Cast": {
+   "len": 2.7,
+   "speedPeaks": [
+    0.241,
+    0.654
+   ],
+   "speedPeak": 0.241,
+   "reachPeak": 0.901,
+   "raised90": 0.673,
+   "wristRange": [
+    0.4,
+    1.5
+   ],
+   "heldUntil": 0.821
+  },
+  "Hit_Reaction": {
+   "len": 1.67,
+   "speedPeaks": [
+    0.13,
+    0.2,
+    0.36,
+    0.42,
+    0.44,
+    0.46,
+    0.62
+   ],
+   "speedPeak": 0.36,
+   "reachPeak": 0.26
+  },
+  "dying_backwards": {
+   "len": 2.23,
+   "speedPeaks": [
+    0.582
+   ],
+   "speedPeak": 0.582,
+   "reachPeak": 0.254,
+   "hipsDown95": 0.448,
+   "hipsLowest": 0.672,
+   "headDown95": 0.597
+  }
+ },
+ "npc-sarkh-land-courier": {
+  "Combat_Stance": {
+   "len": 1.7,
+   "speedPeaks": [
+    0.049,
+    0.118,
+    0.294,
+    0.51,
+    0.578,
+    0.637,
+    0.667,
+    0.696,
+    0.755,
+    0.99
+   ],
+   "speedPeak": 0.755,
+   "reachPeak": 0.843,
+   "shoulderYaw": -51.4,
+   "feetYaw": 0,
+   "chestFromForward": -51.4
+  },
+  "Thrust_Slash": {
+   "len": 3.03,
+   "speedPeaks": [
+    0.247,
+    0.286
+   ],
+   "speedPeak": 0.247,
+   "reachPeak": 0.121
+  },
+  "Over_Shoulder_Throw": {
+   "len": 4.33,
+   "speedPeaks": [
+    0.2,
+    0.454,
+    0.754,
+    0.808
+   ],
+   "speedPeak": 0.808,
+   "reachPeak": 0.227
+  },
+  "Block1": {
+   "len": 3.5,
+   "speedPeaks": [
+    0.319,
+    0.343,
+    0.352,
+    0.476,
+    0.586
+   ],
+   "speedPeak": 0.319,
+   "reachPeak": 0.562,
+   "raised90": 0.329,
+   "wristRange": [
+    0.4,
+    0.5
+   ],
+   "heldUntil": 0.405
+  },
+  "Charged_Spell_Cast": {
+   "len": 2.7,
+   "speedPeaks": [
+    0.247,
+    0.654
+   ],
+   "speedPeak": 0.247,
+   "reachPeak": 0.895,
+   "raised90": 0.673,
+   "wristRange": [
+    0.1,
+    0.9
+   ],
+   "heldUntil": 0.827
+  },
+  "Hit_Reaction": {
+   "len": 1.67,
+   "speedPeaks": [
+    0.12,
+    0.2,
+    0.35,
+    0.44,
+    0.61
+   ],
+   "speedPeak": 0.44,
+   "reachPeak": 0.26
+  },
+  "dying_backwards": {
+   "len": 2.23,
+   "speedPeaks": [
+    0.239,
+    0.582
+   ],
+   "speedPeak": 0.582,
+   "reachPeak": 0.254,
+   "hipsDown95": 0.44,
+   "hipsLowest": 0.672,
+   "headDown95": 0.597
+  }
+ }
+}

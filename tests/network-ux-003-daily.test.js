@@ -102,6 +102,6 @@ test("NET-UX-003: network panel, activity links, safe return, mobile CSS and bui
  assert.match(css,/max-height:calc\(100dvh - 218px\)/);
  assert.match(css,/min-height:44px/);
  assert.match(css,/safe-area-inset/);
- assert.equal(pkg.version,"0.3.208");
- assert.match(html,/id="buildVersion">Прототип · v0\.3\.208 · ARENAART004D/);
+ assert.equal(pkg.version,"0.3.209");
+ assert.match(html,/id="buildVersion">Прототип · v0\.3\.209 · ARENAART004E/);
 });

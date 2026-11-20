@@ -6,6 +6,8 @@
  *  - Block1: when the wrists reach their raised plateau;
  *  - dying_backwards: when the hips stop falling (body on the ground);
  *  - Combat_Stance: yaw of the chest relative to the feet axis (profile to camera).
+ * ARENA-ART-004E: also reads the sarkh (NPC_ONLY=npc-sarkh-convoy-guard,npc-sarkh-land-courier);
+ * their clips come from a humanoid donor, so the moments must match the humanoid table.
  * Run: python3 -m http.server 8765 & NPC_CHROME=/usr/bin/google-chrome NPC_BABYLON_LOCAL=1
  *      node tools/measure-npc-clips.cjs  → artifacts/npc-glb-004d/clip-measure.json
  */
@@ -42,7 +44,10 @@ fs.mkdirSync(out,{recursive:true});
    const r=await B.SceneLoader.ImportMeshAsync(null,url.slice(0,slash+1),url.slice(slash+1),scene,null,".glb");
    const node=n=>r.transformNodes.find(t=>t.name===n);
    const hips=node("Hips"),lh=node("LeftHand"),rh=node("RightHand"),
-    lf=node("LeftFoot"),rf=node("RightFoot"),ls=node("LeftShoulder")||node("LeftArm"),rs=node("RightShoulder")||node("RightArm"),head=node("Head");
+    // ARENA-ART-004E: sarkh have no feet (tools/build-sarkh-rig.mjs names the coil Tail_*); the
+    // waist stands in so the foot columns stay defined. Their «Hips» is the waist bone and does
+    // not drop on death, so dying_backwards is read from the head (headDown95).
+    lf=node("LeftFoot")||node("Hips"),rf=node("RightFoot")||node("Hips"),ls=node("LeftShoulder")||node("LeftArm"),rs=node("RightShoulder")||node("RightArm"),head=node("Head");
    const all=[...r.transformNodes,...r.meshes];
    const update=()=>{for(const n of all)n.computeWorldMatrix(true);};
    const P=n=>{const p=n.getAbsolutePosition();return [p.x,p.y,p.z];};

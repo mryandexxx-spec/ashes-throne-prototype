@@ -116,6 +116,34 @@ fs.mkdirSync(out,{recursive:true});
     // Chest normal yaw: perpendicular to the shoulder line, measured from +Z.
     entry.chestFromForward=+((yaw(s.ls,s.rs))).toFixed(1);
    }
+   // ARENA-ART-004F: Hit_Reaction — displacement of hips and head from the first frame
+   // (hips x/z are pinned in the runtime, so head is read relative to the hips' x/z).
+   if(clip==="Hit_Reaction"){
+    const rel=s=>[s.hd[0]-s.h[0],s.hd[1],s.hd[2]-s.h[2]];
+    const hipD=samples.map(s=>Math.abs(s.h[1]-samples[0].h[1]));
+    const headD=samples.map(s=>dist(rel(s),rel(samples[0])));
+    const hv=smooth(headD.map((d,i)=>i?Math.abs(d-headD[i-1]):0));
+    const hm=Math.max(...headD);
+    entry.headPeak=t(headD.indexOf(hm));entry.hipPeak=t(hipD.indexOf(Math.max(...hipD)));
+    entry.headOnset20=t(headD.findIndex(d=>d>=.2*hm));entry.headOnset50=t(headD.findIndex(d=>d>=.5*hm));
+    entry.headSpeedPeak=t(hv.indexOf(Math.max(...hv)));
+    entry.headBack90=t(headD.length-1-[...headD].reverse().findIndex(d=>d>=.1*hm));
+    // Thrown back = head behind the hips along the asset forward (+Z); fastest head motion inside.
+    const back=samples.map(s=>s.hd[2]-s.h[2]),bmin=Math.min(...back);
+    entry.headBackPeak=t(back.indexOf(bmin));entry.headBackFromStart=+(back[0]-bmin).toFixed(3);
+    const from=Math.round(.3*n),to=Math.round(.6*n),hvBack=hv.slice(from,to+1);
+    entry.headSpeedPeakBack=t(from+hvBack.indexOf(Math.max(...hvBack)));
+    entry.headMax=+hm.toFixed(3);entry.hipMax=+Math.max(...hipD).toFixed(3);
+    if(process.env.NPC_TIMELINE)entry.hitTimeline=Array.from({length:21},(_,k)=>{const i=Math.round(k/20*n);return [k*5,+headD[i].toFixed(3),+hipD[i].toFixed(3)];});
+   }
+   // ARENA-ART-004F: distance of a clip pose from the nearest Combat_Stance pose (head, hands,
+   // hips height; hips x/z removed as in the runtime). Shows where an attack ends vs the stance.
+   if(rows.Combat_Stance&&clip!=="Combat_Stance"){
+    const key=s=>[s.hd[0]-s.h[0],s.hd[1],s.hd[2]-s.h[2],s.l[0]-s.h[0],s.l[1],s.l[2]-s.h[2],s.r[0]-s.h[0],s.r[1],s.r[2]-s.h[2],0,s.h[1],0];
+    const stance=rows.Combat_Stance.samples.map(key);
+    const near=s=>{const k=key(s);let b=Infinity;for(const q of stance){let d=0;for(let j=0;j<k.length;j+=3)d+=Math.hypot(k[j]-q[j],k[j+1]-q[j+1],k[j+2]-q[j+2]);b=Math.min(b,d/4);}return b;};
+    entry.stanceDist=Array.from({length:21},(_,k)=>+near(samples[Math.round(k/20*n)]).toFixed(3));
+   }
    // Coarse timeline (every 5%): wrist speed, signed forward reach (asset +Z, both signs kept),
    // wrist height over hips, hips height. For review only.
    if(process.env.NPC_TIMELINE)entry.timeline=Array.from({length:21},(_,k)=>{const i=Math.round(k/20*n),s=samples[i];
@@ -123,7 +151,8 @@ fs.mkdirSync(out,{recursive:true});
    m[clip]=entry;
   }
  }
- fs.writeFileSync(path.join(out,"clip-measure.json"),JSON.stringify(report,null,1));
+ if(process.env.NPC_OUT_DIR)fs.mkdirSync(process.env.NPC_OUT_DIR,{recursive:true});
+ fs.writeFileSync(path.join(process.env.NPC_OUT_DIR||out,"clip-measure.json"),JSON.stringify(report,null,1));
  const first=report[Object.keys(report)[0]];
  for(const [clip,e] of Object.entries(first))console.log(clip,JSON.stringify(e));
  // spread across models for the key numbers

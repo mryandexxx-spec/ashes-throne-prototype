@@ -24,7 +24,9 @@ const NpcGlbRuntime=(()=>{
  // the facing). Outside attacks the body turns by this much toward the camera so face
  // and gear read; attacks keep facing the target. Picked from the render sweep
  // (docs/evidence/arenaart004d/stance-yaw.webp). Radians, per side.
- const STANCE_YAW=Object.freeze({enemy:-35*Math.PI/180,ally:0});
+ // ARENA-ART-004F: allies wear enemy models only as stand-ins (kael, lyra, darin); they face
+ // the other way, so the same turn toward the camera is +35° (artifacts sweep 0/20/35/50/-35).
+ const STANCE_YAW=Object.freeze({enemy:-35*Math.PI/180,ally:35*Math.PI/180});
  const manifest=()=>typeof NpcModelAssets!=="undefined"?NpcModelAssets:null;
  const entry=archetypeId=>{
   const models=manifest()?.models;
@@ -65,19 +67,29 @@ const NpcGlbRuntime=(()=>{
  // Charged_Spell_Cast release .65, held to .83; dying_backwards hips down at .55-.57.
  // Melee approach (BattleAnimation.approach) arrives at progress .38 and holds to .64,
  // so melee contacts sit inside that hold.
- const W=(keys,contact)=>Object.freeze({keys:Object.freeze(keys.map(k=>Object.freeze(k))),
-  ...(contact!==undefined?{contact}:{})});
+ // ARENA-ART-004F: blendOut = slot progress after which the clip pose is blended (smoothstep)
+ // into the Combat_Stance pose by the end of the slot. The throws end in a deep lunge (head
+ // 0.6 m, hips 0.2 m lower than in the stance), so cutting the window alone still jumps.
+ const W=(keys,contact,blendOut)=>Object.freeze({keys:Object.freeze(keys.map(k=>Object.freeze(k))),
+  ...(contact!==undefined?{contact}:{}),...(blendOut!==undefined?{blendOut}:{})});
  const slashWindow=W([[0,0],[.42,.30],[1,.82]],.42);
  const castWindow=W([[0,0],[.78,.65],[1,.83]],.78);
  const castHold=W([[0,0],[1,.83]]); // heal/guard cast: no blow to time
  const blockAbility=W([[0,.12],[1,.55]]);
+ const throwWindow=W([[0,.1],[.78,.8],[1,.84]],.78,.82);
  const WINDOWS=Object.freeze({
   Thrust_Slash:Object.freeze({basic:slashWindow,special:slashWindow}),
   Triple_Combo_Attack:Object.freeze({powerful:W([[0,0],[.3,.15],[.6,.52],[1,.85]],.6)}),
   // powerful: sarkh courier's «Скорый выстрел» (ARENA-ART-004E) reuses the throw.
-  Over_Shoulder_Throw:Object.freeze({basic:W([[0,.1],[.78,.8],[1,.9]],.78),
-   special:W([[0,.1],[.78,.8],[1,.9]],.78),powerful:W([[0,.1],[.78,.8],[1,.9]],.78)}),
-  Crouch_Charge_and_Throw:Object.freeze({powerful:W([[0,0],[.25,.15],[.55,.62],[.75,.70],[1,.92]],.75)}),
+  // ARENA-ART-004F: after the release the clip only sinks into the lunge, so the window
+  // ends at .84 (short follow-through) and the last part of the slot blends into the stance.
+  Over_Shoulder_Throw:Object.freeze({basic:throwWindow,special:throwWindow,powerful:throwWindow}),
+  Crouch_Charge_and_Throw:Object.freeze({powerful:W([[0,0],[.25,.15],[.55,.62],[.75,.70],[1,.78]],.75,.8)}),
+  // ARENA-ART-004F: Hit_Reaction measured against the stance (head/chest, hips x/z pinned):
+  // .00-.30 the body comes forward out of the clip's own start pose, .35-.52 it is thrown
+  // back (head 16 cm behind the stance, fastest at .42), .55-.80 recovers, .80-1 stands still.
+  // The slot starts at the blow's contact: the recoil peaks 96 ms after it, then recovers.
+  Hit_Reaction:Object.freeze({hit:W([[0,.34],[.12,.52],[1,.8]])}),
   // Guard raises the block and ends raised; the ward cue then holds it (as Liora).
   Block1:Object.freeze({guard:W([[0,.12],[1,.36]]),ward:W([[0,.34],[1,.42]]),
    special:blockAbility,powerful:blockAbility}),
@@ -94,6 +106,13 @@ const NpcGlbRuntime=(()=>{
  // [first, last] clip fraction shown for a slot.
  const windowFor=(archetypeId,slot)=>{const k=windowOf(archetypeId,slot).keys;return [k[0][1],k[k.length-1][1]];};
  const contactFor=(archetypeId,slot)=>windowOf(archetypeId,slot).contact??null;
+ // Weight 0..1 of the stance pose at this slot progress (0 outside a blendOut tail).
+ function stanceBlend(archetypeId,slot,progress){
+  const start=windowOf(archetypeId,slot).blendOut;
+  if(!Number.isFinite(start))return 0;
+  const u=Math.max(0,Math.min(1,(clamp(progress)-start)/(1-start)));
+  return u*u*(3-2*u);
+ }
  // Slot progress 0..1 -> clip fraction 0..1 through the window knots.
  function clipFraction(archetypeId,slot,progress){
   const keys=windowOf(archetypeId,slot).keys,p=clamp(progress);
@@ -182,6 +201,17 @@ const NpcGlbRuntime=(()=>{
    const hips=result.transformNodes.find(node=>node.name==="Hips"||node.name==="mixamorig:Hips");
    const hipX=hips?.position.x,hipZ=hips?.position.z;
    for(const group of result.animationGroups)group.stop();
+   // ARENA-ART-004F: every animated node once, for the blend into the stance pose.
+   const animated=new Set();
+   for(const group of result.animationGroups)for(const t of group.targetedAnimations)if(t.target)animated.add(t.target);
+   let stancePose=null;
+   function blendToStance(w){
+    for(const s of stancePose){
+     if(s.q&&s.node.rotationQuaternion)B.Quaternion.SlerpToRef(s.node.rotationQuaternion,s.q,w,s.node.rotationQuaternion);
+     if(s.p)B.Vector3.LerpToRef(s.node.position,s.p,w,s.node.position);
+     if(s.s)B.Vector3.LerpToRef(s.node.scaling,s.s,w,s.node.scaling);
+    }
+   }
    function sample(activity){
     if(disposed||sceneDisposed(scene))return;
     const slot=SLOTS.includes(activity?.slot)?activity.slot:"idle";
@@ -196,9 +226,14 @@ const NpcGlbRuntime=(()=>{
     }
     // One pose at a time, driven by the BattleAnimation clock; no own render loop.
     group.goToFrame(group.from+(group.to-group.from)*clipFraction(archetypeId,slot,p));
+    const w=stancePose?stanceBlend(archetypeId,slot,p):0;
+    if(w>0)blendToStance(w);
     if(hips){hips.position.x=hipX;hips.position.z=hipZ;}
    }
    sample({slot:"idle",progress:0});
+   // Stance pose = first frame of the idle clip (Combat_Stance barely moves over its loop).
+   stancePose=[...animated].map(node=>({node,q:node.rotationQuaternion?.clone()||null,
+    p:node.position?.clone()||null,s:node.scaling?.clone()||null}));
    return Object.freeze({
     update:sample,
     dispose(){
@@ -240,6 +275,6 @@ const NpcGlbRuntime=(()=>{
   });
  }
  return Object.freeze({SLOTS,HEIGHT,HEIGHTS,STANCE_YAW,CLIPS,WINDOWS,STAND_INS,has,standIn,heightFor,assetUrl,
-  clipFor,windowFor,contactFor,clipFraction,ensureLoader,create});
+  clipFor,windowFor,contactFor,clipFraction,stanceBlend,ensureLoader,create});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=NpcGlbRuntime;

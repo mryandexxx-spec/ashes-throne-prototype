@@ -18,6 +18,8 @@ async function run(name,type,[W,H]){
   page.on("response",r=>{if(r.status()>=400)failed.push(r.status()+" "+r.url());});
   await page.goto("http://127.0.0.1:8765/tests/fixtures/env022-full-game.html",{waitUntil:"load",timeout:90000});
   await page.waitForFunction(()=>document.documentElement.dataset.visualStatus==="ready",null,{timeout:150000});
+  // Evidence only: a slow screenshot pipeline on CI must not fail the behaviour check.
+  const shot=file=>page.screenshot({path:path.join(out,file),timeout:20000}).catch(e=>console.warn("screenshot skipped",file,e.message.split("\n")[0]));
   const ev=code=>page.evaluate(c=>document.querySelector("#game").contentWindow.eval(c),code);
   await ev(`stopBattleRendering();engine.getDeltaTime=()=>16;window.__step=n=>{for(let i=0;i<n;i++)renderBattleFrame();};__step(3);`);
   const layout=await ev(`(()=>{
@@ -53,7 +55,7 @@ async function run(name,type,[W,H]){
   assert.equal(layout.queue.length,6);
   assert.equal(layout.hidden.length,0,"old elements removed");
   assert.equal(layout.visibleService,false,"no service text on screen");
-  await page.screenshot({path:path.join(out,`${name}-${W}x${H}-ally-turn.png`)});
+  await shot(`${name}-${W}x${H}-ally-turn.png`);
   // Collapse via the real button; the choice survives a new battle.
   await page.frameLocator("#game").locator("#turnQueueToggle").click();
   assert.equal(await ev(`[...document.querySelectorAll("#turnQueue li")].filter(n=>n.offsetWidth>0).length`),1);
@@ -74,7 +76,7 @@ async function run(name,type,[W,H]){
   await ev(`(()=>{const a=state.fighters[state.currentActor];a.specialCooldown=2;syncBattleUI();})()`);
   const cd=await ev(`(()=>{const b=document.querySelector("#specialAbilityBtn");return {state:b.dataset.state,num:b.querySelector(".ability-cooldown")?.textContent,label:b.getAttribute("aria-label"),filter:getComputedStyle(b).filter};})()`);
   assert.equal(cd.state,"cooldown");assert.equal(cd.num,"2");assert.match(cd.label,/перезарядка 2/);assert.match(cd.filter,/grayscale/);
-  await page.screenshot({path:path.join(out,`${name}-${W}x${H}-cooldown.png`)});
+  await shot(`${name}-${W}x${H}-cooldown.png`);
   await ev(`(()=>{const a=state.fighters[state.currentActor];a.specialCooldown=0;syncBattleUI();})()`);
   // A real tap on the basic ability performs a turn; the queue moves on.
   await page.frameLocator("#game").locator("#basicAbilityBtn").click();
@@ -126,7 +128,7 @@ async function run(name,type,[W,H]){
   assert.equal(away,true,"the striker's label hides while it is away");
   await ev(`__step(40)`);
   assert.equal(await ev(`document.querySelectorAll("#arenaIndicators .arena-indicator.away").length`),0,"label returns with its fighter");
-  await page.screenshot({path:path.join(out,`${name}-${W}x${H}-5v5-labels.png`)});
+  await shot(`${name}-${W}x${H}-5v5-labels.png`);
   assert.deepEqual(errors,[]);
   assert.deepEqual(failed.filter(u=>!/fonts\.g/.test(u)),[],"no failed requests (no icon 404s)");
   console.log("ARENA_UI_003_PASS",name,W+"x"+H,JSON.stringify({queue:layout.queue,hero:layout.heroName}));

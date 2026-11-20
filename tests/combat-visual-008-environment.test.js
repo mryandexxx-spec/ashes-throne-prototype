@@ -44,7 +44,7 @@ function makeScene(){return {
 test("CV008 replaces repetitive concrete beams/grid with finite unpickable layered rock",()=>{
  const B=createBabylon(),scene=makeScene(),arena=Visual.create(B,scene);
  const names=scene.meshes.map(m=>m.name);
- assert.equal(scene.meshes.length,56,"bounded geometry including 3 pooled FX pairs");
+ assert.equal(scene.meshes.length,50+Visual.MAX_FX*(1+Visual.SPARKS),"bounded geometry including 3 pooled spark bursts");
  assert.equal(scene.materials.length,16);
  assert.equal(new Set(names).size,names.length,"stable unique Babylon names");
  assert.ok(scene.meshes.every(m=>m.isPickable===false),"arena never steals fighter taps");
@@ -54,14 +54,17 @@ test("CV008 replaces repetitive concrete beams/grid with finite unpickable layer
  assert.ok(names.some(n=>n.startsWith("cv008_fallen_")));
  assert.ok(!names.some(n=>n.startsWith("cv007_far_cliff_")));
  assert.ok(!names.some(n=>n.startsWith("cv007_grid_")));
- assert.equal(scene.meshes.filter(m=>m.name.includes("hit_")).length,6);
+ assert.equal(scene.meshes.filter(m=>m.name.includes("hit_")).length,Visual.MAX_FX*(1+Visual.SPARKS));
  assert.equal(arena.pending(),0);
 });
 test("CV008 paints one deterministic 256 px texture once with no remote assets",()=>{
  const B=createBabylon(),scene=makeScene();
  Visual.create(B,scene);
- assert.equal(scene.textures.length,1);
- const grain=scene.textures[0];
+ // ARENA-VIS-002 adds one small FX texture (cv007_spark_tex); scenery still paints one.
+ const scenery=scene.textures.filter(t=>t.name!=="cv007_spark_tex");
+ assert.equal(scenery.length,1);
+ assert.ok(scene.textures.filter(t=>t.name==="cv007_spark_tex").every(t=>t.size.width===64),"spark texture stays tiny");
+ const grain=scenery[0];
  assert.deepEqual(grain.size,{width:256,height:256});
  assert.equal(grain.updated,true);
  assert.ok(grain.calls>2400&&grain.calls<2550,"bounded procedural brush operations");
@@ -74,11 +77,13 @@ test("CV008 paints one deterministic 256 px texture once with no remote assets",
 test("CV008 works without Canvas DynamicTexture and preserves existing FX contract",()=>{
  const B=createBabylon(false),scene=makeScene(),arena=Visual.create(B,scene);
  assert.equal(scene.textures.length,0);
- assert.equal(scene.meshes.length,56);
+ assert.equal(scene.meshes.length,50+Visual.MAX_FX*(1+Visual.SPARKS));
  assert.equal(scene.meshes.find(m=>m.name==="cv007_surface").material.diffuseTexture,undefined);
  const target={ren:{head:{position:new B.Vector3(-2,1.8,0)}}};
  arena.emit([{id:"ren",slot:"hit"}],target);
  assert.equal(arena.pending(),1);
+ arena.tick(80,2);
+ assert.equal(arena.pending(),1,"spark burst outlives the old 160 ms ring");
  arena.tick(80,2);
  assert.equal(arena.pending(),0);
  arena.clear();

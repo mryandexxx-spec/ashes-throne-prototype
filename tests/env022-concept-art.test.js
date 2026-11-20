@@ -45,13 +45,12 @@ test("concept mode keeps live fighter hit effect pool while skipping all old sce
     Vector3:class {constructor(x,y,z){Object.assign(this,{x,y,z});}}
   };
   const cv=context.CV.create(B,{}, {conceptBackdrop:true});
-  assert.equal(spawned.length,6,"Three hit rings and three glow meshes should remain");
+  assert.equal(spawned.length,context.CV.MAX_FX*(1+context.CV.SPARKS),"Three pooled spark bursts (flash + sparks) should remain");
   assert.ok(spawned.every(m=>/cv007_hit_/.test(m.name)));
   assert.equal(cv.pending(),0);
   cv.emit([{slot:"hit",id:"hero"}],{hero:{head:{position:{x:1,y:2,z:3}}}});
   assert.equal(cv.pending(),1);
-  cv.tick(100,1);
-  cv.tick(100,1);
+  for(let i=0;i<4;i++)cv.tick(100,1);
   assert.equal(cv.pending(),0);
 });
 

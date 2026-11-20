@@ -71,12 +71,12 @@ test("ENV009 integrates with CV007 FX without intercepting hits or changing scen
  const names=scene.meshes.map(m=>m.name);
  assert.equal(names.filter(n=>n.startsWith("env009_")).length,5);
  assert.ok(!names.includes("cv007_surface")&&!names.some(n=>n.startsWith("cv008_patch_")));
- assert.equal(names.filter(n=>n.includes("hit_")).length,6);
+ assert.equal(names.filter(n=>n.includes("hit_")).length,Visual.MAX_FX*(1+Visual.SPARKS),"ARENA-VIS-002: 3 pooled bursts = flash + sparks");
  assert.ok(scene.meshes.every(m=>!m.isPickable));
  assert.equal(visual.pending(),0);
  visual.emit([{id:"enemy",slot:"hit"}],{enemy:{head:{position:new B.Vector3(2,1.8,0)}}});
- assert.equal(visual.pending(),1);visual.tick(100,2);assert.equal(visual.pending(),0);
- assert.equal(scene.textures?.length||0,0,"no procedural texture when new environment is active");
+ assert.equal(visual.pending(),1);visual.tick(100,2);visual.tick(100,2);assert.equal(visual.pending(),0);
+ assert.equal((scene.textures||[]).filter(t=>t.name!=="cv007_spark_tex").length,0,"no procedural scenery texture when new environment is active");
  assert.doesNotMatch(read("combat-environment-009.js"),/runRenderLoop|setInterval|setTimeout|fetch\(|XMLHttpRequest|Math\.random/);
 });
 test("ENV009 constructs one locally generated stratified texture and no network loads",()=>{

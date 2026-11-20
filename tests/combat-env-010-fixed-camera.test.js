@@ -72,7 +72,7 @@ test("ENV010 integrates as an additive optional layer without changing ENV009/FX
  }
  assert.ok(scene.meshes.find(m=>m.name==="env009_living_ledge").enabled!==false);
  assert.ok(scene.meshes.find(m=>m.name==="env009_ravine").enabled!==false);
- assert.equal(scene.meshes.filter(m=>m.name.includes("hit_")).length,6);
+ assert.equal(scene.meshes.filter(m=>m.name.includes("hit_")).length,visual.MAX_FX*(1+visual.SPARKS));
  assert.ok(scene.meshes.every(m=>!m.isPickable));
  battle.emit([{id:"enemy",slot:"hit"}],{enemy:{head:{position:new B.Vector3(2,1.8,0)}}});
  assert.equal(battle.pending(),1);

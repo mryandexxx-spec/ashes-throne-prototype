@@ -7,6 +7,9 @@ const BattleAnimation=(()=>{
  const dying=new Set();
  // Presentation-only cues: the first frame of each queued action, no combat side-effects.
  const started=[];
+ // ARENA-VIS-002: feedback cues (numbers, hit-stop, flash, camera) fired at the
+ // same moment as the matching hit/heal cue. Read-only copies of event data.
+ const feedback=[];
  // HUDSYNC001: HP/protection the HUD is allowed to show while the batch is still being
  // drawn. CombatCore has already applied every event; these numbers only lag behind it
  // until the matching hit/heal cue starts, then snap to the value the event recorded.
@@ -25,7 +28,9 @@ const BattleAnimation=(()=>{
   shown.get(event.targetId).pending++;
  }
  function begin(cue){
-  if(cue.slot==="hit")started.push({id:cue.id,slot:cue.slot});
+  if(cue.slot==="hit")started.push({id:cue.id,slot:cue.slot,strong:cue.fx?.crit===true||cue.fx?.power===true});
+  if(cue.fx)feedback.push({id:cue.id,...cue.fx});
+  if(cue.power)feedback.push({id:cue.id,kind:"power",slot:cue.slot});
   if(cue.after){
    const entry=shown.get(cue.id);
    if(entry){
@@ -36,12 +41,26 @@ const BattleAnimation=(()=>{
    }
   }
  }
+ // ARENA-VIS-002: misses and resists have no animation of their own; they are shown
+ // when the action lands (its contact moment, or its end without one).
+ function fireFloats(action){
+  if(!action?.floats||action.floatsFired)return;
+  action.floatsFired=true;
+  for(const fx of action.floats)feedback.push(fx);
+ }
  function enqueue(events,positions,snapshot){
-  let contactAction=null;
+  let contactAction=null,lastAction=null;
+  const crits=new Set();
   if(!Array.isArray(events))return;
   for(let i=0;i<events.length;i++){
    const event=events[i];
-   if(event.type==="ability"&&typeof event.actorId==="string"){
+   if(event.type==="critical"&&typeof event.targetId==="string"){
+    crits.add(event.actorId+">"+event.targetId);
+   }else if((event.type==="miss"||event.type==="status-resisted")&&typeof event.targetId==="string"){
+    const fx={id:event.targetId,kind:event.type==="miss"?"miss":"resist"};
+    if(lastAction&&lastAction.id===event.actorId)(lastAction.floats||(lastAction.floats=[])).push(fx);
+    else feedback.push(fx); // no drawn action in this batch: show immediately
+   }else if(event.type==="ability"&&typeof event.actorId==="string"){
     const guard=events.slice(i+1).some(next=>(next.type==="effect"&&next.effect==="guard"||next.type==="heal")&&
      next.actorId===event.actorId&&next.targetId===event.targetId);
     contactAction=null;
@@ -62,15 +81,21 @@ const BattleAnimation=(()=>{
       action.reactions=[];contactAction=action;
      }
     }
+    if(event.abilityId==="powerful")action.power=true;
+    lastAction=action;
     queue.push(action);
    }else if(event.type==="heal"&&typeof event.targetId==="string"){
-    const cue={id:event.targetId,slot:"ward"};
+    const cue={id:event.targetId,slot:"ward",fx:{kind:"heal",amount:event.amount}};
     recordAfter(cue,event,snapshot);
     queue.push(cue);
    }else if(event.type==="effect"&&event.effect==="guard"&&typeof event.targetId==="string"){
-    queue.push({id:event.targetId,slot:"ward"});
+    queue.push({id:event.targetId,slot:"ward",fx:{kind:"guard",stacks:event.stacks}});
    }else if(event.type==="damage"&&typeof event.targetId==="string"){
-    const cue={id:event.targetId,slot:"hit"};
+    const key=event.actorId+">"+event.targetId,crit=crits.delete(key);
+    const cue={id:event.targetId,slot:"hit",fx:{kind:"damage",amount:event.amount,crit,
+     power:!!(lastAction?.power&&lastAction.id===event.actorId),actorId:event.actorId??null,
+     ...(Number.isFinite(event.hpDamage)?{hp:event.hpDamage}:{}),
+     ...(Number.isFinite(event.protectionDamage)?{protection:event.protectionDamage}:{})}};
     recordAfter(cue,event,snapshot);
     if(contactAction&&event.actorId===contactAction.id)contactAction.reactions.push(cue);
     else queue.push(cue);
@@ -81,7 +106,7 @@ const BattleAnimation=(()=>{
   }
  }
  function clear(){
-  queue.length=0;current=null;elapsed=0;idleTime=0;dying.clear();started.length=0;
+  queue.length=0;current=null;elapsed=0;idleTime=0;dying.clear();started.length=0;feedback.length=0;
   if(shown.size)revision++;shown.clear();
  }
  const contactOf=action=>action?.plan?.contactMs??action?.contactMs;
@@ -103,7 +128,9 @@ const BattleAnimation=(()=>{
    const contactMs=contactOf(current);
    if(current.reactions&&before<contactMs&&elapsed>=contactMs)
     for(const cue of current.reactions)begin(cue);
+   if(Number.isFinite(contactMs)&&before<contactMs&&elapsed>=contactMs)fireFloats(current);
    if(elapsed>=duration){
+    fireFloats(current);
     if(current.slot==="death")dying.delete(current.id);
     current=queue.shift()||null;
     if(current)begin(current);
@@ -182,5 +209,6 @@ const BattleAnimation=(()=>{
  function isDying(heroId){return dying.has(heroId);}
  function pending(){return queue.length+(current?1:0);}
  function drainStarted(){const cues=started.splice(0);return cues;}
- return Object.freeze({enqueue,clear,tick,pose,activity,approach,displayed,displayRevision,isDying,pending,drainStarted});
+ function drainFeedback(){return feedback.splice(0);}
+ return Object.freeze({enqueue,clear,tick,pose,activity,approach,displayed,displayRevision,isDying,pending,drainStarted,drainFeedback});
 })();

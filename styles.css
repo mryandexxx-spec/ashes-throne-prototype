@@ -4517,3 +4517,30 @@ body:has(#storyDemo.active)::before{
  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
  max-height:2.4em;overflow:hidden;
 }
+
+/* ARENA-VIS-002: floating combat numbers. One fixed pool of nodes, moved by
+   transform/opacity only (compositor), never captures touch. */
+.battle-screen .arena-floaters{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.battle-screen .arena-floater{
+ position:absolute;left:0;top:0;opacity:0;display:none;flex-direction:column;align-items:center;
+ font:800 22px/1 Inter,system-ui,sans-serif;letter-spacing:.01em;white-space:nowrap;
+ color:#fff4e6;-webkit-text-stroke:1px rgba(40,10,6,.85);
+ text-shadow:0 2px 0 rgba(0,0,0,.55),0 0 8px rgba(0,0,0,.55);will-change:transform,opacity;
+}
+.battle-screen .arena-floater.on{display:flex}
+.battle-screen .arena-floater-note{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1px}
+.battle-screen .arena-floater-note[hidden]{display:none}
+.battle-screen .arena-floater.damage{color:#fff1e2}
+.battle-screen .arena-floater.crit{font-size:31px;color:#ffc24a;-webkit-text-stroke:1.2px rgba(70,22,0,.95)}
+.battle-screen .arena-floater.crit .arena-floater-note{color:#ffe08a}
+.battle-screen .arena-floater.protection{font-size:19px;color:#9fd3ff;-webkit-text-stroke:1px rgba(6,22,46,.9)}
+.battle-screen .arena-floater.heal{color:#8af0a0;-webkit-text-stroke:1px rgba(4,36,14,.9)}
+.battle-screen .arena-floater.guard{font-size:15px;color:#a9d6ff;-webkit-text-stroke:.8px rgba(6,22,46,.9)}
+.battle-screen .arena-floater.miss{font-size:15px;font-style:italic;color:#e8e2d8;-webkit-text-stroke:.8px rgba(0,0,0,.8)}
+.battle-screen .arena-floater.resist{font-size:15px;color:#d5b8ff;-webkit-text-stroke:.8px rgba(30,8,50,.9)}
+@media (max-height:430px){
+ .battle-screen .arena-floater{font-size:19px}
+ .battle-screen .arena-floater.crit{font-size:27px}
+ .battle-screen .arena-floater.protection{font-size:17px}
+ .battle-screen .arena-floater.guard,.battle-screen .arena-floater.miss,.battle-screen .arena-floater.resist{font-size:13px}
+}

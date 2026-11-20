@@ -33,7 +33,7 @@ button.material-tile,#app button.material-tile{
 #materialSources ul{margin:0;padding:0;list-style:none}#materialSources li{font:13px/1.45 system-ui;color:#e1d8c9}
 #materialFind{flex:none;min-height:44px;margin:0 12px 9px}
 #app .gear-ux-materials.material-group{flex-direction:row;gap:6px}
-#app .gear-ux-materials .material-tile{min-width:54px}
+#app .gear-ux-materials .material-tile{min-width:48px}
 #app .net004-clue:has(>.material-group){position:relative}
 #app .net004-clue:has(>.material-group) .netux-clue-pick{padding-right:58px}
 #app .net004-clue>.material-group{position:absolute;right:4px;top:50%;transform:translateY(-50%);margin:0}

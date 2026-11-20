@@ -1,0 +1,40 @@
+name: ARENA-VIS-002 hit feedback (Chromium + WebKit)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'arena-vis-002.js'
+      - 'battle-animation.js'
+      - 'combat-visual-007.js'
+      - 'game.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'tests/arena-vis-002-browser.cjs'
+      - '.github/workflows/arena-vis-002-browser.yml'
+permissions:
+  contents: read
+jobs:
+  hit-feedback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Numbers, flash, sparks, hit-stop and camera beat in a real battle
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/arena-vis-002.log 2>&1 &
+          sleep 2
+          node tests/arena-vis-002-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: arena-vis-002
+          path: artifacts/arena-vis-002/
+          if-no-files-found: warn
+          retention-days: 14

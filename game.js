@@ -55,6 +55,7 @@ const ENV022_CONCEPT_PREVIEW=typeof location!=="undefined" &&
  !/(?:^|[?&])environment=(?:env017|env010)(?:&|$)/.test(location.search);
 let engine, scene, meshes={};
 let combatVisual007=null; // One optional visual layer per Babylon Scene.
+let arenaFeedback=null; // ARENA-VIS-002: numbers, hit-stop, flash, camera beat.
 let renGlbRuntime=null; // Default Ren GLB visual, no gameplay ownership.
 let nadaGlbRuntime=null; // Optional Nada GLB only when she is in the party.
 let lioraGlbRuntime=null; // Optional Liora GLB (shield baked into the rig), only in party.
@@ -1135,7 +1136,7 @@ function showScreen(id){
   if(typeof cancelHQTooltip==="function")cancelHQTooltip();
  }
  if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();}
- if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();stopBattleRendering();}
+ if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();arenaFeedback?.clear(arenaCamera);stopBattleRendering();}
  if(id!=="heroDetail"&&typeof RenCard3D!=="undefined")RenCard3D.dispose();
  // Combat-008A: release the document scroll while the arena owns the viewport.
  // Guard document.body for headless DOM tests and embedded integrations.
@@ -1304,7 +1305,7 @@ function showScreen(id){
    if(artGlbRuntime){artGlbRuntime.dispose();artGlbRuntime=null;}
    if(scene){try{scene.dispose();}catch(cleanupError){console.error(cleanupError);}}
    if(engine){try{engine.dispose();}catch(cleanupError){console.error(cleanupError);}}
-   scene=undefined;engine=undefined;arenaCamera=null;meshes={};encounterNpcVisualIds.clear();indicatorNodes={};combatVisual007=null;renderLoopRunning=false;
+   scene=undefined;engine=undefined;arenaCamera=null;meshes={};encounterNpcVisualIds.clear();indicatorNodes={};combatVisual007=null;arenaFeedback=null;renderLoopRunning=false;
    if(battleIsStoryDemo&&storyTrialParty){
     StoryDemoCore.cancelBattle(storyDemoState);
     showScreen("storyDemo");
@@ -3316,6 +3317,7 @@ function resetBattle(){
  cancelVisualTransition();
  BattleAnimation.clear();
  combatVisual007?.clear();
+ arenaFeedback?.clear(arenaCamera);
  clearEncounterNpcVisuals();
  autoBattle=false;
  // Keep the chosen speed between battles; only autoplay resets.
@@ -3626,6 +3628,32 @@ function selectArenaTarget(pickedMesh){
  }
  return picked;
 }
+// ARENA-VIS-002: screen point (overlay CSS px) at a fighter's shoulders for floating numbers;
+// the spark burst stays visible on the chest below the label.
+function arenaFeedbackPoint(id){
+ const mesh=meshes[id],overlay=$("#arenaFloaters");
+ if(!mesh?.head?.position||!overlay||!scene||!engine||!arenaCamera?.viewport?.toGlobal||
+    !BABYLON.Vector3?.Project||!BABYLON.Matrix?.Identity)return null;
+ const width=engine.getRenderWidth(),height=engine.getRenderHeight();
+ const cssWidth=arenaHudLayout?.width||overlay.clientWidth||width;
+ const cssHeight=arenaHudLayout?.height||overlay.clientHeight||height;
+ if(!width||!height||!cssWidth||!cssHeight)return null;
+ const p=mesh.head.position;
+ const screen=BABYLON.Vector3.Project(new BABYLON.Vector3(p.x,p.y-.3,p.z),BABYLON.Matrix.Identity(),
+  scene.getTransformMatrix(),arenaCamera.viewport.toGlobal(width,height));
+ if(!(screen.z>=0&&screen.z<=1))return null;
+ const x=screen.x*cssWidth/width,y=screen.y*cssHeight/height;
+ // Keep the label fully on screen (enemy line runs toward the right edge).
+ return {x:Math.max(40,Math.min(cssWidth-40,x)),y:Math.max(56,Math.min(cssHeight-30,y))};
+}
+// Visible geometry of one fighter (GLB or capsule), never its ground shadow/ring.
+function arenaFlashMeshes(id){
+ const visual=meshes[id];
+ if(!visual||!scene?.meshes)return [];
+ const skip=new Set([visual.base,visual.base?.av001Ring]);
+ return scene.meshes.filter(m=>m.metadata?.fighterId===id&&!skip.has(m)&&m.isVisible!==false&&
+  (typeof m.isEnabled!=="function"||m.isEnabled())&&(typeof m.getTotalVertices!=="function"||m.getTotalVertices()>0));
+}
 // A single render callback and a single Engine/Scene for the lifetime of this prototype.
 let hudDisplayRevision=0;
 function renderBattleFrame(){
@@ -3634,12 +3662,22 @@ function renderBattleFrame(){
  const dt=engine&&typeof engine.getDeltaTime==="function"?engine.getDeltaTime():16;
  if(arenaResolution&&ArenaVis001.adapt(engine,arenaResolution,dt))positionArenaIndicators();
  const hadPending=visualActionPending();
- BattleAnimation.tick(dt,BattleSpeed.multiplier());
+ // ARENA-VIS-002: hit-stop pauses the animation clock only; the frame still renders.
+ const animationDt=arenaFeedback?arenaFeedback.animationDelta(dt):dt;
+ BattleAnimation.tick(animationDt,BattleSpeed.multiplier());
  // Consume hit markers regardless of whether optional visuals are available.
  const visualCues=BattleAnimation.drainStarted();
+ const feedbackCues=BattleAnimation.drainFeedback();
  if(combatVisual007){
   combatVisual007.emit(visualCues,meshes);
   combatVisual007.tick(dt,BattleSpeed.multiplier());
+ }
+ if(arenaFeedback){
+  arenaFeedback.handle(feedbackCues,{multiplier:BattleSpeed.multiplier(),
+   // Owner requirement: no camera push-in during 4x autobattle.
+   cameraMotion:!(autoBattle&&BattleSpeed.get()>=4),
+   project:arenaFeedbackPoint,meshesFor:arenaFlashMeshes});
+  arenaFeedback.frame(dt,arenaCamera,visualActionPending());
  }
  // Death animation may end without a new combat action. Retire stale
  // indicators immediately instead of waiting for the following turn.
@@ -3941,6 +3979,13 @@ function initBabylon(){
  if(typeof CombatVisual007!=="undefined"&&CombatVisual007.supported(BABYLON)){
   try{combatVisual007=CombatVisual007.create(BABYLON,scene,{conceptBackdrop:ENV022_CONCEPT_PREVIEW});}
   catch(visualError){console.warn("CV007 arena unavailable, using legacy ground",visualError);}
+ }
+ arenaFeedback=null;
+ if(typeof ArenaVis002!=="undefined"){
+  try{
+   const reducedMotion=typeof window.matchMedia==="function"&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+   arenaFeedback=ArenaVis002.create(BABYLON,{container:$("#arenaFloaters"),document,reducedMotion});
+  }catch(feedbackError){console.warn("ARENA-VIS-002 feedback unavailable",feedbackError);arenaFeedback=null;}
  }
  if(!combatVisual007 && !ENV022_CONCEPT_PREVIEW){
   const ground=BABYLON.MeshBuilder.CreateGround("ground",{width:16,height:9},scene);const gm=new BABYLON.StandardMaterial("groundMat",scene);gm.diffuseColor=new BABYLON.Color3(.12,.15,.19);gm.specularColor=new BABYLON.Color3(.1,.1,.1);ground.material=gm;

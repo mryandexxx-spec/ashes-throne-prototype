@@ -3304,13 +3304,22 @@ function renderArenaIndicators(){
   const focused=!!actor&&!autoBattle&&h.hp>0&&(support?
    h.side==="ally"&&(!onlyOther||h.id!==actor.id):
    h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
-  return `<div class="arena-indicator ${h.side} ${active?"acting":""} ${npcMark==="first"||npcMark==="signal"?"must-first":npcMark==="hunter"?"assault-hunter":""}" data-fighter-id="${h.id}" aria-label="${h.name}${npcMark?", "+NpcBattleIntel.markerLabel(npcMark):""}: здоровье ${Math.max(0,view.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
+  // ARENA-UI-003B: the name only over the acting hero and the selected target;
+  // everyone else shows bars and effect icons. A battle-intel mark stays as an icon.
+  const targeted=!!actor&&h.hp>0&&!support&&h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id;
+  const named=active||targeted;
+  // The band reserved for an enemy target's hanging name; the name is capped to
+  // it (ellipsis), so a wider system font can never spill over a neighbour.
+  const nameW=Math.min(150,Math.round(h.name.length*7+10));
+  const markClass=npcMark==="first"||npcMark==="signal"?"must-first":npcMark==="hunter"?"assault-hunter":"";
+  const markIcon=!named&&markClass?`<span class="arena-effect mark ${markClass}" title="${NpcBattleIntel.markerLabel(npcMark)}">${markClass==="must-first"?"①":"!"}</span>`:"";
+  return `<div class="arena-indicator ${h.side} ${active?"acting":""} ${targeted?"targeted":""} ${named?"named":""} ${markClass}" data-fighter-id="${h.id}"${named&&h.side==="enemy"?` data-name-w="${nameW}"`:""} aria-label="${h.name}${npcMark?", "+NpcBattleIntel.markerLabel(npcMark):""}: здоровье ${Math.max(0,view.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
    ${focused?`<div class="arena-focus-cursor ${support?"available":"locked"}" aria-hidden="true">▼</div>`:""}
-   <div class="arena-indicator-name">${h.name}</div>
+   ${named?`<div class="arena-indicator-name"${h.side==="enemy"?` style="max-width:${nameW}px"`:""}>${h.name}</div>`:""}
    ${protectionLine}
    <div class="arena-health" title="HP ${Math.max(0,view.hp)} / ${h.maxHp}"><span style="width:${health}%"></span></div>
    <div class="arena-initiative" title="Инициатива ${Math.round(h.meter||0)} / 1000"><span style="width:${initiative}%"></span></div>
-   ${effects?`<div class="arena-effects">${effects}</div>`:""}
+   ${effects||markIcon?`<div class="arena-effects">${markIcon}${effects}</div>`:""}
   </div>`;
  }).join("");
  indicatorNodes={};
@@ -3355,10 +3364,12 @@ function positionArenaIndicators(){
   const screen=BABYLON.Vector3.Project(world,identity,transform,viewport);
   const visible=screen.z>=0&&screen.z<=1&&screen.x>=0&&screen.x<=width&&screen.y>=0&&screen.y<=height;
   node.style.display=visible?"":"none";
+  const away=!!mesh.av003Away;
+  if(node.dataset&&(node.dataset.away==="1")!==away){node.dataset.away=away?"1":"0";node.classList?.toggle("away",away);}
   if(visible){
    const ax=screen.x*cssWidth/width,ay=screen.y*cssHeight/height;
    node.style.left=ax+"px";node.style.top=ay+"px";
-   if(arenaHudLayout)arenaHudLayout.track(id,node,ax,ay);
+   if(arenaHudLayout)arenaHudLayout.track(id,node,ax,ay,away);
   }
  }
  if(arenaHudLayout)arenaHudLayout.place();
@@ -3769,6 +3780,8 @@ function renderBattleFrame(){
   // NADAANIM001: Nada is an archer — she shoots from her place, no melee lunge.
   const approach=(h.id==="nada"||h.id==="sava")?{x:0,z:0}:BattleAnimation.approach(activity,origin,targetPosition);
   const offset=pose.x*(h.side==="ally"?1:-1);
+  // ARENA-UI-003B: a fighter who ran out to strike hides its label until back home.
+  visual.av003Away=Math.hypot(approach.x||0,approach.z||0)>.45;
   visual.body.position.x=visual.head.position.x=visual.base.position.x=origin.x+offset+approach.x;
   visual.body.position.z=visual.head.position.z=visual.base.position.z=origin.z+approach.z;
   visual.body.position.y=.8+pose.y;
@@ -3807,6 +3820,8 @@ function renderBattleFrame(){
   }
  }
  positionArenaIndicators();
+ // ARENA-UI-003B: numbers follow the labels placed in this very frame.
+ arenaFeedback?.floaters?.relayout?.();
  scene.render();
  // Draw the last animation frame before revealing the next wave/result.
  finishVisualTransition();
@@ -4042,7 +4057,9 @@ function initBabylon(){
  if(typeof ArenaVis002!=="undefined"){
   try{
    const reducedMotion=typeof window.matchMedia==="function"&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-   arenaFeedback=ArenaVis002.create(BABYLON,{container:$("#arenaFloaters"),document,reducedMotion});
+   arenaFeedback=ArenaVis002.create(BABYLON,{container:$("#arenaFloaters"),document,reducedMotion,
+    // ARENA-UI-003B: numbers never rise into the target's own label.
+    floor:id=>arenaHudLayout?.bottomOf?.(id)??null});
   }catch(feedbackError){console.warn("ARENA-VIS-002 feedback unavailable",feedbackError);arenaFeedback=null;}
  }
  if(!combatVisual007 && !ENV022_CONCEPT_PREVIEW){

@@ -18,6 +18,8 @@ async function run(name,type,[W,H]){
   page.on("response",r=>{if(r.status()>=400)failed.push(r.status()+" "+r.url());});
   await page.goto("http://127.0.0.1:8765/tests/fixtures/env022-full-game.html",{waitUntil:"load",timeout:90000});
   await page.waitForFunction(()=>document.documentElement.dataset.visualStatus==="ready",null,{timeout:150000});
+  // Evidence only: a slow screenshot pipeline on CI must not fail the behaviour check.
+  const shot=file=>page.screenshot({path:path.join(out,file),timeout:20000}).catch(e=>console.warn("screenshot skipped",file,e.message.split("\n")[0]));
   const ev=code=>page.evaluate(c=>document.querySelector("#game").contentWindow.eval(c),code);
   await ev(`stopBattleRendering();engine.getDeltaTime=()=>16;window.__step=n=>{for(let i=0;i<n;i++)renderBattleFrame();};__step(3);`);
   const layout=await ev(`(()=>{
@@ -53,7 +55,7 @@ async function run(name,type,[W,H]){
   assert.equal(layout.queue.length,6);
   assert.equal(layout.hidden.length,0,"old elements removed");
   assert.equal(layout.visibleService,false,"no service text on screen");
-  await page.screenshot({path:path.join(out,`${name}-${W}x${H}-ally-turn.png`)});
+  await shot(`${name}-${W}x${H}-ally-turn.png`);
   // Collapse via the real button; the choice survives a new battle.
   await page.frameLocator("#game").locator("#turnQueueToggle").click();
   assert.equal(await ev(`[...document.querySelectorAll("#turnQueue li")].filter(n=>n.offsetWidth>0).length`),1);
@@ -74,7 +76,7 @@ async function run(name,type,[W,H]){
   await ev(`(()=>{const a=state.fighters[state.currentActor];a.specialCooldown=2;syncBattleUI();})()`);
   const cd=await ev(`(()=>{const b=document.querySelector("#specialAbilityBtn");return {state:b.dataset.state,num:b.querySelector(".ability-cooldown")?.textContent,label:b.getAttribute("aria-label"),filter:getComputedStyle(b).filter};})()`);
   assert.equal(cd.state,"cooldown");assert.equal(cd.num,"2");assert.match(cd.label,/перезарядка 2/);assert.match(cd.filter,/grayscale/);
-  await page.screenshot({path:path.join(out,`${name}-${W}x${H}-cooldown.png`)});
+  await shot(`${name}-${W}x${H}-cooldown.png`);
   await ev(`(()=>{const a=state.fighters[state.currentActor];a.specialCooldown=0;syncBattleUI();})()`);
   // A real tap on the basic ability performs a turn; the queue moves on.
   await page.frameLocator("#game").locator("#basicAbilityBtn").click();
@@ -82,6 +84,51 @@ async function run(name,type,[W,H]){
   for(let i=0;i<600;i++)if(!(await ev(`(__step(1),BattleAnimation.pending())`)))break;
   await ev(`__step(20)`);
   assert.equal(await ev(`document.querySelector("#turnQueue li").dataset.fighterId===state.fighters[state.currentActor].id`),true);
+  // ARENA-UI-003B: labels pinned to fighters; floating numbers never cover a label.
+  await ev(`state=CombatCore.createBattle([...HEROES.filter(f=>f.side==="ally").slice(0,5),...HEROES.filter(f=>f.side==="enemy").slice(0,5)]);
+   CombatCore.advanceToPlayerTurn(state);syncBattleUI();updateMeshes();__step(6);`);
+  await page.waitForTimeout(400);await ev(`__step(4)`);
+  const plates=`[...document.querySelectorAll("#arenaIndicators .arena-indicator")].filter(n=>n.style.display!=="none"&&!n.classList.contains("away")).map(n=>{
+    const b=n.getBoundingClientRect(),name=n.querySelector(".arena-indicator-name");const nb=name?.getBoundingClientRect();
+    return {id:n.dataset.fighterId,x:b.x,y:b.y,w:b.width,h:b.height,named:!!name,name:nb?{x:nb.x,y:nb.y,w:nb.width,h:nb.height}:null,
+     ax:parseFloat(n.style.left),ay:parseFloat(n.style.top)};})`;
+  const pinned=await ev(`(()=>{const p=${plates};const actor=state.fighters[state.currentActor].id,target=state.fighters[state.selectedEnemy].id;
+   return {p,actor,target,named:p.filter(x=>x.named).map(x=>x.id).sort()};})()`);
+  assert.equal(pinned.p.length,10);
+  assert.deepEqual(pinned.named,[pinned.actor,pinned.target].sort(),"names only over the acting hero and the target");
+  for(const r of pinned.p){
+   assert.ok(Math.abs(r.x+r.w/2-r.ax)<=17,r.id+" label centred over its fighter");
+   assert.ok(r.y+r.h<=r.ay+13,r.id+" label above its head anchor");
+  }
+  const ov=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
+  for(let i=0;i<pinned.p.length;i++)for(let j=0;j<i;j++)
+   assert.equal(ov(pinned.p[i],pinned.p[j]),false,"labels collide "+pinned.p[i].id+"/"+pinned.p[j].id);
+  for(const a of pinned.p)if(a.name)for(const b of pinned.p)if(b!==a)
+   assert.equal(ov(a.name,b),false,"name of "+a.id+" covers the label of "+b.id+" "+JSON.stringify({a,b}));
+  // Target the farthest enemy (the old packer moved its label under the numbers) and strike.
+  await ev(`(()=>{const e=state.fighters.map((f,i)=>[f,i]).filter(([f])=>f.side==="enemy"&&f.hp>0);
+   const far=e.reduce((a,b)=>(meshes[b[0].id].head.position.z<meshes[a[0].id].head.position.z?b:a));
+   CombatCore.chooseEnemy(state,far[1]);syncBattleUI();__step(2);})()`);
+  await page.waitForTimeout(200);await ev(`__step(2)`);
+  const farLabels=await ev(`${plates}`);
+  for(const a of farLabels)if(a.name)for(const b of farLabels)if(b!==a)
+   assert.equal(ov(a.name,b),false,"far target name covers "+b.id+" "+JSON.stringify({a,b,
+    rows:await ev(`JSON.stringify([...arenaHudLayout.rows.values()].map(r=>[r.id,Math.round(r.x),Math.round(r.y),r.w,r.h,r.nameW,r.shiftX,r.shiftY,r.crowded]))`)}));
+  assert.equal(await ev(`applyManualAbility("basic")`),true);
+  let seen=0,away=false;const clashes=[];
+  for(let i=0;i<500;i++){
+   const f=await ev(`(()=>{__step(1);const fl=[...document.querySelectorAll("#arenaFloaters .arena-floater.on")].map(n=>{const b=n.getBoundingClientRect();return {x:b.x,y:b.y,w:b.width,h:b.height,t:n.textContent};});
+    return {fl,p:${plates},away:!!document.querySelector("#arenaIndicators .arena-indicator.away"),pending:BattleAnimation.pending()};})()`);
+   away=away||f.away;
+   for(const n of f.fl){seen++;for(const r of f.p){if(ov(n,r)||(r.name&&ov(n,r.name))){clashes.push(n.t+"/"+r.id);if(process.env.DEBUG_UI003)console.log(JSON.stringify({n,r,target:await ev("state.fighters[state.selectedEnemy]?.id")}));}}}
+   if(!f.pending&&seen&&!f.fl.length)break;
+  }
+  assert.ok(seen>0,"a number was shown");
+  assert.deepEqual([...new Set(clashes)],[],"floating numbers cover a label");
+  assert.equal(away,true,"the striker's label hides while it is away");
+  await ev(`__step(40)`);
+  assert.equal(await ev(`document.querySelectorAll("#arenaIndicators .arena-indicator.away").length`),0,"label returns with its fighter");
+  await shot(`${name}-${W}x${H}-5v5-labels.png`);
   assert.deepEqual(errors,[]);
   assert.deepEqual(failed.filter(u=>!/fonts\.g/.test(u)),[],"no failed requests (no icon 404s)");
   console.log("ARENA_UI_003_PASS",name,W+"x"+H,JSON.stringify({queue:layout.queue,hero:layout.heroName}));

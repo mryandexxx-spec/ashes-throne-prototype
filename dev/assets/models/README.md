@@ -13,3 +13,5 @@
 В отличие от Дюны, текущая игра не имеет сборщика `dev/tools/build.mjs`; копировать его нельзя. GitHub Pages напрямую обслуживает файл здесь.
 
 **ART3D001:** `art-mobile-animated.glb` ожидает загрузки двоичного файла в рабочую ветку; 2 032 788 байт, SHA-256 `c7a25c48dbd9117baec08e3ff1612f4b52ece8516a521571b9b1f1b3852b2860`, 9 клипов. См. `docs/ART_3D_001.md`.
+
+**ARENA-ART-004B (враги):** `npc-*.glb` — 8 гуманоидных NPC, имя файла = `archetypeId` из `npc-enemy-data.js`. Манифест `dev/src/assets/npc-models.js` генерирует `tools/build-npc-models.mjs` (он же вызывает `tools/optimize-hero-glb.mjs`); вручную не править. Проверка: `tests/npc-models-004b.test.js`. Сархи — шаг 5, см. `docs/ARENA_ART_004_PLAN.md`.

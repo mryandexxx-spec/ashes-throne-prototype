@@ -1,0 +1,742 @@
+{
+ "npc-pass-guard": {
+  "Combat_Stance": {
+   "len": 1.7,
+   "speedPeaks": [
+    0.049,
+    0.216,
+    0.304,
+    0.51,
+    0.627,
+    0.765
+   ],
+   "speedPeak": 0.51,
+   "reachPeak": 0.902,
+   "shoulderYaw": -46.1,
+   "feetYaw": -64.7,
+   "chestFromForward": -46.1
+  },
+  "Thrust_Slash": {
+   "len": 3.03,
+   "speedPeaks": [
+    0.247
+   ],
+   "speedPeak": 0.247,
+   "reachPeak": 0.104
+  },
+  "Over_Shoulder_Throw": {
+   "len": 4.33,
+   "speedPeaks": [
+    0.2,
+    0.45,
+    0.808
+   ],
+   "speedPeak": 0.808,
+   "reachPeak": 0.227
+  },
+  "Block1": {
+   "len": 3.5,
+   "speedPeaks": [
+    0.319,
+    0.452,
+    0.481,
+    0.59
+   ],
+   "speedPeak": 0.319,
+   "reachPeak": 0.562,
+   "raised90": 0.333,
+   "wristRange": [
+    0.3,
+    0.6
+   ],
+   "heldUntil": 0.424
+  },
+  "Charged_Spell_Cast": {
+   "len": 2.7,
+   "speedPeaks": [
+    0.241,
+    0.648
+   ],
+   "speedPeak": 0.241,
+   "reachPeak": 0.907,
+   "raised90": 0.673,
+   "wristRange": [
+    0.1,
+    0.9
+   ],
+   "heldUntil": 0.827
+  },
+  "Hit_Reaction": {
+   "len": 1.67,
+   "speedPeaks": [
+    0.37
+   ],
+   "speedPeak": 0.37,
+   "reachPeak": 0.29
+  },
+  "dying_backwards": {
+   "len": 2.23,
+   "speedPeaks": [
+    0.515,
+    0.567,
+    0.582
+   ],
+   "speedPeak": 0.567,
+   "reachPeak": 0.284,
+   "hipsDown95": 0.552,
+   "hipsLowest": 0.567,
+   "headDown95": 0.604
+  }
+ },
+ "npc-trail-interceptor": {
+  "Combat_Stance": {
+   "len": 1.7,
+   "speedPeaks": [
+    0.049,
+    0.216,
+    0.304,
+    0.51,
+    0.627,
+    0.765
+   ],
+   "speedPeak": 0.51,
+   "reachPeak": 0.902,
+   "shoulderYaw": -45.5,
+   "feetYaw": -67.2,
+   "chestFromForward": -45.5
+  },
+  "Thrust_Slash": {
+   "len": 3.03,
+   "speedPeaks": [
+    0.247
+   ],
+   "speedPeak": 0.247,
+   "reachPeak": 0.104
+  },
+  "Over_Shoulder_Throw": {
+   "len": 4.33,
+   "speedPeaks": [
+    0.2,
+    0.45,
+    0.808
+   ],
+   "speedPeak": 0.808,
+   "reachPeak": 0.227
+  },
+  "Triple_Combo_Attack": {
+   "len": 4.37,
+   "speedPeaks": [
+    0.183,
+    0.355,
+    0.519
+   ],
+   "speedPeak": 0.355,
+   "reachPeak": 0.355
+  },
+  "Block1": {
+   "len": 3.5,
+   "speedPeaks": [
+    0.319,
+    0.452,
+    0.481,
+    0.59
+   ],
+   "speedPeak": 0.319,
+   "reachPeak": 0.562,
+   "raised90": 0.329,
+   "wristRange": [
+    0.3,
+    0.5
+   ],
+   "heldUntil": 0.424
+  },
+  "Charged_Spell_Cast": {
+   "len": 2.7,
+   "speedPeaks": [
+    0.241,
+    0.648
+   ],
+   "speedPeak": 0.241,
+   "reachPeak": 0.914,
+   "raised90": 0.673,
+   "wristRange": [
+    0.1,
+    0.8
+   ],
+   "heldUntil": 0.827
+  },
+  "Hit_Reaction": {
+   "len": 1.67,
+   "speedPeaks": [
+    0.37
+   ],
+   "speedPeak": 0.37,
+   "reachPeak": 0.28
+  },
+  "dying_backwards": {
+   "len": 2.23,
+   "speedPeaks": [
+    0.515,
+    0.56,
+    0.582
+   ],
+   "speedPeak": 0.56,
+   "reachPeak": 0.284,
+   "hipsDown95": 0.552,
+   "hipsLowest": 0.567,
+   "headDown95": 0.604
+  }
+ },
+ "npc-ridge-slinger": {
+  "Combat_Stance": {
+   "len": 1.7,
+   "speedPeaks": [
+    0.049,
+    0.216,
+    0.304,
+    0.51,
+    0.627,
+    0.765,
+    0.804
+   ],
+   "speedPeak": 0.51,
+   "reachPeak": 0.902,
+   "shoulderYaw": -47.7,
+   "feetYaw": -64.1,
+   "chestFromForward": -47.7
+  },
+  "Thrust_Slash": {
+   "len": 3.03,
+   "speedPeaks": [
+    0.247
+   ],
+   "speedPeak": 0.247,
+   "reachPeak": 0.104
+  },
+  "Over_Shoulder_Throw": {
+   "len": 4.33,
+   "speedPeaks": [
+    0.2,
+    0.45,
+    0.55,
+    0.808
+   ],
+   "speedPeak": 0.808,
+   "reachPeak": 0.223
+  },
+  "Crouch_Charge_and_Throw": {
+   "len": 7.7,
+   "speedPeaks": [
+    0.701
+   ],
+   "speedPeak": 0.701,
+   "reachPeak": 0.649
+  },
+  "Block1": {
+   "len": 3.5,
+   "speedPeaks": [
+    0.319,
+    0.452,
+    0.481,
+    0.59
+   ],
+   "speedPeak": 0.319,
+   "reachPeak": 0.562,
+   "raised90": 0.333,
+   "wristRange": [
+    0.3,
+    0.5
+   ],
+   "heldUntil": 0.424
+  },
+  "Charged_Spell_Cast": {
+   "len": 2.7,
+   "speedPeaks": [
+    0.241,
+    0.648
+   ],
+   "speedPeak": 0.241,
+   "reachPeak": 0.907,
+   "raised90": 0.673,
+   "wristRange": [
+    0.1,
+    0.8
+   ],
+   "heldUntil": 0.827
+  },
+  "Hit_Reaction": {
+   "len": 1.67,
+   "speedPeaks": [
+    0.37
+   ],
+   "speedPeak": 0.37,
+   "reachPeak": 0.29
+  },
+  "dying_backwards": {
+   "len": 2.23,
+   "speedPeaks": [
+    0.515,
+    0.567,
+    0.582
+   ],
+   "speedPeak": 0.567,
+   "reachPeak": 0.284,
+   "hipsDown95": 0.552,
+   "hipsLowest": 0.567,
+   "headDown95": 0.612
+  }
+ },
+ "npc-field-medic": {
+  "Combat_Stance": {
+   "len": 1.7,
+   "speedPeaks": [
+    0.049,
+    0.304,
+    0.51,
+    0.627,
+    0.765
+   ],
+   "speedPeak": 0.51,
+   "reachPeak": 0.902,
+   "shoulderYaw": -45.6,
+   "feetYaw": -66.7,
+   "chestFromForward": -45.6
+  },
+  "Thrust_Slash": {
+   "len": 3.03,
+   "speedPeaks": [
+    0.247
+   ],
+   "speedPeak": 0.247,
+   "reachPeak": 0.104
+  },
+  "Over_Shoulder_Throw": {
+   "len": 4.33,
+   "speedPeaks": [
+    0.2,
+    0.45,
+    0.808
+   ],
+   "speedPeak": 0.808,
+   "reachPeak": 0.227
+  },
+  "Block1": {
+   "len": 3.5,
+   "speedPeaks": [
+    0.319,
+    0.443,
+    0.452,
+    0.481,
+    0.59
+   ],
+   "speedPeak": 0.319,
+   "reachPeak": 0.562,
+   "raised90": 0.329,
+   "wristRange": [
+    0.3,
+    0.5
+   ],
+   "heldUntil": 0.424
+  },
+  "Charged_Spell_Cast": {
+   "len": 2.7,
+   "speedPeaks": [
+    0.241,
+    0.648
+   ],
+   "speedPeak": 0.241,
+   "reachPeak": 0.914,
+   "raised90": 0.673,
+   "wristRange": [
+    0.1,
+    0.8
+   ],
+   "heldUntil": 0.827
+  },
+  "Hit_Reaction": {
+   "len": 1.67,
+   "speedPeaks": [
+    0.37
+   ],
+   "speedPeak": 0.37,
+   "reachPeak": 0.28
+  },
+  "dying_backwards": {
+   "len": 2.23,
+   "speedPeaks": [
+    0.515,
+    0.56,
+    0.582
+   ],
+   "speedPeak": 0.56,
+   "reachPeak": 0.284,
+   "hipsDown95": 0.552,
+   "hipsLowest": 0.567,
+   "headDown95": 0.746
+  }
+ },
+ "npc-route-signaller": {
+  "Combat_Stance": {
+   "len": 1.7,
+   "speedPeaks": [
+    0.049,
+    0.304,
+    0.51,
+    0.627,
+    0.765
+   ],
+   "speedPeak": 0.51,
+   "reachPeak": 0.902,
+   "shoulderYaw": -47.9,
+   "feetYaw": -68.2,
+   "chestFromForward": -47.9
+  },
+  "Thrust_Slash": {
+   "len": 3.03,
+   "speedPeaks": [
+    0.247
+   ],
+   "speedPeak": 0.247,
+   "reachPeak": 0.104
+  },
+  "Over_Shoulder_Throw": {
+   "len": 4.33,
+   "speedPeaks": [
+    0.2,
+    0.45,
+    0.808
+   ],
+   "speedPeak": 0.808,
+   "reachPeak": 0.231
+  },
+  "Block1": {
+   "len": 3.5,
+   "speedPeaks": [
+    0.319,
+    0.452,
+    0.481,
+    0.59
+   ],
+   "speedPeak": 0.319,
+   "reachPeak": 0.562,
+   "raised90": 0.329,
+   "wristRange": [
+    0.3,
+    0.6
+   ],
+   "heldUntil": 0.424
+  },
+  "Charged_Spell_Cast": {
+   "len": 2.7,
+   "speedPeaks": [
+    0.241,
+    0.648
+   ],
+   "speedPeak": 0.241,
+   "reachPeak": 0.914,
+   "raised90": 0.673,
+   "wristRange": [
+    0.1,
+    0.9
+   ],
+   "heldUntil": 0.827
+  },
+  "Hit_Reaction": {
+   "len": 1.67,
+   "speedPeaks": [
+    0.37
+   ],
+   "speedPeak": 0.37,
+   "reachPeak": 0.27
+  },
+  "dying_backwards": {
+   "len": 2.23,
+   "speedPeaks": [
+    0.515,
+    0.56,
+    0.582
+   ],
+   "speedPeak": 0.56,
+   "reachPeak": 0.284,
+   "hipsDown95": 0.552,
+   "hipsLowest": 0.567,
+   "headDown95": 0.604
+  }
+ },
+ "npc-watch-captain": {
+  "Combat_Stance": {
+   "len": 1.7,
+   "speedPeaks": [
+    0.049,
+    0.304,
+    0.51,
+    0.627,
+    0.765
+   ],
+   "speedPeak": 0.51,
+   "reachPeak": 0.902,
+   "shoulderYaw": -46.3,
+   "feetYaw": -67,
+   "chestFromForward": -46.3
+  },
+  "Thrust_Slash": {
+   "len": 3.03,
+   "speedPeaks": [
+    0.247
+   ],
+   "speedPeak": 0.247,
+   "reachPeak": 0.104
+  },
+  "Over_Shoulder_Throw": {
+   "len": 4.33,
+   "speedPeaks": [
+    0.2,
+    0.45,
+    0.808
+   ],
+   "speedPeak": 0.808,
+   "reachPeak": 0.223
+  },
+  "Triple_Combo_Attack": {
+   "len": 4.37,
+   "speedPeaks": [
+    0.183,
+    0.355,
+    0.519
+   ],
+   "speedPeak": 0.355,
+   "reachPeak": 0.355
+  },
+  "Block1": {
+   "len": 3.5,
+   "speedPeaks": [
+    0.319,
+    0.452,
+    0.481,
+    0.59
+   ],
+   "speedPeak": 0.319,
+   "reachPeak": 0.562,
+   "raised90": 0.333,
+   "wristRange": [
+    0.3,
+    0.6
+   ],
+   "heldUntil": 0.424
+  },
+  "Charged_Spell_Cast": {
+   "len": 2.7,
+   "speedPeaks": [
+    0.241,
+    0.648
+   ],
+   "speedPeak": 0.241,
+   "reachPeak": 0.914,
+   "raised90": 0.673,
+   "wristRange": [
+    0.1,
+    0.9
+   ],
+   "heldUntil": 0.827
+  },
+  "Hit_Reaction": {
+   "len": 1.67,
+   "speedPeaks": [
+    0.37
+   ],
+   "speedPeak": 0.37,
+   "reachPeak": 0.29
+  },
+  "dying_backwards": {
+   "len": 2.23,
+   "speedPeaks": [
+    0.515,
+    0.567,
+    0.582
+   ],
+   "speedPeak": 0.567,
+   "reachPeak": 0.284,
+   "hipsDown95": 0.552,
+   "hipsLowest": 0.567,
+   "headDown95": 0.604
+  }
+ },
+ "npc-laun-ford-guard": {
+  "Combat_Stance": {
+   "len": 1.7,
+   "speedPeaks": [
+    0.049,
+    0.216,
+    0.294,
+    0.51,
+    0.627,
+    0.765,
+    0.804
+   ],
+   "speedPeak": 0.51,
+   "reachPeak": 0.902,
+   "shoulderYaw": -51.6,
+   "feetYaw": -67.2,
+   "chestFromForward": -51.6
+  },
+  "Thrust_Slash": {
+   "len": 3.03,
+   "speedPeaks": [
+    0.247
+   ],
+   "speedPeak": 0.247,
+   "reachPeak": 0.104
+  },
+  "Over_Shoulder_Throw": {
+   "len": 4.33,
+   "speedPeaks": [
+    0.2,
+    0.45,
+    0.808
+   ],
+   "speedPeak": 0.808,
+   "reachPeak": 0.227
+  },
+  "Block1": {
+   "len": 3.5,
+   "speedPeaks": [
+    0.319,
+    0.452,
+    0.481,
+    0.59
+   ],
+   "speedPeak": 0.319,
+   "reachPeak": 0.562,
+   "raised90": 0.333,
+   "wristRange": [
+    0.3,
+    0.5
+   ],
+   "heldUntil": 0.424
+  },
+  "Charged_Spell_Cast": {
+   "len": 2.7,
+   "speedPeaks": [
+    0.241,
+    0.648
+   ],
+   "speedPeak": 0.241,
+   "reachPeak": 0.907,
+   "raised90": 0.673,
+   "wristRange": [
+    0,
+    0.9
+   ],
+   "heldUntil": 0.827
+  },
+  "Hit_Reaction": {
+   "len": 1.67,
+   "speedPeaks": [
+    0.37
+   ],
+   "speedPeak": 0.37,
+   "reachPeak": 0.29
+  },
+  "dying_backwards": {
+   "len": 2.23,
+   "speedPeaks": [
+    0.515,
+    0.567,
+    0.582
+   ],
+   "speedPeak": 0.567,
+   "reachPeak": 0.284,
+   "hipsDown95": 0.552,
+   "hipsLowest": 0.567,
+   "headDown95": 0.604
+  }
+ },
+ "npc-laun-physician": {
+  "Combat_Stance": {
+   "len": 1.7,
+   "speedPeaks": [
+    0.049,
+    0.304,
+    0.51,
+    0.765
+   ],
+   "speedPeak": 0.51,
+   "reachPeak": 0.922,
+   "shoulderYaw": -65.8,
+   "feetYaw": -67.8,
+   "chestFromForward": -65.8
+  },
+  "Thrust_Slash": {
+   "len": 3.03,
+   "speedPeaks": [
+    0.247
+   ],
+   "speedPeak": 0.247,
+   "reachPeak": 0.11
+  },
+  "Over_Shoulder_Throw": {
+   "len": 4.33,
+   "speedPeaks": [
+    0.2,
+    0.45,
+    0.808
+   ],
+   "speedPeak": 0.808,
+   "reachPeak": 0.231
+  },
+  "Block1": {
+   "len": 3.5,
+   "speedPeaks": [
+    0.324,
+    0.452,
+    0.481,
+    0.59,
+    0.681
+   ],
+   "speedPeak": 0.324,
+   "reachPeak": 0.562,
+   "raised90": 0.324,
+   "wristRange": [
+    0.3,
+    0.5
+   ],
+   "heldUntil": 0.424
+  },
+  "Charged_Spell_Cast": {
+   "len": 2.7,
+   "speedPeaks": [
+    0.241,
+    0.648
+   ],
+   "speedPeak": 0.241,
+   "reachPeak": 0.056,
+   "raised90": 0.673,
+   "wristRange": [
+    0.1,
+    0.9
+   ],
+   "heldUntil": 0.827
+  },
+  "Hit_Reaction": {
+   "len": 1.67,
+   "speedPeaks": [
+    0.37
+   ],
+   "speedPeak": 0.37,
+   "reachPeak": 0.28
+  },
+  "dying_backwards": {
+   "len": 2.23,
+   "speedPeaks": [
+    0.515,
+    0.56,
+    0.582
+   ],
+   "speedPeak": 0.56,
+   "reachPeak": 0.284,
+   "hipsDown95": 0.552,
+   "hipsLowest": 0.567,
+   "headDown95": 0.597
+  }
+ }
+}

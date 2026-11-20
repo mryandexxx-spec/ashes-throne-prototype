@@ -148,7 +148,8 @@ const BattleAnimation=(()=>{
    case "guard":return {x:-.05*pulse,y:a*pulse,tilt:.11*pulse};
    case "ward":return {x:0,y:a*Math.sin(progress*Math.PI),tilt:.05*pulse};
    case "hit":return {x:-a*pulse,y:0,tilt:.14*pulse};
-   case "death":return {x:0,y:-a*progress,tilt:Math.PI*.38*progress};
+   // ARENA-ART-004D: clipFall — the skinned clip itself falls; no second template tilt.
+   case "death":return {x:0,y:-a*progress,tilt:profile.clipFall?0:Math.PI*.38*progress};
    default:return empty();
   }
  }

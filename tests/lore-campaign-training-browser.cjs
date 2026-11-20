@@ -55,6 +55,8 @@ async function check(name,type){
   assert.ok(combat.participants.some(f=>f.name==="Учебный противник 1"));
   assert.equal(combat.webgl,true,"actual Babylon.js battle must start");
   await page.screenshot({path:path.join(out,name+"-training-arena.png"),fullPage:true});
+  // ARENA-ART-004D: ves/shade stand-in models play real clip lengths; auto battle at x4.
+  await page.evaluate(()=>setAutoSpeed(4));
   await page.locator("#autoBattleBtn").click();
   await page.waitForFunction(()=>document.querySelector("#loreTrainingResult")?.classList.contains("active"),
    null,{timeout:110000});

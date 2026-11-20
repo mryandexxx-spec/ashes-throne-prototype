@@ -20,7 +20,7 @@ test("ARENA-ART-004C: interface mirrors NadaGlbRuntime and reads the manifest",(
   assert.equal(runtime.assetUrl(id),NpcModelAssets.models[id].url);
   assert.deepEqual(runtime.CLIPS[id],NpcModelAssets.models[id].clips);
   for(const slot of runtime.SLOTS)assert.equal(runtime.clipFor(id,slot),NpcModelAssets.models[id].clips[slot]);
-  assert.deepEqual(runtime.windowFor(id,"death"),[0,1]);
+  assert.deepEqual(runtime.windowFor(id,"idle"),[0,1]); // windows: ARENA-ART-004D test
  }
  // Sarkh have no model until step 5: create() returns null, the capsule stays.
  for(const id of ["npc-sarkh-convoy-guard","npc-sarkh-land-courier","ves",undefined,"__proto__"]){
@@ -46,7 +46,7 @@ test("ARENA-ART-004C: archetype profiles apply only through link() and keep sane
   }
   assert.equal(profiles.resolve(id,"idle").amplitude,0);
   for(const slot of ["guard","ward","death"])assert.equal(profiles.resolve(id,slot).amplitude,0);
-  assert.equal(profiles.resolve(id,"basic").contactFraction,undefined); // measured in 004D
+  assert.ok(Number.isFinite(profiles.resolve(id,"basic").contactFraction)); // measured in 004D
  }
  assert.equal(profiles.resolve("npc-ridge-slinger","basic").rooted,true);
  assert.equal(profiles.resolve("npc-pass-guard","basic").rooted,undefined);
@@ -66,6 +66,7 @@ test("ARENA-ART-004C: game.js keeps the capsule fallback and disposes enemy GLBs
  const ensure=game.slice(game.indexOf("function ensureEncounterNpcVisuals"),game.indexOf("function arenaVisReady"));
  assert.match(ensure,/CreateCapsule/); // capsule is always built first
  assert.match(ensure,/ensureEncounterNpcModel\(f,meshes\[f\.id\]\)/);
+ assert.match(ensure,/ensureEncounterNpcModel\(\{id:f\.id,archetypeId:standIn\.archetypeId\},meshes\[f\.id\],standIn\.tint\)/);
  assert.match(ensure,/AnimationProfiles\.link\(f\.id,f\.archetypeId\)/);
  const clear=game.slice(game.indexOf("function clearEncounterNpcVisuals"),game.indexOf("function ensureEncounterNpcVisuals"));
  assert.ok(clear.indexOf("disposeNpcGlbRuntimes()")<clear.indexOf("part.dispose()"),"GLB before capsule");

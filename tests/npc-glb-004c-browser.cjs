@@ -4,6 +4,8 @@
  *    meshes/textures/materials/skeletons/animation groups after dispose.
  * 2) Real campaign mission 2 (slinger + medic): models replace capsules, auto battle
  *    to victory, retry reopens the battle without growth of scene resources.
+ * 3) ARENA-ART-004D: shown frames follow the measured clip windows; an enemy blow puts
+ *    the damage number at its contact moment; tinted stand-ins on permanent capsules.
  * Local cloud run: NPC_CHROME=/usr/bin/google-chrome NPC_BABYLON_LOCAL=1 (Babylon from
  * node_modules via page.route). CI uses the Playwright image and the real CDN. */
 const assert=require("node:assert/strict");
@@ -65,6 +67,18 @@ const census=()=>({meshes:scene.meshes.length,materials:scene.materials.length,t
     for(const slot of ["idle","basic","special","powerful","guard","ward","hit","death"])
      for(const p of [.25,.6,.95]){rt.update({slot,progress:p});scene.render();
       drift=Math.max(drift,Math.abs(hips.position.x-bind.x),Math.abs(hips.position.z-bind.z));}
+    // ARENA-ART-004D: the frame shown at slot progress p is the window's clip fraction.
+    const windows=[];
+    for(const slot of ["basic","powerful","guard","ward","death"]){
+     const contact=NpcGlbRuntime.contactFor(id,slot);
+     for(const p of [0,contact??.5,1]){
+      rt.update({slot,progress:p});
+      const g=scene.animationGroups.find(a=>a.name===NpcGlbRuntime.clipFor(id,slot)&&a.animatables.length>0);
+      const frame=g?.animatables[0]?.masterFrame;
+      const want=g.from+(g.to-g.from)*NpcGlbRuntime.clipFraction(id,slot,p);
+      windows.push({slot,p,err:Math.abs(frame-want)});
+     }
+    }
     const parts=scene.meshes.filter(m=>m.metadata?.fighterId==="qa-"+id&&m.getTotalVertices?.()>0);
     const box=parts.reduce((a,m)=>{m.computeWorldMatrix(true);const b=m.getBoundingInfo().boundingBox;
      return {min:Math.min(a.min,b.minimumWorld.y),max:Math.max(a.max,b.maximumWorld.y)};},{min:Infinity,max:-Infinity});
@@ -72,6 +86,7 @@ const census=()=>({meshes:scene.meshes.length,materials:scene.materials.length,t
     const loaded=count();
     rt.dispose();
     rows.push({id,ok,hidden,drift:+drift.toFixed(5),height:+(box.max-box.min).toFixed(2),
+     windowErr:Math.max(...windows.map(w=>w.err)),wantHeight:NpcGlbRuntime.heightFor(id),
      restored:body.isVisible&&head.isVisible,before,loaded,after:count(),leftover:extra(),
      brdf:scene.environmentBRDFTexture?.name||null});
     body.dispose();head.dispose();
@@ -84,6 +99,7 @@ const census=()=>({meshes:scene.meshes.length,materials:scene.materials.length,t
    assert.equal(r.hidden,true,r.id+" capsule hidden");
    assert.equal(r.restored,true,r.id+" capsule restored on dispose");
    assert.ok(r.drift<1e-6,r.id+" hips x/z pinned, drift "+r.drift);
+   assert.ok(r.windowErr<.51,r.id+" shown frame follows the clip window, err "+r.windowErr);
    assert.notEqual(r.loaded,r.before,r.id+" model actually added resources");
    assert.deepEqual(r.leftover,[],r.id+" no model texture survives dispose");
    const [a,b]=[r.after,r.before].map(x=>x.split("/").filter((_,i)=>i!==2).join("/"));
@@ -118,6 +134,28 @@ const census=()=>({meshes:scene.meshes.length,materials:scene.materials.length,t
   assert.ok(arena.length>=2);
   for(const f of arena){assert.equal(f.glb,true,f.id);assert.equal(f.capsuleHidden,true,f.id);assert.equal(f.linked,true,f.id);}
   await page.screenshot({path:path.join(out,(useWebkit?"webkit":"chromium")+"-arena.png")});
+  // ARENA-ART-004D: an enemy blow is timed by its profile's contactFraction (= window
+  // contact): the target's hit cue and the HUD number start at that moment.
+  const contact=await page.evaluate(()=>{
+   const slinger=state.fighters.find(f=>f.archetypeId==="npc-ridge-slinger");
+   const hero=state.fighters.find(f=>f.side==="ally"&&f.hp>0);
+   const profile=AnimationProfiles.resolve(slinger.id,"basic");
+   BattleAnimation.clear();BattleAnimation.drainFeedback();
+   BattleAnimation.enqueue([{type:"ability",actorId:slinger.id,targetId:hero.id,abilityId:"basic"},
+    {type:"damage",actorId:slinger.id,targetId:hero.id,amount:1,remainingHp:hero.hp}],null,null);
+   const step=20,seen=[];let t=0,numberAt=null;
+   BattleAnimation.tick(0);
+   while(t<profile.durationMs+200){
+    BattleAnimation.tick(step);t+=step;
+    if(numberAt===null&&BattleAnimation.drainFeedback().some(f=>f.kind==="damage"&&f.id===hero.id))numberAt=t;
+   }
+   BattleAnimation.clear();
+   return {numberAt,contactMs:profile.durationMs*profile.contactFraction,duration:profile.durationMs,
+    window:NpcGlbRuntime.contactFor("npc-ridge-slinger","basic"),fraction:profile.contactFraction};
+  });
+  assert.equal(contact.fraction,contact.window,"profile contact equals window contact");
+  assert.ok(contact.numberAt!==null&&Math.abs(contact.numberAt-contact.contactMs)<=20,"number at contact: "+JSON.stringify(contact));
+  assert.ok(contact.numberAt<contact.duration-100,"number before the clip ends");
   await page.locator("#autoSpeedBtn").click();await page.locator("#autoSpeedBtn").click();
   await page.locator("#autoBattleBtn").click();
   await page.locator("#missionResult").waitFor({state:"visible",timeout:180000});
@@ -127,8 +165,35 @@ const census=()=>({meshes:scene.meshes.length,materials:scene.materials.length,t
   await start();
   const second=await page.evaluate(census);
   assert.deepEqual(second,first,"reopened battle must not grow scene resources");
+  // ARENA-ART-004D: stand-ins on permanent capsules (training enemies, capsule heroes):
+  // tinted model replaces the capsule, profile linked; dispose hands the capsule back.
+  const standIns=await page.evaluate(async()=>{
+   const ids=["ves","shade","kael","lyra","darin"].filter(id=>meshes[id]);
+   const count=()=>[scene.meshes.length,scene.materials.length,scene.textures.length,scene.skeletons.length,
+    scene.animationGroups.length,scene.transformNodes.length].join("/");
+   const before=count();
+   ensureEncounterNpcVisuals(ids.map(id=>({id,side:"enemy"})));
+   await Promise.all(ids.map(id=>npcGlbRuntimes.get(id)?.ready));
+   const rows=ids.map(id=>{
+    const mat=scene.meshes.find(m=>m.metadata?.fighterId===id&&m.material?.albedoColor)?.material;
+    return {id,ready:!!npcGlbRuntimes.get(id)?.isReady,hidden:meshes[id].body.isVisible===false,
+     linked:AnimationProfiles.isCustom(id,"basic"),tint:mat?[mat.albedoColor.r,mat.albedoColor.g,mat.albedoColor.b].map(v=>+v.toFixed(2)):null,
+     want:NpcGlbRuntime.standIn(id).tint};
+   });
+   const loaded=count();
+   for(const id of ids){npcGlbRuntimes.get(id)?.dispose();npcGlbRuntimes.delete(id);AnimationProfiles.unlink(id);}
+   return {rows,before,loaded,after:count(),restored:ids.every(id=>meshes[id].body.isVisible)};
+  });
+  assert.ok(standIns.rows.length===5,"all five stand-in capsules exist");
+  for(const r of standIns.rows){
+   assert.equal(r.ready,true,r.id);assert.equal(r.hidden,true,r.id);assert.equal(r.linked,true,r.id);
+   assert.deepEqual(r.tint,r.want,r.id+" tint");
+  }
+  assert.equal(standIns.restored,true,"capsules restored");
+  const strip=x=>x.split("/").filter((_,i)=>i!==2).join("/");
+  assert.equal(strip(standIns.after),strip(standIns.before),"stand-ins leave no resources");
   assert.deepEqual(errors.filter(e=>/TypeError|ReferenceError|NpcGlb|AnimationProfiles/.test(e)),[]);
-  console.log("ARENAART004C_BROWSER PASS",JSON.stringify({arena,first,second}));
+  console.log("ARENAART004C_BROWSER PASS",JSON.stringify({arena,contact,first,second,standIns:{before:standIns.before,loaded:standIns.loaded,after:standIns.after}}));
  }catch(err){
   await page.screenshot({path:path.join(out,"failure.png")}).catch(()=>{});
   console.error("ARENAART004C_BROWSER FAIL",errors);

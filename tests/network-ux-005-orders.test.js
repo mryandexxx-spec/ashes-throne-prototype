@@ -21,8 +21,8 @@ test("NET-UX-005: dialog, tabs, priority, accessible state, guaranteed progress 
  assert.match(css,/safe-area-inset-left/);
  assert.match(css,/min-height:44px/);
  assert.ok(!html.includes('<details class="net005-order"'));
- assert.equal(JSON.parse(read("package.json")).version,"0.3.207");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.207 · ARENAART004C'));
+ assert.equal(JSON.parse(read("package.json")).version,"0.3.208");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.208 · ARENAART004D'));
 });
 function store(){
  const map=new Map();let failed=false,lock=true;

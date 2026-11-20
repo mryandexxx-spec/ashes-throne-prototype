@@ -10,8 +10,19 @@ const NpcGlbRuntime=(()=>{
  const SLOTS=Object.freeze(["idle","basic","special","powerful","guard","ward","hit","death","run","walk"]);
  // Slots that must exist in the GLB before the capsule is hidden.
  const REQUIRED=Object.freeze(["idle","basic","special","powerful","guard","ward","hit","death"]);
- // Fighter height in world units, same as the hero GLBs. Scale versus heroes: ARENA-ART-004D.
- const HEIGHT=2.1;
+ // Fighter height in world units (bind-pose bounding box). Heroes use 2.1, but their
+ // idle clips stand upright (top of head 2.04-2.23, mean 2.14 on the battle frame) while
+ // Combat_Stance crouches (2.02-2.07 at 2.1). ARENA-ART-004D: 2.2 brings the enemy stance
+ // to the heroes' mean; they still read smaller only because they stand deeper in frame.
+ const HEIGHT=2.2;
+ // Launs are tall non-flying feathered people (PR #339, [ПРЕДЛОЖЕНИЕ]): ~10% taller.
+ const HEIGHTS=Object.freeze({"npc-laun-ford-guard":2.45,"npc-laun-physician":2.4});
+ const heightFor=archetypeId=>HEIGHTS[archetypeId]||HEIGHT;
+ // ARENA-ART-004D: Combat_Stance stands side-on (shoulder line ~46 deg, feet ~65 deg off
+ // the facing). Outside attacks the body turns by this much toward the camera so face
+ // and gear read; attacks keep facing the target. Picked from the render sweep
+ // (docs/evidence/arenaart004d/stance-yaw.webp). Radians, per side.
+ const STANCE_YAW=Object.freeze({enemy:-35*Math.PI/180,ally:0});
  const manifest=()=>typeof NpcModelAssets!=="undefined"?NpcModelAssets:null;
  const entry=archetypeId=>{
   const models=manifest()?.models;
@@ -19,17 +30,76 @@ const NpcGlbRuntime=(()=>{
    ?models[archetypeId]:null;
  };
  const has=archetypeId=>!!entry(archetypeId)?.url;
+ // ARENA-ART-004D, owner decision 20.11.2026 (plan §8 п. 4): until they get their own
+ // models, the training enemies and the capsule heroes borrow an enemy model, tinted
+ // so they do not read as that NPC. Model choice is a [ПРЕДЛОЖЕНИЕ] by role and clip set
+ // (the profile follows the model, because the clips do). Tint multiplies the albedo.
+ const STAND_INS=Object.freeze({
+  ves:Object.freeze({archetypeId:"npc-watch-captain",tint:Object.freeze([.78,.7,.95])}),
+  shade:Object.freeze({archetypeId:"npc-trail-interceptor",tint:Object.freeze([.55,.55,.68])}),
+  kael:Object.freeze({archetypeId:"npc-pass-guard",tint:Object.freeze([.78,.86,1])}),
+  lyra:Object.freeze({archetypeId:"npc-ridge-slinger",tint:Object.freeze([.8,1,.82])}),
+  darin:Object.freeze({archetypeId:"npc-route-signaller",tint:Object.freeze([1,.84,.7])})
+ });
+ // Later-wave copies of the training enemies (demo mission 3) look the same.
+ const copies={"ves-2":"ves","ves-3":"ves","shade-2":"shade"};
+ const standIn=fighterId=>{
+  if(typeof fighterId!=="string")return null;
+  const id=Object.prototype.hasOwnProperty.call(copies,fighterId)?copies[fighterId]:fighterId;
+  return Object.prototype.hasOwnProperty.call(STAND_INS,id)?STAND_INS[id]:null;
+ };
  // CLIPS[archetypeId][slot] — read straight from the generated manifest.
  const CLIPS=Object.freeze(Object.fromEntries(Object.entries(manifest()?.models||{})
   .map(([id,model])=>[id,model.clips])));
- // Part of a clip shown for a slot, as fractions of the clip length, keyed by clip name
- // because the same clip serves several archetypes. Measured windows: ARENA-ART-004D.
- const WINDOWS=Object.freeze({});
+ // ARENA-ART-004D: part of a clip shown for a slot, keyed by clip name (the same Meshy
+ // clip serves several archetypes) and then by slot. keys are [progress, clipFraction]
+ // knots, linear between them, so a long wind-up can be compressed while the blow keeps
+ // its own speed. contact = slot progress at which the blow lands or the throw leaves the
+ // hand; the matching AnimationProfiles entry carries the same contactFraction.
+ // Measured by tools/measure-npc-clips.cjs from wrist speed/reach and hip height (60 Hz,
+ // identical on all 8 rigs): Thrust_Slash thrust peak .247, full reach .30;
+ // Triple_Combo_Attack strikes .18/.36/.52; Over_Shoulder_Throw release .80;
+ // Crouch_Charge_and_Throw crouch .15-.60, release .70; Block1 raised by .33, held to .42;
+ // Charged_Spell_Cast release .65, held to .83; dying_backwards hips down at .55-.57.
+ // Melee approach (BattleAnimation.approach) arrives at progress .38 and holds to .64,
+ // so melee contacts sit inside that hold.
+ const W=(keys,contact)=>Object.freeze({keys:Object.freeze(keys.map(k=>Object.freeze(k))),
+  ...(contact!==undefined?{contact}:{})});
+ const slashWindow=W([[0,0],[.42,.30],[1,.82]],.42);
+ const castWindow=W([[0,0],[.78,.65],[1,.83]],.78);
+ const castHold=W([[0,0],[1,.83]]); // heal/guard cast: no blow to time
+ const blockAbility=W([[0,.12],[1,.55]]);
+ const WINDOWS=Object.freeze({
+  Thrust_Slash:Object.freeze({basic:slashWindow,special:slashWindow}),
+  Triple_Combo_Attack:Object.freeze({powerful:W([[0,0],[.3,.15],[.6,.52],[1,.85]],.6)}),
+  Over_Shoulder_Throw:Object.freeze({basic:W([[0,.1],[.78,.8],[1,.9]],.78),
+   special:W([[0,.1],[.78,.8],[1,.9]],.78)}),
+  Crouch_Charge_and_Throw:Object.freeze({powerful:W([[0,0],[.25,.15],[.55,.62],[.75,.70],[1,.92]],.75)}),
+  // Guard raises the block and ends raised; the ward cue then holds it (as Liora).
+  Block1:Object.freeze({guard:W([[0,.12],[1,.36]]),ward:W([[0,.34],[1,.42]]),
+   special:blockAbility,powerful:blockAbility}),
+  Charged_Spell_Cast:Object.freeze({special:castWindow,powerful:castHold,guard:castHold}),
+  // Ends shortly after the body is down: the fighter is hidden when the slot ends.
+  dying_backwards:Object.freeze({death:W([[0,.1],[1,.7]])})
+ });
+ const FULL=W([[0,0],[1,1]]);
  const clipFor=(archetypeId,slot)=>{
   const clips=entry(archetypeId)?.clips;
   return clips?.[slot]||clips?.idle||null;
  };
- const windowFor=(archetypeId,slot)=>WINDOWS[clipFor(archetypeId,slot)]?.[slot]||[0,1];
+ const windowOf=(archetypeId,slot)=>WINDOWS[clipFor(archetypeId,slot)]?.[slot]||FULL;
+ // [first, last] clip fraction shown for a slot.
+ const windowFor=(archetypeId,slot)=>{const k=windowOf(archetypeId,slot).keys;return [k[0][1],k[k.length-1][1]];};
+ const contactFor=(archetypeId,slot)=>windowOf(archetypeId,slot).contact??null;
+ // Slot progress 0..1 -> clip fraction 0..1 through the window knots.
+ function clipFraction(archetypeId,slot,progress){
+  const keys=windowOf(archetypeId,slot).keys,p=clamp(progress);
+  for(let i=1;i<keys.length;i++){
+   const [p0,f0]=keys[i-1],[p1,f1]=keys[i];
+   if(p<=p1||i===keys.length-1)return f0+(f1-f0)*(p1>p0?Math.min(1,Math.max(0,(p-p0)/(p1-p0))):1);
+  }
+  return keys[0][1];
+ }
  const assetUrl=archetypeId=>entry(archetypeId)?.url||null;
  const sceneDisposed=scene=>typeof scene?.isDisposed==="function"
   ?scene.isDisposed():scene?.isDisposed===true;
@@ -48,7 +118,7 @@ const NpcGlbRuntime=(()=>{
    if(!root)for(const node of result.transformNodes||[])node.dispose();
   }catch(error){console.warn("NPC GLB cleanup",error);}
  }
- async function load(B,scene,visual,archetypeId,fighterId,onProgress){
+ async function load(B,scene,visual,archetypeId,fighterId,tint,onProgress){
   const model=entry(archetypeId);
   if(!model?.url)throw Error("No NPC model for "+archetypeId);
   if(!B?.SceneLoader||!visual?.body||!visual?.head||!scene)throw Error("NPC scene anchors missing");
@@ -80,7 +150,7 @@ const NpcGlbRuntime=(()=>{
    }
    const height=max.y-min.y;
    if(!Number.isFinite(height)||height<=0)throw Error("Invalid NPC GLB height: "+archetypeId);
-   const scale=HEIGHT/height;
+   const scale=heightFor(archetypeId)/height;
    // Meshy faces +Z; body-local +X is the battlefield front (ArenaStageView.idleFacing).
    root.scaling.set(scale,scale,scale);
    root.rotation.y=Math.PI/2;
@@ -90,6 +160,8 @@ const NpcGlbRuntime=(()=>{
    for(const mesh of result.meshes){
     mesh.metadata={...(mesh.metadata||{}),fighterId};
     mesh.isPickable=true;
+    // Each load owns its material (disposed with the root), so tinting is local.
+    if(tint&&mesh.material?.albedoColor)mesh.material.albedoColor=new B.Color3(tint[0],tint[1],tint[2]);
    }
    savedVisibility={body:visual.body.isVisible,head:visual.head.isVisible};
    // Invisible capsule still moves and enables all descendants (same as heroes).
@@ -114,8 +186,7 @@ const NpcGlbRuntime=(()=>{
      activeGroup=group;
     }
     // One pose at a time, driven by the BattleAnimation clock; no own render loop.
-    const [w0,w1]=windowFor(archetypeId,slot);
-    group.goToFrame(group.from+(group.to-group.from)*(w0+(w1-w0)*p));
+    group.goToFrame(group.from+(group.to-group.from)*clipFraction(archetypeId,slot,p));
     if(hips){hips.position.x=hipX;hips.position.z=hipZ;}
    }
    sample({slot:"idle",progress:0});
@@ -135,7 +206,7 @@ const NpcGlbRuntime=(()=>{
    throw error;
   }
  }
- // options: {archetypeId, fighterId, onStatus(state,message)}.
+ // options: {archetypeId, fighterId, tint:[r,g,b]?, onStatus(state,message)}.
  // Returns null when the archetype has no model: the caller keeps the capsule.
  function create(B,scene,visual,options){
   const archetypeId=options?.archetypeId,fighterId=options?.fighterId||archetypeId;
@@ -143,7 +214,8 @@ const NpcGlbRuntime=(()=>{
   let disposed=false,instance=null;
   const report=(state,message)=>{if(!disposed)options?.onStatus?.(state,message);};
   report("loading","Загружаю модель врага…");
-  const ready=load(B,scene,visual,archetypeId,fighterId).then(value=>{
+  const tint=Array.isArray(options?.tint)&&options.tint.length===3&&options.tint.every(Number.isFinite)?options.tint:null;
+  const ready=load(B,scene,visual,archetypeId,fighterId,tint).then(value=>{
    if(disposed||sceneDisposed(scene)){value.dispose();return false;}
    instance=value;report("ready","Модель врага загружена");return true;
   }).catch(error=>{
@@ -158,6 +230,7 @@ const NpcGlbRuntime=(()=>{
    dispose(){disposed=true;instance?.dispose();instance=null;}
   });
  }
- return Object.freeze({SLOTS,HEIGHT,CLIPS,WINDOWS,has,assetUrl,clipFor,windowFor,ensureLoader,create});
+ return Object.freeze({SLOTS,HEIGHT,HEIGHTS,STANCE_YAW,CLIPS,WINDOWS,STAND_INS,has,standIn,heightFor,assetUrl,
+  clipFor,windowFor,contactFor,clipFraction,ensureLoader,create});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=NpcGlbRuntime;

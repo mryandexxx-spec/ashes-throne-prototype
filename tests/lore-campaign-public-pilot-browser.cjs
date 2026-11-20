@@ -89,6 +89,9 @@ async function fight(page,tag,index){
  assert.ok(combat.fighters.includes(["Искатель дороги","Удерживающий тропу",
    "Первая проверка"][index-1]),"Correct stage-specific enemy must appear");
  await page.screenshot({path:path.join(out,tag+"-arena-"+index+".png"),fullPage:true});
+ // ARENA-ART-004D: ves/shade stand-in models play real clip lengths instead of the 200 ms
+ // capsule templates; run the auto battle at x4 so the full quest fits the timeout.
+ await page.evaluate(()=>setAutoSpeed(4));
  await page.locator("#autoBattleBtn").click();
  await page.locator("#loreRequiredBattleResult").waitFor({state:"visible",timeout:145000});
  assert.equal(await page.locator("#loreRequiredResultTitle").innerText(),"Бой выигран",

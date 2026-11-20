@@ -43,7 +43,7 @@ async function run(name,engine,viewport){
  try{
   await page.goto(origin,{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
-  assert.match(await page.locator("#buildVersion").innerText(),/v0\.3\.207 · ARENAART004C/);
+  assert.match(await page.locator("#buildVersion").innerText(),/v0\.3\.208 · ARENAART004D/);
   await enter();
   assert.ok(await page.locator("#net004Clues .netux-clue-pick").count()>=2);
   const scene=await page.evaluate(()=>{

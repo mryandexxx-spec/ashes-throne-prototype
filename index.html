@@ -1,1 +1,201 @@
-PLACEHOLDER
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0a090c">
+  <meta name="description" content="Пепельный престол — тактическая RPG: выбирай отряд, прокачивай героев, сражайся.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Пепельный престол · Prototype</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css?v=0.3.218">
+  <script src="https://cdn.babylonjs.com/babylon.js" defer></script>
+  <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js" defer></script>
+</head>
+<body>
+  <div id="app">
+    <header class="app-header" id="appHeader" role="banner">
+      <div class="app-title">Пепельный престол</div>
+      <nav class="app-nav" aria-label="Основное меню">
+        <button class="nav-btn active" data-screen="home" aria-current="page">Главная</button>
+        <button class="nav-btn" data-screen="collection">Герои</button>
+        <button class="nav-btn" data-screen="campaign">Кампания</button>
+        <button class="nav-btn" data-screen="squad">Отряд</button>
+        <button class="nav-btn" data-screen="battle">Арена</button>
+      </nav>
+    </header>
+
+    <main class="app-main" id="appMain">
+      <section id="home" class="screen active" aria-label="Главная">
+        <div class="hero-section">
+          <div class="hero-text">
+            <h1>Пепельный престол</h1>
+            <p class="hero-subtitle">Тактическая RPG в мрачном фэнтези</p>
+            <p class="hero-desc">Собери отряд из уникальных героев, прокачай их способности и сражайся в пошаговых боях.</p>
+            <div class="hero-buttons">
+              <button class="btn primary" id="startBattle">⚔️ Бой</button>
+              <button class="btn secondary" id="campaignBattle">📜 Кампания</button>
+              <button class="btn ghost" data-screen="collection">👥 Герои</button>
+            </div>
+          </div>
+          <div class="hero-visual">
+            <div class="hero-portrait" id="heroPortrait" role="img" aria-label="Арт Рена"></div>
+            <div class="hero-glow"></div>
+          </div>
+        </div>
+
+        <div class="features">
+          <div class="feature-card">
+            <div class="feature-icon">⚔️</div>
+            <h3>Пошаговые бои</h3>
+            <p>Тактические сражения с уникальными способностями каждого героя.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">👑</div>
+            <h3>Лидерские способности</h3>
+            <p>Первый герой отряда даёт бонусы всей команде.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📖</div>
+            <h3>Сюжетная кампания</h3>
+            <p>Проходи главы и открывай новых героев.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎨</div>
+            <h3>3D-арена</h3>
+            <p>Сражайся на интерактивной 3D-локации.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="collection" class="screen" aria-label="Коллекция героев">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">КОЛЛЕКЦИЯ</div>
+            <h2>Герои</h2>
+            <p class="muted">Нажми на героя, чтобы узнать подробности.</p>
+          </div>
+          <button class="ghost" type="button" id="collectionBack">← Назад</button>
+        </div>
+        <div id="heroList" class="hero-list" role="list" aria-label="Список героев"></div>
+      </section>
+
+      <section id="campaign" class="screen" aria-label="Сюжетная кампания">
+        <div class="campaign-layout">
+          <div class="campaign-sidebar">
+            <div class="section-heading campaign-heading">
+              <div><div class="eyebrow">СЮЖЕТ</div><h2>Кампания</h2><p class="muted" id="campaignIntro">Проходи главы и открывай новых героев.</p></div>
+              <button class="ghost" type="button" id="campaignBack">← Назад</button>
+            </div>
+            <div id="campaignMissions" class="campaign-missions" role="list" aria-label="Главы кампании"></div>
+          </div>
+          <div class="campaign-main">
+            <div id="missionResult" class="mission-result" hidden>
+              <h3 id="missionResultTitle"></h3>
+              <p id="missionResultText"></p>
+              <div class="mission-actions">
+                <button class="primary" id="missionResultRetry">↻ Повторить</button>
+                <button class="ghost" id="missionResultBack">← Назад к главам</button>
+                <button class="ghost" id="missionResultHome">⌂ На главную</button>
+              </div>
+            </div>
+            <div id="campaignSaveStatus" class="campaign-save-status" role="status" aria-live="polite"></div>
+            <div id="campaignMissionStatus" class="campaign-mission-status" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="squad" class="screen squad-screen" aria-label="Подготовка отряда">
+        <div class="squad-top-bar">
+          <button class="ghost squad-back" id="squadBack">← Назад</button>
+          <div class="squad-title-group">
+            <div class="eyebrow">ПЕРЕД СРАЖЕНИЕМ</div>
+            <h2>Выбор отряда</h2>
+            <p class="muted" id="squadIntro">Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.</p>
+          </div>
+          <div class="squad-power-box" id="squadPowerBox">
+            <div class="squad-power-label">Мощь отряда</div>
+            <div class="squad-power-value" id="squadPower">0</div>
+          </div>
+        </div>
+        <div class="squad-leader-bar" id="squadLeaderBar" hidden>
+          <span class="squad-leader-icon">👑</span>
+          <span class="squad-leader-text" id="squadLeaderText">Лидер: —</span>
+        </div>
+        <div class="squad-layout">
+          <div class="squad-panel squad-panel-roster">
+            <div class="eyebrow">ДОСТУПНЫЕ ГЕРОИ</div>
+            <div id="squadRoster" class="squad-roster" aria-label="Герои для выбора"></div>
+          </div>
+          <div class="squad-panel squad-panel-team">
+            <div class="eyebrow">БОЕВОЙ СОСТАВ · <span id="squadCount">0/5</span></div>
+            <div id="squadTacticalBrief" class="squad-tactical-brief" role="note" hidden>
+              <strong>ПРИКРЫТЬ ОТХОД · ЗАДАЧА</strong>
+              <p>Сохрани Рена: его падение — поражение. Победи врагов <b>или</b> проведи 12 действий союзников. <b>Преследователь</b> целится в Рена — останови его. Автобой доступен.</p>
+            </div>
+            <div id="squadSlots" class="squad-slots" aria-label="Пять мест в отряде"></div>
+            <p id="squadHint" class="muted" role="status">Выбери хотя бы одного героя.</p>
+            <p id="squadWarning" class="squad-warning" role="alert" hidden></p>
+            <div class="squad-actions">
+              <button class="ghost squad-disband" type="button" id="squadDisband">Распустить</button>
+              <button class="ghost squad-select" type="button" id="squadSelect">Выбрать отряд</button>
+              <button class="primary squad-start" type="button" id="squadStart">Начать бой</button>
+            </div>
+            <div id="battleLoadError" hidden role="alert" class="battle-load-error">
+              <strong>Не удалось загрузить 3D-арену.</strong>
+              <p>Проверь подключение к интернету и попробуй ещё раз. Подготовка отряда и остальные разделы доступны.</p>
+              <button type="button" class="ghost" id="retryBattleLoad">Повторить загрузку</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="battle" class="screen battle-screen" aria-label="Боевая арена">
+        <div class="battle-layout">
+          <div class="battle-sidebar">
+            <div class="battle-controls-top">
+              <div id="turnChip" class="turn-chip" role="status" aria-live="polite">Ходит: —</div>
+              <div id="battleStatus" class="battle-status" role="log" aria-live="polite"></div>
+            </div>
+            <div class="battle-abilities" role="group" aria-label="Способности">
+              <button class="ability-btn" id="basicAbilityBtn" type="button">
+                <span class="ability-name">Базовая</span>
+                <span class="ability-cost">0 ОД</span>
+              </button>
+              <button class="ability-btn special" id="specialAbilityBtn" type="button">
+                <span class="ability-name">Специальная</span>
+                <span class="ability-cost">2 ОД</span>
+              </button>
+            </div>
+            <div class="battle-actions-bottom">
+              <button class="ghost battle-auto" id="battleAuto" type="button">🤖 Автобой</button>
+              <button class="ghost battle-retry" id="battleRetryBtn" type="button" hidden>↻ Заново</button>
+              <button class="ghost" data-screen="home" id="battleHomeBtn" type="button">⌂ Меню</button>
+            </div>
+          </div>
+          <div class="battle-main">
+            <div id="renderCanvas" class="render-canvas" role="img" aria-label="3D-арена"></div>
+            <div id="actionTitle" class="action-title" role="status"></div>
+            <div id="actionHint" class="action-hint" role="note"></div>
+            <p id="battleMessage" class="battle-message" role="alert" hidden></p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer" role="contentinfo">
+      <div class="build-info">v0.3.218 · SQUADSWGOH</div>
+      <div class="footer-links">
+        <a href="https://github.com/mryandexxx-spec/ashes-throne-prototype" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://mryandexxx-spec.github.io/ashes-throne-prototype/" target="_blank" rel="noopener">Играть</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="game.js?v=0.3.218" defer></script>
+</body>
+</html>

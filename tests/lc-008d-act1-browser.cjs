@@ -160,7 +160,7 @@ async function run(name,type){
    assert.equal(await card.count(),1);
    assert.match(await card.innerText(),/победите в бою после «Имя Элы»/i);
    assert.equal((await card.innerText()).includes("FS-03"),false);
-   assert.equal(await card.locator("button").isEnabled(),false);
+   assert.equal(await card.locator('[data-lore-action="claim-act-reward"]').isEnabled(),false);
    await unfinished.page.locator('[data-lore-action="choose-layer"]').nth(2).click();
    assert.equal(await unfinished.page.locator(".lore-act-one-reward").count(),0);
    assert.deepEqual(unfinished.errors,[]);

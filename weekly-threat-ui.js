@@ -3,8 +3,6 @@ const WeeklyThreatUI=(()=>{
  "use strict";
  let session=null,onSquad=null,onDevelop=null,network=null,mounted=false,notice="";
  const $=id=>document.getElementById(id);
- const labels={Fe:"Железо",Le:"Кожа",Cl:"Ткань",Wo:"Древесина",
-  Fa:"Волокно",Th:"Нить",Gl:"Стекло"};
  function render(){
   if(!mounted)return;
   const root=$("net008aThreat"),s=session.read();
@@ -39,11 +37,9 @@ const WeeklyThreatUI=(()=>{
    " · лучший результат: "+(s.bestScore?s.bestScore+"/100 ("+
    WeeklyThreatCore.TIERS.filter(t=>s.bestScore>=t.score).length+"★)":"нет")+
    ". Поражение не лишает награды и допускает повтор.");
-  $("net008aRewards").textContent="Награды за 1★ / 2★ / 3★ (однократно в неделю): "+
-   WeeklyThreatCore.TIERS.map((x,i)=>(i+1)+"★ от "+x.score+
-   ": +"+x.currency+" валюты, +"+x.xp+" XP, "+
-   Object.entries(x.materials).map(([id,n])=>n+" "+(typeof GearData!=="undefined"?
-    GearData.MATERIAL_LABELS[id]||id:labels[id])).join(", ")).join(" · ");
+  $("net008aRewards").innerHTML=WeeklyThreatCore.TIERS.map((tier,i)=>
+   (i+1)+"★ · "+tier.score+" очков · +"+tier.currency+" валюты · +"+tier.xp+
+   " XP"+GearMaterialUI.group(tier.materials)).join("");
   $("net008aSurvey").hidden=!!s.active;
   $("net008aCover").hidden=!!s.active;
   $("net008aFight").hidden=!s.active;

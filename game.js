@@ -406,9 +406,11 @@ function renderDailyClaimBadge(){
 // NET-UX-003: the network and legacy screen render the SAME DailyCore ledger.
 // Navigation never records a task, creates a reward or changes network.v1.
 let dailyNavigationOrigin=false;
-function dailyNotify(message){
+function dailyNotify(message,materials){
  for(const id of ["dailyTaskNotice","netuxDailyTaskNotice"]){
-  const notice=$("#"+id);if(notice)notice.textContent=message;
+  const notice=$("#"+id);if(!notice)continue;
+  notice.textContent=message;
+  if(materials)GearMaterialUI.append(notice,materials);
  }
 }
 function renderDailyTasks(){
@@ -445,13 +447,12 @@ function renderDailyTasks(){
    const title=document.createElement("strong");title.textContent=task.label;
    const detail=document.createElement("small");
    const done=progress.daily.counts[task.id]===1,claimed=progress.daily.claimed.includes(task.id);
-   const materials=Object.entries(task.materials).map(([key,qty])=>
-    "+"+qty+" "+(GearData.MATERIAL_LABELS[key]||key)).join(" · ");
    const books=Object.entries(task.skillMaterials||{}).map(([key,qty])=>
     "+"+qty+" "+(SkillCore.LABELS[key]||key)).join(" · ");
    detail.textContent="Прогресс "+(done?"1/1":"0/1")+" · "+
     (claimed?"Награда получена":done?"Готово к получению":"Не выполнено")+
-    " · +"+task.currency+" валюты · +"+task.xp+" Account XP · "+materials+(books?" · "+books:"");
+    " · +"+task.currency+" валюты · +"+task.xp+" Account XP"+(books?" · "+books:"");
+   GearMaterialUI.append(detail,task.materials);
    label.append(title,detail);
    const claimButton=document.createElement("button");claimButton.type="button";
    claimButton.className=claimed?"ghost":"primary";
@@ -513,9 +514,7 @@ for(const listId of ["dailyTaskList","netuxDailyTaskList"]){
    renderDailyTasks();renderDailyClaimBadge();return;
   }
   dailyNotify("Награда получена: +"+reward.currency+
-   " валюты, +"+reward.xp+" Account XP, "+
-   Object.entries(reward.materials).map(([key,qty])=>
-    "+"+qty+" "+(GearData.MATERIAL_LABELS[key]||key)).join(", ")+".");
+   " валюты, +"+reward.xp+" Account XP.",reward.materials);
   renderDailyTasks();renderDailyClaimBadge();renderAccountHeader();renderPlayerProfile();renderHeroes();
  });
 }
@@ -533,7 +532,7 @@ for(const buttonId of ["dailyClaimAll","netuxDailyClaimAll"]){
    renderDailyTasks();renderDailyClaimBadge();return;
   }
   dailyNotify("Получено наград: "+batch.ids.length+
-   " · +"+batch.currency+" валюты · +"+batch.xp+" Account XP.");
+   " · +"+batch.currency+" валюты · +"+batch.xp+" Account XP.",batch.materials);
   renderDailyTasks();renderDailyClaimBadge();renderAccountHeader();renderPlayerProfile();renderHeroes();
  });
 }
@@ -584,11 +583,10 @@ function renderLoginCalendar(){
    (view.available&&i===view.nextDay-1?" active":"");
   const title=document.createElement("strong");title.textContent="День "+(i+1);
   const detail=document.createElement("small");
-  detail.textContent="+"+reward.currency+" валюты · +"+reward.xp+" XP · "+
-   Object.entries(reward.materials).map(([key,n])=>"+"+n+" "+
-    (GearData.MATERIAL_LABELS[key]||key)).join(", ")+
+  detail.textContent="+"+reward.currency+" валюты · +"+reward.xp+" XP"+
    Object.entries(reward.skillMaterials||{}).map(([key,n])=>
     " · +"+n+" "+(SkillCore.LABELS[key]||key)).join("");
+  GearMaterialUI.append(detail,reward.materials);
   cell.append(title,detail);grid.append(cell);
  }
  button.disabled=!view.available;
@@ -614,9 +612,8 @@ $("#loginClaim")?.addEventListener("click",()=>{
  }
  renderLoginCalendar();renderDailyTasks();renderPlayerProfile();renderHeroes();
  $("#loginCalendarStatus").textContent="Награда дня "+reward.day+" получена: +"+
-  reward.currency+" валюты, +"+reward.xp+" XP, "+
-  Object.entries(reward.materials).map(([key,n])=>"+"+n+" "+
-   (GearData.MATERIAL_LABELS[key]||key)).join(", ")+".";
+  reward.currency+" валюты, +"+reward.xp+" XP.";
+ GearMaterialUI.append($("#loginCalendarStatus"),reward.materials);
 });
 function persistProgress(){
  if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>window.localStorage);
@@ -648,13 +645,13 @@ $("#devResourcesGrant")?.addEventListener("click",()=>{
  const status=$("#devResourcesNotice");
  if(status)status.textContent="Тестовый запас готов: энергия "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX+
   ", игровая валюта "+progress.currency+", материал C "+progress.gearMaterials+
-  (progress.saveVersion===3?" · G"+Math.max(1,...Object.values(progress.gear||{}).map(g=>g.tier||1))+": "+
-   GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(", "):"")+
+  (progress.saveVersion===3?" · Компоненты G"+Math.max(1,...Object.values(progress.gear||{}).map(g=>g.tier||1)):"")+
   (progress.saveVersion===3&&typeof SkillCore!=="undefined"&&progress.skillMaterials?" · Навыки: "+
    SkillCore.RESOURCE_IDS.map(id=>SkillCore.LABELS[id]+" "+
     progress.skillMaterials[id]).join(", "):"")+
   (progress.saveVersion===3&&typeof StarCore!=="undefined"?" · Осколки: тестовый запас для достижения 7★.":"")+
   (saveAvailable?". Сохранено в этом браузере.":". Внимание: сохранение недоступно.");
+ if(status&&progress.saveVersion===3)GearMaterialUI.append(status,progress.materials,{stock:true});
 });
 
 // PROG-085: distinct explicit test aid; never mixed with normal rewards.
@@ -2123,14 +2120,14 @@ function renderItemizedGear(base,gear){
    '<span aria-hidden="true">'+(filled?'◆':'◇')+'</span><small>'+gearSlotCaption(entry.label)+'</small></button>';
  }).join("");
  const label=$("#gearMaterialLabel");if(label)label.textContent="Компоненты G"+gear.tier;
- $("#gearMaterial").textContent=GearData.MATERIALS.map(id=>GearData.MATERIAL_LABELS[id]+" "+progress.materials[id]).join(" · ");
+ $("#gearMaterial").innerHTML=GearMaterialUI.group(progress.materials,{stock:true});
  $("#gearWallet").textContent=String(progress.currency);
  $("#gearPriceLabel").textContent=ready?"Стоимость перехода":"Выбранный предмет";
  $("#gearStatBonusLabel").textContent=ready?"Бонус повышения":"Бонус предмета";
  const chosen=installed?GearData.get(installed):item;
  $("#gearPrice").textContent=ready?(promotion?promotion.currency+" валюты · G"+promotion.from+" → G"+promotion.to:"G"+GearData.MAX_TIER+" · максимум"):
-  chosen?chosen.name+" · "+Object.entries(chosen.ingredients).map(([id,n])=>
-   GearData.MATERIAL_LABELS[id]+" ×"+n).join(", ")+" · "+chosen.currency+" валюты":"—";
+  chosen?chosen.name+" · "+chosen.currency+" валюты":"—";
+ if(!ready&&chosen)GearMaterialUI.append($("#gearPrice"),chosen.ingredients,{inventory:progress.materials});
  $("#gearStatBonus").textContent=ready?(promotion?"HP и ATK +3%":"—"):
   chosen?[
    chosen.bonuses.hp?"HP +"+Math.round(chosen.bonuses.hp*100)+"%":"",
@@ -2540,14 +2537,13 @@ $("#detailUpgradeMax")?.addEventListener("click",()=>applyHeroLevels(85));
 function missionRewardLabel(id){
  const reward=ProgressCore.MISSION_GEAR_FARM[id];
  if(progress.saveVersion!==3||!reward)return "";
- const components=GearData.MATERIALS.filter(key=>reward.materials[key]>0)
-  .map(key=>GearData.MATERIAL_LABELS[key]+" ×"+reward.materials[key]).join(" · ");
+ const components=GearMaterialUI.group(reward.materials);
  const first=ProgressCore.FIRST_CLEAR_REWARDS[id];
  const bonus=first&&!progress.claimedMissions.includes(id)
   ?"<p class=\"muted\">Дополнительно за первую победу: "+first.currency+" валюты · "+first.xp+" XP.</p>":"";
  return "<p class=\"muted\"><b>Награды за победу:</b> "+reward.currency+
-  " валюты · "+reward.xp+" XP · "+components+
-  ". Выдаются при первой победе и каждом повторе (от 1★). Симуляция после 3★.</p>"+bonus+
+  " валюты · "+reward.xp+" XP."+components+
+  "Выдаются при первой победе и каждом повторе (от 1★). Симуляция после 3★.</p>"+bonus+
   (typeof HeroCollectionCore!=="undefined"&&HeroCollectionCore.reward(id)&&
    !heroOwned(HeroCollectionCore.reward(id))?
     '<p class="muted">За первую победу: новый тестовый герой — '+
@@ -2798,6 +2794,12 @@ function renderSimulationPreview(){
  if(!mission||!range)return;
  ProgressCore.refreshEnergy(progress);
  const count=Number(range.value),cost=ProgressCore.missionEnergyCost(mission);
+ const preview=$("#simulationMaterialPreview");
+ if(preview){
+  const materials=progress.saveVersion===3&&ProgressCore.MISSION_GEAR_FARM[mission]?.materials;
+  preview.innerHTML=materials?GearMaterialUI.group(Object.fromEntries(
+   Object.entries(materials).map(([key,n])=>[key,n*count]))):"";
+ }
  $("#simulationQuantity").textContent=String(count);
  $("#simulationCost").textContent=String(count*cost)+" ⚡";
  $("#simulationAvailable").textContent=String(progress.energy.value)+" ⚡";
@@ -2850,10 +2852,10 @@ $("#simulationConfirm")?.addEventListener("click",()=>{
  $("#simulationText").textContent="Выполнено симуляций: "+gain.count+". Потрачено: "+gain.energy+" ⚡.";
  $("#simulationRewards").textContent=[
   gain.material?"+ "+gain.material+" материалов C":null,
-  gain.materials?GearData.MATERIALS.filter(key=>gain.materials[key]>0).map(key=>"+ "+gain.materials[key]+" "+GearData.MATERIAL_LABELS[key]).join(" · "):null,
   gain.currency?"+ "+gain.currency+" валюты":null,
   gain.xp?"+ "+gain.xp+" Account XP":null
  ].filter(Boolean).map(item=>"• "+item).join("\n");
+ if(gain.materials)GearMaterialUI.append($("#simulationRewards"),gain.materials);
  $("#simulationClose").textContent="Закрыть";
  renderCampaign();
  if($("#heroDetail")?.classList.contains("active"))renderHeroDetail();
@@ -2870,11 +2872,8 @@ function renderMissionResult(){
  const chapterLabel=$("#missionResultChapter");
  if(chapterLabel)chapterLabel.textContent=chapter?chapter.title:"Кампания";
  $("#missionResultTitle").textContent=won?"Миссия пройдена":"Миссия не пройдена";
- const components=lastMissionFarmReward?.materials
-  ?GearData.MATERIALS.filter(key=>lastMissionFarmReward.materials[key]>0)
-    .map(key=>GearData.MATERIAL_LABELS[key]+" ×"+lastMissionFarmReward.materials[key]).join(", "):"";
  const base=lastMissionFarmReward
-  ?"Получено: +"+lastMissionFarmReward.currency+" валюты, +"+lastMissionFarmReward.xp+" XP, "+components+". ":"";
+  ?"Получено: +"+lastMissionFarmReward.currency+" валюты, +"+lastMissionFarmReward.xp+" XP. ":"";
  const first=lastMissionReward
   ?"Дополнительно за первую победу: +"+lastMissionReward.currency+" валюты, +"+lastMissionReward.xp+" XP"+
     (lastMissionReward.material?", +"+lastMissionReward.material+" C":"")+".":"";
@@ -2883,6 +2882,7 @@ function renderMissionResult(){
   :won?MissionData.get(activeMissionId).title+" завершена. "+(base+first||"Повтор без экономических наград.")+
    (lastUnlockedHeroId?" Новый герой получен: "+(ALLIES.find(h=>h.id===lastUnlockedHeroId)?.name||"тестовый персонаж")+".":"")
   :"Отряд потерпел поражение. Наград нет."+(lastMissionEnergyRefunded?" Энергия за ресурсный повтор возвращена.":"");
+ if(won&&!missionResultSaveFailed&&lastMissionFarmReward)GearMaterialUI.append($("#missionResultText"),lastMissionFarmReward.materials);
  const grade=$("#missionResultStars");
  if(grade){
   const best=campaignProgress.bestStars[activeMissionId]||0;
@@ -4119,6 +4119,10 @@ if(typeof NetworkPilotSession!=="undefined"&&
    });
  }
 }
+if(typeof GearMaterialUI!=="undefined"&&document.getElementById)GearMaterialUI.mount(()=>({
+ profile:progress,campaign:campaignProgress,day:dailyDay(),
+ liveNetwork:!!networkPilot?.isLive(),weekly:!!weeklySession
+}));
 // Fresh display when returning to this view without a full screen transition.
 $("#network")?.addEventListener("click",event=>{
  const tab=event.target.closest?.('button[data-net-view="daily"]');

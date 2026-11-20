@@ -3,14 +3,14 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","combat-log.js","gear-data.js","progress-core.js","save-core.js","progress-v3-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const src=["initiative-model.js","ability-data.js","combat-core.js","combat-log.js","gear-data.js","gear-material-ui.js","progress-core.js","save-core.js","progress-v3-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["energyStatus","missionResultChapter","missionResultStars","missionResultText","battleLogSummary","battleLogEntries","targetFighterHud","targetFighterSide","targetFighterLevel","targetFighterName","targetFighterHp","targetFighterStats","targetFighterHealthFill","arenaIndicators","autoBattleBtn","autoSpeedBtn","powerfulAbilityBtn","powerfulAbilitySlot","abilityOptions","abilityControls","battleLoadError","campaignMissions","campaign","missionResult","missionResultTitle","missionResultBack","missionResultRetry","missionResultHome","squad","squadStart","home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
  "startBattle","devResourcesGrant","devResourcesNotice","accountStatus","campaignBattle","campaignMissions","missionResultBack","missionResultRetry","missionResultHome","missionResult","missionResultTitle","missionResultText","campaignMissionStatus","campaignSaveStatus","squadBack","squadStart","squadRoster",
  "squadSlots","squadHint","squadCount","heroDetail","detailName","detailRole","detailGlyph","detailStats","detailLevel","detailWallet","detailCost","detailPreview","detailUpgrade","detailNotice","detailBack","detailHome","battleReward","gearTier","gearSlots","gearMaterial","gearWallet","gearPrice","gearPriceLabel","gearStatBonus","gearStatBonusLabel","gearEquipNext","gearNotice","gearPromotionDialog","gearPromotionTitle","gearPromotionLevel","gearPromotionCost","gearPromotionStats","gearPromotionClose"];
 function element(id=""){
- return {id,dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},style:{},
+ return {id,insertAdjacentHTML(position,html){this.innerHTML+=html;},dataset:{},innerHTML:"",textContent:"",disabled:false,handlers:{},style:{},
   classList:{active:id==="home",contains(x){return !!this[x]},add(x){this[x]=true},
    remove(x){this[x]=false},toggle(x,v){this[x]=!!v}},
   querySelector(){return null},
@@ -112,7 +112,7 @@ assert.equal(p.materials.Cl,4);
 assert.equal(p.materials.Gl,0);
 assert.equal(p.gearMaterials,0,"no obsolete C in active v3");
 assert.doesNotMatch(elements.accountStatus.textContent,/ · C /,"v3 wallet must hide obsolete C");
-assert.match(elements.missionResultText.textContent,/Железо ×2/);
+assert.match(elements.missionResultText.innerHTML,/Железо ×2/);
 assert.match(elements.missionResultText.textContent,/Дополнительно за первую победу: \+500/);
 api.syncBattleUI();
 assert.equal(p.currency,1350,"repeated render cannot mint rewards");

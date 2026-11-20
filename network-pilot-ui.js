@@ -19,7 +19,7 @@ const NetworkPilotUI=(()=>{
   const story=operationStory(clue);
   return story?story.title+" · "+subject:subject;
  }
- function rewardText(ref){
+ function rewardText(ref,includeMaterials=true){
   if(!isLive()||typeof NetworkLiveEconomy==="undefined")return "";
   const reward=NetworkLiveEconomy.preview(ref);
   if(!reward)return "Награда не настроена";
@@ -27,8 +27,13 @@ const NetworkPilotUI=(()=>{
    typeof GearData!=="undefined"?GearData.MATERIAL_LABELS[k]||k:k));
   const shards=Object.entries(reward.heroShards||{}).map(([k,v])=>
    "+"+v+" осколков: "+(heroLabels[k]||k));
-  return ["+"+reward.currency+" валюты","+"+reward.accountXp+" XP",...mats,...shards].join(" · ");
+  return ["+"+reward.currency+" валюты","+"+reward.accountXp+" XP",...(includeMaterials?mats:[]),...shards].join(" · ");
  }
+ function renderReward(host,ref,pilotText){
+  host.textContent=isLive()?rewardText(ref,false):pilotText;
+  if(isLive())GearMaterialUI.append(host,NetworkLiveEconomy.preview(ref)?.materials);
+ }
+ let materialReceipt=null;
  async function collectRewards(){
   if(!isLive()||!session?.isReady())return;
   let result;
@@ -36,15 +41,14 @@ const NetworkPilotUI=(()=>{
   if(result.ok&&result.paid>0){
    const n=result.paid,part=n%10===1&&n%100!==11?"зацепку":
     n%10>=2&&n%10<=4&&(n%100<12||n%100>14)?"зацепки":"зацепок";
-   const materials=Object.entries(result.materialBreakdown||{}).map(([id,count])=>
-    "+"+count+" "+(typeof GearData!=="undefined"?GearData.MATERIAL_LABELS[id]||id:id));
    const shards=Object.entries(result.shardBreakdown||{}).map(([id,count])=>
     "+"+count+" осколков ("+(heroLabels[id]||id)+")");
    notice="Получено за "+n+" "+part+": +"+result.currency+
     " валюты · +"+result.xp+" XP"+
-    (materials.length?" · "+materials.join(", "):"")+
     (shards.length?" · "+shards.join(", "):"")+".";
+   materialReceipt={text:notice,materials:result.materialBreakdown};
   }else if(!result.ok){
+   materialReceipt=null;
    notice=errorText[result.code]||"Не удалось выдать награду: "+result.code+
     ". Выплата сохранена в очереди; попробуйте снова.";
   }
@@ -127,7 +131,11 @@ const NetworkPilotUI=(()=>{
    const hint=line(o.kind==="region"?"Все зацепки региона":
     o.kind==="hero"?"Осколки персонажа":
     o.kind==="material"?"Материалы":"Тип донесения","small");
-   b.append(hint);choices.append(b);
+   b.append(hint);
+   if(o.kind==="material"){
+    const wrap=document.createElement("div");wrap.className="material-order-option";
+    wrap.append(b);wrap.insertAdjacentHTML("beforeend",GearMaterialUI.tile(o.targetId,null));choices.append(wrap);
+   }else choices.append(b);
   }
   if(!all.length)choices.append(line("Сейчас нет доступных направлений поиска."));
   const draft=all.find(o=>orderKey(o)===orderDraftKey)||null;
@@ -197,6 +205,7 @@ const NetworkPilotUI=(()=>{
    "Режим заблокирован: нет безопасной записи. Перезагрузите страницу.":
    notice||(isLive()?"":
     "Пробный режим без наград и расхода энергии. Данные хранятся отдельно.");
+  if(!blocked&&materialReceipt?.text===notice)GearMaterialUI.append($("net004Notice"),materialReceipt.materials);
   const board=$("net004Board"),active=$("net004Active"),result=$("net004Result");
   board.hidden=!!s?.active||!s;
   active.hidden=!s?.active||s.active.phase==="result";
@@ -230,7 +239,7 @@ const NetworkPilotUI=(()=>{
    const title=line(clueTitle(clue),"strong");
    const fullReward=isLive()?rewardText(clue.rewardRef):
     "Пробный бой. Реальные награды не назначены.";
-   const reward=line(fullReward,"span");reward.className="netux-clue-reward";
+   const reward=line(isLive()?rewardText(clue.rewardRef,false):fullReward,"span");reward.className="netux-clue-reward";
    const tags=document.createElement("div");tags.className="netux-clue-tags";
    if(session.canSimulate(clue.id))tags.append(line("Освоено","span"));
    if(clue.threatTag){
@@ -242,7 +251,9 @@ const NetworkPilotUI=(()=>{
    choice.setAttribute("aria-label",clueTitle(clue)+", уровень "+clue.level+
     ". "+fullReward+(session.canSimulate(clue.id)?". Освоено":"")+
     (clue.threatTag?". След угрозы":""));
-   choice.append(top,title,reward,tags);el.append(choice);cluesEl.append(el);
+   choice.append(top,title,reward,tags);el.append(choice);
+   if(isLive())GearMaterialUI.append(el,NetworkLiveEconomy.preview(clue.rewardRef)?.materials);
+   cluesEl.append(el);
   }
   updateSelection(s,blocked,busy);
   if(s.active&&s.active.phase!=="result"){
@@ -270,8 +281,7 @@ const NetworkPilotUI=(()=>{
     (a.preparation==="survey"?"Разведка отмечает первого противника как приоритетную цель.":
      a.preparation==="cover"?"Прикрытие снижает физическую атаку противников.":
      "Разведка отмечает приоритетную цель, прикрытие ослабляет физические атаки.");
-   $("netuxBriefReward").textContent=isLive()?rewardText(c.rewardRef):
-    "Пробный режим · реальных наград нет.";
+   renderReward($("netuxBriefReward"),c.rewardRef,"Пробный режим · реальных наград нет.");
    $("netuxBriefThreat").textContent=c.threatTag?
     "Сведения об угрозе за ручное прохождение.":"";
    const slot=$("net004Choices");slot.replaceChildren();
@@ -315,8 +325,7 @@ const NetworkPilotUI=(()=>{
    $("netuxResultIntel").textContent=c.threatTag==="weekly-gardens"&&tracked?
     "След угрозы: после завершения +1 сведение для текущей UTC-недели.":
     "Дополнительных сведений об угрозе эта операция не добавит.";
-   $("netuxResultReward").textContent=isLive()?rewardText(c.rewardRef):
-    "Пробный режим · награды не начисляются.";
+   renderReward($("netuxResultReward"),c.rewardRef,"Пробный режим · награды не начисляются.");
    $("net004Finish").textContent=isLive()?"Завершить и получить":"Завершить испытание";
    $("net004Finish").disabled=blocked||busy;
   }
@@ -338,7 +347,7 @@ const NetworkPilotUI=(()=>{
  }
  async function change(action,value){
   if(!session||session.isBlocked())return {ok:false,code:"SESSION_BLOCKED_RELOAD_REQUIRED"};
-  notice="";
+  notice="";materialReceipt=null;
   let result;
   try{result=await session.change(action,value);}catch(_){result={ok:false,code:"SAVE_FAILED"};}
   if(!result.ok)notice=errorText[result.code]||"Действие отклонено: "+result.code;

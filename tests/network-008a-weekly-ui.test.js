@@ -9,6 +9,8 @@ test("NET-UX-001 first weekly open does not report already-claimed rewards",asyn
   if(!nodes.has(id))nodes.set(id,{textContent:"",hidden:false,disabled:false,dataset:{},value:0});
   return nodes.get(id);
  }};
+ global.GearData=require("../gear-data.js");
+ global.GearMaterialUI=require("../gear-material-ui.js");
  global.WeeklyThreatCore={
   variant:()=>({title:"Пробная угроза",goal:"Победить"}),
   weekId:()=> "2026-11-16",
@@ -27,5 +29,5 @@ test("NET-UX-001 first weekly open does not report already-claimed rewards",asyn
  const status=nodes.get("net008aStatus").textContent;
  assert.match(status,/лучший результат: нет/);
  assert.doesNotMatch(status,/Все доступные награды уже получены/);
- delete global.document;delete global.WeeklyThreatCore;
+ delete global.document;delete global.WeeklyThreatCore;delete global.GearData;delete global.GearMaterialUI;
 });

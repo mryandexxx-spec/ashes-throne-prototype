@@ -82,9 +82,17 @@ async function check(name,engine,viewport){
   assert.match(await page.locator("#netuxWeeklyTier1").innerText(),/5000/);
   assert.equal(await page.locator("#netuxWeeklyTier1").getAttribute("data-status"),"locked");
   assert.equal((await saved()).wallet,wallet);
+  const details=page.locator(".netux-weekly-prizes details");
+  await details.locator("summary").click();
+  const icons=details.locator("[data-material]");
+  assert.equal(await icons.count(),21);
+  await icons.first().click();
+  assert.match(await page.locator("#materialName").innerText(),/Железо/);
+  await page.locator("#materialClose").click();
   g=await geometry("#net008aThreat");assert.equal(g.overflow,false);
   assert.ok(g.rect.left>=-1&&g.rect.right<=viewport.width+1);
   assert.ok(g.buttons.every(x=>x.h>=44&&x.w>=44));
+  await details.locator("summary").click();
   const action=await page.evaluate(()=>{
    const b=document.getElementById("net008aSurvey").getBoundingClientRect(),
     v=document.querySelector(".netux-weekly-plan").getBoundingClientRect();

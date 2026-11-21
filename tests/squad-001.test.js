@@ -90,7 +90,7 @@ assert.equal(api.toggleSquadHero("ren"),true,"regular click removes first-slot l
 assert.equal(count(),"4/5");
 assert.match(elements.squadSlots.innerHTML,/★ ЛИДЕР/);
 assert.match(elements.squadSlots.innerHTML,/squad-slot-leader[^]*?Свободно/,"leader slot remains empty");
-assert.match(elements.squadSlots.innerHTML,/squad-slot filled[^]*?Лира/,"second hero remains in position 2");
+assert.match(elements.squadSlots.innerHTML,/squad-slot filled[^]*?Нада/,"second hero remains in position 2");
 assert.equal(api.toggleSquadHero("liora"),true);
 assert.equal(count(),"3/5");
 assert.equal(api.toggleSquadHero("nada"),true);

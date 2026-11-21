@@ -172,7 +172,7 @@ assert.equal(elements.squadWarning.hidden,true,"changing team resets warning");
 click(elements.squadStart);
 assert.equal(elements.squad.classList.active,true);
 click(elements.squadStart);
-assert.equal(api.getBattle().leaderId,"nada");
+assert.equal(api.getBattle().leaderId,null);
 
 // Old Combat-014C save: leader intentionally empty while later slots
 // have occupants. Preserve their actual positions; do not promote.

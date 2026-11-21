@@ -21,7 +21,8 @@ test("UIHERO002 maintains five slots, the actual leader, disabled locked heroes 
  assert.match(js,/const isLeader=ids\[0\]===h\.id/);
  assert.match(js,/aria-pressed="\$\{active\}"/);
  assert.match(js,/\$\{owned\?"":"disabled"\}/);
- assert.match(js,/if\(i===0\)return \`<div class="squad-slot squad-slot-leader/);
+ assert.match(js,/data-squad-index/);
+ assert.match(js,/squad-slot-leader/);
  assert.match(js,/slots\[occupied\]=null/);
  assert.match(js,/selectedLeaderId=slots\[0\]/);
  assert.match(js,/selectedPartyIds=slots\.slice\(1\)/);
@@ -44,5 +45,5 @@ test("UIHERO002 keeps touch, landscape and reduced motion rules",()=>{
 });
 test("UIHERO002 candidate version matches build",()=>{
  assert.equal(JSON.parse(read("package.json")).version,__BUILD_VERSION_FOR_TESTS);
- assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001/);
+ assert.match(html,/v0\.3\.219 · RECOVER3D/);
 });

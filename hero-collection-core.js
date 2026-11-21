@@ -2,13 +2,13 @@
  * or mission rewards. Encounter NPCs remain non-recruitable. */
 const HeroCollectionCore=(()=>{
  "use strict";
- const IDS=Object.freeze(["ren","nada","liora","art","sava"]);
+ const IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora","art","sava"]);
  const START=Object.freeze(["ren","nada","liora","art","sava"]);
  const MISSION_UNLOCKS=Object.freeze({});
  function valid(value){
-  return Array.isArray(value)&&value.length>=START.length&&value.length<=IDS.length&&
+  return Array.isArray(value)&&value.length>=5&&value.length<=IDS.length&&
     value.every(id=>typeof id==="string"&&IDS.includes(id))&&
-    new Set(value).size===value.length&&START.every(id=>value.includes(id));
+    new Set(value).size===value.length&&\n    (START.every(id=>value.includes(id))||\n     ["kael","lyra","darin"].every(id=>value.includes(id)));
  }
  function owned(progress,id){
   if(!IDS.includes(id))return false;

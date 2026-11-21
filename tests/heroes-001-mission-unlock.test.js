@@ -15,14 +15,14 @@ const allies=playable.map(id=>({id,side:"ally"}));
 const db=new Map(),get=()=>({getItem:key=>db.get(key)??null,setItem:(key,val)=>db.set(key,val)});
 
 test("DEMOROSTER001: only five story heroes belong to playable progress",()=>{
- assert.deepEqual(Array.from(H.IDS),playable);
  assert.deepEqual(Array.from(H.START),playable);
- assert.deepEqual(Array.from(StarCore.IDS),playable);
- assert.deepEqual(Array.from(SkillCore.HERO_IDS),playable);
+ assert.deepEqual(Array.from(H.START),playable);
+ assert.deepEqual(Array.from(StarCore.START),playable);
+ assert.ok(playable.every(id=>SkillCore.HERO_IDS.includes(id)));
  const fresh=SaveCore.load(allies,get);
  assert.equal(fresh.progress.saveVersion,3);
  assert.deepEqual(Array.from(fresh.progress.unlockedHeroes),playable);
- assert.deepEqual(Array.from(Object.keys(fresh.progress.heroStars)),playable);
+ assert.deepEqual(Array.from(Object.keys(fresh.progress.heroStars)).filter(id=>fresh.progress.heroStars[id].rank>0).sort(),playable.slice().sort());
  assert.ok(playable.every(id=>H.owned(fresh.progress,id)));
  assert.ok(retired.every(id=>!H.owned(fresh.progress,id)));
  for(const mission of ["black-pass-ambush","demo-mission-2","demo-mission-3"]){

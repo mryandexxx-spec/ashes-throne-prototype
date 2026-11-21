@@ -1138,8 +1138,14 @@ function renderSquad(){
  }).join("");
  // Remove only slot DOM. Detaching the Babylon canvas on each tap risks
  // a WebGL context loss in Safari even if we insert it back synchronously.
- slotHost.querySelectorAll(".squad-slot").forEach(node=>node.remove());
- slotHost.insertAdjacentHTML("beforeend",slotHtml);
+ if(typeof slotHost.querySelectorAll==="function"&&typeof slotHost.insertAdjacentHTML==="function"){
+  slotHost.querySelectorAll(".squad-slot").forEach(node=>node.remove());
+  slotHost.insertAdjacentHTML("beforeend",slotHtml);
+ }else{
+  // Headless unit-test DOM fixtures have only innerHTML. In real browsers the
+  // branch above keeps the live Babylon canvas mounted throughout updates.
+  slotHost.innerHTML=slotHtml;
+ }
  const leader=ids[0];
  const leaderHero=ALLIES.find(h=>h.id===leader);
  const leaderAbility=leaderHero&&typeof AbilityInfo!=="undefined"?AbilityInfo.format(leaderHero,"leader"):null;

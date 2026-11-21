@@ -10,6 +10,41 @@ const NetworkPilotUI=(()=>{
  const heroLabels=Object.freeze({ren:"Рен",nada:"Нада",liora:"Лиора",art:"Арт",sava:"Сава"});
  const operationStory=clue=>isLive()&&typeof NetworkEncounterData!=="undefined"?
   NetworkEncounterData.brief(clue.encounterRef):null;
+ function formations(clue,approachId){
+  if(!clue||typeof NetworkEncounterData==="undefined")return null;
+  return NetworkEncounterData.REGISTRY[clue.encounterRef]?.formations?.[approachId]||null;
+ }
+ function enemyName(id){
+  return typeof NpcEnemyData!=="undefined"?NpcEnemyData.get(id)?.name||id:id;
+ }
+ function enemyIds(clue,approachId=null){
+  if(typeof NetworkEncounterData==="undefined")return [];
+  const registry=NetworkEncounterData.REGISTRY[clue.encounterRef]?.formations;
+  const groups=approachId?[formations(clue,approachId)]:Object.values(registry||{});
+  return [...new Set(groups.filter(Array.isArray).flat(2))];
+ }
+ function enemySummary(clue,approachId=null){
+  const ids=enemyIds(clue,approachId);
+  return ids.length?ids.map(enemyName).join(" · "):"Состав будет показан перед боем.";
+ }
+ function renderEnemySummary(host,clue,approachId,target=null){
+  const ids=enemyIds(clue,approachId),full=line(enemySummary(clue,approachId)+
+   (target?". Первая цель: "+target+".":""),"span");
+  full.className="netux-enemy-full";
+  const compact=line(ids.length?"Противников: "+ids.length+" · состав в донесении":
+   "Состав будет показан перед боем","span");
+  compact.className="netux-enemy-compact";host.replaceChildren(full,compact);
+ }
+ function routeFacts(clue,route){
+  const waves=formations(clue,route.id);
+  return {counts:waves?waves.map(w=>w.length):Array.from({length:route.waves},()=>0),
+   target:waves?.[0]?.[0]?enemyName(waves[0][0]):null};
+ }
+ function preparationEffect(id){
+  if(id==="survey")return "Отмечает главную цель. Отдельного бонуса к награде нет.";
+  if(id==="cover")return "Физическая атака всех врагов −10%. Награда не меняется.";
+  return "Наблюдение отмечает главную цель; прикрытие снижает физическую атаку врагов на 10%.";
+ }
  function clueTitle(clue){
   if(!isLive())return names[clue.templateId]||"Неизвестная зацепка";
   const subject=clue.materialId?"Материалы: "+(typeof GearData!=="undefined"?
@@ -184,12 +219,18 @@ const NetworkPilotUI=(()=>{
   const title=$("netuxSelectedTitle"),start=$("netuxStartSelected"),sim=$("netuxSimulateSelected");
   if(title)title.textContent=selected?clueTitle(selected)+" · ур. "+selected.level:
    "Нет доступных донесений";
+  const mastered=selected&&!blocked&&session.canSimulate(selected.id);
+  const cause=$("netuxSelectedCause");
+  if(cause)cause.textContent=!selected?"Нет доступных донесений":
+   (selected.threatTag?"Вручную: базовая награда +1 сведение об угрозе. ":
+    "Вручную: базовая награда без сведений об угрозе. ")+
+   (mastered?"Симуляция: та же базовая награда, но без сведений.":
+    "Симуляция после освоения: та же базовая награда, но без сведений.");
   if(start)start.disabled=!selected||blocked||busy;
   if(sim){
-   const mastered=selected&&!blocked&&session.canSimulate(selected.id);
    sim.disabled=!mastered||busy;
    sim.textContent=mastered?"Симулировать":"Не освоено";
-   sim.title=mastered?"Симулировать выбранную освоенную зацепку":
+   sim.title=mastered?"Та же базовая награда, но без сведений об угрозе":
     "Симуляция закрыта · требуется освоение";
   }
   $("net004Clues")?.querySelectorAll(".net004-clue").forEach(item=>{
@@ -197,6 +238,36 @@ const NetworkPilotUI=(()=>{
    item.dataset.selected=String(pressed);
    item.querySelector("button")?.setAttribute("aria-pressed",String(pressed));
   });
+ }
+ function renderResultCauses(a){
+  const host=$("netuxResultCauses");host.replaceChildren();
+  if(!Array.isArray(a.waveSummaries))return;
+  host.append(line("Подготовка · "+(prep[a.preparation]||a.preparation)+": "+
+   preparationEffect(a.preparation)));
+  host.append(line("Подход · "+(approach[a.approach]||a.approach)+": "+
+   a.waveSummaries.length+(a.waveSummaries.length===1?" бой":" боя")+
+   ". Базовая награда не зависит от подхода."));
+  a.waveSummaries.forEach((wave,i)=>{
+   const survivors=Math.round(25*(1-wave.knockedOut/wave.deployed));
+   const pace=Math.max(0,5-Math.max(0,wave.allyActions-wave.paceBudget));
+   const row=document.createElement("div");row.className="netux-score-cause";
+   row.append(line("Бой "+(i+1)+" · "+wave.score+"/100","strong"),
+    line("База 60 · первая цель: +"+(wave.objectiveDone?10:0)+
+     " · выжившие "+(wave.deployed-wave.knockedOut)+"/"+wave.deployed+": +"+survivors+
+     " · темп: +"+pace+" ("+wave.allyActions+" действий при ориентире "+wave.paceBudget+")","small"));
+   host.append(row);
+  });
+ }
+ function resultIntel(s,clue,tracked){
+  if(clue.threatTag!=="weekly-gardens"||!tracked)
+   return "Дополнительных сведений об угрозе эта операция не добавит.";
+  if(typeof WeeklyThreatCore==="undefined")
+   return "После завершения: +1 сведение для текущей UTC-недели.";
+  const start=WeeklyThreatCore.weekStart(Date.now()),week=WeeklyThreatCore.weekId(start);
+  const current=Math.min(3,s.threatIntel[week]??0);
+  if(current===0)return "Сведения: 0 → 1 после завершения. До усиленной подготовки угрозы ещё 1.";
+  if(current===1)return "Сведения: 1 → 2 после завершения. Откроется усиленная подготовка угрозы.";
+  return "Усиленная подготовка уже доступна. После завершения ещё +1 в запас; дополнительного усиления нет.";
  }
  function render(){
   if(!mounted)return;
@@ -258,46 +329,51 @@ const NetworkPilotUI=(()=>{
   updateSelection(s,blocked,busy);
   if(s.active&&s.active.phase!=="result"){
    const a=s.active,c=a.clue,story=operationStory(c);
+   active.dataset.phase=a.phase;
    const chosen=a.approach&&c.approaches.find(x=>x.id===a.approach);
    $("net004ActiveTitle").textContent=clueTitle(c);
    $("netuxBriefMeta").textContent=(types[c.type]||c.type)+" · ур. "+c.level;
    $("netuxBriefStage").textContent=a.phase==="brief"?"1 · ПОДГОТОВКА":
     a.phase==="approach"?"2 · ВЫБОР ПОДХОДА":"3 · ВЫЛАЗКА";
    $("net004ActiveDetail").textContent=a.phase==="brief"?
-    "":
-    a.phase==="approach"?"Подготовка: "+(prep[a.preparation]||a.preparation)+
-     ".":
-    "Контрольная точка · волна "+(a.wave+1)+"/"+chosen.waves+
-     ". Каждая волна проходит отдельным боем с полным восстановлением отряда."+
+    "Выберите один эффект подготовки. Для 3★ нужно 90/100: первая гибель главной цели, выжившие и темп.":
+    a.phase==="approach"?"Теперь выберите: один плотный бой или два отдельных боя с восстановлением.":
+    "Контрольная точка · бой "+(a.wave+1)+"/"+chosen.waves+
+     ". Каждый бой начинается с полным восстановлением отряда."+
      (a.wave>0&&!Array.isArray(a.waveSummaries)?
       " Старое сохранение без отчёта S1: отмените вылазку, чтобы вернуть зацепку.":
-      a.waveSummaries?.length?" Предыдущая волна: "+a.waveSummaries.at(-1).score+"/100 S1.":"");
+      a.waveSummaries?.length?" Предыдущий бой: "+a.waveSummaries.at(-1).score+"/100 S1.":"");
+   const selectedRoute=chosen?routeFacts(c,chosen):null;
+   $("netuxDecisionPreview").textContent=a.phase==="brief"?
+    "Симуляция после освоения даст ту же базовую награду, но не добавит сведений об угрозе.":
+    (prep[a.preparation]||a.preparation)+": "+preparationEffect(a.preparation)+
+    (chosen?" Подход: "+(approach[chosen.id]||chosen.id)+". Первым уничтожьте: "+
+     (selectedRoute?.target||"отмеченную цель")+".":"");
    const routes=c.approaches.map(x=>(approach[x.id]||x.id)+
-    " — "+x.waves+(x.waves===1?" волна":" волны")).join(" · ");
+    " — "+x.waves+(x.waves===1?" бой":" боя")).join(" · ");
    $("netuxBriefIntel").textContent=(story?story.context+" "+story.tactic+" ":"")+(chosen?
     (approach[chosen.id]||chosen.id)+" · "+chosen.waves+
     (chosen.waves===1?" отдельный бой":" отдельных боя"):
-    "Доступные пути: "+routes)+". "+
-    (a.preparation==="survey"?"Разведка отмечает первого противника как приоритетную цель.":
-     a.preparation==="cover"?"Прикрытие снижает физическую атаку противников.":
-     "Разведка отмечает приоритетную цель, прикрытие ослабляет физические атаки.");
-   renderReward($("netuxBriefReward"),c.rewardRef,"Пробный режим · реальных наград нет.");
+    "Доступные пути: "+routes)+". Противники: "+enemySummary(c,a.approach)+". "+
+    preparationEffect(a.preparation);
+   $("netuxBriefReward").textContent=isLive()?rewardText(c.rewardRef):
+    "Пробный режим · реальных наград нет.";
    $("netuxBriefThreat").textContent=c.threatTag?
-    "Сведения об угрозе за ручное прохождение.":"";
+    "Награда +1 сведение после завершения.":"Награда без сведений об угрозе.";
+   renderEnemySummary($("netuxBriefEnemies"),c,a.approach,selectedRoute?.target||null);
    const slot=$("net004Choices");slot.replaceChildren();
-   const descriptions={survey:"Отметить первую цель в бою.",
-    cover:"Ослабить физические атаки врагов.",
-    quiet:story?.quiet||"Одна отдельная схватка.",
-    cordon:story?.cordon||"Две отдельные схватки, отряд восстанавливается между ними."};
    if(a.phase==="brief")for(const id of c.preparationIds){
     const choice=button(prep[id]||id,"prepare",id);
-    choice.append(line(descriptions[id]||"Выбрать подготовку","small"));
+    choice.append(line(preparationEffect(id),"small"));
     slot.append(choice);
    }
    if(a.phase==="approach")for(const route of c.approaches){
+    const facts=routeFacts(c,route),counts=facts.counts.filter(Boolean).join(" + ");
     const choice=button((approach[route.id]||route.id)+" · "+route.waves+
-     (route.waves===1?" волна":" волны"),"approach",route.id);
-    choice.append(line(descriptions[route.id]||"Выбрать подход","small"));
+     (route.waves===1?" бой":" боя"),"approach",route.id);
+    choice.append(line((counts?"Противники по боям: "+counts+". ":"")+
+     (route.waves===1?"Все противники сразу; без промежуточного восстановления.":
+      "Полное восстановление между боями.")+" Награда та же.","small"));
     slot.append(choice);
    }
    $("net004Fight").textContent=a.wave>0?"Продолжить вылазку":"Выбрать отряд";
@@ -311,20 +387,17 @@ const NetworkPilotUI=(()=>{
    $("net004ResultTitle").textContent=clueTitle(c);
    $("netuxResultRating").textContent=tracked?stars+"★ · "+score+"/100":"Оценка не подтверждена";
    $("net004ResultDetail").textContent=tracked?
-    "Оценка S1: "+score+"/100 · Ручная операция · "+(approach[a.approach]||a.approach)+
-    " · "+a.waveSummaries.length+(a.waveSummaries.length===1?" волна":" волны")+
-    ". Оценка по волнам: "+a.waveSummaries.map(x=>x.score+"/100").join(" → ")+
-    ". Учитываются потери и действия отряда."+
+    "Итог S1: "+score+"/100 — средний результат отдельных боёв ("+
+    a.waveSummaries.map(x=>x.score+"/100").join(" → ")+")."+
     (operationStory(c)?" "+operationStory(c).success:""):
     "Старое пробное завершение: оценка S1 недоступна. Не считать освоением.";
+   renderResultCauses(a);
    $("netuxResultMastery").textContent=!tracked?
     "Нет подтверждённого ручного освоения.":
-    score>=s.config.masteryScore?
-     "Освоение: после завершения станет доступна симуляция этого шаблона на этом уровне.":
-     "Освоение пока закрыто: требуется "+s.config.masteryScore+"/100 за ручную операцию.";
-   $("netuxResultIntel").textContent=c.threatTag==="weekly-gardens"&&tracked?
-    "След угрозы: после завершения +1 сведение для текущей UTC-недели.":
-    "Дополнительных сведений об угрозе эта операция не добавит.";
+    score>=Math.max(90,s.config.masteryScore)?
+     "Освоение: после завершения станет доступна симуляция этого шаблона на этом уровне. Она даст ту же базовую награду без сведений.":
+     "Освоение пока закрыто: требуется "+Math.max(90,s.config.masteryScore)+"/100 за ручную операцию.";
+   $("netuxResultIntel").textContent=resultIntel(s,c,tracked);
    renderReward($("netuxResultReward"),c.rewardRef,"Пробный режим · награды не начисляются.");
    $("net004Finish").textContent=isLive()?"Завершить и получить":"Завершить испытание";
    $("net004Finish").disabled=blocked||busy;

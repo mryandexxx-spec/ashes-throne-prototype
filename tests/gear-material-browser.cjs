@@ -73,6 +73,19 @@ const { chromium, webkit }=require("playwright");
   }
   const order=await page.evaluate(()=>JSON.stringify(networkPilot.read().order));
   await page.locator("#netuxOrderOpen").tap();
+  const orderState=await page.evaluate(()=>{
+   const modal=document.getElementById("netuxOrderDialog");
+   const tile=document.querySelector("#net005OrderChoices [data-material=Fe]");
+   const describe=el=>el?{tag:el.tagName,visible:getComputedStyle(el).visibility,
+    display:getComputedStyle(el).display,rect:(()=>{const r=el.getBoundingClientRect();
+     return {x:r.x,y:r.y,width:r.width,height:r.height};})()}:null;
+   return {activeScreen:document.querySelector(".screen.active")?.id,dialogOpen:modal?.open,
+    dialog:describe(modal),choices:describe(document.getElementById("net005OrderChoices")),
+    tile:describe(tile),parent:describe(tile?.parentElement),
+    tabs:[...document.querySelectorAll("#netuxOrderTabs button")].map(b=>({text:b.textContent,selected:b.getAttribute("aria-selected")}))};
+  });
+  console.log("MATERIAL_ORDER_DIALOG_DIAGNOSTIC",JSON.stringify(orderState));
+  await capture(page,"network-order");
   await open("#net005OrderChoices [data-material=Fe]");
   assert.match(await page.locator("#materialSources").innerText(),/Разведсеть · снабжение/);
   await page.keyboard.press("Escape");

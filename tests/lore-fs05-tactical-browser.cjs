@@ -44,12 +44,35 @@ function seed(){
 async function finishManually(page){
  for(let i=0;i<35;i++){
   if(await page.locator("#loreRequiredBattleResult").isVisible())return;
-  await page.waitForFunction(()=>{
-   const result=document.querySelector("#loreRequiredBattleResult");
-   return result?.classList.contains("active")||
-    (document.querySelector("#battle")?.classList.contains("active")&&
-      !document.querySelector("#basicAbilityBtn")?.disabled);
-  },null,{timeout:25000});
+  try{
+   await page.waitForFunction(()=>{
+    const result=document.querySelector("#loreRequiredBattleResult");
+    return result?.classList.contains("active")||
+     (document.querySelector("#battle")?.classList.contains("active")&&
+       !document.querySelector("#basicAbilityBtn")?.disabled);
+   },null,{timeout:25000});
+  }catch(error){
+   // Preserve the failure, but report concrete combat state to determine
+   // whether a turn, asset gate, terminal screen or WebGL lifecycle stalled.
+   const debug=await page.evaluate(()=>({
+    active:state?.active,winner:state?.winner,currentActor:state?.currentActor,
+    actorId:state?.fighters?.[state.currentActor]?.id,
+    allyActions:state?.allyActions,turn:state?.turn,
+    fighters:state?.fighters?.map(f=>({id:f.id,side:f.side,hp:f.hp})),
+    battleScreen:document.querySelector("#battle")?.className,
+    resultScreen:document.querySelector("#loreRequiredBattleResult")?.className,
+    resultText:document.querySelector("#loreRequiredResultText")?.textContent,
+    basicDisabled:document.querySelector("#basicAbilityBtn")?.disabled,
+    specialDisabled:document.querySelector("#specialAbilityBtn")?.disabled,
+    autoPressed:document.querySelector("#autoBattleBtn")?.getAttribute("aria-pressed"),
+    gateHidden:document.querySelector("#battleAssetGate")?.hidden,
+    gateText:document.querySelector("#battleAssetGate")?.textContent?.slice(0,200),
+    engineReady:!!engine,sceneReady:!!scene,
+    autoBattle,renderLoopRunning
+   })).catch(e=>({readError:String(e)}));
+   console.error("FS05_TURN_WAIT_DIAGNOSTICS",JSON.stringify(debug));
+   throw error;
+  }
   if(await page.locator("#loreRequiredBattleResult").isVisible())return;
   const action=await page.evaluate(()=>{
    const proposal=AutoDecision.chooseAction(state);

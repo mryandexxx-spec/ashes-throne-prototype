@@ -67,6 +67,10 @@ async function check(name,engine,viewport){
   await enter();await page.locator("#net004Result").waitFor({state:"visible"});
   assert.match(await page.locator("#netuxResultRating").innerText(),/3★ · 100\/100/);
   assert.match(await page.locator("#netuxResultMastery").innerText(),/симуляция/);
+  assert.match(await page.locator("#netuxResultCauses").innerText(),/База 60 · первая цель: \+10/);
+  assert.match(await page.locator("#netuxResultCauses").innerText(),/выжившие 1\/1: \+25/);
+  assert.match(await page.locator("#netuxResultCauses").innerText(),/темп: \+5/);
+  assert.match(await page.locator("#netuxResultIntel").innerText(),/0 → 1/);
   assert.ok((await page.locator("#netuxResultReward").innerText()).length>10);
   assert.equal((await saved()).wallet,wallet);
   const sr=(await saved()).network;
@@ -78,6 +82,9 @@ async function check(name,engine,viewport){
   await page.locator('#network [data-net-view="threat"]').click();
   await page.locator("#net008aThreat").waitFor({state:"visible"});
   assert.match(await page.locator("#netuxWeeklyIntel").innerText(),/0\/3/);
+  assert.match(await page.locator("#net008aSurvey").innerText(),/HP −10%/);
+  assert.match(await page.locator("#net008aCover").innerText(),/атака врагов −10%/);
+  assert.match(await page.locator("#net008aContinue").innerText(),/От 2 сведений: −24% либо −22%/);
   assert.equal(await page.locator("#netuxWeeklyTier1").count(),1);
   assert.match(await page.locator("#netuxWeeklyTier1").innerText(),/5000/);
   assert.equal(await page.locator("#netuxWeeklyTier1").getAttribute("data-status"),"locked");

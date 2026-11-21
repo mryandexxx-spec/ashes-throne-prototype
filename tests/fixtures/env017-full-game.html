@@ -10,7 +10,7 @@
  */
 (()=>{
  const frame=document.querySelector("#game"),data=document.documentElement.dataset;
- let tick=0,entered=false,launched=false;
+ let tick=0,entered=false,launched=false,invalidProjectionAttempts=0;
  const far=new URLSearchParams(location.search).get("radius")==="19";
  const poll=setInterval(()=>{
   try{
@@ -40,14 +40,19 @@
       scene.meshes.some(m=>m.name.startsWith("env010_glb_")))
     throw Error("wrong geometry loaded");
    if(far)camera.radius=19;
+   // On the first battle frame Babylon may not yet have updated its matrices.
+   // Retry a bounded number of frames; persistent invalid geometry still fails.
+   scene.updateTransformMatrix?.(true);
    const view=win.eval("CombatEnvironment017").inspect(B,scene,camera,
     engine.getRenderWidth(),engine.getRenderHeight());
    // Normal view follows the active approved arena camera; far remains explicit.
    if(!view||Math.abs(view.radius-(far?19:win.eval("ARENA_VIEW.radius")))>.01)
     throw Error("camera projection unavailable");
    const values=[view.ledgeRightEdge,view.gapSample,view.bankNear,view.bankFar,view.leftRoot];
-   if(values.some(v=>v.some(n=>!Number.isFinite(n))))
-    throw Error("nonfinite projection");
+   if(values.some(v=>v.some(n=>!Number.isFinite(n)))){
+    if(++invalidProjectionAttempts<20)return;
+    throw Error("nonfinite projection after 20 camera updates: "+JSON.stringify(view));
+   }
    data.camera=JSON.stringify(view);
    data.environment="ENV017";data.webgl="true";data.view=far?"far":"normal";
    clearInterval(poll);

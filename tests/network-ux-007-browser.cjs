@@ -43,7 +43,7 @@ async function run(name,engine,viewport){
  try{
   await page.goto(origin,{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
-  assert.match(await page.locator("#buildVersion").innerText(),/v0\.3\.217 · ARENAENV006C/);
+  assert.match(await page.locator("#buildVersion").innerText(),/v0\.3\.218 · NETUXCLR008/);
   await enter();
   assert.ok(await page.locator("#net004Clues .netux-clue-pick").count()>=2);
   const scene=await page.evaluate(()=>{
@@ -62,6 +62,11 @@ async function run(name,engine,viewport){
   await page.locator("#netuxStartSelected").click();
   await page.locator("#net004Active").waitFor({state:"visible"});
   assert.equal((await saved()).state.active.phase,"brief");
+  assert.match(await page.locator("#netuxSelectedCause").textContent(),/та же базовая награда/);
+  assert.match(await page.locator("#netuxBriefThreat").innerText(),/\+1 сведение/);
+  assert.ok((await page.locator("#netuxBriefEnemies").innerText()).length>5);
+  assert.match(await page.locator('#net004Choices [data-net-value="cover"]').innerText(),/−10%/);
+  assert.match(await page.locator('#net004Choices [data-net-value="survey"]').innerText(),/Отдельного бонуса к награде нет/);
   // Resize the active briefing as browser chrome opens and the phone rotates back.
   const expectedState=(await saved()).state.active;
   for(const size of [{width:667,height:320},{width:844,height:300},viewport]){
@@ -96,10 +101,14 @@ async function run(name,engine,viewport){
   await page.screenshot({path:path.join(dir,name+"-"+viewport.width+"-preparation.png")});
   await page.locator('#net004Choices [data-net-action="prepare"][data-net-value="cover"]').click();
   assert.equal((await saved()).state.active.phase,"approach");
+  assert.match(await page.locator("#netuxDecisionPreview").innerText(),/Физическая атака всех врагов −10%/);
   const quiet=await page.locator('#net004Choices [data-net-action="approach"][data-net-value="quiet"]').innerText();
   const cordon=await page.locator('#net004Choices [data-net-action="approach"][data-net-value="cordon"]').innerText();
-  assert.ok(quiet.includes(scene.quiet));
-  assert.ok(cordon.includes(scene.cordon));
+  assert.ok(quiet.includes("Противники по боям: 2"));
+  assert.ok(quiet.includes("Награда та же"));
+  assert.ok(cordon.includes("Противники по боям: 1 + 2"));
+  assert.ok(cordon.includes("Полное восстановление между боями"));
+  assert.ok(cordon.includes("Награда та же"));
   g=await geometry();assert.equal(g.overflow,false);
   assert.ok(g.controls.every(x=>x.h>=44&&x.w>=44),"touch controls on briefing");
   await page.screenshot({path:path.join(dir,name+"-"+viewport.width+"-brief.png")});
@@ -129,6 +138,12 @@ async function run(name,engine,viewport){
   await page.locator("#net004Result").waitFor({state:"visible",timeout:125000});
   assert.equal((await saved()).state.active.phase,"result");
   assert.match(await page.locator("#net004ResultDetail").innerText(),new RegExp(scene.success));
+  assert.match(await page.locator("#netuxResultCauses").innerText(),/Подготовка · Подготовить прикрытие/);
+  assert.match(await page.locator("#netuxResultCauses").innerText(),/Базовая награда не зависит от подхода/);
+  assert.match(await page.locator("#netuxResultCauses").innerText(),/База 60 · первая цель: \+(?:0|10)/);
+  assert.match(await page.locator("#netuxResultCauses").innerText(),/выжившие/);
+  assert.match(await page.locator("#netuxResultCauses").innerText(),/темп:/);
+  assert.match(await page.locator("#netuxResultIntel").innerText(),/0 → 1/);
   assert.equal((await saved()).wallet,walletBefore,"result preview must not pay before finish");
   g=await geometry();assert.equal(g.overflow,false);
   assert.ok(g.controls.every(x=>x.h>=44&&x.w>=44),"touch controls on result");

@@ -26,6 +26,9 @@ async function check(name,engine,viewport){
     x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom};};
    return {windowWidth:innerWidth,windowHeight:innerHeight,
     overflow:document.documentElement.scrollWidth>innerWidth+1,
+    verticalOverflow:document.documentElement.scrollHeight>innerHeight+2,
+    app:rect("#app"),screen:rect("#network"),shell:rect("#network .netux-board-shell"),
+    header:rect("#app > .topbar"),footer:rect("#app > footer"),
     rail:rect("#network .netux-rail"),board:rect("#net004Clues"),
     tabs:rect("#network .netux-tabs"),action:rect("#network .netux-board-selection"),
     picks:[...document.querySelectorAll("#net004Clues .netux-clue-pick")]
@@ -35,6 +38,16 @@ async function check(name,engine,viewport){
    };
   });
   assert.equal(geom.overflow,false,"no horizontal overflow");
+  assert.equal(geom.verticalOverflow,false,"network fits the viewport without page scrolling");
+  assert.ok(geom.app.width>=viewport.width-2,"network app must span viewport: "+JSON.stringify(geom));
+  assert.ok(geom.shell.x<=viewport.width*.035&&geom.shell.right>=viewport.width*.965,
+   "network board must not be letterboxed: "+JSON.stringify(geom));
+  assert.ok(geom.shell.height>=viewport.height*.60,
+   "network board must fill available viewport height: "+JSON.stringify(geom));
+  assert.ok(geom.shell.y>=geom.header.bottom-1&&geom.shell.bottom<=geom.footer.y+1,
+   "board must fit between header and footer: "+JSON.stringify(geom));
+  assert.ok(geom.footer.bottom<=viewport.height+1,
+   "footer must stay visible without vertical scroll: "+JSON.stringify(geom));
   assert.ok(geom.rail.x>=-1&&geom.board.x>geom.rail.right,"separate rail and board");
   assert.ok(geom.tabs.bottom<=geom.board.y+3,"tabs must not overlap clue board");
   assert.ok(geom.board.width>300&&geom.board.height>=90,"board occupies useful landscape space");
@@ -103,6 +116,6 @@ async function check(name,engine,viewport){
  }finally{await browser.close()}
 }
 (async()=>{for(const [name,engine] of [["chromium",chromium],["webkit",webkit]]){
- for(const viewport of [{width:844,height:390},{width:932,height:430}])
+ for(const viewport of [{width:844,height:390},{width:932,height:430},{width:1366,height:768}])
   await check(name,engine,viewport);
 }})().catch(e=>{console.error(e);process.exitCode=1});

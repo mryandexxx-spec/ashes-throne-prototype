@@ -806,7 +806,19 @@
           <div id="squadRoster" class="squad-roster" aria-label="Герои для выбора"></div>
         </div>
         <div class="squad-panel squad-panel-team">
-          <div class="squad-team-head"><span class="eyebrow">БОЕВОЙ СОСТАВ · <span id="squadCount">0/5</span></span><span id="squad3dStatus" role="status" aria-live="polite">Модели героев</span></div>
+          <div class="squad-team-head">
+            <span class="eyebrow">БОЕВОЙ СОСТАВ · <span id="squadCount">0/5</span></span>
+            <div class="squad-leader-ability">
+              <button type="button" id="squadLeaderSkillButton" class="squad-leader-skill" aria-expanded="false" aria-label="Лидерская способность" hidden>
+                <span class="squad-leader-skill-icon" aria-hidden="true">✦</span><span id="squadLeaderSkillName"></span>
+              </button>
+              <div id="squadLeaderTooltip" role="tooltip" hidden>
+                <strong id="squadLeaderTooltipName"></strong>
+                <p id="squadLeaderTooltipDescription"></p>
+              </div>
+            </div>
+            <span id="squad3dStatus" role="status" aria-live="polite">Модели героев</span>
+          </div>
           <div id="squadTacticalBrief" class="squad-tactical-brief" role="note" hidden>
             <strong>ПРИКРЫТЬ ОТХОД · ЗАДАЧА</strong>
             <p>Сохрани Рена: его падение — поражение. Победи врагов <b>или</b> проведи 12 действий союзников. <b>Преследователь</b> целится в Рена — останови его. Автобой доступен.</p>

@@ -2558,51 +2558,52 @@ body:has(#squad.active)::before{
 
 
 
-/* SWGOH-style squad selection */
+/* SWGOH-style squad selection — reference layout: narrow roster left, large slots right */
 #squad.squad-screen{
  display:flex;flex-direction:column;
  height:100dvh;overflow:hidden;
  padding:0;
 }
 #squad.squad-screen .squad-layout{
+ display:grid;grid-template-columns:260px 1fr;
  flex:1 1 auto;min-height:0;overflow:hidden;
  margin:0;gap:10px;
 }
 #squad.squad-screen .squad-panel-roster{
  overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
- padding:10px;
+ padding:8px;
 }
 #squad.squad-screen .squad-panel-team{
  display:flex;flex-direction:column;
- padding:10px;overflow:hidden;
+ padding:8px;overflow:hidden;
 }
 #squad .squad-top-bar{
  display:flex;align-items:center;justify-content:space-between;gap:8px;
- margin:0 0 6px;padding:6px 0 5px;border-bottom:1px solid #d7b27c55;
- flex-wrap:wrap;flex-shrink:0;
+ margin:0 0 6px;padding:6px 10px 5px;border-bottom:1px solid #d7b27c55;
+ flex-shrink:0;
 }
-#squad .squad-back{min-height:40px;padding:8px 14px}
+#squad .squad-back{min-height:36px;padding:6px 12px;font-size:13px}
 #squad .squad-title-group{flex:1 1 auto;min-width:0}
 #squad .squad-title-group h2{
- font:600 clamp(21px,3vw,32px)/1.1 Georgia,serif;
+ font:600 clamp(18px,2.5vw,28px)/1.1 Georgia,serif;
  color:#f7e8c9;letter-spacing:.02em;text-shadow:0 2px 5px #09070a;
 }
 #squad .squad-power-box{
- text-align:center;padding:8px 16px;
- border:1px solid #c9a055;border-radius:10px;
+ text-align:center;padding:6px 12px;
+ border:1px solid #c9a055;border-radius:8px;
  background:linear-gradient(145deg,#3a2e26,#221e20);
- box-shadow:inset 0 1px #eac68b33,0 3px 9px #07060980;
+ box-shadow:inset 0 1px #eac68b33,0 2px 6px #07060980;
 }
 #squad .squad-power-label{
- font-size:11px;letter-spacing:.12em;color:#d4b484;text-transform:uppercase;
+ font-size:10px;letter-spacing:.1em;color:#d4b484;text-transform:uppercase;
 }
 #squad .squad-power-value{
- font-size:26px;font-weight:700;color:var(--gold);
+ font-size:22px;font-weight:700;color:var(--gold);
  text-shadow:0 2px 8px #b8860b66;
 }
 #squad .squad-leader-bar{
  display:flex;align-items:center;gap:8px;
- margin:0 0 6px;padding:5px 10px;
+ margin:0 10px 6px;padding:4px 10px;
  border:1px solid var(--gold);border-radius:8px;
  background:linear-gradient(90deg,#3d2e1e,#2a2220);
  color:#f0d8a8;font-size:12px;flex-shrink:0;
@@ -2611,21 +2612,18 @@ body:has(#squad.active)::before{
 #squad .squad-leader-icon{font-size:16px}
 #squad .squad-panel-roster{min-width:0}
 #squad .squad-panel-team{min-width:0}
+
+/* Roster cards — small, compact, 2 columns */
 #squad .squad-roster{
- display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;
+ display:grid;grid-template-columns:repeat(2,1fr);gap:5px;
 }
 #squad .squad-card{
  position:relative;display:flex;flex-direction:column;
  padding:0;gap:0;text-align:center;
- border:1px solid #92714c;border-radius:8px;
+ border:1px solid #92714c;border-radius:6px;
  background:linear-gradient(150deg,#3c302d,#242126 75%);
- color:#f2e2c8;box-shadow:inset 0 1px #f2c98f27,0 2px 6px #07070b80;
+ color:#f2e2c8;box-shadow:inset 0 1px #f2c98f27,0 1px 4px #07070b80;
  overflow:hidden;cursor:pointer;
-}
-#squad .squad-card.chosen{
- border-color:#e6bc7c;
- background:linear-gradient(145deg,#6b4b31,#332927 72%);
- box-shadow:inset 0 1px #ffe2a35c,0 0 0 1px #c5975766,0 4px 11px #0806098c;
 }
 #squad .squad-card.leader{border-color:#e5bd7b;border-width:2px}
 #squad .squad-card.hero-locked:disabled{
@@ -2642,43 +2640,45 @@ body:has(#squad.active)::before{
  width:100%;height:100%;object-fit:cover;
 }
 #squad .squad-card-glyph{
- font-size:36px;color:#f0c986;text-shadow:0 2px 4px #000;
+ font-size:28px;color:#f0c986;text-shadow:0 2px 4px #000;
 }
 #squad .squad-card-body{
- padding:5px 4px;display:flex;flex-direction:column;gap:2px;
+ padding:3px 2px;display:flex;flex-direction:column;gap:1px;
 }
 #squad .squad-card-name{
- font-weight:700;font-size:11px;color:#fff0d5;
+ font-weight:700;font-size:10px;color:#fff0d5;
  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 #squad .squad-card-meta{
- font-size:9px;color:#d5bfa2;line-height:1.2;
+ font-size:8px;color:#d5bfa2;line-height:1.2;
 }
 #squad .squad-card-stars{
- font-size:10px;color:var(--gold);letter-spacing:.5px;
+ font-size:9px;color:var(--gold);letter-spacing:.3px;
 }
 #squad .squad-card-power{
- font-size:11px;font-weight:700;color:#f5cb83;
+ font-size:10px;font-weight:700;color:#f5cb83;
 }
 #squad .squad-card-skill{
- font-size:9px;color:#ffe0a4;background:#4a3a2a;
- border-radius:3px;padding:1px 4px;margin-top:1px;
+ font-size:8px;color:#ffe0a4;background:#4a3a2a;
+ border-radius:2px;padding:1px 3px;margin-top:1px;
 }
 #squad .squad-card-badge{
- position:absolute;top:3px;right:3px;
- width:18px;height:18px;border-radius:50%;
- background:#4a3528;color:#f5cb83;font-size:10px;font-weight:700;
+ position:absolute;top:2px;right:2px;
+ width:16px;height:16px;border-radius:50%;
+ background:#4a3528;color:#f5cb83;font-size:9px;font-weight:700;
  display:flex;align-items:center;justify-content:center;
- box-shadow:0 1px 3px #000;
+ box-shadow:0 1px 2px #000;
 }
+
+/* Squad slots — large, 3D model fills card, name overlaid */
 #squad .squad-slots{
- display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;
- margin-top:10px;flex:0 0 auto;
+ display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;
+ flex:1 1 auto;align-items:start;
 }
 #squad .squad-slot-card{
  position:relative;display:flex;flex-direction:column;
- padding:0;gap:0;text-align:center;
- border:1px dashed #887351;border-radius:10px;
+ aspect-ratio:3/4;padding:0;gap:0;text-align:center;
+ border:1px dashed #887351;border-radius:12px;
  background:linear-gradient(145deg,#262428,#191a20);
  color:#c7b8a4;box-shadow:inset 0 2px 9px #08080cb8;
  overflow:hidden;
@@ -2708,13 +2708,13 @@ body:has(#squad.active)::before{
 }
 #squad .squad-slot-card.required{border-color:#c9a055}
 #squad .squad-slot-portrait{
- width:100%;aspect-ratio:1/1;
+ position:absolute;inset:0;
  background:linear-gradient(145deg,#262428,#191a20);
  display:flex;align-items:center;justify-content:center;
- overflow:hidden;position:relative;
+ overflow:hidden;
 }
 #squad .squad-slot-portrait img.squad-slot-model{
- width:100%;height:100%;object-fit:contain;object-position:center top;
+ width:100%;height:100%;object-fit:cover;object-position:center 20%;
 }
 #squad .squad-slot-portrait img.squad-slot-fallback{
  display:none;width:100%;height:100%;object-fit:cover;object-position:center 20%;
@@ -2725,58 +2725,89 @@ body:has(#squad.active)::before{
 #squad .squad-slot-empty{
  font-size:11px;color:#8a7a6a;text-transform:uppercase;letter-spacing:.08em;
 }
-#squad .squad-slot-body{
- padding:5px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;
- background:linear-gradient(180deg,transparent 0%,#1a1618 100%);
-}
-#squad .squad-slot-name{
- font-weight:700;font-size:11px;color:#fff0d5;
- white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
- text-shadow:0 1px 3px #000;
-}
-#squad .squad-slot-name.medium{font-size:10px}
-#squad .squad-slot-name.long{font-size:9px}
+
+/* Corner overlays on slots */
 #squad .squad-slot-stars{
- font-size:10px;color:var(--gold);letter-spacing:.5px;
+ position:absolute;top:4px;left:4px;
+ font-size:11px;color:var(--gold);letter-spacing:.5px;
+ text-shadow:0 1px 3px #000;z-index:2;
 }
 #squad .squad-slot-level{
- font-size:10px;color:#d5bfa2;
+ position:absolute;top:4px;right:4px;
+ font-size:11px;font-weight:700;color:#f0d8a8;
+ text-shadow:0 1px 3px #000;z-index:2;
 }
 #squad .squad-slot-gear-tier{
- font-size:10px;font-weight:700;color:#ffe0a4;background:#4a3a2a;
- border-radius:3px;padding:1px 4px;
+ position:absolute;bottom:28px;right:4px;
+ font-size:10px;font-weight:700;color:#ffe0a4;
+ background:#4a3a2a88;border-radius:3px;padding:1px 4px;
+ text-shadow:0 1px 2px #000;z-index:2;
+}
+#squad .squad-slot-name-wrap{
+ position:absolute;bottom:0;left:0;right:0;
+ padding:20px 4px 6px;
+ background:linear-gradient(180deg,transparent 0%,#1a1215 70%);
+ z-index:2;
+}
+#squad .squad-slot-name{
+ font-weight:700;font-size:12px;color:#fff0d5;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ text-shadow:0 1px 4px #000;
 }
 #squad .squad-slot-lock{
- position:absolute;top:4px;right:4px;font-size:14px;
+ position:absolute;top:4px;right:4px;font-size:14px;z-index:2;
 }
 #squad .squad-select{
  min-height:44px;border:1px solid #bd925b;border-radius:8px;
  background:linear-gradient(145deg,#4c3529,#272127);
  color:#f2dfbd;box-shadow:inset 0 1px #e8bd8240,0 3px 10px #09080c75;
 }
+
 @media(max-width:700px) and (orientation:portrait){
  #squad.squad-screen{height:100dvh}
  #squad .squad-layout{grid-template-columns:1fr;min-height:0}
- #squad .squad-panel-roster{max-height:45vh}
- #squad .squad-slots{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
- #squad .squad-roster{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+ #squad .squad-panel-roster{max-height:40vh}
+ #squad .squad-slots{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+ #squad .squad-slot-card{border-radius:8px}
+ #squad .squad-slot-name{font-size:10px}
+ #squad .squad-slot-stars{font-size:9px}
+ #squad .squad-slot-level{font-size:9px}
+ #squad .squad-slot-gear-tier{font-size:8px;bottom:24px}
+ #squad .squad-roster{grid-template-columns:repeat(3,1fr);gap:4px}
+ #squad .squad-actions{gap:5px;margin-top:auto}
+}
+@media(orientation:landscape) and (max-height:540px){
+ #squad.squad-screen{height:100dvh}
+ #squad .squad-top-bar{padding:4px 10px 3px;margin-bottom:4px;gap:6px}
+ #squad .squad-title-group h2{font-size:16px}
+ #squad .squad-power-box{padding:4px 8px}
+ #squad .squad-power-value{font-size:18px}
+ #squad .squad-power-label{font-size:9px}
+ #squad .squad-leader-bar{padding:3px 8px;margin:0 10px 4px;font-size:11px}
+ #squad .squad-layout{grid-template-columns:200px 1fr;gap:6px}
+ #squad .squad-panel{padding:5px}
+ #squad .squad-slots{gap:6px}
+ #squad .squad-slot-card{border-radius:8px}
+ #squad .squad-slot-name{font-size:10px}
+ #squad .squad-roster{grid-template-columns:repeat(2,1fr);gap:4px}
+ #squad .squad-actions{gap:5px;margin-top:auto}
 }
 @media(max-width:580px){
  #squad.squad-screen{height:100dvh}
- #squad .squad-top-bar{flex-direction:row;align-items:center;gap:6px;padding:4px 0 3px;margin-bottom:4px}
- #squad .squad-title-group h2{font-size:20px}
- #squad .squad-power-box{align-self:flex-end;padding:4px 10px}
- #squad .squad-power-value{font-size:20px}
- #squad .squad-power-label{font-size:9px}
- #squad .squad-leader-bar{padding:3px 8px;margin-bottom:4px;font-size:11px}
- #squad .squad-slots{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:6px}
- #squad .squad-slot-card{border-radius:10px}
- #squad .squad-slot-name{font-size:11px}
- #squad .squad-slot-stats{gap:3px;margin-top:2px}
- #squad .squad-slot-stat{font-size:8px;padding:1px 3px}
- #squad .squad-slot-stars{font-size:9px;margin-top:1px}
- #squad .squad-slot-gear{font-size:8px;margin-top:1px}
- #squad .squad-roster{grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px}
+ #squad .squad-layout{grid-template-columns:1fr}
+ #squad .squad-panel-roster{max-height:40vh}
+ #squad .squad-top-bar{padding:4px 10px 3px;margin-bottom:4px}
+ #squad .squad-title-group h2{font-size:18px}
+ #squad .squad-power-box{padding:4px 8px}
+ #squad .squad-power-value{font-size:18px}
+ #squad .squad-leader-bar{padding:3px 8px;margin:0 10px 4px;font-size:10px}
+ #squad .squad-slots{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+ #squad .squad-slot-card{border-radius:8px}
+ #squad .squad-slot-name{font-size:10px}
+ #squad .squad-slot-stars{font-size:9px}
+ #squad .squad-slot-level{font-size:9px}
+ #squad .squad-slot-gear-tier{font-size:8px;bottom:24px}
+ #squad .squad-roster{grid-template-columns:repeat(3,1fr);gap:4px}
  #squad .squad-actions{gap:5px;margin-top:auto}
 }
 @media(orientation:landscape) and (max-height:540px){

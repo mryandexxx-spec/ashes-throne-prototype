@@ -87,7 +87,7 @@ function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
 const allyIds=()=>api.getBattle().fighters.filter(h=>h.side==="ally").map(h=>h.id).join(",");
 const count=()=>elements.squadCount.textContent;
 
-const slots=()=>Array.from(elements.squadSlots.innerHTML.matchAll(/squad-slot-name[^"]*">([^<]*)/g),m=>m[1]);
+const slots=()=>Array.from(elements.squadSlots.innerHTML.matchAll(/class="squad-slot-name">([^<]*)/g),m=>m[1]);
 
 // Default formation: all five occupied, Kael first and the test-only aura active.
 click(elements.startBattle);

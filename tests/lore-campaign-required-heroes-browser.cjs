@@ -156,7 +156,11 @@ async function run(name,type,w,h){
     assert.equal(await page.evaluate(heroId=>toggleSquadHero(heroId),id),false);
    }
    const excluded=extra==="sava"?"art":"sava";
-   assert.equal(await page.locator('#squadRoster [data-hero-id="'+excluded+'"]').getAttribute("data-squad-required"),null);
+   // The nonmandatory hero may already occupy a slot in the saved lineup.
+   // Check its lock state wherever the hero is currently rendered.
+   const excludedCard=page.locator('#squadRoster [data-hero-id="'+excluded+'"],#squadSlots [data-hero-id="'+excluded+'"]');
+   assert.equal(await excludedCard.count(),1);
+   assert.equal(await excludedCard.getAttribute("data-squad-required"),null);
    assert.match(await page.locator("#squadIntro").innerText(),new RegExp(extra==="sava"?"Сава":"Арт"));
    await page.locator("#squadDisband").click();
    assert.equal(await page.locator("#squadCount").innerText(),"3/5");

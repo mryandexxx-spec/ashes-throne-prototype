@@ -63,18 +63,18 @@ async function run(name,type,w,h){
   await enterRequiredSquad(page);
   assert.equal(await page.locator("#squadIntro").innerText(),
    "«Пять теней»: Рен и Нада обязательны. Остальных героев выбираешь ты.");
-  const mandatory=page.locator("#squadRoster [data-squad-required=true]");
+  const mandatory=page.locator('#squadSlots .squad-slot[data-squad-required="true"]');
   assert.equal(await mandatory.count(),2,"Exactly Ren/Nada mandatory");
   for(const id of ["ren","nada"]){
-   const button=page.locator('#squadRoster [data-hero-id="'+id+'"]');
-   assert.equal(await button.getAttribute("aria-disabled"),"true");
-   assert.equal(await button.getAttribute("aria-pressed"),"true");
-   assert.match(await button.innerText(),/ОБЯЗАТЕЛЬНЫЙ/);
-   // Playwright honours aria-disabled and correctly refuses a pointer click.
-   // The domain handler must also refuse direct attempts to remove the hero.
+   const slot=page.locator('#squadSlots .squad-slot[data-hero-id="'+id+'"]');
+   assert.equal(await slot.getAttribute("data-squad-required"),"true");
+   assert.match(await slot.getAttribute("aria-label"),/обязательный герой/);
+   assert.equal(await page.locator('#squadRoster [data-hero-id="'+id+'"]').count(),0,
+    "Selected mandatory hero must not remain in available roster");
+   // A real tap and a direct domain attempt must both preserve the lock.
+   await slot.tap();
    assert.equal(await page.evaluate(heroId=>toggleSquadHero(heroId),id),false);
-   assert.equal(await button.getAttribute("aria-pressed"),"true",
-    "Mandatory character cannot be deselected "+id);
+   assert.equal(await slot.count(),1,"Mandatory character cannot be deselected "+id);
   }
   assert.deepEqual((await state(page)).normal,baseline.normal);
   // Clearing all optional slots must never remove the two mandatory heroes.
@@ -93,8 +93,8 @@ async function run(name,type,w,h){
   assert.ok(chosen.lore.includes("ren")&&chosen.lore.includes("nada"));
   const geometry=await page.evaluate(()=>({
    width:innerWidth,scroll:document.documentElement.scrollWidth,
-   renHeight:document.querySelector('[data-hero-id="ren"].squad-choice').getBoundingClientRect().height,
-   nadaHeight:document.querySelector('[data-hero-id="nada"].squad-choice').getBoundingClientRect().height
+   renHeight:document.querySelector('#squadSlots [data-hero-id="ren"].squad-slot').getBoundingClientRect().height,
+   nadaHeight:document.querySelector('#squadSlots [data-hero-id="nada"].squad-slot').getBoundingClientRect().height
   }));
   assert.ok(geometry.scroll<=geometry.width+1,"No horizontal overflow: "+JSON.stringify(geometry));
   assert.ok(geometry.renHeight>=44&&geometry.nadaHeight>=44,"Mandatory targets touch-sized");
@@ -106,7 +106,7 @@ async function run(name,type,w,h){
   assert.deepEqual((await state(page)).normal,baseline.normal);
   await page.locator(".lore-list-node").first().click();
   await enterRequiredSquad(page);
-  assert.equal(await page.locator("#squadRoster [data-squad-required=true]").count(),2);
+  assert.equal(await page.locator("#squadSlots [data-squad-required=true]").count(),2);
   assert.equal(await page.locator("#squadCount").innerText(),"5/5");
   await page.locator("#squadStart").click();
   await page.locator("#battle").waitFor({state:"visible",timeout:30000});
@@ -149,9 +149,10 @@ async function run(name,type,w,h){
    }),{episode,battleId});
    assert.equal(opened,true,episode+" squad opens");
    await page.locator("#squad").waitFor({state:"visible"});
-   assert.equal(await page.locator('#squadRoster [data-squad-required="true"]').count(),3);
+   assert.equal(await page.locator('#squadSlots [data-squad-required="true"]').count(),3);
    for(const id of ["ren","nada",extra]){
-    assert.equal(await page.locator('#squadRoster [data-hero-id="'+id+'"]').getAttribute("data-squad-required"),"true");
+    assert.equal(await page.locator('#squadSlots [data-hero-id="'+id+'"]').getAttribute("data-squad-required"),"true");
+    assert.equal(await page.locator('#squadRoster [data-hero-id="'+id+'"]').count(),0);
     assert.equal(await page.evaluate(heroId=>toggleSquadHero(heroId),id),false);
    }
    const excluded=extra==="sava"?"art":"sava";

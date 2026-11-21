@@ -19,8 +19,9 @@ test("UIHERO002 maintains five slots, the actual leader, disabled locked heroes 
   assert.ok(html.includes('id="'+id+'"'),id+" retained");
  }
  assert.match(js,/const isLeader=ids\[0\]===h\.id/);
+ assert.match(js,/aria-pressed="\$\{active\}"/);
  assert.match(js,/\$\{owned\?"":"disabled"\}/);
- assert.match(js,/\$\{i===0\?"leader":""\}/);
+ assert.match(js,/if\(i===0\)return \`<div class="squad-slot squad-slot-leader/);
  assert.match(js,/slots\[occupied\]=null/);
  assert.match(js,/selectedLeaderId=slots\[0\]/);
  assert.match(js,/selectedPartyIds=slots\.slice\(1\)/);
@@ -28,8 +29,9 @@ test("UIHERO002 maintains five slots, the actual leader, disabled locked heroes 
  assert.match(js,/\$\("#squadStart"\)\.disabled=chosen\.length===0/);
 });
 test("UIHERO002 visibly separates leader, selected, empty and locked states",()=>{
- assert.match(art,/#squad \.squad-slot-card\.leader\.filled/);
- assert.match(art,/#squad \.squad-card\.hero-locked:disabled/);
+ assert.match(art,/#squad \.squad-slot-leader\.filled/);
+ assert.match(art,/#squad \.squad-choice\.chosen/);
+ assert.match(art,/#squad \.squad-choice\.hero-locked:disabled/);
  assert.match(art,/#squad \.squad-start:disabled/);
  assert.match(art,/#squad \.squad-warning/);
 });
@@ -42,5 +44,5 @@ test("UIHERO002 keeps touch, landscape and reduced motion rules",()=>{
 });
 test("UIHERO002 candidate version matches build",()=>{
  assert.equal(JSON.parse(read("package.json")).version,__BUILD_VERSION_FOR_TESTS);
- assert.match(html,/v\d+\.\d+\.\d+ · SQUADSWGOH/);
+ assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001/);
 });

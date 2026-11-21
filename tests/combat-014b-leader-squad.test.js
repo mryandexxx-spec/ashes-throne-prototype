@@ -87,7 +87,7 @@ function toggle(id){click(chooseNodes.find(el=>el.dataset.heroId===id));}
 const allyIds=()=>api.getBattle().fighters.filter(h=>h.side==="ally").map(h=>h.id).join(",");
 const count=()=>elements.squadCount.textContent;
 
-const slots=()=>Array.from(elements.squadSlots.innerHTML.matchAll(/class="squad-slot-name">([^<]*)/g),m=>m[1]);
+const slots=()=>Array.from(elements.squadSlots.innerHTML.matchAll(/squad-slot-content">([^<]*)/g),m=>m[1]);
 
 // Default formation: all five occupied, Kael first and the test-only aura active.
 click(elements.startBattle);
@@ -104,7 +104,7 @@ assert.equal(api.CombatCore.effectiveStat(api.getBattle(),
 api.openSquad();
 toggle("kael");
 assert.equal(count(),"4/5");
-assert.deepEqual(slots(),["Лидер","Лира Соль","Дарин Пепельный","Учебный лекарь","Учебный боец группы"]);
+assert.deepEqual(slots(),["Свободно","Лира Соль","Дарин Пепельный","Учебный лекарь","Учебный боец группы"]);
 assert.equal(api.selectedParty().join(","),"lyra,darin,medic-demo,test-area-damage");
 click(elements.squadStart);
 assert.equal(elements.squad.classList.active,true,"first tap warns with four of five allies");
@@ -134,7 +134,7 @@ assert.equal(new Set(api.selectedParty()).size,5,"no duplicate fighters");
 // Save an intentionally empty leader slot and a middle gap.
 toggle("kael");
 toggle("darin");
-const gaps=["Лидер","Лира Соль","Свободно","Учебный лекарь","Учебный боец группы"];
+const gaps=["Свободно","Лира Соль","Свободно","Учебный лекарь","Учебный боец группы"];
 assert.deepEqual(slots(),gaps);
 const stored=JSON.parse(storageData.get("ashes-throne.squad.v1"));
 assert.equal(stored.leaderId,null);
@@ -157,7 +157,7 @@ assert.deepEqual(slots(),["Каэль Ворон","Лира Соль","Дари�
 // Disband persists five vacancies. The next ordinary click fills slot 1.
 click(elements.squadDisband);
 assert.equal(count(),"0/5");
-assert.deepEqual(slots(),["Лидер","Свободно","Свободно","Свободно","Свободно"]);
+assert.deepEqual(slots(),["Свободно","Свободно","Свободно","Свободно","Свободно"]);
 assert.equal(elements.squadStart.disabled,true);
 const empty=vm.runInNewContext(src+
  "\n({leaderId:selectedLeaderId,regularIds:selectedPartyIds.slice(),selectedParty:()=>selectedParty().map(h=>h.id)})",

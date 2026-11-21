@@ -1,16 +1,7 @@
 name: LC-002 lore campaign landscape browser
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'index.html'
-      - 'game.js'
-      - 'lore-campaign-data.js'
-      - 'lore-campaign-core.js'
-      - 'lore-campaign-ui.js'
-      - 'lore-campaign.css'
-      - 'tests/lore-campaign-002-browser.cjs'
-      - '.github/workflows/lore-campaign-browser.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

@@ -1,9 +1,7 @@
 name: NET-005 stacked orders simulation and Finder regression
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  push:
-    branches: [feat/net-005-network-orders-simulation-finder]
-  pull_request:
-    branches: [feat/net-004-network-pilot-ui]
+  workflow_dispatch:
 jobs:
   node-tests:
     runs-on: ubuntu-latest

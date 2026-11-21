@@ -1,12 +1,7 @@
 name: ARENA-ENGINE-002 Ren Nada full battle WebGL
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'arena-stage-view.js'
-      - 'arena-world-hud.js'
-      - 'tests/arena-stage-real-heroes.cjs'
-      - '.github/workflows/arena-stage-real-heroes.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

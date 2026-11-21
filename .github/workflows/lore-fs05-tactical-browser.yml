@@ -1,14 +1,7 @@
 name: LORETACTIC001 FS-05 real tactical battle
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'game.js'
-      - 'combat-core.js'
-      - 'lore-campaign-*.js'
-      - 'index.html'
-      - 'tests/lore-fs05-tactical-browser.cjs'
-      - '.github/workflows/lore-fs05-tactical-browser.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

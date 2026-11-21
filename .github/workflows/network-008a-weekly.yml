@@ -1,32 +1,7 @@
 name: NET-008A weekly threat Node and mobile Chromium WebKit
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'weekly-threat-*.js'
-      - 'network-*.js'
-      - 'game.js'
-      - 'index.html'
-      - 'network-pilot.css'
-      - 'reward-policy-core.js'
-      - 'progress-v3-core.js'
-      - 'package.json'
-      - 'tests/network-008a-*'
-      - 'docs/NET_008A_WEEKLY_THREAT.md'
-      - '.github/workflows/network-008a-weekly.yml'
-  push:
-    branches: [main]
-    paths:
-      - 'weekly-threat-*.js'
-      - 'network-*.js'
-      - 'game.js'
-      - 'index.html'
-      - 'network-pilot.css'
-      - 'reward-policy-core.js'
-      - 'progress-v3-core.js'
-      - 'package.json'
-      - 'tests/network-008a-*'
-      - '.github/workflows/network-008a-weekly.yml'
+  workflow_dispatch:
 concurrency:
   group: net008a-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

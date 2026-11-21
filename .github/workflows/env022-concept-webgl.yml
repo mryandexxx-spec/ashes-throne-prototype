@@ -1,15 +1,8 @@
 name: ENV022 real-game concept backdrop WebGL
 
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/env022-concept-webgl.yml"
-      - "assets/arena-env005-terrace.webp"
-      - "game.js"
-      - "combat-visual-007.js"
-      - "styles.css"
-      - "tests/fixtures/env022-full-game.html"
-
+  workflow_dispatch:
 permissions:
   contents: read
 

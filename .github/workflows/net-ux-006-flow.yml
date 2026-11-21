@@ -1,25 +1,7 @@
 name: NET-UX-006 briefing result weekly Node and mobile browsers
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'index.html'
-      - 'network-pilot-ui.js'
-      - 'weekly-threat-ui.js'
-      - 'network-pilot.css'
-      - 'package.json'
-      - 'tests/network-ux-006-*'
-      - '.github/workflows/net-ux-006-flow.yml'
-  push:
-    branches: [main]
-    paths:
-      - 'index.html'
-      - 'network-pilot-ui.js'
-      - 'weekly-threat-ui.js'
-      - 'network-pilot.css'
-      - 'package.json'
-      - 'tests/network-ux-006-*'
-      - '.github/workflows/net-ux-006-flow.yml'
+  workflow_dispatch:
 concurrency:
   group: netux006-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

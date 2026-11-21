@@ -1,14 +1,6 @@
 name: ENV010 real-time combat (Chromium and WebKit)
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'tests/env010-realtime-browser.cjs'
-      - 'tests/fixtures/env010-interactive-smoke.html'
-      - '.github/workflows/env010-realtime-browser.yml'
-      - 'game.js'
-      - 'battle-animation.js'
-      - 'index.html'
   workflow_dispatch:
 jobs:
   real-time-autobattle:

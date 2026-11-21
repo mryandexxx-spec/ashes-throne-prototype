@@ -1,13 +1,6 @@
 name: HQ UI landscape browser smoke
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    paths:
-      - index.html
-      - styles.css
-      - game.js
-      - assets/hq-hall.svg
-      - tests/fixtures/hq-ui-smoke.html
-      - .github/workflows/hq-ui-browser.yml
   workflow_dispatch:
 jobs:
   landscape:

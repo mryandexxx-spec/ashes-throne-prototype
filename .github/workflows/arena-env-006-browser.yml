@@ -1,17 +1,6 @@
 name: ARENA-ENV-006/006B 3D terrace experiment (browser)
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    branches: [main, 'exp/**']
-    paths:
-      - 'combat-environment-006.js'
-      - 'assets/arena-env006-terrace-projection.webp'
-      - 'assets/arena-env006b-anim-mask.webp'
-      - 'arena-stage-view.js'
-      - 'game.js'
-      - 'index.html'
-      - 'styles.css'
-      - 'tests/arena-env-006-browser.cjs'
-      - '.github/workflows/arena-env-006-browser.yml'
   workflow_dispatch:
 jobs:
   env006-chromium-webkit:

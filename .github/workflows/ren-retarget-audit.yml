@@ -1,11 +1,7 @@
 name: Ren retarget skeletal audit
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'tests/ren-retarget-rig-audit.cjs'
-      - 'assets/ren-wanderer-v1.glb'
-      - '.github/workflows/ren-retarget-audit.yml'
+  workflow_dispatch:
 jobs:
   rig:
     runs-on: ubuntu-latest

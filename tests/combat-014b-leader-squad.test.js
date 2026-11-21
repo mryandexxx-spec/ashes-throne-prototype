@@ -89,16 +89,14 @@ const count=()=>elements.squadCount.textContent;
 
 const slots=()=>Array.from(elements.squadSlots.innerHTML.matchAll(/squad-slot-content">([^<]*)/g),m=>m[1]);
 
-// Default formation: all five occupied, Kael first and the test-only aura active.
+// Default formation: all five permanent heroes selected; Ren has no leader aura.
 click(elements.startBattle);
 assert.equal(count(),"5/5");
 assert.deepEqual(slots(),["Рен Терен","Нада","Лиора Вель","Арт","Сава"]);
 assert.doesNotMatch(elements.squadRoster.innerHTML,/data-leader-id|В лидеры/);
 click(elements.squadStart);
-assert.equal(api.getBattle().leaderId,"ren");
-assert.equal(api.CombatCore.effectiveStat(api.getBattle(),
- api.getBattle().fighters.find(h=>h.id==="nada"),"atk"),
- api.getBattle().fighters.find(h=>h.id==="nada").atk+4);
+assert.equal(api.getBattle().leaderId,null);
+assert.equal(api.CombatCore.activeLeaderModifiers(api.getBattle(),"nada").length,0);
 
 // Removing slot 1 leaves it empty. It never shifts another fighter.
 api.openSquad();
@@ -120,7 +118,7 @@ toggle("ren");
 assert.deepEqual(slots(),["Рен Терен","Нада","Лиора Вель","Арт","Сава"]);
 assert.equal(count(),"5/5");
 click(elements.squadStart);
-assert.equal(api.getBattle().leaderId,"ren");
+assert.equal(api.getBattle().leaderId,null);
 
 // Removing a middle hero leaves the exact middle cell empty.
 // Re-adding that hero fills the earliest vacancy, not the last cell.

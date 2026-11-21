@@ -84,7 +84,7 @@ click(elements.squadDisband);
 for(const id of ["ren","nada","liora","art","sava"])
  assert.equal(api.toggleSquadHero(id),true);
 assert.equal(count(),"5/5");
-assert.equal(api.getBattle().leaderId,"ren","first selected real hero leads");
+assert.equal(api.getBattle().leaderId,null,"first selected real hero leads");
 assert.match(elements.squadHint.textContent,/лидерская способность отсутствует/);
 assert.equal(api.toggleSquadHero("ren"),true,"regular click removes first-slot leader");
 assert.equal(count(),"4/5");
@@ -110,7 +110,7 @@ click(elements.squadStart);
 assert.equal(elements.squadWarning.hidden,true);
 assert.equal(elements.battle.classList.active,true);
 assert.equal(allyIds(),"nada");
-assert.equal(api.getBattle().leaderId,"nada","first selected hero after an empty squad occupies slot 1");
+assert.equal(api.getBattle().leaderId,null,"first selected hero after an empty squad occupies slot 1");
 assert.equal(engineCreates,1);
 assert.equal(meshCreates,30,"ten active fighter templates get 3D shapes");
 assert.equal(createdCameras.length,1,"one 3D camera allocated");

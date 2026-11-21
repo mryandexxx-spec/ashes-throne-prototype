@@ -115,7 +115,7 @@ test("ARENAUI003A: arena markup — queue, hero, round abilities; no target card
  assert.match(battleHtml,/id="battleLogSummary" class="sr-only"/);
  // No "Тестовая арена"/"Ход N" on screen: the label is read only by screen readers.
  assert.match(game,/battleIsCampaign\?MissionData\.get\(activeMissionId\)\.title:"ТЕСТОВАЯ АРЕНА"/);
- assert.doesNotMatch(game,/\$(\("#turnChip"\)|\$(\("#actionTitle"\)|\$(\("#targetFighter/);
+ assert.doesNotMatch(game,/\$\("#turnChip"\)|\$\("#actionTitle"\)|\$\("#targetFighter/);
 });
 
 test("ARENAUI003A: HUD logic is read-only presentation with a remembered queue toggle",()=>{

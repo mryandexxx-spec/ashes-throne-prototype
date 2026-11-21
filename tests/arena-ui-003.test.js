@@ -150,11 +150,11 @@ test("ARENAUI003A: CSS — 44pt targets, ≥56px round abilities, safe-area, sco
 });
 
 test("ARENAUI003A: build version and script order",()=>{
- assert.equal(pkg.version,"0.3.217");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.217 · ARENAENV006C'));
+ assert.equal(pkg.version,"0.3.218");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.218 · NETUXCLR008'));
  assert.ok(pkg.scripts.test.includes("node --check arena-ui-003.js"));
- const at=html.indexOf('src="arena-ui-003.js?v=0.3.217"');
- assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.217"'));
+ const at=html.indexOf('src="arena-ui-003.js?v=0.3.218"');
+ assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.218"'));
 });
 
 // ---------------- ARENA-UI-003B: labels and numbers ----------------
@@ -187,7 +187,7 @@ test("ARENAUI003B: a number never rises into its target's label, even when the l
 test("ARENAUI003B: labels show names only for the acting hero and the target; marks stay as icons",()=>{
  assert.match(game,/const targeted=!!actor&&h\.hp>0&&!support&&h\.side==="enemy"&&state\.fighters\[state\.selectedEnemy\]\?\.id===h\.id;/);
  assert.match(game,/const named=active\|\|targeted;/);
- assert.match(game,/\$\{named\?`<div class="arena-indicator-name"\$\{h\.side==="enemy"\?` style="max-width:\$\{nameW\}px"`:""\}>\$\{h\.name\}<\/div>`:""\}/);
+ assert.match(game,/\$\{named\?`<div class="arena-indicator-name"\$\{h\.side==="enemy"\?` style="max-width:\$\{nameW\}px"`:""}>\$\{h\.name\}<\/div>`:""\}/);
  assert.match(game,/data-name-w="\$\{nameW\}"/,"the reserved band and the name cap are the same number");
  assert.match(game,/const markIcon=!named&&markClass\?`<span class="arena-effect mark \$\{markClass\}"/);
  // Labels are pinned (bounded shift), the free packer is gone.

@@ -1128,7 +1128,7 @@ function renderSquad(){
   const meta=p?squadHeroSummary(p):"";
   return '<div class="squad-slot '+(i===0?'squad-slot-leader ':'')+
    (h?'filled ':'')+(locked?'squad-slot-required ':'')+
-   '" data-squad-index="'+i+'"'+(h?' data-model-id="'+h.id+'" data-hero-id="'+h.id+'" role="button" tabindex="0"':'')+
+   '" data-squad-index="'+i+'"'+(locked?' data-squad-required="true"':'')+(h?' data-model-id="'+h.id+'" data-hero-id="'+h.id+'" role="button" tabindex="0"':'')+
    ' aria-label="'+(i===0?'Лидер отряда':'Место '+(i+1))+': '+label+
    (p?". "+meta:"")+(locked?' · обязательный герой':'')+'">'+
    '<span class="squad-slot-number">'+(i===0?'★ ЛИДЕР':i+1)+'</span>'+

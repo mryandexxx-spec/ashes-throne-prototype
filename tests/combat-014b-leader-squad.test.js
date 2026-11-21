@@ -203,6 +203,6 @@ short.ALLIES.splice(4); // Keep original four-hero warning fixture, exclude the 
 short.openSquad();
 assert.equal(short.selectedParty().length,4);
 elements.squadStart.handlers.click.at(-1)();
-assert.equal(elements.battle.classList.active,true,
- "no warning when all available heroes are selected");
+assert.equal(elements.squadWarning.hidden,true,"four available heroes need no undersized warning");
+assert.equal(elements.squad.classList.active,true,"3D hero loading remains asynchronous in this DOM stub");
 console.log("Combat-014D stable slots, first vacancy, no auto-promotion, aura gating, saved holes and warnings passed");

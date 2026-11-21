@@ -1083,6 +1083,14 @@ function battleFutureWaves(){
 }
 const SQUAD_PORTRAITS=Object.freeze({ren:"assets/ren-portrait-roster.webp",nada:"assets/nada-portrait-roster.webp",liora:"assets/liora-portrait-roster.webp",art:"assets/art-portrait-roster.webp",sava:"assets/sava-portrait-roster.webp"});
 const squadPortrait=id=>SQUAD_PORTRAITS[id]||null;
+// Only display fields from existing player progress; no assumed hero upgrades.
+function squadHeroSummary(hero){
+ const level=Number.isFinite(hero?.level)?hero.level:ProgressCore.levelOf(progress,hero.id)??1;
+ const rank=typeof StarCore!=="undefined"?StarCore.rankOf(progress,hero.id):hero?.stars;
+ const tier=ProgressCore.gearState(progress,hero.id)?.tier;
+ return "Ур. "+level+" · ★"+(Number.isFinite(rank)?rank:"—")+
+  " · "+(Number.isFinite(tier)?"G"+tier:"G—");
+}
 function renderSquad(){
  const loreMode=isLoreRequiredSquad();
  const mandatoryIds=loreMode?requiredLoreHeroIds():[];
@@ -1091,40 +1099,71 @@ function renderSquad(){
  const ids=squadSlots();
  const slots=ids.map(id=>ALLIES.find(h=>h.id===id)||null);
  $("#squadCount").textContent=chosen.length+"/"+MAX_SQUAD;
- $("#squadRoster").innerHTML=ALLIES.map(progressedHero).map(h=>{
-  const isLeader=ids[0]===h.id;
-  const active=ids.includes(h.id);
-  const required=loreMode&&mandatoryIds.includes(h.id);
-  const skill=hasLeaderSkill(h.id);
+ // A selected hero belongs to the formation, not to the available roster.
+ $("#squadRoster").innerHTML=ALLIES.map(progressedHero).filter(h=>h&&!ids.includes(h.id)).map(h=>{
   const owned=heroOwned(h.id);
-  return `<button type="button" class="squad-choice ${active?"chosen":""} ${owned?"":"hero-locked"} ${required?"squad-choice-required":""}" data-hero-id="${h.id}" aria-pressed="${active}" ${required?'aria-disabled="true" data-squad-required="true" title="Обязательный герой сюжетного боя"':""} ${owned?"":"disabled"}><span class="squad-glyph">${squadPortrait(h.id)?'<img src="'+squadPortrait(h.id)+'" alt="" loading="lazy">':owned?h.glyph:"♙"}</span><span><b>${owned?h.name:"Закрытый герой"}</b><small>${owned?(required?"ОБЯЗАТЕЛЬНЫЙ · ":"")+h.role+" · HP "+h.hp+" · ATK "+h.atk+(skill?" · Лидерская способность":""):"Открывается: "+heroUnlockLabel(h.id)}</small></span><strong>${owned?(required?"🔒":active?"✓":"+"):"🔒"}</strong></button>`;
+  const required=loreMode&&mandatoryIds.includes(h.id);
+  const meta=owned?squadHeroSummary(h):"";
+  const portrait=squadPortrait(h.id);
+  return '<button type="button" class="squad-choice '+(owned?"":"hero-locked ")+(required?"squad-choice-required":"")+
+   '" data-hero-id="'+h.id+'" aria-label="'+(owned?h.name+". "+meta:"Закрытый герой")+
+   '" '+(required?'aria-disabled="true" data-squad-required="true" title="Обязательный герой сюжетного боя"':"")+
+   (owned?"":" disabled")+'>'+
+   '<span class="squad-glyph">'+(portrait?'<img src="'+portrait+'" alt="" loading="lazy">':owned?h.glyph:"♙")+'</span>'+
+   '<span class="squad-choice-detail"><b>'+(owned?h.name:"Закрытый герой")+'</b>'+
+   '<small>'+(owned?meta:"Открывается: "+heroUnlockLabel(h.id))+'</small></span>'+
+   '<strong aria-hidden="true">'+(owned?"+":"🔒")+'</strong></button>';
  }).join("");
- $("#squadSlots").innerHTML=Array.from({length:MAX_SQUAD},(_,i)=>{
+ // Preserve the single Babylon canvas across DOM rebuilds; never recreate
+ // its WebGL context for an added/removed squad member.
+ const slotHost=$("#squadSlots");
+ const stageCanvas=slotHost.querySelector(".squad-stage-canvas");
+ slotHost.innerHTML=Array.from({length:MAX_SQUAD},(_,i)=>{
   const h=slots[i];
   const p=h?progressedHero(h):null;
   const locked=loreMode&&h&&mandatoryIds.includes(h.id);
   const label=h?h.name:"Свободно";
   const portrait=h?squadPortrait(h.id):null;
   const avatar=portrait?'<img class="squad-slot-fallback" src="'+portrait+'" alt="" loading="lazy">':(h?'<span class="squad-slot-glyph" aria-hidden="true">'+h.glyph+'</span>':"");
-  const stars=p&&Number.isFinite(p.stars)?Math.min(7,Math.max(0,p.stars)):0;
+  const meta=p?squadHeroSummary(p):"";
   return '<div class="squad-slot '+(i===0?'squad-slot-leader ':'')+
    (h?'filled ':'')+(locked?'squad-slot-required ':'')+
    '" data-squad-index="'+i+'"'+(h?' data-model-id="'+h.id+'" data-hero-id="'+h.id+'" role="button" tabindex="0"':'')+
-   ' aria-label="'+(i===0?'Лидер отряда':'Место '+(i+1))+': '+label+(locked?' · обязательный герой':'')+'">'+
+   ' aria-label="'+(i===0?'Лидер отряда':'Место '+(i+1))+': '+label+
+   (p?". "+meta:"")+(locked?' · обязательный герой':'')+'">'+
    '<span class="squad-slot-number">'+(i===0?'★ ЛИДЕР':i+1)+'</span>'+
    '<div class="squad-slot-fallback-wrap">'+avatar+'</div>'+
-   (p?'<span class="squad-slot-stars" aria-hidden="true">'+"★".repeat(stars)+'</span>':'')+
-   (p?'<span class="squad-slot-level">Ур. '+(p.level||1)+'</span>':'')+
+   (p?'<span class="squad-slot-progress">'+meta+'</span>':"")+
    '<span class="squad-slot-content">'+label+(locked?' 🔒':'')+'</span>'+
    '</div>';
  }).join("");
-  const leader=ids[0];
+ if(stageCanvas)slotHost.insertBefore(stageCanvas,slotHost.firstChild);
+ const leader=ids[0];
+ const leaderHero=ALLIES.find(h=>h.id===leader);
+ const leaderAbility=leaderHero&&typeof AbilityInfo!=="undefined"?AbilityInfo.format(leaderHero,"leader"):null;
+ const hasSkill=leaderAbility?.status==="available";
+ const leaderButton=$("#squadLeaderSkillButton");
+ const leaderName=$("#squadLeaderSkillName");
+ const leaderTip=$("#squadLeaderTooltip");
+ if(leaderButton){
+  leaderButton.hidden=!hasSkill;
+  leaderButton.setAttribute("aria-label",hasSkill?"Лидерская способность: "+leaderAbility.name+". Удерживай для описания":"Нет лидерской способности");
+  if(leaderName)leaderName.textContent=hasSkill?leaderAbility.name:"";
+ }
+ if(leaderTip){
+  leaderTip.hidden=true;
+  leaderButton?.setAttribute("aria-expanded","false");
+  const tipName=$("#squadLeaderTooltipName"),tipDesc=$("#squadLeaderTooltipDescription");
+  if(tipName)tipName.textContent=hasSkill?leaderAbility.name:"";
+  if(tipDesc)tipDesc.textContent=hasSkill?leaderAbility.description:"";
+ }
  const leaderHint=leader
-  ?(hasLeaderSkill(leader)
-     ?"Первый персонаж — лидер; его лидерская способность действует автоматически."
-     :"Первый персонаж — лидер. У него пока нет лидерской способности.")
-  :"Выбери героя слева: он займёт первую свободную ячейку. Пока лидерская ячейка пуста, лидерского бонуса нет.";
- $("#squadHint").textContent=(loreMode?"Обязательные герои: "+mandatoryNames+". Свободных мест: "+(MAX_SQUAD-mandatoryIds.length)+". ":"")+leaderHint;
+  ?(hasSkill?"★ "+leaderHero.name+" ведёт отряд. Удерживай значок способности для описания.":
+    "⚠ "+leaderHero.name+": лидерская способность отсутствует — бонуса лидера нет.")
+  :"Выбери героя слева: он займёт первую свободную ячейку. Пока ячейка лидера пуста, лидерского бонуса нет.";
+ const hint=$("#squadHint");
+ hint.textContent=(loreMode?"Обязательные герои: "+mandatoryNames+". ":"")+leaderHint;
+ hint.classList.toggle("squad-hint-warning",Boolean(leader)&&!hasSkill);
  const tacticalBrief=$("#squadTacticalBrief");
  const trial=loreMode?ActiveLoreCampaign.encounter(loreRequiredContext?.nodeId):null;
  const npcBrief=squadReturnScreen==="challenges"&&NPC_CHALLENGE_PILOT_ENABLED&&
@@ -1148,9 +1187,8 @@ function renderSquad(){
  const disband=$("#squadDisband");
  if(disband)disband.textContent=loreMode?"Убрать остальных":"Распустить";
  $("#squadStart").disabled=chosen.length===0||(loreMode&&!requiredLoreSquadReady());
- document.querySelectorAll("[data-hero-id]").forEach(btn=>btn.addEventListener("click",()=>{
-  toggleSquadHero(btn.dataset.heroId);
- }));
+ document.querySelectorAll("#squadRoster .squad-choice[data-hero-id],#squadSlots .squad-slot[data-hero-id]").forEach(node=>
+  node.addEventListener("click",()=>toggleSquadHero(node.dataset.heroId)));
  document.querySelectorAll("#squadSlots .squad-slot[data-hero-id]").forEach(slot=>{
   slot.addEventListener("keydown",event=>{
    if(event.key==="Enter"||event.key===" "){event.preventDefault();toggleSquadHero(slot.dataset.heroId);}
@@ -2030,6 +2068,34 @@ $("#squadBack").addEventListener("click",()=>{
  showScreen(squadReturnScreen==="weekly"?"network":squadReturnScreen);
 });
 $("#squadDisband")?.addEventListener("click",disbandSquad);
+// Long-press on touch, click/Enter on keyboard/desktop. No new game state.
+const squadLeaderButton=$("#squadLeaderSkillButton"),squadLeaderTooltip=$("#squadLeaderTooltip");
+if(squadLeaderButton&&squadLeaderTooltip){
+ let holdTimer=null,openedByHold=false;
+ const cancelHold=()=>{if(holdTimer!==null){clearTimeout(holdTimer);holdTimer=null;}};
+ const hide=()=>{squadLeaderTooltip.hidden=true;squadLeaderButton.setAttribute("aria-expanded","false");};
+ const show=()=>{if(squadLeaderButton.hidden)return;squadLeaderTooltip.hidden=false;
+  squadLeaderButton.setAttribute("aria-expanded","true");};
+ squadLeaderButton.addEventListener("pointerdown",event=>{
+  if(event.pointerType!=="touch"&&event.pointerType!=="pen")return;
+  openedByHold=false;cancelHold();
+  holdTimer=setTimeout(()=>{holdTimer=null;openedByHold=true;show();},500);
+ });
+ for(const type of ["pointerup","pointercancel","pointerleave"])
+  squadLeaderButton.addEventListener(type,cancelHold);
+ squadLeaderButton.addEventListener("contextmenu",event=>{
+  event.preventDefault();cancelHold();openedByHold=true;show();
+ });
+ squadLeaderButton.addEventListener("click",event=>{
+  event.stopPropagation();cancelHold();
+  if(openedByHold){openedByHold=false;return;}
+  if(squadLeaderTooltip.hidden)show();else hide();
+ });
+ document.addEventListener("pointerdown",event=>{
+  if(!squadLeaderButton.contains(event.target)&&!squadLeaderTooltip.contains(event.target))hide();
+ });
+ document.addEventListener("keydown",event=>{if(event.key==="Escape")hide();});
+}
 // If Babylon.js cannot load, show a recoverable message instead of an uncaught crash.
 const retryLoad=$("#retryBattleLoad");
 if(retryLoad)retryLoad.addEventListener("click",()=>window.location.reload());

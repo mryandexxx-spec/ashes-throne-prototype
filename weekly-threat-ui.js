@@ -17,6 +17,8 @@ const WeeklyThreatUI=(()=>{
    ". Первый отмеченный противник должен погибнуть первым. Нокауты и число ходов влияют на оценку.";
   $("netuxWeeklyIntel").textContent=intel+"/3";
   $("netuxWeeklyIntelMeter").value=intel;
+  $("net008aSurvey").textContent="Разведать цель · HP "+(intel>=2?"−24%":"−10%");
+  $("net008aCover").textContent="Прикрытие · атака врагов "+(intel>=2?"−22%":"−10%");
   $("netuxWeeklyAttempts").textContent=String(s.attempts);
   $("netuxWeeklyBest").textContent=s.bestScore?
    s.bestScore+"/100 · "+WeeklyThreatCore.TIERS.filter(t=>s.bestScore>=t.score).length+"★":"Нет";
@@ -46,11 +48,12 @@ const WeeklyThreatUI=(()=>{
   $("net008aAbandon").hidden=!s.active;
   $("net008aContinue").textContent=s.active?
    "Текущая попытка №"+s.active.attempt+" · "+
-   (s.active.preparation==="survey"?"Разведка: главная цель ослаблена.":
-    "Прикрытие: физическая атака противников снижена.")+
+   (s.active.preparation==="survey"?"Разведка: HP главной цели "+(s.active.intel>=2?"−24%.":"−10%."):
+    "Прикрытие: физическая атака противников "+(s.active.intel>=2?"−22%.":"−10%."))+
    " Учтено сведений при начале: "+s.active.intel+"/3.":
-   "Выберите подготовку: разведка снижает HP первой цели, прикрытие — физическую атаку врагов."+
-   " От 2 сведений эффект сильнее; сведения дают завершённые вручную зацепки с меткой угрозы.";
+   "До 2 сведений: HP цели −10% либо атака врагов −10%. От 2 сведений: −24% либо −22%."+
+   (intel>=2?" Усиление уже максимальное; третье сведение — запас без дополнительного эффекта.":
+    " Сведения дают завершённые вручную зацепки с меткой угрозы.");
   $("net008aCollect").textContent="Забрать награды: "+pend.length;
   $("net008aCollect").hidden=pend.length===0;
   root.querySelectorAll("button[data-week-action]").forEach(b=>b.disabled=blocked||busy);

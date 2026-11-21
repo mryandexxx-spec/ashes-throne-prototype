@@ -1148,6 +1148,9 @@ function renderSquad(){
  }
  const leader=ids[0];
  const leaderHero=ALLIES.find(h=>h.id===leader);
+ const leaderArt=$(".squad-leader-skill-icon");
+ if(leaderArt&&typeof AbilityIconCore!=="undefined")
+  leaderArt.innerHTML=leaderHero?AbilityIconCore.markup(leaderHero,"leader")||"✦":"✦";
  const leaderAbility=leaderHero&&typeof AbilityInfo!=="undefined"?AbilityInfo.format(leaderHero,"leader"):null;
  const hasSkill=leaderAbility?.status==="available";
  const leaderButton=$("#squadLeaderSkillButton");
@@ -2276,7 +2279,11 @@ function renderHeroes(){
   const tags=labels.length?'<span class="roster-identity-tags">'+labels.map(label=>'<span class="roster-identity-tag">'+safeTag(label)+'</span>').join("")+'</span>':"";
   const isLeader=owned&&selectedLeaderId===h.id;
   const leaderBadge=isLeader?'<span class="roster-leader-indicator">★ Лидер</span>':"";
-  return `<button type="button" class="hero-card hero-open roster-card ${owned?"":"hero-locked"}" data-open-hero="${h.id}" aria-label="${name}${isLeader?". Лидер отряда":""}. ${owned?"Открыть досье":"Условия получения"}${labels.length?". "+labels.join(", "):""}"><span class="roster-card-art hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":owned&&h.id==="nada"?"hero-avatar-nada":owned&&h.id==="liora"?"hero-avatar-liora":owned&&h.id==="art"?"hero-avatar-art":owned&&h.id==="sava"?"hero-avatar-sava":""}">${portraitAvatar}${leaderBadge}</span><span class="roster-card-name">${name}</span>${tags}${starInfo}<span class="roster-card-subtitle">${levelLine}</span>${owned?'<span class="roster-card-gear">'+gearLabel+'</span>':progressLine}<span class="hero-open-hint">${owned?"Открыть досье ›":"Как получить ›"}</span></button>`;
+  const abilityStrip=owned&&typeof AbilityIconCore!=="undefined"?
+   '<span class="roster-ability-icons" aria-hidden="true">'+
+   ["basic","special","powerful"].map(slot=>AbilityIconCore.markup(h.id,slot,"roster-ability-icon")).join("")+
+   '</span>':"";
+  return `<button type="button" class="hero-card hero-open roster-card ${owned?"":"hero-locked"}" data-open-hero="${h.id}" aria-label="${name}${isLeader?". Лидер отряда":""}. ${owned?"Открыть досье":"Условия получения"}${labels.length?". "+labels.join(", "):""}"><span class="roster-card-art hero-avatar ${owned&&h.id==="ren"?"hero-avatar-ren":owned&&h.id==="nada"?"hero-avatar-nada":owned&&h.id==="liora"?"hero-avatar-liora":owned&&h.id==="art"?"hero-avatar-art":owned&&h.id==="sava"?"hero-avatar-sava":""}">${portraitAvatar}${abilityStrip}${leaderBadge}</span><span class="roster-card-name">${name}</span>${tags}${starInfo}<span class="roster-card-subtitle">${levelLine}</span>${owned?'<span class="roster-card-gear">'+gearLabel+'</span>':progressLine}<span class="hero-open-hint">${owned?"Открыть досье ›":"Как получить ›"}</span></button>`;
  }).join("");
  if(!visible.length)$("#heroList").innerHTML='<p class="roster-empty">В этой категории героев пока нет.</p>';
  document.querySelectorAll("[data-open-hero]").forEach(node=>node.addEventListener("click",()=>{
@@ -2393,7 +2400,11 @@ function renderHeroAbilities(hero){
   heading.className="hero-ability-heading";
   const label=document.createElement("span");label.className="hero-ability-kind";label.textContent=info.label+(typeof SkillCore!=="undefined"&&SkillCore.UPGRADABLE_IDS.includes(info.id)&&SkillCore.level(progress,hero.id,info.id)!==null?" · ур. "+SkillCore.level(progress,hero.id,info.id):"");
   const name=document.createElement("strong");name.textContent=info.name;
-  heading.append(label,name);
+  const icon=typeof AbilityIconCore!=="undefined"?AbilityIconCore.element(hero,info.id,"hero-ability-thumb"):null;
+  const title=document.createElement("span");title.className="hero-ability-title-text";
+  title.append(label,name);
+  if(icon)heading.append(icon);
+  heading.append(title);
   const details=document.createElement("details");details.className="hero-ability-more";
   const summary=document.createElement("summary");summary.textContent="Описание";
   const description=document.createElement("p");description.textContent=info.description;
@@ -3282,7 +3293,7 @@ function renderAbilityButton(button,actor,abilityId,definition,cooldown,stateNam
  const data=button.dataset||(button.dataset={});
  data.state=stateName;
  if(typeof ArenaUI003==="undefined"){button.textContent=name+(cooldown>0?" · "+cooldown:"");return;}
- const face=ArenaUI003.abilityFace(actor?.id,abilityId,definition||{name},cooldown);
+ const face=ArenaUI003.abilityFace(actor?.archetypeId||actor?.id,abilityId,definition||{name},cooldown);
  const signature=[actor?.id,abilityId,name,cooldown].join("|");
  if(data.face!==signature){data.face=signature;button.innerHTML=face.html;}
  data.accent=face.accent;
@@ -3928,7 +3939,18 @@ function renderFighterInspection(){
  if(npcAbilities){
   const lines=typeof NpcBattleIntel!=="undefined"?NpcBattleIntel.abilities(fighter):[];
   npcAbilities.hidden=!lines.length;
-  npcAbilities.textContent=lines.length?"СПОСОБНОСТИ\n"+lines.join("\n"):"";
+  if(lines.length&&fighter.archetypeId&&typeof AbilityIconCore!=="undefined"&&
+     typeof document.createElement==="function"&&typeof npcAbilities.replaceChildren==="function"){
+   npcAbilities.replaceChildren();
+   const title=document.createElement("strong");title.textContent="СПОСОБНОСТИ";npcAbilities.append(title);
+   for(const [i,line] of lines.entries()){
+    const slot=["basic","special","powerful","passive"][i];
+    const row=document.createElement("div");row.className="npc-ability-row";
+    const icon=AbilityIconCore.element(fighter,slot,"npc-ability-thumb");if(icon)row.append(icon);
+    const description=document.createElement("span");description.textContent=line;row.append(description);
+    npcAbilities.append(row);
+   }
+  }else npcAbilities.textContent=lines.length?"СПОСОБНОСТИ\n"+lines.join("\n"):"";
  }
  dialog.hidden=false;
 }

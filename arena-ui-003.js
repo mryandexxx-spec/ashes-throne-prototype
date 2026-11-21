@@ -1,9 +1,8 @@
 /* ARENA-UI-003: SWGOH-style battle HUD helpers. Presentation only.
    - forecast(): predicted turn order from the current initiative meters. It
      works on a copy and never changes the battle (CombatCore stays the rule).
-   - ability icons: owner art from assets/abilities/<hero>-<slot>.webp when it
-     is listed in assets/abilities/manifest.json, otherwise a temporary
-     pictogram chosen from the ability data. The manifest is read once, so
+   - ability icons: approved 63-image atlas first, manifest-listed art second,
+     and the original SVG pictogram underneath as safe visual fallback. The manifest is read once, so
      absent files are never requested (no 404 per button on iPhone).
    No Babylon, no timers, no layout reads. */
 const ArenaUI003=(()=>{
@@ -79,8 +78,9 @@ const ArenaUI003=(()=>{
  function abilityFace(heroId,slot,definition,cooldown){
   const glyph=glyphFor(definition,slot);
   const url=iconUrl(heroId,slot);
-  const art=url&&available.has(url)&&!missing.has(url)?
-   `<img class="ability-art" src="${url}" alt="" draggable="false" onerror="ArenaUI003.iconMissing(this)">`:"";
+  const approved=typeof AbilityIconCore!=="undefined"?AbilityIconCore.markup(heroId,slot,"ability-art"):"";
+  const art=approved||(url&&available.has(url)&&!missing.has(url)?
+   `<img class="ability-art" src="${url}" alt="" draggable="false" onerror="ArenaUI003.iconMissing(this)">`:"");
   const cd=Number.isInteger(cooldown)&&cooldown>0?`<span class="ability-cooldown" aria-hidden="true">${cooldown}</span>`:"";
   const name=definition?.name||"";
   return {glyph,accent:ACCENT[glyph],

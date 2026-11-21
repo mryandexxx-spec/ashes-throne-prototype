@@ -45,5 +45,5 @@ test("UIHERO002 keeps touch, landscape and reduced motion rules",()=>{
 });
 test("UIHERO002 candidate version matches build",()=>{
  assert.equal(JSON.parse(read("package.json")).version,__BUILD_VERSION_FOR_TESTS);
- assert.match(html,/v0\.3\.222 · SQUADVIEW002/);
+ assert.ok(html.includes("v"+__BUILD_VERSION_FOR_TESTS+" · "));
 });

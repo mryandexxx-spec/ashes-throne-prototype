@@ -17,7 +17,7 @@ function element(id=""){
  };
 }
 const elements=Object.fromEntries(ids.map(id=>[id,element(id)]));
-const chooseNodes=["kael","lyra","darin"].map(id=>{
+const chooseNodes=["ren","nada","liora"].map(id=>{
  const e=element();e.dataset.heroId=id;return e;
 });
 const arenaNav=element();arenaNav.dataset.screen="battle";
@@ -81,26 +81,26 @@ for(const name of ["Нада","Лиора Вель","Сава","Арт"])
 // The rest of this legacy test verifies the original sandbox fighters' slot
 // and camera contracts. Select them explicitly rather than assuming defaults.
 click(elements.squadDisband);
-for(const id of ["kael","lyra","darin","medic-demo","test-area-damage"])
+for(const id of ["ren","nada","liora","art","sava"])
  assert.equal(api.toggleSquadHero(id),true);
 assert.equal(count(),"5/5");
-assert.equal(api.getBattle().leaderId,null,"initial sandbox battle is still legacy");
+assert.equal(api.getBattle().leaderId,"ren","first selected real hero leads");
 assert.match(elements.squadHint.textContent,/лидерская способность отсутствует/);
-assert.equal(api.toggleSquadHero("kael"),true,"regular click removes first-slot leader");
+assert.equal(api.toggleSquadHero("ren"),true,"regular click removes first-slot leader");
 assert.equal(count(),"4/5");
 assert.match(elements.squadSlots.innerHTML,/★ ЛИДЕР/);
 assert.match(elements.squadSlots.innerHTML,/squad-slot-leader[^]*?Свободно/,"leader slot remains empty");
 assert.match(elements.squadSlots.innerHTML,/squad-slot filled[^]*?Лира/,"second hero remains in position 2");
-assert.equal(api.toggleSquadHero("darin"),true);
+assert.equal(api.toggleSquadHero("liora"),true);
 assert.equal(count(),"3/5");
-assert.equal(api.toggleSquadHero("lyra"),true);
+assert.equal(api.toggleSquadHero("nada"),true);
 assert.equal(count(),"2/5");
-assert.equal(api.toggleSquadHero("medic-demo"),true);
+assert.equal(api.toggleSquadHero("art"),true);
 assert.equal(count(),"1/5");
-assert.equal(api.toggleSquadHero("test-area-damage"),true);
+assert.equal(api.toggleSquadHero("sava"),true);
 assert.equal(count(),"0/5");
 assert.equal(elements.squadStart.disabled,true,"empty party cannot start");
-assert.equal(api.toggleSquadHero("lyra"),true);
+assert.equal(api.toggleSquadHero("nada"),true);
 assert.equal(count(),"1/5");
 click(elements.squadStart);
 assert.equal(elements.squad.classList.active,true,"first click warns before a short-handed battle");
@@ -109,10 +109,10 @@ assert.equal(elements.squadWarning.hidden,false);
 click(elements.squadStart);
 assert.equal(elements.squadWarning.hidden,true);
 assert.equal(elements.battle.classList.active,true);
-assert.equal(allyIds(),"lyra");
-assert.equal(api.getBattle().leaderId,"lyra","first selected hero after an empty squad occupies slot 1");
+assert.equal(allyIds(),"nada");
+assert.equal(api.getBattle().leaderId,"nada","first selected hero after an empty squad occupies slot 1");
 assert.equal(engineCreates,1);
-assert.equal(meshCreates,45,"fifteen fighter templates including Art and Sava get 3D shapes");
+assert.equal(meshCreates,30,"ten active fighter templates get 3D shapes");
 assert.equal(createdCameras.length,1,"one 3D camera allocated");
 const camera=createdCameras[0];
 assert.ok(Math.abs(camera.alpha+3*Math.PI/4)<1e-9);
@@ -135,19 +135,19 @@ assert.equal(elements.battleRetryBtn.hidden,false);
 click(elements.battleRetryBtn);
 assert.equal(elements.squad.classList.active,true);
 assert.equal(count(),"1/5");
-assert.equal(api.toggleSquadHero("kael"),true);
+assert.equal(api.toggleSquadHero("ren"),true);
 assert.equal(count(),"2/5");
 camera.alpha=0;camera.beta=1.2;camera.radius=12;
 click(elements.squadStart);
 assert.equal(elements.squad.classList.active,true,"retry confirmation resets on squad change");
 click(elements.squadStart);
-assert.equal(allyIds(),"lyra,kael","first selected hero remains leader; tap order sets formation");
+assert.equal(allyIds(),"nada,ren","first selected hero remains leader; tap order sets formation");
 assert.equal(camera.alpha,-3*Math.PI/4);
 assert.equal(camera.beta,.96);
 assert.equal(camera.radius,12);
 assert.equal(createdCameras.length,1);
 assert.equal(engineCreates,1);
-assert.equal(meshCreates,45,"replay reuses 3D meshes for expanded roster");
+assert.equal(meshCreates,30,"replay reuses meshes without reallocating");
 
 // All entry points still route through the composition screen.
 api.openSquad();
@@ -160,7 +160,7 @@ click(elements.squadBack);
 assert.equal(elements.campaign.classList.active,true);
 assert.equal(api.openCampaignMission("black-pass-ambush"),true);
 assert.equal(elements.squad.classList.active,true);
-assert.equal(api.selectedParty().join(","),"lyra,kael");
+assert.equal(api.selectedParty().join(","),"nada,ren");
 assert.doesNotMatch(elements.squadRoster.innerHTML,/data-leader-id|В лидеры/,"ordinary selection is the only way to fill leader slot");
 // Disband is explicit, clears all five displayed positions and prevents
 // entry until at least one hero is selected again.

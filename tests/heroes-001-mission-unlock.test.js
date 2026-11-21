@@ -52,8 +52,8 @@ test("DEMOROSTER001: precise old ten-hero save is pruned with a backup, without 
  db.set(V.KEY,JSON.stringify(fresh));
  const loaded=V.stage(allies,get,now);
  assert.equal(loaded.status,"existing");
- assert.deepEqual(Object.keys(loaded.profile.heroes).sort(),playable.slice().sort());
- assert.deepEqual(loaded.profile.unlockedHeroes.slice().sort(),playable.slice().sort());
+ assert.deepEqual(Array.from(Object.keys(loaded.profile.heroes)).sort(),playable.slice().sort());
+ assert.deepEqual(Array.from(loaded.profile.unlockedHeroes).sort(),playable.slice().sort());
  assert.ok(db.has(V.KEY+".before-demo-roster-cleanup"));
  assert.equal(V.validateActive(JSON.parse(db.get(V.KEY)),allies)!==null,true);
  const again=V.stage(allies,get,now);

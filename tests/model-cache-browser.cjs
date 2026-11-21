@@ -138,17 +138,25 @@ async function battleGate(name,driver){
   await page.waitForFunction(()=>!!navigator.serviceWorker?.controller,null,{timeout:45000});
   assert.equal(await page.evaluate(()=>AssetLoader.summary().done),0,"Data Saver: nothing pre-downloaded");
   await openSquad(page);
-  // Record what the gate shows, every frame, from inside the page.
+  // Observe the actual visible DOM gate. WebKit may suppress rAF while
+  // WebGL is busy; DOM mutations and a short timer provide independent proof.
   await page.evaluate(()=>{
    window.__gate=[];
-   const tick=()=>{
+   const sample=()=>{
     const el=document.getElementById("battleAssetGate");
-    if(el&&!el.hidden)window.__gate.push({pct:parseInt(document.getElementById("battleAssetGatePercent").textContent,10),
+    if(!el||el.hidden||getComputedStyle(el).display==="none"||
+      !el.getBoundingClientRect().height)return;
+    const entry={pct:parseInt(document.getElementById("battleAssetGatePercent").textContent,10),
      caption:document.getElementById("battleAssetGateCaption").textContent,
      rows:[...document.querySelectorAll("#battleAssetGateList li")].map(li=>li.textContent),
-     npcReady:typeof npcGlbRuntimes!=="undefined"?[...npcGlbRuntimes.values()].filter(r=>r.isReady).length:0});
-    requestAnimationFrame(tick);
+     npcReady:typeof npcGlbRuntimes!=="undefined"?[...npcGlbRuntimes.values()].filter(r=>r.isReady).length:0};
+    if(JSON.stringify(entry)!==JSON.stringify(window.__gate.at(-1)))window.__gate.push(entry);
    };
+   window.__gateObserver=new MutationObserver(sample);
+   window.__gateObserver.observe(document.getElementById("battleAssetGate"),
+    {childList:true,subtree:true,attributes:true,characterData:true});
+   window.__gatePoll=setInterval(sample,100);
+   const tick=()=>{sample();requestAnimationFrame(tick);};
    requestAnimationFrame(tick);
   });
   const button=page.locator("#squadStart");await button.click();

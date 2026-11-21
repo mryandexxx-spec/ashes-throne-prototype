@@ -112,8 +112,10 @@ const BattleAnimation=(()=>{
  const contactOf=action=>action?.plan?.contactMs??action?.contactMs;
  function tick(deltaMs,multiplier=1){
   if(!Number.isFinite(deltaMs)||deltaMs<0||!Number.isFinite(multiplier)||multiplier<=0)return;
-  // Tab wake-ups cannot skip unbounded queued actions.
-  let remaining=Math.min(deltaMs,100)*multiplier;
+  // Slow WebGL frames must not hold combat controls for many real seconds:
+  // allow bounded catch-up when a mobile GPU / headless runner misses frames.
+  // A single wake-up still cannot skip an unbounded visual queue.
+  let remaining=Math.min(deltaMs,400)*multiplier;
   idleTime+=remaining;
   if(!current&&queue.length){
    current=queue.shift();elapsed=0;

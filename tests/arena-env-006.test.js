@@ -98,18 +98,18 @@ test("game wiring: flag-only, built on battle entry, disposed on exit; 2D stays 
  // ENV-005 behaviour is untouched: transparent canvas + CSS art (also the 3D loading fallback).
  assert.ok(game.includes("!/(?:^|[?&])environment=(?:env017|env010)(?:&|$)/.test(location.search)"));
  assert.match(game,/alpha:ENV022_CONCEPT_PREVIEW/);
- const at=html.indexOf('src="combat-environment-006.js?v=0.3.217"');
- assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.217"'));
+ const at=html.indexOf('src="combat-environment-006.js?v=0.3.219"');
+ assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.219"'));
  const src=read("combat-environment-006.js");
  assert.match(src,/isPickable=false/);
  assert.ok(!/ShadowGenerator|PostProcess|DefaultRenderingPipeline/.test(src),"no shadow map, no post-process");
 });
 
-test("build label v0.3.217 · ARENAENV006C",()=>{
+test("build label v0.3.219 · RECOVER3D",()=>{
  const pkg=JSON.parse(read("package.json")),html=read("index.html");
- assert.equal(pkg.version,"0.3.217");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.217 · ARENAENV006C'));
- assert.ok(html.includes('src="game.js?v=0.3.217"'));
+ assert.equal(pkg.version,"0.3.219");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.219 · RECOVER3D'));
+ assert.ok(html.includes('src="game.js?v=0.3.219"'));
  assert.ok(!html.includes("?v=0.3.214"));
  assert.ok(pkg.scripts.test.includes("node --check combat-environment-006.js"));
 });

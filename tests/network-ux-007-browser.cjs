@@ -43,7 +43,7 @@ async function run(name,engine,viewport){
  try{
   await page.goto(origin,{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
-  assert.match(await page.locator("#buildVersion").innerText(),/v0\.3\.217 · ARENAENV006C/);
+  assert.match(await page.locator("#buildVersion").innerText(),/v0\.3\.219 · RECOVER3D/);
   await enter();
   assert.ok(await page.locator("#net004Clues .netux-clue-pick").count()>=2);
   const scene=await page.evaluate(()=>{
@@ -66,31 +66,49 @@ async function run(name,engine,viewport){
   const expectedState=(await saved()).state.active;
   for(const size of [{width:667,height:320},{width:844,height:300},viewport]){
    await page.setViewportSize(size);
+   // A short landscape viewport is allowed to scroll within the briefing
+   // pane. Validate reachability of every text/control instead of incorrectly
+   // requiring all scroll-container contents to be visible simultaneously.
    const clipped=await page.evaluate(()=>{
-    const selectors=[".netux-region strong","#netuxInfluence","#net005OrderStatus","#netuxBriefStage",
-     "#net004ActiveTitle","#net004Choices button","#netuxBriefReward",".netux-report-open","#net004Cancel"];
+    const selectors=[".netux-region strong","#netuxInfluence","#net005OrderStatus",
+     "#netuxBriefStage","#net004ActiveTitle","#net004Choices button",
+     "#netuxBriefReward","#netuxBriefIntel","#net004Cancel"];
     const failures=[];
     for(const selector of selectors)for(const el of document.querySelectorAll(selector)){
-     const box=el.getBoundingClientRect();
-     const range=document.createRange();
-     range.selectNodeContents(el);
-     const bounds=[{left:0,right:innerWidth,top:0,bottom:innerHeight}];
-     for(let p=el;p;p=p.parentElement){
-      if(/auto|scroll|hidden|clip/.test(getComputedStyle(p).overflowY))bounds.push(p.getBoundingClientRect());
+     if(!el.getClientRects().length||getComputedStyle(el).display==="none")continue;
+     el.scrollIntoView({block:"nearest",inline:"nearest",behavior:"instant"});
+     const rect=el.getBoundingClientRect();
+     let left=0,top=0,right=innerWidth,bottom=innerHeight;
+     for(let p=el.parentElement;p;p=p.parentElement){
+      const style=getComputedStyle(p);
+      if(/auto|scroll|hidden|clip/.test(style.overflowY)){
+       const r=p.getBoundingClientRect();
+       top=Math.max(top,r.top);bottom=Math.min(bottom,r.bottom);
+      }
+      if(/auto|scroll|hidden|clip/.test(style.overflowX)){
+       const r=p.getBoundingClientRect();
+       left=Math.max(left,r.left);right=Math.min(right,r.right);
+      }
      }
-     if(!box.width||!box.height||[...range.getClientRects()].some(r=>bounds.some(b=>
-      r.top<b.top-1||r.bottom>b.bottom+1||r.left<b.left-1||r.right>b.right+1)))failures.push(selector);
+     // Long descriptive paragraphs can extend beyond the pane: they must
+     // have a visible reading area, not be completely unreachable.
+     const visibleHeight=Math.min(rect.bottom,bottom)-Math.max(rect.top,top);
+     const visibleWidth=Math.min(rect.right,right)-Math.max(rect.left,left);
+     const requiredHeight=el.tagName==="BUTTON"?Math.min(42,rect.height-1):Math.min(12,rect.height-1);
+     if(visibleHeight<requiredHeight||visibleWidth<Math.min(32,rect.width-1))
+      failures.push(selector+" (unreachable)");
     }
     if(document.documentElement.scrollWidth>innerWidth+1)failures.push("page width");
-    if(getComputedStyle(document.documentElement).backgroundColor!=="rgb(11, 13, 18)")failures.push("page background");
+    if(getComputedStyle(document.documentElement).backgroundColor!=="rgb(11, 13, 18)")
+     failures.push("page background");
     return failures;
    });
    assert.deepEqual(clipped,[],"briefing at "+size.width+"x"+size.height);
   }
-  await page.getByRole("button",{name:"Донесение",exact:true}).click();
+  // NETUXFIT was explicitly rolled back: intel is available inline, not
+  // behind the removed "Донесение" modal. No duplicate dialog controls.
   assert.match(await page.locator("#netuxBriefIntel").innerText(),new RegExp(scene.context));
-  await page.getByRole("button",{name:"Закрыть донесение"}).click();
-  assert.equal(await page.locator("#netuxReportDialog").isVisible(),false);
+  assert.equal(await page.locator("#netuxReportDialog").count(),0);
   assert.deepEqual((await saved()).state.active,expectedState);
   assert.equal((await saved()).wallet,walletBefore);
   await page.screenshot({path:path.join(dir,name+"-"+viewport.width+"-preparation.png")});

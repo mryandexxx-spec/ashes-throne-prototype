@@ -26,7 +26,8 @@ const battle=any(f=>/^(combat-|arena-|battle-|npc-|enemy-|tests\/arena-fix-001)/
 const lore=any(f=>/^(lore-|story-|tests\/lore-campaign)/.test(f));
 const network=any(f=>/^(network-|net-|weekly-threat-|tests\/network-)/.test(f));
 const hero=any(f=>/^(hero-card|hero-stats|gear-|tests\/hero-card)/.test(f));
-const scopes={squad,battle,lore,network,hero};
+const audit=any(f=>f.startsWith(".github/workflows/")||f==="scripts/ci-selective.cjs");
+const scopes={squad,battle,lore,network,hero,audit};
 const tests=new Set();
 if(squad)for(const f of ["tests/squad-001.test.js","tests/combat-014b-leader-squad.test.js","tests/ui-hero-002-squad.test.js","tests/squad-recover-3d.test.js"])tests.add(f);
 if(battle)for(const f of ["tests/combat-014a-leader-contract.test.js","tests/ren-status-h-full-battle-model.test.js"])tests.add(f);

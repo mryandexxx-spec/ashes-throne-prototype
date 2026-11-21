@@ -19,6 +19,7 @@ jobs:
       lore: ${{ steps.smoke.outputs.lore }}
       network: ${{ steps.smoke.outputs.network }}
       hero: ${{ steps.smoke.outputs.hero }}
+      audit: ${{ steps.smoke.outputs.audit }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,6 +32,21 @@ jobs:
         env:
           BASE_BRANCH: ${{ github.event.pull_request.base.ref || 'main' }}
         run: node scripts/ci-selective.cjs
+
+
+  ci-infrastructure:
+    name: One-time full Node regression for CI changes
+    needs: scope
+    if: ${{ needs.scope.outputs.audit == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Full suite only when CI workflows or selector change
+        run: npm test
 
   squad:
     name: Mobile GLB squad · Chromium and WebKit

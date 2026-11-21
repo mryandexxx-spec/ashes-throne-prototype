@@ -167,7 +167,7 @@ assert.doesNotMatch(elements.squadRoster.innerHTML,/data-leader-id|В лидер
 click(elements.squadDisband);
 assert.equal(count(),"0/5");
 assert.equal(elements.squadStart.disabled,true);
-assert.equal((elements.squadSlots.innerHTML.match(/Свободно/g)||[]).length,5,"disband clears every slot");
+assert.equal((elements.squadSlots.innerHTML.match(/class="squad-slot-content">Свободно<\/span>/g)||[]).length,5,"disband clears every slot");
 assert.equal(elements.squadWarning.hidden,true);
 click(elements.squadStart);
 assert.equal(elements.squad.classList.active,true);

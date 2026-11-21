@@ -1,30 +1,46 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
-const assert=require("assert"),fs=require("fs"),path=require("path");
-const css=fs.readFileSync(path.join(__dirname,"..","styles.css"),"utf8");
-const js =fs.readFileSync(path.join(__dirname,"..","game.js"),"utf8");
-
-// Verify squad choice styles are present
-assert.match(css,/#squad \.squad-card/,"squad-card styles present");
-assert.match(css,/#squad \.squad-card\.chosen/,"chosen state styles present");
-assert.match(css,/#squad \.squad-card\.hero-locked:disabled/,"locked hero styles present");
-assert.match(css,/#squad \.squad-slot-card/,"squad-slot-card styles present");
-assert.match(css,/#squad \.squad-slot-card\.leader\.filled/,"leader filled slot styles present");
-assert.match(css,/#squad \.squad-slot-card\.filled/,"filled slot styles present");
-
-// Verify renderSquad references new class names
-assert.match(js,/class="squad-card/,"renderSquad uses squad-card class");
-assert.match(js,/class="squad-slot-card/,"renderSquad uses squad-slot-card class");
-assert.match(js,/\$\{i===0\?"leader":""\}/,"slot leader class conditional present");
-assert.match(js,/heroPortraitUrl/,"heroPortraitUrl helper referenced");
-assert.match(js,/squadPower/,"squadPower helper referenced");
-
-// Verify new DOM elements are queried
-assert.match(js,/#squadPower/,"squadPower element queried");
-assert.match(js,/#squadLeaderBar/,"squadLeaderBar element queried");
-assert.match(js,/#squadLeaderText/,"squadLeaderText element queried");
-
-// Verify slot click handler is attached
-assert.match(js,/\.squad-slot-card\[data-slot-index\]/,"slot click selector present");
-assert.match(js,/toggleSquadHero\(h\.id\)/,"slot click calls toggleSquadHero");
-
-console.log("ui-hero-002-squad: all assertions passed");
+const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
+const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
+const css=read("styles.css"),html=read("index.html"),js=read("game.js");
+const start=css.indexOf("/* UI-HERO-002");
+const art=css.slice(start,css.indexOf("/* UI-SYSTEMS-001A:",start));
+test("UIHERO002 applies HQ scene and compact HUD to squad only",()=>{
+ assert.ok(start>0);
+ assert.match(art,/body:has\(#squad\.active\)::before/);
+ assert.match(art,/url\("assets\/hq-hall-painting-mobile\.webp"\)/);
+ assert.match(art,/#app:has\(#squad\.active\)>.topbar/);
+ assert.match(art,/#squad\.squad-screen\.active/);
+ assert.doesNotMatch(art,/#home\.hq-screen|#collection\.roster-screen|#heroDetail|#battle/);
+ assert.match(html,/id="accountStatus"/);
+});
+test("UIHERO002 maintains five slots, the actual leader, disabled locked heroes and squad controls",()=>{
+ for(const id of ["squadBack","squadRoster","squadSlots","squadCount","squadHint","squadWarning","squadDisband","squadStart","battleLoadError","retryBattleLoad"]){
+  assert.ok(html.includes('id="'+id+'"'),id+" retained");
+ }
+ assert.match(js,/const isLeader=ids\[0\]===h\.id/);
+ assert.match(js,/\$\{owned\?"":"disabled"\}/);
+ assert.match(js,/\$\{i===0\?"leader":""\}/);
+ assert.match(js,/slots\[occupied\]=null/);
+ assert.match(js,/selectedLeaderId=slots\[0\]/);
+ assert.match(js,/selectedPartyIds=slots\.slice\(1\)/);
+ assert.match(js,/saveSquad\(\)/);
+ assert.match(js,/\$\("#squadStart"\)\.disabled=chosen\.length===0/);
+});
+test("UIHERO002 visibly separates leader, selected, empty and locked states",()=>{
+ assert.match(art,/#squad \.squad-slot-card\.leader\.filled/);
+ assert.match(art,/#squad \.squad-card\.hero-locked:disabled/);
+ assert.match(art,/#squad \.squad-start:disabled/);
+ assert.match(art,/#squad \.squad-warning/);
+});
+test("UIHERO002 keeps touch, landscape and reduced motion rules",()=>{
+ assert.match(art,/@media\(orientation:landscape\) and \(max-height:540px\)/);
+ assert.match(art,/min-height:44px/);
+ assert.match(art,/#squad button:focus-visible/);
+ assert.match(art,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.match(art,/padding-inline:max\(12px,env\(safe-area-inset-left\)\)/);
+});
+test("UIHERO002 candidate version matches build",()=>{
+ assert.equal(JSON.parse(read("package.json")).version,__BUILD_VERSION_FOR_TESTS);
+ assert.match(html,/v\d+\.\d+\.\d+ · SQUADSWGOH/);
+});

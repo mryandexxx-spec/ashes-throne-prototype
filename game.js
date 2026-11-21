@@ -1121,10 +1121,9 @@ function renderSquad(){
   }
  }
 
- // Roster cards
- $("#squadRoster").innerHTML=ALLIES.map(progressedHero).map(h=>{
+ // Roster cards — hide heroes already in squad
+ $("#squadRoster").innerHTML=ALLIES.map(progressedHero).filter(h=>!ids.includes(h.id)).map(h=>{
   const isLeader=ids[0]===h.id;
-  const active=ids.includes(h.id);
   const required=loreMode&&mandatoryIds.includes(h.id);
   const skill=hasLeaderSkill(h.id);
   const owned=heroOwned(h.id);
@@ -1132,7 +1131,7 @@ function renderSquad(){
   const power=((h?.hp||0)+(h?.atk||0)*5);
   const stars=h?.stars||0;
   const level=h?.level||1;
-  return `<button type="button" class="squad-card ${active?"chosen":""} ${owned?"":"hero-locked"} ${required?"squad-card-required":""} ${isLeader?"leader":""}" data-hero-id="${h.id}" aria-pressed="${active}" ${required?'aria-disabled="true" data-squad-required="true" title="Обязательный герой сюжетного боя"':""} ${owned?"":"disabled"}>
+  return `<button type="button" class="squad-card ${owned?"":"hero-locked"} ${required?"squad-card-required":""} ${isLeader?"leader":""}" data-hero-id="${h.id}" ${required?'aria-disabled="true" data-squad-required="true" title="Обязательный герой сюжетного боя"':""} ${owned?"":"disabled"}>
    <div class="squad-card-portrait">${portrait?`<img src="${portrait}" alt="${h.name}" loading="lazy" onerror="this.style.display='none'">`:`<span class="squad-card-glyph">${owned?h.glyph:"♙"}</span>`}</div>
    <div class="squad-card-body">
     <div class="squad-card-name">${owned?h.name:"Закрытый герой"}</div>
@@ -1141,7 +1140,7 @@ function renderSquad(){
     <div class="squad-card-power">⚡ ${power}</div>
     ${skill?`<div class="squad-card-skill">👑 Лидер</div>`:""}
    </div>
-   <div class="squad-card-badge">${owned?(required?"🔒":active?"✓":"+"):"🔒"}</div>
+   <div class="squad-card-badge">${owned?(required?"🔒":"+"):"🔒"}</div>
   </button>`;
  }).join("");
 

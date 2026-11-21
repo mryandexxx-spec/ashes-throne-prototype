@@ -73,6 +73,6 @@ test("ARENA-ART-004F: browser test and workflow renamed, CI still runs them",()=
  assert.match(wf,/NPC_BROWSER=webkit node tests\/npc-glb-browser\.cjs/);
  // Historical browser regression remains runnable on demand; CI selection
  // no longer depends on stale pull_request.paths in this workflow.
- assert.match(wf,/on:\\n  workflow_dispatch:/);
+ assert.match(wf,/on:\n  workflow_dispatch:/);
  assert.match(wf,/name: Enemy GLB runtime browser/);
 });

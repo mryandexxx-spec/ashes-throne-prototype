@@ -1,5 +1,6 @@
 "use strict";
 // Diff-aware, dependency-free PR smoke: no npm test on every small UI change.
+// DEMOROSTER001: audit-triggered full test run for the removal of prototype roster IDs.
 // Use: node scripts/ci-selective.cjs
 const cp=require("node:child_process");
 const fs=require("node:fs");

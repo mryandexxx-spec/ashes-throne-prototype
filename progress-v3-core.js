@@ -282,7 +282,18 @@ const ProgressV3Core=(()=>{
  function fromRuntime(p){
   if(!object(p)||p.saveVersion!==3||!object(p.levels)||!object(p.gear)||
      !object(p.materials)||!object(p.classes)||!object(p.energy))return null;
-  // Live ALLIES contains five protagonists. Standalone tests may use old\n  // fixture ID sets; accepting them here does not add fighters to the game.\n  const ids=Object.keys(p.classes);\n  const playableIds=["ren","nada","liora","art","sava"];\n  const legacyIds=["kael","lyra","darin","medic-demo","test-area-damage"];\n  const validLive=ids.length===playableIds.length&&playableIds.every(id=>ids.includes(id));\n  const validFixture=[5,6,7,8,10].includes(ids.length)&&\n   legacyIds.every(id=>ids.includes(id));\n  if(!(validLive||validFixture)||\n   ids.some(id=>!own(TEST_CLASSES,id)||!own(p.levels,id)||!own(p.gear,id)||\n    p.classes[id]!==TEST_CLASSES[id]))return null;\n  const source={
+  // Live ALLIES contains five protagonists. Standalone tests may use old
+  // fixture ID sets; accepting them here does not add fighters to the game.
+  const ids=Object.keys(p.classes);
+  const playableIds=["ren","nada","liora","art","sava"];
+  const legacyIds=["kael","lyra","darin","medic-demo","test-area-damage"];
+  const validLive=ids.length===playableIds.length&&playableIds.every(id=>ids.includes(id));
+  const validFixture=[5,6,7,8,10].includes(ids.length)&&
+   legacyIds.every(id=>ids.includes(id));
+  if(!(validLive||validFixture)||
+   ids.some(id=>!own(TEST_CLASSES,id)||!own(p.levels,id)||!own(p.gear,id)||
+    p.classes[id]!==TEST_CLASSES[id]))return null;
+  const source={
    version:3,revision:p.saveRevision??0,
    accountXp:p.accountXp,currency:p.currency,legacyC:p.gearMaterials,
    energy:p.energy,claimedMissions:p.claimedMissions,

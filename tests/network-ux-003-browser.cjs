@@ -94,7 +94,7 @@ async function run(name,engine,viewport){
      document.querySelector("#netuxDailyTaskList").clientHeight};
   });
   assert.equal(touch.overflow,false,"no horizontal viewport overflow");
-  assert.ok(touch.rects.every(x=>x>=44),"touch targets are at least 44px");
+  assert.ok(touch.rects.every(x=>x>=44),"touch targets are at least 44px: "+JSON.stringify(touch));
   assert.ok(touch.scrollable,"daily rows scroll within the network instead of growing the page");
   await page.screenshot({path:path.join(dest,name+"-"+viewport.width+"-daily.png")});
   await page.reload({waitUntil:"load",timeout:60000});

@@ -206,6 +206,6 @@ test("ARENA-VIS-002 is presentation only and wired into the existing frame",()=>
  assert.match(css,/\.battle-screen \.arena-floaters\{[^}]*pointer-events:none/);
  assert.match(css,/\.battle-screen \.arena-floater\.crit\{[^}]*font-size:31px/);
  assert.ok(pkg.scripts.test.includes("node --check arena-vis-002.js"));
- assert.equal(pkg.version,"0.3.219");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.219 · RECOVER3D'));
+ assert.equal(pkg.version,"0.3.220");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.220 · NETFULL001'));
 });

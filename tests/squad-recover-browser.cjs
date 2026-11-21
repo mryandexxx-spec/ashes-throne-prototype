@@ -50,6 +50,81 @@ async function check(browserName,engine,viewport){
   assert.equal(stats.vertical,false,"squad fits landscape without page scroll");
   assert.ok(stats.main.x>stats.roster.x+stats.roster.w*.7,"five model slots to right of roster");
   assert.ok(stats.main.h>=95&&stats.squad.bottom<=viewport.height+1);
+  // Regression: the old test only counted GLBs, so a hero visible in
+  // slot FIVE while assigned to slot ONE could falsely pass.
+  async function checkVisualSlotAlignment(){
+   const centers=await page.evaluate(()=>{
+    const stage=document.querySelector("#squadSlots");
+    const engine=BABYLON.EngineStore.Instances.find(e=>e.getRenderingCanvas?.()===stage.querySelector("canvas"));
+    const scene=engine?.scenes?.[0],camera=scene?.activeCamera;
+    if(!scene||!camera)return [];
+    scene.render();
+    const stageRect=stage.getBoundingClientRect();
+    return [...stage.querySelectorAll(".squad-slot[data-model-id]")].map(slot=>{
+     const holder=scene.getTransformNodeByName("squadHero-"+slot.dataset.modelId);
+     const meshes=holder?.getChildMeshes?.(false).filter(m=>m.getTotalVertices?.()>0)||[];
+     if(!meshes.length)return {id:slot.dataset.modelId,error:Infinity,width:0};
+     let low=new BABYLON.Vector3(Infinity,Infinity,Infinity);
+     let high=new BABYLON.Vector3(-Infinity,-Infinity,-Infinity);
+     for(const mesh of meshes){
+      mesh.computeWorldMatrix(true);
+      const box=mesh.getBoundingInfo().boundingBox;
+      low=BABYLON.Vector3.Minimize(low,box.minimumWorld);
+      high=BABYLON.Vector3.Maximize(high,box.maximumWorld);
+     }
+     const centre=low.add(high).scale(.5);
+     const pixel=BABYLON.Vector3.Project(centre,BABYLON.Matrix.Identity(),
+      scene.getTransformMatrix(),camera.viewport.toGlobal(engine.getRenderWidth(),engine.getRenderHeight()));
+     const projectedX=stageRect.left+pixel.x/engine.getRenderWidth()*stageRect.width;
+     const rect=slot.getBoundingClientRect();
+     return {id:slot.dataset.modelId,index:Number(slot.dataset.squadIndex),
+      projectedX,slotX:rect.left+rect.width/2,error:Math.abs(projectedX-(rect.left+rect.width/2)),width:rect.width};
+    });
+   });
+   console.log("SQUADUX_MODEL_PROJECTIONS",browserName,viewport,centers);
+   assert.ok(centers.length>0&&centers.every(x=>Number.isFinite(x.error)&&x.error<x.width*.7),
+    "each real GLB must visually occupy its designated slot, not another card");
+  }
+  await checkVisualSlotAlignment();
+  for(const id of ["ren","nada","liora","art","sava"])
+   assert.equal(await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').count(),0,
+    "selected hero "+id+" must disappear from roster");
+  assert.match(await page.locator("#squadHint").innerText(),/бонуса лидера нет/i,
+   "Ren has no leader skill: show truthful warning");
+  assert.equal(await page.locator("#squadLeaderSkillButton").isVisible(),false);
+  await page.locator('#squadSlots .squad-slot[data-squad-index="0"]').tap();
+  assert.equal(await page.locator('#squadRoster .squad-choice[data-hero-id="ren"]').count(),1,
+   "tapping occupied slot returns hero to roster");
+  assert.equal(await page.locator('#squadSlots .squad-slot[data-model-id="ren"]').count(),0);
+  assert.equal(await page.locator('#squadSlots .squad-slot[data-squad-index="1"][data-model-id="nada"]').count(),1,
+   "removing a leader does not shift remaining formation");
+  await page.locator('#squadRoster .squad-choice[data-hero-id="ren"]').tap();
+  assert.equal(await page.locator('#squadRoster .squad-choice[data-hero-id="ren"]').count(),0);
+  assert.equal(await page.locator('#squadSlots .squad-slot[data-squad-index="0"][data-model-id="ren"]').count(),1);
+  await page.locator("#squadDisband").tap();
+  assert.equal(await page.locator("#squadRoster .squad-choice[data-hero-id='liora']").count(),1);
+  await page.locator('#squadRoster .squad-choice[data-hero-id="liora"]').tap();
+  assert.equal(await page.locator('#squadSlots .squad-slot[data-squad-index="0"][data-model-id="liora"]').count(),1);
+  assert.equal(await page.locator('#squadSlots .squad-slot[data-squad-index="4"][data-model-id]').count(),0,
+   "selecting first hero must not fill last slot");
+  assert.equal(await page.locator('#squadRoster .squad-choice[data-hero-id="liora"]').count(),0);
+  assert.match(await page.locator('#squadSlots .squad-slot[data-model-id="liora"]').innerText(),/Ур\.\s*\d+.*★\d+.*G\d+/);
+  assert.equal(await page.locator("#squadLeaderSkillName").innerText(),"Опора отряда");
+  await page.locator("#squadLeaderSkillButton").dispatchEvent("pointerdown",{pointerType:"touch"});
+  await page.waitForTimeout(560);
+  assert.equal(await page.locator("#squadLeaderTooltip").isVisible(),true,
+   "long touch opens actual leader description");
+  assert.match(await page.locator("#squadLeaderTooltipDescription").innerText(),/Protection/);
+  await page.locator("#squadLeaderSkillButton").dispatchEvent("pointerup",{pointerType:"touch"});
+  await page.keyboard.press("Escape");
+  assert.equal(await page.locator("#squadLeaderTooltip").isVisible(),false);
+  await page.waitForFunction(()=>{
+   const slot=document.querySelector('#squadSlots .squad-slot[data-model-id="liora"]');
+   return slot?.classList.contains("squad-model-live");
+  },null,{timeout:90000});
+  await checkVisualSlotAlignment();
+  await page.locator('#squadSlots .squad-slot[data-model-id="liora"]').tap();
+  assert.equal(await page.locator('#squadRoster .squad-choice[data-hero-id="liora"]').count(),1);
   const file=path.join("artifacts","squad-recovery",browserName+"-"+viewport.width+"x"+viewport.height+".png");
   await page.screenshot({path:file});
   await page.evaluate(()=>showScreen("home"));

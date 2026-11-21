@@ -39,7 +39,8 @@ test("arena CSS uses the new art bottom-anchored with a HUD shade; old SVG is go
  assert.ok(!fs.existsSync("assets/env022-canyon-concept.svg"));
  // Fixture and workflow follow the new file.
  assert.ok(read("tests/fixtures/env022-full-game.html").includes("arena-env005-terrace.webp"));
- assert.ok(read(".github/workflows/env022-concept-webgl.yml").includes("assets/arena-env005-terrace.webp"));
+ assert.ok(read(".github/workflows/env022-concept-webgl.yml").includes("tests/fixtures/env022-full-game.html"),
+  "manual visual workflow must still capture the actual terrace-backed game");
 });
 
 test("transparent WebGL over the CSS art is unchanged (no 3D scenery, same camera)",()=>{

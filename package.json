@@ -1,1 +1,84 @@
-PLACEHOLDER_PKG
+{
+  "name": "ashes-throne-prototype",
+  "private": true,
+  "version": "0.3.218",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js tests/*.cjs 2>&1 | tail -30",
+    "test:full": "node --test tests/*.test.js tests/*.cjs",
+    "test:squad": "node --test tests/squad-*.test.js",
+    "test:combat": "node --test tests/combat-*.test.js",
+    "test:ui": "node --test tests/ui-*.test.js",
+    "test:arena": "node --test tests/arena-*.test.js",
+    "test:integration": "node --test tests/integration-*.test.js",
+    "test:unit": "node --test tests/unit-*.test.js",
+    "test:visual": "node --test tests/*-visual-*.test.js",
+    "test:watch": "node --test --watch tests/*.test.js tests/*.cjs",
+    "lint": "eslint game.js tests/*.test.js",
+    "lint:fix": "eslint --fix game.js tests/*.test.js",
+    "format": "prettier --write \"**/*.{js,json,css,html}\"",
+    "format:check": "prettier --check \"**/*.{js,json,css,html}\"",
+    "dev": "python3 -m http.server 8080",
+    "build": "echo 'No build step needed for vanilla JS'",
+    "deploy": "echo 'Deploy to GitHub Pages via git push'",
+    "preview": "python3 -m http.server 8080 &",
+    "clean": "rm -rf node_modules dist",
+    "postinstall": "echo 'No postinstall needed'",
+    "benchmark": "node benchmark.js",
+    "profile": "node --prof game.js",
+    "coverage": "c8 node --test tests/*.test.js tests/*.cjs",
+    "test:ci": "node --test tests/*.test.js tests/*.cjs 2>&1 | tee test-results.log",
+    "validate": "node validate.js",
+    "audit": "npm audit",
+    "outdated": "npm outdated",
+    "update": "npm update",
+    "doctor": "npm doctor",
+    "info": "npm info",
+    "list": "npm list",
+    "cache:clean": "npm cache clean --force",
+    "cache:verify": "npm cache verify",
+    "prune": "npm prune",
+    "dedupe": "npm dedupe",
+    "shrinkwrap": "npm shrinkwrap",
+    "lockfile:clean": "rm package-lock.json && npm install",
+    "lockfile:update": "npm install --package-lock-only",
+    "lockfile:verify": "npm install --package-lock-only --dry-run"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "c8": "^9.1.0"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "keywords": [
+    "game",
+    "rpg",
+    "turn-based",
+    "browser",
+    "vanilla-js",
+    "ashes-throne"
+  ],
+  "author": "mryandexxx-spec",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mryandexxx-spec/ashes-throne-prototype.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mryandexxx-spec/ashes-throne-prototype/issues"
+  },
+  "homepage": "https://mryandexxx-spec.github.io/ashes-throne-prototype/"
+}

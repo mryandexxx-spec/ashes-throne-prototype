@@ -1263,6 +1263,9 @@ function renderStoryDemo(){
  $("#storyDemoAgain").hidden=view.kind!=="defeat"&&view.kind!=="ending";
 }
 function showScreen(id){
+ // Release the squad WebGL context synchronously BEFORE entering combat.
+ // The MutationObserver remains a fallback for external screen changes.
+ if(id!=="squad"&&typeof SquadStage3D!=="undefined")SquadStage3D.dispose();
  // A non-lore navigation can occur while the visual-novel overlay owns the
  // viewport. Dispose that transient view before switching screens, so the
  // body scroll lock never leaks into the roster or squad.

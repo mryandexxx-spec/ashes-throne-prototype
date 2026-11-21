@@ -8,6 +8,7 @@ test("RECOVER3D: squads remain hidden offscreen and preserve original data contr
  for(const id of ["squadRoster","squadSlots","squadHint","squadWarning","squadStart","squadDisband","squadCount","squadTacticalBrief","squad3dStatus"])
   assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1,id);
  assert.match(game,/function toggleSquadHero\(id\)/);
+ assert.match(game,/id!=="squad"&&typeof SquadStage3D!=="undefined"\)SquadStage3D\.dispose\(\)/);
  assert.match(game,/function disbandSquad\(\)/);
  assert.match(game,/data-model-id/);
  assert.match(game,/squad-slot-content/);

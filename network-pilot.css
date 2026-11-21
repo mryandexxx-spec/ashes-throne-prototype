@@ -227,6 +227,10 @@
  display:flex;flex-direction:column;gap:7px;overflow-y:auto;overscroll-behavior:contain;
  padding:7px 9px;border:1px solid #a7834877;border-radius:11px;background:rgba(19,18,22,.94)
 }
+/* A compact rail scrolls as a whole: never compress its cards below their
+   touch targets. Otherwise the 56px order button can overflow a shrunken
+   parent and taps hit the region / weekly threat instead (667×320). */
+.net004-screen .netux-rail > *{flex-shrink:0}
 .net004-screen .net004-head{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:6px;align-items:start}
 .net004-screen .net004-head h2{font-size:19px;margin:1px 0}
 .net004-screen .net004-head p{font-size:10px;line-height:1.25}

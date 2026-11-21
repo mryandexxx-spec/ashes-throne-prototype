@@ -111,7 +111,9 @@ async function check(browserName,engine,viewport){
   assert.match(await page.locator('#squadSlots .squad-slot[data-model-id="liora"]').innerText(),/Ур\.\s*\d+.*★\d+.*G\d+/);
   assert.equal(await page.locator("#squadLeaderSkillName").innerText(),"Опора отряда");
   await page.locator("#squadLeaderSkillButton").dispatchEvent("pointerdown",{pointerType:"touch"});
-  await page.waitForTimeout(560);
+  // A busy WebGL frame can delay the 500 ms long-press timer. Wait for the
+  // real DOM state instead of sampling once at exactly 560 ms.
+  await page.waitForFunction(()=>!document.querySelector("#squadLeaderTooltip").hidden,null,{timeout:10000});
   assert.equal(await page.locator("#squadLeaderTooltip").isVisible(),true,
    "long touch opens actual leader description");
   assert.match(await page.locator("#squadLeaderTooltipDescription").innerText(),/Protection/);

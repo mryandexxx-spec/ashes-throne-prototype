@@ -2677,8 +2677,8 @@ body:has(#squad.active)::before{
 }
 #squad .squad-slot-card{
  position:relative;display:flex;flex-direction:column;
- aspect-ratio:2/3;padding:0;gap:0;text-align:center;
- border:1px dashed #887351;border-radius:12px;
+ padding:0;gap:0;text-align:center;
+ border:1px dashed #887351;border-radius:10px;
  background:linear-gradient(145deg,#262428,#191a20);
  color:#c7b8a4;box-shadow:inset 0 2px 9px #08080cb8;
  overflow:hidden;
@@ -2708,7 +2708,7 @@ body:has(#squad.active)::before{
 }
 #squad .squad-slot-card.required{border-color:#c9a055}
 #squad .squad-slot-portrait{
- width:100%;flex:1 1 auto;min-height:0;
+ width:100%;aspect-ratio:1/1;
  background:linear-gradient(145deg,#262428,#191a20);
  display:flex;align-items:center;justify-content:center;
  overflow:hidden;position:relative;
@@ -2726,34 +2726,25 @@ body:has(#squad.active)::before{
  font-size:11px;color:#8a7a6a;text-transform:uppercase;letter-spacing:.08em;
 }
 #squad .squad-slot-body{
- padding:8px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:0;
+ padding:5px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;
  background:linear-gradient(180deg,transparent 0%,#1a1618 100%);
 }
 #squad .squad-slot-name{
- font-weight:700;font-size:13px;color:#fff0d5;
+ font-weight:700;font-size:11px;color:#fff0d5;
  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
  text-shadow:0 1px 3px #000;
 }
-#squad .squad-slot-name.medium{font-size:11px}
-#squad .squad-slot-name.long{font-size:10px}
-#squad .squad-slot-role{display:none}
-#squad .squad-slot-level{display:none}
-#squad .squad-slot-stats{
- display:flex;align-items:center;justify-content:center;gap:6px;
- margin-top:3px;
-}
-#squad .squad-slot-stat{
- font-size:9px;color:#d5bfa2;background:#2a2220;
- border-radius:3px;padding:1px 4px;
-}
+#squad .squad-slot-name.medium{font-size:10px}
+#squad .squad-slot-name.long{font-size:9px}
 #squad .squad-slot-stars{
  font-size:10px;color:var(--gold);letter-spacing:.5px;
- margin-top:2px;
 }
-#squad .squad-slot-gear{
- font-size:9px;color:#c9a87a;margin-top:1px;
- white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
- max-width:100%;
+#squad .squad-slot-level{
+ font-size:10px;color:#d5bfa2;
+}
+#squad .squad-slot-gear-tier{
+ font-size:10px;font-weight:700;color:#ffe0a4;background:#4a3a2a;
+ border-radius:3px;padding:1px 4px;
 }
 #squad .squad-slot-lock{
  position:absolute;top:4px;right:4px;font-size:14px;

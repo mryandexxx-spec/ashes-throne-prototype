@@ -1144,7 +1144,7 @@ function renderSquad(){
   </button>`;
  }).join("");
 
- // Squad slots (horizontal SWGOH-style) — 3D model + name + stats; long-press opens hero detail
+ // Squad slots (horizontal SWGOH-style) — same card format as roster: 3D model, name, stars, level, gear tier
  $("#squadSlots").innerHTML=Array.from({length:MAX_SQUAD},(_,i)=>{
   const h=slots[i];
   const locked=loreMode&&h&&mandatoryIds.includes(h.id);
@@ -1153,15 +1153,15 @@ function renderSquad(){
   const emptyText=i===0?"Лидер":"Свободно";
   const name=h?h.name:emptyText;
   const nameClass=name.length>12?"squad-slot-name long":name.length>8?"squad-slot-name medium":"squad-slot-name";
-  const power=h?((h.hp||0)+(h.atk||0)*5):0;
   const level=h?.level||1;
   const stars=h?.stars||0;
-  const gear=h?.role||"";
+  const gearTier=(typeof ProgressCore!=="undefined"&&h)?(ProgressCore.gearState(progress,h.id)?.tier??null):null;
+  const gearLabel=Number.isFinite(gearTier)?"G"+gearTier:"";
   return `<div class="squad-slot-card ${h?"filled":""} ${locked?"required":""} ${i===0?"leader":""}" data-slot-index="${i}" ${h?'data-hero-id="'+h.id+'"':""} aria-label="${i===0?"Лидер отряда":"Место "+(i+1)}${locked?" · обязательный герой":""}" ${h&&!locked?'role="button" tabindex="0" title="Нажми, чтобы убрать. Удерживай — карточка героя."':""}>
    <div class="squad-slot-portrait">${h?(model?`<img class="squad-slot-model" src="${model}" alt="${h.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`+`<img class="squad-slot-fallback" src="${portrait}" alt="${h.name}" loading="lazy">`:`<span class="squad-slot-glyph">${h.glyph}</span>`):`<span class="squad-slot-empty">${emptyText}</span>`}</div>
    <div class="squad-slot-body">
     <div class="${nameClass}">${name}</div>
-    ${h?`<div class="squad-slot-stats"><span class="squad-slot-stat">Ур. ${level}</span><span class="squad-slot-stat">⚡${power}</span></div><div class="squad-slot-stars">${"★".repeat(stars)+"☆".repeat(7-stars)}</div><div class="squad-slot-gear">${gear}</div>`:""}
+    ${h?`<div class="squad-slot-stars">${"★".repeat(stars)+"☆".repeat(7-stars)}</div><div class="squad-slot-level">Ур. ${level}</div>${gearLabel?`<div class="squad-slot-gear-tier">${gearLabel}</div>`:""}`:""}
    </div>
    ${locked?`<div class="squad-slot-lock">🔒</div>`:""}
   </div>`;

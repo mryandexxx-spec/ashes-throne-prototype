@@ -5073,7 +5073,7 @@ body:has(#storyDemo.active)::before{
  display:block;flex:none;background-repeat:no-repeat;background-color:#201f20
 }
 #battle.battle-screen .ability-slot .ability-btn .ability-art{
- position:absolute;inset:0;width:100%;height:100%;border-radius:50%;pointer-events:none
+ position:absolute;inset:0;width:100%;height:100%;border-radius:50%;pointer-events:none;background-color:transparent
 }
 #heroDetail .hero-ability-heading{display:flex;flex-direction:row;align-items:center;gap:10px}
 #heroDetail .hero-ability-title-text{display:flex;flex-direction:column;gap:4px;min-width:0}

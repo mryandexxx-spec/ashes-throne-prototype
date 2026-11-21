@@ -17,8 +17,8 @@ test("RECOVER3D: squads remain hidden offscreen and preserve original data contr
 test("RECOVER3D: uses existing real GLBs, one Babylon renderer and cleans up on exit",()=>{
  const js=read("squad-stage-3d.js"),html=read("index.html");
  for(const x of ["ImportMeshAsync","ensureLoader","engine.stopRenderLoop","scene?.dispose()","engine.dispose()","ResizeObserver","visibilitychange","42","squad-model-live"])assert.ok(js.includes(x),x);
- assert.match(html,/squad-stage-3d\.js\?v=0\.3\.221" type="text\/progress-gated"/);
- assert.ok(html.indexOf('game.js?v=0.3.221" type="text/progress-gated"')<html.indexOf('squad-stage-3d.js?v=0.3.221'));
+ assert.match(html,/squad-stage-3d\.js\?v=0\.3\.222" type="text\/progress-gated"/);
+ assert.ok(html.indexOf('game.js?v=0.3.222" type="text/progress-gated"')<html.indexOf('squad-stage-3d.js?v=0.3.222'));
  for(const asset of ["assets/ren-meshy-mixamo-animated.glb","dev/assets/models/nada-mobile-animated.glb","dev/assets/models/liora-mobile-animated.glb","dev/assets/models/art-mobile-animated.glb","dev/assets/models/sava-mobile-animated.glb"])
   assert.ok(fs.existsSync(path.join(__dirname,"..",asset)),asset);
 });
@@ -29,4 +29,11 @@ test("RECOVER3D: network board and brief retained with no reward/save changes",(
  assert.ok(nav.includes("netuxThreatShortcut"));
  assert.ok(net.includes("renderReward("));
  assert.ok(net.includes("session.collect("));
+});
+
+test("SQUADVIEW002 close-up torso framing and bottom progress labels",()=>{
+ const js=read("squad-stage-3d.js"),css=read("styles.css");
+ assert.match(js,/scale=4\.55\/largest/);
+ assert.match(css,/#squad\.active \.squad-slot-progress\{[^}]*bottom:3px/);
+ assert.match(css,/#squad\.active \.squad-slot\.filled \.squad-slot-content\{margin-bottom:23px\}/);
 });

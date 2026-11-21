@@ -76,16 +76,35 @@ async function check(browserName,engine,viewport){
      const pixel=BABYLON.Vector3.Project(centre,BABYLON.Matrix.Identity(),
       scene.getTransformMatrix(),camera.viewport.toGlobal(engine.getRenderWidth(),engine.getRenderHeight()));
      const projectedX=stageRect.left+pixel.x/engine.getRenderWidth()*stageRect.width;
+     const viewport=camera.viewport.toGlobal(engine.getRenderWidth(),engine.getRenderHeight());
+     const top=BABYLON.Vector3.Project(new BABYLON.Vector3(centre.x,high.y,centre.z),
+      BABYLON.Matrix.Identity(),scene.getTransformMatrix(),viewport);
+     const bottom=BABYLON.Vector3.Project(new BABYLON.Vector3(centre.x,low.y,centre.z),
+      BABYLON.Matrix.Identity(),scene.getTransformMatrix(),viewport);
      const rect=slot.getBoundingClientRect();
      return {id:slot.dataset.modelId,index:Number(slot.dataset.squadIndex),
-      projectedX,slotX:rect.left+rect.width/2,error:Math.abs(projectedX-(rect.left+rect.width/2)),width:rect.width};
+      projectedX,slotX:rect.left+rect.width/2,error:Math.abs(projectedX-(rect.left+rect.width/2)),width:rect.width,
+      projectedHeight:Math.abs(top.y-bottom.y)*stageRect.height/engine.getRenderHeight(),stageHeight:stageRect.height};
     });
    });
    console.log("SQUADUX_MODEL_PROJECTIONS",browserName,viewport,centers);
    assert.ok(centers.length>0&&centers.every(x=>Number.isFinite(x.error)&&x.error<x.width*.7),
     "each real GLB must visually occupy its designated slot, not another card");
+   assert.ok(centers.every(x=>x.projectedHeight>x.stageHeight*1.2),
+    "full 3D figure extends beyond the viewport: torso fills the card, legs are cropped");
   }
   await checkVisualSlotAlignment();
+  const bottomLabels=await page.evaluate(()=>[...document.querySelectorAll("#squadSlots .squad-slot.filled")].map(slot=>{
+   const p=slot.querySelector(".squad-slot-progress")?.getBoundingClientRect();
+   const name=slot.querySelector(".squad-slot-content")?.getBoundingClientRect();
+   const rect=slot.getBoundingClientRect();
+   return {bottomOffset:p?rect.bottom-p.bottom:999,belowName:Boolean(p&&name&&p.top>=name.bottom-2)};
+  }));
+  assert.equal(bottomLabels.length,5);
+  assert.ok(bottomLabels.every(x=>x.bottomOffset>=0&&x.bottomOffset<12&&x.belowName),
+   "level, stars and gear tier are aligned below the hero name at card bottom");
+  await page.screenshot({path:path.join("artifacts","squad-recovery",
+   browserName+"-"+viewport.width+"x"+viewport.height+"-busts.png")});
   for(const id of ["ren","nada","liora","art","sava"])
    assert.equal(await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').count(),0,
     "selected hero "+id+" must disappear from roster");

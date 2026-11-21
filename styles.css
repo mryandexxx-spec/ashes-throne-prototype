@@ -5023,11 +5023,12 @@ body:has(#storyDemo.active)::before{
 #squad.active .squad-stage-canvas{z-index:2}
 #squad.active .squad-slot-fallback-wrap{z-index:1}
 #squad.active .squad-slot-progress{
- position:absolute;z-index:3;top:25px;left:4px;right:4px;
+ position:absolute;z-index:3;top:auto;bottom:3px;left:4px;right:4px;
  border-radius:4px;padding:3px 2px;text-align:center;white-space:nowrap;
  font:700 clamp(9px,1.05vw,12px)/1.1 Inter,system-ui,sans-serif;
  color:#ffe1a7;background:#181419dc;text-shadow:0 1px 2px #000
 }
+#squad.active .squad-slot.filled .squad-slot-content{margin-bottom:23px}
 #squad.active .squad-choice-detail{min-width:0;padding:4px 2px 6px}
 #squad.active .squad-choice-detail small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
  color:#f5ce8e;font-weight:700;font-size:clamp(8px,.8vw,11px);line-height:1.25;max-height:none}
@@ -5057,7 +5058,8 @@ body:has(#storyDemo.active)::before{
 #squad.active #squadLeaderTooltip p{font-size:12px;line-height:1.4;margin:0}
 @media(orientation:landscape) and (max-height:540px){
  #squad.active .squad-leader-skill{min-height:28px}
- #squad.active .squad-slot-progress{top:22px;padding:2px 1px;font-size:9px}
+ #squad.active .squad-slot-progress{top:auto;bottom:2px;padding:2px 1px;font-size:9px}
+ #squad.active .squad-slot.filled .squad-slot-content{margin-bottom:20px}
  #squad.active .squad-choice-detail{padding:3px 1px 5px}
 }
 @media(max-width:700px){

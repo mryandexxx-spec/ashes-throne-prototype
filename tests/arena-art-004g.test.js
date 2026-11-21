@@ -9,9 +9,9 @@ const battle=html.slice(html.indexOf('<section id="battle"'),html.indexOf("</sec
 const block=css.slice(css.indexOf("/* ARENA-ART-004G"));
 
 test("ARENA-ART-004G: version and build code",()=>{
- assert.equal(pkg.version,"0.3.221");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.221 · SQUADUX001'));
- assert.ok(html.includes('src="game.js?v=0.3.221"'));
+ assert.equal(pkg.version,"0.3.222");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.222 · SQUADVIEW002'));
+ assert.ok(html.includes('src="game.js?v=0.3.222"'));
 });
 
 test("ARENA-ART-004G: top-left row is menu, log, Автобой, 1×; ✕ is gone",()=>{

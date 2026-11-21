@@ -165,9 +165,11 @@ const SquadStage3D=(()=>{
    const extent=max.subtract(min);
    const largest=Math.max(extent.x,extent.y,extent.z);
    if(!Number.isFinite(largest)||largest<=0)throw Error("Invalid GLB bounds");
-   const scale=2.24/largest,center=min.add(max).scale(.5);
+   // Squad-only closer bust framing: models extend below the canvas so
+   // the visible part is mainly the torso, without extra GLB copies or GPU work.
+   const scale=4.55/largest,center=min.add(max).scale(.5);
    holder.scaling.set(scale,scale,scale);
-   holder.position.y=1.12-center.y*scale;
+   holder.position.y=.14-center.y*scale;
    holder.position.z=-center.z*scale;
    const groups=result.animationGroups||[];
    groups.forEach(g=>g.stop());

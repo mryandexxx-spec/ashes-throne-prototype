@@ -68,7 +68,12 @@ async function finishManually(page){
     gateHidden:document.querySelector("#battleAssetGate")?.hidden,
     gateText:document.querySelector("#battleAssetGate")?.textContent?.slice(0,200),
     engineReady:!!engine,sceneReady:!!scene,
-    autoBattle,renderLoopRunning
+    autoBattle,renderLoopRunning,
+    animationPending:BattleAnimation.pending(),
+    visualTransition,visualBusy:visualActionPending(),
+    animationActors:state?.fighters?.map(f=>({id:f.id,animation:BattleAnimation.activity(f.id)})),
+    battleSpeed:BattleSpeed.get(),documentHidden:document.hidden,
+    coreBasicReady:CombatCore.abilityReady(state,"basic")
    })).catch(e=>({readError:String(e)}));
    console.error("FS05_TURN_WAIT_DIAGNOSTICS",JSON.stringify(debug));
    throw error;

@@ -169,9 +169,12 @@ const SquadStage3D=(()=>{
    target.el.classList.add("squad-model-live");
    status("Объёмные модели героев");
   }catch(error){
+   clearResult(result);
+   // An import may reject after navigation disposes its scene; never poison
+   // the next screen entry's retry state with a stale asynchronous failure.
+   if(requestEpoch!==epoch||!scene)return;
    console.warn("SQUAD-RECOVERY: portrait fallback for "+id,error);
    failed.add(id);
-   clearResult(result);
    status("Часть моделей недоступна — показаны портреты");
   }
  }
@@ -193,7 +196,7 @@ const SquadStage3D=(()=>{
    if(models.has(x.id)||loading.has(x.id)||failed.has(x.id))continue;
    loading.add(x.id);
    loadQueue=loadQueue.catch(()=>{}).then(()=>importHero(x.id,requestEpoch))
-    .finally(()=>{loading.delete(x.id);if(requestEpoch===epoch)requestSync();});
+    .finally(()=>{if(requestEpoch===epoch){loading.delete(x.id);requestSync();}});
   }
   if(loading.size)status("Подготовка настоящих 3D-моделей…");
  }

@@ -4,13 +4,6 @@ const ActiveLoreCampaign=typeof LoreCampaignAct5!=="undefined"?LoreCampaignAct5:
  typeof LoreCampaignAct3!=="undefined"?LoreCampaignAct3:
  typeof LoreCampaignTrials!=="undefined"?LoreCampaignTrials:null;
 const HEROES = [
-  {id:"kael",name:"Каэль Ворон",role:"Страж",hp:120,atk:24,speed:110,side:"ally",glyph:"♜"},
-  {id:"lyra",name:"Лира Соль",role:"Следопыт",hp:88,atk:31,speed:155,side:"ally",glyph:"♧"},
-  {id:"darin",name:"Дарин Пепельный",role:"Мечник",hp:105,atk:27,speed:125,side:"ally",glyph:"⚔"},
-  // Combat-007 test-only healer, not canonical or final balance.
-  {id:"medic-demo",name:"Учебный лекарь",role:"Учебная поддержка",hp:90,atk:14,speed:115,side:"ally",glyph:"✚"},
-  // Combat-011C: optional training-only group attacker, not canonical lore or final balance.
-  {id:"test-area-damage",name:"Учебный боец группы",role:"Тренировка массовых атак",hp:90,atk:20,speed:120,side:"ally",glyph:"✧"},
   // REN-PLAYABLE: permanent roster entry; combat numbers are still a test pilot.
   {id:"ren",name:"Рен Терен",classId:"melee",tags:["gardens-over-abyss"],role:"Боец ближнего боя",hp:91,atk:27,speed:150,side:"ally",glyph:"⌁"},
  // NADA-PLAYABLE-001: provisional gameplay role and combat numbers only.
@@ -906,9 +899,6 @@ function eligibleSquadCount(){
 let state=CombatCore.createBattle([...ALLIES,...ENEMIES.slice(0,2)]);
 // Stats-002C [TEST PILOT]: provisional combat profiles, not canonical identities.
 const PILOT_HERO_STATS=Object.freeze({
- kael:Object.freeze({physicalDefense:24,magicDefense:12,maxProtection:20}),
- lyra:Object.freeze({physicalDefense:6,magicDefense:15,maxProtection:0}),
- darin:Object.freeze({physicalDefense:14,magicDefense:9,maxProtection:0}),
  ren:Object.freeze({physicalDefense:14,magicDefense:9,maxProtection:0}),
  nada:Object.freeze({physicalDefense:8,magicDefense:12,maxProtection:0})
 });
@@ -921,8 +911,7 @@ function equippedPilotStats(hero,profile){
   magicDefense:profile.magicDefense+(hero.magicDefense||0),
   protection,maxProtection:protection};
 }
-// STATS-001B: the two production heroes use one stat source, directly.
-// Other fighters remain test mannequins under their existing demo rules.
+// STATS-001B: permanent heroes use their authored 14-stat profiles; generic enemies keep their isolated NPC rules.
 function progressedHero(hero){
  let h;
  if((["ren","nada","liora","art","sava"].includes(hero.id))&&

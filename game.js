@@ -1085,6 +1085,10 @@ function heroPortraitUrl(id){
  const rosterMap={ren:"assets/ren-portrait-roster.webp",nada:"assets/nada-portrait-roster.webp",liora:"assets/liora-portrait-roster.webp",art:"assets/art-portrait-roster.webp",sava:"assets/sava-portrait-roster.webp"};
  return rosterMap[id]||null;
 }
+function heroModelUrl(id){
+ const modelMap={ren:"assets/ren-model-preview.png",nada:"assets/nada-model-preview.png",liora:"assets/liora-model-preview.png",art:"assets/art-model-preview.png",sava:"assets/sava-model-preview.png"};
+ return modelMap[id]||null;
+}
 function squadPower(heroes){
  if(!Array.isArray(heroes))return 0;
  return heroes.reduce((sum,h)=>sum+((h?.hp||0)+(h?.atk||0)*5),0);
@@ -1141,16 +1145,19 @@ function renderSquad(){
   </button>`;
  }).join("");
 
- // Squad slots (horizontal SWGOH-style) — portrait + name only; long-press opens hero detail
+ // Squad slots (horizontal SWGOH-style) — 3D model + name; long-press opens hero detail
  $("#squadSlots").innerHTML=Array.from({length:MAX_SQUAD},(_,i)=>{
   const h=slots[i];
   const locked=loreMode&&h&&mandatoryIds.includes(h.id);
+  const model=h?heroModelUrl(h.id):null;
   const portrait=h?heroPortraitUrl(h.id):null;
   const emptyText=i===0?"Лидер":"Свободно";
+  const name=h?h.name:emptyText;
+  const nameClass=name.length>12?"squad-slot-name long":name.length>8?"squad-slot-name medium":"squad-slot-name";
   return `<div class="squad-slot-card ${h?"filled":""} ${locked?"required":""} ${i===0?"leader":""}" data-slot-index="${i}" ${h?'data-hero-id="'+h.id+'"':""} aria-label="${i===0?"Лидер отряда":"Место "+(i+1)}${locked?" · обязательный герой":""}" ${h&&!locked?'role="button" tabindex="0" title="Нажми, чтобы убрать. Удерживай — карточка героя."':""}>
-   <div class="squad-slot-portrait">${h?(portrait?`<img src="${portrait}" alt="${h.name}" loading="lazy" onerror="this.style.display='none'">`:`<span class="squad-slot-glyph">${h.glyph}</span>`):`<span class="squad-slot-empty">${emptyText}</span>`}</div>
+   <div class="squad-slot-portrait">${h?(model?`<img class="squad-slot-model" src="${model}" alt="${h.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`+`<img class="squad-slot-fallback" src="${portrait}" alt="${h.name}" loading="lazy">`:`<span class="squad-slot-glyph">${h.glyph}</span>`):`<span class="squad-slot-empty">${emptyText}</span>`}</div>
    <div class="squad-slot-body">
-    <div class="squad-slot-name">${h?h.name:emptyText}</div>
+    <div class="${nameClass}">${name}</div>
    </div>
    ${locked?`<div class="squad-slot-lock">🔒</div>`:""}
   </div>`;

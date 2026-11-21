@@ -2711,10 +2711,13 @@ body:has(#squad.active)::before{
  width:100%;flex:1 1 auto;min-height:0;
  background:linear-gradient(145deg,#262428,#191a20);
  display:flex;align-items:center;justify-content:center;
- overflow:hidden;
+ overflow:hidden;position:relative;
 }
-#squad .squad-slot-portrait img{
- width:100%;height:100%;object-fit:cover;object-position:center 20%;
+#squad .squad-slot-portrait img.squad-slot-model{
+ width:100%;height:100%;object-fit:contain;object-position:center top;
+}
+#squad .squad-slot-portrait img.squad-slot-fallback{
+ display:none;width:100%;height:100%;object-fit:cover;object-position:center 20%;
 }
 #squad .squad-slot-glyph{
  font-size:28px;color:#f0c986;text-shadow:0 2px 4px #000;
@@ -2727,10 +2730,12 @@ body:has(#squad.active)::before{
  background:linear-gradient(180deg,transparent 0%,#1a1618 100%);
 }
 #squad .squad-slot-name{
- font-weight:700;font-size:14px;color:#fff0d5;
+ font-weight:700;font-size:13px;color:#fff0d5;
  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
  text-shadow:0 1px 3px #000;
 }
+#squad .squad-slot-name.medium{font-size:11px}
+#squad .squad-slot-name.long{font-size:10px}
 #squad .squad-slot-role{display:none}
 #squad .squad-slot-level{display:none}
 #squad .squad-slot-lock{

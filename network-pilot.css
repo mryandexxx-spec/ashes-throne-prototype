@@ -541,6 +541,8 @@
 .net004-screen .netux-brief .netux-operation-head{
  border-bottom:1px solid #a783484a;padding-bottom:8px;align-items:center
 }
+.net004-screen .netux-operation-head>div:first-child{min-width:0}
+.netux-operation-actions{display:flex;align-items:center;gap:6px;flex:none}
 .net004-screen .netux-report-open{
  flex:none;min-height:44px;padding:5px 12px;color:#eed1a1;background:#28252a;
  border:1px solid #8d734c99;border-radius:7px;font-size:13px
@@ -581,4 +583,52 @@
  #network.active{flex:auto}
  .net004-screen .netux-tabs{grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr))}
  .netux-brief-footer{align-items:flex-start}
+}
+
+/* NET-UX-008: expose actual decision effects; no combat or economy changes. */
+.net004-screen .netux-selected-copy .netux-selected-cause{
+ display:block;margin-top:2px;font-size:10px;line-height:1.2;letter-spacing:0;
+ color:#d9c5ab;overflow-wrap:anywhere
+}
+.netux-decision-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:6px;min-width:0}
+.netux-decision-summary>div{min-width:0;padding:6px 8px;border:1px solid #a7834852;
+ border-radius:7px;background:#272328}
+.netux-decision-summary p{margin:3px 0 0;font-size:11px;line-height:1.3;
+ color:#f0dfca;overflow-wrap:anywhere}
+.netux-enemy-compact{display:none}
+.net004-screen .netux-decision-preview{margin:0;padding:6px 8px;border-inline-start:2px solid #c49a58;
+ background:#2b2527;color:#f0d6b2;font-size:11px;line-height:1.3;overflow-wrap:anywhere}
+.net004-screen .netux-decision-preview:empty{display:none}
+.net004-screen .netux-brief-footer .netux-equal-reward{flex:1 1 220px;margin:0;
+ color:#d9c5ab;font-size:11px;line-height:1.3}
+.netux-result-causes{display:grid;gap:6px;min-width:0}
+.netux-result-causes>p{padding:5px 7px;background:#2c2528;border-radius:6px}
+.netux-score-cause{display:grid;gap:2px;padding:6px 8px;border:1px solid #a7834848;
+ border-radius:6px;background:#211f24}
+.netux-score-cause strong{font-size:11px;color:#f0c879}
+.netux-score-cause small{font-size:10px;line-height:1.3;color:#e3d3bd;overflow-wrap:anywhere}
+@media(max-width:900px){
+ .netux-decision-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .netux-decision-summary>div:last-child{grid-column:1/-1}
+}
+@media(orientation:landscape) and (max-height:430px){
+ .netux-decision-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+ .netux-decision-summary>div{padding:4px 6px}
+ .netux-decision-summary>div:last-child{grid-column:auto}
+ .netux-decision-summary p,.net004-screen .netux-decision-preview{font-size:10px;line-height:1.2}
+ .netux-enemy-full{display:none}
+ .netux-enemy-compact{display:inline}
+ .net004-screen .netux-brief .netux-operation-head h3{font-size:15px;line-height:1.1;
+  white-space:normal;overflow:visible;max-width:100%}
+ .net004-screen .netux-brief-choices button small{font-size:10px;line-height:1.15}
+ .net004-screen #net004Active[data-phase="brief"] #net004ActiveDetail,
+ .net004-screen #net004Active[data-phase="brief"] #netuxDecisionPreview,
+ .net004-screen #net004Active[data-phase="approach"] #net004ActiveDetail{display:none}
+ .net004-screen .netux-brief-grid{gap:5px}
+ .net004-screen .netux-brief-footer .netux-equal-reward{display:none}
+ .net004-screen .netux-brief-footer{display:none}
+ .net004-screen .netux-operation-actions{gap:3px}
+ .net004-screen .netux-operation-actions button{padding-inline:8px;font-size:11px}
+ .netux-result-causes{gap:4px}
 }

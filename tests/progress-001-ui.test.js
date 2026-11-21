@@ -33,7 +33,7 @@ const document={
  querySelectorAll(q){
   if(q===".screen")return allScreens;
   if(q==="[data-screen]")return [arenaNav,collectionNav];
-  if(q==="[data-hero-id]")return chooseNodes;
+  if(q==="[data-hero-id]"||q==="#squadRoster .squad-choice[data-hero-id],#squadSlots .squad-slot[data-hero-id]")return chooseNodes;
   if(q==="[data-open-hero]")return heroNodes;
   return [];
  },

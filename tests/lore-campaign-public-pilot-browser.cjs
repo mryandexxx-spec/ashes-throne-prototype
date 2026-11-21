@@ -58,11 +58,12 @@ async function fight(page,tag,index){
  // LC-007: regular picker stays open, Ren + Nada are mandatory (cannot remove)
  // while the player may fill the other three positions normally.
  for(const id of ["ren","nada"]){
-  const button=page.locator('#squadRoster [data-hero-id="'+id+'"]');
-  assert.equal(await button.getAttribute("data-squad-required"),"true");
-  assert.equal(await button.getAttribute("aria-disabled"),"true");
-  assert.equal(await button.getAttribute("aria-pressed"),"true");
+  const slot=page.locator('#squadSlots [data-hero-id="'+id+'"]');
+  assert.equal(await slot.getAttribute("data-squad-required"),"true");
+  assert.equal(await page.locator('#squadRoster [data-hero-id="'+id+'"]').count(),0);
+  await slot.tap();
   assert.equal(await page.evaluate(heroId=>toggleSquadHero(heroId),id),false);
+  assert.equal(await slot.count(),1);
  }
  await page.locator("#squadDisband").click();
  assert.equal(await page.locator("#squadCount").innerText(),"2/5",

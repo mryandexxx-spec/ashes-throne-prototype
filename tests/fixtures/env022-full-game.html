@@ -11,7 +11,7 @@
  * The static 2D art must remain behind REAL 3D fighters in the same engine.
  * Nothing here replaces battle logic or changes shipped code. */
 const frame=document.querySelector("#game");
-let attempts=0,entered=false,launched=false,readyFrames=0;
+let attempts=0,entered=false,launched=false,readyFrames=0,lastStage="loading";
 const far=new URLSearchParams(location.search).get("radius")==="far";
 function fail(message){
  clearInterval(watchdog);
@@ -21,21 +21,31 @@ function fail(message){
 }
 const watchdog=setInterval(()=>{
  try{
-  if(++attempts>160)throw Error("ENV022 full game entry timed out");
+  if(++attempts>160)throw Error("ENV022 full game entry timed out at "+lastStage);
   const doc=frame.contentDocument,win=frame.contentWindow;
-  if(!doc||doc.readyState!=="complete"||typeof frame.contentWindow.showScreen!=="function")return;
+  // The real game is ready to navigate after DOMContentLoaded and game.js, not
+  // after every background image/asset has loaded. Requiring readyState=complete
+  // made the second headless Chromium run intermittently miss its 20s budget.
+  lastStage="document:"+(doc?.readyState||"missing");
+  if(!doc||doc.readyState==="loading"||typeof win.showScreen!=="function")return;
+  lastStage="game-initialized";
   if(doc.querySelector("#loginCalendar.active")){
+   lastStage="login-calendar";
    doc.querySelector('#loginCalendar [data-screen="home"]')?.click();
    entered=false;launched=false;return;
   }
   if(doc.querySelector("#home.active")&&!entered){
+   lastStage="opening-squad";
    entered=true;doc.querySelector("#startBattle")?.click();return;
   }
   if(doc.querySelector("#squad.active")&&!launched){
+   lastStage="starting-battle";
    launched=true;doc.querySelector("#squadStart")?.click();return;
   }
   const canvas=doc.querySelector("#renderCanvas"),battle=doc.querySelector("#battle.active");
+  lastStage="waiting-for-battle-canvas";
   if(!battle||!canvas||canvas.width===0||canvas.height===0)return;
+  lastStage="validating-battle";
   if(doc.documentElement.dataset.environment!=="ENV022-CONCEPT-PREVIEW")
    throw Error("ENV022 concept flag did not reach Babylon");
   if(!battle.classList.contains("env022-concept-preview"))
@@ -50,7 +60,8 @@ const watchdog=setInterval(()=>{
   // Allow at least 3 real WebGL render frames before taking evidence.
   const indicators=doc.querySelector("#arenaIndicators");
   const people=win.eval("Object.values(meshes).filter(f=>f.body.isEnabled()).length");
-  if(people<2||!indicators||indicators.childElementCount<2)return;
+  if(people<2||!indicators||indicators.childElementCount<2){lastStage="waiting-for-fighters";return;}
+  lastStage="waiting-for-three-render-samples";
   if(++readyFrames<3)return;
   clearInterval(watchdog);
   document.documentElement.dataset.visualStatus="ready";

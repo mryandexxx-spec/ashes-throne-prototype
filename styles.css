@@ -5013,3 +5013,55 @@ body:has(#storyDemo.active)::before{
 
 /* Training-only fighters have no approved GLB: their original emblems stay visible. */
 #squad.active .squad-slot-glyph{display:grid;place-items:center;width:100%;height:100%;font-size:clamp(24px,5vw,54px);color:#d5ad65;text-shadow:0 2px 9px #09090f}
+
+
+/* SQUADUX001: single WebGL layer aligned to the occupied card, above the
+   painted slot background but below labels/tap targets. One engine, five slots. */
+#squad.active .squad-panel-team{overflow:visible}
+#squad.active .squad-team-head{position:relative;z-index:5}
+#squad.active .squad-slot{z-index:auto}
+#squad.active .squad-stage-canvas{z-index:2}
+#squad.active .squad-slot-fallback-wrap{z-index:1}
+#squad.active .squad-slot-progress{
+ position:absolute;z-index:3;top:25px;left:4px;right:4px;
+ border-radius:4px;padding:3px 2px;text-align:center;white-space:nowrap;
+ font:700 clamp(9px,1.05vw,12px)/1.1 Inter,system-ui,sans-serif;
+ color:#ffe1a7;background:#181419dc;text-shadow:0 1px 2px #000
+}
+#squad.active .squad-choice-detail{min-width:0;padding:4px 2px 6px}
+#squad.active .squad-choice-detail small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ color:#f5ce8e;font-weight:700;font-size:clamp(8px,.8vw,11px);line-height:1.25;max-height:none}
+#squad.active .squad-choice>strong{z-index:2}
+#squad.active #squadHint.squad-hint-warning{color:#ffc67a;font-weight:700}
+#squad.active .squad-leader-ability{position:relative;min-width:0;flex:0 1 auto}
+#squad.active .squad-leader-skill{
+ display:flex;align-items:center;gap:5px;max-width:100%;min-height:32px;padding:0 7px 0 2px;
+ border:1px solid #c6a06d;border-radius:7px;background:#302522;color:#ffe0a8;
+ font:700 clamp(10px,1.1vw,12px)/1.1 Inter,system-ui,sans-serif;
+ touch-action:manipulation;-webkit-user-select:none;user-select:none
+}
+#squad.active .squad-leader-skill[hidden],#squad.active #squadLeaderTooltip[hidden]{display:none!important}
+#squad.active #squadLeaderSkillName{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#squad.active .squad-leader-skill-icon{
+ display:grid;place-items:center;flex:none;width:28px;height:28px;border:1px solid #e8c488;
+ border-radius:6px;background:radial-gradient(circle,#765b38,#292128);font-size:20px;color:#ffdda2
+}
+#squad.active #squadLeaderTooltip{
+ position:absolute;top:calc(100% + 6px);left:0;z-index:15;
+ width:min(300px,calc(100vw - 52px));max-height:min(220px,48dvh);overflow-y:auto;
+ padding:12px;border:1px solid #e9bc77;border-radius:10px;
+ background:linear-gradient(155deg,#382a27f9,#1b1c24f9);color:#f7e6c7;
+ box-shadow:0 8px 25px #000c;overscroll-behavior:contain
+}
+#squad.active #squadLeaderTooltip strong{display:block;margin-bottom:6px;font-size:13px;color:#ffe0a2}
+#squad.active #squadLeaderTooltip p{font-size:12px;line-height:1.4;margin:0}
+@media(orientation:landscape) and (max-height:540px){
+ #squad.active .squad-leader-skill{min-height:28px}
+ #squad.active .squad-slot-progress{top:22px;padding:2px 1px;font-size:9px}
+ #squad.active .squad-choice-detail{padding:3px 1px 5px}
+}
+@media(max-width:700px){
+ #squad.active #squad3dStatus{display:none}
+ #squad.active .squad-slot-progress{font-size:8px;letter-spacing:-.04em}
+ #squad.active #squadLeaderTooltip{max-height:45dvh}
+}

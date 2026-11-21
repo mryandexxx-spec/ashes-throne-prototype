@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b0d12">
   <title>Пепельный престол — прототип</title>
-  <link rel="stylesheet" href="styles.css?v=0.3.217">
-  <link rel="stylesheet" href="hero-card.css?v=0.3.217">
-  <link rel="stylesheet" href="gear-ux-004.css?v=0.3.217">
-  <link rel="stylesheet" href="lore-campaign.css?v=0.3.217">
-  <link rel="stylesheet" href="network-pilot.css?v=0.3.217">
-  <link rel="stylesheet" href="gear-material-ui.css?v=0.3.217">
+  <link rel="stylesheet" href="styles.css?v=0.3.218">
+  <link rel="stylesheet" href="hero-card.css?v=0.3.218">
+  <link rel="stylesheet" href="gear-ux-004.css?v=0.3.218">
+  <link rel="stylesheet" href="lore-campaign.css?v=0.3.218">
+  <link rel="stylesheet" href="network-pilot.css?v=0.3.218">
+  <link rel="stylesheet" href="gear-material-ui.css?v=0.3.218">
   <!-- Fixed Babylon.js release: no unversioned CDN updates during prototype development. -->
   <script src="https://cdn.babylonjs.com/v9.33.2/babylon.js"></script>
 </head>
@@ -377,8 +377,8 @@
             <button id="net008aDevelop" type="button" data-week-action="develop">Развивать героев</button>
           </header>
           <div class="netux-weekly-facts" aria-label="Текущий прогресс угрозы">
-            <div><small>СВЕДЕНИЯ ИЗ РУЧНЫХ ЗАЦЕПОК</small><strong id="netuxWeeklyIntel">0/3</strong>
-              <progress id="netuxWeeklyIntelMeter" max="3" value="0" aria-label="Сведения об угрозе"></progress></div>
+            <div><small>СВЕДЕНИЯ · УСИЛЕНИЕ ОТ 2</small><strong id="netuxWeeklyIntel">0/3</strong>
+              <progress id="netuxWeeklyIntelMeter" max="3" value="0" aria-label="Сведения об угрозе; усиление от двух, третье без дополнительного эффекта"></progress></div>
             <div><small>ПОПЫТОК ПРОВЕДЕНО</small><strong id="netuxWeeklyAttempts">0</strong></div>
             <div><small>ЛУЧШАЯ ОЦЕНКА</small><strong id="netuxWeeklyBest">Нет</strong></div>
           </div>
@@ -417,7 +417,8 @@
           <div class="net004-section-head netux-board-heading"><h3>Доска донесений</h3><button type="button" id="net004Refresh" data-net-action="refresh">Проверить</button></div>
           <div id="net004Clues" class="net004-cards" aria-label="Выбор донесения"></div>
           <div class="netux-board-selection" aria-label="Выбранная зацепка">
-            <div class="netux-selected-copy"><small>ВЫБРАНО</small><span id="netuxSelectedTitle">Зацепки загружаются…</span></div>
+            <div class="netux-selected-copy"><small>ВЫБРАНО</small><span id="netuxSelectedTitle">Зацепки загружаются…</span>
+              <small id="netuxSelectedCause" class="netux-selected-cause">Выберите зацепку, чтобы увидеть последствия.</small></div>
             <div class="netux-board-controls">
               <button id="netuxSimulateSelected" type="button" data-net-action="simulate-selected" disabled>Симулировать</button>
               <button id="netuxStartSelected" type="button" data-net-action="start-selected" disabled>Брифинг</button>
@@ -428,20 +429,24 @@
           <header class="netux-operation-head">
             <div><span id="netuxBriefStage" class="netux-phase-label">1 · ПОДГОТОВКА</span>
               <h3 id="net004ActiveTitle">Зацепка</h3></div>
-            <button type="button" class="ghost netux-report-open" data-net-action="open-report"
-              aria-haspopup="dialog" aria-controls="netuxReportDialog">Донесение</button>
+            <div class="netux-operation-actions">
+              <button type="button" class="ghost netux-report-open" data-net-action="open-report"
+                aria-haspopup="dialog" aria-controls="netuxReportDialog">Донесение</button>
+              <button id="net004Cancel" class="ghost" type="button" data-net-action="abandon">Отказаться</button>
+            </div>
           </header>
           <div class="netux-brief-grid">
+            <div class="netux-decision-summary" aria-label="Оперативная сводка">
+              <div><span class="netux-phase-label">ПОЛУЧУ</span><p id="netuxBriefReward"></p></div>
+              <div><span class="netux-phase-label">РУЧНАЯ ОПЕРАЦИЯ</span><p id="netuxBriefThreat"></p></div>
+              <div><span class="netux-phase-label">ПРОТИВНИКИ</span><p id="netuxBriefEnemies"></p></div>
+            </div>
             <p id="net004ActiveDetail"></p>
+            <p id="netuxDecisionPreview" class="netux-decision-preview" aria-live="polite"></p>
             <div id="net004Choices" class="net004-cards netux-brief-choices"></div>
             <button id="net004Fight" type="button" data-net-action="fight" hidden>Выбрать отряд</button>
             <div class="netux-brief-footer">
-              <div class="netux-brief-prize">
-                <span class="netux-phase-label">НАГРАДА</span>
-                <p id="netuxBriefReward"></p>
-                <p id="netuxBriefThreat"></p>
-              </div>
-              <button id="net004Cancel" class="ghost" type="button" data-net-action="abandon">Отказаться от зацепки</button>
+              <p class="netux-equal-reward">Базовая награда одинакова для обоих подходов.</p>
             </div>
           </div>
         </div>
@@ -453,6 +458,7 @@
           <div class="netux-result-grid">
             <div class="netux-result-report">
               <p id="net004ResultDetail"></p>
+              <div id="netuxResultCauses" class="netux-result-causes" aria-label="Почему получен такой результат"></div>
               <p id="netuxResultMastery"></p>
               <p id="netuxResultIntel"></p>
             </div>
@@ -865,7 +871,7 @@
         <p id="loreTrainingResultText" role="status">В этой тренировке нет наград и сюжетных последствий.</p>
         <div class="lore-training-result-actions">
           <button type="button" class="primary" id="loreTrainingResultBack">К карте «Пяти теней»</button>
-          <button type="button" class="ghost" id="loreTrainingResultRetry">Ещё бой</button>
+          <button type="button" class="primary" id="loreTrainingResultRetry">Ещё бой</button>
           <button type="button" class="ghost" id="loreTrainingResultHome">В штаб</button>
         </div>
       </div>
@@ -993,7 +999,7 @@
     </dialog>
     <!-- Previous build tokens remain non-rendered for old test contracts; full history in docs/BUILD_HISTORY.md. -->
     <template id="legacyBuildMilestones">Прототип · v0.3.147 · UIHUD001 + OPSHELP + RENPLAY + REN3D003 + ENV010 + ENV017-MASSING + ENV022-DEFAULT + RENGLB003 + RENLOAD005 + RENAN008 + RENCARD009 + MELEE009 + RENIDLE010 + RENPOSE011 + RENSTANCE012 + RENSTANCE013 + RENRETARGET014 + RENIDLE015 + RENPOSE016 + RENMESH017 + RENPACE018 + RENQUEUE019 + HEROCARD001 + RENMOVE020+ RENCHOR021 + RENBYTES001 + RENBYTES002 + NADAART001 + NADAPLAY001 + NADAPORTRAIT002 + NADAROSTER001</template>
-    <footer><span id="buildVersion">Прототип · v0.3.217 · ARENAENV006C</span><span>Пепельный престол</span></footer>
+    <footer><span id="buildVersion">Прототип · v0.3.218 · NETUXCLR008</span><span>Пепельный престол</span></footer>
   </main>
   <aside id="orientationPrompt" class="orientation-prompt" aria-label="Поверните устройство">
     <div class="orientation-prompt__content">
@@ -1010,17 +1016,17 @@
   <script src="combat-core.js"></script>
   <script src="auto-decision.js"></script>
   <script src="enemy-decision.js"></script>
-  <script src="npc-enemy-data.js?v=0.3.217"></script>
-  <script src="npc-mission-pilot.js?v=0.3.217"></script>
-  <script src="npc-challenge-pilot.js?v=0.3.217"></script>
-   <script src="npc-story-ops-adapter.js?v=0.3.217"></script>
-   <script src="npc-battle-intel.js?v=0.3.217"></script>
+  <script src="npc-enemy-data.js?v=0.3.218"></script>
+  <script src="npc-mission-pilot.js?v=0.3.218"></script>
+  <script src="npc-challenge-pilot.js?v=0.3.218"></script>
+   <script src="npc-story-ops-adapter.js?v=0.3.218"></script>
+   <script src="npc-battle-intel.js?v=0.3.218"></script>
   <script src="combat-log.js"></script>
   <script src="gear-data.js"></script>
-  <script src="gear-material-ui.js?v=0.3.217"></script>
-  <script src="hero-stats-core.js?v=0.3.217"></script>
-  <script src="hero-stats-profiles.js?v=0.3.217"></script>
-  <script src="hero-stats-combat-bridge.js?v=0.3.217"></script>
+  <script src="gear-material-ui.js?v=0.3.218"></script>
+  <script src="hero-stats-core.js?v=0.3.218"></script>
+  <script src="hero-stats-profiles.js?v=0.3.218"></script>
+  <script src="hero-stats-combat-bridge.js?v=0.3.218"></script>
   <script src="progress-core.js"></script>
   <script src="save-core.js"></script>
   <script src="daily-core.js"></script>
@@ -1032,28 +1038,28 @@
   <script src="mission-data.js"></script>
   <script src="campaign-core.js"></script>
   <script src="campaign-data.js"></script>
-  <script src="gear-source-data.js?v=0.3.217"></script>
-  <script src="gear-planning-core.js?v=0.3.217"></script>
-  <script src="lore-campaign-data.js?v=0.3.217"></script>
-  <script src="lore-campaign-core.js?v=0.3.217"></script>
-  <script src="lore-campaign-scenes.js?v=0.3.217"></script>
-  <script src="lore-campaign-pilot.js?v=0.3.217"></script>
-  <script src="lore-campaign-act2.js?v=0.3.217"></script>
-  <script src="lore-campaign-trials.js?v=0.3.217"></script>
-  <script src="lore-campaign-act3.js?v=0.3.217"></script>
-  <script src="lore-campaign-act4.js?v=0.3.217"></script>
-  <script src="lore-campaign-act5.js?v=0.3.217"></script>
-  <script src="lore-campaign-scene-core.js?v=0.3.217"></script>
-  <script src="lore-campaign-scene-save.js?v=0.3.217"></script>
-  <script src="lore-campaign-scene-runtime.js?v=0.3.217"></script>
-  <script src="lore-campaign-ui.js?v=0.3.217"></script>
+  <script src="gear-source-data.js?v=0.3.218"></script>
+  <script src="gear-planning-core.js?v=0.3.218"></script>
+  <script src="lore-campaign-data.js?v=0.3.218"></script>
+  <script src="lore-campaign-core.js?v=0.3.218"></script>
+  <script src="lore-campaign-scenes.js?v=0.3.218"></script>
+  <script src="lore-campaign-pilot.js?v=0.3.218"></script>
+  <script src="lore-campaign-act2.js?v=0.3.218"></script>
+  <script src="lore-campaign-trials.js?v=0.3.218"></script>
+  <script src="lore-campaign-act3.js?v=0.3.218"></script>
+  <script src="lore-campaign-act4.js?v=0.3.218"></script>
+  <script src="lore-campaign-act5.js?v=0.3.218"></script>
+  <script src="lore-campaign-scene-core.js?v=0.3.218"></script>
+  <script src="lore-campaign-scene-save.js?v=0.3.218"></script>
+  <script src="lore-campaign-scene-runtime.js?v=0.3.218"></script>
+  <script src="lore-campaign-ui.js?v=0.3.218"></script>
    <script src="challenge-core.js"></script>
   <script src="operation-core.js"></script>
   <script src="signal-operation-core.js"></script>
   <script src="battle-speed.js"></script>
-  <script src="animation-profiles.js?v=0.3.217"></script>
-  <script src="ren-choreography.js?v=0.3.217"></script>
-  <script src="battle-animation.js?v=0.3.217"></script>
+  <script src="animation-profiles.js?v=0.3.218"></script>
+  <script src="ren-choreography.js?v=0.3.218"></script>
+  <script src="battle-animation.js?v=0.3.218"></script>
   <script src="player-profile-core.js"></script>
   <script src="hero-profile-data.js"></script>
   <script src="story-trial-data.js"></script>
@@ -1061,50 +1067,50 @@
   <script src="combat-environment-009.js"></script>
   <script src="combat-environment-010.js"></script>
   <script src="combat-environment-017.js"></script>
-  <script src="combat-environment-006.js?v=0.3.217"></script>
+  <script src="combat-environment-006.js?v=0.3.218"></script>
   <script src="combat-visual-007.js"></script>
   <script src="ren-visual-model.js"></script>
-  <script src="ren-glb-runtime.js?v=0.3.217"></script>
-  <script src="dev/src/assets/models.js?v=0.3.217"></script>
-  <script src="nada-glb-runtime.js?v=0.3.217"></script>
-   <script src="liora-glb-runtime.js?v=0.3.217"></script>
-   <script src="sava-glb-runtime.js?v=0.3.217"></script>
-   <script src="art-glb-runtime.js?v=0.3.217"></script>
-  <script src="dev/src/assets/npc-models.js?v=0.3.217"></script>
-  <script src="npc-glb-runtime.js?v=0.3.217"></script>
-  <script src="ren-idle-kinemiq.js?v=0.3.217"></script>
-  <script src="ren-kinemiq-retarget-data.js?v=0.3.217"></script>
-  <script src="ren-motion-retarget.js?v=0.3.217"></script>
-  <script src="ren-card-pose.js?v=0.3.217"></script>
-  <script src="ren-card-3d.js?v=0.3.217"></script>
-  <script src="arena-world-hud.js?v=0.3.217"></script>
-  <script src="arena-stage-view.js?v=0.3.217"></script>
-  <script src="arena-vis-001.js?v=0.3.217"></script>
-  <script src="arena-vis-002.js?v=0.3.217"></script>
-  <script src="arena-ui-003.js?v=0.3.217"></script>
+  <script src="ren-glb-runtime.js?v=0.3.218"></script>
+  <script src="dev/src/assets/models.js?v=0.3.218"></script>
+  <script src="nada-glb-runtime.js?v=0.3.218"></script>
+   <script src="liora-glb-runtime.js?v=0.3.218"></script>
+   <script src="sava-glb-runtime.js?v=0.3.218"></script>
+   <script src="art-glb-runtime.js?v=0.3.218"></script>
+  <script src="dev/src/assets/npc-models.js?v=0.3.218"></script>
+  <script src="npc-glb-runtime.js?v=0.3.218"></script>
+  <script src="ren-idle-kinemiq.js?v=0.3.218"></script>
+  <script src="ren-kinemiq-retarget-data.js?v=0.3.218"></script>
+  <script src="ren-motion-retarget.js?v=0.3.218"></script>
+  <script src="ren-card-pose.js?v=0.3.218"></script>
+  <script src="ren-card-3d.js?v=0.3.218"></script>
+  <script src="arena-world-hud.js?v=0.3.218"></script>
+  <script src="arena-stage-view.js?v=0.3.218"></script>
+  <script src="arena-vis-001.js?v=0.3.218"></script>
+  <script src="arena-vis-002.js?v=0.3.218"></script>
+  <script src="arena-ui-003.js?v=0.3.218"></script>
   <!-- Game must initialize only AFTER wallet exclusivity has been granted. -->
-  <script src="progress-writer-core.js?v=0.3.217"></script>
+  <script src="progress-writer-core.js?v=0.3.218"></script>
   <!-- All five one-time lore act rewards are gated by the exclusive wallet writer. -->
-  <script src="lore-reward-proof-core.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="reward-policy-core.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="lore-act1-reward-core.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="network-data.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="network-score-core.js?v=0.3.217" type="text/progress-gated"></script>
-   <script src="network-core.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="network-encounter-data.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="network-encounter-adapter.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="network-live-economy.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="network-reward-core.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="weekly-threat-core.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="network-pilot-session.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="network-pilot-ui.js?v=0.3.217" type="text/progress-gated"></script>
-   <script src="network-navigation.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="weekly-threat-ui.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="game.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="hero-card-ui.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="gear-ux-004.js?v=0.3.217" type="text/progress-gated"></script>
-  <script src="asset-manifest.js?v=0.3.217"></script>
-  <script src="model-cache-client.js?v=0.3.217"></script>
+  <script src="lore-reward-proof-core.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="reward-policy-core.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="lore-act1-reward-core.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="network-data.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="network-score-core.js?v=0.3.218" type="text/progress-gated"></script>
+   <script src="network-core.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="network-encounter-data.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="network-encounter-adapter.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="network-live-economy.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="network-reward-core.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="weekly-threat-core.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="network-pilot-session.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="network-pilot-ui.js?v=0.3.218" type="text/progress-gated"></script>
+   <script src="network-navigation.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="weekly-threat-ui.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="game.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="hero-card-ui.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="gear-ux-004.js?v=0.3.218" type="text/progress-gated"></script>
+  <script src="asset-manifest.js?v=0.3.218"></script>
+  <script src="model-cache-client.js?v=0.3.218"></script>
   <!-- Competing tabs and unsupported browsers never initialize wallet-mutating UI. -->
   <aside id="walletWriterNotice" role="alertdialog" aria-modal="true" aria-label="Доступ к сохранению"
     style="position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;background:#101821f5;color:#f7e7cb;text-align:center">

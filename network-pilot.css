@@ -583,3 +583,35 @@
  .net004-screen .netux-order-open small{display:none}
  .net004-screen .netux-order-kicker{font-size:9px}
 }
+
+/* NETFULL001: network is a workspace, not a fixed 1200/1280px canvas.
+   Scope to landscape to preserve the existing stacked portrait fallback.
+   The header and footer retain their height; only the network board fills
+   their remaining viewport space. Touch targets / nested scrolling stay local. */
+@media (orientation:landscape) and (min-width:581px){
+ body:has(#network.active){height:100dvh;overflow:hidden}
+ #app:has(#network.active){
+  display:flex;flex-direction:column;width:100%;height:100dvh;
+  min-width:0;max-width:none;margin:0;overflow:hidden;
+  padding-inline:max(8px,env(safe-area-inset-left,0px)) max(8px,env(safe-area-inset-right,0px));
+ }
+ #app:has(#network.active)>.topbar{
+  flex:0 0 auto;min-height:0;height:clamp(44px,7dvh,64px);
+ }
+ #app:has(#network.active)>footer{
+  flex:0 0 auto;padding:4px 0 max(5px,env(safe-area-inset-bottom,0px));
+ }
+ #network.net004-screen.active{
+  display:flex;flex-direction:column;flex:1 1 0;
+  min-width:0;min-height:0;margin:0;padding:5px 0;overflow:hidden;
+ }
+ #network.net004-screen .netux-board-shell{
+  flex:1 1 0;width:100%;height:auto;min-width:0;min-height:0;
+  max-width:none;max-height:none;margin:0;
+ }
+}
+@media (orientation:landscape) and (min-width:1101px){
+ #network.net004-screen .netux-board-shell{
+  grid-template-columns:clamp(260px,25%,380px) minmax(0,1fr);
+ }
+}

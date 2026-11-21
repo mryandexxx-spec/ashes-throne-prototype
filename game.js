@@ -1105,7 +1105,7 @@ function renderSquad(){
   const locked=loreMode&&h&&mandatoryIds.includes(h.id);
   const label=h?h.name:"Свободно";
   const portrait=h?squadPortrait(h.id):null;
-  const avatar=portrait?'<img class="squad-slot-fallback" src="'+portrait+'" alt="" loading="lazy">':"";
+  const avatar=portrait?'<img class="squad-slot-fallback" src="'+portrait+'" alt="" loading="lazy">':(h?'<span class="squad-slot-glyph" aria-hidden="true">'+h.glyph+'</span>':"");
   const stars=p&&Number.isFinite(p.stars)?Math.min(7,Math.max(0,p.stars)):0;
   return '<div class="squad-slot '+(i===0?'squad-slot-leader ':'')+
    (h?'filled ':'')+(locked?'squad-slot-required ':'')+

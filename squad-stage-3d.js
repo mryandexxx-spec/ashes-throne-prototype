@@ -10,7 +10,8 @@ const SquadStage3D=(()=>{
  let ro=null,hostObserver=null,screenObserver=null,epoch=0,lastFrame=0;
  let render=null,loadQueue=Promise.resolve(),scheduled=false;
  const models=new Map(),loading=new Set(),failed=new Set();
- const isShown=()=>!!screen?.classList.contains("active")&&!document.hidden;
+ const isShown=()=>!!screen?.classList.contains("active")&&!document.hidden&&
+  !(typeof window!=="undefined"&&window.matchMedia?.("(orientation:portrait) and (max-width:1100px)")?.matches);
  const status=text=>{const el=$("squad3dStatus");if(el)el.textContent=text;};
  function asset(id){
   switch(id){
@@ -185,7 +186,7 @@ const SquadStage3D=(()=>{
    const rec=models.get(x.id);
    if(rec){rec.index=x.index;position(rec);x.el.classList.add("squad-model-live");}
   }
-  if(!wanted.length){status("Выберите героев");return;}
+  if(!wanted.length){status("3D доступны сюжетным героям");return;}
   if(!create())return;
   const requestEpoch=epoch;
   for(const x of wanted){

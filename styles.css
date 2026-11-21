@@ -5010,3 +5010,6 @@ body:has(#storyDemo.active)::before{
 @media(prefers-reduced-motion:reduce){
  #squad.active .squad-slot-fallback{transition:none}
 }
+
+/* Training-only fighters have no approved GLB: their original emblems stay visible. */
+#squad.active .squad-slot-glyph{display:grid;place-items:center;width:100%;height:100%;font-size:clamp(24px,5vw,54px);color:#d5ad65;text-shadow:0 2px 9px #09090f}

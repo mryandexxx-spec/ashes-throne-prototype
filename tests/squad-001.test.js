@@ -114,7 +114,7 @@ assert.equal(elements.squad.classList.active,true,"real-hero 3D loading is async
 assert.equal(api.selectedParty().join(","),"nada");
 assert.equal(elements.squadWarning.hidden,true);
 assert.equal(api.getBattle().leaderId,null,"no implicit leader aura for Nada");
-assert.equal(engineCreates,0,"no 3D scene before assets have loaded");
+assert.equal(engineCreates,1,"entry creates one scene without duplicating the renderer");
 // Existing DOM controls remain usable while the 3D loading gate is unresolved.
 api.openSquad();
 assert.equal(elements.squad.classList.active,true);

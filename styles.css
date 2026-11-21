@@ -2672,22 +2672,30 @@ body:has(#squad.active)::before{
  box-shadow:0 2px 5px #000;
 }
 #squad .squad-slots{
- display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;
- margin-top:8px;flex:0 0 auto;
+ display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;
+ margin-top:10px;flex:0 0 auto;
 }
 #squad .squad-slot-card{
  position:relative;display:flex;flex-direction:column;
- aspect-ratio:3/4;padding:0;gap:0;text-align:center;
- border:1px dashed #887351;border-radius:10px;
+ aspect-ratio:2/3;padding:0;gap:0;text-align:center;
+ border:1px dashed #887351;border-radius:12px;
  background:linear-gradient(145deg,#262428,#191a20);
  color:#c7b8a4;box-shadow:inset 0 2px 9px #08080cb8;
  overflow:hidden;
+ transition:transform .12s,border-color .12s,box-shadow .12s;
 }
 #squad .squad-slot-card.filled{
  border-style:solid;border-color:#bd925b;
  background:linear-gradient(155deg,#58402d,#2b2526);
- color:#fff0d5;box-shadow:inset 0 1px #e9c38d36,0 3px 7px #0706096b;
+ color:#fff0d5;
+ box-shadow:inset 0 1px #e9c38d36,0 0 14px #d5ad6540,0 3px 7px #0706096b;
  cursor:pointer;
+}
+#squad .squad-slot-card.filled:hover,
+#squad .squad-slot-card.filled:focus-visible{
+ transform:translateY(-2px) scale(1.02);
+ box-shadow:inset 0 1px #e9c38d36,0 0 20px #d5ad6560,0 5px 12px #0706098a;
+ border-color:#e5bd7b;
 }
 #squad .squad-slot-card.leader{
  border-width:2px;border-color:#ae9470;
@@ -2696,16 +2704,17 @@ body:has(#squad.active)::before{
 #squad .squad-slot-card.leader.filled{
  border-color:#e5bd7b;
  background:linear-gradient(160deg,#725030,#342827);
+ box-shadow:inset 0 1px #e9c38d36,0 0 18px #e5bd7b50,0 3px 7px #0706096b;
 }
 #squad .squad-slot-card.required{border-color:#c9a055}
 #squad .squad-slot-portrait{
- width:100%;flex:1 1 auto;
+ width:100%;flex:1 1 auto;min-height:0;
  background:linear-gradient(145deg,#262428,#191a20);
  display:flex;align-items:center;justify-content:center;
  overflow:hidden;
 }
 #squad .squad-slot-portrait img{
- width:100%;height:100%;object-fit:cover;
+ width:100%;height:100%;object-fit:cover;object-position:center 20%;
 }
 #squad .squad-slot-glyph{
  font-size:28px;color:#f0c986;text-shadow:0 2px 4px #000;
@@ -2714,18 +2723,16 @@ body:has(#squad.active)::before{
  font-size:11px;color:#8a7a6a;text-transform:uppercase;letter-spacing:.08em;
 }
 #squad .squad-slot-body{
- padding:6px 4px;display:flex;flex-direction:column;gap:2px;
+ padding:8px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:0;
+ background:linear-gradient(180deg,transparent 0%,#1a1618 100%);
 }
 #squad .squad-slot-name{
- font-weight:700;font-size:12px;color:#fff0d5;
+ font-weight:700;font-size:14px;color:#fff0d5;
  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ text-shadow:0 1px 3px #000;
 }
-#squad .squad-slot-role{
- font-size:10px;color:#d5bfa2;
-}
-#squad .squad-slot-level{
- font-size:10px;color:#c9a87a;
-}
+#squad .squad-slot-role{display:none}
+#squad .squad-slot-level{display:none}
 #squad .squad-slot-lock{
  position:absolute;top:4px;right:4px;font-size:14px;
 }
@@ -2749,8 +2756,9 @@ body:has(#squad.active)::before{
  #squad .squad-power-value{font-size:20px}
  #squad .squad-power-label{font-size:9px}
  #squad .squad-leader-bar{padding:3px 8px;margin-bottom:4px;font-size:11px}
- #squad .squad-slots{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-top:6px}
- #squad .squad-slot-card{border-radius:8px}
+ #squad .squad-slots{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:6px}
+ #squad .squad-slot-card{border-radius:10px}
+ #squad .squad-slot-name{font-size:12px}
  #squad .squad-roster{grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px}
  #squad .squad-actions{gap:5px;margin-top:auto}
 }

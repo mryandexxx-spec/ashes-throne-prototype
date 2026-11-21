@@ -1141,30 +1141,29 @@ function renderSquad(){
   </button>`;
  }).join("");
 
- // Squad slots (horizontal SWGOH-style)
+ // Squad slots (horizontal SWGOH-style) — portrait + name only; long-press opens hero detail
  $("#squadSlots").innerHTML=Array.from({length:MAX_SQUAD},(_,i)=>{
   const h=slots[i];
   const locked=loreMode&&h&&mandatoryIds.includes(h.id);
   const portrait=h?heroPortraitUrl(h.id):null;
   const emptyText=i===0?"Лидер":"Свободно";
-  return `<div class="squad-slot-card ${h?"filled":""} ${locked?"required":""} ${i===0?"leader":""}" data-slot-index="${i}" aria-label="${i===0?"Лидер отряда":"Место "+(i+1)}${locked?" · обязательный герой":""}" ${h&&!locked?'role="button" tabindex="0" title="Нажми, чтобы убрать"':""}>
+  return `<div class="squad-slot-card ${h?"filled":""} ${locked?"required":""} ${i===0?"leader":""}" data-slot-index="${i}" ${h?'data-hero-id="'+h.id+'"':""} aria-label="${i===0?"Лидер отряда":"Место "+(i+1)}${locked?" · обязательный герой":""}" ${h&&!locked?'role="button" tabindex="0" title="Нажми, чтобы убрать. Удерживай — карточка героя."':""}>
    <div class="squad-slot-portrait">${h?(portrait?`<img src="${portrait}" alt="${h.name}" loading="lazy" onerror="this.style.display='none'">`:`<span class="squad-slot-glyph">${h.glyph}</span>`):`<span class="squad-slot-empty">${emptyText}</span>`}</div>
    <div class="squad-slot-body">
     <div class="squad-slot-name">${h?h.name:emptyText}</div>
-    ${h?`<div class="squad-slot-role">${h.role}</div>`:""}
-    ${h?`<div class="squad-slot-level">Ур. ${h.level||1}</div>`:""}
    </div>
    ${locked?`<div class="squad-slot-lock">🔒</div>`:""}
   </div>`;
  }).join("");
 
- // Slot click handlers (remove non-mandatory heroes)
+ // Slot click handlers (remove non-mandatory heroes) + long-press to open hero detail
  document.querySelectorAll(".squad-slot-card[data-slot-index]").forEach(card=>{
   const idx=parseInt(card.dataset.slotIndex,10);
   const h=slots[idx];
   const locked=loreMode&&h&&mandatoryIds.includes(h.id);
   if(h&&!locked){
    card.addEventListener("click",()=>{
+    if(card._longPressed)return;
     toggleSquadHero(h.id);
    });
    card.addEventListener("keydown",e=>{
@@ -1174,6 +1173,29 @@ function renderSquad(){
     }
    });
   }
+ });
+ document.querySelectorAll(".squad-slot-card[data-hero-id]").forEach(card=>{
+  let pressTimer;
+  const heroId=card.dataset.heroId;
+  const startPress=()=>{
+   pressTimer=setTimeout(()=>{
+    const hero=ALLIES.find(h=>h.id===heroId);
+    if(hero){
+     openHeroDetail(hero);
+     card._longPressed=true;
+    }
+   },600);
+  };
+  const endPress=()=>{
+   clearTimeout(pressTimer);
+   setTimeout(()=>{card._longPressed=false;},50);
+  };
+  card.addEventListener("touchstart",startPress,{passive:true});
+  card.addEventListener("touchend",endPress);
+  card.addEventListener("touchcancel",endPress);
+  card.addEventListener("mousedown",startPress);
+  card.addEventListener("mouseup",endPress);
+  card.addEventListener("mouseleave",endPress);
  });
 
  const leaderHint=leader

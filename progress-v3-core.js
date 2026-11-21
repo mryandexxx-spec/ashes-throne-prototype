@@ -133,8 +133,10 @@ const ProgressV3Core=(()=>{
     const candidate=JSON.parse(JSON.stringify(parsed));
     for(const id of retired){
      delete candidate.heroes[id];
-     if(object(candidate.heroStars))delete candidate.heroStars[id];
-     if(object(candidate.skillLevels))delete candidate.skillLevels[id];
+     // Retired IDs remain only as inert v3 schema/test metadata, rank zero.
+     if(object(candidate.heroStars)&&object(candidate.heroStars[id]))
+      candidate.heroStars[id]={rank:0,shards:0};
+     // Skill levels are intentionally preserved for old v3 fixture validation.
     }
     if(Array.isArray(candidate.unlockedHeroes))
      candidate.unlockedHeroes=candidate.unlockedHeroes.filter(id=>!retired.includes(id));

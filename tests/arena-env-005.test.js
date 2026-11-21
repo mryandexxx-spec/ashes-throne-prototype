@@ -54,8 +54,8 @@ test("transparent WebGL over the CSS art is unchanged (no 3D scenery, same camer
 test("build label follows the current build",()=>{
  const pkg=JSON.parse(read("package.json"));
  const html=read("index.html");
- assert.equal(pkg.version,"0.3.220");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.220 · NETFULL001'));
- assert.ok(html.includes('src="game.js?v=0.3.220"'));
+ assert.equal(pkg.version,"0.3.221");
+ assert.ok(html.includes('id="buildVersion">Прототип · v0.3.221 · SQUADUX001'));
+ assert.ok(html.includes('src="game.js?v=0.3.221"'));
  assert.ok(!html.includes("?v=0.3.214"));
 });

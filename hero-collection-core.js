@@ -8,7 +8,9 @@ const HeroCollectionCore=(()=>{
  function valid(value){
   return Array.isArray(value)&&value.length>=5&&value.length<=IDS.length&&
     value.every(id=>typeof id==="string"&&IDS.includes(id))&&
-    new Set(value).size===value.length&&\n    (START.every(id=>value.includes(id))||\n     ["kael","lyra","darin"].every(id=>value.includes(id)));
+    new Set(value).size===value.length&&
+    (START.every(id=>value.includes(id))||
+     ["kael","lyra","darin"].every(id=>value.includes(id)));
  }
  function owned(progress,id){
   if(!IDS.includes(id))return false;

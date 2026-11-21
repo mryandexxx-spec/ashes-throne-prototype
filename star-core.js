@@ -23,7 +23,8 @@ const StarCore=(()=>{
  // Legacy fixture IDs are kept for stat/gear test compatibility, not as recruitable heroes.
  function fromLegacy(unlockedHeroes){
   if(unlockedHeroes!==undefined&&(!Array.isArray(unlockedHeroes)||
-     !(START.every(id=>unlockedHeroes.includes(id))||\n       ["kael","lyra","darin"].every(id=>unlockedHeroes.includes(id)))||
+     !(START.every(id=>unlockedHeroes.includes(id))||
+       ["kael","lyra","darin"].every(id=>unlockedHeroes.includes(id)))||
      unlockedHeroes.some(id=>!IDS.includes(id))||
      new Set(unlockedHeroes).size!==unlockedHeroes.length))return null;
   return Object.fromEntries(IDS.map(id=>[id,{

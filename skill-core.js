@@ -3,7 +3,8 @@
 const SkillCore=(()=>{
  "use strict";
  const HERO_IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora","art","sava"]);
- // The five retired IDs are fixtures for pre-existing tests, never in ALLIES.\n const IDS=Object.freeze(["basic","special","powerful"]);
+ // The five retired IDs are fixtures for pre-existing tests, never in ALLIES.
+ const IDS=Object.freeze(["basic","special","powerful"]);
  const PASSIVE_IDS=Object.freeze(["ren","nada","liora","art","sava"]);
  const UPGRADABLE_IDS=Object.freeze([...IDS,"passive"]);
  // Optional v3 field. All pre-CHAR003 saves imply L1 without mutation.

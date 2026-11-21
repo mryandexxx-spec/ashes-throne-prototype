@@ -36,13 +36,31 @@ jobs:
               --hide-scrollbars --force-device-scale-factor=1 --window-size=844,390 \
               --virtual-time-budget=20000 --screenshot="$PWD/artifacts/env022-$radius.png" \
               "$url" 2>"/tmp/env022-chrome-$radius.log"
-            "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
-              --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
-              --virtual-time-budget=20000 --dump-dom "$url" \
-              >"artifacts/env022-$radius.dom.html" 2>>"/tmp/env022-chrome-$radius.log"
-            grep -q 'data-visual-status="ready"' "artifacts/env022-$radius.dom.html"
-            grep -q 'data-canvas-alpha="0"' "artifacts/env022-$radius.dom.html"
-            grep -q 'data-backdrop="env005-terrace-webp"' "artifacts/env022-$radius.dom.html"
+            # The DOM capture starts a fresh Chromium process independent of
+            # the screenshot. Heavy first-time WebGL shader compilation can make
+            # that process miss the 20s virtual clock budget even though the
+            # actual battle renders successfully. Retry only the capture; never
+            # accept a frame without all three original visual assertions.
+            dom="artifacts/env022-$radius.dom.html"
+            ready=false
+            for attempt in 1 2 3; do
+              "$chrome" --headless --no-sandbox --disable-dev-shm-usage --disable-gpu-sandbox \
+                --enable-webgl --enable-unsafe-swiftshader --use-angle=swiftshader \
+                --virtual-time-budget=30000 --dump-dom "$url" \
+                >"$dom" 2>>"/tmp/env022-chrome-$radius.log"
+              if grep -q 'data-visual-status="ready"' "$dom" &&
+                 grep -q 'data-canvas-alpha="0"' "$dom" &&
+                 grep -q 'data-backdrop="env005-terrace-webp"' "$dom"; then
+                ready=true
+                break
+              fi
+              echo "::warning::ENV022 $radius DOM attempt $attempt not ready; retrying independent browser launch"
+              grep -o 'data-visual-error="[^"]*"' "$dom" | head -1 || true
+            done
+            if [ "$ready" != true ]; then
+              echo "::error::ENV022 $radius failed all three verified DOM captures"
+              exit 1
+            fi
             test -s "artifacts/env022-$radius.png"
             file "artifacts/env022-$radius.png"
           done

@@ -18,9 +18,9 @@ test("UIHERO002 maintains five slots, the actual leader, disabled locked heroes 
  for(const id of ["squadBack","squadRoster","squadSlots","squadCount","squadHint","squadWarning","squadDisband","squadStart","battleLoadError","retryBattleLoad"]){
   assert.ok(html.includes('id="'+id+'"'),id+" retained");
  }
- assert.match(js,/const isLeader=ids\[0\]===h\.id/);
- assert.match(js,/aria-pressed="\$\{active\}"/);
- assert.match(js,/\$\{owned\?"":"disabled"\}/);
+ assert.match(js,/filter\(h=>h&&!ids\.includes\(h\.id\)\)/);
+ assert.match(js,/squadHeroSummary\(h\)/);
+ assert.match(js,/data-hero-id/);
  assert.match(js,/data-squad-index/);
  assert.match(js,/squad-slot-leader/);
  assert.match(js,/slots\[occupied\]=null/);
@@ -31,7 +31,7 @@ test("UIHERO002 maintains five slots, the actual leader, disabled locked heroes 
 });
 test("UIHERO002 visibly separates leader, selected, empty and locked states",()=>{
  assert.match(art,/#squad \.squad-slot-leader\.filled/);
- assert.match(art,/#squad \.squad-choice\.chosen/);
+ assert.match(css,/#squad\.active \.squad-slot-progress/);
  assert.match(art,/#squad \.squad-choice\.hero-locked:disabled/);
  assert.match(art,/#squad \.squad-start:disabled/);
  assert.match(art,/#squad \.squad-warning/);
@@ -45,5 +45,5 @@ test("UIHERO002 keeps touch, landscape and reduced motion rules",()=>{
 });
 test("UIHERO002 candidate version matches build",()=>{
  assert.equal(JSON.parse(read("package.json")).version,__BUILD_VERSION_FOR_TESTS);
- assert.match(html,/v0\.3\.220 · NETFULL001/);
+ assert.match(html,/v0\.3\.221 · SQUADUX001/);
 });

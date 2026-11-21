@@ -129,7 +129,7 @@ async function run(name,browserType,width,height){
   assert.equal(await page.locator('.lore-list-node[data-lore-node="five-shadows:fs-06"]').evaluate(el=>el.classList.contains("lore-state-locked")),true);
   await page.locator('[data-lore-action="required-battle"]').click();
   await page.locator("#squad").waitFor({state:"visible",timeout:15000});
-  assert.equal(await page.locator("#squadRoster [data-squad-required=true]").count(),2);
+  assert.equal(await page.locator("#squadSlots [data-squad-required=true]").count(),2);
   assert.equal(await page.locator("#squadTacticalBrief").isVisible(),true);
   assert.match(await page.locator("#squadTacticalBrief").innerText(),/12 действий союзников/);
   assert.match(await page.locator("#squadTacticalBrief").innerText(),/Автобой доступен/);

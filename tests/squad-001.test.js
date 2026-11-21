@@ -29,7 +29,7 @@ const document={
  querySelectorAll(q){
   if(q===".screen")return allScreens;
   if(q==="[data-screen]")return [arenaNav,collectionNav];
-  if(q==="[data-hero-id]")return chooseNodes;
+  if(q==="[data-hero-id]"||q==="#squadRoster .squad-choice[data-hero-id],#squadSlots .squad-slot[data-hero-id]")return chooseNodes;
   return [];
  },
  addEventListener(){}
@@ -85,7 +85,7 @@ for(const id of ["kael","lyra","darin","medic-demo","test-area-damage"])
  assert.equal(api.toggleSquadHero(id),true);
 assert.equal(count(),"5/5");
 assert.equal(api.getBattle().leaderId,null,"initial sandbox battle is still legacy");
-assert.match(elements.squadHint.textContent,/нет лидерской способности/);
+assert.match(elements.squadHint.textContent,/лидерская способность отсутствует/);
 assert.equal(api.toggleSquadHero("kael"),true,"regular click removes first-slot leader");
 assert.equal(count(),"4/5");
 assert.match(elements.squadSlots.innerHTML,/★ ЛИДЕР/);

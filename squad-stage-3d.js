@@ -40,9 +40,20 @@ const SquadStage3D=(()=>{
   for(const rec of models.values())position(rec);
  }
  function position(rec){
-  if(!camera||!rec.holder)return;
+  if(!camera||!rec.holder||!host)return;
+  // Centre on the ACTUAL occupied DOM slot, not a presumed fifth of the
+  // canvas. This also respects gaps and future slot padding in landscape.
+  const stage=host.getBoundingClientRect();
+  const slot=host.querySelector('.squad-slot[data-squad-index="'+rec.index+'"]');
+  const rect=slot?.getBoundingClientRect();
+  const fraction=rect&&stage.width>0?
+   (rect.left+rect.width/2-stage.left)/stage.width:(rec.index+.5)/5;
   const width=camera.orthoRight-camera.orthoLeft;
-  rec.holder.position.x=((rec.index+.5)/5-.5)*width-rec.centerX*rec.scale;
+  // Babylon is left-handed. This FreeCamera looks from +Z toward -Z, so
+  // screen-right points toward NEGATIVE world X. Do not mirror the formation.
+  const cameraRight=camera.getDirection(BABYLON.Axis.X).x;
+  const direction=cameraRight<0?-1:1;
+  rec.holder.position.x=(fraction-.5)*width*direction-rec.centerX*rec.scale;
  }
  function clearResult(result){
   if(!result)return;

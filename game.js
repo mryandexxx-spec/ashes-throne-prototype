@@ -1117,8 +1117,7 @@ function renderSquad(){
  // Preserve the single Babylon canvas across DOM rebuilds; never recreate
  // its WebGL context for an added/removed squad member.
  const slotHost=$("#squadSlots");
- const stageCanvas=slotHost.querySelector(".squad-stage-canvas");
- slotHost.innerHTML=Array.from({length:MAX_SQUAD},(_,i)=>{
+ const slotHtml=Array.from({length:MAX_SQUAD},(_,i)=>{
   const h=slots[i];
   const p=h?progressedHero(h):null;
   const locked=loreMode&&h&&mandatoryIds.includes(h.id);
@@ -1137,7 +1136,10 @@ function renderSquad(){
    '<span class="squad-slot-content">'+label+(locked?' 🔒':'')+'</span>'+
    '</div>';
  }).join("");
- if(stageCanvas)slotHost.insertBefore(stageCanvas,slotHost.firstChild);
+ // Remove only slot DOM. Detaching the Babylon canvas on each tap risks
+ // a WebGL context loss in Safari even if we insert it back synchronously.
+ slotHost.querySelectorAll(".squad-slot").forEach(node=>node.remove());
+ slotHost.insertAdjacentHTML("beforeend",slotHtml);
  const leader=ids[0];
  const leaderHero=ALLIES.find(h=>h.id===leader);
  const leaderAbility=leaderHero&&typeof AbilityInfo!=="undefined"?AbilityInfo.format(leaderHero,"leader"):null;

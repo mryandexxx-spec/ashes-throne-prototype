@@ -1,18 +1,7 @@
 name: ASSETLOAD001 unified asset loading and device cache browser
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'model-cache-sw.js'
-      - 'model-cache-client.js'
-      - 'asset-manifest.js'
-      - 'game.js'
-      - 'styles.css'
-      - '**/*.glb'
-      - 'assets/arena-*.webp'
-      - 'tests/model-cache-browser.cjs'
-      - 'index.html'
-      - '.github/workflows/model-cache-browser.yml'
+  workflow_dispatch:
 jobs:
   asset-load-browser:
     runs-on: ubuntu-latest

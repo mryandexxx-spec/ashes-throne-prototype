@@ -1,18 +1,6 @@
 name: LC-008D/008F Five Shadows rewards (Chromium and WebKit)
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'lore-act1-reward-core.js'
-      - 'reward-policy-core.js'
-      - 'lore-reward-proof-core.js'
-      - 'lore-campaign-ui.js'
-      - 'lore-campaign.css'
-      - 'game.js'
-      - 'index.html'
-      - 'tests/lc-008d-act1-browser.cjs'
-      - 'tests/lc-008f-five-acts-browser.cjs'
-      - '.github/workflows/lc-008d-act1-browser.yml'
   workflow_dispatch:
 permissions:
   contents: read

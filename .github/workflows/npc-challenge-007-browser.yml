@@ -1,13 +1,7 @@
 name: NPCCHALLENGE007 T-04 hold and N-04 no-heal Chromium-WebKit
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'npc-challenge-pilot.js'
-      - 'game.js'
-      - 'index.html'
-      - 'tests/npc-challenge-007-browser.cjs'
-      - '.github/workflows/npc-challenge-007-browser.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

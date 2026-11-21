@@ -1,14 +1,7 @@
 name: ARENA-ENGINE-001 real Babylon World HUD preview
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'arena-world-hud.js'
-      - 'game.js'
-      - 'index.html'
-      - 'styles.css'
-      - 'tests/arena-world-hud-browser.cjs'
-      - '.github/workflows/arena-world-hud-browser.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

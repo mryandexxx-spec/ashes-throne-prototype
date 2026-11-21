@@ -1,14 +1,7 @@
 name: LC-004 lore tactical combat integration
+# On-demand legacy regression. PR smoke is in ci-selective.yml.
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'game.js'
-      - 'index.html'
-      - 'lore-campaign-ui.js'
-      - 'lore-campaign.css'
-      - 'tests/lore-campaign-training-browser.cjs'
-      - '.github/workflows/lore-campaign-training-browser.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

@@ -1,0 +1,156 @@
+name: CI / selective smoke
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: selective-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  scope:
+    name: Diff-aware Node smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    outputs:
+      squad: ${{ steps.smoke.outputs.squad }}
+      battle: ${{ steps.smoke.outputs.battle }}
+      lore: ${{ steps.smoke.outputs.lore }}
+      network: ${{ steps.smoke.outputs.network }}
+      hero: ${{ steps.smoke.outputs.hero }}
+      audit: ${{ steps.smoke.outputs.audit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax, build contract, relevant Node tests and scope decision
+        id: smoke
+        env:
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref || 'main' }}
+        run: node scripts/ci-selective.cjs
+
+
+  ci-infrastructure:
+    name: One-time full Node regression for CI changes
+    needs: scope
+    if: ${{ needs.scope.outputs.audit == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Full suite only when CI workflows or selector change
+        run: npm test
+
+  squad:
+    name: Mobile GLB squad · Chromium and WebKit
+    needs: scope
+    if: ${{ needs.scope.outputs.squad == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Real five GLBs, slot projection, touch and return to game
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ci-squad-http.log 2>&1 &
+          sleep 2
+          node tests/squad-recover-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selective-squad-evidence
+          path: artifacts/squad-recovery/
+          if-no-files-found: ignore
+
+  battle:
+    name: Battle re-entry · Chromium and WebKit
+    needs: scope
+    if: ${{ needs.scope.outputs.battle == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ci-battle-http.log 2>&1 &
+          sleep 2
+          node tests/arena-fix-001-reentry-browser.cjs
+
+  lore:
+    name: Required campaign heroes · mobile browser
+    needs: scope
+    if: ${{ needs.scope.outputs.lore == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ci-lore-http.log 2>&1 &
+          sleep 2
+          node tests/lore-campaign-required-heroes-browser.cjs
+
+  network:
+    name: Network board · mobile browser
+    needs: scope
+    if: ${{ needs.scope.outputs.network == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ci-network-http.log 2>&1 &
+          sleep 2
+          node tests/network-ux-004-browser.cjs
+
+  hero:
+    name: Hero card · mobile browser
+    needs: scope
+    if: ${{ needs.scope.outputs.hero == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ci-hero-http.log 2>&1 &
+          sleep 2
+          node tests/hero-card-browser.cjs

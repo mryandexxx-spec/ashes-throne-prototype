@@ -9,7 +9,7 @@ const read=file=>fs.readFileSync(path.join(root,file),"utf8");
 class FakeNode{
  constructor(tag="div"){
   this.tagName=tag;this.children=[];this.attributes={};this.textContent="";
-  this.hidden=false;this.alt="";this.className="";this.src="";
+  this.hidden=false;this.alt="";this.className="";this.src="";this.dataset={};
   this.classList={classes:new Set(),add:x=>this.classList.classes.add(x),remove:x=>this.classList.classes.delete(x)};
  }
  append(...children){this.children.push(...children)}
@@ -24,11 +24,11 @@ function makeUI(){
  const names=["gearPromotionDialog","gearPromotionTitle","gearPromotionHeroName",
   "gearPromotionTier","gearPromotionLevel","gearPromotionHistory","gearPromotionCost",
   "gearPromotionPortrait","detailRenPortrait","gearPromotionStats","gearPromotionClose",
-  "gearPromotionMedal","gearPromotionBonusesTitle","gearPromotionResourceIcon"];
+  "gearPromotionMedal","gearPromotionBonusesTitle","gearPromotionResourceIcon","gearPromotionScrollHint"];
  const elements=Object.fromEntries(names.map(id=>[id,new FakeNode()]));
  elements.detailRenPortrait.setAttribute("src","assets/ren-portrait-ui.webp");
  elements.detailRenPortrait.alt="Рен — портрет из игры";
- const context=vm.createContext({document:{
+ const context=vm.createContext({HeroStatsCore:require("../hero-stats-core.js"),document:{
   getElementById:id=>elements[id]??null,
   createElement:tag=>new FakeNode(tag)
  },Intl,Number,Object});
@@ -68,9 +68,9 @@ test("game routes both promotions through presentation after transactions",()=>{
  assert.equal((game.match(/GearPromotionUI\.show\(/g)||[]).length,2);
  assert.ok(game.indexOf("persistProgress()")<game.indexOf("GearPromotionUI.show("));
  assert.match(html,/id="gearPromotionPortrait"/);
- assert.match(html,/gear-promotion-ui\.js\?v=0\.3\.234/);
- assert.match(html,/gear-promotion-ui\.css\?v=0\.3\.234/);
- assert.match(html,/v0\.3\.234 · HEROVICTORY002/);
+ assert.match(html,/gear-promotion-ui\.js\?v=0\.3\.235/);
+ assert.match(html,/gear-promotion-ui\.css\?v=0\.3\.235/);
+ assert.match(html,/v0\.3\.235 · VICTORYSTATS003/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.match(css,/safe-area-inset-bottom/);
  assert.match(css,/min-height:44px/);
@@ -124,5 +124,62 @@ test("portrait uses contain without zoom/cropping; all versions and calls are wi
  assert.match(game,/GearPromotionUI\.showStar\(/);
  assert.match(game,/GearPromotionUI\.showLevel\(/);
  assert.match(html,/id="gearPromotionResourceIcon"/);
- assert.match(html,/v0\.3\.234 · HEROVICTORY002/);
+ assert.match(html,/v0\.3\.235 · VICTORYSTATS003/);
+});
+
+
+test("canonical 14-stat source: gear shows every actual change, no fabricated speed or atk alias",()=>{
+ const {ui,elements:e}=makeUI();
+ const keys=require("../hero-stats-core.js").KEYS;
+ assert.equal(keys.length,14);
+ const before=Object.fromEntries(keys.map((key,i)=>[key,i+10]));
+ const after=Object.fromEntries(keys.map((key,i)=>[key,i+11]));
+ before.atk=123;after.atk=124; // compatibility alias must not be shown twice
+ before.level=5;after.level=6; // level is not a combat stat
+ before.currency=2000;after.currency=1750;
+ ui.show({heroName:"Нада",from:3,to:4,currency:250,before,after});
+ const rows=e.gearPromotionStats.children;
+ assert.equal(rows.length,14);
+ assert.deepEqual(rows.map(row=>row.dataset.statKey),Array.from(keys));
+ assert.equal(rows.some(row=>row.dataset.statKey==="atk"),false);
+ assert.equal(rows.some(row=>row.dataset.statKey==="level"),false);
+ assert.equal(e.gearPromotionStats.attributes["aria-label"],"Изменения характеристик: 14");
+ const speed=rows.find(row=>row.dataset.statKey==="speed");
+ assert.equal(speed.children[2].textContent,"+1");
+ const crit=rows.find(row=>row.dataset.statKey==="critChance");
+ assert.equal(crit.children[1].children[1].children[0].textContent,"17%");
+ assert.equal(crit.children[2].textContent,"+1 п.п.");
+});
+test("percent-point deltas, negative values and missing fields never invent stats",()=>{
+ const {ui,elements:e}=makeUI();
+ ui.show({heroName:"Рен",from:3,to:4,currency:700,
+  before:{hp:100,critChance:7.5,debuffPotency:2,physicalAttack:45,atk:45,speed:150,level:9},
+  after:{hp:99,critChance:8,debuffPotency:2,physicalAttack:45,atk:46,speed:150,level:10}});
+ const rows=e.gearPromotionStats.children;
+ assert.deepEqual(rows.map(row=>row.dataset.statKey),["hp","critChance"]);
+ assert.equal(rows[0].children[2].className.includes("is-negative"),true);
+ assert.equal(rows[0].children[2].textContent,"-1");
+ assert.equal(rows[1].children[1].children[1].children[0].textContent,"7,5%");
+ assert.equal(rows[1].children[1].children[1].children[2].textContent,"8%");
+ assert.equal(rows[1].children[2].textContent,"+0,5 п.п.");
+ ui.showLevel({heroName:"Рен",from:9,to:10,currency:200,
+  before:{hp:99,physicalAttack:45,magicDefense:3,protection:0},
+  after:{hp:100,physicalAttack:46,magicDefense:null,protection:NaN}});
+ assert.deepEqual(e.gearPromotionStats.children.map(row=>row.dataset.statKey),
+  ["hp","physicalAttack"]);
+});
+test("legacy pilot attack remains available only when the full physical stat is absent",()=>{
+ const {ui,elements:e}=makeUI();
+ show(ui);
+ assert.deepEqual(e.gearPromotionStats.children.map(row=>row.dataset.statKey),["hp","atk"]);
+});
+test("long results have a scroll region while existing portrait and Continue remain intact",()=>{
+ const html=read("index.html"),css=read("gear-promotion-ui.css");
+ assert.match(html,/id="gearPromotionScrollHint"/);
+ assert.match(html,/id="gearPromotionStats"[^>]*role="region"[^>]*tabindex="0"/);
+ assert.match(css,/overscroll-behavior-y:contain/);
+ assert.match(css,/-webkit-overflow-scrolling:touch/);
+ assert.match(css,/#gearPromotionClose\{[^}]*min-height:44px/);
+ assert.match(css,/object-fit:contain/);
+ assert.match(html,/v0\.3\.235 · VICTORYSTATS003/);
 });

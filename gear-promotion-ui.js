@@ -65,7 +65,7 @@ const GearPromotionUI=(()=>{
   currencyIcon.textContent=kind==="star"?"✦":"";
   const portrait=byId("gearPromotionPortrait"),source=byId("detailRenPortrait");
   const src=source?.getAttribute("src");
-  if(src&&!source?.hidden || src&&source?.alt){
+  if(src){
    portrait.src=src;portrait.alt=source.alt||String(heroName||"Герой");portrait.hidden=false;
   }else{portrait.removeAttribute("src");portrait.hidden=true;}
   const stats=byId("gearPromotionStats"),rows=effects(before,after,kind);

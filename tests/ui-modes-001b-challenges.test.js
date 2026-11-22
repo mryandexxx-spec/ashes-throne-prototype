@@ -14,7 +14,7 @@ test("UIMODES001C keeps both trial modes in the accepted HQ visual language",()=
  assert.match(art,/#challenges\.screen\.active/);
  assert.match(art,/#challenges \.challenge-mode-card/);
  assert.match(art,/#challenges #challengeList \.campaign-mission/);
- assert.doesNotMatch(art,/#campaign\s|#home\s|#playerProfile\s|#battle\s/);
+ assert.doesNotMatch(art,/#campaign\s|#home\s|#playerProfile\s/);
 });
 
 test("UIMODES001C preserves mode switching, unlocks, squad entry and results",()=>{

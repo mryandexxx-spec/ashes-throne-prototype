@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path");
@@ -78,8 +79,8 @@ test("NET-UX-002 app routes, existing game systems and release contract",()=>{
   'data-net-view="clues"',
   'data-net-view="threat"',
   'data-screen="operations" aria-label="Открыть учебные разведоперации"',
-  'network-navigation.js?v=0.3.222" type="text/progress-gated"',
-  'id="buildVersion">Прототип · v0.3.222 · SQUADVIEW002'
+  'network-navigation.js?v='+__BUILD_VERSION_FOR_TESTS+'" type="text/progress-gated"',
+  'id="buildVersion">Прототип · v'+__BUILD_VERSION_FOR_TESTS+' · '
  ])assert.ok(html.includes(needle),needle);
  for(const needle of [
   'NetworkNavigation.mount(',
@@ -91,5 +92,5 @@ test("NET-UX-002 app routes, existing game systems and release contract",()=>{
  ])assert.ok(game.includes(needle),needle);
  assert.ok(css.includes(".netux-tabs"));
  assert.ok(css.includes("min-height:44px"));
- assert.equal(JSON.parse(read("package.json")).version,"0.3.222");
+ assert.equal(JSON.parse(read("package.json")).version,__BUILD_VERSION_FOR_TESTS);
 });

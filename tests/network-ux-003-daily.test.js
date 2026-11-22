@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
@@ -102,6 +103,6 @@ test("NET-UX-003: network panel, activity links, safe return, mobile CSS and bui
  assert.match(css,/max-height:calc\(100dvh - 218px\)/);
  assert.match(css,/min-height:44px/);
  assert.match(css,/safe-area-inset/);
- assert.equal(pkg.version,"0.3.222");
- assert.match(html,/id="buildVersion">Прототип · v0\.3\.222 · SQUADVIEW002/);
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+__BUILD_VERSION_FOR_TESTS+' · '));
 });

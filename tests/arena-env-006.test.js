@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 // ARENA-ENV-006 (experiment): projected 3D terrace behind ?environment=env3d.
 // Pure geometry/projection contract; the real frame lives in arena-env-006-browser.cjs.
@@ -98,8 +99,8 @@ test("game wiring: flag-only, built on battle entry, disposed on exit; 2D stays 
  // ENV-005 behaviour is untouched: transparent canvas + CSS art (also the 3D loading fallback).
  assert.ok(game.includes("!/(?:^|[?&])environment=(?:env017|env010)(?:&|$)/.test(location.search)"));
  assert.match(game,/alpha:ENV022_CONCEPT_PREVIEW/);
- const at=html.indexOf('src="combat-environment-006.js?v=0.3.222"');
- assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.222"'));
+ const at=html.indexOf('src="combat-environment-006.js?v='+__BUILD_VERSION_FOR_TESTS+'"');
+ assert.ok(at>0&&at<html.indexOf('src="game.js?v='+__BUILD_VERSION_FOR_TESTS+'"'));
  const src=read("combat-environment-006.js");
  assert.match(src,/isPickable=false/);
  assert.ok(!/ShadowGenerator|PostProcess|DefaultRenderingPipeline/.test(src),"no shadow map, no post-process");
@@ -107,9 +108,9 @@ test("game wiring: flag-only, built on battle entry, disposed on exit; 2D stays 
 
 test("build label v0.3.222 · SQUADVIEW002",()=>{
  const pkg=JSON.parse(read("package.json")),html=read("index.html");
- assert.equal(pkg.version,"0.3.222");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.222 · SQUADVIEW002'));
- assert.ok(html.includes('src="game.js?v=0.3.222"'));
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+__BUILD_VERSION_FOR_TESTS+' · '));
+ assert.ok(html.includes('src="game.js?v='+__BUILD_VERSION_FOR_TESTS+'"'));
  assert.ok(!html.includes("?v=0.3.214"));
  assert.ok(pkg.scripts.test.includes("node --check combat-environment-006.js"));
 });

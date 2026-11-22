@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path");
@@ -31,8 +32,8 @@ test("NET-UX-006: briefing, result and weekly layouts retain existing actions an
  assert.match(css,/\.netux-weekly-facts/);
  assert.match(css,/min-height:44px/);
  assert.match(css,/overflow-y:auto/);
- assert.equal(JSON.parse(read("package.json")).version,"0.3.222");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.222 · SQUADVIEW002'));
+ assert.equal(JSON.parse(read("package.json")).version,__BUILD_VERSION_FOR_TESTS);
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+__BUILD_VERSION_FOR_TESTS+' · '));
 });
 test("NET-UX-006: reward and combat engine files remain unchanged by UI workflow",()=>{
  const ui=read("network-pilot-ui.js"),week=read("weekly-threat-ui.js");

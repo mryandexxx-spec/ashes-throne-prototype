@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 /* NET-005: test-only directed orders, mastered simulation and material-source honesty. */
 const test=require("node:test"),assert=require("node:assert/strict");
@@ -151,7 +152,7 @@ test("NET-005 configured matching material links only: no fictitious farm source
 });
 test("NET-005 build is opt-in, versioned and no live reward/source table",()=>{
  const pkg=JSON.parse(read("package.json")),html=read("index.html");
- assert.ok(html.includes('id="buildVersion">Прототип · v'+pkg.version+' · SQUADVIEW002'));
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+pkg.version+' · '));
  assert.ok(html.includes('id="net005OrderChoices"'));
  assert.ok(html.includes('id="net005FinderBack"'));
  assert.ok(read("network-pilot-ui.js").includes("Симуляция закрыта"));

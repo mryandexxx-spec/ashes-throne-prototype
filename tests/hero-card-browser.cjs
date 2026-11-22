@@ -255,7 +255,7 @@ const {chromium,webkit}=require('playwright');
   }));
   await page.locator('#starPromoteButton').click();
   assert.equal(await page.locator('#gearPromotionDialog').getAttribute('data-victory-kind'),'star');
-  assert.match(await page.locator('#gearPromotionPortrait').getAttribute('src'),/nada-portrait-ui\\.webp/);
+  assert.match(await page.locator('#gearPromotionPortrait').getAttribute('src'),/nada-portrait-ui\.webp/);
   await page.locator('#gearPromotionPortrait').evaluate(img=>img.decode());
   assert.equal(await page.evaluate(()=>StarCore.rankOf(progress,'nada')),nadaBefore.rank+1);
   for(const [width,height] of [[844,390],[932,430],[844,320]]){

@@ -89,7 +89,7 @@ assert.equal(devProgress.energy.value,240);
 assert.equal(devProgress.currency,5000);
 assert.equal(devProgress.gearMaterials,100);
 assert.match(elements.devResourcesNotice.textContent,/Тестовый запас готов/);
-assert.match(elements.accountStatus.textContent,/Валюта 5000/);
+assert.match(elements.accountStatus.textContent,/Кромы 5000/);
 assert.equal(devProgress.levels.kael,oldLevel);
 assert.deepEqual(Array.from(devProgress.claimedMissions),oldClaims);
 assert.equal(JSON.parse(savedData.get("ashes-throne.progress.v2")).currency,5000);
@@ -115,7 +115,7 @@ click(heroNodes[0]);
 assert.equal(elements.heroDetail.classList.active,true);
 assert.equal(elements.detailName.textContent,"Каэль Ворон");
 assert.equal(elements.detailWallet.textContent,"500");
-assert.equal(elements.detailCost.textContent,"39 валюты");
+assert.equal(elements.detailCost.textContent,"39 кромов");
 assert.equal(elements.detailUpgrade.disabled,false,"currency from saved test account");
 click(elements.detailBack);
 assert.equal(elements.collection.classList.active,true);
@@ -149,7 +149,7 @@ assert.equal(elements.heroDetail.classList.active,true,"remains on hero detail a
 assert.equal(elements.detailWallet.textContent,"461");
 assert.match(elements.detailStats.innerHTML,/125 HP/);
 assert.match(elements.detailStats.innerHTML,/25 ATK/);
-assert.equal(elements.detailCost.textContent,"44 валюты");
+assert.equal(elements.detailCost.textContent,"44 кромов");
 assert.equal(elements.detailUpgrade.disabled,false,"hero upgrade available above account level");
 assert.match(elements.detailNotice.textContent,/Улучшение доступно/);
 
@@ -216,7 +216,7 @@ assert.equal(api.getProgress().gear.kael.tier,1,"full six do not auto-promote");
 assert.equal(api.getProgress().gear.kael.slots.filter(Boolean).length,6);
 assert.equal(elements.gearEquipNext.textContent,"Поднять уровень");
 assert.equal(elements.gearPriceLabel.textContent,"Стоимость перехода");
-assert.match(elements.gearPrice.textContent,/250 игровой валюты/);
+assert.match(elements.gearPrice.textContent,/250 кромов/);
 assert.equal(elements.gearEquipNext.disabled,false,"G2 promotion available at hero level 2");
 // No prerequisite hero or account level is needed for this prototype action.
 api.openHeroDetail("kael");

@@ -1,12 +1,14 @@
-// RESICON001: display-only Account XP and skill materials. No reward or wallet writes.
+// KROM001: presentation-only Account XP, Kroms and skill materials. No wallet writes.
 const ResourceIconUI=(()=>{
  "use strict";
- const IDS=Object.freeze(["account-xp","manual1","manual2","seal"]);
+ const SKILL_IDS=Object.freeze(["manual1","manual2","seal"]);
+ const IDS=Object.freeze(["account-xp","krom",...SKILL_IDS]);
  const LABELS=Object.freeze({
-  "account-xp":"Опыт аккаунта",manual1:"Учебник I",manual2:"Учебник II",seal:"Печать мастерства"
+  "account-xp":"Опыт аккаунта",krom:"Кром",manual1:"Учебник I",manual2:"Учебник II",seal:"Печать мастерства"
  });
  const DESCRIPTIONS=Object.freeze({
-  "account-xp":"Повышает уровень аккаунта, открывая доступ к новым возможностям и пределам развития героев. Уровень героя повышается за игровую валюту, не за отдельный опыт.",
+  "account-xp":"Повышает уровень аккаунта, открывая доступ к новым возможностям и пределам развития героев. Уровень героя повышается за кромы, не за отдельный опыт.",
+  krom:"Кром — основная игровая валюта. Её получают за выполнение задач и получение игровых наград и тратят на улучшение героев, способностей и экипировки. Название и рисунок согласованы; денежная система всего мира пока не установлена.",
   manual1:"Материал раннего обучения: требуется для улучшения способностей с уровня 2 до 3 и с 3 до 4.",
   manual2:"Продвинутый учебник: требуется для улучшения способностей с уровня 4 до 5 и с 5 до 6.",
   seal:"Редкий материал, необходимый при улучшении способности с уровня 5 до 6."
@@ -26,8 +28,10 @@ const ResourceIconUI=(()=>{
   if(!known(id)||!(quantity===null||valid(quantity))||
     !(stock===null||valid(stock))||!(need===null||valid(need)))return "";
   const recipe=need!==null,available=recipe&&stock>=need;
-  const count=recipe?(stock===null?"?/":stock+"/")+need:
+  const format=n=>new Intl.NumberFormat("ru-RU").format(n);
+  const count=recipe?(id==="krom"?format(need):(stock===null?"?/":stock+"/")+need):
    quantity===null?"":id==="account-xp"?(mode==="reward"?"+":"")+quantity+" XP":
+   id==="krom"?(mode==="reward"?"+":"")+format(quantity):
    "×"+quantity;
   const detail=recipe?"Есть "+(stock??"неизвестно")+", нужно "+need:
    quantity===null?"":(mode==="reward"?"Награда: ":"Количество: ")+quantity;
@@ -41,7 +45,7 @@ const ResourceIconUI=(()=>{
  function rewards(xp=0,materials=null,{compact=false,mode="reward"}={}){
   const chunks=[];
   if(valid(xp)&&xp>0)chunks.push(tile("account-xp",xp,{compact,mode}));
-  for(const id of IDS.slice(1)){
+  for(const id of SKILL_IDS){
    const n=materials?.[id];
    if(valid(n)&&n>0)chunks.push(tile(id,n,{compact}));
   }
@@ -54,30 +58,52 @@ const ResourceIconUI=(()=>{
  }
  function appendCost(host,cost,inventory){
   if(!host)return;
-  const markup=IDS.slice(1).filter(id=>valid(cost?.[id])&&cost[id]>0)
+  const markup=SKILL_IDS.filter(id=>valid(cost?.[id])&&cost[id]>0)
    .map(id=>tile(id,cost[id],{stock:valid(inventory?.[id])?inventory[id]:null,need:cost[id]})).join("");
   if(markup)host.insertAdjacentHTML("beforeend",'<span class="resource-group">'+markup+'</span>');
+ }
+ function currencyTile(amount,{compact=true,mode="reward",stock=null,asCost=false}={}){
+  return tile("krom",amount,{compact,mode,stock:asCost?stock:null,need:asCost?amount:null});
+ }
+ function appendCurrency(host,amount,options={}){
+  const html=currencyTile(amount,options);
+  if(host&&html)host.insertAdjacentHTML?.("beforeend",html);
  }
  function sources(id,day){
   if(!known(id))return [];
   const rows=[];
   const add=(title,detail,screen)=>rows.push({title,detail,screen});
   if(id==="account-xp")add("Сюжетная кампания","Опыт за предусмотренные награды миссий и первые победы.","campaign");
+  if(id==="krom"){
+   if(typeof ProgressCore!=="undefined"){
+    if(Object.values(ProgressCore.MISSION_GEAR_FARM||{}).some(x=>x.currency>0))
+     add("Ресурсные миссии","Кромы за предусмотренные боевые повторы и симуляции.","campaign");
+    if(Object.values(ProgressCore.FIRST_CLEAR_REWARDS||{}).some(x=>x.currency>0))
+     add("Первые победы","Разовые награды за первое прохождение доступных миссий.","campaign");
+   }
+   if(typeof LoreActOneRewardCore!=="undefined"&&LoreActOneRewardCore.ACTS?.some(x=>x.source?.reward?.currency>0))
+    add("Сюжетные акты","Разовые награды за завершённые акты кампании.","campaign");
+   if(typeof WeeklyThreatCore!=="undefined"&&WeeklyThreatCore.TIERS?.some(x=>x.currency>0))
+    add("Недельная угроза","Кромы за достигнутые и полученные ступени недельного испытания.","network");
+   if(typeof NetworkLiveEconomy!=="undefined"&&typeof NetworkLiveEconomy.preview==="function")
+    add("Разведсеть","Кромы в наградах активных разведывательных операций.","network");
+  }
   if(typeof DailyCore!=="undefined"){
-   const tasks=DailyCore.TASKS.filter(t=>id==="account-xp"?t.xp>0:(t.skillMaterials?.[id]??0)>0);
+   const tasks=DailyCore.TASKS.filter(t=>id==="account-xp"?t.xp>0:id==="krom"?t.currency>0:(t.skillMaterials?.[id]??0)>0);
    if(tasks.length)add("Задания дня",tasks.map(t=>t.label+" · +"+
-    (id==="account-xp"?t.xp:t.skillMaterials[id])).join("; "),"dailyTasks");
+    (id==="account-xp"?t.xp:id==="krom"?t.currency:t.skillMaterials[id])).join("; "),"dailyTasks");
   }
   if(typeof LoginCore!=="undefined"){
    const days=typeof day==="string"&&day.length>=7?LoginCore.daysInMonth(day.slice(0,7)):null;
    const dates=[];
    if(days)for(let n=1;n<=days;n++){
     const reward=LoginCore.rewardForDay(n);
-    const amount=id==="account-xp"?reward?.xp:reward?.skillMaterials?.[id];
+    const amount=id==="account-xp"?reward?.xp:id==="krom"?reward?.currency:reward?.skillMaterials?.[id];
     if(amount>0)dates.push(n);
    }
    if(dates.length)add("Календарь входа",
     id==="account-xp"?"Опыт входит в ежедневные награды календаря.":
+    id==="krom"?"Кромы входят в награды календаря: дни "+dates.join(", ")+".":
     "Дни месяца: "+dates.join(", ")+" · по 1 шт.","loginCalendar");
   }
   if(id==="account-xp")add("Повторные боевые миссии","XP начисляется в предусмотренных ресурсных повторах и симуляциях.","campaign");
@@ -93,12 +119,13 @@ const ResourceIconUI=(()=>{
    if(!trigger||dialog.open)return;
    const id=trigger.dataset.resourceId;
    if(!known(id))return;
-   const state=getState()||{},have=state.progress?.skillMaterials?.[id];
+   const state=getState()||{},have=id==="krom"?state.progress?.currency:state.progress?.skillMaterials?.[id];
    const need=trigger.dataset.resourceNeed;
    const stock=id==="account-xp"
     ?"Всего получено: "+(state.progress?.accountXp??"—")+" XP":
-    "В запасе: "+(valid(have)?have:"неизвестно")+
-      (need===undefined?"":", нужно "+need);
+    "В запасе: "+(valid(have)?new Intl.NumberFormat("ru-RU").format(have):"неизвестно")+
+      (id==="krom"?" кромов":"")+
+      (need===undefined?"":", нужно "+new Intl.NumberFormat("ru-RU").format(Number(need)));
    origin=trigger;
    get("resourceDialogTitle").textContent=LABELS[id];
    get("resourceDialogArt").innerHTML=art(id);
@@ -140,6 +167,6 @@ const ResourceIconUI=(()=>{
    origin=null;
   });
  }
- return Object.freeze({IDS,LABELS,OVERRIDES,art,tile,rewards,append,appendCost,sources,mount});
+ return Object.freeze({IDS,SKILL_IDS,LABELS,OVERRIDES,art,tile,rewards,append,appendCost,currencyTile,appendCurrency,sources,mount});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=ResourceIconUI;

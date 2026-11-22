@@ -18,6 +18,21 @@ async function run(name,browserType){
    document.getElementById("walletWriterNotice")?.style.display==="none",null,{timeout:60000});
   for(const [width,height] of [[844,390],[932,430],[844,320]]){
    await page.setViewportSize({width,height});
+   await page.evaluate(()=>showScreen("home"));
+   const krom=page.locator("#home .hq-krom-button[data-resource-id='krom']");
+   assert.equal(await krom.count(),1,"HQ uses shared resource icon");
+   await krom.tap();
+   assert.equal(await page.locator("#resourceDialog").evaluate(n=>n.open),true);
+   assert.match(await page.locator("#resourceDialogTitle").textContent(),/Кром/);
+   assert.match(await page.locator("#resourceDialogStock").textContent(),/В запасе/);
+   assert.match(await page.locator("#resourceDialogSources").textContent(),/Задания дня/);
+   const coin=await page.locator("#resourceDialogArt .resource-art--krom").evaluate(el=>{
+    const rect=el.getBoundingClientRect(),url=getComputedStyle(el).backgroundImage;
+    return {width:rect.width,height:rect.height,url};
+   });
+   assert.ok(coin.width>=48&&coin.height>=48&&coin.url.includes("krom.webp"));
+   await page.locator("#resourceDialogClose").tap();
+   assert.equal(await krom.evaluate(n=>document.activeElement===n),true);
    await page.evaluate(()=>showScreen("dailyTasks"));
    const xp=page.locator("#dailyTaskList .resource-chip[data-resource-id='account-xp']").first();
    await xp.tap();

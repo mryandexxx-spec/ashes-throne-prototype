@@ -41,3 +41,22 @@
 #net008aRewards .weekly-reward-line{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:4px 0;border-bottom:1px solid #9e805936}
 #net008aRewards .weekly-reward-line:last-child{border-bottom:0}
 #net008aRewards .resource-chip{flex:0 0 auto}
+
+/* KROM001 — approved clipped-rim bronze Krom, separate replaceable WebP. */
+.resource-art--krom{background-image:url("assets/resources/krom.webp?v=1");background-size:contain;background-position:center}
+.hq-krom-button{display:inline-flex;align-items:center;justify-content:center;gap:3px;min-height:44px;min-width:64px;max-width:100%;padding:4px 8px;border:1px solid #765a3c88;border-radius:18px;background:linear-gradient(#1e1d20ee,#282125df);color:#fff1db;white-space:nowrap;touch-action:manipulation;font:600 13px Inter,system-ui,sans-serif;box-shadow:inset 0 1px #d9ad6740}
+.hq-krom-button .resource-art{width:27px;height:27px}
+.hq-krom-button:focus-visible{outline:2px solid #f5c983;outline-offset:2px}
+.hq-krom-button strong{font-variant-numeric:tabular-nums}
+#accountStatus .resource-chip{margin-left:4px;white-space:nowrap}
+#accountStatus .resource-chip--compact{font-size:11px}
+.resource-chip--krom{color:#eaca88}
+.resource-chip--krom .resource-art{width:30px;height:30px}
+.resource-dialog header .resource-art--krom{width:68px;height:68px}
+#skillCostText .resource-chip--krom{vertical-align:middle}
+#loginCalendarGrid .resource-chip--krom,#dailyTaskList .resource-chip--krom{max-width:100%}
+@media(max-height:430px) and (orientation:landscape){
+ .hq-krom-button{padding:3px 6px;min-height:44px}
+ .hq-krom-button .resource-art{width:26px;height:26px}
+ #accountStatus .resource-chip--krom{padding:1px 4px}
+}

@@ -28,8 +28,9 @@ const WeeklyThreatUI=(()=>{
    el.dataset.status=won?(due?"pending":"paid"):"locked";
    el.textContent=(i+1)+"★ · от "+tier.score+"/100 · "+
     (won?(due?"К получению":"Получено"):"Пока не достигнуто")+
-    " · +"+tier.currency+" валюты · +"+tier.xp+" XP · "+
-    materialCount+" материалов ("+Object.keys(tier.materials).length+" видов)";
+    " · +"+tier.xp+" XP · "+materialCount+" материалов ("+
+    Object.keys(tier.materials).length+" видов)";
+   if(typeof ResourceIconUI!=="undefined")ResourceIconUI.appendCurrency(el,tier.currency,{compact:true});
   });
   $("net008aStatus").textContent=notice||(session.isClockBack()?
    "Часы устройства переведены назад: недельные действия приостановлены. Верните правильное время.":
@@ -39,7 +40,7 @@ const WeeklyThreatUI=(()=>{
    ". Поражение не лишает награды и допускает повтор.");
   $("net008aRewards").innerHTML=WeeklyThreatCore.TIERS.map((tier,i)=>
    '<span class="weekly-reward-line">'+(i+1)+"★ · "+tier.score+" очков · +"+
-    tier.currency+" валюты · "+
+    (typeof ResourceIconUI!=="undefined"?ResourceIconUI.currencyTile(tier.currency,{compact:true}):"+"+tier.currency+" кромов")+" · "+
     (typeof ResourceIconUI!=="undefined"?
      ResourceIconUI.tile("account-xp",tier.xp,{compact:true}):
      "+"+tier.xp+" XP")+
@@ -68,7 +69,7 @@ const WeeklyThreatUI=(()=>{
   }
   const r=await session.collect().catch(()=>({ok:false,code:"COLLECT_FAILED"}));
   notice=r.ok?(r.count?"Получено: "+r.count+" наградных ступеней, +"+r.currency+
-   " валюты, +"+r.xp+" XP, +"+r.materials+" материалов.":""):
+   " кромов, +"+r.xp+" XP, +"+r.materials+" материалов.":""):
    "Выплата не подтверждена: "+r.code+". Не запускайте повторную выдачу без проверки.";
   render();
  }

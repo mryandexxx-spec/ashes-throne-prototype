@@ -27,14 +27,15 @@ const NetworkPilotUI=(()=>{
    typeof GearData!=="undefined"?GearData.MATERIAL_LABELS[k]||k:k));
   const shards=Object.entries(reward.heroShards||{}).map(([k,v])=>
    "+"+v+" осколков: "+(heroLabels[k]||k));
-  return ["+"+reward.currency+" валюты","+"+reward.accountXp+" XP",...(includeMaterials?mats:[]),...shards].join(" · ");
+  return ["+"+reward.currency+" кромов","+"+reward.accountXp+" XP",...(includeMaterials?mats:[]),...shards].join(" · ");
  }
  function renderReward(host,ref,pilotText){
   const receipt=isLive()?NetworkLiveEconomy.preview(ref):null;
   const icons=typeof ResourceIconUI!=="undefined";
   const label=isLive()?rewardText(ref,false):pilotText;
   host.textContent=receipt&&icons?
-   label.replace(" · +"+receipt.accountXp+" XP",""):label;
+   label.replace("+"+receipt.currency+" кромов · ","").replace(" · +"+receipt.accountXp+" XP",""):label;
+  if(receipt&&icons)ResourceIconUI.appendCurrency(host,receipt.currency,{compact:true});
   if(receipt&&icons)ResourceIconUI.append(host,receipt.accountXp,null,{compact:true});
   if(receipt)GearMaterialUI.append(host,receipt.materials);
  }
@@ -49,9 +50,9 @@ const NetworkPilotUI=(()=>{
    const shards=Object.entries(result.shardBreakdown||{}).map(([id,count])=>
     "+"+count+" осколков ("+(heroLabels[id]||id)+")");
    notice="Получено за "+n+" "+part+": +"+result.currency+
-    " валюты · +"+result.xp+" XP"+
+    " кромов · +"+result.xp+" XP"+
     (shards.length?" · "+shards.join(", "):"")+".";
-   materialReceipt={text:notice,materials:result.materialBreakdown};
+   materialReceipt={text:notice,materials:result.materialBreakdown,currency:result.currency};
   }else if(!result.ok){
    materialReceipt=null;
    notice=errorText[result.code]||"Не удалось выдать награду: "+result.code+
@@ -210,7 +211,10 @@ const NetworkPilotUI=(()=>{
    "Режим заблокирован: нет безопасной записи. Перезагрузите страницу.":
    notice||(isLive()?"Разведсеть: выполняйте зацепки, направляйте поиск материалов и осколков.":
     "Пробный режим без наград и расхода энергии. Данные хранятся отдельно.");
-  if(!blocked&&materialReceipt?.text===notice)GearMaterialUI.append($("net004Notice"),materialReceipt.materials);
+  if(!blocked&&materialReceipt?.text===notice){
+   if(typeof ResourceIconUI!=="undefined")ResourceIconUI.appendCurrency($("net004Notice"),materialReceipt.currency,{compact:true});
+   GearMaterialUI.append($("net004Notice"),materialReceipt.materials);
+  }
   const board=$("net004Board"),active=$("net004Active"),result=$("net004Result");
   board.hidden=!!s?.active||!s;
   active.hidden=!s?.active||s.active.phase==="result";
@@ -248,7 +252,7 @@ const NetworkPilotUI=(()=>{
    const useXpIcon=!!payout&&typeof ResourceIconUI!=="undefined";
    const visibleReward=isLive()?rewardText(clue.rewardRef,false):fullReward;
    const reward=line(useXpIcon?
-    visibleReward.replace(" · +"+payout.accountXp+" XP",""):visibleReward,"span");
+    visibleReward.replace("+"+payout.currency+" кромов · ","").replace(" · +"+payout.accountXp+" XP",""):visibleReward,"span");
    reward.className="netux-clue-reward";
    const tags=document.createElement("div");tags.className="netux-clue-tags";
    if(session.canSimulate(clue.id))tags.append(line("Освоено","span"));
@@ -263,7 +267,7 @@ const NetworkPilotUI=(()=>{
     (clue.threatTag?". След угрозы":""));
    choice.append(top,title,reward,tags);el.append(choice);
    if(isLive()){
-    if(useXpIcon)ResourceIconUI.append(el,payout.accountXp,null,{compact:true});
+    if(useXpIcon){ResourceIconUI.appendCurrency(el,payout.currency,{compact:true});ResourceIconUI.append(el,payout.accountXp,null,{compact:true});}
     GearMaterialUI.append(el,payout?.materials);
    }
    cluesEl.append(el);

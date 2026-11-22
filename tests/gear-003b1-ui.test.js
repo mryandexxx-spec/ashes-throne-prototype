@@ -89,7 +89,7 @@ for(let i=0;i<6;i++){
 assert.match(elements.gearTier.textContent,/G1 · 6\/6/);
 assert.equal(elements.gearEquipNext.textContent,"Повысить экипировку до G2");
 assert.equal(elements.gearEquipNext.disabled,false);
-assert.match(elements.gearPrice.textContent,/250 валюты/);
+assert.match(elements.gearPrice.textContent,/250 кромов/);
 assert.equal(elements.gearStatBonus.textContent,"HP и ATK +3%");
 const beforePromo=p.currency,resourcesBefore=JSON.stringify(p.materials);
 click(elements.gearEquipNext);

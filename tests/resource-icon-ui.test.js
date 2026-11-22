@@ -53,7 +53,7 @@ test("Krom coin is an independent compact transparent WebP, without a save schem
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
  assert.match(html,/data-resource-id="krom"/);
  assert.match(html,/id="hqCurrency"/);
- assert.match(html,/v0.3.228 · KROM002/);
+ assert.ok(html.includes("v"+require("../package.json").version+" ·"),"current build version follows package");
  assert.match(fs.readFileSync(path.join(root,"progress-core.js"),"utf8"),/progress\.currency/);
 });
 test("Krom rewards, costs and source cards reuse verified catalogs",()=>{

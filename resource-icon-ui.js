@@ -109,6 +109,43 @@ const ResourceIconUI=(()=>{
   if(id==="account-xp")add("Повторные боевые миссии","XP начисляется в предусмотренных ресурсных повторах и симуляциях.","campaign");
   return rows;
  }
+
+ // LOGIN-CAL-003: UI-only contract for a primary reward. Actual grant logic is
+ // still owned by LoginCore/RewardPolicy; this never modifies a wallet.
+ function calendarPrimary(reward){
+  if(!reward||typeof reward!=="object")return null;
+  const candidate=reward.primary;
+  const kinds=["currency","hero-shard","material","resource"];
+  if(candidate&&typeof candidate==="object"&&kinds.includes(candidate.kind)&&
+     typeof candidate.id==="string"&&/^[a-zA-Z0-9_-]{1,64}$/.test(candidate.id)&&
+     Number.isSafeInteger(candidate.amount)&&candidate.amount>0){
+   const label=typeof candidate.label==="string"&&candidate.label.length<=70?
+     candidate.label:(candidate.kind==="hero-shard"?"Осколки героя":
+     candidate.kind==="material"?"Материал":candidate.kind==="currency"?"Валюта":"Ресурс");
+   const subtitle=candidate.kind==="hero-shard"?"Осколки персонажа":
+    candidate.kind==="currency"?"Основная валюта":
+    candidate.kind==="material"?"Материал снаряжения":"Игровой ресурс";
+   // Optional future content art is a vetted local asset, never an external URL.
+   const artPath=typeof candidate.art==="string"&&
+     /^assets\/(?:resources|heroes|characters|gear-materials)\/[a-zA-Z0-9_./-]+\.webp(?:\?v=\d+)?$/.test(candidate.art)?
+     candidate.art:null;
+   return Object.freeze({kind:candidate.kind,id:candidate.id,amount:candidate.amount,
+    label,subtitle,art:artPath,explicit:true});
+  }
+  if(Number.isSafeInteger(reward.currency)&&reward.currency>0)
+   return Object.freeze({kind:"currency",id:"krom",amount:reward.currency,
+    label:"Кромы",subtitle:"Основная валюта",art:null,explicit:false});
+  if(Number.isSafeInteger(reward.xp)&&reward.xp>0)
+   return Object.freeze({kind:"resource",id:"account-xp",amount:reward.xp,
+    label:"Опыт аккаунта",subtitle:"Развитие аккаунта",art:null,explicit:false});
+  const [material,amount]=Object.entries(reward.materials||{})
+   .find(([id,n])=>/^[A-Za-z]{2}$/.test(id)&&Number.isSafeInteger(n)&&n>0)||[];
+  if(material)
+   return Object.freeze({kind:"material",id:material,amount,
+    label:material,subtitle:"Материал снаряжения",art:null,explicit:false});
+  return null;
+ }
+
  function mount(getState,navigate){
   const dialog=document.getElementById("resourceDialog");
   if(!dialog||typeof getState!=="function")return;
@@ -167,6 +204,6 @@ const ResourceIconUI=(()=>{
    origin=null;
   });
  }
- return Object.freeze({IDS,SKILL_IDS,LABELS,OVERRIDES,art,tile,rewards,append,appendCost,currencyTile,appendCurrency,sources,mount});
+ return Object.freeze({IDS,SKILL_IDS,LABELS,OVERRIDES,art,tile,rewards,append,appendCost,currencyTile,appendCurrency,sources,calendarPrimary,mount});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=ResourceIconUI;

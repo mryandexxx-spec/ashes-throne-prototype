@@ -104,4 +104,38 @@ assert.ok(source.includes("i<view.days"));
 assert.ok(source.includes("LoginCore.rewardForDay(i+1)"));
 assert.ok(source.includes("view.claimedThisMonth"));
 assert.ok(source.includes("markLoginCalendarSeen()"));
+// LOGIN-CAL-003: the visible main reward is a typed view, not a hardcoded Krom slot.
+const R=require("../resource-icon-ui.js");
+const krom=R.calendarPrimary(L.rewardForDay(1));
+assert.equal(krom.kind,"currency");assert.equal(krom.id,"krom");
+assert.equal(krom.amount,100);assert.equal(krom.explicit,false);
+const shard=R.calendarPrimary({currency:100,primary:{
+ kind:"hero-shard",id:"ren",amount:5,label:"Осколки Рена",
+ art:"assets/heroes/ren.webp"
+}});
+assert.equal(shard.kind,"hero-shard");
+assert.equal(shard.amount,5);assert.equal(shard.label,"Осколки Рена");
+assert.equal(shard.art,"assets/heroes/ren.webp");
+const material=R.calendarPrimary({primary:{
+ kind:"material",id:"Fe",amount:2,label:"Железо"
+}});
+assert.equal(material.kind,"material");assert.equal(material.id,"Fe");
+const alternate=R.calendarPrimary({primary:{
+ kind:"currency",id:"future-token",amount:20,label:"Событийная валюта"
+}});
+assert.equal(alternate.id,"future-token");
+assert.equal(R.calendarPrimary({primary:{
+ kind:"hero-shard",id:"ren",amount:5,art:"https://untrusted.example/icon.webp"
+}}).art,null,"do not accept external art URL");
+assert.equal(R.calendarPrimary({primary:{kind:"hero-shard",id:"ren",amount:-3},currency:25}).amount,25,
+ "invalid future primary falls back to existing actual Krom payout");
+const css=read("styles.css");
+assert.ok(html.includes('id="loginCalendarGrid"'));
+assert.ok(html.includes('id="loginPrev"')&&html.includes('id="loginNext"'));
+assert.ok(html.includes('id="loginPrimaryArt"')&&html.includes('id="loginRewardExtras"'));
+assert.ok(source.includes("LOGIN_PAGE_SIZE=14"));
+assert.ok(source.includes("loginCalendarRenderedMonth!==view.month"));
+assert.ok(css.includes("LOGIN-CAL-003"));
+assert.match(css,/#loginCalendar \.login-calendar-grid\{[\s\S]*grid-template-rows:repeat\(2,minmax\(0,1fr\)\)/);
+
 console.log("Login-001/002: month-length calendar, leap years, skipped days, first-of-month reset, v1 migration, save and UI passed");

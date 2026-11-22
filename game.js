@@ -685,45 +685,141 @@ function maybeOpenLoginOnEntry(){
  showScreen("loginCalendar");
  return true;
 }
-// Login-001: explicit claim, one local calendar day, no missed-day reset.
+// LOGIN-CAL-003: two rows per page; selection and browsing never alter wallet state.
+const LOGIN_PAGE_SIZE=14;
+let loginCalendarPage=-1,loginCalendarSelectedDay=0,loginCalendarRenderedMonth=null;
+function loginPrimaryIcon(host,primary){
+ host.replaceChildren();
+ if(!primary)return;
+ const id=primary.id;
+ let icon=null;
+ if(primary.art){
+  icon=document.createElement("img");
+  icon.src=primary.art;icon.alt="";icon.decoding="async";
+ }else if(primary.kind==="material"&&typeof GearData!=="undefined"&&
+  GearData.MATERIALS.includes(id)){
+  icon=document.createElement("img");icon.src="assets/gear-materials/"+id+".webp?v=1";
+  icon.alt="";icon.decoding="async";
+ }else if((primary.kind==="currency"||primary.kind==="resource")&&
+  typeof ResourceIconUI!=="undefined"&&ResourceIconUI.IDS.includes(id)){
+  icon=document.createElement("span");icon.className="resource-art resource-art--"+id;
+  icon.setAttribute("aria-hidden","true");
+ }else{
+  icon=document.createElement("span");icon.className="login-reward-fallback";
+  icon.textContent=primary.kind==="hero-shard"?"✦":"◆";
+ }
+ host.append(icon);
+}
 function renderLoginCalendar(){
  const grid=$("#loginCalendarGrid"),status=$("#loginCalendarStatus"),button=$("#loginClaim");
- if(!grid||!status||!button)return;
- const day=dailyDay();
- const view=LoginCore.current(progress,day);
+ const prev=$("#loginPrev"),next=$("#loginNext");
+ if(!grid||!status||!button||!prev||!next)return;
+ const view=LoginCore.current(progress,dailyDay());
  if(saveBlocked||!view){
   grid.textContent="Календарь недоступен: проверь дату и сохранение.";
-  button.disabled=true;
+  button.disabled=true;prev.disabled=true;next.disabled=true;
   status.textContent="Награды не начисляются, пока профиль недоступен.";
   return;
  }
- grid.replaceChildren();
+ if(loginCalendarRenderedMonth!==view.month){
+  loginCalendarPage=-1;loginCalendarSelectedDay=0;
+  loginCalendarRenderedMonth=view.month;
+ }
+ const pages=Math.ceil(view.days/LOGIN_PAGE_SIZE);
+ const todayDay=view.available?view.nextDay:Math.max(1,view.claimedThisMonth);
+ if(loginCalendarSelectedDay<1||loginCalendarSelectedDay>view.days){
+  loginCalendarSelectedDay=todayDay;loginCalendarPage=-1;
+ }
+ if(loginCalendarPage<0||loginCalendarPage>=pages)
+  loginCalendarPage=Math.floor((loginCalendarSelectedDay-1)/LOGIN_PAGE_SIZE);
+ const start=loginCalendarPage*LOGIN_PAGE_SIZE+1;
+ const end=Math.min(start+LOGIN_PAGE_SIZE-1,view.days);
  const monthLabel=$("#loginCalendarMonth");
  if(monthLabel)monthLabel.textContent=new Intl.DateTimeFormat("ru-RU",{month:"long",year:"numeric"})
-  .format(new Date(Number(view.month.slice(0,4)),Number(view.month.slice(5,7))-1,1))+
-  " · "+view.days+" дней";
+  .format(new Date(Number(view.month.slice(0,4)),Number(view.month.slice(5,7))-1,1));
+ $("#loginMiniProgress").textContent=view.claimedThisMonth+" / "+view.days;
+ $("#loginHeaderProgress").textContent=view.claimedThisMonth+" из "+view.days+" получено";
+ $("#loginProgressFill").style.width=(100*view.claimedThisMonth/view.days)+"%";
+ $("#loginPageInfo").textContent=start+"–"+end+" / "+view.days+" · "+(loginCalendarPage+1)+"/"+pages;
+ prev.disabled=loginCalendarPage===0;
+ next.disabled=loginCalendarPage===pages-1;
+ grid.replaceChildren();
  for(let i=0;i<view.days;i++){
   const reward=LoginCore.rewardForDay(i+1);
-  const cell=document.createElement("div");
+  if(i+1<start||i+1>end)continue;
+  const primary=ResourceIconUI.calendarPrimary(reward);
+  const cell=document.createElement("button");cell.type="button";
   cell.className="login-day"+(i<view.claimedThisMonth?" claimed":"")+
-   (view.available&&i===view.nextDay-1?" active":"");
-  const title=document.createElement("strong");title.textContent="День "+(i+1);
-  const detail=document.createElement("small");
-  detail.textContent="";
-  ResourceArtUI.appendCurrency(detail,reward.currency,{compact:true});
-  ResourceArtUI.append(detail,reward.xp,reward.skillMaterials,{compact:true});
-  GearMaterialUI.append(detail,reward.materials);
-  cell.append(title,detail);grid.append(cell);
+   (view.available&&i===view.nextDay-1?" active":"")+
+   (loginCalendarSelectedDay===i+1?" selected":"");
+  cell.dataset.loginDay=String(i+1);
+  cell.setAttribute("aria-pressed",String(loginCalendarSelectedDay===i+1));
+  cell.setAttribute("aria-label","День "+(i+1)+": "+(primary?.label||"Награда")+
+   " "+(primary?.amount??"")+(i<view.claimedThisMonth?", получено":""));
+  const number=document.createElement("strong");number.textContent=String(i+1);
+  const art=document.createElement("span");art.className="login-day-art";
+  loginPrimaryIcon(art,primary);
+  const amount=document.createElement("small");
+  amount.textContent=primary?(primary.kind==="currency"&&primary.id==="krom"?
+   String(primary.amount):"×"+primary.amount):"—";
+  cell.append(number,art,amount);
+  cell.addEventListener("click",()=>{
+   loginCalendarSelectedDay=i+1;
+   renderLoginCalendar();
+   grid.querySelector('[data-login-day="'+(i+1)+'"]')?.focus({preventScroll:true});
+  });
+  grid.append(cell);
  }
+ for(let d=end+1;d<start+LOGIN_PAGE_SIZE;d++){
+  const placeholder=document.createElement("span");
+  placeholder.className="login-day-placeholder";placeholder.setAttribute("aria-hidden","true");
+  grid.append(placeholder);
+ }
+ const chosen=LoginCore.rewardForDay(loginCalendarSelectedDay);
+ const main=ResourceIconUI.calendarPrimary(chosen);
+ $("#loginSelectedTitle").textContent="День "+loginCalendarSelectedDay;
+ $("#loginSelectedState").textContent=loginCalendarSelectedDay<=view.claimedThisMonth?
+  "Награда получена":loginCalendarSelectedDay===view.nextDay&&view.available?
+  "Доступно сегодня":"Можно посмотреть заранее";
+ loginPrimaryIcon($("#loginPrimaryArt"),main);
+ $("#loginPrimaryTitle").textContent=!main?"Награда":
+  main.kind==="currency"&&main.id==="krom"?main.amount+" кромов":
+  main.kind==="hero-shard"?main.label+" ×"+main.amount:
+  main.amount+" · "+main.label;
+ $("#loginPrimarySubtitle").textContent=main?.subtitle||"";
+ const extras=$("#loginRewardExtras");extras.replaceChildren();
+ if(!(main?.kind==="currency"&&main.id==="krom"))
+  ResourceArtUI.appendCurrency(extras,chosen.currency,{compact:true});
+ ResourceArtUI.append(extras,main?.kind==="resource"&&main.id==="account-xp"?0:chosen.xp,
+  main?.kind==="resource"?Object.fromEntries(Object.entries(chosen.skillMaterials||{})
+   .filter(([id])=>id!==main.id)):chosen.skillMaterials,{compact:true});
+ const gear=main?.kind==="material"?Object.fromEntries(Object.entries(chosen.materials||{})
+  .filter(([id])=>id!==main.id)):chosen.materials;
+ GearMaterialUI.append(extras,gear);
+ if(!extras.childElementCount)extras.textContent="Дополнительных наград нет";
  button.disabled=!view.available;
  button.textContent=view.available?"Забрать награду дня "+view.nextDay:
   view.alreadyClaimed?"Сегодня получено":"Получение недоступно";
  status.textContent=view.clockBack?"Дата на устройстве раньше последней полученной награды.":
-  view.alreadyClaimed?"Награда за сегодня получена. Возвращайся завтра.":
-  view.available?"Пропущенные дни не сбрасывают прогресс. Следующая награда — день "+
-   view.nextDay+" из "+view.days+". Первого числа календарь обновится.":
-   "Все награды этого месяца собраны. Новый календарь появится первого числа.";
+  view.alreadyClaimed?"Сегодня награда уже получена.":
+  view.available?"Одна награда в день.":"Месяц завершён.";
 }
+$("#loginPrev")?.addEventListener("click",()=>{
+ if(loginCalendarPage<=0)return;
+ loginCalendarPage--;loginCalendarSelectedDay=loginCalendarPage*LOGIN_PAGE_SIZE+1;
+ renderLoginCalendar();
+});
+$("#loginNext")?.addEventListener("click",()=>{
+ const view=LoginCore.current(progress,dailyDay());
+ if(!view||loginCalendarPage>=Math.ceil(view.days/LOGIN_PAGE_SIZE)-1)return;
+ loginCalendarPage++;loginCalendarSelectedDay=loginCalendarPage*LOGIN_PAGE_SIZE+1;
+ renderLoginCalendar();
+});
+$("#loginRulesOpen")?.addEventListener("click",()=>$("#loginCalendarRules")?.showModal());
+$("#loginRulesClose")?.addEventListener("click",()=>$("#loginCalendarRules")?.close());
+$("#loginCalendarRules")?.addEventListener("click",event=>{
+ if(event.target===event.currentTarget)event.currentTarget.close();
+});
 $("#loginClaim")?.addEventListener("click",()=>{
  if(saveBlocked)return;
  const snapshot=JSON.stringify(progress);
@@ -736,11 +832,10 @@ $("#loginClaim")?.addEventListener("click",()=>{
   $("#loginCalendarStatus").textContent="Ошибка сохранения. Награда не выдана.";
   return;
  }
+ loginCalendarSelectedDay=reward.day;
+ loginCalendarPage=Math.floor((reward.day-1)/LOGIN_PAGE_SIZE);
  renderLoginCalendar();renderDailyTasks();renderPlayerProfile();renderHeroes();
- $("#loginCalendarStatus").textContent="Награда дня "+reward.day+" получена:";
- ResourceArtUI.appendCurrency($("#loginCalendarStatus"),reward.currency,{compact:true});
- ResourceArtUI.append($("#loginCalendarStatus"),reward.xp,reward.skillMaterials,{compact:true});
- GearMaterialUI.append($("#loginCalendarStatus"),reward.materials);
+ $("#loginCalendarStatus").textContent="Награда дня "+reward.day+" получена и сохранена.";
 });
 function persistProgress(){
  if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>window.localStorage);
@@ -1363,6 +1458,9 @@ function showScreen(id){
  if(id==="playerProfile")renderPlayerProfile();
  if(id==="dailyTasks")renderDailyTasks();
  if(id==="loginCalendar"){
+  if(previousScreenId!=="loginCalendar"){
+   loginCalendarPage=-1;loginCalendarSelectedDay=0;
+  }
   markLoginCalendarSeen();
   renderLoginCalendar();
  }

@@ -2454,11 +2454,12 @@ function renderItemizedGear(base,gear){
  $("#gearSlots").innerHTML=GearData.SLOTS.map((entry,i)=>{
   const filled=gear.slots[i],selected=i===selectedGearSlot;
   const status=filled?"installed":slotPlans[i]?.status||"unknown";
-  const state=HeroCardUI.gearVisual(status);
+  const state={ready:"можно изготовить и надеть",missing:"нужны ресурсы, открыть поиск",
+   installed:"предмет надет",unknown:"состояние пока неизвестно"}[status];
   return '<button type="button" class="gear-slot gear-slot--'+status+' '+(filled?'filled ':'')+
    (selected?'selected':'')+'" data-gear-slot="'+i+'" data-gear-state="'+status+
-   '" aria-pressed="'+selected+'" aria-label="'+entry.label+' · '+state.aria+
-   '" title="'+entry.label+' · '+state.aria+'">'+
+   '" aria-pressed="'+selected+'" aria-label="'+entry.label+' · '+state+
+   '" title="'+entry.label+' · '+state+'">'+
    '<span aria-hidden="true">'+(filled?'◆':'◇')+'</span><small>'+gearSlotCaption(entry.label)+'</small></button>';
  }).join("");
  const label=$("#gearMaterialLabel");if(label)label.textContent="Компоненты G"+gear.tier;

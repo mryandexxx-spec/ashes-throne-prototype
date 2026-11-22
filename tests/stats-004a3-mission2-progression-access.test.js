@@ -1,4 +1,6 @@
 "use strict";
+// Historical balance corpus: sandbox-era training characters, supplied in tests only.
+require("./legacy-demo-fixture.cjs").install();
 // Stats-004A3: controlled resource-access audit for mission 2.
 // Reads production mission, combat, progression, save and crafting code;
 // does not change campaign economy. All farm iterations are assumed victories.

@@ -1,4 +1,6 @@
 "use strict";
+// Historical balance corpus: sandbox-era training characters, supplied in tests only.
+require("./legacy-demo-fixture.cjs").install();
 // Combat-015D balance audit: deterministic paired runs against live combat rules.
 // No balance targets, tuning or production behavior are changed by this test.
 const assert=require("node:assert/strict");

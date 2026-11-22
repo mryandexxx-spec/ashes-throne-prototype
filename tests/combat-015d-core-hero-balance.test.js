@@ -1,4 +1,6 @@
 "use strict";
+// Historical balance corpus: sandbox-era training characters, supplied in tests only.
+require("./legacy-demo-fixture.cjs").install();
 // Combat-015D: all permutations of ordinary core heroes at even/mixed levels.
 // Training-only fighters are deliberately excluded from every scenario.
 const assert=require("node:assert/strict");

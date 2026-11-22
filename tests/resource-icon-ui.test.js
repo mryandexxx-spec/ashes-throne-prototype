@@ -49,10 +49,11 @@ test("Krom coin is an independent compact transparent WebP, without a save schem
  assert.equal(coin.toString("ascii",0,4),"RIFF");
  assert.equal(coin.toString("ascii",8,12),"WEBP");
  assert.ok(coin.length>1000&&coin.length<10000);
+ assert.match(fs.readFileSync(path.join(root,"resource-icon-ui.css"),"utf8"),/krom\.webp\?v=2/);
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
  assert.match(html,/data-resource-id="krom"/);
  assert.match(html,/id="hqCurrency"/);
- assert.match(html,/v0.3.227 · KROM001/);
+ assert.match(html,/v0.3.228 · KROM002/);
  assert.match(fs.readFileSync(path.join(root,"progress-core.js"),"utf8"),/progress\.currency/);
 });
 test("Krom rewards, costs and source cards reuse verified catalogs",()=>{

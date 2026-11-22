@@ -371,7 +371,6 @@ function renderPlayerProfile(){
   ?"Текущий технический предел аккаунта · Всего "+progress.accountXp+" XP"
   :(xp?xp.current+" / "+xp.required+" XP до следующего уровня · Всего "+xp.totalXp+" XP"
      :progress.accountXp+" XP");
- ResourceIconUI.append($("#playerAccountXpText"),0,null);
  $("#playerAccountXpText")?.insertAdjacentHTML("beforeend",ResourceIconUI.tile("account-xp",null,{compact:true}));
  const missions=MissionData.all();
  const completed=missions.filter(m=>campaignProgress.completed[m.id]===true).length;
@@ -504,7 +503,7 @@ function renderAccountHeader(){
    " (тест) · Валюта "+progress.currency+
    (progress.saveVersion===3?"":" · C "+progress.gearMaterials)+
    " · ⚡ "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX;
-  ResourceIconUI.append(summary,progress.accountXp,null,{compact:true,mode:"balance"});
+  summary.insertAdjacentHTML("beforeend",ResourceIconUI.tile("account-xp",progress.accountXp,{compact:true,mode:"balance"}));
  }
  renderHeadquarters();
 }

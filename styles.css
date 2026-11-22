@@ -2984,6 +2984,236 @@ body:has(#loginCalendar.active)::before{
 @media(prefers-reduced-motion:reduce){#loginCalendar button{transition:none}}
 
 
+
+/* LOGIN-CAL-003 — height-bound, two-week calendar. No new gameplay economy. */
+#app:has(#loginCalendar.active){
+ display:flex;flex-direction:column;height:100dvh;min-height:0;overflow:hidden;
+}
+#app:has(#loginCalendar.active)>.topbar{
+ flex:0 0 42px;height:42px;min-height:42px;
+}
+#app:has(#loginCalendar.active)>footer{
+ flex:0 0 18px;height:18px;min-height:18px;align-items:center;
+ padding:0 8px;font-size:9px;overflow:hidden;
+}
+#loginCalendar.screen.active{
+ display:flex;flex-direction:column;flex:1 1 0;min-height:0;
+ width:min(100%,1500px);margin:6px auto 5px;padding:0;
+ overflow:hidden;border-radius:12px;
+}
+#loginCalendar .login-compact-heading{
+ display:flex;flex:0 0 44px;min-height:0;height:44px;align-items:center;
+ justify-content:space-between;gap:8px;margin:0;padding:4px 12px;
+ background:linear-gradient(180deg,#48352a,#2b2324);
+ border-bottom:1px solid #9a784d8c;
+}
+#loginCalendar .login-compact-heading h2{
+ margin:3px 0 0;font-size:clamp(17px,2.1vw,23px);white-space:nowrap;
+}
+#loginCalendar .login-compact-heading .eyebrow{font-size:9px}
+#loginCalendar .login-heading-actions{display:flex;align-items:center;gap:8px;min-width:0}
+#loginCalendar .login-header-progress{font-size:11px;color:#d6b990;white-space:nowrap}
+#loginCalendar .login-compact-heading .ghost{
+ min-height:33px;height:33px;padding:5px 10px;white-space:nowrap;
+}
+#loginCalendar .login-calendar-layout{
+ display:grid;grid-template-columns:minmax(0,1fr) clamp(210px,27vw,280px);
+ flex:1 1 0;min-height:0;min-width:0;overflow:hidden;
+}
+#loginCalendar .login-calendar-board{
+ display:flex;flex-direction:column;min-height:0;min-width:0;
+ padding:8px 10px 6px;border-right:1px solid #94714877;
+}
+#loginCalendar .login-month-bar{
+ display:flex;align-items:center;justify-content:space-between;
+ flex:0 0 23px;min-height:23px;gap:8px;margin-bottom:4px;
+}
+#loginCalendar #loginCalendarMonth{
+ margin:0;padding:0;border:0;background:none;border-radius:0;
+ font:700 clamp(12px,1.4vw,16px) Georgia,serif;color:#eed0a0;
+ white-space:nowrap;
+}
+#loginCalendar .login-month-progress{
+ display:flex;align-items:center;gap:7px;white-space:nowrap;
+ color:#c9ab81;font-size:10px;
+}
+#loginCalendar .login-progress-track{
+ display:block;flex:none;width:62px;height:5px;border-radius:4px;
+ background:#101116;overflow:hidden;
+}
+#loginCalendar .login-progress-track i{display:block;height:100%;background:#e1b77c}
+#loginCalendar .login-calendar-grid{
+ display:grid;grid-template-columns:repeat(7,minmax(0,1fr));
+ grid-template-rows:repeat(2,minmax(0,1fr));
+ flex:1 1 0;min-width:0;min-height:0;gap:5px;margin:0;
+}
+#loginCalendar .login-day{
+ display:flex;flex-direction:column;justify-content:space-between;align-items:center;
+ position:relative;min-width:0;min-height:0;height:100%;
+ padding:4px 3px;border-radius:7px;
+ background:linear-gradient(155deg,#39302c,#242126 80%);
+ cursor:pointer;box-shadow:inset 0 1px #ead2ab25;
+}
+#loginCalendar .login-day strong{
+ align-self:flex-start;font:700 10px/1.1 Inter,sans-serif;
+ margin:0 0 0 2px;color:#cfb7a0;
+}
+#loginCalendar .login-day small{
+ align-self:flex-end;margin:0 2px 0 0;
+ font:800 10px/1 Inter,sans-serif;color:#f6dab0;
+ white-space:nowrap;
+}
+#loginCalendar .login-day-art{
+ display:flex;align-items:center;justify-content:center;flex:1 1 0;
+ min-height:0;max-height:40px;width:100%;
+}
+#loginCalendar .login-day-art img,
+#loginCalendar .login-day-art .resource-art{display:block;width:28px;height:28px;max-height:100%;object-fit:contain}
+#loginCalendar .login-reward-fallback{
+ display:grid;place-items:center;width:30px;height:30px;border:1px solid #a47b51;
+ border-radius:50%;background:#574029;color:#e9c38f;font-size:19px;
+}
+#loginCalendar .login-day.claimed{opacity:1;filter:saturate(.67);background:#1c2625}
+#loginCalendar .login-day.claimed .login-day-art{opacity:.5}
+#loginCalendar .login-day.claimed strong{color:#a6c3ab}
+#loginCalendar .login-day.claimed::after{
+ content:"✓";position:absolute;top:2px;right:5px;color:#b9d6ae;
+ font-size:13px;
+}
+#loginCalendar .login-day.active{
+ border:2px solid #f0c47e;
+ background:radial-gradient(ellipse at top,#be8e4566,transparent 80%),#493122;
+ box-shadow:0 0 12px #d19f5660,inset 0 1px #ffdda68c;
+}
+#loginCalendar .login-day.selected:not(.active){
+ border-color:#c0c4b8;box-shadow:inset 0 0 0 1px #e2d5ba72;
+}
+#loginCalendar .login-day-placeholder{visibility:hidden}
+#loginCalendar .login-calendar-pager{
+ display:flex;justify-content:space-between;align-items:center;gap:6px;
+ flex:0 0 32px;min-height:32px;padding-top:3px;
+}
+#loginCalendar .login-calendar-pager .ghost{
+ min-width:70px;min-height:27px;height:27px;padding:3px 8px;
+ border:1px solid #8b694e;border-radius:6px;background:#312827;
+ font-size:11px;
+}
+#loginCalendar .login-calendar-pager .ghost:disabled{opacity:.35}
+#loginCalendar #loginPageInfo{font-size:10px;color:#cdb18a;white-space:nowrap}
+#loginCalendar .login-reward-detail{
+ display:flex;flex-direction:column;min-height:0;min-width:0;
+ padding:9px 12px 6px;overflow:hidden;
+ background:linear-gradient(155deg,#241f23,#1b1b21);
+}
+#loginCalendar .login-reward-caption{
+ flex:none;font:800 9px/1.2 Inter,sans-serif;color:#c79c63;letter-spacing:.12em;
+}
+#loginCalendar .login-reward-detail h3{
+ flex:none;font:700 clamp(17px,2vw,21px)/1.2 Georgia,serif;
+ margin:4px 0 0;color:#f6dfb7;
+}
+#loginCalendar .login-selected-state{
+ flex:none;color:#d0baa0;font-size:11px;line-height:1.2;margin:2px 0 0;
+}
+#loginCalendar .login-main-reward{
+ display:flex;align-items:center;gap:10px;flex:none;min-width:0;
+ margin:7px 0 0;padding:5px 7px;min-height:47px;
+ border:1px solid #95714a;border-radius:8px;
+ background:linear-gradient(145deg,#3b2b27,#292426);
+}
+#loginCalendar .login-primary-art{
+ display:flex;align-items:center;justify-content:center;flex:0 0 36px;
+ width:36px;height:36px;
+}
+#loginCalendar .login-primary-art img,
+#loginCalendar .login-primary-art .resource-art{
+ width:36px;height:36px;display:block;object-fit:contain;
+}
+#loginCalendar .login-primary-desc{min-width:0;overflow:hidden}
+#loginCalendar .login-primary-desc strong{
+ display:block;font-size:clamp(11px,1.25vw,14px);color:#f6e3c3;
+ line-height:1.15;overflow-wrap:anywhere;
+}
+#loginCalendar .login-primary-desc small{
+ display:block;margin-top:3px;font-size:10px;color:#c8b49b;
+ line-height:1.15;
+}
+#loginCalendar .login-extras-heading{
+ flex:none;margin:6px 0 3px;font-size:10px;color:#ddc5a8;
+}
+#loginCalendar .login-reward-extras{
+ display:flex;align-content:flex-start;align-items:flex-start;gap:3px;flex-wrap:wrap;
+ flex:0 1 auto;min-height:0;max-height:57px;overflow-y:auto;overflow-x:hidden;
+ font-size:10px;scrollbar-width:thin;
+}
+#loginCalendar .login-reward-extras .resource-chip,
+#loginCalendar .login-reward-extras .material-tile{
+ min-height:25px;max-height:25px;padding:2px 4px;margin:0;font-size:10px;
+}
+#loginCalendar .login-reward-extras .resource-art{width:20px;height:20px}
+#loginCalendar .login-reward-extras .material-tile img{width:22px;height:22px}
+#loginCalendar .login-reward-extras .resource-amount,
+#loginCalendar .login-reward-extras .material-count{font-size:10px}
+#loginCalendar .login-reward-extras .material-group,
+#loginCalendar .login-reward-extras .resource-group{display:inline-flex;flex-wrap:wrap;gap:3px}
+#loginCalendar .login-claim-dock{
+ margin-top:auto;padding-top:5px;flex:none;min-height:0;
+}
+#loginCalendar #loginClaim{
+ display:block;width:100%;min-height:38px;height:38px;padding:5px 7px;
+ white-space:nowrap;font-size:clamp(10px,1.22vw,13px);
+}
+#loginCalendar #loginCalendarStatus{
+ min-height:12px;height:15px;margin:3px 0 0;overflow:hidden;
+ color:#d5b990;text-overflow:ellipsis;white-space:nowrap;
+ font-size:9px;line-height:1.2;
+}
+.login-rules-dialog{
+ width:min(440px,calc(100vw - 30px));max-height:calc(100dvh - 30px);
+ padding:14px 16px;overflow:auto;background:#252022;color:#f2e3ca;
+ border:1px solid #bd925b;border-radius:10px;
+}
+.login-rules-dialog::backdrop{background:#09080bd9}
+.login-rules-dialog h3{margin:0;color:#f1c990;font:700 20px Georgia,serif}
+.login-rules-dialog p{font-size:13px;line-height:1.45;color:#decbb0}
+.login-rules-dialog button{min-height:44px;float:right}
+@media(orientation:landscape) and (max-height:355px){
+ #app:has(#loginCalendar.active)>.topbar{flex-basis:33px;height:33px;min-height:33px}
+ #app:has(#loginCalendar.active)>footer{flex-basis:13px;height:13px;min-height:13px;font-size:8px}
+ #loginCalendar.screen.active{margin:4px auto 3px}
+ #loginCalendar .login-compact-heading{flex-basis:35px;height:35px;padding:2px 9px}
+ #loginCalendar .login-compact-heading h2{font-size:17px}
+ #loginCalendar .login-compact-heading .ghost{height:27px;min-height:27px}
+ #loginCalendar .login-calendar-board{padding:5px 7px 4px}
+ #loginCalendar .login-month-bar{flex-basis:18px;min-height:18px;margin-bottom:2px}
+ #loginCalendar .login-calendar-pager{flex-basis:27px;min-height:27px}
+ #loginCalendar .login-calendar-pager .ghost{height:24px;min-height:24px}
+ #loginCalendar .login-reward-detail{padding:6px 9px 4px}
+ #loginCalendar .login-reward-detail h3{font-size:16px;margin-top:1px}
+ #loginCalendar .login-selected-state{font-size:10px}
+ #loginCalendar .login-main-reward{min-height:40px;margin-top:4px;padding:3px 5px}
+ #loginCalendar .login-primary-art{height:30px;flex-basis:30px}
+ #loginCalendar .login-primary-art img,
+ #loginCalendar .login-primary-art .resource-art{width:30px;height:30px}
+ #loginCalendar .login-extras-heading{margin:3px 0 2px}
+ #loginCalendar .login-reward-extras{max-height:52px}
+ #loginCalendar #loginClaim{height:34px;min-height:34px}
+}
+@media(max-width:750px) and (orientation:landscape){
+ #loginCalendar .login-calendar-layout{grid-template-columns:minmax(0,1fr) 195px}
+ #loginCalendar .login-header-progress{display:none}
+ #loginCalendar .login-calendar-board{padding-inline:6px}
+ #loginCalendar .login-reward-detail{padding-inline:8px}
+ #loginCalendar .login-month-progress .login-progress-track{width:32px}
+}
+@media(orientation:portrait){
+ #app:has(#loginCalendar.active){height:auto;min-height:100dvh;overflow-y:auto}
+ #loginCalendar.screen.active{min-height:0}
+ #loginCalendar .login-calendar-layout{grid-template-columns:minmax(0,1fr)}
+ #loginCalendar .login-calendar-board{min-height:300px}
+ #loginCalendar .login-reward-detail{min-height:220px}
+}
+
 /* UI-MODES-001A — campaign chapter / route / mission visual hierarchy.
    Screen-only art: CampaignData, energy, 3-star simulation and battle events unchanged. */
 body:has(#campaign.active){background:#16191b}

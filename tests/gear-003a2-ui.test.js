@@ -4,7 +4,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","gear-data.js","gear-material-ui.js","progress-core.js","save-core.js","progress-v3-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","gear-source-data.js","gear-planning-core.js","gear-equip-all-core.js","resource-icon-ui.js","gear-promotion-ui.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const src=["initiative-model.js","ability-data.js","combat-core.js","gear-data.js","gear-material-ui.js","progress-core.js","save-core.js","progress-v3-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
@@ -40,7 +40,6 @@ const document={
  },
  addEventListener(){}
 };
-require("./gear-victory-vm-fixture.cjs")(document,elements,element);
 let meshCreates=0,engineCreates=0,rendersStarted=0;
 class Mesh {
  constructor(){this.position={};this.visible=true;}

@@ -146,3 +146,64 @@ body.hero-card-mode #buildVersion::before{content:attr(data-short-build);font-si
  #heroDetail .hero-detail-identity>.ren-card-3d-controls{max-width:calc(100% - 78px);gap:3px}
  #heroDetail .hero-detail-identity>.ren-card-3d-controls button{padding:4px 6px;font-size:10px}
 }
+
+/* DOSSIERFIX001 — one icon per ability, stable action row for every hero.
+   The atlas thumbnail is in the flex flow; the legacy absolute badge is fallback only. */
+#heroDetail .hero-ability-card:has(.hero-ability-thumb){
+ padding:4px 7px;
+}
+#heroDetail .hero-ability-card:has(.hero-ability-thumb)::before{display:none}
+#heroDetail .hero-ability-card:has(.hero-ability-thumb) .hero-ability-heading{
+ display:flex;flex-direction:row;align-items:center;gap:7px;
+ width:100%;min-width:0;min-height:0;
+}
+#heroDetail .hero-ability-card .hero-ability-title-text{
+ display:flex;flex:1 1 auto;flex-direction:column;min-width:0;
+ overflow-wrap:anywhere;
+}
+#heroDetail .hero-ability-card .hero-ability-title-text strong{
+ display:block;min-width:0;line-height:1.18;overflow-wrap:anywhere;
+}
+#heroDetail .hero-ability-card .hero-ability-thumb{
+ display:block;flex:0 0 38px;width:38px;height:38px;
+ border-radius:7px;pointer-events:none;
+}
+#heroDetail .hero-detail-reference>.hero-detail-progression{
+ display:grid;grid-template-rows:auto minmax(0,1fr) auto;
+ gap:6px;min-height:0;overflow:hidden;
+}
+#heroDetail .hero-detail-progression>.star-panel{
+ min-height:0;overflow-x:hidden;overflow-y:auto;
+ overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+ scrollbar-width:thin;
+}
+#heroDetail .hero-detail-progression>.hero-card-level{min-height:0}
+#heroDetail .hero-detail-progression>.hero-card-links{
+ position:static;inset:auto;width:100%;margin:0;
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:5px;align-self:end;min-height:44px;z-index:1;
+}
+#heroDetail .hero-detail-progression>.hero-card-links button{
+ min-width:0;min-height:44px;height:auto;padding:5px 4px;
+ white-space:normal;overflow-wrap:anywhere;line-height:1.15;
+}
+@media(orientation:landscape) and (max-height:390px){
+ #heroDetail .hero-ability-card .hero-ability-thumb{
+  flex-basis:32px;width:32px;height:32px;
+ }
+ #heroDetail .hero-ability-card:has(.hero-ability-thumb) .hero-ability-heading{gap:5px}
+ #heroDetail .hero-ability-card .hero-ability-title-text{gap:2px}
+ #heroDetail .hero-ability-card .hero-ability-title-text strong{font-size:clamp(10px,1.25vw,13px);line-height:1.12}
+ #heroDetail .hero-ability-card .hero-ability-kind{font-size:9px}
+ #heroDetail .hero-detail-reference>.hero-detail-progression{gap:4px}
+ #heroDetail .hero-card-level,#heroDetail .star-panel{padding:5px 7px}
+ #heroDetail #starRankVisual{font-size:15px}
+}
+@media(orientation:landscape) and (max-height:360px){
+ #heroDetail .hero-detail-heading>div:first-child{padding-right:0}
+ #heroDetail .hero-detail-progression>.hero-card-links{
+  position:static;top:auto;right:auto;left:auto;bottom:auto;
+  width:100%;grid-template-columns:repeat(2,minmax(0,1fr));
+ }
+ #heroDetail .hero-detail-progression>.hero-card-links button{font-size:10px}
+}

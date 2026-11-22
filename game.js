@@ -897,6 +897,7 @@ $("#devLevel85Grant")?.addEventListener("click",()=>{
  
 let selectedHeroId=ALLIES[0].id;
 let selectedGearSlot=0;
+let levelSelectionHeroId=null,selectedLevelTarget=null;
 // Formation persists independently of hero levels/campaign saves. On the first
 // visit (or invalid/unavailable storage), use the first five roster heroes.
 const SQUAD_SAVE_KEY="ashes-throne.squad.v1";
@@ -2662,21 +2663,63 @@ $("#skillUpgradeButton")?.addEventListener("click",()=>{
  renderHeroDetail();renderHeroes();renderSkillUpgrade();
  $("#skillUpgradeStatus").textContent="Навык улучшен до уровня "+upgraded.level+". Сохранено.";
 });
+// HEROLEVELSLIDER001: preview and purchase use the same account/currency-gated plan.
+function levelPreviewHero(base,level){
+ const gear=ProgressCore.gearBonuses(progress,base.id);
+ return ["ren","nada","liora","art","sava"].includes(base.id)?
+  HeroStatsCombatBridge.apply(base,{
+   level,stars:StarCore.rankOf(progress,base.id),
+   gearPercent:gear,gearStats:gear.stats
+  },HeroStatsProfiles[base.id],HeroStatsCore):
+  equippedPilotStats(ProgressCore.heroStats(progress,base,level),PILOT_HERO_STATS[base.id]);
+}
+function syncHeroLevelSelection(base,hero,levelCap){
+ const full=ProgressCore.upgradePlan(progress,base.id,ProgressCore.MAX_LEVEL);
+ const maxAffordable=full?.to??hero.level;
+ const canSelect=!saveBlocked&&maxAffordable>hero.level;
+ if(levelSelectionHeroId!==base.id||selectedLevelTarget===null||selectedLevelTarget<=hero.level){
+  levelSelectionHeroId=base.id;
+  selectedLevelTarget=hero.level+1;
+ }
+ selectedLevelTarget=canSelect?
+  Math.max(hero.level+1,Math.min(maxAffordable,selectedLevelTarget)):hero.level;
+ const slider=$("#heroLevelSlider");
+ if(slider){
+  slider.min=String(canSelect?hero.level+1:hero.level);
+  slider.max=String(canSelect?maxAffordable:hero.level);
+  slider.value=String(selectedLevelTarget);
+  slider.disabled=!canSelect;
+  slider.setAttribute("aria-valuetext",canSelect?
+   "Целевой уровень "+selectedLevelTarget+" из "+maxAffordable:
+   "Повышение недоступно, текущий уровень "+hero.level);
+ }
+ const plan=canSelect?ProgressCore.upgradePlan(progress,base.id,selectedLevelTarget-hero.level):null;
+ const exact=!!plan&&plan.to===selectedLevelTarget&&plan.levels>0;
+ $("#heroLevelTarget").textContent=canSelect?"→ "+selectedLevelTarget:"—";
+ $("#heroLevelCost").textContent=exact?
+  "+"+plan.levels+" ур. · "+plan.cost.toLocaleString("ru-RU")+" кромов":
+  (saveBlocked?"Сохранение недоступно":ProgressCore.upgradeBlockReason(progress,base.id)||"Повышение недоступно");
+ const button=$("#detailUpgrade");
+ button.disabled=!exact||saveBlocked;
+ button.textContent=exact?"Повысить до "+selectedLevelTarget:
+  (hero.level>=levelCap?"Предел уровня":"Недоступно");
+ const cost=$("#detailCost");
+ cost.textContent=exact?"":"Недоступно";
+ if(exact&&typeof ResourceArtUI!=="undefined")
+  ResourceArtUI.appendCurrency(cost,plan.cost,{compact:true,mode:"cost",stock:progress.currency,asCost:true});
+ else if(exact)cost.textContent=plan.cost+" кромов";
+ const preview=exact?levelPreviewHero(base,selectedLevelTarget):null;
+ $("#detailPreview").textContent=preview?
+  preview.hp+" HP · "+(Number.isFinite(preview.physicalAttack)?preview.physicalAttack:preview.atk)+" ATK":
+  (hero.level>=ProgressCore.maxLevelOf(base.id)?"Максимальный уровень достигнут":
+   hero.level>=levelCap?"Нужен более высокий уровень аккаунта":"Недоступно");
+}
 function renderHeroDetail(){
  const base=ALLIES.find(h=>h.id===selectedHeroId);
  if(!base)return;
  const hero=progressedHero(base);
  const cost=ProgressCore.upgradeCost(progress,base.id);
  const levelCap=ProgressCore.heroLevelCap(progress,base.id);
- const upcomingGear=ProgressCore.gearBonuses(progress,base.id);
- const next=cost===null?null:((["ren","nada","liora","art","sava"].includes(base.id))?
-  HeroStatsCombatBridge.apply(base,{
-   level:hero.level+1,
-   stars:StarCore.rankOf(progress,base.id),
-   gearPercent:upcomingGear,
-   gearStats:upcomingGear.stats
-  },HeroStatsProfiles[base.id],HeroStatsCore):
-  equippedPilotStats(ProgressCore.heroStats(progress,base,hero.level+1),PILOT_HERO_STATS[base.id]));
  $("#detailName").textContent=hero.name;
  $("#detailRole").textContent=hero.role+((["ren","nada","liora","art","sava"].includes(hero.id))?" · Играбельный герой (баланс тестовый)":" · Демонстрационный персонаж");
  if($("#detailTags"))$("#detailTags").textContent=heroTagText(hero);
@@ -2716,12 +2759,12 @@ function renderHeroDetail(){
  $("#detailLevel").textContent="Уровень героя "+hero.level;
  if($("#heroCardCap"))$("#heroCardCap").textContent=saveBlocked?"Сохранение недоступно":
   hero.level>=levelCap?"Достигнут предел: "+levelCap:
-  cost!==null&&progress.currency<cost?"Не хватает кромов · максимум "+levelCap:"Доступный максимум: "+levelCap;
+  cost!==null&&progress.currency<cost?"Не хватает кромов · предел "+levelCap:
+  "Предел: "+levelCap;
  if($("#heroCardWallet")){
   $("#heroCardWallet").textContent="Кромы";
   if(typeof ResourceArtUI!=="undefined")ResourceArtUI.appendCurrency($("#heroCardWallet"),progress.currency,{compact:true,mode:"balance"});
  }
- $("#detailUpgrade").textContent=cost===null?"Предел уровня":"Повысить · "+cost;
  const nextCap=ProgressCore.nextHeroCapUnlock(ProgressCore.accountLevel(progress));
  const limitNote=$("#detailHeroLevelCap");
  if(limitNote)limitNote.textContent="Твой аккаунт: уровень "+ProgressCore.accountLevel(progress)+
@@ -2731,24 +2774,7 @@ function renderHeroDetail(){
    (nextCap?"Чтобы открыть максимум "+nextCap.heroCap+
     ", получи уровень аккаунта "+nextCap.accountLevel+".":"Нужен новый уровень аккаунта."));
  $("#detailWallet").textContent=String(progress.currency);
- $("#detailCost").textContent=cost===null?"Недоступно":"";
- if(cost!==null&&typeof ResourceArtUI!=="undefined")ResourceArtUI.appendCurrency($("#detailCost"),cost,{compact:true,mode:"cost",stock:progress.currency,asCost:true});
- $("#detailPreview").textContent=next?next.hp+" HP · "+next.atk+" ATK":
-  hero.level>=ProgressCore.maxLevelOf(base.id)?"Максимальный уровень достигнут":
-  hero.level>=levelCap?"Нужен более высокий уровень аккаунта":"Недоступно";
- $("#detailUpgrade").disabled=saveBlocked||!ProgressCore.canUpgrade(progress,base.id);
- // Multi-level plans are calculated once with the same currency/account gate.
- const five=ProgressCore.upgradePlan(progress,base.id,5);
- const all=ProgressCore.upgradePlan(progress,base.id,85);
- const plusFive=$("#detailUpgradeFive"),allButton=$("#detailUpgradeMax");
- if(plusFive){
-  plusFive.disabled=saveBlocked||!five||five.levels===0;
-  plusFive.textContent=five&&five.levels?"Повысить на "+five.levels+" · "+five.cost:"Повысить на 5";
- }
- if(allButton){
-  allButton.disabled=saveBlocked||!all||all.levels===0;
-  allButton.textContent=all&&all.levels?"Доступно до "+all.to+" · "+all.cost:"До доступного уровня";
- }
+ syncHeroLevelSelection(base,hero,levelCap);
 
  $("#detailNotice").textContent=saveBlocked?"Сохранение недоступно. Повышение заблокировано.":
   (ProgressCore.upgradeBlockReason(progress,base.id)||
@@ -2939,7 +2965,7 @@ function applyHeroLevels(count){
   Object.keys(progress).forEach(k=>delete progress[k]);
   Object.assign(progress,JSON.parse(before));
   renderAccountHeader();renderHeroDetail();
-  $("#detailNotice").textContent="Уровни не сохранены. Кромы возвращена.";
+  $("#detailNotice").textContent="Уровни не сохранены. Кромы возвращены.";
   return false;
  }
  renderHeroDetail();renderHeroes();
@@ -2951,9 +2977,25 @@ function applyHeroLevels(count){
  }
  return true;
 }
-$("#detailUpgrade").addEventListener("click",()=>applyHeroLevels(1));
-$("#detailUpgradeFive")?.addEventListener("click",()=>applyHeroLevels(5));
-$("#detailUpgradeMax")?.addEventListener("click",()=>applyHeroLevels(85));
+$("#heroLevelSlider")?.addEventListener("input",event=>{
+ const base=ALLIES.find(hero=>hero.id===selectedHeroId);
+ if(!base||saveBlocked)return;
+ const current=ProgressCore.levelOf(progress,base.id);
+ const full=ProgressCore.upgradePlan(progress,base.id,ProgressCore.MAX_LEVEL);
+ const requested=Number(event.currentTarget.value);
+ if(!Number.isInteger(requested)||!full||full.to<=current)return;
+ levelSelectionHeroId=base.id;
+ selectedLevelTarget=Math.max(current+1,Math.min(full.to,requested));
+ syncHeroLevelSelection(base,progressedHero(base),ProgressCore.heroLevelCap(progress,base.id));
+});
+$("#detailUpgrade").addEventListener("click",()=>{
+ if(saveBlocked)return;
+ const current=ProgressCore.levelOf(progress,selectedHeroId);
+ const count=selectedLevelTarget-current;
+ const plan=ProgressCore.upgradePlan(progress,selectedHeroId,count);
+ if(!plan||plan.levels!==count||plan.to!==selectedLevelTarget)return;
+ applyHeroLevels(count);
+});
 
 function missionRewardLabel(id){
  const reward=ProgressCore.MISSION_GEAR_FARM[id];

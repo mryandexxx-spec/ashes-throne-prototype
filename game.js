@@ -1,3 +1,7 @@
+// In isolated legacy VM tests the presentation module may be intentionally omitted.
+const ResourceArtUI=typeof ResourceIconUI!=="undefined"?ResourceIconUI:Object.freeze({
+ append(){},appendCost(){},tile(){return "";},mount(){}
+});
 // LOREACT5001: validated 15-node final arc; keep prior versions for fixtures.
 const ActiveLoreCampaign=typeof LoreCampaignAct5!=="undefined"?LoreCampaignAct5:
  typeof LoreCampaignAct4!=="undefined"?LoreCampaignAct4:
@@ -371,7 +375,7 @@ function renderPlayerProfile(){
   ?"Текущий технический предел аккаунта · Всего "+progress.accountXp+" XP"
   :(xp?xp.current+" / "+xp.required+" XP до следующего уровня · Всего "+xp.totalXp+" XP"
      :progress.accountXp+" XP");
- $("#playerAccountXpText")?.insertAdjacentHTML("beforeend",ResourceIconUI.tile("account-xp",null,{compact:true}));
+ $("#playerAccountXpText")?.insertAdjacentHTML("beforeend",ResourceArtUI.tile("account-xp",null,{compact:true}));
  const missions=MissionData.all();
  const completed=missions.filter(m=>campaignProgress.completed[m.id]===true).length;
  const stars=missions.reduce((sum,m)=>sum+Math.min(3,Math.max(0,campaignProgress.bestStars[m.id]||0)),0);
@@ -503,7 +507,7 @@ function renderAccountHeader(){
    " (тест) · Валюта "+progress.currency+
    (progress.saveVersion===3?"":" · C "+progress.gearMaterials)+
    " · ⚡ "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX;
-  summary.insertAdjacentHTML("beforeend",ResourceIconUI.tile("account-xp",progress.accountXp,{compact:true,mode:"balance"}));
+  summary.insertAdjacentHTML("beforeend",ResourceArtUI.tile("account-xp",progress.accountXp,{compact:true,mode:"balance"}));
  }
  renderHeadquarters();
 }
@@ -529,7 +533,7 @@ function dailyNotify(message,materials,xp=0,skillMaterials=null){
  for(const id of ["dailyTaskNotice","netuxDailyTaskNotice"]){
   const notice=$("#"+id);if(!notice)continue;
   notice.textContent=message;
-  ResourceIconUI.append(notice,xp,skillMaterials,{compact:true});
+  ResourceArtUI.append(notice,xp,skillMaterials,{compact:true});
   if(materials)GearMaterialUI.append(notice,materials);
  }
 }
@@ -570,7 +574,7 @@ function renderDailyTasks(){
    detail.textContent="Прогресс "+(done?"1/1":"0/1")+" · "+
     (claimed?"Награда получена":done?"Готово к получению":"Не выполнено")+
     " · +"+task.currency+" валюты";
-   ResourceIconUI.append(detail,task.xp,task.skillMaterials,{compact:true});
+   ResourceArtUI.append(detail,task.xp,task.skillMaterials,{compact:true});
    GearMaterialUI.append(detail,task.materials);
    label.append(title,detail);
    const claimButton=document.createElement("button");claimButton.type="button";
@@ -702,7 +706,7 @@ function renderLoginCalendar(){
   const title=document.createElement("strong");title.textContent="День "+(i+1);
   const detail=document.createElement("small");
   detail.textContent="+"+reward.currency+" валюты";
-  ResourceIconUI.append(detail,reward.xp,reward.skillMaterials,{compact:true});
+  ResourceArtUI.append(detail,reward.xp,reward.skillMaterials,{compact:true});
   GearMaterialUI.append(detail,reward.materials);
   cell.append(title,detail);grid.append(cell);
  }
@@ -730,7 +734,7 @@ $("#loginClaim")?.addEventListener("click",()=>{
  renderLoginCalendar();renderDailyTasks();renderPlayerProfile();renderHeroes();
  $("#loginCalendarStatus").textContent="Награда дня "+reward.day+" получена: +"+
   reward.currency+" валюты.";
- ResourceIconUI.append($("#loginCalendarStatus"),reward.xp,reward.skillMaterials,{compact:true});
+ ResourceArtUI.append($("#loginCalendarStatus"),reward.xp,reward.skillMaterials,{compact:true});
  GearMaterialUI.append($("#loginCalendarStatus"),reward.materials);
 });
 function persistProgress(){
@@ -2473,7 +2477,7 @@ function renderSkillUpgrade(){
  $("#skillCostText").textContent=c?
   c.currency+" валюты · герой от ур. "+c.heroLevel:
   "Все шесть уровней изучены";
- if(c)ResourceIconUI.appendCost($("#skillCostText"),c.materials,progress.skillMaterials);
+ if(c)ResourceArtUI.appendCost($("#skillCostText"),c.materials,progress.skillMaterials);
  const reason=saveBlocked?"Сохранение недоступно.":SkillCore.blocked(progress,selectedHeroId,openedSkillId);
  $("#skillUpgradeButton").disabled=!!reason;
  $("#skillUpgradeButton").textContent=c?"Улучшить до "+c.to:"Умение изучено";
@@ -3086,7 +3090,7 @@ $("#simulationConfirm")?.addEventListener("click",()=>{
   gain.material?"+ "+gain.material+" материалов C":null,
   gain.currency?"+ "+gain.currency+" валюты":null,
  ].filter(Boolean).map(item=>"• "+item).join("\n");
- ResourceIconUI.append($("#simulationRewards"),gain.xp);
+ ResourceArtUI.append($("#simulationRewards"),gain.xp);
  if(gain.materials)GearMaterialUI.append($("#simulationRewards"),gain.materials);
  $("#simulationClose").textContent="Закрыть";
  renderCampaign();
@@ -3116,7 +3120,7 @@ function renderMissionResult(){
   :"Отряд потерпел поражение. Наград нет."+(lastMissionEnergyRefunded?" Энергия за ресурсный повтор возвращена.":"");
  if(won&&!missionResultSaveFailed){
   const xp=(lastMissionFarmReward?.xp||0)+(lastMissionReward?.xp||0);
-  ResourceIconUI.append($("#missionResultText"),xp);
+  ResourceArtUI.append($("#missionResultText"),xp);
   if(lastMissionFarmReward)GearMaterialUI.append($("#missionResultText"),lastMissionFarmReward.materials);
  }
  const grade=$("#missionResultStars");
@@ -4614,4 +4618,4 @@ maybeOpenLoginOnEntry();
 
 // Resources UI is presentation-only; navigation respects the existing screen router.
 if(typeof ResourceIconUI!=="undefined")
- ResourceIconUI.mount(()=>({progress,day:dailyDay()}),screen=>showScreen(screen));
+ ResourceArtUI.mount(()=>({progress,day:dailyDay()}),screen=>showScreen(screen));

@@ -232,9 +232,12 @@ assert.equal(elements.gearTier.textContent,"G2 · 0/6");
 assert.equal(elements.gearPromotionDialog.open,true);
 assert.match(elements.gearPromotionLevel.textContent,/G1 → G2/);
 assert.match(elements.gearPromotionCost.textContent,/250/);
-assert.match(elements.gearPromotionStats.textContent,new RegExp("Здоровье: "+fromHp+" → "));
-assert.match(elements.gearPromotionStats.textContent,new RegExp("Атака: "+fromAtk+" → "));
-assert.match(elements.gearPromotionStats.textContent,/Скорость: 110 → 110/);
+const changedStats=elements.gearPromotionStats.children;
+assert.equal(changedStats.length,2,"Only changed statistics are shown");
+assert.equal(changedStats[0].children[1].children[1].children[0].textContent,String(fromHp));
+assert.equal(changedStats[1].children[1].children[1].children[0].textContent,String(fromAtk));
+assert.ok(changedStats.every(row=>row.children[1].children[0].textContent!=="Скорость"),
+ "Unchanged speed must be hidden");
 assert.equal(JSON.parse(savedData.get("ashes-throne.progress.v2")).gear.kael.tier,2,"promotion is persisted");
 click(elements.gearEquipNext);
 assert.equal(api.getCurrency(),beforePromotion-250,"cannot pay twice through second press");

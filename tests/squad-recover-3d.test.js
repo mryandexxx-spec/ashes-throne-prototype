@@ -18,7 +18,7 @@ test("RECOVER3D: uses existing real GLBs, one Babylon renderer and cleans up on 
  const js=read("squad-stage-3d.js"),html=read("index.html");
  for(const x of ["ImportMeshAsync","ensureLoader","engine.stopRenderLoop","scene?.dispose()","engine.dispose()","ResizeObserver","visibilitychange","42","squad-model-live"])assert.ok(js.includes(x),x);
  assert.ok(html.includes('squad-stage-3d.js?v='+require("../package.json").version+'" type="text/progress-gated"'));
- assert.ok(html.indexOf('game.js?v=0.3.223" type="text/progress-gated"')<html.indexOf('squad-stage-3d.js?v=0.3.223'));
+ assert.ok(html.indexOf('game.js?v='+require("../package.json").version+'" type="text/progress-gated"')<html.indexOf('squad-stage-3d.js?v='+require("../package.json").version+''));
  for(const asset of ["assets/ren-meshy-mixamo-animated.glb","dev/assets/models/nada-mobile-animated.glb","dev/assets/models/liora-mobile-animated.glb","dev/assets/models/art-mobile-animated.glb","dev/assets/models/sava-mobile-animated.glb"])
   assert.ok(fs.existsSync(path.join(__dirname,"..",asset)),asset);
 });

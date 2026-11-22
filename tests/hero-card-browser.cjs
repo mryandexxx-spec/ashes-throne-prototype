@@ -42,6 +42,44 @@ const {chromium,webkit}=require('playwright');
    await page.setViewportSize({width:w,height:h});await page.waitForTimeout(500);await drawn();await fits(`${w}x${h}`);
    await page.screenshot({path:`artifacts/hero-card-${useWebkit?'webkit':'chromium'}-${w}x${h}.png`});
   }
+
+  // ROSTERDOSSIER001: all five heroes use one responsive ability/action layout.
+  for(const heroId of ['ren','nada','liora','art','sava']){
+   await page.evaluate(id=>{selectedHeroId=id;showScreen('heroDetail');},heroId);
+   for(const [width,height] of [[844,390],[932,430],[844,320]]){
+    await page.setViewportSize({width,height});
+    const measured=await page.evaluate(()=>{
+     const root=document.documentElement;
+     const cards=[...document.querySelectorAll('#heroAbilityList .hero-ability-card')];
+     const conflict=cards.filter(card=>card.querySelector('.hero-ability-thumb')&&
+      card.querySelector('.hero-card-ability-icon')).length;
+     const overlaps=cards.filter(card=>{
+      const art=card.querySelector('.hero-ability-thumb'),name=card.querySelector('.hero-ability-title-text');
+      if(!art||!name)return false;
+      const a=art.getBoundingClientRect(),n=name.getBoundingClientRect(),c=card.getBoundingClientRect();
+      return a.right>n.left+1||n.right>c.right+1||n.bottom>c.bottom+1;
+     }).length;
+     const panel=document.querySelector('#heroDetail .hero-detail-progression').getBoundingClientRect();
+     const actions=[...document.querySelectorAll('#heroDetail .hero-card-links button')];
+     const clipped=actions.filter(el=>{
+      const box=el.getBoundingClientRect();
+      return box.height<43||box.width<43||box.top<panel.top-1||
+       box.bottom>panel.bottom+1||box.bottom>innerHeight-16+1;
+     }).map(el=>el.textContent);
+     return {cards:cards.length,art:cards.filter(c=>c.querySelector('.hero-ability-thumb')).length,
+      conflict,overlaps,clipped,overflow:root.scrollWidth>innerWidth+1||root.scrollHeight>innerHeight+1};
+    });
+    assert.ok(measured.cards>=4,heroId+': missing ability cards');
+    assert.ok(measured.art>=4,heroId+': missing approved illustrations');
+    assert.equal(measured.conflict,0,heroId+': duplicated legacy glyph');
+    assert.equal(measured.overlaps,0,heroId+': icon/title overlap at '+width+'x'+height);
+    assert.deepEqual(measured.clipped,[],heroId+': clipped bottom controls at '+width+'x'+height);
+    assert.equal(measured.overflow,false,heroId+': document overflow at '+width+'x'+height);
+    console.log('ROSTERDOSSIER001',heroId,width,height,measured);
+   }
+  }
+  await page.evaluate(()=>{selectedHeroId='ren';showScreen('heroDetail');});
+  await page.setViewportSize({width:844,height:390});
   await page.setViewportSize({width:844,height:390});
   await page.locator('#gearSlots button').nth(0).click();
   assert.equal(await page.locator('#heroDetail').evaluate(n=>n.classList.contains('gear-ux-active')),true);
@@ -100,7 +138,7 @@ const {chromium,webkit}=require('playwright');
   await page.keyboard.press('Escape');
   await page.locator('#detailBack').click();assert.equal(await page.locator('#collection').evaluate(n=>n.classList.contains('active')),true);
   assert.equal(await page.evaluate(()=>document.body.classList.contains('hero-card-mode')),false);
-  await page.evaluate(()=>{selectedHeroId='kael';showScreen('heroDetail');});await fits('other hero');
+  await page.evaluate(()=>{selectedHeroId='nada';showScreen('heroDetail');});await fits('other playable hero');
   await page.locator('#detailHome').click();
   await page.evaluate(()=>{selectedHeroId='ren';showScreen('heroDetail');});
   await page.waitForFunction(()=>document.querySelector('#detailHeroStage').classList.contains('has-ren-3d'),null,{timeout:45000});

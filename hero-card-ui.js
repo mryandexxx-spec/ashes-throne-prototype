@@ -53,7 +53,8 @@ const HeroCardUI=(()=>{
  }
  function decorate(){
   get("heroAbilityList")?.querySelectorAll("[data-hero-ability]").forEach(card=>{
-   if(card.querySelector(".hero-card-ability-icon"))return;
+   // Approved atlas art replaces the former absolute SVG badge; never render both.
+   if(card.querySelector(".hero-card-ability-icon, .hero-ability-thumb"))return;
    const span=document.createElement("span");span.className="hero-card-ability-icon";
    span.append(icon(card.dataset.heroAbility));card.prepend(span);
   });

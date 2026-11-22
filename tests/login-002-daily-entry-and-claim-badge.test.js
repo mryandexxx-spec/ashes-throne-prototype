@@ -34,7 +34,7 @@ assert.ok(game.includes('DailyCore.unclaimedCount(progress,dailyDay())'));
 assert.ok(game.includes('const LOGIN_CALENDAR_SEEN_KEY="ashes-throne.login-calendar-seen.v1"'));
 assert.ok(game.includes('window.localStorage?.getItem(LOGIN_CALENDAR_SEEN_KEY)'));
 assert.ok(game.includes('window.localStorage?.setItem(LOGIN_CALENDAR_SEEN_KEY,day)'));
-assert.match(game,/if\\(id==="loginCalendar"\\)\\{[\\s\\S]{0,300}markLoginCalendarSeen\\(\\);[\\s\\S]{0,100}renderLoginCalendar\\(\\);/);
+assert.match(game,/if\(id==="loginCalendar"\)\{[\s\S]{0,300}markLoginCalendarSeen\(\);[\s\S]{0,100}renderLoginCalendar\(\);/);
 assert.ok(game.includes('if(id==="home"){\n  renderDailyClaimBadge();\n  maybeOpenLoginOnEntry();'));
 assert.ok(game.endsWith('maybeOpenLoginOnEntry();\n'));
 assert.match(game,/if\(document\.hidden\|\|saveBlocked/);

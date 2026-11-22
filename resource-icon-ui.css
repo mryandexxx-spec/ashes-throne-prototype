@@ -43,7 +43,7 @@
 #net008aRewards .resource-chip{flex:0 0 auto}
 
 /* KROM001 — approved clipped-rim bronze Krom, separate replaceable WebP. */
-.resource-art--krom{background-image:url("assets/resources/krom.webp?v=1");background-size:contain;background-position:center}
+.resource-art--krom{background-image:url("assets/resources/krom.webp?v=2");background-size:contain;background-position:center}
 .hq-krom-button{display:inline-flex;align-items:center;justify-content:center;gap:3px;min-height:44px;min-width:64px;max-width:100%;padding:4px 8px;border:1px solid #765a3c88;border-radius:18px;background:linear-gradient(#1e1d20ee,#282125df);color:#fff1db;white-space:nowrap;touch-action:manipulation;font:600 13px Inter,system-ui,sans-serif;box-shadow:inset 0 1px #d9ad6740}
 .hq-krom-button .resource-art{width:27px;height:27px}
 .hq-krom-button:focus-visible{outline:2px solid #f5c983;outline-offset:2px}
@@ -60,3 +60,8 @@
  .hq-krom-button .resource-art{width:26px;height:26px}
  #accountStatus .resource-chip--krom{padding:1px 4px}
 }
+
+/* KROM002: stable slot for art in the resource dialog, including narrow iPhone landscape. */
+#resourceDialogArt{display:flex;flex:0 0 68px;align-items:center;justify-content:center;min-width:68px;height:68px}
+#resourceDialogArt .resource-art--krom{display:block;flex:none;background-repeat:no-repeat;background-color:transparent;background-size:contain;width:68px;height:68px}
+@media(max-height:430px) and (orientation:landscape){#resourceDialogArt{flex-basis:48px;min-width:48px;height:48px}#resourceDialogArt .resource-art--krom{width:48px;height:48px}}

@@ -81,6 +81,10 @@ const {chromium,webkit}=require('playwright');
   await page.evaluate(()=>{selectedHeroId='ren';showScreen('heroDetail');});
   await page.setViewportSize({width:844,height:390});
   await page.setViewportSize({width:844,height:390});
+  // GEARSLOTUX001: initial save has no resources; each of the six slots
+  // advertises farming before the player opens the recipe.
+  assert.equal(await page.locator('#gearSlots .gear-slot--missing').count(),6);
+  assert.equal(await page.locator('#gearSlots .gear-slot-indicator svg').count(),6);
   await page.locator('#gearSlots button').nth(0).click();
   assert.equal(await page.locator('#heroDetail').evaluate(n=>n.classList.contains('gear-ux-active')),true);
   assert.equal(await page.locator('#heroGearDialog').evaluate(n=>n.open),false,'Gear must not cover the 3D hero');
@@ -121,6 +125,9 @@ const {chromium,webkit}=require('playwright');
   await page.evaluate(()=>document.getElementById('heroBiographyDialog').close());
   // Real existing debug action grants resources; purchases still go through the live UI.
   await page.evaluate(()=>{document.getElementById('devResourcesGrant').click();renderHeroDetail();});
+  assert.equal(await page.locator('#gearSlots button').first().getAttribute('data-gear-state'),'ready',
+   'Developer materials must unlock crafting directly on the hero card');
+  assert.equal(await page.locator('#gearSlots button').first().locator('.gear-slot-indicator').textContent(),'+');
   const before=await page.evaluate(()=>({level:progress.levels.ren,currency:progress.currency,rank:StarCore.rankOf(progress,'ren')}));
   await fits('resources/star upgrade available');
   await page.setViewportSize({width:844,height:320});
@@ -135,6 +142,9 @@ const {chromium,webkit}=require('playwright');
   await page.locator('#gearSlots button').nth(0).click();
   await page.locator('#gearUxRight .gear-ux-craft').click();
   assert.equal(await page.evaluate(()=>!!ProgressCore.gearState(progress,'ren').slots[0]),true);
+  assert.equal(await page.locator('#gearSlots button').first().getAttribute('data-gear-state'),'installed',
+   'The crafted item must immediately change to the equipped state');
+  assert.equal(await page.locator('#gearSlots button').first().locator('.gear-slot-indicator').textContent(),'✓');
   await page.keyboard.press('Escape');
   await page.locator('#detailBack').click();assert.equal(await page.locator('#collection').evaluate(n=>n.classList.contains('active')),true);
   assert.equal(await page.evaluate(()=>document.body.classList.contains('hero-card-mode')),false);

@@ -139,7 +139,7 @@ assert.equal(p.currency,balanceFail,"failed save does not spend wallet");
 assert.equal(p.materials.Le,leatherFail,"failed save does not consume ingredients");
 assert.equal(p.gear.kael.slots[1],null,"failed save does not install item");
 assert.match(elements.gearNotice.textContent,/Покупка не сохранена/);
-assert.match(elements.accountStatus.textContent,new RegExp("Валюта "+balanceFail));
+assert.match(elements.accountStatus.textContent,new RegExp("Кромы "+balanceFail));
 localStorage.setItem=realSet;
 click(elements.gearEquipNext);
 assert.equal(p.gear.kael.slots[1],"g1-vest");

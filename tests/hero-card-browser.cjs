@@ -139,9 +139,35 @@ const {chromium,webkit}=require('playwright');
   await fits('low Safari with simulated safe-area and available star upgrade');
   await page.evaluate(()=>{document.getElementById('app').style.padding='';});
   await page.setViewportSize({width:844,height:390});
+  // HEROLEVELSLIDER001: choose a precise target, preview one cumulative cost,
+  // and confirm one atomic purchase rather than repeatedly tapping +1.
+  const slider=page.locator('#heroLevelSlider');
+  const range=await slider.evaluate(el=>({min:Number(el.min),max:Number(el.max),disabled:el.disabled}));
+  assert.equal(range.min,before.level+1);
+  assert.equal(range.disabled,false);
+  const target=Math.min(range.max,before.level+2);
+  assert.ok(target>before.level,'At least one level must be affordable');
+  const expected=await page.evaluate(to=>ProgressCore.upgradePlan(progress,'ren',to-progress.levels.ren),target);
+  assert.equal(expected.to,target,'Preview must respect the exact target');
+  await slider.evaluate((el,value)=>{el.value=String(value);el.dispatchEvent(new Event('input',{bubbles:true}));},target);
+  assert.equal(await slider.inputValue(),String(target));
+  assert.equal(await page.locator('#heroLevelTarget').textContent(),'→ '+target);
+  assert.match(await page.locator('#heroLevelCost').textContent(),new RegExp(String(expected.cost)));
+  assert.equal(await page.locator('#detailUpgrade').textContent(),'Повысить до '+target);
+  for(const [width,height] of [[844,390],[932,430],[844,320]]){
+   await page.setViewportSize({width,height});
+   await fits('level slider '+width+'x'+height);
+   const inPanel=await slider.evaluate(el=>{
+    const bounds=el.getBoundingClientRect(),panel=el.closest('.hero-card-level').getBoundingClientRect();
+    return bounds.left>=panel.left&&bounds.right<=panel.right+1&&bounds.bottom<=panel.bottom+1;
+   });
+   assert.equal(inPanel,true,'Slider must fit its card at '+width+'x'+height);
+  }
+  await page.setViewportSize({width:844,height:390});
   await page.locator('#detailUpgrade').click();
   const after=await page.evaluate(()=>({level:progress.levels.ren,currency:progress.currency}));
-  assert.equal(after.level,before.level+1);assert.ok(after.currency<before.currency);
+  assert.equal(after.level,target);
+  assert.equal(after.currency,before.currency-expected.cost,'Only the selected levels are charged');
   assert.equal(await page.locator('#gearPromotionDialog').getAttribute('data-victory-kind'),'level');
   assert.match(await page.locator('#gearPromotionLevel').textContent(),new RegExp('Ур\\. '+before.level+' → '+after.level));
   assert.match(await page.locator('#gearPromotionCost').textContent(),/кромов/);

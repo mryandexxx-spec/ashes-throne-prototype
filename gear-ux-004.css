@@ -60,3 +60,12 @@
 @media(prefers-reduced-motion:reduce){
  #heroDetail .gear-ux-panel *{animation:none!important;transition:none!important}
 }
+
+/* GEARSLOTUX001 — the same state vocabulary in the item dossier. */
+#heroDetail .gear-ux-state{
+ margin:1px 0;padding:4px 7px;border-radius:5px;
+ font:700 11px/1.25 Inter,system-ui,sans-serif;
+}
+#heroDetail .gear-ux-state--ready{color:#b6f2c1;background:#244131a8}
+#heroDetail .gear-ux-state--missing{color:#d1dce6;background:#30363da8}
+#heroDetail .gear-ux-state--installed{color:#f2d59d;background:#463723b8}

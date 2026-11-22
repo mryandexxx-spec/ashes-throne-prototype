@@ -375,7 +375,7 @@ function renderPlayerProfile(){
   ?"Текущий технический предел аккаунта · Всего "+progress.accountXp+" XP"
   :(xp?xp.current+" / "+xp.required+" XP до следующего уровня · Всего "+xp.totalXp+" XP"
      :progress.accountXp+" XP");
- $("#playerAccountXpText")?.insertAdjacentHTML("beforeend",ResourceArtUI.tile("account-xp",null,{compact:true}));
+ if(typeof ResourceArtUI!=="undefined") $("#playerAccountXpText")?.insertAdjacentHTML?.("beforeend",ResourceArtUI.tile("account-xp",null,{compact:true}));
  const missions=MissionData.all();
  const completed=missions.filter(m=>campaignProgress.completed[m.id]===true).length;
  const stars=missions.reduce((sum,m)=>sum+Math.min(3,Math.max(0,campaignProgress.bestStars[m.id]||0)),0);
@@ -507,7 +507,7 @@ function renderAccountHeader(){
    " (тест) · Валюта "+progress.currency+
    (progress.saveVersion===3?"":" · C "+progress.gearMaterials)+
    " · ⚡ "+progress.energy.value+"/"+ProgressCore.ENERGY_MAX;
-  summary.insertAdjacentHTML("beforeend",ResourceArtUI.tile("account-xp",progress.accountXp,{compact:true,mode:"balance"}));
+  summary.insertAdjacentHTML?.("beforeend",ResourceArtUI.tile("account-xp",progress.accountXp,{compact:true,mode:"balance"}));
  }
  renderHeadquarters();
 }
@@ -4614,8 +4614,7 @@ if(typeof NetworkNavigation!=="undefined")NetworkNavigation.mount({
 });
 
 renderAccountHeader();renderHeroes();CombatCore.advanceToPlayerTurn(state);
-maybeOpenLoginOnEntry();
-
-// Resources UI is presentation-only; navigation respects the existing screen router.
+// RESICON001: source cards register before the startup entry prompt.
 if(typeof ResourceIconUI!=="undefined")
  ResourceArtUI.mount(()=>({progress,day:dailyDay()}),screen=>showScreen(screen));
+maybeOpenLoginOnEntry();

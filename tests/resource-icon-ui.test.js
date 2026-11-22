@@ -9,7 +9,7 @@ test("Approved WebP atlas is compact, valid RIFF/WebP and stores four 64px cells
  assert.equal(data.toString("ascii",0,4),"RIFF");
  assert.equal(data.toString("ascii",8,12),"WEBP");
  assert.ok(data.length<16000);
- assert.deepEqual(Array.from(ui.IDS),["account-xp","manual1","manual2","seal"]);
+ assert.deepEqual(Array.from(ui.IDS),["account-xp","krom","manual1","manual2","seal"]);
 });
 test("Clickable tiles validate ids and counters, and keep ability costs distinct",()=>{
  assert.equal(ui.tile("__proto__",1),"");
@@ -42,4 +42,27 @@ test("No wallet modifications in display module; costs use source-of-truth skill
  const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
  assert.match(html,/id="resourceDialog"/);
  assert.match(html,/resource-icon-ui\.js/);
+});
+
+test("Krom coin is an independent compact transparent WebP, without a save schema change",()=>{
+ const coin=fs.readFileSync(path.join(root,"assets/resources/krom.webp"));
+ assert.equal(coin.toString("ascii",0,4),"RIFF");
+ assert.equal(coin.toString("ascii",8,12),"WEBP");
+ assert.ok(coin.length>1000&&coin.length<10000);
+ const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
+ assert.match(html,/data-resource-id="krom"/);
+ assert.match(html,/id="hqCurrency"/);
+ assert.match(html,/v0.3.227 · KROM001/);
+ assert.match(fs.readFileSync(path.join(root,"progress-core.js"),"utf8"),/progress\.currency/);
+});
+test("Krom rewards, costs and source cards reuse verified catalogs",()=>{
+ assert.match(ui.currencyTile(250),/data-resource-id="krom"/);
+ assert.match(ui.currencyTile(250),/\+250/);
+ assert.match(ui.currencyTile(250,{mode:"balance"}),/>250</);
+ assert.match(ui.currencyTile(300,{stock:120,asCost:true}),/resource-chip--short/);
+ assert.match(ui.currencyTile(300,{stock:400,asCost:true}),/resource-chip--ready/);
+ assert.equal(ui.currencyTile(-1),"");
+ assert.ok(ui.sources("krom","2026-11-22").some(x=>x.screen==="dailyTasks"&&x.detail.includes("Повысить уровень")));
+ assert.ok(ui.sources("krom","2026-11-22").some(x=>x.screen==="loginCalendar"));
+ assert.match(ui.art("krom"),/resource-art--krom/);
 });

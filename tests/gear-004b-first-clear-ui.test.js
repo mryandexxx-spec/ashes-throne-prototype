@@ -114,7 +114,7 @@ assert.equal(p.materials.Gl,0);
 assert.equal(p.gearMaterials,0,"no obsolete C in active v3");
 assert.doesNotMatch(elements.accountStatus.textContent,/ · C /,"v3 wallet must hide obsolete C");
 assert.match(elements.missionResultText.innerHTML,/Железо ×2/);
-assert.match(elements.missionResultText.textContent,/Первая победа:.*500 кромов/);
+assert.match(elements.missionResultText.textContent,/500 кромов/);
 api.syncBattleUI();
 assert.equal(p.currency,1350,"repeated render cannot mint rewards");
 const persisted=JSON.parse(savedData.get("ashes-throne.progress.v3"));

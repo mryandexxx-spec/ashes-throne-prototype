@@ -280,7 +280,8 @@ const {chromium,webkit}=require('playwright');
    await page.screenshot({path:'artifacts/hero-victory-nada-'+(useWebkit?'webkit':'chromium')+'-'+width+'x'+height+'.png'});
   }
   await page.locator('#gearPromotionClose').click();
-  assert.equal(await page.evaluate(()=>StarCore.shardsOf(progress,'nada')<nadaBefore.shards),true);
+  const nadaAfterShards=await page.evaluate(()=>StarCore.shardsOf(progress,'nada'));
+  assert.ok(nadaAfterShards<nadaBefore.shards,'Star promotion spends shards once');
   assert.deepEqual(errors,[]);
   console.log('HEROCARD001 browser passed',useWebkit?'WebKit':'Chromium');
  }finally{await browser.close()}

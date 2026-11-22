@@ -36,3 +36,8 @@
  .resource-dialog-body{max-height:calc(100dvh - 88px);padding:6px 12px}
  .resource-source{padding:5px 0}
 }
+
+/* Multi-tier weekly rewards remain separated instead of running together in one line. */
+#net008aRewards .weekly-reward-line{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:4px 0;border-bottom:1px solid #9e805936}
+#net008aRewards .weekly-reward-line:last-child{border-bottom:0}
+#net008aRewards .resource-chip{flex:0 0 auto}

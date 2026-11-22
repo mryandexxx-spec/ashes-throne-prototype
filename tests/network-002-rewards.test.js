@@ -10,14 +10,13 @@ const src=names.map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join
 const MODULES="\n({SaveCore,StarCore,NetworkCore,NetworkData,RewardPolicyCore,ProgressV3Core,NetworkRewardCore})";
 const createModules=()=>vm.runInNewContext(src+MODULES);
 const clone=x=>JSON.parse(JSON.stringify(x));
-const heroes=["kael","lyra","darin","medic-demo","test-area-damage","ren",
- "nada","liora","art","sava"].map(id=>({id,side:"ally"}));
+const heroes=["ren","nada","liora","art","sava"].map(id=>({id,side:"ally"}));
 const DAY="2026-11-18";
 const config={id:"net002-test-config",capacity:3,intervalMs:1000,
  guaranteeAfter:3,focusWeight:2,masteryScore:3};
 const reward=(extra={})=>({
  sourceId:"synthetic-test-ref",kind:"serial",energyCost:0,
- reward:{currency:7,accountXp:2,materials:{Fe:1},heroShards:{lyra:2}},...extra
+ reward:{currency:7,accountXp:2,materials:{Fe:1},heroShards:{nada:2}},...extra
 });
 const makeCatalog=Data=>Data.buildCatalog({
  version:1,regions:[{id:"synthetic-region",name:"Тестовый",unlockRef:null}],
@@ -124,7 +123,7 @@ test("serial payout is atomic with v3 and does NOT create reward receipts or spe
  assert.equal(after.accountXp,before.accountXp+2);
  assert.equal(after.materials.Fe,before.materials.Fe+1);
  assert.equal(after.energy.value,before.energy.value);
- assert.equal(after.heroStars.lyra.shards,before.heroStars.lyra.shards+2);
+ assert.equal(after.heroStars.nada.shards,before.heroStars.nada.shards+2);
  assert.equal(after.networkLedger.claimedThrough,1);
  assert.equal(after.rewardReceipts,undefined);
  assert.equal(s.storage.data.get(s.m.NetworkCore.KEY),netBefore);
@@ -210,16 +209,16 @@ test("shards are constrained by known roster, overflow and unresolved rank 7",as
  const s=setup();complete(s);saveNetwork(s);
  assert.equal((await claim(s,1,reward({reward:{currency:0,accountXp:0,
   materials:{},heroShards:{"unknown":1}}}))).code,"REWARDS_NOT_CONFIGURED");
- const max=wallet(s);max.heroStars.lyra.rank=7;max.heroStars.lyra.shards=0;
+ const max=wallet(s);max.heroStars.nada.rank=7;max.heroStars.nada.shards=0;
  s.storage.data.set(s.m.ProgressV3Core.KEY,JSON.stringify(max));
  const beforeOverflow=max.currency;
  assert.equal((await claim(s,1)).ok,true,"rank 7 payout exchanges the full shard amount");
  assert.equal(wallet(s).currency,beforeOverflow+7+2*80);
- assert.equal(wallet(s).heroStars.lyra.shards,0);
+ assert.equal(wallet(s).heroStars.nada.shards,0);
  assert.equal(wallet(s).networkLedger.claimedThrough,1);
  const atLimit=wallet(s);delete atLimit.networkLedger;
- atLimit.heroStars.lyra.rank=1;
- atLimit.heroStars.lyra.shards=Number.MAX_SAFE_INTEGER;
+ atLimit.heroStars.nada.rank=1;
+ atLimit.heroStars.nada.shards=Number.MAX_SAFE_INTEGER;
  s.storage.data.set(s.m.ProgressV3Core.KEY,JSON.stringify(atLimit));
  assert.equal((await claim(s,1)).code,"SHARD_BALANCE_OVERFLOW");
  assert.equal(wallet(s).networkLedger,undefined);
@@ -231,8 +230,8 @@ test("legacy v3 without heroStars safely acquires stars on shard payout",async()
  assert.ok(s.m.ProgressV3Core.validateActive(v3,heroes));
  assert.equal((await claim(s,1)).ok,true);
  const after=wallet(s);
- assert.equal(after.heroStars.lyra.rank,1);
- assert.equal(after.heroStars.lyra.shards,2);
+ assert.equal(after.heroStars.nada.rank,1);
+ assert.equal(after.heroStars.nada.shards,2);
  assert.equal(after.networkLedger.claimedThrough,1);
 });
 test("first-clear receipts stay separate; regular payouts still work after serial",async()=>{

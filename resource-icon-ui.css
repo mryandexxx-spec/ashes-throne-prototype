@@ -1,7 +1,7 @@
 .resource-group{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;vertical-align:middle;max-width:100%}
 .resource-chip{display:inline-flex;align-items:center;justify-content:center;gap:3px;min-height:44px;min-width:44px;padding:4px 7px;border:1px solid #8d714d80;border-radius:8px;background:#1a1c20b8;color:#f3dec0;font:600 12px Inter,system-ui,sans-serif;white-space:nowrap;vertical-align:middle;max-width:100%;touch-action:manipulation}
 .resource-chip:focus-visible,.resource-source button:focus-visible{outline:2px solid #f5c983;outline-offset:2px}
-.resource-chip--compact{min-height:36px;min-width:36px;padding:2px 4px;font-size:11px;border-color:transparent;background:transparent}
+.resource-chip--compact{min-height:44px;min-width:44px;padding:3px 5px;font-size:11px;border-color:transparent;background:transparent}
 .resource-chip--short{border-color:#ba655c}.resource-chip--ready{border-color:#799d81}
 .resource-art{display:inline-block;flex:0 0 auto;width:32px;height:32px;background-image:url("assets/resources/atlas.webp?v=1");background-size:200% 200%;background-repeat:no-repeat;vertical-align:middle}
 .resource-chip--compact .resource-art{width:26px;height:26px}

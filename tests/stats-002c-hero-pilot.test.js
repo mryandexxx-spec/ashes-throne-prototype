@@ -1,4 +1,5 @@
 "use strict";
+require("./legacy-demo-fixture.cjs").install();
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 const game=read("game.js");

@@ -687,7 +687,7 @@ function maybeOpenLoginOnEntry(){
 }
 // LOGIN-CAL-003: two rows per page; selection and browsing never alter wallet state.
 const LOGIN_PAGE_SIZE=14;
-let loginCalendarPage=-1,loginCalendarSelectedDay=0;
+let loginCalendarPage=-1,loginCalendarSelectedDay=0,loginCalendarRenderedMonth=null;
 function loginPrimaryIcon(host,primary){
  host.replaceChildren();
  if(!primary)return;
@@ -720,6 +720,10 @@ function renderLoginCalendar(){
   button.disabled=true;prev.disabled=true;next.disabled=true;
   status.textContent="Награды не начисляются, пока профиль недоступен.";
   return;
+ }
+ if(loginCalendarRenderedMonth!==view.month){
+  loginCalendarPage=-1;loginCalendarSelectedDay=0;
+  loginCalendarRenderedMonth=view.month;
  }
  const pages=Math.ceil(view.days/LOGIN_PAGE_SIZE);
  const todayDay=view.available?view.nextDay:Math.max(1,view.claimedThisMonth);

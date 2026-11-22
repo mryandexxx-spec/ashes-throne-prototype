@@ -1,4 +1,4 @@
-/* STATS-001B: one direct 14-stat path for Ren/Nada.
+/* STATS-001B + PROGRESSIONSTATS004: one direct 14-stat path for all playable heroes.
  * Numerical curves are prototype proposals, not accepted balance.
  * All stats are derived from the profile, level, stars and equipped bonuses;
  * legacy hp/atk/speed are NOT inputs to the calculation. */
@@ -23,16 +23,27 @@ const HeroStatsCombatBridge=(()=>{
   // The older prototype growth.star points are not stacked with NET-007.
   const raw=key=>profile.combatStats[key]+
    (level-1)*(profile.growth?.level?.[key]??0);
-  // NET-007: 3% of base profile per earned star after 1★; gear remains
-  // independent, speed/crit/potency/protection are not multiplied.
-  const starFactor=1+(stars-1)*0.03;
-  const bonusKeys=["hp","physicalAttack","magicAttack","physicalDefense","magicDefense"];
+  // NET-007's approved 3% per star remains the ONLY primary-stat
+  // multiplier. Preserve its five base-stat targets and avoid double growth.
+  const starFactor=typeof StarCore!=="undefined"?
+   StarCore.combatMultiplier(stars):1+(stars-1)*0.03;
+  const primaryStarKeys=typeof StarCore!=="undefined"?
+   StarCore.COMBAT_BONUS_STATS:
+   ["hp","physicalAttack","magicAttack","physicalDefense","magicDefense"];
   const bonuses={
    hp:raw("hp")*(gear.hp??0),
    physicalAttack:raw("physicalAttack")*(gear.atk??0)
   };
-  for(const key of bonusKeys)
+  for(const key of primaryStarKeys)
    bonuses[key]=(bonuses[key]||0)+profile.combatStats[key]*(starFactor-1);
+  // PROGRESSIONSTATS004 [PROPOSAL]: profile-driven flat secondary
+  // specializations per star (e.g. Protection, Accuracy, Debuff Potency).
+  // Legacy growth.star primary entries remain ignored: applying them would
+  // stack another HP/ATK gain on top of NET-007's existing 3% multiplier.
+  for(const [key,perStar] of Object.entries(profile.growth?.star??{})){
+   if(primaryStarKeys.includes(key))continue;
+   bonuses[key]=(bonuses[key]||0)+(stars-1)*perStar;
+  }
   const itemStats=progression.gearStats??{};
   if(!itemStats||typeof itemStats!=="object"||Array.isArray(itemStats)||
     Object.keys(itemStats).some(key=>!core.KEYS.includes(key)||key==="speed"||

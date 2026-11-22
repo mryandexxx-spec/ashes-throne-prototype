@@ -311,8 +311,20 @@ const {chromium,webkit}=require('playwright');
   const nadaBefore=await page.evaluate(()=>({
    rank:StarCore.rankOf(progress,'nada'),shards:StarCore.shardsOf(progress,'nada')
   }));
+  const nadaStatsBefore=await page.evaluate(()=>{
+   const current=progressedHero(ALLIES.find(hero=>hero.id==='nada'));
+   return Object.fromEntries(HeroStatsCore.KEYS.map(key=>[key,current[key]]));
+  });
   await page.locator('#starPromoteButton').click();
   assert.equal(await page.locator('#gearPromotionDialog').getAttribute('data-victory-kind'),'star');
+  const nadaChanged=await page.evaluate(before=>{
+   const after=progressedHero(ALLIES.find(hero=>hero.id==='nada'));
+   return HeroStatsCore.KEYS.filter(key=>Number.isFinite(before[key])&&
+    Number.isFinite(after[key])&&before[key]!==after[key]);
+  },nadaStatsBefore);
+  const nadaShown=await page.locator('#gearPromotionStats .gear-victory-stat')
+   .evaluateAll(rows=>rows.map(row=>row.dataset.statKey));
+  assert.deepEqual(nadaShown,nadaChanged,"Star popup must show all actually changed stats");
   assert.match(await page.locator('#gearPromotionPortrait').getAttribute('src'),/nada-portrait-ui\.webp/);
   await page.locator('#gearPromotionPortrait').evaluate(img=>img.decode());
   assert.equal(await page.evaluate(()=>StarCore.rankOf(progress,'nada')),nadaBefore.rank+1);
@@ -323,8 +335,15 @@ const {chromium,webkit}=require('playwright');
      button=dialog.querySelector('#gearPromotionClose').getBoundingClientRect(),
      portrait=dialog.querySelector('#gearPromotionPortrait'),stats=dialog.querySelector('#gearPromotionStats');
     const style=getComputedStyle(portrait);
+    const maxScroll=stats.scrollHeight-stats.clientHeight;
+    stats.scrollTop=Math.max(0,maxScroll);
+    const last=stats.querySelector('.gear-victory-stat:last-child');
+    const statsBox=stats.getBoundingClientRect(),lastBox=last?.getBoundingClientRect();
     return {fit:style.objectFit,imageWidth:portrait.naturalWidth,imageHeight:portrait.naturalHeight,
-     statsOverflow:stats.scrollHeight>stats.clientHeight+2||stats.scrollWidth>stats.clientWidth+2,
+     statsCount:stats.querySelectorAll('.gear-victory-stat').length,
+     statsHorizOverflow:stats.scrollWidth>stats.clientWidth+2,
+     statsScrollable:maxScroll>2,scrolled:stats.scrollTop>0,
+     lastReachable:!!lastBox&&lastBox.bottom<=statsBox.bottom+3,
      left:bounds.left,right:bounds.right,top:bounds.top,bottom:bounds.bottom,
      frameOverflow:frame.scrollHeight>frame.clientHeight+2||frame.scrollWidth>frame.clientWidth+2,
      buttonHeight:button.height,buttonBottom:button.bottom,width:innerWidth,height:innerHeight};
@@ -333,7 +352,10 @@ const {chromium,webkit}=require('playwright');
    assert.ok(viewport.imageWidth>0&&viewport.imageHeight>0);
    assert.ok(viewport.left>=-1&&viewport.right<=viewport.width+1&&viewport.top>=-1&&viewport.bottom<=viewport.height+1);
    assert.equal(viewport.frameOverflow,false,'Victory content fits '+width+'x'+height);
-   assert.equal(viewport.statsOverflow,false,'All upgraded stats visible '+width+'x'+height);
+   assert.equal(viewport.statsHorizOverflow,false,'No horizontal scroll for stats '+width+'x'+height);
+   assert.equal(viewport.statsCount,nadaChanged.length,"No truncated stat rows");
+   assert.equal(viewport.lastReachable,true,'Last changed stat remains reachable '+width+'x'+height);
+   if(viewport.statsScrollable)assert.equal(viewport.scrolled,true,'Internal results must be scrollable');
    assert.ok(viewport.buttonHeight>=43&&viewport.buttonBottom<=viewport.bottom+1);
    await page.screenshot({path:'artifacts/hero-victory-nada-'+(useWebkit?'webkit':'chromium')+'-'+width+'x'+height+'.png'});
   }

@@ -41,6 +41,19 @@ const ProgressCore=(()=>{
  const GEAR_PROMOTION_CURRENCY=Object.freeze(Object.fromEntries(
   Array.from({length:MAX_GEAR_TIER-1},(_,i)=>[i+1,(i+1)*250])));
  const GEAR_PROMOTION_STAT_BONUS=0.03;
+ // PROGRESSIONSTATS004 [PROPOSAL]: flat combat bonuses for each fully
+ // completed G tier. The existing 3%-base HP and physical ATK remain intact.
+ // Values do not depend on save shape and never grant ordinary speed.
+ const GEAR_PROMOTION_FLAT_BONUS=Object.freeze({
+  protection:2,physicalDefense:1,magicDefense:1
+ });
+ const GEAR_PROMOTION_CLASS_BONUS=Object.freeze({
+  melee:Object.freeze({critChance:0.25}),
+  ranged:Object.freeze({accuracy:0.25}),
+  mage:Object.freeze({debuffPotency:0.35}),
+  support:Object.freeze({debuffResistance:0.35}),
+  tank:Object.freeze({protection:1})
+ });
  const freshGear=()=>({tier:1,slots:Array(SLOT_COUNT).fill(false)});
  const installedInTier=state=>state.slots.filter(Boolean).length;
  // VS-001C UX revision: mission entry costs energy regardless of manual/simulation mode.
@@ -374,8 +387,16 @@ const ProgressCore=(()=>{
       stats[key]=(stats[key]||0)+value;
     }
    }
-   hp+=(state.tier-1)*GEAR_PROMOTION_STAT_BONUS;
-   atk+=(state.tier-1)*GEAR_PROMOTION_STAT_BONUS;
+   const completedTiers=state.tier-1;
+   hp+=completedTiers*GEAR_PROMOTION_STAT_BONUS;
+   atk+=completedTiers*GEAR_PROMOTION_STAT_BONUS;
+   // Item bonuses and rank bonuses are additive; their source remains
+   // distinguishable and old item history is counted exactly once.
+   const classBonus=GEAR_PROMOTION_CLASS_BONUS[progress.classes?.[id]]||{};
+   for(const [key,perTier] of Object.entries(GEAR_PROMOTION_FLAT_BONUS))
+    stats[key]=(stats[key]||0)+completedTiers*perTier;
+   for(const [key,perTier] of Object.entries(classBonus))
+    stats[key]=(stats[key]||0)+completedTiers*perTier;
    return {hp,atk,stats};
   }
   let hp=0,atk=0;
@@ -435,7 +456,9 @@ const ProgressCore=(()=>{
   accountLevel,heroLevelCapForAccountLevel,nextHeroCapUnlock,heroLevelCap,upgradeBlockReason,levelOf,upgradeCost,upgradePlan,upgradeMany,canUpgrade,upgrade,heroStats,claimFirstClear,
   GEAR,MAX_GEAR_TIER,SLOT_COUNT,SLOT_NAMES,gearItem,freshGear,gearState,gearInstalled,gearCost,gearBlockReason,canEquip,equip,
   itemOffer,itemCost,itemBlockReason,canEquipItem,equipItem,gearBonuses,
-  GEAR_PROMOTION_CURRENCY,GEAR_PROMOTION_STAT_BONUS,gearPromotionCost,gearPromotionBlockReason,canPromoteGear,promoteGear,
+  GEAR_PROMOTION_CURRENCY,GEAR_PROMOTION_STAT_BONUS,
+  GEAR_PROMOTION_FLAT_BONUS,GEAR_PROMOTION_CLASS_BONUS,
+  gearPromotionCost,gearPromotionBlockReason,canPromoteGear,promoteGear,
   ENERGY_MAX,ENERGY_REGEN_MS,MISSION_FARM,MISSION_GEAR_FARM,grantRepeatFarm,TEST_RESOURCE_FLOOR,grantTestResources,freshEnergy,refreshEnergy,
   missionEnergyCost,affordableRuns,spendEnergy,refundEnergy,simulate});
 })();

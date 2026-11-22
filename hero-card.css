@@ -289,6 +289,16 @@ body.hero-card-mode #buildVersion::before{content:attr(data-short-build);font-si
  color:#e3f8e8;
  box-shadow:inset 0 1px #b7efc660,0 2px 9px #0009;
 }
+/* GEARPROMOCTA001: gold for promotion; green remains crafting. */
+#heroDetail .hero-card-gear-actions #gearEquipAll.gear-equip-promote{
+ border:1px solid #e9bd77;
+ background:linear-gradient(165deg,#e6c489,#b8894c);
+ color:#211913;font-weight:700;
+ box-shadow:inset 0 1px #ffebc1ac,0 3px 10px #0c090b9e;
+}
+#heroDetail .hero-card-gear-actions #gearEquipAll.gear-equip-complete{
+ border-color:#a18b68;background:#39302b;color:#e7d5b4;
+}
 #heroDetail .hero-card-gear-actions #gearEquipAll:disabled{
  opacity:.53;filter:saturate(.3);box-shadow:none;
 }

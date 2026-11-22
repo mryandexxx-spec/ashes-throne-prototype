@@ -165,8 +165,38 @@ const {chromium,webkit}=require('playwright');
   assert.equal(afterBatch.tier,beforeBatch.tier,'Equipping all must not promote automatically');
   assert.ok(afterBatch.currency<beforeBatch.currency);
   assert.equal(await page.locator('#gearSlots .gear-slot--installed').count(),6);
-  assert.equal(await page.locator('#gearEquipAll').isHidden(),true);
+  for(const [width,height] of [[844,390],[932,430],[844,320]]){
+   await page.setViewportSize({width,height});
+   await fits('GEARPROMOCTA001 6/6 '+width+'x'+height);
+   assert.equal(await page.locator('#gearEquipAll').isVisible(),true);
+  }
+  await page.setViewportSize({width:844,height:390});
+  assert.match(await page.locator('#gearEquipAll').textContent(),/Повысить до G2/);
+  assert.equal(await page.locator('#gearEquipAll').isEnabled(),true);
   assert.match(await page.locator('#gearEquipAllStatus').textContent(),/Прогресс сохранён/);
+  // GEARPROMOCTA001: the next primary action on 6/6 is G1 -> G2, not
+  // another batch purchase. The established transaction shows its result.
+  const promotionCost=await page.evaluate(()=>ProgressCore.gearPromotionCost(progress,'ren'));
+  assert.equal(promotionCost.from,1);
+  assert.equal(promotionCost.to,2);
+  const walletBeforePromotion=await page.evaluate(()=>progress.currency);
+  await page.locator('#gearEquipAll').click();
+  assert.equal(await page.locator('#gearPromotionDialog').evaluate(el=>el.open),true);
+  assert.match(await page.locator('#gearPromotionLevel').textContent(),/G1 → G2/);
+  const promoted=await page.evaluate(()=>({
+   tier:ProgressCore.gearState(progress,'ren').tier,
+   count:ProgressCore.gearState(progress,'ren').slots.filter(Boolean).length,
+   history:ProgressCore.gearState(progress,'ren').history?.['1']?.filter(Boolean).length,
+   currency:progress.currency
+  }));
+  assert.equal(promoted.tier,2);
+  assert.equal(promoted.count,0);
+  assert.equal(promoted.history,6);
+  assert.equal(promoted.currency,walletBeforePromotion-promotionCost.currency);
+  assert.equal(await page.locator('#gearSlots .gear-slot--installed').count(),0);
+  assert.equal(await page.locator('#gearEquipAll').isVisible(),true);
+  assert.doesNotMatch(await page.locator('#gearEquipAll').textContent(),/Повысить/);
+  await page.locator('#gearPromotionClose').click();
   await page.keyboard.press('Escape');
   await page.locator('#detailBack').click();assert.equal(await page.locator('#collection').evaluate(n=>n.classList.contains('active')),true);
   assert.equal(await page.evaluate(()=>document.body.classList.contains('hero-card-mode')),false);

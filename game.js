@@ -2451,13 +2451,32 @@ function renderItemizedGear(base,gear){
   (ready&&gear.tier===GearData.MAX_TIER?" · максимум":"");
  const batchButton=$("#gearEquipAll"),batchPlan=GearEquipAllCore.preview(progress,base.id);
  if(batchButton){
-  batchButton.hidden=!!batchPlan&&!batchPlan.empty;
-  batchButton.disabled=saveBlocked||!batchPlan||!batchPlan.count;
-  batchButton.textContent=batchPlan?.all?"Надеть всё":
-   batchPlan?.count?"Надеть доступное · "+batchPlan.count:"Надеть всё";
-  batchButton.setAttribute("aria-label",batchPlan?.count?
-   "Изготовить и надеть "+batchPlan.count+" предметов из "+batchPlan.empty+" свободных слотов":
-   "Недостаточно ресурсов для изготовления снаряжения");
+  // GEARPROMOCTA001: after the sixth item, reuse the primary action space.
+  // Promotion stays a separate click and uses the existing save-safe handler.
+  batchButton.hidden=false;
+  batchButton.classList.toggle("gear-equip-promote",ready&&!!promotion);
+  batchButton.classList.toggle("gear-equip-complete",ready&&!promotion);
+  if(ready){
+   batchButton.disabled=saveBlocked||!promotion||!ProgressCore.canPromoteGear(progress,base.id);
+   batchButton.textContent=promotion?"Повысить до G"+promotion.to+" · "+promotion.currency:
+    "G"+gear.tier+" · максимум";
+   const reason=saveBlocked?"Сохранение недоступно":
+    !promotion?"Достигнут максимальный уровень экипировки":
+    ProgressCore.gearPromotionBlockReason(progress,base.id);
+   const description=promotion?"Повысить экипировку до G"+promotion.to+
+    " за "+promotion.currency+" кромов"+(reason?". "+reason:""):
+    "Достигнут максимальный уровень экипировки G"+gear.tier;
+   batchButton.setAttribute("aria-label",description);
+   batchButton.title=description;
+  }else{
+   batchButton.disabled=saveBlocked||!batchPlan||!batchPlan.count;
+   batchButton.textContent=batchPlan?.all?"Надеть всё":
+    batchPlan?.count?"Надеть доступное · "+batchPlan.count:"Надеть всё";
+   batchButton.setAttribute("aria-label",batchPlan?.count?
+    "Изготовить и надеть "+batchPlan.count+" предметов из "+batchPlan.empty+" свободных слотов":
+    "Недостаточно ресурсов для изготовления снаряжения");
+   batchButton.title=batchButton.getAttribute("aria-label");
+  }
  }
 
  const slotPlans=GearData.SLOTS.map(entry=>
@@ -2804,6 +2823,14 @@ $("#gearSlots")?.addEventListener("click",event=>{
 $("#gearEquipAll")?.addEventListener("click",()=>{
  const button=$("#gearEquipAll"),base=ALLIES.find(h=>h.id===selectedHeroId);
  if(!base||saveBlocked||button.disabled)return;
+ const state=ProgressCore.gearState(progress,base.id);
+ if(state?.mode==="itemized"&&state.slots.every(Boolean)){
+  // Route through the existing promotion transaction: one save, rollback,
+  // rank/history updates and the native promotion-result dialog.
+  if(ProgressCore.canPromoteGear(progress,base.id))$("#gearEquipNext")?.click();
+  else renderHeroDetail();
+  return;
+ }
  const plan=GearEquipAllCore.preview(progress,base.id);
  if(!plan?.count){renderHeroDetail();return;}
  const before=JSON.stringify(progress);

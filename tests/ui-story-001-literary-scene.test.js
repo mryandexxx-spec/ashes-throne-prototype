@@ -3,7 +3,7 @@ const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 const css=read("styles.css"),html=read("index.html"),game=read("game.js");
-const start=css.indexOf("/* UI-STORY-001"),art=css.slice(start);
+const start=css.indexOf("/* UI-STORY-001"),art=css.slice(start,css.indexOf("/* REN-LOAD-005",start+1));
 test("UI-STORY-001 keeps the literary HQ scene scoped to noncanonical story",()=>{
  assert.ok(start>0);
  assert.match(art,/body:has\(#storyDemo\.active\)::before/);

@@ -75,7 +75,10 @@ test("G promotion saves six equipped items once, adds class-based defense and se
   const after=ProgressCore.gearBonuses(progress,id);
   const newHero=hero(id,25,2,after);
   assert.ok(newHero.hp>oldHero.hp,id+" rank HP");
-  assert.ok(newHero.physicalAttack>oldHero.physicalAttack,id+" rank physical attack");
+  // The +3 percentage points are real, but final integer ATK may round
+  // to the same value at a low rank (Nada G1 -> G2 is a reproducible case).
+  assert.ok(Math.abs(after.atk-before.atk-.03)<1e-8,id+" rank ATK bonus persists");
+  assert.ok(newHero.physicalAttack>=oldHero.physicalAttack,id+" rank ATK never falls");
   assert.equal(newHero.protection-oldHero.protection,
    2+(classId==="tank"?1:0),id+" Protection by rank");
   assert.equal(newHero.physicalDefense-oldHero.physicalDefense,1);

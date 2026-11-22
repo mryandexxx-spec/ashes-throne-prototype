@@ -263,9 +263,10 @@ const {chromium,webkit}=require('playwright');
    const viewport=await page.locator('#gearPromotionDialog').evaluate(dialog=>{
     const bounds=dialog.getBoundingClientRect(),frame=dialog.querySelector('.gear-victory-frame'),
      button=dialog.querySelector('#gearPromotionClose').getBoundingClientRect(),
-     portrait=dialog.querySelector('#gearPromotionPortrait');
+     portrait=dialog.querySelector('#gearPromotionPortrait'),stats=dialog.querySelector('#gearPromotionStats');
     const style=getComputedStyle(portrait);
     return {fit:style.objectFit,imageWidth:portrait.naturalWidth,imageHeight:portrait.naturalHeight,
+     statsOverflow:stats.scrollHeight>stats.clientHeight+2||stats.scrollWidth>stats.clientWidth+2,
      left:bounds.left,right:bounds.right,top:bounds.top,bottom:bounds.bottom,
      frameOverflow:frame.scrollHeight>frame.clientHeight+2||frame.scrollWidth>frame.clientWidth+2,
      buttonHeight:button.height,buttonBottom:button.bottom,width:innerWidth,height:innerHeight};
@@ -274,6 +275,7 @@ const {chromium,webkit}=require('playwright');
    assert.ok(viewport.imageWidth>0&&viewport.imageHeight>0);
    assert.ok(viewport.left>=-1&&viewport.right<=viewport.width+1&&viewport.top>=-1&&viewport.bottom<=viewport.height+1);
    assert.equal(viewport.frameOverflow,false,'Victory content fits '+width+'x'+height);
+   assert.equal(viewport.statsOverflow,false,'All upgraded stats visible '+width+'x'+height);
    assert.ok(viewport.buttonHeight>=43&&viewport.buttonBottom<=viewport.bottom+1);
    await page.screenshot({path:'artifacts/hero-victory-nada-'+(useWebkit?'webkit':'chromium')+'-'+width+'x'+height+'.png'});
   }

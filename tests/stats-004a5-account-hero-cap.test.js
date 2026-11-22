@@ -65,7 +65,7 @@ assert.match(P.upgradeBlockReason(v3,"missing"),/не найден/);
 const html=read("index.html");
 for(const id of ["playerHeroLevelCap","playerHeroCapNext","detailHeroLevelCap"])
  assert.ok(html.includes('id="'+id+'"'),"missing explicit cap UI "+id);
-assert.match(html,/Повышение уровня героя требует игровую валюту/);
+assert.match(html,/Повышение уровня героя требует кромы/);
 assert.doesNotMatch(html,/Ограничение уровня героев уровнем аккаунта пока не включено/);
 const game=read("game.js");
 assert.match(game,/ProgressCore\.heroLevelCap\(progress,base\.id\)/);

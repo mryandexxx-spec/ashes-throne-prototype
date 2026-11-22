@@ -314,3 +314,42 @@ body.hero-card-mode #buildVersion::before{content:attr(data-short-build);font-si
  #heroDetail .hero-card-gear-actions{gap:4px}
  #heroDetail .hero-card-gear-actions button{padding:3px 6px;font-size:10px}
 }
+
+/* HEROLEVELSLIDER001 — compact, touch-safe level selector in the hero dossier. */
+#heroDetail .hero-card-level{display:grid;grid-template-columns:minmax(0,1fr);gap:2px}
+#heroDetail .hero-level-heading{display:flex;justify-content:space-between;align-items:baseline;gap:4px;min-width:0}
+#heroDetail .hero-level-heading #detailLevel{margin:0;min-width:0;font-size:clamp(12px,1.55vw,15px)}
+#heroDetail #heroLevelTarget{flex:0 0 auto;font-size:13px;line-height:1.1;color:#f1ce8e;white-space:nowrap}
+#heroDetail #heroCardCap{margin:0;line-height:1.1}
+#heroDetail #heroLevelSlider{
+ display:block;width:100%;height:28px;min-height:28px;margin:0;padding:0;
+ box-sizing:border-box;appearance:none;-webkit-appearance:none;background:transparent;
+ cursor:pointer;touch-action:pan-x;
+}
+#heroDetail #heroLevelSlider::-webkit-slider-runnable-track{
+ height:7px;border:1px solid #8e714d;border-radius:9px;
+ background:linear-gradient(90deg,#bb995e,#4c4032);
+}
+#heroDetail #heroLevelSlider::-webkit-slider-thumb{
+ appearance:none;-webkit-appearance:none;width:26px;height:26px;
+ margin-top:-10px;border-radius:50%;border:2px solid #fff0c9;
+ background:radial-gradient(circle at 35% 30%,#f6deb0,#c18f47);
+ box-shadow:0 1px 4px #0009;
+}
+#heroDetail #heroLevelSlider::-moz-range-track{
+ height:7px;border:1px solid #8e714d;border-radius:9px;
+ background:linear-gradient(90deg,#bb995e,#4c4032);
+}
+#heroDetail #heroLevelSlider::-moz-range-thumb{
+ width:23px;height:23px;border:2px solid #fff0c9;border-radius:50%;background:#d4a85f;
+}
+#heroDetail #heroLevelSlider:focus-visible{outline:2px solid #f1ce8e;outline-offset:1px;border-radius:6px}
+#heroDetail #heroLevelSlider:disabled{opacity:.38;cursor:default}
+#heroDetail .hero-level-cost{min-height:12px;margin:0;font-size:10px;line-height:1.2;color:#e4c18b}
+#heroDetail #detailUpgrade{margin:0;min-height:44px;max-width:100%;touch-action:manipulation}
+@media (orientation:landscape) and (max-height:360px){
+ #heroDetail .hero-card-level{gap:1px}
+ #heroDetail #heroLevelSlider{height:26px;min-height:26px}
+ #heroDetail .hero-level-cost{font-size:9px}
+ #heroDetail #heroLevelTarget{font-size:12px}
+}

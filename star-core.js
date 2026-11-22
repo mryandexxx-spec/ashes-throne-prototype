@@ -3,7 +3,7 @@
 const StarCore=(()=>{
  "use strict";
  const IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora","art","sava"]);
- const START=Object.freeze(["kael","lyra","darin","ren","nada","liora","art","sava"]);
+ const START=Object.freeze(["ren","nada","liora","art","sava"]);
  const COST=Object.freeze([10,15,25,30,65,85,100]);
  const MAX=7, TOTAL=COST.reduce((sum,n)=>sum+n,0);
  const STAR_BONUS_PER_RANK=0.03, EXCESS_SHARD_CURRENCY=80;
@@ -20,10 +20,11 @@ const StarCore=(()=>{
     Number.isInteger(stars[id].rank)&&stars[id].rank>=0&&stars[id].rank<=MAX&&
     validCount(stars[id].shards));
  }
- // Older v3 saves without unlockedHeroes, and v2 saves, own the whole demo roster.
+ // Legacy fixture IDs are kept for stat/gear test compatibility, not as recruitable heroes.
  function fromLegacy(unlockedHeroes){
   if(unlockedHeroes!==undefined&&(!Array.isArray(unlockedHeroes)||
-     START.some(id=>!unlockedHeroes.includes(id))||
+     !(START.every(id=>unlockedHeroes.includes(id))||
+       ["kael","lyra","darin"].every(id=>unlockedHeroes.includes(id)))||
      unlockedHeroes.some(id=>!IDS.includes(id))||
      new Set(unlockedHeroes).size!==unlockedHeroes.length))return null;
   return Object.fromEntries(IDS.map(id=>[id,{
@@ -57,7 +58,7 @@ const StarCore=(()=>{
  // Shards may be earned before a hero joins; all shard sources will call this.
  function add(progress,id,amount){
   const current=state(progress,id);
-  if(!current||!Number.isSafeInteger(amount)||amount<=0)return false;
+  if(!START.includes(id)||!current||!Number.isSafeInteger(amount)||amount<=0)return false;
   if(current.rank===MAX){
    const refund=amount*EXCESS_SHARD_CURRENCY;
    if(!Number.isSafeInteger(refund)||!validCount(progress.currency)||
@@ -69,7 +70,7 @@ const StarCore=(()=>{
  }
  function directGrant(progress,id){
   const current=state(progress,id);
-  if(!current||current.rank!==0)return false;
+  if(!START.includes(id)||!current||current.rank!==0)return false;
   if(progress.unlockedHeroes!==undefined&&
      (!Array.isArray(progress.unlockedHeroes)||!IDS.includes(id)))return false;
   current.rank=1;syncOwned(progress,id);
@@ -77,7 +78,7 @@ const StarCore=(()=>{
  }
  function promote(progress,id){
   const current=state(progress,id),cost=costOf(progress,id);
-  if(!current||cost===null||current.shards<cost)return null;
+  if(!START.includes(id)||!current||cost===null||current.shards<cost)return null;
   if(current.rank===0&&progress.unlockedHeroes!==undefined&&
     !Array.isArray(progress.unlockedHeroes))return null;
   const nextRank=current.rank+1,extra=nextRank===MAX?current.shards-cost:0;
@@ -94,7 +95,7 @@ const StarCore=(()=>{
  // shard requirement per hero; repeats cannot mint more for already-full stock.
  function refillTest(progress){
   if(!valid(progress?.heroStars))return false;
-  for(const id of IDS){
+  for(const id of START){
    const s=progress.heroStars[id];
    if(s.rank===MAX)continue;
    const minimum=TOTAL-usedThrough(s.rank);

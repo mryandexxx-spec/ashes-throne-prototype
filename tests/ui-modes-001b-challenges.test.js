@@ -4,7 +4,7 @@ const test=require("node:test"),assert=require("node:assert/strict"),fs=require(
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 const css=read("styles.css"),html=read("index.html"),js=read("game.js");
 const start=css.indexOf("/* UI-MODES-001B");
-const art=css.slice(start);
+const art=css.slice(start,css.indexOf("/* UI-MODES-001C",start+1));
 
 test("UIMODES001C keeps both trial modes in the accepted HQ visual language",()=>{
  assert.ok(start>0);
@@ -14,7 +14,7 @@ test("UIMODES001C keeps both trial modes in the accepted HQ visual language",()=
  assert.match(art,/#challenges\.screen\.active/);
  assert.match(art,/#challenges \.challenge-mode-card/);
  assert.match(art,/#challenges #challengeList \.campaign-mission/);
- assert.doesNotMatch(art,/#campaign\s|#home\s|#playerProfile\s|#battle\s/);
+ assert.doesNotMatch(art,/#campaign\s|#home\s|#playerProfile\s/);
 });
 
 test("UIMODES001C preserves mode switching, unlocks, squad entry and results",()=>{

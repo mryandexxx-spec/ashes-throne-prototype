@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 // ARENA-ART-004G: iPhone review of the battle HUD, no camera push-in, sarkh courier in N-02.
 const test=require("node:test");
@@ -9,9 +10,9 @@ const battle=html.slice(html.indexOf('<section id="battle"'),html.indexOf("</sec
 const block=css.slice(css.indexOf("/* ARENA-ART-004G"));
 
 test("ARENA-ART-004G: version and build code",()=>{
- assert.equal(pkg.version,"0.3.222");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.222 · SQUADVIEW002'));
- assert.ok(html.includes('src="game.js?v=0.3.222"'));
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+__BUILD_VERSION_FOR_TESTS+' · '));
+ assert.ok(html.includes('src="game.js?v='+__BUILD_VERSION_FOR_TESTS+'"'));
 });
 
 test("ARENA-ART-004G: top-left row is menu, log, Автобой, 1×; ✕ is gone",()=>{

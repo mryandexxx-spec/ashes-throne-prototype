@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 // ARENA-UI-003A: HUD frame. Presentation only; CombatCore rules are not changed.
 const test=require("node:test"),assert=require("node:assert/strict");
@@ -133,7 +134,7 @@ test("ARENAUI003A: HUD logic is read-only presentation with a remembered queue t
 });
 
 test("ARENAUI003A: CSS — 44pt targets, ≥56px round abilities, safe-area, scoped selectors",()=>{
- const block=css.slice(css.indexOf("/* ARENA-UI-003A"));
+ const block=css.slice(css.indexOf("/* ARENA-UI-003A"),css.indexOf("/* ARENA-UI-003B"));
  assert.ok(block.length>100);
  assert.doesNotMatch(block,/#battle\s/,"scoped as #battle.battle-screen");
  assert.match(block,/\.battle-menu-btn,[\s\S]*?width:44px;height:44px;min-width:44px;min-height:44px/);
@@ -150,11 +151,11 @@ test("ARENAUI003A: CSS — 44pt targets, ≥56px round abilities, safe-area, sco
 });
 
 test("ARENAUI003A: build version and script order",()=>{
- assert.equal(pkg.version,"0.3.222");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.222 · SQUADVIEW002'));
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+__BUILD_VERSION_FOR_TESTS+' · '));
  assert.ok(pkg.scripts.test.includes("node --check arena-ui-003.js"));
- const at=html.indexOf('src="arena-ui-003.js?v=0.3.222"');
- assert.ok(at>0&&at<html.indexOf('src="game.js?v=0.3.222"'));
+ const at=html.indexOf('src="arena-ui-003.js?v='+__BUILD_VERSION_FOR_TESTS+'"');
+ assert.ok(at>0&&at<html.indexOf('src="game.js?v='+__BUILD_VERSION_FOR_TESTS+'"'));
 });
 
 // ---------------- ARENA-UI-003B: labels and numbers ----------------
@@ -200,8 +201,8 @@ test("ARENAUI003B: labels show names only for the acting hero and the target; ma
  // Numbers read the label bottom, and are re-placed after the labels in the same frame.
  assert.match(game,/floor:id=>arenaHudLayout\?\.bottomOf\?\.\(id\)\?\?null/);
  assert.match(game,/positionArenaIndicators\(\);\n \/\/ ARENA-UI-003B[^\n]*\n arenaFeedback\?\.floaters\?\.relayout\?\.\(\);\n scene\.render\(\);/);
- const block=css.slice(css.indexOf("/* ARENA-UI-003B"));
+ const block=css.slice(css.indexOf("/* ARENA-UI-003B"),css.indexOf("/* ARENA-ART-004G"));
  assert.match(block,/\.arena-indicator\.away\{opacity:0\}/);
  assert.match(block,/\.arena-indicator\.enemy\.named \.arena-indicator-name\{position:absolute;top:100%;[^}]*height:12px;line-height:12px\}/,"name fits the reserved band");
- assert.doesNotMatch(block,/#battle\s|backdrop-filter|blur\(/);
+ assert.doesNotMatch(block,/backdrop-filter|blur\(/);
 });

@@ -4,7 +4,7 @@ const test=require("node:test"),assert=require("node:assert/strict"),fs=require(
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 const css=read("styles.css"),html=read("index.html"),game=read("game.js");
 const start=css.indexOf("/* UI-MODES-001C");
-const art=css.slice(start);
+const art=css.slice(start,css.indexOf("/* UI-MODES-001D",start+1));
 test("UIMODES001C applies the established HQ visual language to both operational screens",()=>{
  assert.ok(start>0);
  assert.match(art,/body:has\(#operations\.active\),body:has\(#signalOperations\.active\)/);

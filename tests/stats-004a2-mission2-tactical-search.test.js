@@ -1,4 +1,6 @@
 "use strict";
+// Historical balance corpus: sandbox-era training characters, supplied in tests only.
+require("./legacy-demo-fixture.cjs").install();
 // Stats-004A2 bounded, reproducible tactical search. Real source and real engine.
 // A search failing to find a solution is NOT proof of mathematical impossibility.
 const assert=require("node:assert/strict");

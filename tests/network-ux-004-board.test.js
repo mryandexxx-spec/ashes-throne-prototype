@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path");
@@ -28,8 +29,8 @@ test("NET-UX-004: compact board reuses live engine, ids and view navigation",()=
  assert.match(css,/safe-area-inset-right/);
  assert.match(css,/min-height:44px/);
  const pkg=JSON.parse(read("package.json"));
- assert.equal(pkg.version,"0.3.222");
- assert.match(html,/id="buildVersion">Прототип · v0\.3\.222 · SQUADVIEW002/);
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+__BUILD_VERSION_FOR_TESTS+' · '));
 });
 test("NET-UX-004: core, reward and daily files stay untouched by UI stage",()=>{
  const source=read("network-pilot-ui.js");

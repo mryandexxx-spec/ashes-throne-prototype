@@ -1,4 +1,5 @@
 "use strict";
+require("./legacy-demo-fixture.cjs").install();
 // Stats-002C: simulation of the ACTUAL pilot profile builder from game.js.
 // No simulated PR #113 monkeypatch or mission balance adjustment.
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");

@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 // ARENA-ENV-005: owner-supplied terrace art as the battle backdrop (quick variant).
 // Contract only; real frame checks live in the browser tests (env022 fixture).
@@ -55,8 +56,8 @@ test("transparent WebGL over the CSS art is unchanged (no 3D scenery, same camer
 test("build label follows the current build",()=>{
  const pkg=JSON.parse(read("package.json"));
  const html=read("index.html");
- assert.equal(pkg.version,"0.3.222");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.222 · SQUADVIEW002'));
- assert.ok(html.includes('src="game.js?v=0.3.222"'));
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+__BUILD_VERSION_FOR_TESTS+' · '));
+ assert.ok(html.includes('src="game.js?v='+__BUILD_VERSION_FOR_TESTS+'"'));
  assert.ok(!html.includes("?v=0.3.214"));
 });

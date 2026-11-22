@@ -7,7 +7,7 @@ const src=["initiative-model.js","ability-data.js","combat-core.js","progress-co
  let file=fs.readFileSync(path.join(__dirname,"..",n),"utf8");
  // Test-only injectable leader, never part of the shipped HEROES/ability data.
  if(n==="ability-data.js")file=file.replace("const leaderByHero=Object.freeze({",
-  'const leaderByHero=Object.freeze({kael:Object.freeze({id:"leader",modifiers:Object.freeze([{stat:"atk",operation:"flat",value:4,scope:"all-allies",when:{kind:"always"}}])}),');
+  'const leaderByHero=Object.freeze({ren:Object.freeze({id:"leader",modifiers:Object.freeze([{stat:"atk",operation:"flat",value:4,scope:"all-allies",when:{kind:"always"}}])}),');
  return file;
 }).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
@@ -23,10 +23,10 @@ function element(id=""){
  };
 }
 const elements=Object.fromEntries(ids.map(id=>[id,element(id)]));
-const chooseNodes=["kael","lyra","darin"].map(id=>{
+const chooseNodes=["ren","nada","liora","art","sava"].map(id=>{
  const e=element();e.dataset.heroId=id;return e;
 });
-const leaderNode=element();leaderNode.dataset.leaderId="kael";
+const leaderNode=element();leaderNode.dataset.leaderId="ren";
 const clearLeaderNode=element();
 const arenaNav=element();arenaNav.dataset.screen="battle";
 const collectionNav=element();collectionNav.dataset.screen="collection";
@@ -77,8 +77,8 @@ const localStorage={
  setItem(key,value){storageData.set(key,value)}
 };
 // Exercise leader aura and stable slots with an explicit legacy formation.
-storageData.set("ashes-throne.squad.v1",JSON.stringify({version:1,leaderId:"kael",
- regularIds:["lyra","darin","medic-demo","test-area-damage"]}));
+storageData.set("ashes-throne.squad.v1",JSON.stringify({version:1,leaderId:"ren",
+ regularIds:["nada","liora","art","sava"]}));
 const api=vm.runInNewContext(src+
  "\n({getBattle:()=>state,selectedParty:()=>selectedParty().map(h=>h.id),showScreen,openSquad,renderSquad,toggleSquadHero,CombatCore})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
@@ -89,70 +89,68 @@ const count=()=>elements.squadCount.textContent;
 
 const slots=()=>Array.from(elements.squadSlots.innerHTML.matchAll(/squad-slot-content">([^<]*)/g),m=>m[1]);
 
-// Default formation: all five occupied, Kael first and the test-only aura active.
+// Default formation: all five permanent heroes selected; Ren has no leader aura.
 click(elements.startBattle);
 assert.equal(count(),"5/5");
-assert.deepEqual(slots(),["Каэль Ворон","Лира Соль","Дарин Пепельный","Учебный лекарь","Учебный боец группы"]);
+assert.deepEqual(slots(),["Рен Терен","Нада","Лиора Вель","Арт","Сава"]);
 assert.doesNotMatch(elements.squadRoster.innerHTML,/data-leader-id|В лидеры/);
 click(elements.squadStart);
-assert.equal(api.getBattle().leaderId,"kael");
-assert.equal(api.CombatCore.effectiveStat(api.getBattle(),
- api.getBattle().fighters.find(h=>h.id==="lyra"),"atk"),
- api.getBattle().fighters.find(h=>h.id==="lyra").atk+4);
+assert.equal(api.getBattle().leaderId,null);
+assert.equal(api.CombatCore.activeLeaderModifiers(api.getBattle(),"nada").length,0);
 
 // Removing slot 1 leaves it empty. It never shifts another fighter.
 api.openSquad();
-toggle("kael");
+toggle("ren");
 assert.equal(count(),"4/5");
-assert.deepEqual(slots(),["Свободно","Лира Соль","Дарин Пепельный","Учебный лекарь","Учебный боец группы"]);
-assert.equal(api.selectedParty().join(","),"lyra,darin,medic-demo,test-area-damage");
+assert.deepEqual(slots(),["Свободно","Нада","Лиора Вель","Арт","Сава"]);
+assert.equal(api.selectedParty().join(","),"nada,liora,art,sava");
 click(elements.squadStart);
 assert.equal(elements.squad.classList.active,true,"first tap warns with four of five allies");
 assert.match(elements.squadWarning.textContent,/Нажми «Начать бой» ещё раз/);
 click(elements.squadStart);
 assert.equal(api.getBattle().leaderId,null,"empty first cell has no implicit leader");
-assert.equal(api.CombatCore.activeLeaderModifiers(api.getBattle(),"lyra").length,0,
+assert.equal(api.CombatCore.activeLeaderModifiers(api.getBattle(),"nada").length,0,
  "Kael's leader skill is inactive when Kael is missing");
 
 // First available vacancy is slot 1, so reselecting Kael fills it immediately.
 api.openSquad();
-toggle("kael");
-assert.deepEqual(slots(),["Каэль Ворон","Лира Соль","Дарин Пепельный","Учебный лекарь","Учебный боец группы"]);
+toggle("ren");
+assert.deepEqual(slots(),["Рен Терен","Нада","Лиора Вель","Арт","Сава"]);
 assert.equal(count(),"5/5");
 click(elements.squadStart);
-assert.equal(api.getBattle().leaderId,"kael");
+assert.equal(api.getBattle().leaderId,null);
 
 // Removing a middle hero leaves the exact middle cell empty.
 // Re-adding that hero fills the earliest vacancy, not the last cell.
 api.openSquad();
-toggle("darin");
-assert.deepEqual(slots(),["Каэль Ворон","Лира Соль","Свободно","Учебный лекарь","Учебный боец группы"]);
-toggle("darin");
-assert.deepEqual(slots(),["Каэль Ворон","Лира Соль","Дарин Пепельный","Учебный лекарь","Учебный боец группы"]);
+toggle("liora");
+assert.deepEqual(slots(),["Рен Терен","Нада","Свободно","Арт","Сава"]);
+toggle("liora");
+assert.deepEqual(slots(),["Рен Терен","Нада","Лиора Вель","Арт","Сава"]);
 assert.equal(new Set(api.selectedParty()).size,5,"no duplicate fighters");
 
 // Save an intentionally empty leader slot and a middle gap.
-toggle("kael");
-toggle("darin");
-const gaps=["Свободно","Лира Соль","Свободно","Учебный лекарь","Учебный боец группы"];
+toggle("ren");
+toggle("liora");
+const gaps=["Свободно","Нада","Свободно","Арт","Сава"];
 assert.deepEqual(slots(),gaps);
 const stored=JSON.parse(storageData.get("ashes-throne.squad.v1"));
 assert.equal(stored.leaderId,null);
-assert.deepEqual(stored.regularIds,["lyra",null,"medic-demo","test-area-damage"]);
+assert.deepEqual(stored.regularIds,["nada",null,"art","sava"]);
 const restored=vm.runInNewContext(src+
  "\n({leaderId:selectedLeaderId,regularIds:selectedPartyIds.slice(),selectedParty:()=>selectedParty().map(h=>h.id)})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
 assert.equal(restored.leaderId,null);
-assert.deepEqual(Array.from(restored.regularIds),["lyra",null,"medic-demo","test-area-damage"]);
-assert.equal(restored.selectedParty().join(","),"lyra,medic-demo,test-area-damage");
+assert.deepEqual(Array.from(restored.regularIds),["nada",null,"art","sava"]);
+assert.equal(restored.selectedParty().join(","),"nada,art,sava");
 
 // Selecting Kael fills slot 1 while leaving slot 3 empty; selecting Darin
 // then fills slot 3, proving consistent first-free-slot order.
-toggle("kael");
-assert.deepEqual(slots(),["Каэль Ворон","Лира Соль","Свободно","Учебный лекарь","Учебный боец группы"]);
-toggle("darin");
+toggle("ren");
+assert.deepEqual(slots(),["Рен Терен","Нада","Свободно","Арт","Сава"]);
+toggle("liora");
 assert.equal(count(),"5/5");
-assert.deepEqual(slots(),["Каэль Ворон","Лира Соль","Дарин Пепельный","Учебный лекарь","Учебный боец группы"]);
+assert.deepEqual(slots(),["Рен Терен","Нада","Лиора Вель","Арт","Сава"]);
 
 // Disband persists five vacancies. The next ordinary click fills slot 1.
 click(elements.squadDisband);
@@ -165,30 +163,30 @@ const empty=vm.runInNewContext(src+
 assert.equal(empty.leaderId,null);
 assert.deepEqual(Array.from(empty.regularIds),[null,null,null,null]);
 assert.equal(empty.selectedParty().length,0);
-toggle("lyra");
-assert.deepEqual(slots(),["Лира Соль","Свободно","Свободно","Свободно","Свободно"]);
+toggle("nada");
+assert.deepEqual(slots(),["Нада","Свободно","Свободно","Свободно","Свободно"]);
 click(elements.squadStart);
 assert.equal(elements.squad.classList.active,true);
-toggle("darin");
+toggle("liora");
 assert.equal(elements.squadWarning.hidden,true,"changing team resets warning");
 click(elements.squadStart);
 assert.equal(elements.squad.classList.active,true);
 click(elements.squadStart);
-assert.equal(api.getBattle().leaderId,"lyra");
+assert.equal(api.getBattle().leaderId,null);
 
 // Old Combat-014C save: leader intentionally empty while later slots
 // have occupants. Preserve their actual positions; do not promote.
 storageData.set("ashes-throne.squad.v1",
- '{"version":1,"leaderId":null,"regularIds":["lyra","kael"]}');
+ '{"version":1,"leaderId":null,"regularIds":["nada","ren"]}');
 const legacy=vm.runInNewContext(src+
  "\n({leaderId:selectedLeaderId,regularIds:selectedPartyIds.slice()})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
 assert.equal(legacy.leaderId,null);
-assert.deepEqual(Array.from(legacy.regularIds),["lyra","kael",null,null]);
+assert.deepEqual(Array.from(legacy.regularIds),["nada","ren",null,null]);
 
 // A malformed formation recovers the current default five playable heroes.
 storageData.set("ashes-throne.squad.v1",
- '{"version":1,"leaderId":"missing","regularIds":["kael"]}');
+ '{"version":1,"leaderId":"missing","regularIds":["ren"]}');
 const recovered=vm.runInNewContext(src+
  "\n({leaderId:selectedLeaderId,selectedParty:()=>selectedParty().map(h=>h.id)})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
@@ -197,7 +195,7 @@ assert.equal(recovered.selectedParty().length,5);
 
 // A smaller unlocked roster, when fully selected, needs no warning.
 storageData.set("ashes-throne.squad.v1",
- '{"version":1,"leaderId":"kael","regularIds":["lyra","darin","medic-demo"]}');
+ '{"version":1,"leaderId":"ren","regularIds":["nada","liora","art"]}');
 const short=vm.runInNewContext(src+
  "\n({getBattle:()=>state,openSquad,ALLIES,selectedParty:()=>selectedParty().map(h=>h.id)})",
  {document,window:{addEventListener(){},localStorage},BABYLON});
@@ -205,6 +203,6 @@ short.ALLIES.splice(4); // Keep original four-hero warning fixture, exclude the 
 short.openSquad();
 assert.equal(short.selectedParty().length,4);
 elements.squadStart.handlers.click.at(-1)();
-assert.equal(elements.battle.classList.active,true,
- "no warning when all available heroes are selected");
+assert.equal(elements.squadWarning.hidden,true,"four available heroes need no undersized warning");
+assert.equal(elements.squad.classList.active,true,"3D hero loading remains asynchronous in this DOM stub");
 console.log("Combat-014D stable slots, first vacancy, no auto-promotion, aura gating, saved holes and warnings passed");

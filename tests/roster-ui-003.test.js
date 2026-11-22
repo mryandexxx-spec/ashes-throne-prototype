@@ -35,7 +35,7 @@ test("UIHERO002 version is consistent",()=>{
 test("UIHERO002 shows only the current leader in the collection, without squad badges",()=>{
  assert.match(js,/const isLeader=owned&&selectedLeaderId===h\.id/);
  assert.match(js,/const leaderBadge=isLeader\?'<span class="roster-leader-indicator">★ Лидер<\/span>'/);
- assert.match(js,/\$\{portraitAvatar\}\$\{leaderBadge\}/);
+ assert.match(js,/\$\{portraitAvatar\}\$\{abilityStrip\}\$\{leaderBadge\}/);
  assert.doesNotMatch(js,/roster-squad-badge/);
  assert.match(css,/#collection \.roster-leader-indicator\{/);
  assert.match(js,/HeroProfileData\.tagLabels\(profile\.tags\)/);

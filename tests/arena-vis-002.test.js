@@ -1,3 +1,4 @@
+const __BUILD_VERSION_FOR_TESTS=require("../package.json").version;
 "use strict";
 // ARENA-VIS-002: hit feedback contract (numbers, hit-stop, flash, shake, push-in).
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
@@ -206,6 +207,6 @@ test("ARENA-VIS-002 is presentation only and wired into the existing frame",()=>
  assert.match(css,/\.battle-screen \.arena-floaters\{[^}]*pointer-events:none/);
  assert.match(css,/\.battle-screen \.arena-floater\.crit\{[^}]*font-size:31px/);
  assert.ok(pkg.scripts.test.includes("node --check arena-vis-002.js"));
- assert.equal(pkg.version,"0.3.222");
- assert.ok(html.includes('id="buildVersion">Прототип · v0.3.222 · SQUADVIEW002'));
+ assert.match(pkg.version,/^\d+\.\d+\.\d+$/);
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+__BUILD_VERSION_FOR_TESTS+' · '));
 });

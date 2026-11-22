@@ -1,4 +1,6 @@
 "use strict";
+// Historical balance corpus: sandbox-era training characters, supplied in tests only.
+require("./legacy-demo-fixture.cjs").install();
 // Combat-015D extended audit: permutations, lineup sizes and progression levels.
 // The simulator reads production gameplay definitions; no gameplay edits.
 const assert=require("node:assert/strict");

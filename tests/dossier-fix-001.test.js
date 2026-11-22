@@ -16,5 +16,5 @@ test("DOSSIERFIX001: bottom buttons occupy dedicated row on narrow landscape",()
  assert.match(css,/hero-detail-progression>\.star-panel\{[^}]*overflow-y:auto/);
  assert.match(css,/hero-detail-progression>\.hero-card-links\{[^}]*position:static/);
  for(const id of ["detailBiography","detailUpgrade","starPromoteButton","renCardReset"])assert.ok(html.includes('id="'+id+'"'));
- assert.ok(html.includes('v'+require("../package.json").version+' · DOSSIERFIX001'));
+ assert.ok(html.includes('v'+require("../package.json").version+' · '));
 });

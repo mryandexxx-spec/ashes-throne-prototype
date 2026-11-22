@@ -38,8 +38,12 @@ const WeeklyThreatUI=(()=>{
    WeeklyThreatCore.TIERS.filter(t=>s.bestScore>=t.score).length+"★)":"нет")+
    ". Поражение не лишает награды и допускает повтор.");
   $("net008aRewards").innerHTML=WeeklyThreatCore.TIERS.map((tier,i)=>
-   (i+1)+"★ · "+tier.score+" очков · +"+tier.currency+" валюты · +"+tier.xp+
-   " XP"+GearMaterialUI.group(tier.materials)).join("");
+   '<span class="weekly-reward-line">'+(i+1)+"★ · "+tier.score+" очков · +"+
+    tier.currency+" валюты · "+
+    (typeof ResourceIconUI!=="undefined"?
+     ResourceIconUI.tile("account-xp",tier.xp,{compact:true}):
+     "+"+tier.xp+" XP")+
+    GearMaterialUI.group(tier.materials)+'</span>').join("");
   $("net008aSurvey").hidden=!!s.active;
   $("net008aCover").hidden=!!s.active;
   $("net008aFight").hidden=!s.active;

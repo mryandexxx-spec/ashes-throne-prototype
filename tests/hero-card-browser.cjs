@@ -142,7 +142,15 @@ const {chromium,webkit}=require('playwright');
   await page.locator('#detailUpgrade').click();
   const after=await page.evaluate(()=>({level:progress.levels.ren,currency:progress.currency}));
   assert.equal(after.level,before.level+1);assert.ok(after.currency<before.currency);
+  assert.equal(await page.locator('#gearPromotionDialog').getAttribute('data-victory-kind'),'level');
+  assert.match(await page.locator('#gearPromotionLevel').textContent(),new RegExp('Ур\\. '+before.level+' → '+after.level));
+  assert.match(await page.locator('#gearPromotionCost').textContent(),/кромов/);
+  await page.locator('#gearPromotionClose').click();
   await page.locator('#starPromoteButton').click();assert.equal(await page.evaluate(()=>StarCore.rankOf(progress,'ren')),before.rank+1);
+  assert.equal(await page.locator('#gearPromotionDialog').getAttribute('data-victory-kind'),'star');
+  assert.equal(await page.locator('#gearPromotionTier').textContent(),(before.rank+1)+'★');
+  assert.match(await page.locator('#gearPromotionCost').textContent(),/осколков героя/);
+  await page.locator('#gearPromotionClose').click();
   await page.locator('#gearSlots button').nth(0).click();
   await page.locator('#gearUxRight .gear-ux-craft').click();
   assert.equal(await page.evaluate(()=>!!ProgressCore.gearState(progress,'ren').slots[0]),true);
@@ -182,7 +190,10 @@ const {chromium,webkit}=require('playwright');
   const walletBeforePromotion=await page.evaluate(()=>progress.currency);
   await page.locator('#gearEquipAll').click();
   assert.equal(await page.locator('#gearPromotionDialog').evaluate(el=>el.open),true);
+  assert.equal(await page.locator('#gearPromotionDialog').getAttribute('data-victory-kind'),'gear');
   assert.match(await page.locator('#gearPromotionLevel').textContent(),/G1 → G2/);
+  assert.equal(await page.locator('#gearPromotionPortrait').evaluate(img=>getComputedStyle(img).objectFit),'contain',
+   'Full hero portrait must not be cropped by cover');
   const promoted=await page.evaluate(()=>({
    tier:ProgressCore.gearState(progress,'ren').tier,
    count:ProgressCore.gearState(progress,'ren').slots.filter(Boolean).length,
@@ -236,6 +247,38 @@ const {chromium,webkit}=require('playwright');
    assert.ok(bio.length>50);
    await page.evaluate(()=>document.getElementById('heroBiographyDialog').close());
   }
+  // HEROVICTORY002: full Nada portrait and the real star purchase in the same modal.
+  await page.evaluate(()=>{selectedHeroId='nada';showScreen('heroDetail');});
+  assert.equal(await page.locator('#starPromoteButton').isEnabled(),true);
+  const nadaBefore=await page.evaluate(()=>({
+   rank:StarCore.rankOf(progress,'nada'),shards:StarCore.shardsOf(progress,'nada')
+  }));
+  await page.locator('#starPromoteButton').click();
+  assert.equal(await page.locator('#gearPromotionDialog').getAttribute('data-victory-kind'),'star');
+  assert.match(await page.locator('#gearPromotionPortrait').getAttribute('src'),/nada-portrait-ui\\.webp/);
+  await page.locator('#gearPromotionPortrait').evaluate(img=>img.decode());
+  assert.equal(await page.evaluate(()=>StarCore.rankOf(progress,'nada')),nadaBefore.rank+1);
+  for(const [width,height] of [[844,390],[932,430],[844,320]]){
+   await page.setViewportSize({width,height});
+   const viewport=await page.locator('#gearPromotionDialog').evaluate(dialog=>{
+    const bounds=dialog.getBoundingClientRect(),frame=dialog.querySelector('.gear-victory-frame'),
+     button=dialog.querySelector('#gearPromotionClose').getBoundingClientRect(),
+     portrait=dialog.querySelector('#gearPromotionPortrait');
+    const style=getComputedStyle(portrait);
+    return {fit:style.objectFit,imageWidth:portrait.naturalWidth,imageHeight:portrait.naturalHeight,
+     left:bounds.left,right:bounds.right,top:bounds.top,bottom:bounds.bottom,
+     frameOverflow:frame.scrollHeight>frame.clientHeight+2||frame.scrollWidth>frame.clientWidth+2,
+     buttonHeight:button.height,buttonBottom:button.bottom,width:innerWidth,height:innerHeight};
+   });
+   assert.equal(viewport.fit,'contain');
+   assert.ok(viewport.imageWidth>0&&viewport.imageHeight>0);
+   assert.ok(viewport.left>=-1&&viewport.right<=viewport.width+1&&viewport.top>=-1&&viewport.bottom<=viewport.height+1);
+   assert.equal(viewport.frameOverflow,false,'Victory content fits '+width+'x'+height);
+   assert.ok(viewport.buttonHeight>=43&&viewport.buttonBottom<=viewport.bottom+1);
+   await page.screenshot({path:'artifacts/hero-victory-nada-'+(useWebkit?'webkit':'chromium')+'-'+width+'x'+height+'.png'});
+  }
+  await page.locator('#gearPromotionClose').click();
+  assert.equal(await page.evaluate(()=>StarCore.shardsOf(progress,'nada')<nadaBefore.shards),true);
   assert.deepEqual(errors,[]);
   console.log('HEROCARD001 browser passed',useWebkit?'WebKit':'Chromium');
  }finally{await browser.close()}

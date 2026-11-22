@@ -41,7 +41,9 @@ test("level and stars now change actual hero stats; speed stays constant",()=>{
  assert.ok(b.physicalDefense>a.physicalDefense);
  assert.ok(b.protection>a.protection);
  assert.equal(b.speed,a.speed);
- assert.equal(b.critChance,a.critChance);
+ assert.ok(b.critChance>a.critChance,"Ren role-focused crit chance now grows");
+ assert.ok(b.accuracy>a.accuracy,"Ren role-focused accuracy now grows");
+ assert.ok(b.debuffResistance>a.debuffResistance,"Ren secondary resistance grows");
 });
 
 test("equipped legacy G bonuses now scale the new profile, not demo atk",()=>{

@@ -4,7 +4,7 @@ const test=require("node:test"),assert=require("node:assert/strict"),fs=require(
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 const css=read("styles.css"),html=read("index.html"),js=read("game.js");
 const start=css.indexOf("/* UI-MODES-001B");
-const art=css.slice(start);
+const art=css.slice(start,css.indexOf("/* UI-MODES-001C",start+1));
 
 test("UIMODES001C keeps both trial modes in the accepted HQ visual language",()=>{
  assert.ok(start>0);

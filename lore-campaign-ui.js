@@ -469,13 +469,13 @@ const LoreCampaignUI=(()=>{
    step.code==="completed"?"Проверьте, все ли обязательные бои этого и предыдущих актов выиграны.":
    "Продолжайте историю до "+finale+" и выигрывайте обязательные бои.";
   const reward=source.reward;
-  const preview=formatRewardCount(reward.currency)+" валюты";
+  const preview=typeof ResourceIconUI!=="undefined"?ResourceIconUI.currencyTile(reward.currency,{compact:true}):formatRewardCount(reward.currency)+" кромов";
   const xpTile=typeof ResourceIconUI!=="undefined"?
    ResourceIconUI.tile("account-xp",reward.accountXp,{compact:true}):
    formatRewardCount(reward.accountXp)+" опыта аккаунта";
   return '<section class="lore-act-one-reward" aria-label="Награда за завершение акта '+actLabel+'">'+
    '<div class="lore-act-one-reward__copy"><strong>Награда за акт '+actLabel+'</strong>'+
-   '<small>'+escapeHtml(preview)+" · "+xpTile+'</small>'+GearMaterialUI.group(reward.materials)+
+   '<small>'+preview+" · "+xpTile+'</small>'+GearMaterialUI.group(reward.materials)+
    '<span>'+escapeHtml(detail)+'</span>'+
    (rewardFeedbackAct===act&&rewardFeedback?'<p role="status">'+escapeHtml(rewardFeedback)+'</p>':"")+'</div>'+
    '<button type="button" class="primary" data-lore-action="claim-act-reward" data-lore-act="'+act+'"'+

@@ -246,8 +246,9 @@ const NetworkPilotUI=(()=>{
     "Пробный бой. Реальные награды не назначены.";
    const payout=isLive()?NetworkLiveEconomy.preview(clue.rewardRef):null;
    const useXpIcon=!!payout&&typeof ResourceIconUI!=="undefined";
-   const reward=line(isLive()?rewardText(clue.rewardRef,false).replace(
-    useXpIcon?" · +"+payout.accountXp+" XP":"\u0000",""):fullReward,"span");
+   const visibleReward=isLive()?rewardText(clue.rewardRef,false):fullReward;
+   const reward=line(useXpIcon?
+    visibleReward.replace(" · +"+payout.accountXp+" XP",""):visibleReward,"span");
    reward.className="netux-clue-reward";
    const tags=document.createElement("div");tags.className="netux-clue-tags";
    if(session.canSimulate(clue.id))tags.append(line("Освоено","span"));

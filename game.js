@@ -2873,13 +2873,8 @@ $("#gearEquipNext")?.addEventListener("click",()=>{
    }
    const newStats=progressedHero(base);
    selectedGearSlot=0;renderHeroDetail();renderHeroes();
-   $("#gearPromotionTitle").textContent="Поздравляем!";
-   $("#gearPromotionLevel").textContent="G"+result.from+" → G"+result.to+". Предметы прошлых G сохранены в истории.";
-   $("#gearPromotionCost").textContent="Потрачено "+result.currency+" кромов.";
-   $("#gearPromotionStats").textContent="Здоровье: "+oldStats.hp+" → "+newStats.hp+" HP\n"+
-    "Атака: "+oldStats.atk+" → "+newStats.atk+" ATK\n"+
-    "Скорость: "+oldStats.speed+" → "+newStats.speed+" (без изменений)";
-   $("#gearPromotionDialog").showModal();
+   GearPromotionUI.show({heroName:base.name,from:result.from,to:result.to,
+    currency:result.currency,before:oldStats,after:newStats});
    return;
   }
   const slot=GearData.SLOTS[selectedGearSlot];
@@ -2909,14 +2904,8 @@ $("#gearEquipNext")?.addEventListener("click",()=>{
   persistProgress();
   renderHeroDetail();
   renderHeroes();
-  $("#gearPromotionTitle").textContent="Поздравляем!";
-  $("#gearPromotionLevel").textContent="Уровень экипировки: G"+result.from+" → G"+result.to+
-   ". Герой остался на уровне "+before.level+".";
-  $("#gearPromotionCost").textContent="Потрачено "+result.currency+" кромов.";
-  $("#gearPromotionStats").textContent="Здоровье: "+before.hp+" → "+after.hp+" HP\n"+
-   "Атака: "+before.atk+" → "+after.atk+" ATK\n"+
-   "Скорость: "+before.speed+" → "+after.speed+" (без изменений)";
-  $("#gearPromotionDialog").showModal();
+  GearPromotionUI.show({heroName:base.name,from:result.from,to:result.to,
+   currency:result.currency,before,after});
   return;
  }
  if(ProgressCore.equip(progress,selectedHeroId,selectedGearSlot)){

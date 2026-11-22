@@ -1,0 +1,92 @@
+/* GEARVICTORY001 — bronze, graphite and ceremonial golden ring; no WebGL. */
+#gearPromotionDialog.gear-victory-dialog{
+ --gv-gold:#e3b366;--gv-cream:#fff0cc;
+ box-sizing:border-box;
+ position:fixed;inset:0;margin:auto;padding:0;
+ width:min(92vw,1180px);
+ max-width:calc(100vw - 20px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px));
+ height:min(84dvh,600px);
+ max-height:calc(100dvh - 16px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+ border:2px solid #d8a556;border-radius:19px;
+ background:radial-gradient(ellipse at 51% 64%,#5337199c,transparent 45%),linear-gradient(128deg,#18151b 5%,#1c1c21 62%,#090e12);
+ color:#f5ead8;overflow:hidden;
+ box-shadow:0 0 0 2px #21190d,0 5px 36px #000e,inset 0 0 32px #b886472e;
+}
+#gearPromotionDialog.gear-victory-dialog::backdrop{background:#030408da;backdrop-filter:blur(3px)}
+#gearPromotionDialog .gear-victory-frame{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;position:relative;isolation:isolate}
+#gearPromotionDialog .gear-victory-frame::before{content:"";position:absolute;inset:7px;border:1px solid #e8b56648;border-radius:12px;pointer-events:none;z-index:4}
+#gearPromotionDialog .gear-victory-frame::after{content:"✦";position:absolute;top:0;left:50%;transform:translate(-50%,-48%);font:28px Georgia,serif;color:#ffe29d;text-shadow:0 0 16px #ffbe5a;pointer-events:none;z-index:5}
+#gearPromotionDialog .gear-victory-heading{position:relative;text-align:center;z-index:2;padding:12px 30px 4px;min-height:0}
+#gearPromotionDialog #gearPromotionTitle{font:700 clamp(18px,2.6vw,37px)/1.1 Georgia,serif;text-transform:uppercase;letter-spacing:.055em;color:#ffe4ac;margin:0;text-shadow:0 2px 0 #49280d,0 0 13px #b36b2c}
+#gearPromotionDialog .gear-victory-heading::after{content:"◆";color:#ffd27d;display:block;margin:4px auto 0;line-height:8px;font-size:12px;background:linear-gradient(90deg,transparent,#c18d45 36%,#d9aa59 64%,transparent) center / 68% 1px no-repeat}
+#gearPromotionDialog #gearPromotionHeroName{font:600 clamp(11px,1.5vw,20px)/1.2 Georgia,serif;letter-spacing:.12em;color:#f6d597;margin:4px 0 0;text-transform:uppercase}
+#gearPromotionDialog .gear-victory-main{display:grid;grid-template-columns:minmax(0,35%) minmax(0,26%) minmax(0,39%);min-width:0;min-height:0;align-items:stretch;position:relative}
+#gearPromotionDialog .gear-victory-portrait-panel{min-width:0;min-height:0;position:relative;overflow:hidden;pointer-events:none}
+#gearPromotionDialog .gear-victory-portrait-panel::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 45% 70%,#bc753545,transparent 68%),linear-gradient(90deg,#1e1316 0%,transparent 66%,#16161b 100%);z-index:-1}
+#gearPromotionDialog #gearPromotionPortrait{position:absolute;inset:-12% -4% -12% -5%;width:110%;height:124%;object-fit:cover;object-position:center 36%;filter:drop-shadow(3px 9px 13px #000a) sepia(.10);-webkit-mask-image:linear-gradient(90deg,#000 64%,transparent 100%);mask-image:linear-gradient(90deg,#000 64%,transparent 100%)}
+#gearPromotionDialog .gear-victory-portrait-panel::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#1a151a 0%,transparent 36%),linear-gradient(90deg,transparent 75%,#18181b);pointer-events:none}
+#gearPromotionDialog .gear-victory-rank{min-width:0;min-height:0;display:grid;place-content:center;justify-items:center;position:relative;z-index:1}
+#gearPromotionDialog .gear-victory-aura{position:absolute;width:min(30vw,280px);max-height:100%;aspect-ratio:1;background:radial-gradient(circle,#ebb75e4f 0%,#d3902340 25%,transparent 69%);pointer-events:none}
+#gearPromotionDialog .gear-victory-medal{width:clamp(90px,min(17vw,31dvh),225px);aspect-ratio:1;display:grid;place-items:center;position:relative;border:4px double #f5c878;border-radius:50%;background:radial-gradient(circle at 50% 38%,#65472b 0%,#2f2118 49%,#12161b 79%);box-shadow:inset 0 0 0 8px #1c1819,inset 0 0 0 10px #b17b3c,0 0 0 4px #593b20,0 0 30px #ffc56188,0 0 64px #b9753044}
+#gearPromotionDialog .gear-victory-medal::before{content:"✦";position:absolute;left:50%;top:-18px;transform:translateX(-50%);font:28px Georgia,serif;color:#ffe09c;text-shadow:0 0 16px #e7a444}
+#gearPromotionDialog .gear-victory-medal::after{content:"✧";position:absolute;left:50%;bottom:-23px;transform:translateX(-50%);font:26px Georgia,serif;color:#e8b66c}
+#gearPromotionDialog #gearPromotionTier{font:700 clamp(43px,7vw,109px)/1 Georgia,serif;letter-spacing:-.07em;color:#fff0c2;text-shadow:0 2px 0 #613d1c,0 0 11px #ffd37d,0 0 28px #de9446}
+#gearPromotionDialog #gearPromotionLevel{display:block;min-width:110px;padding:4px 14px;margin:13px 0 0;position:relative;text-align:center;font:700 clamp(14px,2vw,24px)/1.1 Georgia,serif;white-space:nowrap;color:#ffda8c;background:linear-gradient(90deg,#261b14,#48301b,#261b14);border:1px solid #b37a3b;box-shadow:0 2px 12px #0009}
+#gearPromotionDialog .gear-victory-bonuses{display:flex;flex-direction:column;min-width:0;min-height:0;padding:6px clamp(9px,1.9vw,27px) 9px 0;justify-content:center;position:relative;z-index:2}
+#gearPromotionDialog .gear-victory-bonuses h3{margin:0 0 8px;text-align:center;font:600 clamp(12px,1.8vw,24px)/1.1 Georgia,serif;letter-spacing:.06em;color:#ffdf9f;text-transform:uppercase}
+#gearPromotionDialog #gearPromotionStats{display:grid;gap:clamp(6px,1.1dvh,15px);min-height:0;border:1px solid #b98349aa;border-radius:8px;background:linear-gradient(115deg,#1f1a1ce6,#151719e6);padding:clamp(6px,1.4vw,16px);box-shadow:inset 0 0 20px #0007;margin:0;color:#e9dac4;font-weight:400;white-space:normal;line-height:normal}
+#gearPromotionDialog .gear-victory-stat{display:grid;grid-template-columns:clamp(25px,3.8vw,50px) minmax(0,1fr) auto;align-items:center;column-gap:8px;min-width:0}
+#gearPromotionDialog .gear-victory-stat-icon{display:grid;place-items:center;width:clamp(25px,3.8vw,50px);aspect-ratio:1;background:radial-gradient(circle at 50% 20%,#6a4729,#21191b);border:1px solid #a97340;border-radius:8px;color:#e6c37c;font:600 clamp(17px,2.3vw,29px) Georgia,serif}
+#gearPromotionDialog .gear-victory-stat-detail{display:grid;min-width:0;gap:2px}
+#gearPromotionDialog .gear-victory-stat-label{font-size:clamp(10px,1.25vw,16px);color:#ead6b3}
+#gearPromotionDialog .gear-victory-stat-values{white-space:nowrap;font-size:clamp(12px,1.6vw,23px);font-variant-numeric:tabular-nums}
+#gearPromotionDialog .gear-victory-stat-values strong{color:#8fe577;font-weight:800}
+#gearPromotionDialog .gear-victory-stat-arrow{color:#e9ac5d}
+#gearPromotionDialog .gear-victory-stat-delta{justify-self:end;border-radius:100px;border:1px solid #5ca74755;background:#284825;color:#d6ffbd;font:700 clamp(10px,1.4vw,17px)/1.2 system-ui,sans-serif;padding:3px 7px;white-space:nowrap}
+#gearPromotionDialog .gear-victory-stat-delta.is-negative{background:#542c24;color:#ffd1c3;border-color:#b96340}
+#gearPromotionDialog .gear-victory-stat-line{height:3px;border-radius:3px;background:linear-gradient(90deg,#b7e77d 0 62%,#40372a 62% 100%);box-shadow:0 0 4px #b6e87caa;opacity:.85;max-width:100%;margin-top:2px}
+#gearPromotionDialog .gear-victory-no-change{font-size:12px;margin:3px;text-align:center;color:#d9c5ab}
+#gearPromotionDialog .gear-victory-footer{min-height:0;z-index:3;display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,42%);gap:10px;align-items:center;padding:clamp(7px,1.3vh,14px) clamp(18px,4vw,60px);border-top:1px solid #ba8a4a7a;background:linear-gradient(90deg,#161318e0,#251c18ed,#121316e8)}
+#gearPromotionDialog .gear-victory-expense{min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+#gearPromotionDialog #gearPromotionCost{margin:0;color:#f1d8a6;font:600 clamp(12px,1.8vw,21px)/1.1 Georgia,serif;white-space:nowrap}
+#gearPromotionDialog .gear-victory-history{font-size:clamp(8px,.9vw,11px);color:#bca98a;line-height:1.2;flex-basis:100%}
+#gearPromotionDialog #gearPromotionClose{width:100%;min-height:44px;max-width:none;padding:6px 12px;margin:0;touch-action:manipulation;background:linear-gradient(#f4d18b,#c18b42);color:#251505;border:1px solid #f0c982;border-radius:6px;box-shadow:0 3px #5b3c20,0 0 18px #e2a45355;font:700 clamp(13px,1.75vw,23px)/1.1 Georgia,serif;text-transform:uppercase;letter-spacing:.02em}
+#gearPromotionDialog #gearPromotionClose:focus-visible{outline:3px solid #fff3cb;outline-offset:3px}
+#gearPromotionDialog #gearPromotionClose:active{transform:translateY(2px);box-shadow:0 1px #5b3c20}
+@media(orientation:landscape) and (max-height:440px){
+ #gearPromotionDialog.gear-victory-dialog{height:calc(100dvh - 14px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+ #gearPromotionDialog .gear-victory-heading{padding:8px 24px 2px}
+ #gearPromotionDialog .gear-victory-heading::after{margin:3px auto 0}
+ #gearPromotionDialog #gearPromotionHeroName{margin:1px 0 0}
+ #gearPromotionDialog .gear-victory-bonuses h3{margin-bottom:4px}
+ #gearPromotionDialog .gear-victory-medal{width:clamp(80px,min(16vw,27dvh),150px)}
+ #gearPromotionDialog .gear-victory-footer{padding:5px 20px;min-height:50px}
+ #gearPromotionDialog .gear-victory-history{font-size:9px}
+}
+@media(orientation:landscape) and (max-height:335px){
+ #gearPromotionDialog .gear-victory-heading{padding-top:5px}
+ #gearPromotionDialog .gear-victory-medal{width:75px}
+ #gearPromotionDialog #gearPromotionLevel{margin-top:8px}
+ #gearPromotionDialog .gear-victory-stat{column-gap:5px}
+ #gearPromotionDialog #gearPromotionStats{gap:4px;padding:5px}
+ #gearPromotionDialog .gear-victory-footer{padding:3px 15px}
+}
+@media(max-width:680px) and (orientation:portrait){
+ #gearPromotionDialog.gear-victory-dialog{height:auto;max-height:calc(100dvh - 24px);overflow:auto}
+ #gearPromotionDialog .gear-victory-frame{min-height:400px}
+ #gearPromotionDialog .gear-victory-main{grid-template-columns:42% 58%;grid-template-rows:minmax(130px,1fr) auto}
+ #gearPromotionDialog .gear-victory-portrait-panel{grid-row:1;grid-column:1}
+ #gearPromotionDialog .gear-victory-rank{grid-row:1;grid-column:2}
+ #gearPromotionDialog .gear-victory-bonuses{grid-row:2;grid-column:1/-1;padding:6px 16px}
+ #gearPromotionDialog .gear-victory-footer{grid-template-columns:1fr;padding:8px 16px}
+}
+@media(prefers-reduced-motion:no-preference){
+ #gearPromotionDialog.gear-victory-enter .gear-victory-medal{animation:gearVictoryReveal .75s ease-out both}
+ #gearPromotionDialog.gear-victory-enter .gear-victory-stat{animation:gearVictoryStat .45s ease-out both}
+ #gearPromotionDialog.gear-victory-enter .gear-victory-stat:nth-child(2){animation-delay:.15s}
+}
+@keyframes gearVictoryReveal{from{opacity:.1;transform:scale(.7);filter:brightness(1.8)}to{opacity:1;transform:scale(1);filter:brightness(1)}}
+@keyframes gearVictoryStat{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){
+ #gearPromotionDialog *,#gearPromotionDialog *::before,#gearPromotionDialog *::after{animation:none!important;transition:none!important}
+}

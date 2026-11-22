@@ -58,6 +58,6 @@ test("GEARPROMOCTA001: visible primary action switches from batch to next G",()=
  assert.match(game,/#gearEquipNext"\)\?\.click\(\)/);
  assert.match(css,/#gearEquipAll\.gear-equip-promote/);
  const version=JSON.parse(read("package.json")).version;
- assert.equal(version,"0.3.232");
- assert.ok(html.includes('v'+version+' · GEARPROMOCTA001'));
+ assert.match(version,/^0\.\d+\.\d+$/);
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+version+' · '),"build version must track package.json");
 });

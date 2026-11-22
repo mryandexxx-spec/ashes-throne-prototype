@@ -28,13 +28,13 @@ assert.equal(D.unclaimedCount(invalid,day),0,"invalid state must not display bog
 const html=read("index.html"),game=read("game.js"),styles=read("styles.css");
 assert.match(html,/id="dailyClaimBadge"/);
 assert.match(html,/id="dailyTasksNav"/);
-assert.match(html,/v\d+\.\d+\.\d+ · UIHUD001/);
+assert.ok(html.includes("v"+__BUILD_VERSION_FOR_TESTS+" ·"),"footer version follows package");
 assert.match(styles,/\.daily-nav-badge\[hidden\]\{display:none\}/);
 assert.ok(game.includes('DailyCore.unclaimedCount(progress,dailyDay())'));
 assert.ok(game.includes('const LOGIN_CALENDAR_SEEN_KEY="ashes-throne.login-calendar-seen.v1"'));
 assert.ok(game.includes('window.localStorage?.getItem(LOGIN_CALENDAR_SEEN_KEY)'));
 assert.ok(game.includes('window.localStorage?.setItem(LOGIN_CALENDAR_SEEN_KEY,day)'));
-assert.ok(game.includes('if(id==="loginCalendar"){\n  markLoginCalendarSeen();'));
+assert.match(game,/if\\(id==="loginCalendar"\\)\\{[\\s\\S]{0,300}markLoginCalendarSeen\\(\\);[\\s\\S]{0,100}renderLoginCalendar\\(\\);/);
 assert.ok(game.includes('if(id==="home"){\n  renderDailyClaimBadge();\n  maybeOpenLoginOnEntry();'));
 assert.ok(game.endsWith('maybeOpenLoginOnEntry();\n'));
 assert.match(game,/if\(document\.hidden\|\|saveBlocked/);

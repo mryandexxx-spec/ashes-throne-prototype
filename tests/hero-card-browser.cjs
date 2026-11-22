@@ -258,6 +258,11 @@ const {chromium,webkit}=require('playwright');
   }
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('#gearPromotionDialog').evaluate(dialog=>dialog.open),false);
+  // First Escape dismisses the modal. The next must dismiss the underlying
+  // gear source panel, just as the original single-modal scenario did.
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#heroDetail').evaluate(el=>el.classList.contains('gear-ux-active')),false,
+   'Closing the victory must not leave the hero dossier in its gear-only mode');
   assert.equal(await page.evaluate(()=>JSON.stringify(progress)),progressBeforePreview,
    'Preview-only presentation never mutates player progress');
   // Subsequent inherited hero-dossier scenarios run at the standard height.

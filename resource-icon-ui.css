@@ -1,0 +1,43 @@
+.resource-group{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;vertical-align:middle;max-width:100%}
+.resource-chip{display:inline-flex;align-items:center;justify-content:center;gap:3px;min-height:44px;min-width:44px;padding:4px 7px;border:1px solid #8d714d80;border-radius:8px;background:#1a1c20b8;color:#f3dec0;font:600 12px Inter,system-ui,sans-serif;white-space:nowrap;vertical-align:middle;max-width:100%;touch-action:manipulation}
+.resource-chip:focus-visible,.resource-source button:focus-visible{outline:2px solid #f5c983;outline-offset:2px}
+.resource-chip--compact{min-height:44px;min-width:44px;padding:3px 5px;font-size:11px;border-color:transparent;background:transparent}
+.resource-chip--short{border-color:#ba655c}.resource-chip--ready{border-color:#799d81}
+.resource-art{display:inline-block;flex:0 0 auto;width:32px;height:32px;background-image:url("assets/resources/atlas.webp?v=1");background-size:200% 200%;background-repeat:no-repeat;vertical-align:middle}
+.resource-chip--compact .resource-art{width:26px;height:26px}
+.resource-art--account-xp{background-position:0% 0%}
+.resource-art--manual1{background-position:100% 0%}
+.resource-art--manual2{background-position:0% 100%}
+.resource-art--seal{background-position:100% 100%}
+.resource-amount{font-variant-numeric:tabular-nums}
+#accountStatus .resource-chip{display:inline-flex;vertical-align:middle}
+.resource-dialog{box-sizing:border-box;width:min(510px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:min(84dvh,490px);padding:0;overflow:hidden;color:#f5ead6;background:linear-gradient(155deg,#2a2523,#17191f 65%);border:1px solid #9e8059;border-radius:13px;box-shadow:0 12px 40px #0009}
+.resource-dialog::backdrop{background:#030608c9}
+.resource-dialog header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #9e805955}
+.resource-dialog header .resource-art{width:68px;height:68px}
+.resource-dialog header>div{min-width:0;flex:1}
+.resource-dialog h2{font:600 clamp(17px,2.2vw,22px) Cinzel,serif;margin:0 0 4px;overflow-wrap:anywhere}
+.resource-dialog header p{font-size:12px;margin:0;color:#d6bc91}
+.resource-dialog .resource-dialog-close{min-width:44px;min-height:44px;padding:0;align-self:flex-start}
+.resource-dialog-body{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;max-height:calc(min(84dvh,490px) - 97px);padding:10px 16px 16px}
+.resource-dialog-body>p{font-size:13px;line-height:1.5;margin:0 0 10px}
+.resource-dialog h3{margin:12px 0 8px;color:#daba7e;font-size:14px}
+.resource-source{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #9e805936}
+.resource-source>div{min-width:0;flex:1}
+.resource-source strong{font-size:13px}
+.resource-source p{font-size:12px;line-height:1.4;color:#c8b9a5;margin:3px 0 0;overflow-wrap:anywhere}
+.resource-source button{min-width:65px;min-height:44px;flex:0 0 auto;padding:8px}
+#skillCostText .resource-group{display:flex;margin-top:3px}
+#dailyTaskList .resource-chip,#netuxDailyTaskList .resource-chip,.login-day .resource-chip{font-size:11px}
+#playerAccountXpText .resource-chip{margin-left:6px}
+@media(max-height:430px) and (orientation:landscape){
+ .resource-dialog{max-height:calc(100dvh - 14px);width:min(590px,calc(100vw - 30px))}
+ .resource-dialog header{padding:5px 12px}.resource-dialog header .resource-art{width:48px;height:48px}
+ .resource-dialog-body{max-height:calc(100dvh - 88px);padding:6px 12px}
+ .resource-source{padding:5px 0}
+}
+
+/* Multi-tier weekly rewards remain separated instead of running together in one line. */
+#net008aRewards .weekly-reward-line{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:4px 0;border-bottom:1px solid #9e805936}
+#net008aRewards .weekly-reward-line:last-child{border-bottom:0}
+#net008aRewards .resource-chip{flex:0 0 auto}

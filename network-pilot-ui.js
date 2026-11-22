@@ -30,8 +30,13 @@ const NetworkPilotUI=(()=>{
   return ["+"+reward.currency+" валюты","+"+reward.accountXp+" XP",...(includeMaterials?mats:[]),...shards].join(" · ");
  }
  function renderReward(host,ref,pilotText){
-  host.textContent=isLive()?rewardText(ref,false):pilotText;
-  if(isLive())GearMaterialUI.append(host,NetworkLiveEconomy.preview(ref)?.materials);
+  const receipt=isLive()?NetworkLiveEconomy.preview(ref):null;
+  const icons=typeof ResourceIconUI!=="undefined";
+  const label=isLive()?rewardText(ref,false):pilotText;
+  host.textContent=receipt&&icons?
+   label.replace(" · +"+receipt.accountXp+" XP",""):label;
+  if(receipt&&icons)ResourceIconUI.append(host,receipt.accountXp,null,{compact:true});
+  if(receipt)GearMaterialUI.append(host,receipt.materials);
  }
  let materialReceipt=null;
  async function collectRewards(){
@@ -239,7 +244,12 @@ const NetworkPilotUI=(()=>{
    const title=line(clueTitle(clue),"strong");
    const fullReward=isLive()?rewardText(clue.rewardRef):
     "Пробный бой. Реальные награды не назначены.";
-   const reward=line(isLive()?rewardText(clue.rewardRef,false):fullReward,"span");reward.className="netux-clue-reward";
+   const payout=isLive()?NetworkLiveEconomy.preview(clue.rewardRef):null;
+   const useXpIcon=!!payout&&typeof ResourceIconUI!=="undefined";
+   const visibleReward=isLive()?rewardText(clue.rewardRef,false):fullReward;
+   const reward=line(useXpIcon?
+    visibleReward.replace(" · +"+payout.accountXp+" XP",""):visibleReward,"span");
+   reward.className="netux-clue-reward";
    const tags=document.createElement("div");tags.className="netux-clue-tags";
    if(session.canSimulate(clue.id))tags.append(line("Освоено","span"));
    if(clue.threatTag){
@@ -252,7 +262,10 @@ const NetworkPilotUI=(()=>{
     ". "+fullReward+(session.canSimulate(clue.id)?". Освоено":"")+
     (clue.threatTag?". След угрозы":""));
    choice.append(top,title,reward,tags);el.append(choice);
-   if(isLive())GearMaterialUI.append(el,NetworkLiveEconomy.preview(clue.rewardRef)?.materials);
+   if(isLive()){
+    if(useXpIcon)ResourceIconUI.append(el,payout.accountXp,null,{compact:true});
+    GearMaterialUI.append(el,payout?.materials);
+   }
    cluesEl.append(el);
   }
   updateSelection(s,blocked,busy);

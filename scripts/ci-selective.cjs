@@ -19,8 +19,9 @@ try{
 if(process.env.GITHUB_EVENT_NAME==="workflow_dispatch"&&!changed.length)
  changed=["game.js"]; // explicit manual smoke runs the essential game path
 const any=fn=>changed.some(fn);
-const squad=any(f=>["game.js","index.html","styles.css","squad-stage-3d.js","tests/squad-recover-browser.cjs"].includes(f)
- || /^assets\/.*\.glb$/.test(f));
+const squad=any(f=>["game.js","index.html","styles.css","squad-stage-3d.js","tests/squad-recover-browser.cjs",
+ "resource-icon-ui.js","resource-icon-ui.css","tests/resource-icon-ui-browser.cjs"].includes(f)
+ || /^assets\/.*\.glb$/.test(f)||/^assets\/resources\//.test(f));
 const battle=any(f=>/^(combat-|arena-|battle-|npc-|enemy-|tests\/arena-fix-001)/.test(f)
  || f==="combat-core.js" || f==="arena-world-hud.js");
 const lore=any(f=>/^(lore-|story-|tests\/lore-campaign)/.test(f));

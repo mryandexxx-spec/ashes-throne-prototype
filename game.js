@@ -1029,9 +1029,9 @@ function progressedHero(hero){
   const level=ProgressCore.levelOf(progress,hero.id);
   const stars=typeof StarCore!=="undefined"?StarCore.rankOf(progress,hero.id):1;
   if(level===null||stars===null||stars<1)return null;
+  const gearBonuses=ProgressCore.gearBonuses(progress,hero.id);
   h=HeroStatsCombatBridge.apply(hero,{
-   level,stars,gearPercent:ProgressCore.gearBonuses(progress,hero.id),
-   gearStats:ProgressCore.gearBonuses(progress,hero.id).stats
+   level,stars,gearPercent:gearBonuses,gearStats:gearBonuses.stats
   },HeroStatsProfiles[hero.id],HeroStatsCore);
  }else{
   const calculated=ProgressCore.heroStats(progress,hero);
@@ -2668,12 +2668,13 @@ function renderHeroDetail(){
  const hero=progressedHero(base);
  const cost=ProgressCore.upgradeCost(progress,base.id);
  const levelCap=ProgressCore.heroLevelCap(progress,base.id);
+ const upcomingGear=ProgressCore.gearBonuses(progress,base.id);
  const next=cost===null?null:((["ren","nada","liora","art","sava"].includes(base.id))?
   HeroStatsCombatBridge.apply(base,{
    level:hero.level+1,
    stars:StarCore.rankOf(progress,base.id),
-   gearPercent:ProgressCore.gearBonuses(progress,base.id),
-   gearStats:ProgressCore.gearBonuses(progress,base.id).stats
+   gearPercent:upcomingGear,
+   gearStats:upcomingGear.stats
   },HeroStatsProfiles[base.id],HeroStatsCore):
   equippedPilotStats(ProgressCore.heroStats(progress,base,hero.level+1),PILOT_HERO_STATS[base.id]));
  $("#detailName").textContent=hero.name;

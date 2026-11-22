@@ -47,7 +47,7 @@ test("GEAREQUIPALL001: all remaining items equipped once at exact old recipe cos
  assert.equal(result.count,6);
  assert.equal(result.all,true);
  assert.equal(p.gear.ren.tier,1,"batch does not promote");
- assert.deepEqual(copy(p.gear.ren.slots),items.map(x=>x.id));
+ assert.deepEqual(copy(p.gear.ren.slots),copy(items.map(x=>x.id)));
  assert.equal(p.currency,0);
  for(const id of GearData.MATERIALS)assert.equal(p.materials[id],0);
  assert.equal(GearEquipAllCore.equip(p,"ren"),null,"repeat never spends a second time");

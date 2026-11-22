@@ -2449,6 +2449,17 @@ function renderItemizedGear(base,gear){
  const promotion=ready?ProgressCore.gearPromotionCost(progress,base.id):null;
  $("#gearTier").textContent="G"+gear.tier+" · "+completed+"/6"+
   (ready&&gear.tier===GearData.MAX_TIER?" · максимум":"");
+ const batchButton=$("#gearEquipAll"),batchPlan=GearEquipAllCore.preview(progress,base.id);
+ if(batchButton){
+  batchButton.hidden=!!batchPlan&&!batchPlan.empty;
+  batchButton.disabled=saveBlocked||!batchPlan||!batchPlan.count;
+  batchButton.textContent=batchPlan?.all?"Надеть всё":
+   batchPlan?.count?"Надеть доступное · "+batchPlan.count:"Надеть всё";
+  batchButton.setAttribute("aria-label",batchPlan?.count?
+   "Изготовить и надеть "+batchPlan.count+" предметов из "+batchPlan.empty+" свободных слотов":
+   "Недостаточно ресурсов для изготовления снаряжения");
+ }
+
  const slotPlans=GearData.SLOTS.map(entry=>
   GearPlanningCore.plan(progress,base.id,entry.id,campaignProgress));
  $("#gearSlots").innerHTML=GearData.SLOTS.map((entry,i)=>{
@@ -2717,6 +2728,7 @@ function renderHeroDetail(){
  const gear=ProgressCore.gearState(progress,base.id);
  if(gear.mode==="itemized")renderItemizedGear(base,gear);
  else {
+ if($("#gearEquipAll"))$("#gearEquipAll").hidden=true;
  const completed=gear.slots.filter(Boolean).length;
  const item=ProgressCore.gearItem(gear.tier,selectedGearSlot);
  const available=ProgressCore.gearCost(progress,base.id,selectedGearSlot);
@@ -2787,6 +2799,29 @@ $("#gearSlots")?.addEventListener("click",event=>{
   $("#gearSlots")?.querySelector?.('[data-gear-slot="'+slot+'"]')?.focus?.();
   HeroCardUI.open("heroGearDialog");
  }
+});
+// GEAREQUIPALL001: one player action, one persisted v3 wallet transaction.
+$("#gearEquipAll")?.addEventListener("click",()=>{
+ const button=$("#gearEquipAll"),base=ALLIES.find(h=>h.id===selectedHeroId);
+ if(!base||saveBlocked||button.disabled)return;
+ const plan=GearEquipAllCore.preview(progress,base.id);
+ if(!plan?.count){renderHeroDetail();return;}
+ const before=JSON.stringify(progress);
+ const result=GearEquipAllCore.equip(progress,base.id);
+ if(!result){renderHeroDetail();return;}
+ recordDailyTask("equip-item");
+ let saved=false;
+ try{saved=persistProgress();}catch(_){window.walletWriterHalt?.();}
+ if(!saved){
+  Object.keys(progress).forEach(k=>delete progress[k]);
+  Object.assign(progress,JSON.parse(before));
+  renderAccountHeader();renderHeroDetail();
+  $("#gearEquipAllStatus").textContent="Не удалось сохранить комплект. Кромы и материалы восстановлены.";
+  return;
+ }
+ renderHeroDetail();renderHeroes();
+ $("#gearEquipAllStatus").textContent="Изготовлено и надето "+result.count+
+  " предметов. Прогресс сохранён.";
 });
 $("#gearEquipNext")?.addEventListener("click",()=>{
  const base=ALLIES.find(h=>h.id===selectedHeroId);

@@ -85,6 +85,8 @@ const {chromium,webkit}=require('playwright');
   // advertises farming before the player opens the recipe.
   assert.equal(await page.locator('#gearSlots .gear-slot--missing').count(),6);
   assert.equal(await page.locator('#gearSlots .gear-slot-indicator svg').count(),6);
+  assert.equal(await page.locator('#gearEquipAll').isDisabled(),true,
+   'Cannot craft anything from an empty wallet');
   await page.locator('#gearSlots button').nth(0).click();
   assert.equal(await page.locator('#heroDetail').evaluate(n=>n.classList.contains('gear-ux-active')),true);
   assert.equal(await page.locator('#heroGearDialog').evaluate(n=>n.open),false,'Gear must not cover the 3D hero');
@@ -128,6 +130,8 @@ const {chromium,webkit}=require('playwright');
   assert.equal(await page.locator('#gearSlots button').first().getAttribute('data-gear-state'),'ready',
    'Developer materials must unlock crafting directly on the hero card');
   assert.equal(await page.locator('#gearSlots button').first().locator('.gear-slot-indicator').textContent(),'+');
+  assert.equal(await page.locator('#gearEquipAll').isEnabled(),true);
+  assert.equal(await page.locator('#gearEquipAll').textContent(),'Надеть всё');
   const before=await page.evaluate(()=>({level:progress.levels.ren,currency:progress.currency,rank:StarCore.rankOf(progress,'ren')}));
   await fits('resources/star upgrade available');
   await page.setViewportSize({width:844,height:320});
@@ -145,6 +149,24 @@ const {chromium,webkit}=require('playwright');
   assert.equal(await page.locator('#gearSlots button').first().getAttribute('data-gear-state'),'installed',
    'The crafted item must immediately change to the equipped state');
   assert.equal(await page.locator('#gearSlots button').first().locator('.gear-slot-indicator').textContent(),'✓');
+  // GEAREQUIPALL001: one tap consumes the remaining five recipes (not promotion).
+  const beforeBatch=await page.evaluate(()=>({
+   currency:progress.currency,materials:{...progress.materials},
+   tier:ProgressCore.gearState(progress,'ren').tier
+  }));
+  assert.equal(await page.locator('#gearEquipAll').isEnabled(),true);
+  await page.locator('#gearEquipAll').click();
+  const afterBatch=await page.evaluate(()=>({
+   currency:progress.currency,materials:{...progress.materials},
+   tier:ProgressCore.gearState(progress,'ren').tier,
+   installed:ProgressCore.gearState(progress,'ren').slots.filter(Boolean).length
+  }));
+  assert.equal(afterBatch.installed,6);
+  assert.equal(afterBatch.tier,beforeBatch.tier,'Equipping all must not promote automatically');
+  assert.ok(afterBatch.currency<beforeBatch.currency);
+  assert.equal(await page.locator('#gearSlots .gear-slot--installed').count(),6);
+  assert.equal(await page.locator('#gearEquipAll').isHidden(),true);
+  assert.match(await page.locator('#gearEquipAllStatus').textContent(),/Прогресс сохранён/);
   await page.keyboard.press('Escape');
   await page.locator('#detailBack').click();assert.equal(await page.locator('#collection').evaluate(n=>n.classList.contains('active')),true);
   assert.equal(await page.evaluate(()=>document.body.classList.contains('hero-card-mode')),false);

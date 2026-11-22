@@ -31,6 +31,18 @@ async function run(name,browserType){
     return {width:rect.width,height:rect.height,url};
    });
    assert.ok(coin.width>=48&&coin.height>=48&&coin.url.includes("krom.webp"));
+   // Previous KROM001 only checked a CSS URL and allowed a corrupt WebP through CI.
+   const decoded=await page.evaluate(async()=>{
+    const image=new Image();image.src="assets/resources/krom.webp?v=2";
+    await image.decode();
+    const canvas=document.createElement("canvas");canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
+    const ctx=canvas.getContext("2d");ctx.drawImage(image,0,0);
+    const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    let opaque=0;for(let i=3;i<pixels.length;i+=4)if(pixels[i]>80)opaque++;
+    return {width:image.naturalWidth,height:image.naturalHeight,opaque};
+   });
+   assert.ok(decoded.width>=96&&decoded.height>=96&&decoded.opaque>1000,
+    "Approved Krom artwork must actually decode and contain visible non-transparent pixels");
    await page.locator("#resourceDialogClose").tap();
    assert.equal(await krom.evaluate(n=>document.activeElement===n),true);
    await page.evaluate(()=>showScreen("dailyTasks"));

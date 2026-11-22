@@ -2695,8 +2695,9 @@ function syncHeroLevelSelection(base,hero,levelCap){
  }
  const plan=canSelect?ProgressCore.upgradePlan(progress,base.id,selectedLevelTarget-hero.level):null;
  const exact=!!plan&&plan.to===selectedLevelTarget&&plan.levels>0;
- $("#heroLevelTarget").textContent=canSelect?"→ "+selectedLevelTarget:"—";
- $("#heroLevelCost").textContent=exact?
+ const targetLabel=$("#heroLevelTarget"),costLabel=$("#heroLevelCost");
+ if(targetLabel)targetLabel.textContent=canSelect?"→ "+selectedLevelTarget:"—";
+ if(costLabel)costLabel.textContent=exact?
   "+"+plan.levels+" ур. · "+plan.cost.toLocaleString("ru-RU")+" кромов":
   (saveBlocked?"Сохранение недоступно":ProgressCore.upgradeBlockReason(progress,base.id)||"Повышение недоступно");
  const button=$("#detailUpgrade");

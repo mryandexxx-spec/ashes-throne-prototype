@@ -38,9 +38,9 @@ const ResourceIconUI=(()=>{
    (detail?'. '+detail:'')+'. Открыть описание и источники">'+
    art(id)+(count?'<span class="resource-amount">'+count+'</span>':'')+'</button>';
  }
- function rewards(xp=0,materials=null,{compact=false}={}){
+ function rewards(xp=0,materials=null,{compact=false,mode="reward"}={}){
   const chunks=[];
-  if(valid(xp)&&xp>0)chunks.push(tile("account-xp",xp,{compact}));
+  if(valid(xp)&&xp>0)chunks.push(tile("account-xp",xp,{compact,mode}));
   for(const id of IDS.slice(1)){
    const n=materials?.[id];
    if(valid(n)&&n>0)chunks.push(tile(id,n,{compact}));

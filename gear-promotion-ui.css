@@ -146,3 +146,38 @@
  #gearPromotionDialog[data-victory-kind="star"] .gear-victory-stat-delta,
  #gearPromotionDialog[data-victory-kind="level"] .gear-victory-stat-delta{font-size:10px;padding:1px 5px}
 }
+
+
+/* VICTORYSTATS003: the right-hand results are an actual, keyboard/touch scroll
+ * region. Portrait, medal and Continue never scroll or disappear. */
+#gearPromotionDialog .gear-victory-bonuses{min-height:0}
+#gearPromotionDialog #gearPromotionStats{
+ min-height:0;max-height:100%;flex:0 1 auto;
+ overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;
+ -webkit-overflow-scrolling:touch;touch-action:pan-y;scrollbar-width:thin;
+ scrollbar-color:#d1a054 #29221e;scroll-padding:5px;
+}
+#gearPromotionDialog #gearPromotionStats::-webkit-scrollbar{width:5px}
+#gearPromotionDialog #gearPromotionStats::-webkit-scrollbar-thumb{
+ background:#bb8a49;border-radius:5px
+}
+#gearPromotionDialog #gearPromotionStats:focus-visible{
+ outline:2px solid #f4d49a;outline-offset:-2px
+}
+#gearPromotionDialog .gear-victory-stat-label{white-space:normal;overflow-wrap:anywhere;line-height:1.1}
+#gearPromotionDialog .gear-victory-stat-values{white-space:normal;overflow-wrap:anywhere}
+#gearPromotionDialog .gear-victory-stat-delta{font-variant-numeric:tabular-nums}
+#gearPromotionDialog .gear-victory-scroll-hint:not([hidden]){
+ flex:0 0 auto;display:block;align-self:center;margin-top:3px;
+ color:#f2d19a;font:600 clamp(9px,1vw,12px)/1.15 system-ui,sans-serif;
+}
+#gearPromotionDialog .gear-victory-stat-line{
+ background:linear-gradient(90deg,#b7e77d,#435a40);opacity:.72
+}
+#gearPromotionDialog[data-victory-kind="star"] .gear-victory-stat-line,
+#gearPromotionDialog[data-victory-kind="level"] .gear-victory-stat-line{
+ background:linear-gradient(90deg,#b7e77d,#435a40)
+}
+@media(orientation:landscape) and (max-height:335px){
+ #gearPromotionDialog .gear-victory-scroll-hint:not([hidden]){font-size:9px;margin-top:1px}
+}

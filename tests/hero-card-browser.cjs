@@ -188,10 +188,24 @@ const {chromium,webkit}=require('playwright');
   assert.equal(promotionCost.from,1);
   assert.equal(promotionCost.to,2);
   const walletBeforePromotion=await page.evaluate(()=>progress.currency);
+  const statsBeforePromotion=await page.evaluate(()=>{
+   const hero=progressedHero(ALLIES.find(item=>item.id==='ren'));
+   return Object.fromEntries(HeroStatsCore.KEYS.map(key=>[key,hero[key]]));
+  });
   await page.locator('#gearEquipAll').click();
   assert.equal(await page.locator('#gearPromotionDialog').evaluate(el=>el.open),true);
   assert.equal(await page.locator('#gearPromotionDialog').getAttribute('data-victory-kind'),'gear');
   assert.match(await page.locator('#gearPromotionLevel').textContent(),/G1 → G2/);
+  const expectedChanged=await page.evaluate(before=>{
+   const hero=progressedHero(ALLIES.find(item=>item.id==='ren'));
+   return Array.from(HeroStatsCore.KEYS.filter(key=>Number.isFinite(before[key])&&
+    Number.isFinite(hero[key])&&before[key]!==hero[key]));
+  },statsBeforePromotion);
+  const displayedChanged=await page.locator('#gearPromotionStats .gear-victory-stat')
+   .evaluateAll(rows=>rows.map(row=>row.dataset.statKey));
+  assert.deepEqual(displayedChanged,expectedChanged,
+   'Gear celebration shows exactly the actual calculated deltas of all 14 stats');
+
   assert.equal(await page.locator('#gearPromotionPortrait').evaluate(img=>getComputedStyle(img).objectFit),'contain',
    'Full hero portrait must not be cropped by cover');
   const promoted=await page.evaluate(()=>({
@@ -208,7 +222,51 @@ const {chromium,webkit}=require('playwright');
   assert.equal(await page.locator('#gearEquipAll').isVisible(),true);
   assert.doesNotMatch(await page.locator('#gearEquipAll').textContent(),/Повысить/);
   await page.locator('#gearPromotionClose').click();
+  // Presentation-only stress: verify 14 distinct real-stat keys remain accessible
+  // via internal scrolling, without scrolling away the medal or Continue CTA.
+  const progressBeforePreview=await page.evaluate(()=>JSON.stringify(progress));
+  await page.evaluate(()=>{
+   const current=progressedHero(ALLIES.find(hero=>hero.id==='ren'));
+   const before=Object.fromEntries(HeroStatsCore.KEYS.map(k=>[k,current[k]]));
+   const after=Object.fromEntries(HeroStatsCore.KEYS.map(k=>[k,current[k]+
+    (['critChance','critDamage','accuracy','evasion','defensePenetration','debuffPotency','debuffResistance'].includes(k)?0.5:1)]));
+   GearPromotionUI.show({heroName:'Рен Терен',from:2,to:3,currency:500,before,after});
+  });
+  assert.equal(await page.locator('#gearPromotionStats .gear-victory-stat').count(),14);
+  for(const [width,height] of [[844,390],[932,430],[844,320]]){
+   await page.setViewportSize({width,height});
+   const geometry=await page.locator('#gearPromotionDialog').evaluate(dialog=>{
+    const stats=dialog.querySelector('#gearPromotionStats'),button=dialog.querySelector('#gearPromotionClose');
+    const dlg=dialog.getBoundingClientRect(),btn=button.getBoundingClientRect();
+    const root=document.documentElement;
+    stats.scrollTop=stats.scrollHeight;
+    return {scrollable:stats.scrollHeight>stats.clientHeight+1,scrolled:stats.scrollTop>0,
+     hint:!dialog.querySelector('#gearPromotionScrollHint').hidden,
+     lastVisible:dialog.querySelector('.gear-victory-stat:last-child').getBoundingClientRect().bottom<=
+      stats.getBoundingClientRect().bottom+2,
+     modalVisible:dlg.top>=-1&&dlg.bottom<=innerHeight+1,
+     buttonVisible:btn.height>=43&&btn.bottom<=dlg.bottom+1,
+     documentOverflow:root.scrollWidth>innerWidth+1||root.scrollHeight>innerHeight+1};
+   });
+   assert.equal(geometry.scrollable,true,'14 real stats need touch scrolling on '+width+'x'+height);
+   assert.equal(geometry.scrolled,true);
+   assert.equal(geometry.hint,true);
+   assert.equal(geometry.lastVisible,true,'Last stat should be reachable');
+   assert.equal(geometry.modalVisible,true);assert.equal(geometry.buttonVisible,true);
+   assert.equal(geometry.documentOverflow,false);
+   await page.screenshot({path:'artifacts/victory-14-stats-'+width+'x'+height+'.png'});
+  }
   await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#gearPromotionDialog').evaluate(dialog=>dialog.open),false);
+  // First Escape dismisses the modal. The next must dismiss the underlying
+  // gear source panel, just as the original single-modal scenario did.
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#heroDetail').evaluate(el=>el.classList.contains('gear-ux-active')),false,
+   'Closing the victory must not leave the hero dossier in its gear-only mode');
+  assert.equal(await page.evaluate(()=>JSON.stringify(progress)),progressBeforePreview,
+   'Preview-only presentation never mutates player progress');
+  // Subsequent inherited hero-dossier scenarios run at the standard height.
+  await page.setViewportSize({width:844,height:390});
   await page.locator('#detailBack').click();assert.equal(await page.locator('#collection').evaluate(n=>n.classList.contains('active')),true);
   assert.equal(await page.evaluate(()=>document.body.classList.contains('hero-card-mode')),false);
   await page.evaluate(()=>{selectedHeroId='nada';showScreen('heroDetail');});await fits('other playable hero');

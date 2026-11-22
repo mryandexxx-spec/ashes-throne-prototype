@@ -28,5 +28,7 @@ test("ROSTERDOSSIER001: compact landscape keeps action buttons fixed and star bo
  assert.match(css,/hero-detail-progression>\.hero-card-links\{[^}]*position:static/);
  for(const id of ["detailBiography","detailUpgrade","starPromoteButton","renCardReset"])
   assert.ok(html.includes('id="'+id+'"'),id);
- assert.ok(html.includes('v'+require("../package.json").version+' · ROSTERDOSSIER001'));
+ const build=html.match(/id="buildVersion">Прототип · v([\d.]+) · ([A-Z\d]+)/);
+ assert.equal(build?.[1],require("../package.json").version,'published version must match package');
+ assert.ok(build?.[2],'build must retain a visible feature code');
 });

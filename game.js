@@ -2672,7 +2672,8 @@ function renderHeroDetail(){
   HeroStatsCombatBridge.apply(base,{
    level:hero.level+1,
    stars:StarCore.rankOf(progress,base.id),
-   gearPercent:ProgressCore.gearBonuses(progress,base.id)
+   gearPercent:ProgressCore.gearBonuses(progress,base.id),
+   gearStats:ProgressCore.gearBonuses(progress,base.id).stats
   },HeroStatsProfiles[base.id],HeroStatsCore):
   equippedPilotStats(ProgressCore.heroStats(progress,base,hero.level+1),PILOT_HERO_STATS[base.id]));
  $("#detailName").textContent=hero.name;

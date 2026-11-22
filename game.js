@@ -1,6 +1,9 @@
 // In isolated legacy VM tests the presentation module may be intentionally omitted.
 const ResourceArtUI=typeof ResourceIconUI!=="undefined"?ResourceIconUI:Object.freeze({
- append(){},appendCost(){},appendCurrency(){},tile(){return "";},currencyTile(){return "";},mount(){}
+ append(){},appendCost(){},
+ appendCurrency(host,n){if(host&&Number.isSafeInteger(n)&&n>=0)
+  host.textContent+=(host.textContent?" · ":"")+n+" кромов";},
+ tile(){return "";},currencyTile(n){return Number.isSafeInteger(n)&&n>=0?n+" кромов":"";},mount(){}
 });
 // LOREACT5001: validated 15-node final arc; keep prior versions for fixtures.
 const ActiveLoreCampaign=typeof LoreCampaignAct5!=="undefined"?LoreCampaignAct5:
@@ -508,6 +511,7 @@ function renderAccountHeader(){
    (progress.saveVersion===3?"":" · C "+progress.gearMaterials);
   summary.insertAdjacentHTML?.("beforeend",ResourceArtUI.tile("account-xp",progress.accountXp,{compact:true,mode:"balance"})+
    ResourceArtUI.currencyTile(progress.currency,{compact:true,mode:"balance"}));
+  if(typeof ResourceIconUI==="undefined")summary.textContent+=" · Кромы "+progress.currency;
  }
  renderHeadquarters();
 }

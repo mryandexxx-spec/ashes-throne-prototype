@@ -5,7 +5,7 @@ const ProgressV3Core=(()=>{
  const KEY="ashes-throne.progress.v3", VERSION=3, SOURCE_KEY="ashes-throne.progress.v2";
  const SLOTS=Object.freeze(["weapon","torso","head","hands","feet","utility"]);
  const MATERIALS=Object.freeze(["Fe","Le","Cl","Wo","Fa","Th","Gl"]);
- // TEST-ONLY roles, explicitly approved for the vertical slice; not lore.
+ // Class contracts for the five permanent playable heroes.
  const TEST_CLASSES=Object.freeze({
   kael:"tank",lyra:"ranged",darin:"melee","medic-demo":"support","test-area-damage":"mage",ren:"melee",nada:"support",liora:"tank",art:"tank",sava:"support"
  });
@@ -121,57 +121,39 @@ const ProgressV3Core=(()=>{
   try{raw3=storage.getItem(KEY);}catch(_){return {status:"blocked",reason:"read-v3-failed"};}
   if(raw3!==null){
    let parsed;try{parsed=JSON.parse(raw3);}catch(_){return {status:"blocked",reason:"invalid-v3"};}
-   // NADA-PLAYABLE-001: expand only exact older rosters (five heroes or
-   // six including Ren). Refuse unknown IDs, duplicates and damaged data.
-   const oldIds=["kael","lyra","darin","medic-demo","test-area-damage"];
-   const actualIds=allyIds(heroes);
-   const currentIds=object(parsed?.heroes)?Object.keys(parsed.heroes):[];
-   const missing=actualIds?.filter(id=>!currentIds.includes(id))||[];
-   // LIORAPLAY001: recognize only exact historical roster prefixes.
-   // Never migrate an unknown hero set or a malformed current profile.
-   const historic=[oldIds,oldIds.concat("ren"),oldIds.concat("ren","nada"),oldIds.concat("ren","nada","liora")];
-   const expandable=actualIds&&missing.length>0&&
-    missing.every(id=>["ren","nada","liora","art","sava"].includes(id))&&
-    historic.some(ids=>currentIds.length===ids.length&&
-     ids.every(id=>currentIds.includes(id)))&&
-    currentIds.every(id=>actualIds.includes(id));
-   if(expandable){
+   // DEMOROSTER001: retire the five tutorial actors from an exact prior
+   // ten-hero local profile. Keep the five real heroes and account data.
+   const retired=["kael","lyra","darin","medic-demo","test-area-damage"];
+   const activeIds=allyIds(heroes);
+   const savedIds=object(parsed?.heroes)?Object.keys(parsed.heroes):[];
+   const matchesOldRoster=activeIds&&activeIds.length===5&&
+    savedIds.length===10&&retired.every(id=>savedIds.includes(id))&&
+    activeIds.every(id=>savedIds.includes(id));
+   if(matchesOldRoster){
     const candidate=JSON.parse(JSON.stringify(parsed));
-    // The temporary playable pilot joins at 1 star. Existing owner data
-    // is never replaced. This is not a claim about story recruitment.
-    for(const id of missing){
-     candidate.heroes[id]=cleanHero(id);
-     if(candidate.unlockedHeroes!==undefined){
-      if(!Array.isArray(candidate.unlockedHeroes))return {status:"blocked",reason:"invalid-v3"};
-      if(!candidate.unlockedHeroes.includes(id))candidate.unlockedHeroes.push(id);
-     }
-     if(candidate.heroStars!==undefined){
-      if(!object(candidate.heroStars))return {status:"blocked",reason:"invalid-v3"};
-      if(!own(candidate.heroStars,id))candidate.heroStars[id]={rank:1,shards:0};
-     }
-     if(candidate.skillLevels!==undefined){
-      if(!object(candidate.skillLevels))return {status:"blocked",reason:"invalid-v3"};
-      if(!own(candidate.skillLevels,id))candidate.skillLevels[id]={basic:1,special:1,powerful:1};
-     }
+    for(const id of retired){
+     delete candidate.heroes[id];
+     // Retired IDs remain only as inert v3 schema/test metadata, rank zero.
+     if(object(candidate.heroStars)&&object(candidate.heroStars[id]))
+      candidate.heroStars[id]={rank:0,shards:0};
+     // Skill levels are intentionally preserved for old v3 fixture validation.
     }
-    const validUpgrade=validateActive(candidate,heroes);
-    if(!validUpgrade)return {status:"blocked",reason:"invalid-v3"};
+    if(Array.isArray(candidate.unlockedHeroes))
+     candidate.unlockedHeroes=candidate.unlockedHeroes.filter(id=>!retired.includes(id));
+    const validCleanup=validateActive(candidate,heroes);
+    if(!validCleanup)return {status:"blocked",reason:"invalid-demo-roster-cleanup"};
     try{
-     // Retain established backup keys for historical partial rosters. Only the
-     // 8 -> 10 transition uses the new Art/Sava backup; never overwrite old ones.
-     const backupKey=KEY+(missing.includes("liora")?".before-liora":
-       missing.includes("ren")?".before-ren":
-       missing.includes("nada")?".before-nada":".before-art-sava");
-     if(storage.getItem(backupKey)===null){
-      storage.setItem(backupKey,raw3);
-      if(storage.getItem(backupKey)!==raw3)throw Error("backup verification failed");
+     const backup=KEY+".before-demo-roster-cleanup";
+     if(storage.getItem(backup)===null){
+      storage.setItem(backup,raw3);
+      if(storage.getItem(backup)!==raw3)throw Error("backup failed");
      }
-     if(storage.getItem(KEY)!==raw3)throw Error("stale saved profile");
-     const encoded=JSON.stringify(validUpgrade);
+     if(storage.getItem(KEY)!==raw3)throw Error("stale profile");
+     const encoded=JSON.stringify(validCleanup);
      storage.setItem(KEY,encoded);
-     if(storage.getItem(KEY)!==encoded)throw Error("upgrade verification failed");
-     return {status:"existing",profile:validUpgrade};
-    }catch(_){return {status:"blocked",reason:"v3-roster-migration-failed"};}
+     if(storage.getItem(KEY)!==encoded)throw Error("write failed");
+     return {status:"existing",profile:validCleanup};
+    }catch(_){return {status:"blocked",reason:"demo-roster-cleanup-failed"};}
    }
    const valid=validateActive(parsed,heroes);
    return valid?{status:"existing",profile:valid}:{status:"blocked",reason:"invalid-v3"};
@@ -302,15 +284,17 @@ const ProgressV3Core=(()=>{
  function fromRuntime(p){
   if(!object(p)||p.saveVersion!==3||!object(p.levels)||!object(p.gear)||
      !object(p.materials)||!object(p.classes)||!object(p.energy))return null;
-  // Old five-hero fixtures are still valid for standalone migration tests.
-  // The live game passes all ten IDs after stage() expands prior saved rosters.
+  // Live ALLIES contains five protagonists. Standalone tests may use old
+  // fixture ID sets; accepting them here does not add fighters to the game.
   const ids=Object.keys(p.classes);
+  const playableIds=["ren","nada","liora","art","sava"];
   const legacyIds=["kael","lyra","darin","medic-demo","test-area-damage"];
-  if(![5,6,7,8,10].includes(ids.length)||
-     !legacyIds.every(id=>ids.includes(id))||
-     ids.some(id=>!own(TEST_CLASSES,id))||
-     ids.some(id=>!own(p.levels,id)||!own(p.gear,id)||p.classes[id]!==TEST_CLASSES[id]))
-   return null;
+  const validLive=ids.length===playableIds.length&&playableIds.every(id=>ids.includes(id));
+  const validFixture=[5,6,7,8,10].includes(ids.length)&&
+   legacyIds.every(id=>ids.includes(id));
+  if(!(validLive||validFixture)||
+   ids.some(id=>!own(TEST_CLASSES,id)||!own(p.levels,id)||!own(p.gear,id)||
+    p.classes[id]!==TEST_CLASSES[id]))return null;
   const source={
    version:3,revision:p.saveRevision??0,
    accountXp:p.accountXp,currency:p.currency,legacyC:p.gearMaterials,

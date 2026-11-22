@@ -1,18 +1,16 @@
-/* Heroes-001: temporary unlock progression for five DEMO heroes only.
- * The absence of unlockedHeroes in older v3 saves means legacy full ownership.
- * No gacha, shards, or lore/canonical hero identity is introduced. */
+/* Playable hero collection. Retired tutorial actors are no longer recruitable
+ * or mission rewards. Encounter NPCs remain non-recruitable. */
 const HeroCollectionCore=(()=>{
  "use strict";
  const IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora","art","sava"]);
- const START=Object.freeze(["kael","lyra","darin","ren","nada","liora","art","sava"]);
- const MISSION_UNLOCKS=Object.freeze({
-  "black-pass-ambush":"medic-demo",
-  "demo-mission-2":"test-area-damage"
- });
+ const START=Object.freeze(["ren","nada","liora","art","sava"]);
+ const MISSION_UNLOCKS=Object.freeze({});
  function valid(value){
-  return Array.isArray(value)&&value.length>=START.length&&value.length<=IDS.length&&
+  return Array.isArray(value)&&value.length>=5&&value.length<=IDS.length&&
     value.every(id=>typeof id==="string"&&IDS.includes(id))&&
-    new Set(value).size===value.length&&START.every(id=>value.includes(id));
+    new Set(value).size===value.length&&
+    (START.every(id=>value.includes(id))||
+     ["kael","lyra","darin"].every(id=>value.includes(id)));
  }
  function owned(progress,id){
   if(!IDS.includes(id))return false;

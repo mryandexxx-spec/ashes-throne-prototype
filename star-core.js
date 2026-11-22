@@ -3,7 +3,7 @@
 const StarCore=(()=>{
  "use strict";
  const IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora","art","sava"]);
- const START=Object.freeze(["kael","lyra","darin","ren","nada","liora","art","sava"]);
+ const START=Object.freeze(["ren","nada","liora","art","sava"]);
  const COST=Object.freeze([10,15,25,30,65,85,100]);
  const MAX=7, TOTAL=COST.reduce((sum,n)=>sum+n,0);
  const STAR_BONUS_PER_RANK=0.03, EXCESS_SHARD_CURRENCY=80;
@@ -20,10 +20,11 @@ const StarCore=(()=>{
     Number.isInteger(stars[id].rank)&&stars[id].rank>=0&&stars[id].rank<=MAX&&
     validCount(stars[id].shards));
  }
- // Older v3 saves without unlockedHeroes, and v2 saves, own the whole demo roster.
+ // Legacy fixture IDs are kept for stat/gear test compatibility, not as recruitable heroes.
  function fromLegacy(unlockedHeroes){
   if(unlockedHeroes!==undefined&&(!Array.isArray(unlockedHeroes)||
-     START.some(id=>!unlockedHeroes.includes(id))||
+     !(START.every(id=>unlockedHeroes.includes(id))||
+       ["kael","lyra","darin"].every(id=>unlockedHeroes.includes(id)))||
      unlockedHeroes.some(id=>!IDS.includes(id))||
      new Set(unlockedHeroes).size!==unlockedHeroes.length))return null;
   return Object.fromEntries(IDS.map(id=>[id,{

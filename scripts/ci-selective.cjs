@@ -26,7 +26,9 @@ const battle=any(f=>/^(combat-|arena-|battle-|npc-|enemy-|tests\/arena-fix-001)/
 const lore=any(f=>/^(lore-|story-|tests\/lore-campaign)/.test(f));
 const network=any(f=>/^(network-|net-|weekly-threat-|tests\/network-)/.test(f));
 const hero=any(f=>/^(hero-card|hero-stats|gear-|tests\/hero-card)/.test(f));
-const audit=any(f=>f.startsWith(".github/workflows/")||f==="scripts/ci-selective.cjs");
+// Roster/save schema changes require the full regression, not only squad/hero smoke.
+const audit=any(f=>f.startsWith(".github/workflows/")||f==="scripts/ci-selective.cjs"||
+ ["hero-collection-core.js","progress-v3-core.js","star-core.js"].includes(f));
 const scopes={squad,battle,lore,network,hero,audit};
 const tests=new Set();
 if(squad)for(const f of ["tests/squad-001.test.js","tests/combat-014b-leader-squad.test.js","tests/ui-hero-002-squad.test.js","tests/squad-recover-3d.test.js"])tests.add(f);

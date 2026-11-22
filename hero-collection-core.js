@@ -13,7 +13,7 @@ const HeroCollectionCore=(()=>{
      ["kael","lyra","darin"].every(id=>value.includes(id)));
  }
  function owned(progress,id){
-  if(!IDS.includes(id))return false;
+  if(!START.includes(id))return false;
   if(typeof StarCore!=="undefined"&&progress?.heroStars!==undefined)
    return StarCore.rankOf(progress,id)>0;
   // Original v3 players keep all five heroes and their saved squads.

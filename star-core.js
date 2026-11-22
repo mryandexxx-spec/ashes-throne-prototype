@@ -58,7 +58,7 @@ const StarCore=(()=>{
  // Shards may be earned before a hero joins; all shard sources will call this.
  function add(progress,id,amount){
   const current=state(progress,id);
-  if(!current||!Number.isSafeInteger(amount)||amount<=0)return false;
+  if(!START.includes(id)||!current||!Number.isSafeInteger(amount)||amount<=0)return false;
   if(current.rank===MAX){
    const refund=amount*EXCESS_SHARD_CURRENCY;
    if(!Number.isSafeInteger(refund)||!validCount(progress.currency)||
@@ -70,7 +70,7 @@ const StarCore=(()=>{
  }
  function directGrant(progress,id){
   const current=state(progress,id);
-  if(!current||current.rank!==0)return false;
+  if(!START.includes(id)||!current||current.rank!==0)return false;
   if(progress.unlockedHeroes!==undefined&&
      (!Array.isArray(progress.unlockedHeroes)||!IDS.includes(id)))return false;
   current.rank=1;syncOwned(progress,id);
@@ -78,7 +78,7 @@ const StarCore=(()=>{
  }
  function promote(progress,id){
   const current=state(progress,id),cost=costOf(progress,id);
-  if(!current||cost===null||current.shards<cost)return null;
+  if(!START.includes(id)||!current||cost===null||current.shards<cost)return null;
   if(current.rank===0&&progress.unlockedHeroes!==undefined&&
     !Array.isArray(progress.unlockedHeroes))return null;
   const nextRank=current.rank+1,extra=nextRank===MAX?current.shards-cost:0;
@@ -95,7 +95,7 @@ const StarCore=(()=>{
  // shard requirement per hero; repeats cannot mint more for already-full stock.
  function refillTest(progress){
   if(!valid(progress?.heroStars))return false;
-  for(const id of IDS){
+  for(const id of START){
    const s=progress.heroStars[id];
    if(s.rank===MAX)continue;
    const minimum=TOTAL-usedThrough(s.rank);

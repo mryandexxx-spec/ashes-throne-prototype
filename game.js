@@ -4613,4 +4613,5 @@ renderAccountHeader();renderHeroes();CombatCore.advanceToPlayerTurn(state);
 maybeOpenLoginOnEntry();
 
 // Resources UI is presentation-only; navigation respects the existing screen router.
-ResourceIconUI.mount(()=>({progress,day:dailyDay()}),screen=>showScreen(screen));
+if(typeof ResourceIconUI!=="undefined")
+ ResourceIconUI.mount(()=>({progress,day:dailyDay()}),screen=>showScreen(screen));

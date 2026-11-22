@@ -23,7 +23,7 @@
 #gearPromotionDialog .gear-victory-main{display:grid;grid-template-columns:minmax(0,35%) minmax(0,26%) minmax(0,39%);min-width:0;min-height:0;align-items:stretch;position:relative}
 #gearPromotionDialog .gear-victory-portrait-panel{min-width:0;min-height:0;position:relative;overflow:hidden;pointer-events:none}
 #gearPromotionDialog .gear-victory-portrait-panel::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 45% 70%,#bc753545,transparent 68%),linear-gradient(90deg,#1e1316 0%,transparent 66%,#16161b 100%);z-index:-1}
-#gearPromotionDialog #gearPromotionPortrait{position:absolute;inset:-12% -4% -12% -5%;width:110%;height:124%;object-fit:cover;object-position:center 36%;filter:drop-shadow(3px 9px 13px #000a) sepia(.10);-webkit-mask-image:linear-gradient(90deg,#000 64%,transparent 100%);mask-image:linear-gradient(90deg,#000 64%,transparent 100%)}
+#gearPromotionDialog #gearPromotionPortrait{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:left bottom;filter:drop-shadow(3px 9px 13px #000a) sepia(.08);-webkit-mask-image:linear-gradient(90deg,#000 0%,#000 82%,transparent 100%);mask-image:linear-gradient(90deg,#000 0%,#000 82%,transparent 100%)}
 #gearPromotionDialog .gear-victory-portrait-panel::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#1a151a 0%,transparent 36%),linear-gradient(90deg,transparent 75%,#18181b);pointer-events:none}
 #gearPromotionDialog .gear-victory-rank{min-width:0;min-height:0;display:grid;place-content:center;justify-items:center;position:relative;z-index:1}
 #gearPromotionDialog .gear-victory-aura{position:absolute;width:min(30vw,280px);max-height:100%;aspect-ratio:1;background:radial-gradient(circle,#ebb75e4f 0%,#d3902340 25%,transparent 69%);pointer-events:none}
@@ -89,4 +89,60 @@
 @keyframes gearVictoryStat{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){
  #gearPromotionDialog *,#gearPromotionDialog *::before,#gearPromotionDialog *::after{animation:none!important;transition:none!important}
+}
+
+
+/* HEROVICTORY002: a full portrait must fit in the left panel; never crop its head.
+ * 'contain' is intentional. The right edge is faded into the existing scene. */
+#gearPromotionDialog .gear-victory-portrait-panel{display:block}
+#gearPromotionDialog .gear-victory-portrait-panel::after{
+ background:linear-gradient(0deg,#1a151a 0%,transparent 20%),
+ linear-gradient(90deg,transparent 76%,#18181b 100%);
+}
+#gearPromotionDialog .gear-victory-shard-art{
+ width:clamp(25px,3.1vw,44px);height:clamp(25px,3.1vw,44px);
+ flex:0 0 auto;display:inline-grid;place-items:center;border:1px solid #e6b06b;
+ border-radius:50%;color:#fff0c0;background:radial-gradient(circle at 37% 27%,#81623c,#2e1d24 70%);
+ box-shadow:0 0 11px #e7b86c45;line-height:1;font-size:clamp(20px,2.5vw,32px);
+}
+#gearPromotionDialog[data-victory-kind="star"] .gear-victory-medal{
+ background:radial-gradient(circle at 50% 40%,#76532f 0%,#3a251e 54%,#111418 83%);
+ box-shadow:inset 0 0 0 8px #1c1819,inset 0 0 0 10px #b17b3c,0 0 0 4px #593b20,
+ 0 0 35px #ffdd8999,0 0 70px #be873e44;
+}
+#gearPromotionDialog[data-victory-kind="star"] #gearPromotionTier{
+ font-size:clamp(38px,6.8vw,91px);letter-spacing:-.055em;
+}
+#gearPromotionDialog[data-victory-kind="level"] #gearPromotionTier{
+ font-size:clamp(48px,7vw,100px);letter-spacing:-.055em;
+}
+#gearPromotionDialog[data-victory-kind="level"] .gear-victory-medal{
+ background:radial-gradient(circle at 50% 38%,#5d4a34 0%,#392a21 50%,#15171a 80%);
+}
+#gearPromotionDialog[data-victory-kind="star"] .gear-victory-stat-line,
+#gearPromotionDialog[data-victory-kind="level"] .gear-victory-stat-line{
+ background:linear-gradient(90deg,#b7e77d 0 66%,#40372a 66% 100%);
+}
+#gearPromotionDialog .gear-victory-bonuses{overflow:hidden}
+#gearPromotionDialog[data-victory-kind="star"] #gearPromotionStats,
+#gearPromotionDialog[data-victory-kind="level"] #gearPromotionStats{gap:clamp(3px,.7dvh,9px)}
+#gearPromotionDialog[data-victory-kind="star"] .gear-victory-stat,
+#gearPromotionDialog[data-victory-kind="level"] .gear-victory-stat{grid-template-columns:clamp(24px,3.2vw,42px) minmax(0,1fr) auto}
+#gearPromotionDialog[data-victory-kind="star"] .gear-victory-stat-icon,
+#gearPromotionDialog[data-victory-kind="level"] .gear-victory-stat-icon{width:clamp(24px,3.2vw,42px)}
+@media(orientation:landscape) and (max-height:440px){
+ #gearPromotionDialog[data-victory-kind="star"] #gearPromotionStats,
+ #gearPromotionDialog[data-victory-kind="level"] #gearPromotionStats{padding:5px 8px;gap:2px}
+ #gearPromotionDialog[data-victory-kind="star"] .gear-victory-stat-icon,
+ #gearPromotionDialog[data-victory-kind="level"] .gear-victory-stat-icon{width:24px;font-size:17px}
+ #gearPromotionDialog[data-victory-kind="star"] .gear-victory-stat,
+ #gearPromotionDialog[data-victory-kind="level"] .gear-victory-stat{grid-template-columns:24px minmax(0,1fr) auto;gap:5px}
+ #gearPromotionDialog[data-victory-kind="star"] .gear-victory-stat-detail,
+ #gearPromotionDialog[data-victory-kind="level"] .gear-victory-stat-detail{gap:0}
+ #gearPromotionDialog[data-victory-kind="star"] .gear-victory-stat-label,
+ #gearPromotionDialog[data-victory-kind="level"] .gear-victory-stat-label{font-size:10px;line-height:1}
+ #gearPromotionDialog[data-victory-kind="star"] .gear-victory-stat-values,
+ #gearPromotionDialog[data-victory-kind="level"] .gear-victory-stat-values{font-size:12px;line-height:1}
+ #gearPromotionDialog[data-victory-kind="star"] .gear-victory-stat-delta,
+ #gearPromotionDialog[data-victory-kind="level"] .gear-victory-stat-delta{font-size:10px;padding:1px 5px}
 }

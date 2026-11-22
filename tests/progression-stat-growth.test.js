@@ -123,3 +123,27 @@ test("progression computation never mutates base profile or saved gear",()=>{
  assert.equal(JSON.stringify(p),before);
  assert.equal(JSON.stringify(Profiles.ren),base);
 });
+
+
+test("full G1–G13 78-item sets do not overflow any real hero combat percentage",()=>{
+ for(const [id,classId] of Object.entries({ren:"melee",nada:"support",
+  liora:"tank",art:"tank",sava:"support"})){
+  const tierItems=tier=>GearData.SLOTS.map(slot=>{
+   const item=GearData.offered(classId,slot.id,tier)[0];
+   assert.ok(item,id+" missing "+slot.id+" G"+tier);
+   return item.id;
+  });
+  const history=Object.fromEntries(Array.from({length:12},(_,i)=>
+   [String(i+1),tierItems(i+1)]));
+  const progress={saveVersion:3,classes:{[id]:classId},
+   gear:{[id]:{mode:"itemized",tier:13,slots:tierItems(13),history}}};
+  const full=hero(id,85,7,ProgressCore.gearBonuses(progress,id));
+  for(const key of statKeys){
+   assert.ok(Number.isFinite(full[key])&&full[key]>=0,id+" "+key);
+   if(["critChance","accuracy","evasion","defensePenetration",
+       "debuffPotency","debuffResistance"].includes(key))
+    assert.ok(full[key]<=100,id+" "+key+"="+full[key]);
+  }
+  assert.equal(full.speed,Profiles[id].combatStats.speed);
+ }
+});

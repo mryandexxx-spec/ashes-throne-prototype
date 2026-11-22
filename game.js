@@ -2295,6 +2295,9 @@ function showLockedHero(id){
 }
 function promoteStar(id,locked){
  if(saveBlocked||typeof StarCore==="undefined")return false;
+ const base=ALLIES.find(hero=>hero.id===id);
+ const oldRank=StarCore.rankOf(progress,id);
+ const oldStats=oldRank>=1&&base?progressedHero(base):null;
  const before=JSON.stringify(progress);
  const upgraded=StarCore.promote(progress,id);
  if(!upgraded)return false;
@@ -2320,6 +2323,11 @@ function promoteStar(id,locked){
   $("#starNotice").textContent="Герой достиг "+upgraded.rank+"★. Списано "+upgraded.spent+" осколков."+
    (upgraded.excessCurrency?" Компенсация: +"+upgraded.excessCurrency+" кромов.":"")+" Сохранено.";
  }
+ // Victory is presentation only: the rank/shard mutation has already been saved.
+ if(typeof GearPromotionUI!=="undefined"&&base)
+  GearPromotionUI.showStar({heroName:base.name,from:oldRank,to:upgraded.rank,
+   spent:upgraded.spent,excessCurrency:upgraded.excessCurrency,
+   before:oldStats,after:progressedHero(base)});
  return true;
 }
 $("#starPromoteButton")?.addEventListener("click",()=>promoteStar(selectedHeroId,false));
@@ -2919,6 +2927,8 @@ $("#detailBack").addEventListener("click",()=>showScreen("collection"));
 $("#detailHome").addEventListener("click",()=>showScreen("home"));
 function applyHeroLevels(count){
  if(saveBlocked)return false;
+ const base=ALLIES.find(hero=>hero.id===selectedHeroId);
+ const oldStats=base?progressedHero(base):null;
  const before=JSON.stringify(progress);
  const purchase=ProgressCore.upgradeMany(progress,selectedHeroId,count);
  if(!purchase)return false;
@@ -2931,6 +2941,12 @@ function applyHeroLevels(count){
   return false;
  }
  renderHeroDetail();renderHeroes();
+ // The hero-stat popup is the bulk-upgrade control; close it before the reward.
+ if(typeof GearPromotionUI!=="undefined"&&base){
+  if($("#heroStatsDialog")?.open)$("#heroStatsDialog").close();
+  GearPromotionUI.showLevel({heroName:base.name,from:purchase.from,to:purchase.to,
+   currency:purchase.cost,cap:purchase.cap,before:oldStats,after:progressedHero(base)});
+ }
  return true;
 }
 $("#detailUpgrade").addEventListener("click",()=>applyHeroLevels(1));

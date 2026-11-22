@@ -179,8 +179,11 @@ const GearUX004=(()=>{
   if(mode==="sources"){
    showSourceList(left,right,plan);return;
   }
-  left.append(node("h3","",plan.itemName),node("p","gear-ux-note",
-   slot.label+" · G"+plan.tier+" · "+(plan.status==="installed"?"Установлен":"Не установлен")));
+  const stateLabel=plan.status==="installed"?"✓ Надето":
+   plan.status==="ready"?"＋ Можно изготовить и надеть":"⌕ Не хватает ресурсов";
+  left.append(node("h3","",plan.itemName),
+   node("p","gear-ux-state gear-ux-state--"+plan.status,stateLabel),
+   node("p","gear-ux-note",slot.label+" · G"+plan.tier));
   showBonus(left,plan,data.progress);
   showMaterials(right,plan,full,data.saveBlocked);
  }

@@ -40,7 +40,8 @@ const HeroCardUI=(()=>{
   head:'M11 30 11 22 C1 7 10 3 18 3 C26 3 35 7 25 22 L25 30 Z',
   hands:'M8 29 5 19 8 16 13 20 13 7 17 7 17 18 20 6 24 7 23 19 28 12 31 14 27 28 21 32 12 32 Z',
   feet:'M10 3 23 3 23 21 31 25 31 32 6 32 6 26 10 21 Z',
-  utility:'M3 13 33 13 33 25 3 25 Z M14 10 22 10 22 28 14 28 Z'
+  utility:'M3 13 33 13 33 25 3 25 Z M14 10 22 10 22 28 14 28 Z',
+  find:'M24 15 A9 9 0 1 1 6 15 A9 9 0 1 1 24 15 M23 23 32 32'
  };
  function icon(kind){
   const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
@@ -51,6 +52,13 @@ const HeroCardUI=(()=>{
   path.setAttribute("stroke-linecap","round");path.setAttribute("stroke-linejoin","round");
   svg.append(path);return svg;
  }
+ const gearVisuals=Object.freeze({
+  ready:Object.freeze({caption:"Создать",mark:"+",aria:"можно изготовить и надеть"}),
+  missing:Object.freeze({caption:"Найти",mark:"find",aria:"нужны ресурсы, открыть поиск"}),
+  installed:Object.freeze({caption:"Надето",mark:"✓",aria:"предмет надет"}),
+  unknown:Object.freeze({caption:"Проверить",mark:"?",aria:"состояние пока неизвестно"})
+ });
+ const gearVisual=status=>gearVisuals[status]||gearVisuals.unknown;
  function decorate(){
   get("heroAbilityList")?.querySelectorAll("[data-hero-ability]").forEach(card=>{
    // Approved atlas art replaces the former absolute SVG badge; never render both.
@@ -61,8 +69,18 @@ const HeroCardUI=(()=>{
   get("gearSlots")?.querySelectorAll("[data-gear-slot]").forEach(button=>{
    const slot=GearData.SLOTS[Number(button.dataset.gearSlot)];
    if(!slot)return;
+   const status=gearVisual(button.dataset.gearState);
    const label=document.createElement("small");label.textContent=slot.label;
-   button.replaceChildren(icon(slot.id==="weapon"?"basic":slot.id),label);
+   const mark=document.createElement("span");
+   mark.className="gear-slot-indicator";
+   mark.setAttribute("aria-hidden","true");
+   if(status.mark==="find")mark.append(icon("find"));
+   else mark.textContent=status.mark;
+   const caption=document.createElement("span");
+   caption.className="gear-slot-state-label";
+   caption.setAttribute("aria-hidden","true");
+   caption.textContent=status.caption;
+   button.replaceChildren(icon(slot.id==="weapon"?"basic":slot.id),label,mark,caption);
   });
  }
  function ability(event){
@@ -88,5 +106,5 @@ const HeroCardUI=(()=>{
   }
  });
  leave(get("heroDetail")?.classList.contains("active")?"heroDetail":"home");
- return Object.freeze({open,leave,decorate});
+ return Object.freeze({open,leave,decorate,gearVisual});
 })();

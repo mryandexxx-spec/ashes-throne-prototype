@@ -207,3 +207,65 @@ body.hero-card-mode #buildVersion::before{content:attr(data-short-build);font-si
  }
  #heroDetail .hero-detail-progression>.hero-card-links button{font-size:10px}
 }
+
+/* GEARSLOTUX001 — three actionable equipment states. Keep all six 48px
+   targets around the hero, not a new panel covering the 3D model. */
+#heroDetail #gearSlots .gear-slot{position:relative;overflow:visible}
+#heroDetail #gearSlots .gear-slot--ready{
+ border-color:#8cd9a0;color:#e4f1db;
+ background:linear-gradient(145deg,#34483a,#1b2520);
+ box-shadow:inset 0 0 0 2px #122017,0 0 10px #65b98660;
+}
+#heroDetail #gearSlots .gear-slot--missing{
+ border-color:#7c8791;color:#d5d8dc;
+ background:linear-gradient(145deg,#34353c,#1b1d23);
+}
+#heroDetail #gearSlots .gear-slot--installed{
+ border-color:#d9b677;color:#f6e3ba;
+ background:linear-gradient(145deg,#68533b,#2b2624);
+}
+#heroDetail #gearSlots .gear-slot.selected{outline:2px solid #f6d297;outline-offset:2px}
+#heroDetail #gearSlots .gear-slot .gear-slot-indicator{
+ position:absolute;top:-7px;right:-7px;z-index:2;
+ display:grid;place-items:center;width:21px;height:21px;
+ border:2px solid #191a1e;border-radius:50%;pointer-events:none;
+ font:800 16px/1 Inter,system-ui,sans-serif;
+ box-shadow:0 1px 5px #000b;
+}
+#heroDetail #gearSlots .gear-slot--ready .gear-slot-indicator{
+ color:#101d13;background:#8be3a0;
+}
+#heroDetail #gearSlots .gear-slot--missing .gear-slot-indicator{
+ color:#111b25;background:#aec4d4;
+}
+#heroDetail #gearSlots .gear-slot--installed .gear-slot-indicator{
+ color:#302111;background:#f1ce8c;
+}
+#heroDetail #gearSlots .gear-slot--unknown .gear-slot-indicator{
+ color:#f1ded0;background:#6c6261;
+}
+#heroDetail #gearSlots .gear-slot .gear-slot-indicator svg{
+ width:13px;height:13px;pointer-events:none;
+}
+#heroDetail #gearSlots .gear-slot .gear-slot-state-label{
+ position:absolute;top:calc(100% + 3px);left:50%;
+ transform:translateX(-50%);z-index:1;pointer-events:none;
+ padding:1px 4px;border-radius:4px;
+ font:700 9px/1.15 Inter,system-ui,sans-serif;
+ white-space:nowrap;color:#e5dfd4;background:#14141bc9;
+ text-shadow:0 1px 2px #000;
+}
+#heroDetail #gearSlots .gear-slot--ready .gear-slot-state-label{color:#adf1bc}
+#heroDetail #gearSlots .gear-slot--missing .gear-slot-state-label{color:#c1d0dc}
+#heroDetail #gearSlots .gear-slot--installed .gear-slot-state-label{color:#efd59a}
+/* At very short landscape heights the row spacing is below the caption
+   height; remove external text, retaining the corner marks and aria-labels. */
+@media(orientation:landscape) and (max-height:360px){
+ #heroDetail #gearSlots .gear-slot .gear-slot-state-label{display:none}
+ #heroDetail #gearSlots .gear-slot .gear-slot-indicator{
+  width:18px;height:18px;top:-5px;right:-5px;font-size:14px
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #heroDetail #gearSlots .gear-slot{transition:none}
+}

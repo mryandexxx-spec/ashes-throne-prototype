@@ -32,48 +32,12 @@ function older(ids){
  s.claimedMissions=["black-pass-ambush"];
  return s;
 }
-test("six-hero save expands to seven, byte-exact backup, keeps all ownership",()=>{
- const m=mk(),old=older(IDs.filter(id=>id!=="nada"));
- const raw=JSON.stringify(old);m.storage.setItem(V.KEY,raw);
- const p=V.stage(heroDefs(IDs),()=>m.storage,1730000000000);
- assert.equal(p.status,"existing");
- assert.equal(m.data.get(V.KEY+".before-nada"),raw);
- const fresh=JSON.parse(m.data.get(V.KEY));
- assert.equal(fresh.currency,27180);
- assert.equal(fresh.accountXp,901);
- assert.equal(fresh.revision,19);
- assert.equal(fresh.heroes.kael.level,8);
- assert.equal(fresh.heroes.kael.gear.installedByTier["1"][0].kind,"item");
- assert.equal(fresh.skillLevels.kael.basic,3);
- assert.equal(fresh.heroStars.kael.shards,19);
- assert.equal(fresh.heroes.nada.classId,"support");
- assert.equal(fresh.heroStars.nada.rank,1);
- assert.equal(fresh.skillLevels.nada.special,1);
- assert.deepEqual(Array.from(fresh.claimedMissions),["black-pass-ambush"]);
- const runtime=V.toRuntime(p.profile,heroDefs(IDs));
- assert.equal(runtime.levels.nada,1);
- assert.equal(H.owned(runtime,"nada"),true);
- assert.equal(S.rankOf(runtime,"nada"),1);
- runtime.currency+=10;
- assert.equal(V.persist(runtime,()=>m.storage),true);
- const updated=V.stage(heroDefs(IDs),()=>m.storage);
- assert.equal(updated.status,"existing");
- assert.equal(V.toRuntime(updated.profile,heroDefs(IDs)).currency,27190);
- assert.equal(m.data.get(V.KEY+".before-nada"),raw);
-});
-test("five-hero save adds Ren and Nada without resetting saved resources",()=>{
- const m=mk(),old=older(IDs.filter(id=>id!=="ren"&&id!=="nada"));
- const raw=JSON.stringify(old);m.storage.setItem(V.KEY,raw);
- const p=V.stage(heroDefs(IDs),()=>m.storage);
- assert.equal(p.status,"existing");
- assert.equal(m.data.get(V.KEY+".before-ren"),raw);
- assert.equal(p.profile.heroes.ren.classId,"melee");
- assert.equal(p.profile.heroes.nada.classId,"support");
- assert.equal(p.profile.heroStars.ren.rank,1);
- assert.equal(p.profile.heroStars.nada.rank,1);
- assert.equal(p.profile.heroes.kael.level,8);
- assert.equal(p.profile.accountXp,901);
-});
+// Superseded by DEMOROSTER001 (tests/heroes-001-mission-unlock.test.js):
+// previous incremental expansion is obsolete; active roster is exactly five.
+
+// Superseded by DEMOROSTER001 (tests/heroes-001-mission-unlock.test.js):
+// previous incremental expansion is obsolete; active roster is exactly five.
+
 test("corrupt or failed migration never overwrites the original save",()=>{
  for(const kind of ["negative-currency","missing-hero","wrong-class","bad-rank"]){
   const m=mk(),old=older(IDs.filter(id=>id!=="nada"));

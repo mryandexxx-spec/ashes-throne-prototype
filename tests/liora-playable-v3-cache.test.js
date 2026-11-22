@@ -36,32 +36,9 @@ test("Liora playable pilot has a real persistent ID but no approved backstory",(
  assert.equal(api.AbilityData.get({id:"liora"},"special").kind,"guard");
  assert.equal(api.AbilityData.get({id:"liora"},"powerful").kind,"guard");
 });
-test("old valid five/six/seven-character v3 accounts migrate exactly once",()=>{
- for(const count of [5,6,7]){
-  const save=storage(),before=oldProfile(count);
-  save.setItem(v3.KEY,JSON.stringify(before));const raw=save.getItem(v3.KEY);
-  const result=v3.stage(heroes,()=>save,1730000000000);
-  assert.equal(result.status,"existing","old count "+count+" "+result.reason);
-  const updated=JSON.parse(save.getItem(v3.KEY));
-  assert.equal(save.getItem(v3.KEY+".before-liora"),raw);
-  assert.equal(updated.currency,8532);
-  assert.equal(updated.accountXp,1234);
-  assert.equal(updated.revision,12);
-  assert.equal(updated.heroes.kael.level,5);
-  assert.equal(updated.heroes.liora.classId,"tank");
-  assert.equal(updated.heroStars.liora.rank,1);
-  assert.equal(updated.skillLevels.liora.basic,1);
-  const restored=v3.toRuntime(result.profile,heroes);
-  assert.ok(restored);
-  assert.equal(collection.owned(restored,"liora"),true);
-  restored.currency+=1;
-  assert.equal(v3.persist(restored,()=>save),true);
-  const twice=v3.stage(heroes,()=>save);
-  assert.equal(twice.status,"existing");
-  assert.equal(save.getItem(v3.KEY+".before-liora"),raw);
-  assert.equal(twice.profile.currency,8533);
- }
-});
+// Superseded by DEMOROSTER001 (tests/heroes-001-mission-unlock.test.js):
+// previous incremental expansion is obsolete; active roster is exactly five.
+
 test("corrupt profile, failed backup writes and stale revisions never reset old data",()=>{
  for(const mode of ["wrong-class","missing-legacy","bad-stars"]){
   const save=storage(),old=oldProfile();

@@ -39,45 +39,9 @@ test("Ren is selectable, owned from start, has biography and class-independent t
  assert.equal(fresh.heroStars.ren.rank,1);
  assert.equal(collection.owned(v3.toRuntime(fresh,newHeroes),"ren"),true);
 });
-test("old five-hero v3 profile upgrades without losing economy, progress and gear",()=>{
- const m=mock(),old=v3.fresh(oldHeroes,1730000000000);
- assert.ok(old);
- // Represent the shape of a previously published v3 save.
- delete old.heroes.ren;
- old.unlockedHeroes=old.unlockedHeroes.filter(x=>x!=="ren");
- delete old.heroStars.ren;
- old.skillLevels=skills.freshLevels();
- delete old.skillLevels.ren;
- old.currency=45000;old.accountXp=321;
- old.heroes.kael.level=4;
- old.heroStars.kael.shards=23;
- old.claimedMissions=["black-pass-ambush"];
- old.revision=7;
- const raw=JSON.stringify(old);
- m.storage.setItem(v3.KEY,raw);
- const staged=v3.stage(newHeroes,()=>m.storage,1730000000000);
- assert.equal(staged.status,"existing");
- assert.equal(m.m.get(v3.KEY+".before-ren"),raw,"byte-exact backup");
- const migrated=JSON.parse(m.m.get(v3.KEY));
- assert.equal(migrated.heroes.kael.level,4);
- assert.equal(migrated.currency,45000);
- assert.equal(migrated.accountXp,321);
- assert.equal(migrated.revision,7);
- assert.deepEqual(Array.from(migrated.claimedMissions),["black-pass-ambush"]);
- assert.equal(migrated.heroStars.kael.shards,23);
- assert.equal(migrated.heroStars.ren.rank,1);
- assert.equal(migrated.skillLevels.ren.basic,1);
- assert.equal(migrated.heroes.ren.classId,"melee");
- const runtime=v3.toRuntime(staged.profile,newHeroes);
- assert.ok(runtime);
- assert.equal(runtime.levels.kael,4);
- assert.equal(runtime.levels.ren,1);
- assert.equal(collection.owned(runtime,"ren"),true);
- runtime.currency+=111;
- assert.equal(v3.persist(runtime,()=>m.storage),true);
- assert.equal(v3.toRuntime(v3.stage(newHeroes,()=>m.storage).profile,newHeroes).currency,45111);
- assert.equal(m.m.get(v3.KEY+".before-ren"),raw,"backup never overwritten");
-});
+// Superseded by DEMOROSTER001 (tests/heroes-001-mission-unlock.test.js):
+// previous incremental expansion is obsolete; active roster is exactly five.
+
 test("Ren migration rejects corrupt saves and failed storage without wiping old data",()=>{
  for(const kind of ["wrong-class","invalid-shards","missing-legacy-hero"]){
   const m=mock(),s=v3.fresh(oldHeroes,1730000000000);

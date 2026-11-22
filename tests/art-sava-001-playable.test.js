@@ -49,33 +49,9 @@ test("ARTSAVA001 exposes permanent selectable heroes with typed 14-stat profiles
  assert.equal(Abilities.get({id:"sava"},"special").kind,"signal");
  assert.equal(Abilities.get({id:"art"},"passive").name,"Знать предел");
 });
-test("ARTSAVA001 migrates exact valid 8-hero save once, preserving values, items, revision and old squad",()=>{
- const local=db();const old=old8();const raw=JSON.stringify(old);
- local.setItem(V.KEY,raw);
- const r=V.stage(heroes,()=>local,1730000000000);
- assert.equal(r.status,"existing",r.reason);
- assert.equal(local.getItem(V.KEY+".before-art-sava"),raw);
- const updated=JSON.parse(local.getItem(V.KEY));
- assert.equal(updated.currency,2048);assert.equal(updated.accountXp,777);
- assert.equal(updated.revision,17);assert.equal(updated.heroes.kael.level,4);
- assert.equal(updated.skillLevels.kael.basic,3);
- assert.equal(updated.heroes.kael.gear.installedByTier["1"][0].kind,"item");
- for(const [id,classId] of [["art","tank"],["sava","support"]]){
-  assert.equal(updated.heroes[id].classId,classId);
-  assert.equal(updated.heroes[id].level,1);
-  assert.equal(updated.heroStars[id].rank,1);
-  assert.equal(updated.skillLevels[id].basic,1);
-  assert.ok(updated.unlockedHeroes.includes(id));
- }
- const runtime=V.toRuntime(r.profile,heroes);assert.ok(runtime);
- assert.equal(H.owned(runtime,"art"),true);assert.equal(H.owned(runtime,"sava"),true);
- runtime.currency+=7;
- assert.equal(V.persist(runtime,()=>local),true);
- const again=V.stage(heroes,()=>local);
- assert.equal(again.status,"existing");
- assert.equal(again.profile.currency,2055);
- assert.equal(local.getItem(V.KEY+".before-art-sava"),raw);
-});
+// Superseded by DEMOROSTER001 (tests/heroes-001-mission-unlock.test.js):
+// previous incremental expansion is obsolete; active roster is exactly five.
+
 test("ARTSAVA001 refuses corrupted old records and denied backup writes without resetting save",()=>{
  for(const corrupt of ["missing-kael","bad-rank","wrong-class"]){
   const local=db();const profile=old8();

@@ -474,7 +474,7 @@ api.syncBattleUI();
 assert.equal(elements.missionResult.classList.active,true);
 assert.equal(api.getCurrency(),500);
 assert.equal(api.getCampaignCompleted(),true);
-assert.match(elements.missionResultText.textContent,/\+500 валюты/);
+assert.match(elements.missionResultText.textContent,/500 кромов/);
 assert.ok(savedData.has("ashes-throne.campaign.v1"));
 assert.ok(savedData.has("ashes-throne.progress.v2"));
 api.syncBattleUI();

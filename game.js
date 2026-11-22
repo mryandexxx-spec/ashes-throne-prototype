@@ -1458,6 +1458,9 @@ function showScreen(id){
  if(id==="playerProfile")renderPlayerProfile();
  if(id==="dailyTasks")renderDailyTasks();
  if(id==="loginCalendar"){
+  if(previousScreenId!=="loginCalendar"){
+   loginCalendarPage=-1;loginCalendarSelectedDay=0;
+  }
   markLoginCalendarSeen();
   renderLoginCalendar();
  }

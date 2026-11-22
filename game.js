@@ -3131,7 +3131,8 @@ function renderMissionResult(){
   :"Отряд потерпел поражение. Наград нет."+(lastMissionEnergyRefunded?" Энергия за ресурсный повтор возвращена.":"");
  if(won&&!missionResultSaveFailed){
   const xp=(lastMissionFarmReward?.xp||0)+(lastMissionReward?.xp||0);
-  ResourceArtUI.appendCurrency($("#missionResultText"),(lastMissionFarmReward?.currency||0)+(lastMissionReward?.currency||0),{compact:true});
+  if(lastMissionFarmReward)ResourceArtUI.appendCurrency($("#missionResultText"),lastMissionFarmReward.currency,{compact:true});
+  if(lastMissionReward)ResourceArtUI.appendCurrency($("#missionResultText"),lastMissionReward.currency,{compact:true});
   ResourceArtUI.append($("#missionResultText"),xp);
   if(lastMissionFarmReward)GearMaterialUI.append($("#missionResultText"),lastMissionFarmReward.materials);
  }

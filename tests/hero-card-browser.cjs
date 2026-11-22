@@ -260,6 +260,8 @@ const {chromium,webkit}=require('playwright');
   assert.equal(await page.locator('#gearPromotionDialog').evaluate(dialog=>dialog.open),false);
   assert.equal(await page.evaluate(()=>JSON.stringify(progress)),progressBeforePreview,
    'Preview-only presentation never mutates player progress');
+  // Subsequent inherited hero-dossier scenarios run at the standard height.
+  await page.setViewportSize({width:844,height:390});
   await page.locator('#detailBack').click();assert.equal(await page.locator('#collection').evaluate(n=>n.classList.contains('active')),true);
   assert.equal(await page.evaluate(()=>document.body.classList.contains('hero-card-mode')),false);
   await page.evaluate(()=>{selectedHeroId='nada';showScreen('heroDetail');});await fits('other playable hero');

@@ -2449,11 +2449,16 @@ function renderItemizedGear(base,gear){
  const promotion=ready?ProgressCore.gearPromotionCost(progress,base.id):null;
  $("#gearTier").textContent="G"+gear.tier+" · "+completed+"/6"+
   (ready&&gear.tier===GearData.MAX_TIER?" · максимум":"");
+ const slotPlans=GearData.SLOTS.map(entry=>
+  GearPlanningCore.plan(progress,base.id,entry.id,campaignProgress));
  $("#gearSlots").innerHTML=GearData.SLOTS.map((entry,i)=>{
   const filled=gear.slots[i],selected=i===selectedGearSlot;
-  return '<button type="button" class="gear-slot '+(filled?'filled ':'')+
-   (selected?'selected':'')+'" data-gear-slot="'+i+'" aria-pressed="'+selected+
-   '" aria-label="'+entry.label+' · '+(filled?'установлен':'пустой')+'">'+
+  const status=filled?"installed":slotPlans[i]?.status||"unknown";
+  const state=HeroCardUI.gearVisual(status);
+  return '<button type="button" class="gear-slot gear-slot--'+status+' '+(filled?'filled ':'')+
+   (selected?'selected':'')+'" data-gear-slot="'+i+'" data-gear-state="'+status+
+   '" aria-pressed="'+selected+'" aria-label="'+entry.label+' · '+state.aria+
+   '" title="'+entry.label+' · '+state.aria+'">'+
    '<span aria-hidden="true">'+(filled?'◆':'◇')+'</span><small>'+gearSlotCaption(entry.label)+'</small></button>';
  }).join("");
  const label=$("#gearMaterialLabel");if(label)label.textContent="Компоненты G"+gear.tier;

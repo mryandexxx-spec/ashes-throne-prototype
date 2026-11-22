@@ -165,6 +165,12 @@ const {chromium,webkit}=require('playwright');
   assert.equal(afterBatch.tier,beforeBatch.tier,'Equipping all must not promote automatically');
   assert.ok(afterBatch.currency<beforeBatch.currency);
   assert.equal(await page.locator('#gearSlots .gear-slot--installed').count(),6);
+  for(const [width,height] of [[844,390],[932,430],[844,320]]){
+   await page.setViewportSize({width,height});
+   await fits('GEARPROMOCTA001 6/6 '+width+'x'+height);
+   assert.equal(await page.locator('#gearEquipAll').isVisible(),true);
+  }
+  await page.setViewportSize({width:844,height:390});
   assert.match(await page.locator('#gearEquipAll').textContent(),/Повысить до G2/);
   assert.equal(await page.locator('#gearEquipAll').isEnabled(),true);
   assert.match(await page.locator('#gearEquipAllStatus').textContent(),/Прогресс сохранён/);

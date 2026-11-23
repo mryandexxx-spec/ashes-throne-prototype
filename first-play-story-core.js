@@ -8,8 +8,8 @@ const FirstPlayStoryCore=(()=>{
  const CAST=Object.freeze({
   art:Object.freeze({name:"Арт",label:"АРТ",portrait:"assets/art-portrait-ui.webp?v=2"}),
   ren:Object.freeze({name:"Рен Терен",label:"РЕН ТЕРЕН",portrait:"assets/ren-portrait-ui.webp"}),
-  master:Object.freeze({name:"Мастер участка",label:"МАСТЕР УЧАСТКА",portrait:null}),
-  worker:Object.freeze({name:"Рабочий на переходе",label:"РАБОЧИЙ",portrait:null})
+  master:Object.freeze({name:"Мастер участка",label:"МАСТЕР УЧАСТКА",portrait:"assets/cutscenes/first-report/v4/master-portrait.svg",npc:true}),
+  worker:Object.freeze({name:"Рабочий на переходе",label:"РАБОЧИЙ",portrait:"assets/cutscenes/first-report/v4/worker-portrait.svg",npc:true})
  });
  // One validated environment artwork, multiple camera framings per story beat.
  // No invented heroic faces anywhere on the scene image.
@@ -34,13 +34,14 @@ const FirstPlayStoryCore=(()=>{
   {art:"decision",shot:"wide",speakerId:"master",speaker:"МАСТЕР",text:"Мы вас на проверку звали. Теперь людей надо снимать.",detail:"Решение командира: как подготовить помощь?",choice:true}
  ]);
  const RESPONSE=Object.freeze({
-  survey:{art:"decision",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Под нижним краем. Я посмотрел — пока держит.",detail:"Осмотр подходов: Арт действует быстрее в бою. +30 к скорости."},
-  cover:{art:"decision",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Хорошо. Только отпустишь по моему знаку.",detail:"Прикрытие отхода: Рен получает +35 защиты."}
+  survey:{art:"decision",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Под нижним краем. Я посмотрел — пока держит.",detail:"Приказ выполнен: Арт получает +30 к скорости на предстоящий бой.",effect:"survey"},
+  cover:{art:"decision",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Хорошо. Только отпустишь по моему знаку.",detail:"Приказ выполнен: Рен получает +35 очков к запасу защиты (Protection) на предстоящий бой.",effect:"cover"}
  });
  const OUTRO=Object.freeze([
   {art:"aftermath",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Эту сторону закрываем. Ни сверху, ни снизу не пускать.",detail:"После победы рабочие возвращаются на безопасный участок."},
   {art:"aftermath",shot:"wide",speakerId:"master",speaker:"МАСТЕР",text:"Я их сюда сам направил. По этому списку.",detail:"Переход одновременно помечен безопасным и переданным под разборку."}
  ]);
+ const ORDER_LABELS=Object.freeze({survey:"Арт · скорость +30",cover:"Рен · запас защиты +35"});
  const fresh=()=>({version:1,part:"intro",step:0});
  function isValid(c){return !!c&&c.version===1&&["intro","outro"].includes(c.part)&&
   Number.isInteger(c.step)&&c.step>=0&&c.step<=5;}
@@ -82,6 +83,6 @@ const FirstPlayStoryCore=(()=>{
   if(phase==="won")return {action:"finish"};
   return {action:"none"};
  }
- return Object.freeze({KEY,CAST,ART,AVIF,INTRO,RESPONSE,OUTRO,fresh,isValid,normalize,load,save,frame,advance,skipNarration});
+ return Object.freeze({KEY,CAST,ART,AVIF,INTRO,RESPONSE,OUTRO,ORDER_LABELS,fresh,isValid,normalize,load,save,frame,advance,skipNarration});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=FirstPlayStoryCore;

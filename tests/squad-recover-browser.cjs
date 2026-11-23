@@ -14,7 +14,7 @@ async function check(browserName,engine,viewport){
  const page=await browser.newPage({viewport,hasTouch:true}),errors=[];
  page.on("pageerror",e=>errors.push(e.message));
  try{
-  await page.goto(origin,{waitUntil:"load",timeout:60000});
+  await page.goto(origin+(origin.includes("?")?"&":"?")+"skipFirstPlay=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof openSquad==="function"&&typeof SquadStage3D!=="undefined",null,{timeout:60000});
   await page.evaluate(()=>{
    setSquadSlots(["ren","nada","liora","art","sava"]);

@@ -1,5 +1,5 @@
 "use strict";
-// FIRSTPLAY003: ensure production cutscene art never regresses to tiny previews.
+// FIRSTPLAY004: ensure production cutscene art never regresses to tiny previews.
 // No external decoders/dependencies required: test format headers + dimensions.
 const test=require("node:test");
 const assert=require("node:assert/strict");
@@ -7,12 +7,12 @@ const fs=require("node:fs");
 const path=require("node:path");
 const Story=require("../first-play-story-core.js");
 const root=path.join(__dirname,"..");
-const expected=Object.freeze({warning:740,conflict:750,decision:675,aftermath:742});
+const expected=Object.freeze({warning:941,conflict:941,decision:941,aftermath:941});
 for(const [name,height] of Object.entries(expected)){
- test("FIRSTPLAY003 "+name+" loads sharp replaceable AVIF/WebP art",()=>{
+ test("FIRSTPLAY004 "+name+" loads sharp replaceable AVIF/WebP art",()=>{
   for(const [kind,extension] of [["AVIF","avif"],["ART","webp"]]){
    const file=Story[kind][name];
-   assert.match(file,new RegExp("^assets/cutscenes/first-report/v2/"+name+"\\."+extension+"$"));
+   assert.match(file,new RegExp("^assets/cutscenes/first-report/v3/bridge-approach\\."+extension+"$"));
    const bytes=fs.readFileSync(path.join(root,file));
    assert.ok(bytes.length>200_000,kind+" was excessively compressed");
    assert.ok(bytes.length<650_000,kind+" exceeds mobile art budget");
@@ -33,7 +33,7 @@ for(const [name,height] of Object.entries(expected)){
   }
  });
 }
-test("FIRSTPLAY003 permanently eliminates stale HQ overlay markup and renderer",()=>{
+test("FIRSTPLAY004 permanently eliminates stale HQ overlay markup and renderer",()=>{
  const index=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const game=fs.readFileSync(path.join(root,"game.js"),"utf8");
  const css=fs.readFileSync(path.join(root,"first-play.css"),"utf8");
@@ -41,10 +41,10 @@ test("FIRSTPLAY003 permanently eliminates stale HQ overlay markup and renderer",
  assert.equal(game.includes('querySelector("#hqFirstPlayCard")'),false);
  assert.equal(css.includes(".hq-first-play-status"),false);
 });
-test("FIRSTPLAY003 keeps a consistent 0.3.240 build across entry assets",()=>{
+test("FIRSTPLAY004 keeps a consistent 0.3.240 build across entry assets",()=>{
  const index=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const pkg=require("../package.json");
- assert.equal(pkg.version,"0.3.240");
- assert.match(index,/v0\.3\.240 · FIRSTPLAY003/);
- assert.equal(index.includes("?v=0.3.239"),false);
+ assert.equal(pkg.version,"0.3.241");
+ assert.match(index,/v0\.3\.241 · FIRSTPLAY004/);
+ assert.equal(index.includes("?v=0.3.240"),false);
 });

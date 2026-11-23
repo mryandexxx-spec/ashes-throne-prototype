@@ -54,11 +54,23 @@ test("bad cursor/denied storage falls back without changing FirstPlayCore progre
  assert.deepEqual(Story.load(()=>{throw Error("unavailable")},"briefing"),Story.fresh());
  assert.equal(First.fresh().phase,"briefing");
 });
+test("speaker portraits are the exact Ren/Art game assets",()=>{
+ assert.equal(Story.CAST.ren.portrait,"assets/ren-portrait-ui.webp");
+ assert.equal(Story.CAST.art.portrait,"assets/art-portrait-ui.webp?v=2");
+ assert.equal(Story.CAST.worker.portrait,null);
+ assert.equal(Story.CAST.master.portrait,null);
+ assert.deepEqual(Story.INTRO.map(x=>x.speakerId),["worker","master","art","ren","master"]);
+ assert.equal(Story.RESPONSE.survey.speakerId,"art");
+ assert.equal(Story.RESPONSE.cover.speakerId,"ren");
+ assert.deepEqual(Story.OUTRO.map(x=>x.speakerId),["art","master"]);
+ for(const beat of [...Story.INTRO,...Object.values(Story.RESPONSE),...Story.OUTRO])
+  assert.ok(Story.CAST[beat.speakerId]?.label);
+});
 test("assets are replaceable path declarations, never navigation/network addresses",()=>{
  for(const path of Object.values(Story.ART)){
-  assert.match(path,/^assets\/cutscenes\/first-report\/v2\/[a-z-]+\.webp$/);
+  assert.match(path,/^assets\/cutscenes\/first-report\/v3\/bridge-approach\.webp$/);
  }
  for(const path of Object.values(Story.AVIF)){
-  assert.match(path,/^assets\/cutscenes\/first-report\/v2\/[a-z-]+\.avif$/);
+  assert.match(path,/^assets\/cutscenes\/first-report\/v3\/bridge-approach\.avif$/);
  }
 });

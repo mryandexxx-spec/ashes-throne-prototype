@@ -33,27 +33,51 @@ async function run(label,engine,viewport){
    bounds.scene.top>=0&&bounds.scene.bottom<=bounds.height+1,
    label+": story viewport within landscape screen");
   await page.waitForFunction(()=>document.querySelector("#firstPlayStoryImage")?.naturalWidth>=1600,null,{timeout:12000});
-  assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),/\/v2\/warning\.(?:avif|webp)$/);
+  await page.waitForFunction(()=>{
+   const img=document.querySelector("#firstPlayStoryImage");
+   return img?.naturalWidth>=1600&&!img.hidden&&
+    getComputedStyle(img).display!=="none"&&getComputedStyle(img).visibility!=="hidden";
+  },null,{timeout:12000});
+  assert.equal(await page.locator("#firstPlayStoryImage").isVisible(),true);
+  assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),/\/v3\/bridge-approach\.(?:avif|webp)$/);
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
+  assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),false,
+   label+": worker must not be represented by a random hero portrait");
+  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-opening.png")});
   // Regular dialogue navigation and interruption/resume before the commander choice.
   await page.locator("#firstPlayStoryNext").click();
-  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР");
+  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
   await page.locator("#firstPlayStoryNext").click();
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
+  assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true);
+  assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/assets\/art-portrait-ui\.webp\?v=2$/);
+  await page.waitForFunction(()=>document.querySelector("#firstPlayStoryCharacterPortrait")?.naturalWidth>0);
+  await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-art.png")});
+  await page.locator("#firstPlayStoryNext").click();
+  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РЕН ТЕРЕН");
+  assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/assets\/ren-portrait-ui\.webp$/);
+  await page.waitForFunction(()=>document.querySelector("#firstPlayStoryCharacterPortrait")?.complete&&
+   document.querySelector("#firstPlayStoryCharacterPortrait")?.naturalWidth>0);
+  await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-ren.png")});
+  // The cutscene cursor is restored independently of wallet state.
   await page.reload({waitUntil:"load",timeout:60000});
   await page.locator("#firstPlay.active").waitFor({state:"visible",timeout:30000});
-  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
+  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РЕН ТЕРЕН");
   // Skip the remaining *cutscene*, never the mandatory order or battle.
   await page.locator("#firstPlayStorySkip").click();
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-decision.png")});
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),true);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
+  assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),false,
+   label+": master must not borrow Ren or Art portrait");
   const choice=label==="chromium"?"survey":"cover";
   await page.locator(choice==="survey"?"#firstPlayStorySurvey":"#firstPlayStoryCover").click();
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem(FirstPlayCore.KEY)).choice),choice);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),true);
+  assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true);
+  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),choice==="survey"?"АРТ":"РЕН ТЕРЕН");
   // Reload must offer the same actual choice and retry, not silently skip onboarding.
   await page.reload({waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof FirstPlayCore!=="undefined"&&
@@ -101,7 +125,7 @@ async function run(label,engine,viewport){
    assert.equal(await page.locator("#firstPlayStoryFinish").isVisible(),false);
    assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
    await page.locator("#firstPlayStoryNext").click();
-   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР");
+   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
    assert.equal(await page.locator("#firstPlayStoryFinish").isVisible(),true);
    await page.locator("#firstPlayStoryFinish").click();
   }

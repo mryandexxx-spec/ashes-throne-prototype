@@ -724,15 +724,17 @@ function renderFirstPlay(){
  if(story){
   story.dataset.speaker=scene.speakerId||"unknown";
   story.dataset.shot=scene.shot||"wide";
+  story.dataset.phase=firstPlayState.phase;
+  story.dataset.order=firstPlayState.choice||"none";
  }
  // A speaker portrait belongs inside dialogue, not pasted over the scene.
- // For offscreen civilians, don't invent people or use decorative emoji.
- if(voice)voice.hidden=!cast?.portrait;
+ // All named speakers have readable portraits; visual cutouts remain replaceable scene art.
+ if(voice){voice.hidden=!cast?.portrait;voice.dataset.npc=cast?.npc?"true":"false";}
  if(character&&portrait){
   character.hidden=!cast?.portrait;
   if(cast?.portrait&&portrait.getAttribute("src")!==cast.portrait){
    portrait.src=cast.portrait;
-   portrait.alt="Игровой портрет: "+cast.name;
+   portrait.alt="Портрет персонажа: "+cast.name;
   }
  }
  if(source&&avif&&source.getAttribute("srcset")!==avif)source.setAttribute("srcset",avif);
@@ -744,7 +746,19 @@ function renderFirstPlay(){
   image.classList.add("fp-fade");
  }
  const context=$("#firstPlayStoryContext");
- if(context)context.textContent=scene.detail||"";
+ if(context){
+  const showNote=firstPlayState.phase==="ready"||firstPlayState.phase==="won";
+  const label=firstPlayState.phase==="won"&&firstPlayState.choice?
+   "Эффект вашего приказа в бою: "+(FirstPlayStoryCore.ORDER_LABELS[firstPlayState.choice]||"")+". ":"";
+  context.textContent=showNote?label+(scene.detail||""):"";
+  context.hidden=!showNote;
+ }
+ const orderSignal=$("#firstPlayStoryOrderSignal");
+ if(orderSignal){
+  const chosen=firstPlayState.phase==="ready"||firstPlayState.phase==="won";
+  orderSignal.textContent=chosen?(FirstPlayStoryCore.ORDER_LABELS[firstPlayState.choice]||""):"";
+  orderSignal.hidden=!chosen;
+ }
  const decision=firstPlayState.phase==="briefing"&&!!scene.choice;
  const won=firstPlayState.phase==="won";
  const lastOutro=won&&firstPlayStoryCursor.step===FirstPlayStoryCore.OUTRO.length-1;
@@ -1239,10 +1253,10 @@ function battleLineup(){
   const ren=progressedHero(ALLIES.find(h=>h.id==="ren"));
   if(!art||!ren)throw Error("FIRST_PLAY_HERO_MISSING");
   // First order has real combat consequences.
-  if(firstPlayState?.choice==="survey")art.speed+=30;
+  if(firstPlayState?.choice==="survey")art.speed+=FirstPlayCore.EFFECTS.survey.bonus;
   if(firstPlayState?.choice==="cover"){
-   ren.maxProtection=(ren.maxProtection||0)+35;
-   ren.protection=(ren.protection||0)+35;
+   ren.maxProtection=(ren.maxProtection||0)+FirstPlayCore.EFFECTS.cover.bonus;
+   ren.protection=(ren.protection||0)+FirstPlayCore.EFFECTS.cover.bonus;
   }
   // Reuse the live human NPC combat/visual system, not Conclave demo mannequins.
   const plan=[

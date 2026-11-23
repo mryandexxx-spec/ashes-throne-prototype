@@ -42,7 +42,7 @@ async function run(label,engine,viewport){
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-opening.png")});
   // Regular dialogue navigation and interruption/resume before the commander choice.
   await page.locator("#firstPlayStoryNext").click();
-  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР");
+  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
   await page.locator("#firstPlayStoryNext").click();
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true);
@@ -119,7 +119,7 @@ async function run(label,engine,viewport){
    assert.equal(await page.locator("#firstPlayStoryFinish").isVisible(),false);
    assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
    await page.locator("#firstPlayStoryNext").click();
-   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР");
+   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
    assert.equal(await page.locator("#firstPlayStoryFinish").isVisible(),true);
    await page.locator("#firstPlayStoryFinish").click();
   }

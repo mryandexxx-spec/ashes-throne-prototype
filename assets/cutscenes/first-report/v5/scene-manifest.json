@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "status": "proposal-assets-not-generated",
+  "branch": "firstplay007-storyboard-character-scenes",
+  "sourcePolicy": "canonical game portraits for Ren and Art; no characters pasted over neutral bridge",
+  "referencedPortraits": {
+    "ren": "assets/ren-portrait-ui.webp",
+    "art": "assets/art-portrait-ui.webp?v=2",
+    "master": "assets/cutscenes/first-report/v2/decision.webp",
+    "worker": "assets/cutscenes/first-report/v2/warning.webp"
+  },
+  "requiredSize": {
+    "minWidth": 1672,
+    "minHeight": 941,
+    "formats": [
+      "webp",
+      "avif"
+    ],
+    "mobileViews": [
+      "844x390",
+      "932x430",
+      "844x320"
+    ]
+  },
+  "scenes": [
+    {
+      "id": "danger",
+      "role": "intro.worker",
+      "output": "assets/cutscenes/first-report/v5/danger.webp",
+      "status": "pending-art"
+    },
+    {
+      "id": "conflict",
+      "role": "intro.master",
+      "output": "assets/cutscenes/first-report/v5/conflict.webp",
+      "status": "pending-art"
+    },
+    {
+      "id": "art_support",
+      "role": "intro.art",
+      "output": "assets/cutscenes/first-report/v5/art-support.webp",
+      "status": "pending-art"
+    },
+    {
+      "id": "ren_route",
+      "role": "intro.ren",
+      "output": "assets/cutscenes/first-report/v5/ren-route.webp",
+      "status": "pending-art"
+    },
+    {
+      "id": "command",
+      "role": "intro.decision",
+      "output": "assets/cutscenes/first-report/v5/command.webp",
+      "status": "pending-art"
+    },
+    {
+      "id": "survey",
+      "role": "response.survey",
+      "output": "assets/cutscenes/first-report/v5/survey.webp",
+      "status": "pending-art"
+    },
+    {
+      "id": "cover",
+      "role": "response.cover",
+      "output": "assets/cutscenes/first-report/v5/cover.webp",
+      "status": "pending-art"
+    },
+    {
+      "id": "aftermath",
+      "role": "outro",
+      "output": "assets/cutscenes/first-report/v5/aftermath.webp",
+      "status": "pending-art"
+    }
+  ],
+  "rights": {
+    "origin": "future AI-generated original art, no third-party licensed imagery",
+    "canon": "not approved",
+    "imageCreation": "blocked-by-tool-error"
+  },
+  "integration": {
+    "source": "first-play-story-core.js",
+    "buildVersion": "only on working art integration",
+    "productionMain": "unchanged"
+  }
+}

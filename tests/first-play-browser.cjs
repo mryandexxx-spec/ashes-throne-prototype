@@ -44,6 +44,8 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),false,
    label+": worker must not be represented by a random hero portrait");
+  assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"workers");
+  assert.equal(await page.locator("#firstPlayStoryVoiceIcon").textContent(),"⚒");
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-opening.png")});
   // Regular dialogue navigation and interruption/resume before the commander choice.
@@ -53,10 +55,22 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true);
   assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/assets\/art-portrait-ui\.webp\?v=2$/);
+  assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"supports");
+  assert.equal(await page.locator("#firstPlayStoryCharacter").evaluate(n=>n.closest(".fp-story-dialogue")!==null),true);
+  const portraitBounds=await page.locator("#firstPlayStoryCharacter").boundingBox();
+  const dialogueBounds=await page.locator("#firstPlayStory .fp-story-dialogue").boundingBox();
+  assert.ok(portraitBounds.width<=80&&portraitBounds.height<=80,
+   label+": speaking portrait must be compact, not a pasted poster");
+  assert.ok(portraitBounds.x>=dialogueBounds.x-1&&
+   portraitBounds.x+portraitBounds.width<=dialogueBounds.x+dialogueBounds.width+1&&
+   portraitBounds.y>=dialogueBounds.y-1&&
+   portraitBounds.y+portraitBounds.height<=dialogueBounds.y+dialogueBounds.height+1,
+   label+": speaker portrait belongs inside dialogue panel");
   await page.waitForFunction(()=>document.querySelector("#firstPlayStoryCharacterPortrait")?.naturalWidth>0);
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-art.png")});
   await page.locator("#firstPlayStoryNext").click();
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РЕН ТЕРЕН");
+  assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"route");
   assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/assets\/ren-portrait-ui\.webp$/);
   await page.waitForFunction(()=>document.querySelector("#firstPlayStoryCharacterPortrait")?.complete&&
    document.querySelector("#firstPlayStoryCharacterPortrait")?.naturalWidth>0);
@@ -72,6 +86,7 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),false,
    label+": master must not borrow Ren or Art portrait");
+  assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"wide");
   const choice=label==="chromium"?"survey":"cover";
   await page.locator(choice==="survey"?"#firstPlayStorySurvey":"#firstPlayStoryCover").click();
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem(FirstPlayCore.KEY)).choice),choice);

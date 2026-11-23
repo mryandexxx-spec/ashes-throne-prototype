@@ -5,12 +5,44 @@
 #firstPlay .fp-story-art{position:absolute;inset:0;overflow:hidden;background:
  radial-gradient(ellipse at 65% 25%,#77645155,transparent 55%),linear-gradient(125deg,#211b23,#3a3030 47%,#0e171d);pointer-events:none}
 #firstPlay .fp-story-art picture{display:block;width:100%;height:100%}
-#firstPlay .fp-story-art img{width:100%;height:100%;object-fit:cover;object-position:center 40%;display:block;filter:saturate(.88)}
+#firstPlay .fp-story-art img{width:100%;height:100%;object-fit:cover;object-position:center 42%;display:block;filter:saturate(.95)}
 #firstPlay .fp-story-art:after{content:"";position:absolute;inset:0;background:
  linear-gradient(0deg,#100e14 0%,#100e14d0 6%,#100e1490 23%,transparent 56%),
  linear-gradient(90deg,#0c12184d,transparent 34%,transparent 85%,#0c121847)}
 #firstPlay .fp-story-art img.fp-fade{animation:fp-story-reveal .38s ease-out both}
 @keyframes fp-story-reveal{from{opacity:.45;transform:scale(1.02)}to{opacity:1;transform:scale(1)}}
+/* FIRSTPLAY004: established game portraits, no synthetic character faces. */
+#firstPlay .fp-story-character{
+ box-sizing:border-box;position:absolute;z-index:3;pointer-events:none;
+ left:calc(12px + env(safe-area-inset-left));
+ top:clamp(67px,18dvh,88px);
+ bottom:clamp(74px,21dvh,102px);
+ width:clamp(124px,22vw,206px);
+ overflow:hidden;border:1px solid #c7a068;border-radius:10px;
+ background:linear-gradient(150deg,#332923,#12151a);
+ box-shadow:0 8px 28px #000b,0 0 0 2px #13141591;
+}
+#firstPlay .fp-story-character[hidden]{display:none!important}
+#firstPlay .fp-story-character img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 19%;filter:none}
+#firstPlay .fp-story-character:after{content:"";position:absolute;inset:52% 0 0;background:linear-gradient(transparent,#100e15e9);pointer-events:none}
+#firstPlay .fp-story-character strong{
+ position:absolute;z-index:1;bottom:5px;left:4px;right:4px;
+ text-align:center;color:#ffdfab;font:700 clamp(12px,1.6vw,17px)/1.12 Georgia,serif;
+ text-shadow:0 2px 6px #000;letter-spacing:.03em;
+}
+#firstPlay .fp-story-dialogue{
+ background:linear-gradient(90deg,#111216e6 0%,#111216cd 68%,#1112165c 100%);
+ border-left:3px solid #a78956;border-radius:5px;
+ padding:7px 10px;align-items:center;
+}
+#firstPlay .fp-story-speaker{min-width:118px}
+#firstPlay .fp-story-line{font-size:clamp(14px,1.85vw,20px);line-height:1.2}
+@media(max-height:370px){
+ #firstPlay .fp-story-character{top:58px;bottom:68px;width:clamp(112px,20vw,165px)}
+ #firstPlay .fp-story-character strong{font-size:12px}
+ #firstPlay .fp-story-dialogue{padding:4px 7px}
+ #firstPlay .fp-story-speaker{min-width:91px}
+}
 #firstPlay .fp-story-header{box-sizing:border-box;position:absolute;top:0;left:0;right:0;
  padding:calc(7px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 0 calc(12px + env(safe-area-inset-left));
  display:flex;gap:12px;align-items:center;justify-content:space-between;z-index:3;pointer-events:none}

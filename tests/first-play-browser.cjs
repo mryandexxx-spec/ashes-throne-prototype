@@ -35,8 +35,18 @@ async function run(label,engine,viewport){
   await page.waitForFunction(()=>document.querySelector("#firstPlayStoryImage")?.naturalWidth>0,null,{timeout:12000});
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
-  // Skip the *cutscene*, never the order or battle.
+  await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-opening.png")});
+  // Regular dialogue navigation and interruption/resume before the commander choice.
+  await page.locator("#firstPlayStoryNext").click();
+  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР");
+  await page.locator("#firstPlayStoryNext").click();
+  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
+  await page.reload({waitUntil:"load",timeout:60000});
+  await page.locator("#firstPlay.active").waitFor({state:"visible",timeout:30000});
+  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
+  // Skip the remaining *cutscene*, never the mandatory order or battle.
   await page.locator("#firstPlayStorySkip").click();
+  await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-decision.png")});
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),true);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
   const choice=label==="chromium"?"survey":"cover";

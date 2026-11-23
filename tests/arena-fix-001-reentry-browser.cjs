@@ -9,7 +9,7 @@ const origin=process.env.GAME_ORIGIN||"http://127.0.0.1:8765/";
  const browser=await chromium.launch({...(process.env.CHROME_PATH?{executablePath:process.env.CHROME_PATH}:{}),headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--enable-unsafe-swiftshader","--disable-dev-shm-usage"]});
  const page=await browser.newPage({viewport:{width:844,height:390},hasTouch:true});
  const errors=[];page.on("pageerror",e=>errors.push(e.message));
- await page.goto(origin,{waitUntil:"load",timeout:60000});
+ await page.goto(origin+(origin.includes("?")?"&":"?")+"skipFirstPlay=1",{waitUntil:"load",timeout:60000});
  await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
  await page.evaluate(()=>{challengeProgress.bestStars["T-01"]=1;challengeProgress.bestStars["N-01"]=1;});
  const enter=async(id,kind)=>{

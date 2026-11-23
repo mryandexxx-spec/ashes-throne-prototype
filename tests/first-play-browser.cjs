@@ -32,7 +32,8 @@ async function run(label,engine,viewport){
   assert.ok(bounds.scene.left>=0&&bounds.scene.right<=bounds.width+1&&
    bounds.scene.top>=0&&bounds.scene.bottom<=bounds.height+1,
    label+": story viewport within landscape screen");
-  await page.waitForFunction(()=>document.querySelector("#firstPlayStoryImage")?.naturalWidth>=640,null,{timeout:12000});
+  await page.waitForFunction(()=>document.querySelector("#firstPlayStoryImage")?.naturalWidth>=1600,null,{timeout:12000});
+  assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),/\/v2\/warning\.(?:avif|webp)$/);
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-opening.png")});
@@ -107,6 +108,8 @@ async function run(label,engine,viewport){
   if(await page.locator("#loginCalendar.active").count())
    await page.locator('#loginCalendar [data-screen="home"]').click();
   await page.locator("#home.active").waitFor({state:"visible",timeout:12000});
+  assert.equal(await page.locator("#hqFirstPlayCard").count(),0,
+   label+": completed operation must not cover HQ");
   await page.locator("#hqMoreToggle").click();
   await page.locator("#home .hq-test-menu summary").click();
   await page.locator("#devStartOver").click();

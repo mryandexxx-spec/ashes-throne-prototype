@@ -41,10 +41,10 @@ test("FIRSTPLAY004 permanently eliminates stale HQ overlay markup and renderer",
  assert.equal(game.includes('querySelector("#hqFirstPlayCard")'),false);
  assert.equal(css.includes(".hq-first-play-status"),false);
 });
-test("FIRSTPLAY004 keeps a consistent 0.3.240 build across entry assets",()=>{
+test("FIRSTPLAY005 keeps a consistent 0.3.240 build across entry assets",()=>{
  const index=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const pkg=require("../package.json");
- assert.equal(pkg.version,"0.3.241");
- assert.match(index,/v0\.3\.241 · FIRSTPLAY004/);
- assert.equal(index.includes("?v=0.3.240"),false);
+ assert.equal(pkg.version,"0.3.242");
+ assert.match(index,/v0\.3\.242 · FIRSTPLAY005/);
+ assert.equal(index.includes("?v=0.3.241"),false);
 });

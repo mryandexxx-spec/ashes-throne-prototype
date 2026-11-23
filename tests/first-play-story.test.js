@@ -63,6 +63,10 @@ test("speaker portraits are the exact Ren/Art game assets",()=>{
  assert.equal(Story.RESPONSE.survey.speakerId,"art");
  assert.equal(Story.RESPONSE.cover.speakerId,"ren");
  assert.deepEqual(Story.OUTRO.map(x=>x.speakerId),["art","master"]);
+ assert.deepEqual(Story.INTRO.map(x=>x.shot),["workers","workers","supports","route","wide"]);
+ assert.equal(Story.RESPONSE.survey.shot,"supports");
+ assert.equal(Story.RESPONSE.cover.shot,"route");
+ assert.deepEqual(Story.OUTRO.map(x=>x.shot),["supports","wide"]);
  for(const beat of [...Story.INTRO,...Object.values(Story.RESPONSE),...Story.OUTRO])
   assert.ok(Story.CAST[beat.speakerId]?.label);
 });

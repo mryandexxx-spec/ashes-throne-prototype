@@ -135,6 +135,7 @@
 #firstPlay #firstPlayStory[data-speaker="master"] .fp-story-voice[data-npc="true"] img{
  left:-385px;top:-85px;
 }
+#firstPlay .fp-story-character img[data-loading="true"]{opacity:0!important}
 #firstPlay .fp-story-character img.fp-face-in{animation:fp-face-cut .34s ease-out both}
 #firstPlay .fp-story-art img.fp-fade{animation:fp-scene-cut .5s ease-out both}
 #firstPlay .fp-story-art:before{

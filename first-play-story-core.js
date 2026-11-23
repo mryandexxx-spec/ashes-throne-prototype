@@ -2,40 +2,42 @@
 const FirstPlayStoryCore=(()=>{
  "use strict";
  const KEY="ashes-throne.first-play-story.v1";
- // Replace images by changing these four paths only; all text stays accessible DOM.
- // Canonical in-game portraits: identical assets to Five Shadows scene UI.
- // Do not repaint the heroes inside scene backgrounds.
+ // Canonical hero faces remain the exact Five Shadows UI portraits.
+ // Civilians use close crops of the already-painted action frames: no new fake
+ // portrait faces and no extra large image requests. These crops are replaceable.
+ // Narrative figures inside a painted shot are anonymous unless stated otherwise.
  const CAST=Object.freeze({
   art:Object.freeze({name:"Арт",label:"АРТ",portrait:"assets/art-portrait-ui.webp?v=2"}),
   ren:Object.freeze({name:"Рен Терен",label:"РЕН ТЕРЕН",portrait:"assets/ren-portrait-ui.webp"}),
-  master:Object.freeze({name:"Мастер участка",label:"МАСТЕР УЧАСТКА",portrait:"assets/cutscenes/first-report/v4/master-portrait.svg",npc:true}),
-  worker:Object.freeze({name:"Рабочий на переходе",label:"РАБОЧИЙ",portrait:"assets/cutscenes/first-report/v4/worker-portrait.svg",npc:true})
+  master:Object.freeze({name:"Мастер участка",label:"МАСТЕР УЧАСТКА",portrait:"assets/cutscenes/first-report/v2/decision.webp",npc:true}),
+  worker:Object.freeze({name:"Рабочий на переходе",label:"РАБОЧИЙ",portrait:"assets/cutscenes/first-report/v2/warning.webp",npc:true})
  });
- // One validated environment artwork, multiple camera framings per story beat.
- // No invented heroic faces anywhere on the scene image.
- // Asset paths can be replaced independently of the combat and dialogue.
+ // Painterly action frames for anonymous civilians; neutral approach for
+ // the canonical Ren/Art dialogue so their appearance is never misrepresented.
  const ART=Object.freeze({
-  warning:"assets/cutscenes/first-report/v3/bridge-approach.webp",
-  conflict:"assets/cutscenes/first-report/v3/bridge-approach.webp",
-  decision:"assets/cutscenes/first-report/v3/bridge-approach.webp",
-  aftermath:"assets/cutscenes/first-report/v3/bridge-approach.webp"
+  warning:"assets/cutscenes/first-report/v2/warning.webp",
+  conflict:"assets/cutscenes/first-report/v2/conflict.webp",
+  decision:"assets/cutscenes/first-report/v2/decision.webp",
+  aftermath:"assets/cutscenes/first-report/v2/aftermath.webp",
+  approach:"assets/cutscenes/first-report/v3/bridge-approach.webp"
  });
  const AVIF=Object.freeze({
-  warning:"assets/cutscenes/first-report/v3/bridge-approach.avif",
-  conflict:"assets/cutscenes/first-report/v3/bridge-approach.avif",
-  decision:"assets/cutscenes/first-report/v3/bridge-approach.avif",
-  aftermath:"assets/cutscenes/first-report/v3/bridge-approach.avif"
+  warning:"assets/cutscenes/first-report/v2/warning.avif",
+  conflict:"assets/cutscenes/first-report/v2/conflict.avif",
+  decision:"assets/cutscenes/first-report/v2/decision.avif",
+  aftermath:"assets/cutscenes/first-report/v2/aftermath.avif",
+  approach:"assets/cutscenes/first-report/v3/bridge-approach.avif"
  });
  const INTRO=Object.freeze([
   {art:"warning",shot:"workers",speakerId:"worker",speaker:"РАБОЧИЙ",text:"Не тяни! Держи за стойку!",detail:"На переходе срывается крепление. Двое ремонтников остаются над пропастью."},
   {art:"conflict",shot:"workers",speakerId:"master",speaker:"МАСТЕР",text:"Брось груз! Людей сорвёшь!",detail:"Вооружённые сборщики продолжают выносить разобранные крепления."},
-  {art:"warning",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Не на настил. С этого края крепление сняли.",detail:"Арт проверяет опору и останавливает Рена."},
-  {art:"warning",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Снизу пройти можно. Я видел ступени.",detail:"Рен ищет другой путь к рабочим."},
+  {art:"approach",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Не на настил. С этого края крепление сняли.",detail:"Арт проверяет опору и останавливает Рена."},
+  {art:"approach",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Снизу пройти можно. Я видел ступени.",detail:"Рен ищет другой путь к рабочим."},
   {art:"decision",shot:"wide",speakerId:"master",speaker:"МАСТЕР",text:"Мы вас на проверку звали. Теперь людей надо снимать.",detail:"Решение командира: как подготовить помощь?",choice:true}
  ]);
  const RESPONSE=Object.freeze({
-  survey:{art:"decision",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Под нижним краем. Я посмотрел — пока держит.",detail:"Приказ выполнен: Арт получает +30 к скорости на предстоящий бой.",effect:"survey"},
-  cover:{art:"decision",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Хорошо. Только отпустишь по моему знаку.",detail:"Приказ выполнен: Рен получает +35 очков к запасу защиты (Protection) на предстоящий бой.",effect:"cover"}
+  survey:{art:"approach",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Под нижним краем. Я посмотрел — пока держит.",detail:"Приказ выполнен: Арт получает +30 к скорости на предстоящий бой.",effect:"survey"},
+  cover:{art:"approach",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Хорошо. Только отпустишь по моему знаку.",detail:"Приказ выполнен: Рен получает +35 очков к запасу защиты (Protection) на предстоящий бой.",effect:"cover"}
  });
  const OUTRO=Object.freeze([
   {art:"aftermath",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Эту сторону закрываем. Ни сверху, ни снизу не пускать.",detail:"После победы рабочие возвращаются на безопасный участок."},

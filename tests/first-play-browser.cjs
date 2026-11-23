@@ -121,10 +121,13 @@ async function run(label,engine,viewport){
   await page.locator("#devRestartConfirm").click();
   await page.waitForFunction(()=>document.querySelector("#firstPlay")?.classList.contains("active")
    &&typeof FirstPlayCore!=="undefined"&&
-   localStorage.getItem(FirstPlayCore.KEY)===null,null,{timeout:60000});
+   JSON.parse(localStorage.getItem(FirstPlayCore.KEY)||"null")?.phase==="briefing"
+   &&JSON.parse(localStorage.getItem(FirstPlayCore.KEY)||"null")?.choice===null,
+   null,{timeout:60000});
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryNext").isVisible(),true);
+  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
   assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.campaign.v1")),null);
   assert.deepEqual(errors,[]);
   console.log("FIRSTPLAY002 "+label+" "+viewport.width+"x"+viewport.height+

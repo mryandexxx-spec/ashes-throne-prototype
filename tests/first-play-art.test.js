@@ -9,7 +9,7 @@ const Story=require("../first-play-story-core.js");
 const root=path.join(__dirname,"..");
 const expected=Object.freeze({warning:941,conflict:941,decision:941,aftermath:941});
 for(const [name,height] of Object.entries(expected)){
- test("FIRSTPLAY004 "+name+" loads sharp replaceable AVIF/WebP art",()=>{
+ test("FIRSTPLAY006 "+name+" loads sharp replaceable AVIF/WebP art",()=>{
   for(const [kind,extension] of [["AVIF","avif"],["ART","webp"]]){
    const file=Story[kind][name];
    assert.match(file,new RegExp("^assets/cutscenes/first-report/v3/bridge-approach\\."+extension+"$"));

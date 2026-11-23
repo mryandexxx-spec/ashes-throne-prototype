@@ -715,9 +715,25 @@ function renderFirstPlay(){
  const scene=FirstPlayStoryCore.frame(firstPlayState.phase,firstPlayState.choice,firstPlayStoryCursor);
  const name=$("#firstPlayStorySpeaker"),line=$("#firstPlayStoryLine"),
   image=$("#firstPlayStoryImage"),art=FirstPlayStoryCore.ART[scene.art],
-  source=$("#firstPlayStorySource"),avif=FirstPlayStoryCore.AVIF[scene.art];
- if(name)name.textContent=scene.speaker;
+  source=$("#firstPlayStorySource"),avif=FirstPlayStoryCore.AVIF[scene.art],
+  cast=FirstPlayStoryCore.CAST[scene.speakerId],
+  character=$("#firstPlayStoryCharacter"),portrait=$("#firstPlayStoryCharacterPortrait"),
+  characterName=$("#firstPlayStoryCharacterName"),story=$("#firstPlayStory");
+ if(name)name.textContent=cast?.label||scene.speaker;
  if(line)line.textContent=scene.text;
+ if(story)story.dataset.speaker=scene.speakerId||"unknown";
+ // A speaker's face must be the SAME game asset as in lore scenes;
+ // no false foreground "Ren/Art" figures are baked into the background.
+ if(character&&portrait){
+  character.hidden=!cast?.portrait;
+  if(cast?.portrait){
+   if(characterName)characterName.textContent=cast.name;
+   if(portrait.getAttribute("src")!==cast.portrait){
+    portrait.src=cast.portrait;
+    portrait.alt="Игровой портрет: "+cast.name;
+   }
+  }
+ }
  if(source&&avif&&source.getAttribute("srcset")!==avif)source.setAttribute("srcset",avif);
  if(image&&art&&image.getAttribute("src")!==art){
   image.hidden=false;
@@ -747,6 +763,11 @@ function renderFirstPlay(){
  if(original)original.hidden=true;
  if(oldResult)oldResult.hidden=true;
 }
+$("#firstPlayStoryCharacterPortrait")?.addEventListener("error",()=>{
+ // Never render a broken portrait as a different person.
+ const character=$("#firstPlayStoryCharacter");
+ if(character)character.hidden=true;
+});
 $("#firstPlayStoryImage")?.addEventListener("error",event=>{
  event.currentTarget.hidden=true;
  // The scene stays fully usable on slow/offline connections; no dead overlay.

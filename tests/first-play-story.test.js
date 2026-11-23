@@ -57,8 +57,10 @@ test("bad cursor/denied storage falls back without changing FirstPlayCore progre
 test("speaker portraits are the exact Ren/Art game assets",()=>{
  assert.equal(Story.CAST.ren.portrait,"assets/ren-portrait-ui.webp");
  assert.equal(Story.CAST.art.portrait,"assets/art-portrait-ui.webp?v=2");
- assert.equal(Story.CAST.worker.portrait,null);
- assert.equal(Story.CAST.master.portrait,null);
+ assert.equal(Story.CAST.worker.portrait,"assets/cutscenes/first-report/v4/worker-portrait.svg");
+ assert.equal(Story.CAST.master.portrait,"assets/cutscenes/first-report/v4/master-portrait.svg");
+ assert.equal(Story.CAST.worker.npc,true);
+ assert.equal(Story.CAST.master.npc,true);
  assert.deepEqual(Story.INTRO.map(x=>x.speakerId),["worker","master","art","ren","master"]);
  assert.equal(Story.RESPONSE.survey.speakerId,"art");
  assert.equal(Story.RESPONSE.cover.speakerId,"ren");
@@ -77,4 +79,32 @@ test("assets are replaceable path declarations, never navigation/network address
  for(const path of Object.values(Story.AVIF)){
   assert.match(path,/^assets\/cutscenes\/first-report\/v3\/bridge-approach\.avif$/);
  }
+});
+
+test("crew illustrations exist and contain no baked dialogue or character labels",()=>{
+ const fs=require("node:fs");
+ for(const role of ["worker","master"]){
+  const path=require("node:path").join(__dirname,"..",Story.CAST[role].portrait);
+  const svg=fs.readFileSync(path,"utf8");
+  assert.match(svg,/^<svg[^>]+viewBox=/);
+  assert.match(svg,/<\/svg>\s*$/);
+  assert.doesNotMatch(svg,/<text(?:\s|>)/i);
+ }
+});
+test("storyboard offers real and distinct combat stats, not a false defense buff",()=>{
+ assert.equal(First.EFFECTS.survey.bonus,30);
+ assert.equal(First.EFFECTS.survey.stat,"speed");
+ assert.equal(First.EFFECTS.cover.bonus,35);
+ assert.equal(First.EFFECTS.cover.stat,"protection");
+ assert.match(Story.ORDER_LABELS.survey,/Арт.*скорость.*30/);
+ assert.match(Story.ORDER_LABELS.cover,/Рен.*защиты.*35/);
+ assert.equal(Story.RESPONSE.survey.effect,"survey");
+ assert.equal(Story.RESPONSE.cover.effect,"cover");
+ assert.match(Story.RESPONSE.cover.detail,/Protection/);
+ const fs=require("node:fs");
+ const html=fs.readFileSync(require("node:path").join(__dirname,"..","index.html"),"utf8");
+ for(const id of ["firstPlayStoryOrderSignal","firstPlayStorySurvey","firstPlayStoryCover","fp-stage-crew"])
+  assert.ok(html.includes(id),"missing UI "+id);
+ assert.match(html,/Рен · запас защиты <strong>\+35<\/strong>/);
+ assert.match(html,/Арт · скорость <strong>\+30<\/strong>/);
 });

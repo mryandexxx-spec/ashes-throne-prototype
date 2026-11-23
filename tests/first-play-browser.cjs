@@ -39,16 +39,15 @@ async function run(label,engine,viewport){
     getComputedStyle(img).display!=="none"&&getComputedStyle(img).visibility!=="hidden";
   },null,{timeout:12000});
   assert.equal(await page.locator("#firstPlayStoryImage").isVisible(),true);
-  assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),/\/v3\/bridge-approach\.(?:avif|webp)$/);
+  assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),/\/v2\/warning\.(?:avif|webp)$/);
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true,
-   label+": worker must have a distinct illustrated portrait");
-  assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/v4\/worker-portrait\.svg$/);
+   label+": worker must have a consistent painted portrait");
+  assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/v2\/warning\.webp$/);
   await page.waitForFunction(()=>document.querySelector("#firstPlayStoryCharacterPortrait")?.naturalWidth>0);
-  assert.equal(await page.locator(".fp-stage-crew img").count(),2);
-  assert.equal(await page.locator(".fp-stage-master").isVisible(),true);
-  assert.equal(await page.locator(".fp-stage-worker").isVisible(),true);
+  assert.equal(await page.locator(".fp-stage-crew").count(),0,
+   label+": no cartoon cutouts on top of realistic cinematic art");
   assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"workers");
   assert.equal(await page.locator("#firstPlayStoryVoice").isVisible(),true,
    label+": worker portrait is visible");
@@ -57,13 +56,17 @@ async function run(label,engine,viewport){
   // Regular dialogue navigation and interruption/resume before the commander choice.
   await page.locator("#firstPlayStoryNext").click();
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
-  assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/v4\/master-portrait\.svg$/);
+  assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/v2\/decision\.webp$/);
+  assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),
+   /v2\/conflict\.(?:avif|webp)$/);
   await page.locator("#firstPlayStoryNext").click();
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true);
   assert.equal(await page.locator("#firstPlayStoryVoice").isVisible(),true);
   assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/assets\/art-portrait-ui\.webp\?v=2$/);
   assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"supports");
+  assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),
+   /v3\/bridge-approach\.(?:avif|webp)$/);
   assert.equal(await page.locator("#firstPlayStoryCharacter").evaluate(n=>n.closest(".fp-story-dialogue")!==null),true);
   const portraitBounds=await page.locator("#firstPlayStoryCharacter").boundingBox();
   const dialogueBounds=await page.locator("#firstPlayStory .fp-story-dialogue").boundingBox();
@@ -93,11 +96,13 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),true);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true,
-   label+": master has her own portrait");
-  assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/v4\/master-portrait\.svg$/);
+   label+": master has his own painted portrait");
+  assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/v2\/decision\.webp$/);
   assert.match(await page.locator("#firstPlayStorySurvey").innerText(),/скорость\s*\+30/);
   assert.match(await page.locator("#firstPlayStoryCover").innerText(),/защиты\s*\+35/);
   assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"wide");
+  assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),
+   /v2\/decision\.(?:avif|webp)$/);
   const choice=label==="chromium"?"survey":"cover";
   await page.locator(choice==="survey"?"#firstPlayStorySurvey":"#firstPlayStoryCover").click();
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem(FirstPlayCore.KEY)).choice),choice);
@@ -187,18 +192,6 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStoryNext").isVisible(),true);
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
   assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.campaign.v1")),null);
-  // Temporary art-direction QA: compare earlier painted action frames with the
-  // existing neutral bridge. This does not affect gameplay or persistent state.
-  for(const beat of ["warning","conflict","decision","aftermath"]){
-   await page.evaluate((name)=>{
-    document.querySelector(".fp-stage-crew").style.display="none";
-    document.querySelector("#firstPlayStorySource").srcset="assets/cutscenes/first-report/v2/"+name+".avif";
-    document.querySelector("#firstPlayStoryImage").src="assets/cutscenes/first-report/v2/"+name+".webp";
-   },beat);
-   await page.waitForFunction(name=>document.querySelector("#firstPlayStoryImage")?.currentSrc.includes("/v2/"+name),
-    beat,{timeout:12000});
-   await page.screenshot({path:path.join(dest,label+"-"+beat+"-v2-art-qa.png")});
-  }
   assert.deepEqual(errors,[]);
   console.log("FIRSTPLAY002 "+label+" "+viewport.width+"x"+viewport.height+
    " verified; battle: "+result.winner+" in "+result.steps+" actions");

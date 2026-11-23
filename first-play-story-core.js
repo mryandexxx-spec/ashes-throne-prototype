@@ -41,6 +41,16 @@ const FirstPlayStoryCore=(()=>{
   {art:"aftermath",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Эту сторону закрываем. Ни сверху, ни снизу не пускать.",detail:"После победы рабочие возвращаются на безопасный участок."},
   {art:"aftermath",shot:"wide",speakerId:"master",speaker:"МАСТЕР",text:"Я их сюда сам направил. По этому списку.",detail:"Переход одновременно помечен безопасным и переданным под разборку."}
  ]);
+ // The same real victory reaches the same factual final clue, but the immediate
+ // debrief reflects the command that the player actually gave.
+ const OUTRO_BRANCH=Object.freeze({
+  survey:Object.freeze({art:"aftermath",shot:"supports",speakerId:"art",speaker:"АРТ",
+   text:"Нижний край проверили заранее. Это и дало нам время вывести людей.",
+   detail:"Арт воспользовался разведанным проходом; после операции этот путь закрывают до ремонта."}),
+  cover:Object.freeze({art:"aftermath",shot:"route",speakerId:"ren",speaker:"РЕН",
+   text:"Пока они отходили, проход удержали. Теперь его можно закрывать.",
+   detail:"Прикрытие Рена позволило рабочим отойти без нового риска на повреждённом настиле."})
+ });
  const ORDER_LABELS=Object.freeze({survey:"Арт · скорость +30",cover:"Рен · запас защиты +35"});
  const fresh=()=>({version:1,part:"intro",step:0});
  function isValid(c){return !!c&&c.version===1&&["intro","outro"].includes(c.part)&&
@@ -66,7 +76,10 @@ const FirstPlayStoryCore=(()=>{
   try{storageProvider().setItem(KEY,JSON.stringify(cursor));return true;}catch(_){return false;}
  }
  function frame(phase,choice,cursor){
-  if(phase==="won")return OUTRO[Math.max(0,Math.min(OUTRO.length-1,cursor?.step||0))];
+  if(phase==="won"){
+   const step=Math.max(0,Math.min(OUTRO.length-1,cursor?.step||0));
+   return step===0?(OUTRO_BRANCH[choice]||OUTRO[0]):OUTRO[step];
+  }
   if(phase==="ready")return RESPONSE[choice]||INTRO[INTRO.length-1];
   return INTRO[Math.max(0,Math.min(INTRO.length-1,cursor?.step||0))];
  }

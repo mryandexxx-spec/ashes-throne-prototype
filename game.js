@@ -4109,8 +4109,8 @@ function resetBattle(){
  const realHeroFight=allies.length>0&&
   allies.every(f=>["ren","nada","liora","art","sava"].includes(f.id));
  state=CombatCore.createBattle(lineup,waves,{
-  leaderId:(battleIsFirstPlay||(storyTrialParty&&battleIsStoryDemo))?null:selectedLeaderId,
-  ...(battleIsFirstPlay?{tacticalObjective:{
+  leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId,
+  ...(battleIsFirstPlay?{leaderId:null,tacticalObjective:{
    kind:"hold-or-defeat",protectAllyId:"ren",allyActionsToHold:6
   }}:{}),
   ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{}),

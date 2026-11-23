@@ -39,6 +39,8 @@ async function run(label,engine,viewport){
     getComputedStyle(img).display!=="none"&&getComputedStyle(img).visibility!=="hidden";
   },null,{timeout:12000});
   assert.equal(await page.locator("#firstPlayStoryImage").isVisible(),true);
+  await page.waitForFunction(path=>document.querySelector("#firstPlayStoryImage")?.currentSrc.includes(path),
+   "/v2/warning.",{timeout:12000});
   assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),/\/v2\/warning\.(?:avif|webp)$/);
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
@@ -52,12 +54,15 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStoryVoice").isVisible(),true,
    label+": worker portrait is visible");
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
+  await page.waitForFunction(()=>document.querySelector("#firstPlayStoryCharacterPortrait")?.dataset.loading==="false");
   await page.waitForTimeout(500);
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-opening.png")});
   // Regular dialogue navigation and interruption/resume before the commander choice.
   await page.locator("#firstPlayStoryNext").click();
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
   assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/v2\/decision\.webp$/);
+  await page.waitForFunction(path=>document.querySelector("#firstPlayStoryImage")?.currentSrc.includes(path),
+   "/v2/conflict.",{timeout:12000});
   assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),
    /v2\/conflict\.(?:avif|webp)$/);
   await page.locator("#firstPlayStoryNext").click();
@@ -66,6 +71,8 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStoryVoice").isVisible(),true);
   assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/assets\/art-portrait-ui\.webp\?v=2$/);
   assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"supports");
+  await page.waitForFunction(path=>document.querySelector("#firstPlayStoryImage")?.currentSrc.includes(path),
+   "/v3/bridge-approach.",{timeout:12000});
   assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),
    /v3\/bridge-approach\.(?:avif|webp)$/);
   assert.equal(await page.locator("#firstPlayStoryCharacter").evaluate(n=>n.closest(".fp-story-dialogue")!==null),true);
@@ -93,6 +100,7 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РЕН ТЕРЕН");
   // Skip the remaining *cutscene*, never the mandatory order or battle.
   await page.locator("#firstPlayStorySkip").click();
+  await page.waitForFunction(()=>document.querySelector("#firstPlayStoryCharacterPortrait")?.dataset.loading==="false");
   await page.waitForTimeout(500);
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-decision.png")});
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),true);
@@ -103,6 +111,8 @@ async function run(label,engine,viewport){
   assert.match(await page.locator("#firstPlayStorySurvey").innerText(),/скорость\s*\+30/);
   assert.match(await page.locator("#firstPlayStoryCover").innerText(),/защиты\s*\+35/);
   assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"wide");
+  await page.waitForFunction(path=>document.querySelector("#firstPlayStoryImage")?.currentSrc.includes(path),
+   "/v2/decision.",{timeout:12000});
   assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),
    /v2\/decision\.(?:avif|webp)$/);
   const choice=label==="chromium"?"survey":"cover";

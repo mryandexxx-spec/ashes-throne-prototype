@@ -108,3 +108,16 @@ test("storyboard offers real and distinct combat stats, not a false defense buff
  assert.match(html,/Рен · запас защиты <strong>\+35<\/strong>/);
  assert.match(html,/Арт · скорость <strong>\+30<\/strong>/);
 });
+
+test("the same real victory receives an order-specific, not fabricated, local debrief",()=>{
+ const cursor=Story.normalize(null,"won");
+ const survey=Story.frame("won","survey",cursor);
+ const cover=Story.frame("won","cover",cursor);
+ assert.equal(survey.speakerId,"art");
+ assert.equal(cover.speakerId,"ren");
+ assert.notEqual(survey.text,cover.text);
+ const final=Story.advance("won",cursor);
+ assert.equal(Story.frame("won","survey",final),Story.frame("won","cover",final),
+  "orders reconverge at the same factual final clue");
+ assert.equal(Story.OUTRO.length,2);
+});

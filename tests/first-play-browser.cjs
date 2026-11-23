@@ -52,6 +52,7 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStoryVoice").isVisible(),true,
    label+": worker portrait is visible");
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
+  await page.waitForTimeout(500);
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-opening.png")});
   // Regular dialogue navigation and interruption/resume before the commander choice.
   await page.locator("#firstPlayStoryNext").click();
@@ -92,6 +93,7 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РЕН ТЕРЕН");
   // Skip the remaining *cutscene*, never the mandatory order or battle.
   await page.locator("#firstPlayStorySkip").click();
+  await page.waitForTimeout(500);
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-decision.png")});
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),true);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);

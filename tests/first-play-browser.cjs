@@ -152,7 +152,9 @@ async function run(label,engine,viewport){
   }else{
    assert.equal(await page.evaluate(()=>firstPlayState.phase),"won");
    assert.equal(await page.locator("#firstPlayStoryFinish").isVisible(),false);
-   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
+   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),
+    choice==="survey"?"АРТ":"РЕН ТЕРЕН");
+   assert.match(await page.locator("#firstPlayStoryContext").innerText(),/Эффект вашего приказа/);
    await page.locator("#firstPlayStoryNext").click();
    assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
    assert.equal(await page.locator("#firstPlayStoryFinish").isVisible(),true);

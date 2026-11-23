@@ -3664,7 +3664,7 @@ function npcBattleMessage(){
 }
 function syncBattleUI(){
  if(inspectionId)renderFighterInspection();
- if(battleIsLoreRequired||(battleIsNpcChallengePilot&&activeChallengeId==="T-04")){
+ if(battleIsFirstPlay||battleIsLoreRequired||(battleIsNpcChallengePilot&&activeChallengeId==="T-04")){
   const o=state.tacticalObjective;
   const timed=o?.kind==="hold-or-defeat",counter=$("#tacticalGoalCounter");
   const track=$("#tacticalGoalCard .tactical-goal-track"),fill=$("#tacticalGoalFill");
@@ -3782,6 +3782,10 @@ function syncBattleUI(){
   StoryDemoCore.finishBattle(storyDemoState,state.winner==="ally");
   missionResultRecorded=true;
  }
+ if(battleIsFirstPlay&&!state.active&&!missionResultRecorded){
+  firstPlayFinish(state.winner==="ally");
+  missionResultRecorded=true;
+ }
  if(isVisualTransition()){
   const transitionStatus=$("#battleStatus");
   if(transitionStatus)transitionStatus.textContent=visualTransition==="wave"?"Завершение волны":"Завершение боя";
@@ -3845,6 +3849,9 @@ function syncBattleUI(){
   missionResultShown=true;
   showScreen("storyDemo");
   return;
+ }
+ if(battleIsFirstPlay&&!state.active&&!missionResultShown){
+  missionResultShown=true;showScreen("firstPlay");return;
  }
  if(battleIsCampaign&&!state.active&&!missionResultShown){
   missionResultShown=true;
@@ -4088,7 +4095,10 @@ function resetBattle(){
  const realHeroFight=allies.length>0&&
   allies.every(f=>["ren","nada","liora","art","sava"].includes(f.id));
  state=CombatCore.createBattle(lineup,waves,{
-  leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId,
+  leaderId:(battleIsFirstPlay||(storyTrialParty&&battleIsStoryDemo))?null:selectedLeaderId,
+  ...(battleIsFirstPlay?{tacticalObjective:{
+   kind:"hold-or-defeat",protectAllyId:"ren",allyActionsToHold:6
+  }}:{}),
   ...(storyTrialParty&&battleIsStoryDemo?StoryTrialData.statusPilot:{}),
   ...(battleIsLoreRequired&&loreRequiredContext?.battleObjective?
    {tacticalObjective:NpcStoryOpsAdapter.storyObjective(loreRequiredContext.nodeId,loreRequiredContext.battleObjective)}:{}),

@@ -105,7 +105,7 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true);
   assert.equal(await page.locator("#firstPlayStoryOrderSignal").isVisible(),true);
   assert.match(await page.locator("#firstPlayStoryContext").innerText(),
-   choice==="survey"?/Арт.*скорости.*30/:/Рен.*Protection/);
+   choice==="survey"?/Арт.*30.*скорости/:/Рен.*Protection/);
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),choice==="survey"?"АРТ":"РЕН ТЕРЕН");
   // Reload must offer the same actual choice and retry, not silently skip onboarding.
   await page.reload({waitUntil:"load",timeout:60000});

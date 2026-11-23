@@ -332,7 +332,11 @@ let saveAvailable=loadedProgress?loadedProgress.available:false;
 const firstPlayLoaded=typeof FirstPlayCore!=="undefined"?
  FirstPlayCore.load(()=>window.localStorage):null;
 let firstPlayState=firstPlayLoaded?.state||null;
-const firstPlayEligible=!!firstPlayLoaded?.available&&!firstPlayLoaded.blocked&&!saveBlocked&&
+// Existing headless/browser regressions can bypass the narrative entry explicitly.
+const FIRST_PLAY_TEST_BYPASS=typeof location!=="undefined"&&
+ /(?:^|[?&])skipFirstPlay=1(?:&|$)/.test(location.search);
+const firstPlayEligible=!FIRST_PLAY_TEST_BYPASS&&!!firstPlayLoaded?.available&&
+ !firstPlayLoaded.blocked&&!saveBlocked&&
  (firstPlayLoaded.exists||Boolean(loadedProgress?.fresh));
 let firstPlayFailure=false,firstPlaySaveFailed=false;
 const campaignLoaded=CampaignCore.load(()=>window.localStorage);
@@ -754,6 +758,7 @@ $("#firstPlayContinue")?.addEventListener("click",()=>{
  squadReturnScreen="home";showScreen("home");
 });
 function maybeOpenLoginOnEntry(){
+ if(firstPlayEligible&&firstPlayState?.phase!=="done")return false;
  if(document.hidden||saveBlocked||progress.saveVersion!==3||
     !$("#home")?.classList.contains("active"))return false;
  const day=dailyDay();

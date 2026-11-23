@@ -339,6 +339,8 @@ const firstPlayEligible=!FIRST_PLAY_TEST_BYPASS&&!!firstPlayLoaded?.available&&
  !firstPlayLoaded.blocked&&!saveBlocked&&
  (firstPlayLoaded.exists||Boolean(loadedProgress?.fresh));
 let firstPlayFailure=false,firstPlaySaveFailed=false;
+let firstPlayStoryCursor=typeof FirstPlayStoryCore!=="undefined"?
+ FirstPlayStoryCore.load(()=>window.localStorage,firstPlayState?.phase):null;
 const campaignLoaded=CampaignCore.load(()=>window.localStorage);
 const campaignProgress=progress.saveVersion===3?campaignLoaded.campaign:
  (loadedProgress?.fresh?CampaignCore.fresh():campaignLoaded.campaign);
@@ -699,29 +701,72 @@ function firstPlayStore(next){
 function firstPlayNotice(message){
  const node=$("#firstPlayNotice");
  if(node){node.textContent=message||"";node.hidden=!message;}
+ const story=$("#firstPlayStoryNotice");
+ if(story){story.textContent=message||"";story.hidden=!message;}
+}
+function firstPlayStorySetCursor(next){
+ if(!next||typeof FirstPlayStoryCore==="undefined")return false;
+ firstPlayStoryCursor=next;
+ // Story-page position is convenience state, not a second gameplay save.
+ return FirstPlayStoryCore.save(next,()=>window.localStorage);
 }
 function renderFirstPlay(){
- if(!firstPlayState)return;
+ if(!firstPlayState||typeof FirstPlayStoryCore==="undefined")return;
+ firstPlayStoryCursor=FirstPlayStoryCore.normalize(firstPlayStoryCursor,firstPlayState.phase);
+ const scene=FirstPlayStoryCore.frame(firstPlayState.phase,firstPlayState.choice,firstPlayStoryCursor);
+ const name=$("#firstPlayStorySpeaker"),line=$("#firstPlayStoryLine"),
+  image=$("#firstPlayStoryImage"),art=FirstPlayStoryCore.ART[scene.art];
+ if(name)name.textContent=scene.speaker;
+ if(line)line.textContent=scene.text;
+ if(image&&art&&image.getAttribute("src")!==art){
+  image.hidden=false;
+  image.src=art;
+  image.classList.remove("fp-fade");
+  void image.offsetWidth;
+  image.classList.add("fp-fade");
+ }
+ const context=$("#firstPlayStoryContext");
+ if(context)context.textContent=scene.detail||"";
+ const decision=firstPlayState.phase==="briefing"&&!!scene.choice;
  const won=firstPlayState.phase==="won";
- const intro=$("#firstPlayBriefing"),outcome=$("#firstPlayOutcome");
- if(intro)intro.hidden=won;
- if(outcome)outcome.hidden=!won;
- for(const [id,choice] of [["#firstPlaySurvey","survey"],["#firstPlayCover","cover"]])
-  $(id)?.setAttribute?.("aria-pressed",String(firstPlayState.choice===choice));
- const feedback=$("#firstPlayFeedback");
- if(feedback)feedback.textContent=firstPlayState.choice==="survey"?
-  "Арт изучит подходы: повышенная инициатива в предстоящем бою.":
-  firstPlayState.choice==="cover"?
-  "Рен получит дополнительную защиту при удержании прохода.":
-  "Выберите способ подготовки. Он действительно влияет на бой.";
- const fight=$("#firstPlayBattle");
- if(fight)fight.disabled=firstPlayState.phase!=="ready";
- const text=$("#firstPlayOutcomeText");
- if(text&&won)text.textContent="Проход удержан. Часть рабочих выведена, но записи осмотра противоречат друг другу. Продолжение этой главы пока в разработке.";
- if(firstPlayFailure)firstPlayNotice("Эвакуация пока не завершена. Измените тактику и попробуйте снова.");
- else if(firstPlaySaveFailed)firstPlayNotice("Результат не подтверждён в сохранении. После обновления бой может потребоваться повторить.");
- else firstPlayNotice("");
+ const lastOutro=won&&firstPlayStoryCursor.step===FirstPlayStoryCore.OUTRO.length-1;
+ const next=$("#firstPlayStoryNext"),choices=$("#firstPlayStoryChoices"),
+  fight=$("#firstPlayStoryFight"),finish=$("#firstPlayStoryFinish");
+ if(next)next.hidden=decision||firstPlayState.phase==="ready"||lastOutro;
+ if(choices)choices.hidden=!decision;
+ if(fight)fight.hidden=firstPlayState.phase!=="ready";
+ if(finish)finish.hidden=!lastOutro;
+ const notice=$("#firstPlayStoryNotice");
+ let warning=firstPlayFailure?"Группе пока не удалось удержать проход. Можно повторить бой.":firstPlaySaveFailed?
+ "Сохранение операции не подтверждено; при обновлении страницы бой может потребоваться повторить.":"";
+ if(notice){notice.textContent=warning;notice.hidden=!warning;}
+ // Preserve original DOM hooks for older tests, but do not display duplicate
+ // briefing and outcome panels beneath the actual story presentation.
+ const original=$("#firstPlayBriefing"),oldResult=$("#firstPlayOutcome");
+ if(original)original.hidden=true;
+ if(oldResult)oldResult.hidden=true;
 }
+$("#firstPlayStoryImage")?.addEventListener("error",event=>{
+ event.currentTarget.hidden=true;
+ // The scene stays fully usable on slow/offline connections; no dead overlay.
+});
+function firstPlayStoryNext(){
+ const next=FirstPlayStoryCore.advance(firstPlayState?.phase,firstPlayStoryCursor);
+ if(next){firstPlayStorySetCursor(next);renderFirstPlay();}
+}
+function firstPlayStorySkip(){
+ const result=FirstPlayStoryCore.skipNarration(firstPlayState?.phase,firstPlayState?.choice,firstPlayStoryCursor);
+ if(result.action==="decision"){
+  firstPlayStorySetCursor(result.cursor);renderFirstPlay();
+ }else if(result.action==="battle")firstPlayStartBattle();
+ else if(result.action==="finish")$("#firstPlayContinue")?.click();
+}
+$("#firstPlayStoryNext")?.addEventListener("click",firstPlayStoryNext);
+$("#firstPlayStorySkip")?.addEventListener("click",firstPlayStorySkip);
+$("#firstPlayStorySurvey")?.addEventListener("click",()=>firstPlayChoose("survey"));
+$("#firstPlayStoryCover")?.addEventListener("click",()=>firstPlayChoose("cover"));
+$("#firstPlayStoryFight")?.addEventListener("click",firstPlayStartBattle);
+$("#firstPlayStoryFinish")?.addEventListener("click",()=>$("#firstPlayContinue")?.click());
 function openFirstPlayOnEntry(){
  if(!firstPlayEligible||!firstPlayState||firstPlayState.phase==="done")return false;
  showScreen("firstPlay");return true;
@@ -730,6 +775,7 @@ function firstPlayChoose(choice){
  if(!firstPlayEligible||!firstPlayState)return;
  const next=FirstPlayCore.choose(firstPlayState,choice);
  if(!next||!firstPlayStore(next)){firstPlayNotice("Не удалось сохранить приказ.");return;}
+ firstPlayStoryCursor=FirstPlayStoryCore.normalize(null,"ready");
  firstPlayFailure=false;renderFirstPlay();
 }
 function firstPlayStartBattle(){
@@ -743,6 +789,8 @@ function firstPlayFinish(won){
  if(!next)return;
  if(!firstPlayStore(next)){firstPlayState=next;firstPlaySaveFailed=true;}
  firstPlayFailure=!won;
+ firstPlayStoryCursor=FirstPlayStoryCore.normalize(null,won?"won":"ready");
+ FirstPlayStoryCore.save(firstPlayStoryCursor,()=>window.localStorage);
 }
 $("#firstPlaySurvey")?.addEventListener("click",()=>firstPlayChoose("survey"));
 $("#firstPlayCover")?.addEventListener("click",()=>firstPlayChoose("cover"));

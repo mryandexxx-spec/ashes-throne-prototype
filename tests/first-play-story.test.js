@@ -58,4 +58,7 @@ test("assets are replaceable path declarations, never navigation/network address
  for(const path of Object.values(Story.ART)){
   assert.match(path,/^assets\/cutscenes\/first-report\/[a-z-]+\.webp$/);
  }
+ for(const path of Object.values(Story.AVIF)){
+  assert.match(path,/^assets\/cutscenes\/first-report\/[a-z-]+\.avif$/);
+ }
 });

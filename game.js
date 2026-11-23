@@ -1153,9 +1153,18 @@ function battleLineup(){
    ren.maxProtection=(ren.maxProtection||0)+35;
    ren.protection=(ren.protection||0)+35;
   }
-  const enemies=ENEMIES.slice(0,2).map((enemy,i)=>progressedEnemy({
-   ...enemy,name:i===0?"Вооружённый сборщик":"Страж у прохода"
-  }));
+  // Reuse the live human NPC combat/visual system, not Conclave demo mannequins.
+  const plan=[
+   {archetype:"npc-pass-guard",id:"npc-first-guard",name:"Охранник склада",hp:62,protection:8},
+   {archetype:"npc-trail-interceptor",id:"npc-first-interceptor",name:"Вооружённый сборщик",hp:52,protection:6}
+  ];
+  const enemies=plan.map(spec=>{
+   const npc=NpcEnemyData.spawn(spec.archetype,{instanceId:spec.id});
+   if(!npc)throw Error("FIRST_PLAY_NPC_MISSING");
+   const attack=Math.round(npc.physicalAttack*.7);
+   return {...npc,name:spec.name,hp:spec.hp,protection:spec.protection,
+    maxProtection:spec.protection,atk:attack,physicalAttack:attack};
+  });
   return [art,ren,...enemies];
  }
  if(battleIsSignal){
@@ -1793,8 +1802,8 @@ $("#devStartOver")?.addEventListener("click",()=>{
 $("#devRestartCancel")?.addEventListener("click",()=>devRestartDialog?.close?.());
 $("#devRestartConfirm")?.addEventListener("click",()=>{
  const status=$("#devRestartStatus");
- if(typeof ProgressWriterCore!=="undefined"&&!ProgressWriterCore.isOwner()){
-  if(status){status.hidden=false;status.textContent="Сохранение занято другой вкладкой. Закройте другие вкладки игры.";}
+ if(typeof ProgressWriterCore!=="undefined"&&!ProgressWriterCore.canPersist()){
+  if(status){status.hidden=false;status.textContent="Сохранение сейчас недоступно или выполняется запись. Закройте другие вкладки и повторите.";}
   return;
  }
  const cleared=FirstPlayCore.resetGameStorage(()=>window.localStorage);

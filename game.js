@@ -768,9 +768,13 @@ $("#firstPlayStoryCharacterPortrait")?.addEventListener("error",()=>{
  const character=$("#firstPlayStoryCharacter");
  if(character)character.hidden=true;
 });
+$("#firstPlayStoryImage")?.addEventListener("load",event=>{
+ // A deferred error from a previous source must never leave the real art hidden.
+ if(event.currentTarget.naturalWidth>0)event.currentTarget.hidden=false;
+});
 $("#firstPlayStoryImage")?.addEventListener("error",event=>{
- event.currentTarget.hidden=true;
- // The scene stays fully usable on slow/offline connections; no dead overlay.
+ // Keep the story readable when no art is available, not after a valid load.
+ if(!event.currentTarget.naturalWidth)event.currentTarget.hidden=true;
 });
 function firstPlayStoryNext(){
  const next=FirstPlayStoryCore.advance(firstPlayState?.phase,firstPlayStoryCursor);

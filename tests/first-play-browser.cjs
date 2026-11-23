@@ -187,6 +187,18 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStoryNext").isVisible(),true);
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
   assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.campaign.v1")),null);
+  // Temporary art-direction QA: compare earlier painted action frames with the
+  // existing neutral bridge. This does not affect gameplay or persistent state.
+  for(const beat of ["warning","conflict","decision","aftermath"]){
+   await page.evaluate((name)=>{
+    document.querySelector(".fp-stage-crew").style.display="none";
+    document.querySelector("#firstPlayStorySource").srcset="assets/cutscenes/first-report/v2/"+name+".avif";
+    document.querySelector("#firstPlayStoryImage").src="assets/cutscenes/first-report/v2/"+name+".webp";
+   },beat);
+   await page.waitForFunction(name=>document.querySelector("#firstPlayStoryImage")?.currentSrc.includes("/v2/"+name),
+    beat,{timeout:12000});
+   await page.screenshot({path:path.join(dest,label+"-"+beat+"-v2-art-qa.png")});
+  }
   assert.deepEqual(errors,[]);
   console.log("FIRSTPLAY002 "+label+" "+viewport.width+"x"+viewport.height+
    " verified; battle: "+result.winner+" in "+result.steps+" actions");

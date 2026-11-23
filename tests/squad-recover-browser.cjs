@@ -168,4 +168,9 @@ async function check(browserName,engine,viewport){
  for(const [name,engine] of [["chromium",chromium],["webkit",webkit]])
   for(const viewport of [{width:844,height:390},{width:932,height:430}])
    await check(name,engine,viewport);
+ // FIRSTPLAY001: independent real first-boot/hold/reset coverage, using the
+ // existing squad browser job to preserve the selective CI workflow.
+ require("node:child_process").execFileSync(process.execPath,
+  [require.resolve("./first-play-browser.cjs")],
+  {stdio:"inherit",timeout:180000});
 })().catch(error=>{console.error(error);process.exitCode=1;});

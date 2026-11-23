@@ -12,7 +12,7 @@ for(const [name,height] of Object.entries(expected)){
  test("FIRSTPLAY006 "+name+" loads sharp replaceable AVIF/WebP art",()=>{
   for(const [kind,extension] of [["AVIF","avif"],["ART","webp"]]){
    const file=Story[kind][name];
-   assert.match(file,new RegExp("^assets/cutscenes/first-report/v3/bridge-approach\\."+extension+"$"));
+   assert.match(file,new RegExp("^assets/cutscenes/first-report/v2/"+name+"\\."+extension+"$"));
    const bytes=fs.readFileSync(path.join(root,file));
    assert.ok(bytes.length>200_000,kind+" was excessively compressed");
    assert.ok(bytes.length<650_000,kind+" exceeds mobile art budget");

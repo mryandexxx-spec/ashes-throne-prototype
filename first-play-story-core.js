@@ -9,8 +9,8 @@ const FirstPlayStoryCore=(()=>{
  const CAST=Object.freeze({
   art:Object.freeze({name:"Арт",label:"АРТ",portrait:"assets/art-portrait-ui.webp?v=2"}),
   ren:Object.freeze({name:"Рен Терен",label:"РЕН ТЕРЕН",portrait:"assets/ren-portrait-ui.webp"}),
-  master:Object.freeze({name:"Мастер участка",label:"МАСТЕР УЧАСТКА",portrait:"assets/cutscenes/first-report/v2/decision.webp",npc:true}),
-  worker:Object.freeze({name:"Рабочий на переходе",label:"РАБОЧИЙ",portrait:"assets/cutscenes/first-report/v2/warning.webp",npc:true})
+  master:Object.freeze({name:"Мастер участка",label:"МАСТЕР УЧАСТКА",portrait:"assets/cutscenes/first-report/v2/decision.webp",portraitAvif:"assets/cutscenes/first-report/v2/decision.avif",npc:true}),
+  worker:Object.freeze({name:"Рабочий на переходе",label:"РАБОЧИЙ",portrait:"assets/cutscenes/first-report/v2/warning.webp",portraitAvif:"assets/cutscenes/first-report/v2/warning.avif",npc:true})
  });
  // Painterly action frames for anonymous civilians; neutral approach for
  // the canonical Ren/Art dialogue so their appearance is never misrepresented.

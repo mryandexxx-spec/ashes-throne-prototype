@@ -1,3 +1,6 @@
+body:has(#firstPlay.active){height:100dvh;overflow:hidden}
+#app:has(#firstPlay.active){height:100dvh;max-width:none;padding:0;overflow:hidden}
+#app:has(#firstPlay.active)>.topbar,#app:has(#firstPlay.active)>footer{display:none}
 /* FIRSTPLAY001: mobile-first first-person briefing; isolated from HQ and arena. */
 #firstPlay.first-play-screen{display:none;position:relative;min-height:100dvh;padding:0;overflow:hidden;background:#101a1d;color:#efe2c9}
 #firstPlay.first-play-screen.active{display:flex;align-items:center;justify-content:center}

@@ -716,9 +716,11 @@ function renderFirstPlay(){
  firstPlayStoryCursor=FirstPlayStoryCore.normalize(firstPlayStoryCursor,firstPlayState.phase);
  const scene=FirstPlayStoryCore.frame(firstPlayState.phase,firstPlayState.choice,firstPlayStoryCursor);
  const name=$("#firstPlayStorySpeaker"),line=$("#firstPlayStoryLine"),
-  image=$("#firstPlayStoryImage"),art=FirstPlayStoryCore.ART[scene.art];
+  image=$("#firstPlayStoryImage"),art=FirstPlayStoryCore.ART[scene.art],
+  source=$("#firstPlayStorySource"),avif=FirstPlayStoryCore.AVIF[scene.art];
  if(name)name.textContent=scene.speaker;
  if(line)line.textContent=scene.text;
+ if(source&&avif&&source.getAttribute("srcset")!==avif)source.setAttribute("srcset",avif);
  if(image&&art&&image.getAttribute("src")!==art){
   image.hidden=false;
   image.src=art;

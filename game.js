@@ -718,20 +718,23 @@ function renderFirstPlay(){
   source=$("#firstPlayStorySource"),avif=FirstPlayStoryCore.AVIF[scene.art],
   cast=FirstPlayStoryCore.CAST[scene.speakerId],
   character=$("#firstPlayStoryCharacter"),portrait=$("#firstPlayStoryCharacterPortrait"),
-  characterName=$("#firstPlayStoryCharacterName"),story=$("#firstPlayStory");
+  voiceIcon=$("#firstPlayStoryVoiceIcon"),story=$("#firstPlayStory");
  if(name)name.textContent=cast?.label||scene.speaker;
  if(line)line.textContent=scene.text;
- if(story)story.dataset.speaker=scene.speakerId||"unknown";
- // A speaker's face must be the SAME game asset as in lore scenes;
- // no false foreground "Ren/Art" figures are baked into the background.
+ if(story){
+  story.dataset.speaker=scene.speakerId||"unknown";
+  story.dataset.shot=scene.shot||"wide";
+ }
+ // The avatar is a compact part of the SAME dialogue panel, not an unrelated
+ // tall character card pasted over the location. Portraits are the exact
+ // existing Five Shadows game assets; civilians get role symbols instead.
+ if(voiceIcon)voiceIcon.textContent=scene.speakerId==="worker"?"⚒":
+  scene.speakerId==="master"?"⌖":"◆";
  if(character&&portrait){
   character.hidden=!cast?.portrait;
-  if(cast?.portrait){
-   if(characterName)characterName.textContent=cast.name;
-   if(portrait.getAttribute("src")!==cast.portrait){
-    portrait.src=cast.portrait;
-    portrait.alt="Игровой портрет: "+cast.name;
-   }
+  if(cast?.portrait&&portrait.getAttribute("src")!==cast.portrait){
+   portrait.src=cast.portrait;
+   portrait.alt="Игровой портрет: "+cast.name;
   }
  }
  if(source&&avif&&source.getAttribute("srcset")!==avif)source.setAttribute("srcset",avif);

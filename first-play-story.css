@@ -1,5 +1,5 @@
-/* FIRSTPLAY005: cinematic storyboard + one integrated speaker strip.
-   The character images here are EXISTING in-game portraits, never fabricated people. */
+/* FIRSTPLAY006: layered 2.5D scene, original civilian portraits and diegetic order feedback.
+   Hero portraits stay canonical in-game assets. CSS motion pauses outside this screen. */
 #firstPlay #firstPlayStory{
  position:absolute;inset:0;z-index:3;overflow:hidden;background:#17181c;color:#f8e8d4
 }
@@ -116,4 +116,79 @@
 }
 @media(prefers-reduced-motion:reduce){
  #firstPlay .fp-story-art img{transition:none!important}
+}
+
+/* Crew are part of the setting rather than dialogue cards pasted into the panorama. */
+#firstPlay .fp-stage-crew{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+#firstPlay .fp-stage-crew img{
+ position:absolute;display:block;width:auto;height:clamp(128px,54dvh,300px);max-width:none;
+ object-fit:contain;object-position:bottom center;
+ transform-origin:50% 90%;transition:transform .55s cubic-bezier(.2,.7,.2,1),
+ opacity .4s ease,filter .4s ease;
+ filter:drop-shadow(0 7px 12px #07090fdb) saturate(.85) brightness(.88);
+ will-change:transform
+}
+#firstPlay .fp-stage-master{left:4%;bottom:clamp(66px,17vh,108px);opacity:.94;animation:fp-breath 4.2s ease-in-out infinite}
+#firstPlay .fp-stage-worker{right:11%;bottom:clamp(60px,16vh,102px);opacity:.96;animation:fp-strain 3.4s ease-in-out infinite}
+#firstPlay .fp-stage-rope{position:absolute;right:19%;top:16%;height:57%;width:3px;opacity:.5;
+ background:repeating-linear-gradient(0deg,#e1c296 0 9px,#5d4732 9px 12px);transform:rotate(-13deg);
+ box-shadow:0 0 7px #0506099c;transform-origin:top}
+#firstPlay .fp-stage-warning{position:absolute;right:31%;top:50%;width:38px;height:38px;
+ border:2px solid #ffc276;border-radius:50%;box-shadow:0 0 0 8px #e0a44d26,0 0 20px #e6a44b44;
+ opacity:0;transform:scale(.76);transition:opacity .3s,transform .3s}
+#firstPlay #firstPlayStory[data-shot="workers"] .fp-stage-warning,
+#firstPlay #firstPlayStory[data-shot="supports"] .fp-stage-warning{opacity:.85;transform:scale(1)}
+#firstPlay #firstPlayStory[data-shot="workers"][data-speaker="worker"] .fp-stage-worker{
+ filter:drop-shadow(0 7px 14px #07090fdb) brightness(1.1);transform:scale(1.05)}
+#firstPlay #firstPlayStory[data-shot="workers"][data-speaker="master"] .fp-stage-master{
+ filter:drop-shadow(0 7px 14px #07090fdb) brightness(1.12);transform:scale(1.05)}
+#firstPlay #firstPlayStory[data-shot="supports"] .fp-stage-master{transform:translateX(-18%) scale(.82);opacity:.52}
+#firstPlay #firstPlayStory[data-shot="supports"] .fp-stage-worker{transform:translateX(18%) scale(.83);opacity:.68}
+#firstPlay #firstPlayStory[data-shot="route"] .fp-stage-master{transform:translateX(-18%) scale(.78);opacity:.48}
+#firstPlay #firstPlayStory[data-shot="route"] .fp-stage-worker{transform:translateX(24%) scale(.78);opacity:.55}
+#firstPlay #firstPlayStory[data-phase="won"] .fp-stage-warning{opacity:0}
+#firstPlay #firstPlayStory[data-phase="won"] .fp-stage-worker{animation:none;transform:translateY(4px);filter:brightness(.92)}
+#firstPlay #firstPlayStory[data-phase="won"] .fp-stage-master{animation:none;filter:brightness(.94)}
+#firstPlay .fp-story-voice[data-npc="true"] .fp-story-character img{
+ width:100%;height:100%;left:0;top:0;object-fit:cover;object-position:center 22%
+}
+#firstPlay .fp-story-voice[data-npc="true"] .fp-story-character{background:radial-gradient(at 52% 24%,#8e7658,#25262a 75%)}
+#firstPlay .fp-story-context:not([hidden]){
+ display:block;font:500 clamp(11px,1.25vw,13px)/1.26 system-ui,sans-serif;
+ color:#edd4a6;background:#211a19df;border-left:2px solid #d4a866;padding:4px 8px;
+ max-width:100%;box-sizing:border-box
+}
+#firstPlay .fp-story-choice{
+ display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center;
+ min-height:60px;padding:5px 12px;text-align:center;
+ transition:background-color .14s,transform .14s;
+}
+#firstPlay .fp-story-choice:active{transform:scale(.98)}
+#firstPlay .fp-story-choice-title{font:700 clamp(12px,1.48vw,16px)/1.15 Georgia,serif}
+#firstPlay .fp-story-choice-effect{font:500 clamp(11px,1.25vw,13px)/1.2 system-ui,sans-serif;color:#eddfc9}
+#firstPlay .fp-story-choice-effect strong{color:#ffdc90}
+#firstPlay .fp-story-order-signal:not([hidden]){
+ box-sizing:border-box;display:block;position:absolute;z-index:3;
+ top:calc(66px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));
+ color:#ffebb6;background:#1b231edb;border:1px solid #d9ad68b8;
+ border-radius:6px;box-shadow:0 8px 22px #09090b86;
+ padding:6px 11px;font:700 clamp(11px,1.32vw,13px)/1.2 system-ui,sans-serif;
+ animation:fp-award .35s ease-out both
+}
+@keyframes fp-breath{0%,100%{translate:0 0}50%{translate:0 3px}}
+@keyframes fp-strain{0%,100%{translate:0 0;rotate:0deg}50%{translate:0 -3px;rotate:-.65deg}}
+@keyframes fp-award{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
+@media(max-height:370px){
+ #firstPlay .fp-stage-crew img{height:clamp(115px,47dvh,170px)}
+ #firstPlay .fp-stage-master{bottom:clamp(60px,18vh,76px)}
+ #firstPlay .fp-stage-worker{bottom:clamp(55px,17vh,70px)}
+ #firstPlay .fp-story-choice{min-height:48px;padding:3px 7px}
+ #firstPlay .fp-story-choice-effect{font-size:10px}
+ #firstPlay .fp-story-context:not([hidden]){font-size:10px;padding:2px 6px}
+ #firstPlay .fp-story-order-signal:not([hidden]){top:calc(49px + env(safe-area-inset-top));padding:4px 8px}
+}
+@media(prefers-reduced-motion:reduce){
+ #firstPlay .fp-stage-crew img{animation:none!important;transition:none!important;will-change:auto!important}
+ #firstPlay .fp-stage-warning,#firstPlay .fp-story-order-signal{transition:none!important;animation:none!important}
+ #firstPlay .fp-story-choice{transition:none!important}
 }

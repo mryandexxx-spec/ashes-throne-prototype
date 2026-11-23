@@ -718,6 +718,7 @@ function renderFirstPlay(){
   source=$("#firstPlayStorySource"),avif=FirstPlayStoryCore.AVIF[scene.art],
   cast=FirstPlayStoryCore.CAST[scene.speakerId],
   character=$("#firstPlayStoryCharacter"),portrait=$("#firstPlayStoryCharacterPortrait"),
+  portraitSource=$("#firstPlayStoryPortraitSource"),
   voice=$("#firstPlayStoryVoice"),story=$("#firstPlayStory");
  if(name)name.textContent=cast?.label||scene.speaker;
  if(line)line.textContent=scene.text;
@@ -730,6 +731,7 @@ function renderFirstPlay(){
  // A speaker portrait belongs inside dialogue, not pasted over the scene.
  // All named speakers have readable portraits; visual cutouts remain replaceable scene art.
  if(voice){voice.hidden=!cast?.portrait;voice.dataset.npc=cast?.npc?"true":"false";}
+ if(portraitSource)portraitSource.setAttribute("srcset",cast?.portraitAvif||"");
  if(character&&portrait){
   character.hidden=!cast?.portrait;
   if(cast?.portrait&&portrait.getAttribute("src")!==cast.portrait){

@@ -91,7 +91,8 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#devRestartDialog").evaluate(n=>n.open),false);
   assert.ok(await page.evaluate(()=>localStorage.getItem(FirstPlayCore.KEY)!==null));
   await page.locator("#hqMoreToggle").click();
-  await page.locator("#home .hq-test-menu summary").click();
+  if(!(await page.locator("#home .hq-test-menu").evaluate(n=>n.open)))
+   await page.locator("#home .hq-test-menu summary").click();
   await page.locator("#devStartOver").click();
   await page.locator("#devRestartConfirm").click();
   await page.waitForFunction(()=>document.querySelector("#firstPlay")?.classList.contains("active")

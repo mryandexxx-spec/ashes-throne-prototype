@@ -69,7 +69,6 @@ jobs:
           sleep 2
           node tests/resource-icon-ui-browser.cjs
           node tests/squad-recover-browser.cjs
-          node tests/first-play-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

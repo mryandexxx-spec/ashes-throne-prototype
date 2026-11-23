@@ -481,8 +481,6 @@ let simulationMissionId=null;
 function renderHeadquarters(){
  const root=$("#home");
  if(!root||typeof root.querySelectorAll!=="function"||typeof PlayerProfileCore==="undefined"||typeof ChallengeCore==="undefined"||typeof CampaignData==="undefined")return;
- const introCard=root.querySelector("#hqFirstPlayCard");
- if(introCard)introCard.hidden=!(firstPlayState?.phase==="done"&&firstPlayState.choice!==null);
  const set=(selector,value)=>{const node=$(selector);if(node)node.textContent=String(value);};
  set("#hqNickname",playerNickname);
  const level=ProgressCore.accountLevel(progress);

@@ -1,0 +1,53 @@
+/* FIRSTPLAY002 — cutscene shell, separate from battle and accepted HQ. */
+#firstPlay #firstPlayStory{position:absolute;inset:0;z-index:3;overflow:hidden;background:#17181c;color:#f8e8d4}
+#firstPlay #firstPlayStory[hidden]{display:none!important}
+#firstPlay .first-play-backdrop,#firstPlay .first-play-shade,#firstPlay .first-play-panel{display:none!important}
+#firstPlay .fp-story-art{position:absolute;inset:0;overflow:hidden;background:
+ radial-gradient(ellipse at 65% 25%,#77645155,transparent 55%),linear-gradient(125deg,#211b23,#3a3030 47%,#0e171d);pointer-events:none}
+#firstPlay .fp-story-art img{width:100%;height:100%;object-fit:cover;object-position:center 40%;display:block;filter:saturate(.88)}
+#firstPlay .fp-story-art:after{content:"";position:absolute;inset:0;background:
+ linear-gradient(0deg,#100e14 0%,#100e14d0 6%,#100e1490 23%,transparent 56%),
+ linear-gradient(90deg,#0c12184d,transparent 34%,transparent 85%,#0c121847)}
+#firstPlay .fp-story-art img.fp-fade{animation:fp-story-reveal .38s ease-out both}
+@keyframes fp-story-reveal{from{opacity:.45;transform:scale(1.02)}to{opacity:1;transform:scale(1)}}
+#firstPlay .fp-story-header{box-sizing:border-box;position:absolute;top:0;left:0;right:0;
+ padding:calc(7px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 0 calc(12px + env(safe-area-inset-left));
+ display:flex;gap:12px;align-items:center;justify-content:space-between;z-index:3;pointer-events:none}
+#firstPlay .fp-story-header-left{display:flex;flex-direction:column;gap:1px;
+ text-shadow:0 2px 4px #06080b,0 2px 9px #050608b7}
+#firstPlay .fp-story-episode{font-size:clamp(11px,1.4vw,14px);letter-spacing:.12em;color:#edc584;font-weight:800}
+#firstPlay .fp-story-place{font-size:clamp(10px,1.15vw,12px);color:#f6e8d5}
+#firstPlay .fp-story-skip{pointer-events:auto;display:block;flex:none;border:1px solid #bd9e67aa;border-radius:7px;
+ background:#13191bcc;color:#f4e6d1;font-size:clamp(11px,1.35vw,13px);padding:7px 14px;
+ min-height:44px;touch-action:manipulation}
+#firstPlay .fp-story-footer{box-sizing:border-box;position:absolute;z-index:4;bottom:0;left:0;right:0;
+ display:flex;flex-direction:column;gap:5px;
+ padding:5px calc(12px + env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+ color:#f7ebda}
+#firstPlay .fp-story-dialogue{display:flex;align-items:flex-start;gap:12px;min-width:0;max-width:100%}
+#firstPlay .fp-story-speaker{display:block;box-sizing:border-box;flex:none;min-width:81px;padding:4px 10px;
+ border:1px solid #a78550b8;border-radius:4px;background:#201d1bed;color:#f2ce91;text-align:center;
+ font:700 clamp(10px,1.2vw,13px)/1.15 Georgia,serif;letter-spacing:.07em}
+#firstPlay .fp-story-line{flex:1;margin:0;min-width:0;padding:3px 0 0;
+ font:500 clamp(14px,1.95vw,21px)/1.16 Georgia,serif;text-shadow:0 2px 5px #000c}
+#firstPlay .fp-story-context{display:none;font-size:12px;color:#dfc9a5}
+#firstPlay .fp-story-controls{display:flex;justify-content:flex-end;gap:10px;align-items:center;min-width:0}
+#firstPlay .fp-story-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:min(100%,650px);margin-inline:auto}
+#firstPlay .fp-story-button{box-sizing:border-box;padding:6px 13px;min-height:44px;min-width:0;
+ border:1px solid #ccac7b;border-radius:7px;color:#fff0d8;background:linear-gradient(#493527ee,#312722f5);
+ box-shadow:0 4px 14px #05050894;white-space:normal;line-height:1.2;touch-action:manipulation;font-weight:650}
+#firstPlay .fp-story-button:focus-visible,#firstPlay .fp-story-skip:focus-visible{outline:3px solid #fff3bb;outline-offset:2px}
+#firstPlay .fp-story-button.primary{background:linear-gradient(#87643e,#503a2e);border-color:#ecc48a}
+#firstPlay #firstPlayStory [hidden]{display:none!important}
+#firstPlay #firstPlayStoryNotice{font-size:11px;color:#ffcf96;text-align:right;background:#18151ada;padding:3px 6px;border-radius:5px;align-self:flex-end}
+@media(max-height:370px){
+ #firstPlay .fp-story-header{padding-top:calc(3px + env(safe-area-inset-top))}
+ #firstPlay .fp-story-episode{font-size:10px}
+ #firstPlay .fp-story-place{font-size:9px}
+ #firstPlay .fp-story-footer{gap:3px;padding-bottom:calc(3px + env(safe-area-inset-bottom))}
+ #firstPlay .fp-story-dialogue{gap:6px}
+ #firstPlay .fp-story-speaker{min-width:72px;padding:3px 6px}
+ #firstPlay .fp-story-line{font-size:clamp(12px,1.9vw,16px)}
+ #firstPlay .fp-story-button{padding:4px 6px}
+}
+@media(prefers-reduced-motion:reduce){#firstPlay .fp-story-art img.fp-fade{animation:none!important}}

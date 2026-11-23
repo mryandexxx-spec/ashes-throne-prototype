@@ -339,6 +339,7 @@ const firstPlayEligible=!FIRST_PLAY_TEST_BYPASS&&!!firstPlayLoaded?.available&&
  !firstPlayLoaded.blocked&&!saveBlocked&&
  (firstPlayLoaded.exists||Boolean(loadedProgress?.fresh));
 let firstPlayFailure=false,firstPlaySaveFailed=false;
+let firstPlayBootCheckpointWritten=!!firstPlayLoaded?.exists;
 let firstPlayStoryCursor=typeof FirstPlayStoryCore!=="undefined"?
  FirstPlayStoryCore.load(()=>window.localStorage,firstPlayState?.phase):null;
 const campaignLoaded=CampaignCore.load(()=>window.localStorage);
@@ -769,6 +770,16 @@ $("#firstPlayStoryFight")?.addEventListener("click",firstPlayStartBattle);
 $("#firstPlayStoryFinish")?.addEventListener("click",()=>$("#firstPlayContinue")?.click());
 function openFirstPlayOnEntry(){
  if(!firstPlayEligible||!firstPlayState||firstPlayState.phase==="done")return false;
+ // A fresh player's first two story frames happen BEFORE the first order.
+ // Persist an explicit briefing checkpoint now, so reload cannot mistake this
+ // visitor for a legacy returning player and silently skip the whole narrative.
+ if(!firstPlayBootCheckpointWritten){
+  if(!firstPlayStore(firstPlayState)){
+   firstPlayNotice("Не удалось сохранить начало истории.");
+   return false;
+  }
+  firstPlayBootCheckpointWritten=true;
+ }
  showScreen("firstPlay");return true;
 }
 function firstPlayChoose(choice){

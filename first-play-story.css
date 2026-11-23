@@ -164,6 +164,8 @@
  padding:6px 11px;font:700 clamp(11px,1.32vw,13px)/1.2 system-ui,sans-serif;
  animation:fp-award .35s ease-out both
 }
+@keyframes fp-shot-drift{from{transform:translateY(0) scale(1)}to{transform:translateY(-.4%) scale(1.012)}}
+#firstPlay .fp-story-art{animation:fp-shot-drift 10s ease-in-out infinite alternate;transform-origin:center 40%}
 @keyframes fp-scene-cut{from{opacity:.38;filter:saturate(.75) blur(1.6px)}to{opacity:1;filter:saturate(.96) blur(0)}}
 @keyframes fp-face-cut{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fp-light-shift{from{opacity:.15;transform:translateX(-1.5%)}to{opacity:.37;transform:translateX(1.5%)}}
@@ -175,7 +177,7 @@
  #firstPlay .fp-story-order-signal:not([hidden]){top:calc(49px + env(safe-area-inset-top));padding:4px 8px}
 }
 @media(prefers-reduced-motion:reduce){
- #firstPlay .fp-story-art:before,#firstPlay .fp-story-art img.fp-fade,
+ #firstPlay .fp-story-art,#firstPlay .fp-story-art:before,#firstPlay .fp-story-art img.fp-fade,
  #firstPlay .fp-story-character img.fp-face-in,#firstPlay .fp-story-order-signal{
  animation:none!important;transition:none!important
  }

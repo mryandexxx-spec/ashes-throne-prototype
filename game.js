@@ -737,6 +737,9 @@ function renderFirstPlay(){
   if(cast?.portrait&&portrait.getAttribute("src")!==cast.portrait){
    portrait.src=cast.portrait;
    portrait.alt="Портрет персонажа: "+cast.name;
+   portrait.classList.remove("fp-face-in");
+   void portrait.offsetWidth;
+   portrait.classList.add("fp-face-in");
   }
  }
  if(source&&avif&&source.getAttribute("srcset")!==avif)source.setAttribute("srcset",avif);

@@ -13,7 +13,7 @@ async function check(name,engine,viewport){
  const page=await browser.newPage({viewport,hasTouch:true});
  const errors=[];page.on("pageerror",e=>errors.push(e.message));
  try{
-  await page.goto(origin,{waitUntil:"load",timeout:60000});
+  await page.goto(origin+(origin.includes("?")?"&":"?")+"skipFirstPlay=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   if(await page.locator("#loginCalendar").evaluate(el=>el.classList.contains("active")))
    await page.locator('#loginCalendar [data-screen="home"]').click();

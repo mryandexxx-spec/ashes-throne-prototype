@@ -735,15 +735,33 @@ function renderFirstPlay(){
  if(character&&portrait){
   character.hidden=!cast?.portrait;
   if(cast?.portrait&&portrait.getAttribute("src")!==cast.portrait){
-   portrait.src=cast.portrait;
+   // Never display the *previous speaker's* face against a new name while loading.
+   portrait.dataset.loading="true";
+   portrait.hidden=false;
+   portrait.onload=()=>{
+    portrait.dataset.loading="false";
+    portrait.classList.remove("fp-face-in");
+    void portrait.offsetWidth;
+    portrait.classList.add("fp-face-in");
+   };
    portrait.alt="Портрет персонажа: "+cast.name;
-   portrait.classList.remove("fp-face-in");
-   void portrait.offsetWidth;
-   portrait.classList.add("fp-face-in");
+   portrait.src=cast.portrait;
   }
  }
+ const artSurface=$("#firstPlayStory .fp-story-art");
+ const artChanged=!!(image&&art&&image.getAttribute("src")!==art);
+ if(artChanged&&artSurface){
+  const previous=image.currentSrc;
+  if(previous){
+   // Keep the last painted frame visible while the next shot decodes.
+   artSurface.style.backgroundImage="url("+JSON.stringify(previous)+")";
+   artSurface.style.backgroundSize="cover";
+   artSurface.style.backgroundPosition="center 43%";
+  }
+  image.onload=()=>{artSurface.style.backgroundImage="";};
+ }
  if(source&&avif&&source.getAttribute("srcset")!==avif)source.setAttribute("srcset",avif);
- if(image&&art&&image.getAttribute("src")!==art){
+ if(artChanged){
   image.hidden=false;
   image.src=art;
   image.classList.remove("fp-fade");

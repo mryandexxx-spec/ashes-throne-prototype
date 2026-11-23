@@ -328,6 +328,13 @@ const loadedProgress=storageAdapter?storageAdapter.load(ALLIES,()=>window.localS
 const progress=loadedProgress?loadedProgress.progress:ProgressCore.createProgress(ALLIES);
 const saveBlocked=Boolean(loadedProgress?.blocked);
 let saveAvailable=loadedProgress?loadedProgress.available:false;
+// FIRSTPLAY001: independent intro checkpoint; gameplay wallet untouched.
+const firstPlayLoaded=typeof FirstPlayCore!=="undefined"?
+ FirstPlayCore.load(()=>window.localStorage):null;
+let firstPlayState=firstPlayLoaded?.state||null;
+const firstPlayEligible=!!firstPlayLoaded?.available&&!firstPlayLoaded.blocked&&!saveBlocked&&
+ (firstPlayLoaded.exists||Boolean(loadedProgress?.fresh));
+let firstPlayFailure=false,firstPlaySaveFailed=false;
 const campaignLoaded=CampaignCore.load(()=>window.localStorage);
 const campaignProgress=progress.saveVersion===3?campaignLoaded.campaign:
  (loadedProgress?.fresh?CampaignCore.fresh():campaignLoaded.campaign);
@@ -415,6 +422,7 @@ const NETWORK_PILOT_ENABLED=typeof window!=="undefined"&&
 let networkPilot=null,battleIsNetwork=false,networkResultRecorded=false,networkResultReady=false;
 let weeklySession=null,battleIsWeekly=false,weeklyResultRecorded=false,weeklyResultReady=false;
 let battleIsCampaign=false;
+let battleIsFirstPlay=false;
 let battleIsNpcMissionPilot=false; // NPC roster, normal campaign rewards and saves.
 let battleIsLoreTraining=false; // Noncanonical combat, no costs or rewards.
 let battleIsLoreRequired=false;
@@ -466,6 +474,8 @@ let simulationMissionId=null;
 function renderHeadquarters(){
  const root=$("#home");
  if(!root||typeof root.querySelectorAll!=="function"||typeof PlayerProfileCore==="undefined"||typeof ChallengeCore==="undefined"||typeof CampaignData==="undefined")return;
+ const introCard=root.querySelector("#hqFirstPlayCard");
+ if(introCard)introCard.hidden=!(firstPlayState?.phase==="done"&&firstPlayState.choice!==null);
  const set=(selector,value)=>{const node=$(selector);if(node)node.textContent=String(value);};
  set("#hqNickname",playerNickname);
  const level=ProgressCore.accountLevel(progress);
@@ -676,6 +686,73 @@ function markLoginCalendarSeen(){
  try{window.localStorage?.setItem(LOGIN_CALENDAR_SEEN_KEY,day);}
  catch(_){/* Keep once-per-session guarantee without overwriting game data. */}
 }
+function firstPlayStore(next){
+ if(!next||!FirstPlayCore.save(next,()=>window.localStorage)){
+  firstPlaySaveFailed=true;return false;
+ }
+ firstPlayState=next;firstPlaySaveFailed=false;return true;
+}
+function firstPlayNotice(message){
+ const node=$("#firstPlayNotice");
+ if(node){node.textContent=message||"";node.hidden=!message;}
+}
+function renderFirstPlay(){
+ if(!firstPlayState)return;
+ const won=firstPlayState.phase==="won";
+ const intro=$("#firstPlayBriefing"),outcome=$("#firstPlayOutcome");
+ if(intro)intro.hidden=won;
+ if(outcome)outcome.hidden=!won;
+ for(const [id,choice] of [["#firstPlaySurvey","survey"],["#firstPlayCover","cover"]])
+  $(id)?.setAttribute?.("aria-pressed",String(firstPlayState.choice===choice));
+ const feedback=$("#firstPlayFeedback");
+ if(feedback)feedback.textContent=firstPlayState.choice==="survey"?
+  "Арт изучит подходы: повышенная инициатива в предстоящем бою.":
+  firstPlayState.choice==="cover"?
+  "Рен получит дополнительную защиту при удержании прохода.":
+  "Выберите способ подготовки. Он действительно влияет на бой.";
+ const fight=$("#firstPlayBattle");
+ if(fight)fight.disabled=firstPlayState.phase!=="ready";
+ const text=$("#firstPlayOutcomeText");
+ if(text&&won)text.textContent="Проход удержан. Часть рабочих выведена, но записи осмотра противоречат друг другу. Следующее дело — проверка отметки.";
+ if(firstPlayFailure)firstPlayNotice("Эвакуация пока не завершена. Измените тактику и попробуйте снова.");
+ else if(firstPlaySaveFailed)firstPlayNotice("Результат не подтверждён в сохранении. После обновления бой может потребоваться повторить.");
+ else firstPlayNotice("");
+}
+function openFirstPlayOnEntry(){
+ if(!firstPlayEligible||!firstPlayState||firstPlayState.phase==="done")return false;
+ showScreen("firstPlay");return true;
+}
+function firstPlayChoose(choice){
+ if(!firstPlayEligible||!firstPlayState)return;
+ const next=FirstPlayCore.choose(firstPlayState,choice);
+ if(!next||!firstPlayStore(next)){firstPlayNotice("Не удалось сохранить приказ.");return;}
+ firstPlayFailure=false;renderFirstPlay();
+}
+function firstPlayStartBattle(){
+ if(!firstPlayEligible||firstPlayState?.phase!=="ready")return;
+ const next=FirstPlayCore.start(firstPlayState);
+ if(!firstPlayStore(next)){firstPlayNotice("Не удалось сохранить начало боя.");return;}
+ firstPlayFailure=false;squadReturnScreen="firstPlay";showScreen("battle");
+}
+function firstPlayFinish(won){
+ const next=FirstPlayCore.finish(firstPlayState,won);
+ if(!next)return;
+ if(!firstPlayStore(next)){firstPlayState=next;firstPlaySaveFailed=true;}
+ firstPlayFailure=!won;
+}
+$("#firstPlaySurvey")?.addEventListener("click",()=>firstPlayChoose("survey"));
+$("#firstPlayCover")?.addEventListener("click",()=>firstPlayChoose("cover"));
+$("#firstPlayBattle")?.addEventListener("click",firstPlayStartBattle);
+$("#firstPlaySkip")?.addEventListener("click",()=>{
+ const next=FirstPlayCore.skip(firstPlayState);
+ if(!firstPlayStore(next)){firstPlayNotice("Не удалось сохранить пропуск вступления.");return;}
+ squadReturnScreen="home";showScreen("home");
+});
+$("#firstPlayContinue")?.addEventListener("click",()=>{
+ const next=FirstPlayCore.complete(firstPlayState);
+ if(!firstPlayStore(next)){firstPlayNotice("Не удалось сохранить окончание вступления.");return;}
+ squadReturnScreen="home";showScreen("home");
+});
 function maybeOpenLoginOnEntry(){
  if(document.hidden||saveBlocked||progress.saveVersion!==3||
     !$("#home")?.classList.contains("active"))return false;
@@ -1066,6 +1143,21 @@ function selectedParty(){
   .map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(progressedHero);
 }
 function battleLineup(){
+ if(battleIsFirstPlay){
+  const art=progressedHero(ALLIES.find(h=>h.id==="art"));
+  const ren=progressedHero(ALLIES.find(h=>h.id==="ren"));
+  if(!art||!ren)throw Error("FIRST_PLAY_HERO_MISSING");
+  // First order has real combat consequences.
+  if(firstPlayState?.choice==="survey")art.speed+=30;
+  if(firstPlayState?.choice==="cover"){
+   ren.maxProtection=(ren.maxProtection||0)+35;
+   ren.protection=(ren.protection||0)+35;
+  }
+  const enemies=ENEMIES.slice(0,2).map((enemy,i)=>progressedEnemy({
+   ...enemy,name:i===0?"Вооружённый сборщик":"Страж у прохода"
+  }));
+  return [art,ren,...enemies];
+ }
  if(battleIsSignal){
   const plan=SignalOperationCore.battlePlan(signalProgress.active);
   if(!plan)throw Error("Unknown signal operation plan");
@@ -1482,6 +1574,7 @@ function showScreen(id){
  if(id==="signalOperations")renderSignalOperations();
  if(id==="signalOperationResult")renderSignalOperationResult();
  if(id==="storyDemo")renderStoryDemo();
+ if(id==="firstPlay")renderFirstPlay();
  if(id==="loreTrainingResult")renderLoreTrainingResult();
  if(id==="loreRequiredBattleResult")renderLoreRequiredBattleResult();
  if(id==="heroDetail")renderHeroDetail();
@@ -1493,6 +1586,7 @@ function showScreen(id){
   missionEntryPaid=false;
   missionResultSaveFailed=false;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
+  battleIsFirstPlay=squadReturnScreen==="firstPlay"&&firstPlayState?.phase==="battle";
   battleIsNpcMissionPilot=battleIsCampaign&&NPC_MISSION_PILOT_ENABLED&&
    typeof NpcMissionPilot!=="undefined"&&!!NpcMissionPilot.get(activeMissionId);
   battleIsLoreTraining=squadReturnScreen==="loreTraining";
@@ -1509,7 +1603,8 @@ function showScreen(id){
   battleIsSignal=squadReturnScreen==="signalOperations"&&signalProgress.active?.phase==="battle";
   signalBattleRunId=battleIsSignal?signalProgress.active.runId:null;
   const label=$("#battleMissionLabel");
-  if(label)label.textContent=battleIsWeekly?"ГЛАВНАЯ УГРОЗА · ИСПЫТАНИЕ НЕДЕЛИ":battleIsNetwork?(NETWORK_PILOT_ENABLED?"РАЗВЕДСЕТЬ · ПРОБНЫЙ БОЙ (ВНЕ КАНОНА)":
+  if(label)label.textContent=battleIsFirstPlay?"ПЕРВОЕ ДОНЕСЕНИЕ · УДЕРЖАТЬ ПРОХОД":
+   battleIsWeekly?"ГЛАВНАЯ УГРОЗА · ИСПЫТАНИЕ НЕДЕЛИ":battleIsNetwork?(NETWORK_PILOT_ENABLED?"РАЗВЕДСЕТЬ · ПРОБНЫЙ БОЙ (ВНЕ КАНОНА)":
    "РАЗВЕДСЕТЬ · ДОБЫЧА РЕСУРСОВ"):
    battleIsSignal?"РАЗВЕДОПЕРАЦИЯ · ТРЕВОЖНЫЙ СИГНАЛ":
    battleIsOperation?"РАЗВЕДОПЕРАЦИЯ · ДВА КУРЬЕРА":
@@ -1525,7 +1620,7 @@ function showScreen(id){
   const trial=battleIsLoreRequired?ActiveLoreCampaign.encounter(loreRequiredContext?.nodeId):null;
   const objective=$("#battleChallengeGoal");
   if(objective){
-   objective.hidden=!!trial||
+   objective.hidden=!!trial||battleIsFirstPlay||
    !battleIsWeekly&&!battleIsNetwork&&!battleIsLoreRequired&&!battleIsLoreTraining&&!battleIsChallenge&&!battleIsOperation&&!battleIsSignal;
    const def=battleIsChallenge?ChallengeCore.get(activeChallengeId):null;
    const priority=def?.kind==="tactical"?(battleIsNpcChallengePilot?
@@ -1554,12 +1649,15 @@ function showScreen(id){
   const tacticalGoalCard=$("#tacticalGoalCard");
   const npcHold=battleIsNpcChallengePilot&&activeChallengeId==="T-04";
   if(tacticalGoalCard){
-   tacticalGoalCard.hidden=!trial&&!npcHold;
+   tacticalGoalCard.hidden=!trial&&!npcHold&&!battleIsFirstPlay;
    tacticalGoalCard.classList?.add?.("collapsed");
    $("#tacticalGoalToggle")?.setAttribute?.("aria-expanded","false");
    if(trial){
     tacticalGoalCard.querySelector("strong").textContent=trial.goalTitle;
     tacticalGoalCard.querySelector("p").textContent=trial.goalText;
+   }else if(battleIsFirstPlay){
+    tacticalGoalCard.querySelector("strong").textContent="УДЕРЖАТЬ ПРОХОД";
+    tacticalGoalCard.querySelector("p").textContent="Защитите Рена до завершения вывода рабочих или победите противников.";
    }else if(npcHold){
     tacticalGoalCard.querySelector("strong").textContent="ПРИКРЫТЬ ОТХОД";
     tacticalGoalCard.querySelector("p").textContent=NpcChallengePilot.goal(activeChallengeId,
@@ -1595,6 +1693,12 @@ function showScreen(id){
    const notice=$("#battleLoadError");
    if(notice)notice.hidden=true;
   } catch(error) {
+   if(battleIsFirstPlay){
+    firstPlayFinish(false);
+    showScreen("firstPlay");
+    firstPlayNotice("Не удалось запустить бой: "+String(error?.message||error).slice(0,120)+".");
+    return;
+   }
    if(entryPaid){ProgressCore.refundEnergy(progress,activeMissionId);persistProgress();}
    missionEntryPaid=false;
    cancelAutoTimer();autoBattle=false;
@@ -1670,12 +1774,37 @@ document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click"
  if(b.dataset.screen==="home"&&battleIsLoreRequired&&$("#battle")?.classList.contains("active")){
   LoreCampaignUI.cancelRequiredBattle();returnToLoreMap();return;
  }
+ if(b.dataset.screen==="home"&&battleIsFirstPlay&&$("#battle")?.classList.contains("active")){
+  firstPlayFinish(false);showScreen("firstPlay");return;
+ }
  if(b.dataset.screen==="home"&&battleIsLoreTraining&&$("#battle")?.classList.contains("active"))returnToLoreMap();
  else if(b.dataset.screen==="battle")openSquad("home");
  else showScreen(b.dataset.screen);
 }));
 $("#startBattle").addEventListener("click",()=>openSquad("home"));
 
+// FIRSTPLAY001: debug restart in the existing bottom-right More menu.
+const devRestartDialog=$("#devRestartDialog");
+$("#devStartOver")?.addEventListener("click",()=>{
+ closeHQMenu();
+ const status=$("#devRestartStatus");if(status){status.hidden=true;status.textContent="";}
+ devRestartDialog?.showModal?.();
+});
+$("#devRestartCancel")?.addEventListener("click",()=>devRestartDialog?.close?.());
+$("#devRestartConfirm")?.addEventListener("click",()=>{
+ const status=$("#devRestartStatus");
+ if(typeof ProgressWriterCore!=="undefined"&&!ProgressWriterCore.isOwner()){
+  if(status){status.hidden=false;status.textContent="Сохранение занято другой вкладкой. Закройте другие вкладки игры.";}
+  return;
+ }
+ const cleared=FirstPlayCore.resetGameStorage(()=>window.localStorage);
+ if(!cleared.ok){
+  if(status){status.hidden=false;status.textContent="Не удалось очистить локальные игровые данные. Перезапуск отменён.";}
+  return;
+ }
+ ProgressWriterCore?.release?.();
+ window.location.reload();
+});
 // HQ-UI-001: More menu and cancellable long-press tooltips.
 const hqMore=$("#hqMoreMenu"),hqMoreToggle=$("#hqMoreToggle"),hqTooltip=$("#hqTooltip"),hqHome=$("#home");
 function closeHQMenu(){if(hqMore)hqMore.hidden=true;if(hqMoreToggle)hqMoreToggle.setAttribute("aria-expanded","false");}
@@ -4846,4 +4975,4 @@ renderAccountHeader();renderHeroes();CombatCore.advanceToPlayerTurn(state);
 // RESICON001: source cards register before the startup entry prompt.
 if(typeof ResourceIconUI!=="undefined")
  ResourceArtUI.mount(()=>({progress,day:dailyDay()}),screen=>showScreen(screen));
-maybeOpenLoginOnEntry();
+if(!openFirstPlayOnEntry())maybeOpenLoginOnEntry();

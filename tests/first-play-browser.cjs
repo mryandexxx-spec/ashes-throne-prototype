@@ -45,7 +45,8 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),false,
    label+": worker must not be represented by a random hero portrait");
   assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"workers");
-  assert.equal(await page.locator("#firstPlayStoryVoiceIcon").textContent(),"⚒");
+  assert.equal(await page.locator("#firstPlayStoryVoice").isVisible(),false,
+   label+": offscreen worker has no fake portrait or emoji icon");
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-opening.png")});
   // Regular dialogue navigation and interruption/resume before the commander choice.
@@ -54,6 +55,7 @@ async function run(label,engine,viewport){
   await page.locator("#firstPlayStoryNext").click();
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true);
+  assert.equal(await page.locator("#firstPlayStoryVoice").isVisible(),true);
   assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/assets\/art-portrait-ui\.webp\?v=2$/);
   assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"supports");
   assert.equal(await page.locator("#firstPlayStoryCharacter").evaluate(n=>n.closest(".fp-story-dialogue")!==null),true);

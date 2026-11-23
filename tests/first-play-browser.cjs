@@ -33,6 +33,12 @@ async function run(label,engine,viewport){
    bounds.scene.top>=0&&bounds.scene.bottom<=bounds.height+1,
    label+": story viewport within landscape screen");
   await page.waitForFunction(()=>document.querySelector("#firstPlayStoryImage")?.naturalWidth>=1600,null,{timeout:12000});
+  await page.waitForFunction(()=>{
+   const img=document.querySelector("#firstPlayStoryImage");
+   return img?.naturalWidth>=1600&&!img.hidden&&
+    getComputedStyle(img).display!=="none"&&getComputedStyle(img).visibility!=="hidden";
+  },null,{timeout:12000});
+  assert.equal(await page.locator("#firstPlayStoryImage").isVisible(),true);
   assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),/\/v3\/bridge-approach\.(?:avif|webp)$/);
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);

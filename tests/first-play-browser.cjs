@@ -42,16 +42,22 @@ async function run(label,engine,viewport){
   assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),/\/v3\/bridge-approach\.(?:avif|webp)$/);
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
-  assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),false,
-   label+": worker must not be represented by a random hero portrait");
+  assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true,
+   label+": worker must have a distinct illustrated portrait");
+  assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/v4\/worker-portrait\.svg$/);
+  await page.waitForFunction(()=>document.querySelector("#firstPlayStoryCharacterPortrait")?.naturalWidth>0);
+  assert.equal(await page.locator(".fp-stage-crew img").count(),2);
+  assert.equal(await page.locator(".fp-stage-master").isVisible(),true);
+  assert.equal(await page.locator(".fp-stage-worker").isVisible(),true);
   assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"workers");
-  assert.equal(await page.locator("#firstPlayStoryVoice").isVisible(),false,
-   label+": offscreen worker has no fake portrait or emoji icon");
+  assert.equal(await page.locator("#firstPlayStoryVoice").isVisible(),true,
+   label+": worker portrait is visible");
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-opening.png")});
   // Regular dialogue navigation and interruption/resume before the commander choice.
   await page.locator("#firstPlayStoryNext").click();
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
+  assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/v4\/master-portrait\.svg$/);
   await page.locator("#firstPlayStoryNext").click();
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true);
@@ -86,14 +92,20 @@ async function run(label,engine,viewport){
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-decision.png")});
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),true);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
-  assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),false,
-   label+": master must not borrow Ren or Art portrait");
+  assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true,
+   label+": master has her own portrait");
+  assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/v4\/master-portrait\.svg$/);
+  assert.match(await page.locator("#firstPlayStorySurvey").innerText(),/скорость\s*\+30/);
+  assert.match(await page.locator("#firstPlayStoryCover").innerText(),/защиты\s*\+35/);
   assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"wide");
   const choice=label==="chromium"?"survey":"cover";
   await page.locator(choice==="survey"?"#firstPlayStorySurvey":"#firstPlayStoryCover").click();
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem(FirstPlayCore.KEY)).choice),choice);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),true);
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true);
+  assert.equal(await page.locator("#firstPlayStoryOrderSignal").isVisible(),true);
+  assert.match(await page.locator("#firstPlayStoryContext").innerText(),
+   choice==="survey"?/Арт.*скорости.*30/:/Рен.*Protection/);
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),choice==="survey"?"АРТ":"РЕН ТЕРЕН");
   // Reload must offer the same actual choice and retry, not silently skip onboarding.
   await page.reload({waitUntil:"load",timeout:60000});

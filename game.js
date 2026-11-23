@@ -718,25 +718,50 @@ function renderFirstPlay(){
   source=$("#firstPlayStorySource"),avif=FirstPlayStoryCore.AVIF[scene.art],
   cast=FirstPlayStoryCore.CAST[scene.speakerId],
   character=$("#firstPlayStoryCharacter"),portrait=$("#firstPlayStoryCharacterPortrait"),
+  portraitSource=$("#firstPlayStoryPortraitSource"),
   voice=$("#firstPlayStoryVoice"),story=$("#firstPlayStory");
  if(name)name.textContent=cast?.label||scene.speaker;
  if(line)line.textContent=scene.text;
  if(story){
   story.dataset.speaker=scene.speakerId||"unknown";
   story.dataset.shot=scene.shot||"wide";
+  story.dataset.phase=firstPlayState.phase;
+  story.dataset.order=firstPlayState.choice||"none";
  }
  // A speaker portrait belongs inside dialogue, not pasted over the scene.
- // For offscreen civilians, don't invent people or use decorative emoji.
- if(voice)voice.hidden=!cast?.portrait;
+ // All named speakers have readable portraits; visual cutouts remain replaceable scene art.
+ if(voice){voice.hidden=!cast?.portrait;voice.dataset.npc=cast?.npc?"true":"false";}
+ if(portraitSource)portraitSource.setAttribute("srcset",cast?.portraitAvif||"");
  if(character&&portrait){
   character.hidden=!cast?.portrait;
   if(cast?.portrait&&portrait.getAttribute("src")!==cast.portrait){
+   // Never display the *previous speaker's* face against a new name while loading.
+   portrait.dataset.loading="true";
+   portrait.hidden=false;
+   portrait.onload=()=>{
+    portrait.dataset.loading="false";
+    portrait.classList.remove("fp-face-in");
+    void portrait.offsetWidth;
+    portrait.classList.add("fp-face-in");
+   };
+   portrait.alt="Портрет персонажа: "+cast.name;
    portrait.src=cast.portrait;
-   portrait.alt="Игровой портрет: "+cast.name;
   }
  }
+ const artSurface=$("#firstPlayStory .fp-story-art");
+ const artChanged=!!(image&&art&&image.getAttribute("src")!==art);
+ if(artChanged&&artSurface){
+  const previous=image.currentSrc;
+  if(previous){
+   // Keep the last painted frame visible while the next shot decodes.
+   artSurface.style.backgroundImage="url("+JSON.stringify(previous)+")";
+   artSurface.style.backgroundSize="cover";
+   artSurface.style.backgroundPosition="center 43%";
+  }
+  image.onload=()=>{artSurface.style.backgroundImage="";};
+ }
  if(source&&avif&&source.getAttribute("srcset")!==avif)source.setAttribute("srcset",avif);
- if(image&&art&&image.getAttribute("src")!==art){
+ if(artChanged){
   image.hidden=false;
   image.src=art;
   image.classList.remove("fp-fade");
@@ -744,7 +769,19 @@ function renderFirstPlay(){
   image.classList.add("fp-fade");
  }
  const context=$("#firstPlayStoryContext");
- if(context)context.textContent=scene.detail||"";
+ if(context){
+  const showNote=firstPlayState.phase==="ready"||firstPlayState.phase==="won";
+  const label=firstPlayState.phase==="won"&&firstPlayState.choice?
+   "Эффект вашего приказа в бою: "+(FirstPlayStoryCore.ORDER_LABELS[firstPlayState.choice]||"")+". ":"";
+  context.textContent=showNote?label+(scene.detail||""):"";
+  context.hidden=!showNote;
+ }
+ const orderSignal=$("#firstPlayStoryOrderSignal");
+ if(orderSignal){
+  const chosen=firstPlayState.phase==="ready"||firstPlayState.phase==="won";
+  orderSignal.textContent=chosen?(FirstPlayStoryCore.ORDER_LABELS[firstPlayState.choice]||""):"";
+  orderSignal.hidden=!chosen;
+ }
  const decision=firstPlayState.phase==="briefing"&&!!scene.choice;
  const won=firstPlayState.phase==="won";
  const lastOutro=won&&firstPlayStoryCursor.step===FirstPlayStoryCore.OUTRO.length-1;
@@ -1239,10 +1276,10 @@ function battleLineup(){
   const ren=progressedHero(ALLIES.find(h=>h.id==="ren"));
   if(!art||!ren)throw Error("FIRST_PLAY_HERO_MISSING");
   // First order has real combat consequences.
-  if(firstPlayState?.choice==="survey")art.speed+=30;
+  if(firstPlayState?.choice==="survey")art.speed+=FirstPlayCore.EFFECTS.survey.bonus;
   if(firstPlayState?.choice==="cover"){
-   ren.maxProtection=(ren.maxProtection||0)+35;
-   ren.protection=(ren.protection||0)+35;
+   ren.maxProtection=(ren.maxProtection||0)+FirstPlayCore.EFFECTS.cover.bonus;
+   ren.protection=(ren.protection||0)+FirstPlayCore.EFFECTS.cover.bonus;
   }
   // Reuse the live human NPC combat/visual system, not Conclave demo mannequins.
   const plan=[

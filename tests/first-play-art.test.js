@@ -7,12 +7,12 @@ const fs=require("node:fs");
 const path=require("node:path");
 const Story=require("../first-play-story-core.js");
 const root=path.join(__dirname,"..");
-const expected=Object.freeze({warning:941,conflict:941,decision:941,aftermath:941});
+const expected=Object.freeze({warning:740,conflict:750,decision:675,aftermath:742});
 for(const [name,height] of Object.entries(expected)){
- test("FIRSTPLAY004 "+name+" loads sharp replaceable AVIF/WebP art",()=>{
+ test("FIRSTPLAY006 "+name+" loads sharp replaceable AVIF/WebP art",()=>{
   for(const [kind,extension] of [["AVIF","avif"],["ART","webp"]]){
    const file=Story[kind][name];
-   assert.match(file,new RegExp("^assets/cutscenes/first-report/v3/bridge-approach\\."+extension+"$"));
+   assert.match(file,new RegExp("^assets/cutscenes/first-report/v2/"+name+"\\."+extension+"$"));
    const bytes=fs.readFileSync(path.join(root,file));
    assert.ok(bytes.length>200_000,kind+" was excessively compressed");
    assert.ok(bytes.length<650_000,kind+" exceeds mobile art budget");
@@ -41,10 +41,10 @@ test("FIRSTPLAY004 permanently eliminates stale HQ overlay markup and renderer",
  assert.equal(game.includes('querySelector("#hqFirstPlayCard")'),false);
  assert.equal(css.includes(".hq-first-play-status"),false);
 });
-test("FIRSTPLAY005 keeps a consistent 0.3.240 build across entry assets",()=>{
+test("FIRSTPLAY006 keeps a consistent build across entry assets",()=>{
  const index=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const pkg=require("../package.json");
- assert.equal(pkg.version,"0.3.242");
- assert.match(index,/v0\.3\.242 · FIRSTPLAY005/);
- assert.equal(index.includes("?v=0.3.241"),false);
+ assert.equal(pkg.version,"0.3.243");
+ assert.match(index,/v0\.3\.243 · FIRSTPLAY006/);
+ assert.equal(index.includes("?v=0.3.242"),false);
 });

@@ -9,6 +9,12 @@ const FirstPlayStoryCore=(()=>{
   decision:"assets/cutscenes/first-report/decision.webp",
   aftermath:"assets/cutscenes/first-report/aftermath.webp"
  });
+ const AVIF=Object.freeze({
+  warning:"assets/cutscenes/first-report/warning.avif",
+  conflict:"assets/cutscenes/first-report/conflict.avif",
+  decision:"assets/cutscenes/first-report/decision.avif",
+  aftermath:"assets/cutscenes/first-report/aftermath.avif"
+ });
  const INTRO=Object.freeze([
   {art:"warning",speaker:"РАБОЧИЙ",text:"Не тяни! Держи за стойку!",detail:"На переходе срывается крепление. Двое ремонтников остаются над пропастью."},
   {art:"conflict",speaker:"МАСТЕР",text:"Брось груз! Людей сорвёшь!",detail:"Вооружённые сборщики продолжают выносить разобранные крепления."},
@@ -65,6 +71,6 @@ const FirstPlayStoryCore=(()=>{
   if(phase==="won")return {action:"finish"};
   return {action:"none"};
  }
- return Object.freeze({KEY,ART,INTRO,RESPONSE,OUTRO,fresh,isValid,normalize,load,save,frame,advance,skipNarration});
+ return Object.freeze({KEY,ART,AVIF,INTRO,RESPONSE,OUTRO,fresh,isValid,normalize,load,save,frame,advance,skipNarration});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=FirstPlayStoryCore;

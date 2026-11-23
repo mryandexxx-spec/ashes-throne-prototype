@@ -3,6 +3,9 @@ const FirstPlayCore=(()=>{
  "use strict";
  const KEY="ashes-throne.first-play.v1";
  const CHOICES=Object.freeze(["survey","cover"]);
+ // Shared with the battle lineup and the in-scene preview; these are combat-only effects.
+ const EFFECTS=Object.freeze({survey:Object.freeze({hero:"art",stat:"speed",bonus:30}),
+  cover:Object.freeze({hero:"ren",stat:"protection",bonus:35})});
  const PHASES=Object.freeze(["briefing","ready","battle","won","done"]);
  const fresh=()=>({version:1,phase:"briefing",choice:null});
  const valid=s=>!!s&&s.version===1&&PHASES.includes(s.phase)&&
@@ -50,6 +53,6 @@ const FirstPlayCore=(()=>{
    return {ok:true,removed:keys.length};
   }catch(_){return {ok:false,removed:null};}
  }
- return Object.freeze({KEY,CHOICES,PHASES,fresh,valid,load,save,choose,start,finish,complete,skip,resetGameStorage});
+ return Object.freeze({KEY,CHOICES,EFFECTS,PHASES,fresh,valid,load,save,choose,start,finish,complete,skip,resetGameStorage});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=FirstPlayCore;

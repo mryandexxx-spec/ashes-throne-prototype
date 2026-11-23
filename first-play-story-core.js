@@ -4,16 +4,16 @@ const FirstPlayStoryCore=(()=>{
  const KEY="ashes-throne.first-play-story.v1";
  // Replace images by changing these four paths only; all text stays accessible DOM.
  const ART=Object.freeze({
-  warning:"assets/cutscenes/first-report/warning.webp",
-  conflict:"assets/cutscenes/first-report/conflict.webp",
-  decision:"assets/cutscenes/first-report/decision.webp",
-  aftermath:"assets/cutscenes/first-report/aftermath.webp"
+  warning:"assets/cutscenes/first-report/v2/warning.webp",
+  conflict:"assets/cutscenes/first-report/v2/conflict.webp",
+  decision:"assets/cutscenes/first-report/v2/decision.webp",
+  aftermath:"assets/cutscenes/first-report/v2/aftermath.webp"
  });
  const AVIF=Object.freeze({
-  warning:"assets/cutscenes/first-report/warning.avif",
-  conflict:"assets/cutscenes/first-report/conflict.avif",
-  decision:"assets/cutscenes/first-report/decision.avif",
-  aftermath:"assets/cutscenes/first-report/aftermath.avif"
+  warning:"assets/cutscenes/first-report/v2/warning.avif",
+  conflict:"assets/cutscenes/first-report/v2/conflict.avif",
+  decision:"assets/cutscenes/first-report/v2/decision.avif",
+  aftermath:"assets/cutscenes/first-report/v2/aftermath.avif"
  });
  const INTRO=Object.freeze([
   {art:"warning",speaker:"РАБОЧИЙ",text:"Не тяни! Держи за стойку!",detail:"На переходе срывается крепление. Двое ремонтников остаются над пропастью."},

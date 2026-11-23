@@ -56,9 +56,9 @@ test("bad cursor/denied storage falls back without changing FirstPlayCore progre
 });
 test("assets are replaceable path declarations, never navigation/network addresses",()=>{
  for(const path of Object.values(Story.ART)){
-  assert.match(path,/^assets\/cutscenes\/first-report\/[a-z-]+\.webp$/);
+  assert.match(path,/^assets\/cutscenes\/first-report\/v2\/[a-z-]+\.webp$/);
  }
  for(const path of Object.values(Story.AVIF)){
-  assert.match(path,/^assets\/cutscenes\/first-report\/[a-z-]+\.avif$/);
+  assert.match(path,/^assets\/cutscenes\/first-report\/v2\/[a-z-]+\.avif$/);
  }
 });

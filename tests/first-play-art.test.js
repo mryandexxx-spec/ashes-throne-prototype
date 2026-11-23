@@ -45,6 +45,6 @@ test("FIRSTPLAY006 keeps a consistent build across entry assets",()=>{
  const index=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const pkg=require("../package.json");
  assert.equal(pkg.version,"0.3.243");
- assert.match(index,/v0\.3\.242 · FIRSTPLAY005/);
+ assert.match(index,/v0\.3\.243 · FIRSTPLAY006/);
  assert.equal(index.includes("?v=0.3.242"),false);
 });

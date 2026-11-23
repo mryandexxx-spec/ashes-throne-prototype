@@ -56,7 +56,7 @@ async function run(name,type,w,h){
  const errors=[];page.on("pageerror",e=>errors.push(e.message));
  const tag=name+"-"+w+"x"+h;
  try{
-  await page.goto(origin,{waitUntil:"load",timeout:60000});
+  await page.goto(origin+(origin.includes("?")?"&":"?")+"skipFirstPlay=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await prepareStory(page);
   const baseline=await state(page);

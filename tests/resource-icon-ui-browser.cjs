@@ -12,7 +12,7 @@ async function run(name,browserType){
  const page=await browser.newPage({viewport:{width:844,height:390},hasTouch:true}),errors=[];
  page.on("pageerror",e=>errors.push(e.message));
  try{
-  await page.goto(base,{waitUntil:"load",timeout:60000});
+  await page.goto(base+(base.includes("?")?"&":"?")+"skipFirstPlay=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function"&&
    typeof ResourceIconUI!=="undefined"&&
    document.getElementById("walletWriterNotice")?.style.display==="none",null,{timeout:60000});

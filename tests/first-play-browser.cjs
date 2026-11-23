@@ -5,7 +5,7 @@ const {chromium,webkit}=require("playwright");
 const assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path");
 const origin=process.env.GAME_ORIGIN||"http://127.0.0.1:8765/";
-const dest=path.join(process.cwd(),"artifacts","first-play");
+const dest=path.join(process.cwd(),"artifacts","squad-recovery","first-play");
 fs.mkdirSync(dest,{recursive:true});
 async function run(label,engine,viewport){
  const browser=await engine.launch(label==="chromium"?{

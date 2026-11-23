@@ -35,7 +35,7 @@ const FirstPlayCore=(()=>{
   return valid(state)&&state.phase==="won"?{...state,phase:"done"}:null;
  }
  function skip(state){
-  return valid(state)&&state.phase!=="done"?{version:1,phase:"done",choice:state.choice}:null;
+  return valid(state)&&state.phase!=="done"?{version:1,phase:"done",choice:null}:null;
  }
  // Debug-only: delete only the game's own localStorage namespace, never clear
  // unrelated data on the shared origin. A caller must obtain user confirmation.

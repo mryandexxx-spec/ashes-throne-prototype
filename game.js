@@ -718,18 +718,16 @@ function renderFirstPlay(){
   source=$("#firstPlayStorySource"),avif=FirstPlayStoryCore.AVIF[scene.art],
   cast=FirstPlayStoryCore.CAST[scene.speakerId],
   character=$("#firstPlayStoryCharacter"),portrait=$("#firstPlayStoryCharacterPortrait"),
-  voiceIcon=$("#firstPlayStoryVoiceIcon"),story=$("#firstPlayStory");
+  voice=$("#firstPlayStoryVoice"),story=$("#firstPlayStory");
  if(name)name.textContent=cast?.label||scene.speaker;
  if(line)line.textContent=scene.text;
  if(story){
   story.dataset.speaker=scene.speakerId||"unknown";
   story.dataset.shot=scene.shot||"wide";
  }
- // The avatar is a compact part of the SAME dialogue panel, not an unrelated
- // tall character card pasted over the location. Portraits are the exact
- // existing Five Shadows game assets; civilians get role symbols instead.
- if(voiceIcon)voiceIcon.textContent=scene.speakerId==="worker"?"⚒":
-  scene.speakerId==="master"?"⌖":"◆";
+ // A speaker portrait belongs inside dialogue, not pasted over the scene.
+ // For offscreen civilians, don't invent people or use decorative emoji.
+ if(voice)voice.hidden=!cast?.portrait;
  if(character&&portrait){
   character.hidden=!cast?.portrait;
   if(cast?.portrait&&portrait.getAttribute("src")!==cast.portrait){
@@ -767,9 +765,10 @@ function renderFirstPlay(){
  if(oldResult)oldResult.hidden=true;
 }
 $("#firstPlayStoryCharacterPortrait")?.addEventListener("error",()=>{
- // Never render a broken portrait as a different person.
- const character=$("#firstPlayStoryCharacter");
+ // On a failed image request, keep the text and controls readable.
+ const character=$("#firstPlayStoryCharacter"),voice=$("#firstPlayStoryVoice");
  if(character)character.hidden=true;
+ if(voice)voice.hidden=true;
 });
 $("#firstPlayStoryImage")?.addEventListener("load",event=>{
  // A deferred error from a previous source must never leave the real art hidden.

@@ -717,7 +717,7 @@ function renderFirstPlay(){
  const fight=$("#firstPlayBattle");
  if(fight)fight.disabled=firstPlayState.phase!=="ready";
  const text=$("#firstPlayOutcomeText");
- if(text&&won)text.textContent="Проход удержан. Часть рабочих выведена, но записи осмотра противоречат друг другу. Следующее дело — проверка отметки.";
+ if(text&&won)text.textContent="Проход удержан. Часть рабочих выведена, но записи осмотра противоречат друг другу. Продолжение этой главы пока в разработке.";
  if(firstPlayFailure)firstPlayNotice("Эвакуация пока не завершена. Измените тактику и попробуйте снова.");
  else if(firstPlaySaveFailed)firstPlayNotice("Результат не подтверждён в сохранении. После обновления бой может потребоваться повторить.");
  else firstPlayNotice("");

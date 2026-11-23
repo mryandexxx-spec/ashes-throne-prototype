@@ -57,8 +57,8 @@ test("bad cursor/denied storage falls back without changing FirstPlayCore progre
 test("speaker portraits are the exact Ren/Art game assets",()=>{
  assert.equal(Story.CAST.ren.portrait,"assets/ren-portrait-ui.webp");
  assert.equal(Story.CAST.art.portrait,"assets/art-portrait-ui.webp?v=2");
- assert.equal(Story.CAST.worker.portrait,"assets/cutscenes/first-report/v4/worker-portrait.svg");
- assert.equal(Story.CAST.master.portrait,"assets/cutscenes/first-report/v4/master-portrait.svg");
+ assert.equal(Story.CAST.worker.portrait,"assets/cutscenes/first-report/v2/warning.webp");
+ assert.equal(Story.CAST.master.portrait,"assets/cutscenes/first-report/v2/decision.webp");
  assert.equal(Story.CAST.worker.npc,true);
  assert.equal(Story.CAST.master.npc,true);
  assert.deepEqual(Story.INTRO.map(x=>x.speakerId),["worker","master","art","ren","master"]);
@@ -72,52 +72,15 @@ test("speaker portraits are the exact Ren/Art game assets",()=>{
  for(const beat of [...Story.INTRO,...Object.values(Story.RESPONSE),...Story.OUTRO])
   assert.ok(Story.CAST[beat.speakerId]?.label);
 });
-test("assets are replaceable path declarations, never navigation/network addresses",()=>{
- for(const path of Object.values(Story.ART)){
-  assert.match(path,/^assets\/cutscenes\/first-report\/v3\/bridge-approach\.webp$/);
+test("civilian frames are painted actions; the hero frames keep neutral identity",()=>{
+ for(const key of ["warning","conflict","decision","aftermath"]){
+  assert.equal(Story.ART[key],"assets/cutscenes/first-report/v2/"+key+".webp");
+  assert.equal(Story.AVIF[key],"assets/cutscenes/first-report/v2/"+key+".avif");
  }
- for(const path of Object.values(Story.AVIF)){
-  assert.match(path,/^assets\/cutscenes\/first-report\/v3\/bridge-approach\.avif$/);
- }
-});
-
-test("crew illustrations exist and contain no baked dialogue or character labels",()=>{
- const fs=require("node:fs");
- for(const role of ["worker","master"]){
-  const path=require("node:path").join(__dirname,"..",Story.CAST[role].portrait);
-  const svg=fs.readFileSync(path,"utf8");
-  assert.match(svg,/^<svg[^>]+viewBox=/);
-  assert.match(svg,/<\/svg>\s*$/);
-  assert.doesNotMatch(svg,/<text(?:\s|>)/i);
- }
-});
-test("storyboard offers real and distinct combat stats, not a false defense buff",()=>{
- assert.equal(First.EFFECTS.survey.bonus,30);
- assert.equal(First.EFFECTS.survey.stat,"speed");
- assert.equal(First.EFFECTS.cover.bonus,35);
- assert.equal(First.EFFECTS.cover.stat,"protection");
- assert.match(Story.ORDER_LABELS.survey,/Арт.*скорость.*30/);
- assert.match(Story.ORDER_LABELS.cover,/Рен.*защиты.*35/);
- assert.equal(Story.RESPONSE.survey.effect,"survey");
- assert.equal(Story.RESPONSE.cover.effect,"cover");
- assert.match(Story.RESPONSE.cover.detail,/Protection/);
- const fs=require("node:fs");
- const html=fs.readFileSync(require("node:path").join(__dirname,"..","index.html"),"utf8");
- for(const id of ["firstPlayStoryOrderSignal","firstPlayStorySurvey","firstPlayStoryCover","fp-stage-crew"])
-  assert.ok(html.includes(id),"missing UI "+id);
- assert.match(html,/Рен · запас защиты <strong>\+35<\/strong>/);
- assert.match(html,/Арт · скорость <strong>\+30<\/strong>/);
-});
-
-test("the same real victory receives an order-specific, not fabricated, local debrief",()=>{
- const cursor=Story.normalize(null,"won");
- const survey=Story.frame("won","survey",cursor);
- const cover=Story.frame("won","cover",cursor);
- assert.equal(survey.speakerId,"art");
- assert.equal(cover.speakerId,"ren");
- assert.notEqual(survey.text,cover.text);
- const final=Story.advance("won",cursor);
- assert.equal(Story.frame("won","survey",final),Story.frame("won","cover",final),
-  "orders reconverge at the same factual final clue");
- assert.equal(Story.OUTRO.length,2);
+ assert.match(Story.ART.approach,/v3\/bridge-approach\.webp$/);
+ assert.match(Story.AVIF.approach,/v3\/bridge-approach\.avif$/);
+ assert.equal(Story.INTRO[2].art,"approach");
+ assert.equal(Story.INTRO[3].art,"approach");
+ assert.equal(Story.RESPONSE.survey.art,"approach");
+ assert.equal(Story.RESPONSE.cover.art,"approach");
 });

@@ -130,10 +130,10 @@
  object-fit:fill;filter:saturate(.92) contrast(1.06);
 }
 #firstPlay #firstPlayStory[data-speaker="worker"] .fp-story-voice[data-npc="true"] img{
- left:-310px;top:-122px;
+ left:-520px;top:-117px;
 }
 #firstPlay #firstPlayStory[data-speaker="master"] .fp-story-voice[data-npc="true"] img{
- left:-506px;top:-143px;
+ left:-642px;top:-141px;
 }
 #firstPlay .fp-story-character img.fp-face-in{animation:fp-face-cut .34s ease-out both}
 #firstPlay .fp-story-art img.fp-fade{animation:fp-scene-cut .5s ease-out both}
@@ -166,7 +166,7 @@
 }
 @keyframes fp-shot-drift{from{transform:translateY(0) scale(1)}to{transform:translateY(-.4%) scale(1.012)}}
 #firstPlay .fp-story-art{animation:fp-shot-drift 10s ease-in-out infinite alternate;transform-origin:center 40%}
-@keyframes fp-scene-cut{from{opacity:.38;filter:saturate(.75) blur(1.6px)}to{opacity:1;filter:saturate(.96) blur(0)}}
+@keyframes fp-scene-cut{from{opacity:.75;filter:saturate(.90) blur(.6px)}to{opacity:1;filter:saturate(.96) blur(0)}}
 @keyframes fp-face-cut{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fp-light-shift{from{opacity:.15;transform:translateX(-1.5%)}to{opacity:.37;transform:translateX(1.5%)}}
 @keyframes fp-award{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}

@@ -33,3 +33,8 @@
  #firstPlay .first-play-intro{margin:0 0 5px}
 }
 @media(prefers-reduced-motion:reduce){#firstPlay *{animation:none!important;transition:none!important}}
+
+#home .hq-first-play-status{position:absolute;z-index:7;top:clamp(66px,15dvh,104px);right:max(10px,env(safe-area-inset-right));max-width:min(280px,37vw);padding:9px 12px;border:1px solid #c3a16c;border-radius:8px;background:#211d1eea;color:#f5e4c8;box-shadow:0 6px 20px #0007;pointer-events:none}
+#home .hq-first-play-status strong{display:block;font:600 14px Georgia,serif;color:#f7d89c;margin-bottom:2px}
+#home .hq-first-play-status span{font-size:11px;line-height:1.25;display:block}
+@media(max-height:390px){#home .hq-first-play-status{top:50px;max-width:min(240px,34vw);padding:6px 8px}#home .hq-first-play-status span{font-size:10px}}

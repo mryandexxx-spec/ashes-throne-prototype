@@ -74,7 +74,7 @@ test("every first-play beat has a separate character-led illustration",()=>{
  const paths=["warning","conflict","artSupport","renRoute","decision"];
  assert.equal(new Set(paths.map(k=>Story.ART[k])).size,5);
  for(const key of paths){
-  assert.match(Story.ART[key],/^assets\/cutscenes\/first-report\/v5\/[^/]+\.webp$/);
+  assert.match(Story.ART[key],/^assets\/cutscenes\/first-report\/v[56]\/[^/]+\.webp$/);
   assert.equal(Story.AVIF[key],null);
   assert.ok(Story.STORYBOARD[key]?.purpose);
  }
@@ -83,13 +83,15 @@ test("every first-play beat has a separate character-led illustration",()=>{
  assert.equal(Story.INTRO.at(-1).choice,undefined);
  assert.equal(Story.RESPONSE.survey.art,"artSupport");
  assert.equal(Story.RESPONSE.cover.art,"renRoute");
- assert.equal(Story.OUTRO[1].art,"aftermath");
+ assert.equal(Story.OUTRO[0].art,"aftermath");
+ assert.equal(Story.OUTRO[1].art,"document");
+ assert.notEqual(Story.ART.aftermath,Story.ART.document);
  for(const key of ["worker","master"]){
   assert.match(Story.CAST[key].portrait,/^assets\/cutscenes\/first-report\/v5\/.*-portrait\.webp$/);
   assert.equal(Story.CAST[key].portraitAvif,null);
  }
  const fs=require("node:fs"),path=require("node:path");
- for(const file of [...paths.map(k=>Story.ART[k]),Story.CAST.worker.portrait,Story.CAST.master.portrait]){
+ for(const file of [...paths.map(k=>Story.ART[k]),Story.ART.aftermath,Story.ART.document,Story.CAST.worker.portrait,Story.CAST.master.portrait]){
   assert.ok(fs.existsSync(path.join(__dirname,"..",file)),"required scene asset missing: "+file);
  }
 });
@@ -138,3 +140,21 @@ test("old narration cursors migrate to four shots, ready and victory remain inta
  assert.equal(Story.normalize({version:1,part:"outro",step:1},"won").step,1);
  assert.equal(Story.frame("ready","neutral",Story.fresh()).speakerId,"ren");
 });
+
+ test("P1-C2 assets are actual bounded WebP files, not missing paths or text pointers",()=>{
+ const fs=require("node:fs"),path=require("node:path");
+ for(const key of ["conflict","aftermath","document"]){
+  assert.match(Story.ART[key],/^assets\/cutscenes\/first-report\/v6\/[^/]+\.webp$/);
+  assert.equal(Story.AVIF[key],null);
+  assert.ok(Story.STORYBOARD[key]?.purpose);
+  const bytes=fs.readFileSync(path.join(__dirname,"..",Story.ART[key]));
+  assert.equal(bytes.toString("ascii",0,4),"RIFF");
+  assert.equal(bytes.toString("ascii",8,12),"WEBP");
+  assert.ok(bytes.length>10000&&bytes.length<=220*1024);
+ }
+ for(const choice of ["neutral","survey","cover"]){
+  const start=Story.normalize(null,"won");
+  assert.equal(Story.frame("won",choice,start).art,"aftermath");
+  assert.equal(Story.frame("won",choice,Story.advance("won",start)).art,"document");
+ }
+ });

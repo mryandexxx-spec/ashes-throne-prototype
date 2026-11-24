@@ -9,35 +9,41 @@ const FirstPlayStoryCore=(()=>{
  const CAST=Object.freeze({
   art:Object.freeze({name:"Арт",label:"АРТ",portrait:"assets/art-portrait-ui.webp?v=2"}),
   ren:Object.freeze({name:"Рен Терен",label:"РЕН ТЕРЕН",portrait:"assets/ren-portrait-ui.webp"}),
-  master:Object.freeze({name:"Мастер участка",label:"МАСТЕР УЧАСТКА",portrait:"assets/cutscenes/first-report/v2/decision.webp",portraitAvif:"assets/cutscenes/first-report/v2/decision.avif",npc:true}),
-  worker:Object.freeze({name:"Рабочий на переходе",label:"РАБОЧИЙ",portrait:"assets/cutscenes/first-report/v2/warning.webp",portraitAvif:"assets/cutscenes/first-report/v2/warning.avif",npc:true})
+  master:Object.freeze({name:"Мастер участка",label:"МАСТЕР УЧАСТКА",portrait:"assets/cutscenes/first-report/v5/master-portrait.webp",portraitAvif:null,npc:true}),
+  worker:Object.freeze({name:"Рабочий на переходе",label:"РАБОЧИЙ",portrait:"assets/cutscenes/first-report/v5/worker-portrait.webp",portraitAvif:null,npc:true})
  });
- // Painterly action frames for anonymous civilians; neutral approach for
- // the canonical Ren/Art dialogue so their appearance is never misrepresented.
+ // FIRSTPLAY007: character-led illustrated storyboard. Every new image is
+ // replaceable independently; worldbuilding approval remains a separate gate.
+ // Art/shot IDs are intentionally narrative, not universal UI component names.
  const ART=Object.freeze({
-  warning:"assets/cutscenes/first-report/v2/warning.webp",
-  conflict:"assets/cutscenes/first-report/v2/conflict.webp",
-  decision:"assets/cutscenes/first-report/v2/decision.webp",
-  aftermath:"assets/cutscenes/first-report/v2/aftermath.webp",
-  approach:"assets/cutscenes/first-report/v3/bridge-approach.webp"
+  warning:"assets/cutscenes/first-report/v5/warning.webp",
+  conflict:"assets/cutscenes/first-report/v5/conflict.webp",
+  artSupport:"assets/cutscenes/first-report/v5/art-support.webp",
+  renRoute:"assets/cutscenes/first-report/v5/ren-route.webp",
+  decision:"assets/cutscenes/first-report/v5/decision.webp",
+  aftermath:"assets/cutscenes/first-report/v2/aftermath.webp"
  });
  const AVIF=Object.freeze({
-  warning:"assets/cutscenes/first-report/v2/warning.avif",
-  conflict:"assets/cutscenes/first-report/v2/conflict.avif",
-  decision:"assets/cutscenes/first-report/v2/decision.avif",
-  aftermath:"assets/cutscenes/first-report/v2/aftermath.avif",
-  approach:"assets/cutscenes/first-report/v3/bridge-approach.avif"
+  warning:null,conflict:null,artSupport:null,renRoute:null,decision:null,
+  aftermath:"assets/cutscenes/first-report/v2/aftermath.avif"
+ });
+ const STORYBOARD=Object.freeze({
+  warning:Object.freeze({focus:"workers",purpose:"Рабочие удерживают повреждённый переход"}),
+  conflict:Object.freeze({focus:"master",purpose:"Мастер требует немедленно снять людей"}),
+  artSupport:Object.freeze({focus:"art",purpose:"Арт показывает снятое крепление"}),
+  renRoute:Object.freeze({focus:"ren",purpose:"Рен находит нижний путь"}),
+  decision:Object.freeze({focus:"group",purpose:"Герои и рабочие присутствуют в точке выбора"})
  });
  const INTRO=Object.freeze([
   {art:"warning",shot:"workers",speakerId:"worker",speaker:"РАБОЧИЙ",text:"Не тяни! Держи за стойку!",detail:"На переходе срывается крепление. Двое ремонтников остаются над пропастью."},
   {art:"conflict",shot:"workers",speakerId:"master",speaker:"МАСТЕР",text:"Брось груз! Людей сорвёшь!",detail:"Вооружённые сборщики продолжают выносить разобранные крепления."},
-  {art:"approach",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Не на настил. С этого края крепление сняли.",detail:"Арт проверяет опору и останавливает Рена."},
-  {art:"approach",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Снизу пройти можно. Я видел ступени.",detail:"Рен ищет другой путь к рабочим."},
+  {art:"artSupport",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Не на настил. С этого края крепление сняли.",detail:"Арт проверяет опору и останавливает Рена."},
+  {art:"renRoute",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Снизу пройти можно. Я видел ступени.",detail:"Рен ищет другой путь к рабочим."},
   {art:"decision",shot:"wide",speakerId:"master",speaker:"МАСТЕР",text:"Мы вас на проверку звали. Теперь людей надо снимать.",detail:"Решение командира: как подготовить помощь?",choice:true}
  ]);
  const RESPONSE=Object.freeze({
-  survey:{art:"approach",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Под нижним краем. Я посмотрел — пока держит.",detail:"Приказ выполнен: Арт получает +30 к скорости на предстоящий бой.",effect:"survey"},
-  cover:{art:"approach",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Хорошо. Только отпустишь по моему знаку.",detail:"Приказ выполнен: Рен получает +35 очков к запасу защиты (Protection) на предстоящий бой.",effect:"cover"}
+  survey:{art:"artSupport",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Под нижним краем. Я посмотрел — пока держит.",detail:"Приказ выполнен: Арт получает +30 к скорости на предстоящий бой.",effect:"survey"},
+  cover:{art:"renRoute",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Хорошо. Только отпустишь по моему знаку.",detail:"Приказ выполнен: Рен получает +35 очков к запасу защиты (Protection) на предстоящий бой.",effect:"cover"}
  });
  const OUTRO=Object.freeze([
   {art:"aftermath",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Эту сторону закрываем. Ни сверху, ни снизу не пускать.",detail:"После победы рабочие возвращаются на безопасный участок."},
@@ -98,6 +104,6 @@ const FirstPlayStoryCore=(()=>{
   if(phase==="won")return {action:"finish"};
   return {action:"none"};
  }
- return Object.freeze({KEY,CAST,ART,AVIF,INTRO,RESPONSE,OUTRO,ORDER_LABELS,fresh,isValid,normalize,load,save,frame,advance,skipNarration});
+ return Object.freeze({KEY,CAST,ART,AVIF,STORYBOARD,INTRO,RESPONSE,OUTRO,ORDER_LABELS,fresh,isValid,normalize,load,save,frame,advance,skipNarration});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=FirstPlayStoryCore;

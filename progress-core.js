@@ -224,9 +224,14 @@ const ProgressCore=(()=>{
   if(level<16)return {accountLevel:16,heroCap:16};
   return {accountLevel:level+1,heroCap:Math.min(CANONICAL_HERO_MAX_LEVEL,level+1)};
  }
+ // Keep catalog data readable, but no spend on an unowned playable hero.
+ function lockedForProgression(progress,id){
+  return typeof StarCore!=="undefined"&&StarCore.PLAYABLE.includes(id)&&StarCore.rankOf(progress,id)===0;
+ }
  function levelOf(progress,id){return own(progress?.levels||{},id)?progress.levels[id]:null;}
  const levelPrice=level=>Math.round(35+3*level+0.65*level*level);
  function upgradeCost(progress,id){
+  if(lockedForProgression(progress,id))return null;
   const level=levelOf(progress,id);
   return level===null||level>=maxLevelOf(id)||level>=heroLevelCap(progress,id)
    ?null:levelPrice(level);
@@ -234,6 +239,7 @@ const ProgressCore=(()=>{
  // Atomic multi-level purchase. Mode 'affordable' stops at the account cap
  // or the last level that can be bought with existing currency.
  function upgradePlan(progress,id,count=1){
+  if(lockedForProgression(progress,id))return null;
   const start=levelOf(progress,id);
   if(!Number.isSafeInteger(count)||count<1||start===null||
      !Number.isInteger(start)||start<1||start>maxLevelOf(id)||
@@ -256,6 +262,7 @@ const ProgressCore=(()=>{
   return plan;
  }
  function upgradeBlockReason(progress,id){
+  if(lockedForProgression(progress,id))return "Сначала получите героя в кампании.";
   const level=levelOf(progress,id);
   if(level===null)return "Герой не найден.";
   if(level>=maxLevelOf(id))return "Герой достиг максимального уровня "+maxLevelOf(id)+".";
@@ -279,6 +286,7 @@ const ProgressCore=(()=>{
   return state?(state.tier-1)*SLOT_COUNT+installedInTier(state):0;
  }
  function gearCost(progress,id,slot){
+  if(lockedForProgression(progress,id))return null;
   const state=gearState(progress,id),level=levelOf(progress,id);
   if(!state||state.mode==="itemized"||level===null||!Number.isInteger(slot)||slot<0||slot>=SLOT_COUNT||state.slots[slot])return null;
   return gearItem(state.tier,slot);
@@ -306,6 +314,7 @@ const ProgressCore=(()=>{
   return true;
  }
  function gearPromotionCost(progress,id){
+  if(lockedForProgression(progress,id))return null;
   const state=gearState(progress,id);
   if(!state||state.tier>=MAX_GEAR_TIER||installedInTier(state)!==SLOT_COUNT)return null;
   return {from:state.tier,to:state.tier+1,currency:GEAR_PROMOTION_CURRENCY[state.tier],
@@ -341,6 +350,7 @@ const ProgressCore=(()=>{
   return GearData.offered(progress.classes[id],slotId,state.tier);
  }
  function itemCost(progress,id,itemId){
+  if(lockedForProgression(progress,id))return null;
   const state=gearState(progress,id);
   const item=typeof GearData!=="undefined"?GearData.get(itemId):null;
   if(!item||!state||state.mode!=="itemized"||item.tier!==state.tier||

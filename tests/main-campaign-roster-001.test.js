@@ -1,7 +1,7 @@
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
 const files=["gear-data.js","progress-core.js","star-core.js","skill-core.js","hero-collection-core.js","daily-core.js","login-core.js","progress-v3-core.js","save-core.js","reward-policy-core.js","main-campaign-core.js"];
-const {S,H,V,R,C,Star}=vm.runInNewContext(files.map(f=>fs.readFileSync(path.join(__dirname,"..",f),"utf8")).join("\n")+"\n({S:SaveCore,H:HeroCollectionCore,V:ProgressV3Core,R:RewardPolicyCore,C:MainCampaignCore,Star:StarCore})");
+const {S,H,V,R,C,Star,P,Skill,G}=vm.runInNewContext(files.map(f=>fs.readFileSync(path.join(__dirname,"..",f),"utf8")).join("\n")+"\n({S:SaveCore,H:HeroCollectionCore,V:ProgressV3Core,R:RewardPolicyCore,C:MainCampaignCore,Star:StarCore,P:ProgressCore,Skill:SkillCore,G:GearData})");
 const heroes=["ren","nada","liora","art","sava"].map(id=>({id,side:"ally"}));
 function setup(){
  const map=new Map();let fail=false;
@@ -17,6 +17,12 @@ test("fresh two, locked three, no real M1 recruitment and no shard shortcut",()=
  assert.deepEqual(Array.from(p.unlockedHeroes),["ren","art"]);
  for(const id of ["ren","art"])assert.equal(H.owned(p,id),true);
  for(const id of ["nada","liora","sava"]){assert.equal(H.owned(p,id),false);assert.equal(Star.rankOf(p,id),0)}
+ p.currency=100000;P.grantTestResources(p);Skill.grantTest(p);
+ const before=JSON.stringify(p);
+ assert.equal(P.upgradeMany(p,"nada",1),null);
+ assert.equal(P.equipItem(p,"nada",G.offered(p.classes.nada,G.SLOTS[0].id,1)[0].id),false);
+ assert.equal(Skill.upgrade(p,"nada","basic"),null);
+ assert.equal(JSON.stringify(p),before);
  assert.equal(Star.add(p,"nada",20),true);assert.equal(Star.promote(p,"nada"),null);
  assert.equal(C.SOURCE.reward.heroGrants,undefined);
  assert.equal(S.save(p,provider),true);assert.equal(H.owned(S.load(heroes,provider).progress,"nada"),false);

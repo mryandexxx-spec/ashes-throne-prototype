@@ -36,3 +36,10 @@ body:has(#firstPlay.active){height:100dvh;overflow:hidden}
  #firstPlay .first-play-intro{margin:0 0 5px}
 }
 @media(prefers-reduced-motion:reduce){#firstPlay *{animation:none!important;transition:none!important}}
+
+/* P0-C: static recommendation, not a modal or a forced action. Existing
+   world cursor marks the valid ally; the HUD obstacle layout includes actionHint. */
+#battle.battle-screen .ability-slot .ability-btn.fp-recommended:not(:disabled){
+ outline:2px solid #ffe4a3;outline-offset:3px;
+ box-shadow:0 0 12px #f9c778a0,0 3px 9px #000b;
+}

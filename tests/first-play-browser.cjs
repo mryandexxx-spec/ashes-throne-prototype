@@ -216,7 +216,30 @@ async function run(label,engine,viewport){
    const rect=await cta.boundingBox();
    assert.ok(rect&&rect.height>=44&&rect.x>=0&&rect.x+rect.width<=viewport.width+1&&rect.y+rect.height<=viewport.height+1);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+   const beforeReward=await page.evaluate(()=>({currency:progress.currency,xp:progress.accountXp}));
+   assert.match(await cta.innerText(),/Забрать награду/);
+   await cta.tap();
+   await page.waitForFunction(()=>FirstPlayCore.rewardClaimed(progress)&&!firstSessionClaiming,null,{timeout:15000});
+   assert.equal(await page.evaluate(()=>progress.currency),beforeReward.currency+40);
+   assert.equal(await page.evaluate(()=>progress.accountXp),beforeReward.xp);
+   assert.equal(await page.evaluate(()=>progress.rewardReceipts.filter(r=>r.id===FirstPlayCore.REWARD_RECEIPT).length),1);
+   assert.match(await cta.innerText(),/Усилить Рена/);
+   await cta.tap();
+   await page.locator("#heroDetail.active").waitFor({state:"visible",timeout:30000});
+   assert.equal(await page.evaluate(()=>selectedHeroId),"ren");
+   const beforeLevel=await page.evaluate(()=>progressedHero(ALLIES.find(h=>h.id==="ren")).level);
+   const beforeStats=await page.evaluate(()=>{const h=progressedHero(ALLIES.find(h=>h.id==="ren"));return {hp:h.maxHp??h.hp,attack:h.physicalAttack??h.atk};});
+   await page.locator("#detailUpgrade").tap();
+   await page.waitForFunction(()=>progress.levels.ren===2,null,{timeout:15000});
+   assert.equal(beforeLevel,1);
+   const afterStats=await page.evaluate(()=>{const h=progressedHero(ALLIES.find(h=>h.id==="ren"));return {hp:h.maxHp??h.hp,attack:h.physicalAttack??h.atk};});
+   assert.ok(afterStats.hp>beforeStats.hp||afterStats.attack>beforeStats.attack,"real stat increase");
+   if(await page.locator("#gearPromotionDialog").evaluate(n=>n.open))await page.locator("#gearPromotionClose").tap();
+   await page.locator("#detailHome").tap();
+   await page.locator("#home.active").waitFor({state:"visible"});
+   assert.match(await cta.innerText(),/Два курьера/);
    const wallet=await page.evaluate(()=>({currency:progress.currency,xp:progress.accountXp}));
+   assert.equal(wallet.currency,beforeReward.currency+1);
    await cta.tap();
    await page.locator("#operations.active").waitFor({state:"visible"});
    await page.locator("[data-ops-new]").tap();
@@ -232,6 +255,9 @@ async function run(label,engine,viewport){
    if(await page.locator("#loginCalendar.active").count())await page.locator('#loginCalendar [data-screen="home"]').click();
    await page.locator("#home.active").waitFor({state:"visible",timeout:30000});
    assert.match(await cta.innerText(),/Продолжить/);
+   assert.equal(await page.evaluate(()=>progress.levels.ren),2);
+   assert.equal(await page.evaluate(()=>progress.rewardReceipts.filter(r=>r.id===FirstPlayCore.REWARD_RECEIPT).length),1);
+   assert.deepEqual(await page.evaluate(()=>({currency:progress.currency,xp:progress.accountXp})),wallet);
    await cta.tap();
    await page.locator("#operations.active").waitFor({state:"visible"});
    assert.equal(await page.evaluate(()=>operationProgress.active.orders[0]),"register");
@@ -314,7 +340,7 @@ async function run(label,engine,viewport){
    await page.waitForFunction(()=>!state.active||!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:30000});
   }
   assert.deepEqual(errors,[]);
-  console.log("FIRSTSESSIONP0D "+label+" "+viewport.width+"x"+viewport.height+
+  console.log("FIRSTSESSIONP1A "+label+" "+viewport.width+"x"+viewport.height+
    " verified; battle: "+result.winner+" in "+result.steps+" actions");
  }finally{await browser.close();}
 }

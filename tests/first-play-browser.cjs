@@ -8,7 +8,7 @@ const origin=process.env.GAME_ORIGIN||"http://127.0.0.1:8765/";
 const dest=path.join(process.cwd(),"artifacts","squad-recovery","first-play");
 fs.mkdirSync(dest,{recursive:true});
 async function run(label,engine,viewport){
- const browser=await engine.launch(label==="chromium"?{
+ const browser=await engine.launch(engine===chromium?{
   headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader",
    "--enable-webgl","--disable-dev-shm-usage"]
  }:{headless:true});
@@ -133,7 +133,7 @@ async function run(label,engine,viewport){
    "/v5/decision.",{timeout:12000});
   assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),
    /v5\/decision\.webp$/);
-  const choice=label==="chromium"?"survey":"cover";
+  const choice=label.startsWith("chromium")?"survey":"cover";
   await page.locator(choice==="survey"?"#firstPlayStorySurvey":"#firstPlayStoryCover").click();
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem(FirstPlayCore.KEY)).choice),choice);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),true);
@@ -225,6 +225,9 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryNext").isVisible(),true);
+  const control=await page.locator("#firstPlayStoryNext").boundingBox();
+  assert.ok(control&&control.y+control.height<=viewport.height+1,
+   label+": dialogue and next button must stay within landscape screen");
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
   assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.campaign.v1")),null);
   assert.deepEqual(errors,[]);
@@ -235,4 +238,5 @@ async function run(label,engine,viewport){
 (async()=>{
  await run("chromium",chromium,{width:844,height:390});
  await run("webkit",webkit,{width:932,height:430});
+ await run("chromium-short",chromium,{width:844,height:320});
 })().catch(error=>{console.error(error);process.exitCode=1;});

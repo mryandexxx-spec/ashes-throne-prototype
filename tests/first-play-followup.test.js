@@ -119,3 +119,20 @@ test("P1-B: wrong route, defeat, or skip cannot complete narrative objective",()
  assert.equal(Core.followUp(done,p,true,Ops.STORY_ID),"available");
  assert.equal(Core.followUp(Core.skip(Core.fresh()),p,true,Ops.STORY_ID),null);
 });
+
+test("CAM001FP: HQ follows real prologue reward and M1 proof, independent of OPS",()=>{
+ const profile={saveVersion:3,rewardReceipts:[]};
+ const paid={...profile,rewardReceipts:[{id:Core.REWARD_RECEIPT}]};
+ const action=(state,wallet=paid,overrides={})=>Core.campaignAction(state,wallet,{writable:true,canUpgrade:true,campaignStatus:"locked",...overrides});
+ for(const state of [Core.fresh(),won,Core.skip(Core.fresh()),Core.finish(Core.start(Core.prepare(Core.fresh())),false)])
+  assert.equal(action(state),null);
+ assert.equal(action(done,profile),"reward");
+ assert.equal(action(done,profile,{writable:false}),"reward-blocked");
+ assert.equal(action(done),"upgrade");
+ assert.equal(action(done,paid,{canUpgrade:false}),"campaign");
+ assert.equal(action(done,paid,{writable:false}),"campaign");
+ assert.equal(action(done,paid,{campaignStatus:"blocked"}),"campaign");
+ assert.equal(action(done,paid,{campaignStatus:"claimable"}),"campaign-reward");
+ assert.equal(action(done,paid,{campaignStatus:"claimed"}),null);
+ assert.equal(action(done,profile,{campaignStatus:"claimed"}),"reward");
+});

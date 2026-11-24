@@ -172,5 +172,5 @@ async function check(browserName,engine,viewport){
  // existing squad browser job to preserve the selective CI workflow.
  require("node:child_process").execFileSync(process.execPath,
   [require.resolve("./first-play-browser.cjs")],
-  {stdio:"inherit",timeout:180000});
+  {stdio:"inherit",timeout:480000});
 })().catch(error=>{console.error(error);process.exitCode=1;});

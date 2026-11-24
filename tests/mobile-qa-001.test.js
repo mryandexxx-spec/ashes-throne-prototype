@@ -70,12 +70,12 @@ test("MOBILEQA001: landscape CSS keeps message beside the panel, 44px controls a
  assert.match(block,/\.battle-screen \.battle-message,[\s\S]*?transform:none;[\s\S]*?max-width:calc\(100vw - min\(370px,61vw\)/);
  assert.match(block,/auto-speed-btn\{min-width:44px\}/);
  // FIRSTSESSIONP2A moved the cache into the document flow and hides it on success.
- const cache=block.match(/\.hq-screen \.hq-model-cache\{([^}]+)\}/);
+ const cache=css.match(/\.hq-screen \.hq-model-cache\{([^}]+)\}/);
  assert.ok(cache,"cache status exists");
  assert.match(cache[1],/position:relative;flex:0 0 auto;min-width:0/);
  assert.match(cache[1],/pointer-events:none/);
  assert.match(cache[1],/env\(safe-area-inset-right\).*env\(safe-area-inset-left\)/);
- assert.match(block,/\.hq-screen \.hq-model-cache\[data-state="ready"\]\{display:none\}/);
+ assert.match(css,/\.hq-screen \.hq-model-cache\[data-state="ready"\]\{display:none\}/);
  assert.match(block,/prefers-reduced-motion/);
 });
 test("MOBILEQA001: long gear caption gets a soft hyphen only in display",()=>{

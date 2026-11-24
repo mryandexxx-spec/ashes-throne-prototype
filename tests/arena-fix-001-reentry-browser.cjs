@@ -24,6 +24,7 @@ const origin=process.env.GAME_ORIGIN||"http://127.0.0.1:8765/";
   await page.locator("#squadStart").click();
   if(await page.locator("#squad").isVisible())await page.locator("#squadStart").click();
   await page.locator("#battle").waitFor({state:"visible",timeout:35000});
+  assert.equal(await page.locator("#tacticalGoalCard").evaluate(n=>n.classList.contains("first-session-goal")),false,"ordinary modes retain their existing HUD");
   await page.waitForFunction(()=>[...npcGlbRuntimes.values()].every(r=>r.isReady)&&renGlbRuntime?.isReady,null,{timeout:90000}).catch(()=>{});
   await page.waitForTimeout(1500);
   return page.evaluate(()=>{

@@ -9,8 +9,8 @@ const dest=path.join(process.cwd(),"artifacts","squad-recovery","first-play");
 fs.mkdirSync(dest,{recursive:true});
 // Read-only projection and picking identify a real tappable point on the canvas.
 // The touchscreen tap itself follows the same pointer path as a player's tap.
-async function tapFighter(page,id){
- const point=await page.evaluate(id=>{
+async function tapFighter(page,id,probeOnly=false){
+ const handle=await page.waitForFunction(id=>{
   const canvas=document.querySelector("#renderCanvas"),rect=canvas.getBoundingClientRect();
   const camera=arenaCamera,m=meshes[id];
   if(!m||!scene||!camera)return null;
@@ -27,10 +27,59 @@ async function tapFighter(page,id){
     if(fighterId(scene.pick(sx,sy)?.pickedMesh)===id)return {x:rect.left+sx,y:rect.top+sy};
    }
   }
+  // Imported GLB geometry can extend beyond its invisible capsule anchors.
+  // Sample the live, visible pickable meshes' projected bounds as well.
+  for(const part of scene.meshes.filter(p=>p.isPickable&&p.isVisible&&p.isEnabled()&&p.getTotalVertices()>0&&fighterId(p)===id)){
+   const box=part.getBoundingInfo().boundingBox;
+   const corners=box.vectorsWorld.map(v=>BABYLON.Vector3.Project(v,BABYLON.Matrix.Identity(),scene.getTransformMatrix(),vp));
+   const xs=corners.map(p=>p.x*rect.width/width),ys=corners.map(p=>p.y*rect.height/height);
+   const left=Math.max(0,Math.min(...xs)),right=Math.min(rect.width-1,Math.max(...xs));
+   const top=Math.max(0,Math.min(...ys)),bottom=Math.min(rect.height-1,Math.max(...ys));
+   if(right<left||bottom<top)continue;
+   for(const fy of [.5,.25,.75,.1,.9])for(const fx of [.5,.25,.75,.1,.9]){
+    const sx=left+(right-left)*fx,sy=top+(bottom-top)*fy;
+    if(document.elementFromPoint(rect.left+sx,rect.top+sy)!==canvas)continue;
+    if(fighterId(scene.pick(sx,sy)?.pickedMesh)===id)return {x:rect.left+sx,y:rect.top+sy};
+   }
+  }
   return null;
- },id);
+ },id,{timeout:12000,polling:250});
+ const point=await handle.jsonValue();await handle.dispose();
  assert.ok(point,"real visible pickable canvas point for "+id);
- await page.touchscreen.tap(point.x,point.y);
+ if(!probeOnly)await page.touchscreen.tap(point.x,point.y);
+ return point;
+}
+async function probeBattleTargets(page){
+ await page.waitForFunction(()=>state.active&&!visualActionPending()&&!isVisualTransition()&&!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:60000});
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ const ids=await page.evaluate(()=>state.fighters.filter(f=>f.hp>0).map(f=>f.id));
+ for(const id of ids)await tapFighter(page,id,true);
+ const overlaps=await page.evaluate(()=>{
+  const goal=document.querySelector("#tacticalGoalCard");
+  if(!goal||goal.hidden)return [];
+  const g=goal.getBoundingClientRect(),intersects=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+  const clashes=[];
+  for(const [id,node] of Object.entries(indicatorNodes)){
+   if(getComputedStyle(node).display==="none")continue;
+   const n=node.getBoundingClientRect();
+   if(n.width&&n.height&&intersects(g,n))clashes.push({id,goal:[g.x,g.y,g.width,g.height],label:[n.x,n.y,n.width,n.height]});
+  }
+  for(const el of document.querySelectorAll("#battleMenuBtn,#autoBattleBtn,#autoSpeedBtn,#battleLog summary")){
+   const n=el.getBoundingClientRect();
+   if(n.width&&n.height&&intersects(g,n))clashes.push(el.id||el.tagName);
+  }
+  const canvas=document.querySelector("#renderCanvas"),rect=canvas.getBoundingClientRect();
+  const width=engine.getRenderWidth(),height=engine.getRenderHeight(),vp=arenaCamera.viewport.toGlobal(width,height);
+  for(const f of state.fighters.filter(f=>f.hp>0)){
+   const head=meshes[f.id]?.head;
+   if(!head)continue;
+   const p=BABYLON.Vector3.Project(head.getAbsolutePosition(),BABYLON.Matrix.Identity(),scene.getTransformMatrix(),vp);
+   const x=rect.left+p.x*rect.width/width,y=rect.top+p.y*rect.height/height;
+   if(x>=g.left&&x<=g.right&&y>=g.top&&y<=g.bottom)clashes.push(f.id+" head");
+  }
+  return clashes;
+ });
+ assert.deepEqual(overlaps,[],"intro objective must not overlap a living fighter head/indicator or battle controls");
 }
 async function manualFirstBattle(page,label){
  const special=page.locator("#specialAbilityBtn"),basic=page.locator("#basicAbilityBtn"),hint=page.locator("#actionHint");
@@ -178,6 +227,7 @@ async function run(label,engine,viewport){
   if(choice==="survey")assert.ok(detail.lineup[0].speed>118,label+": survey bonus changes combat speed");
   else if(choice==="cover")assert.ok(await page.evaluate(()=>state.fighters.find(f=>f.id==="ren").protection>=35),
    label+": cover order changes Ren protection");
+  await probeBattleTargets(page);
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-battle.png")});
   // Real manual taps, including target/cancel and an alternative ability.
   // Accelerate subsequent animations with the existing user control.
@@ -436,8 +486,25 @@ async function run(label,engine,viewport){
    " verified; battle: "+result.winner+" in "+result.steps+" actions");
  }finally{await browser.close();}
 }
+// Remaining viewport/browser pairs: a clean skip leads to the real battle, not a synthetic fixture.
+async function probeFreshOpening(name,type,viewport){
+ const browser=await type.launch(type===chromium?{headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage"]}:{headless:true});
+ const page=await browser.newPage({viewport,hasTouch:true,reducedMotion:"reduce"});
+ try{
+  await page.goto(origin,{waitUntil:"load",timeout:60000});
+  await page.locator("#firstPlay.active").waitFor({timeout:60000});
+  await page.locator("#firstPlayStorySkip").tap();
+  await page.locator("#battle.active").waitFor({timeout:60000});
+  await probeBattleTargets(page);
+  assert.equal(await page.locator("#tacticalGoalText").isVisible(),true);
+  await page.screenshot({path:path.join(dest,name+"-"+viewport.width+"x"+viewport.height+"-battle.png")});
+ }finally{await browser.close();}
+}
 (async()=>{
  await run("chromium",chromium,{width:844,height:390});
  await run("webkit",webkit,{width:932,height:430});
  await run("chromium-short",chromium,{width:844,height:320});
+ await probeFreshOpening("webkit",webkit,{width:844,height:390});
+ await probeFreshOpening("chromium",chromium,{width:932,height:430});
+ await probeFreshOpening("webkit",webkit,{width:844,height:320});
 })().catch(error=>{console.error(error);process.exitCode=1;});

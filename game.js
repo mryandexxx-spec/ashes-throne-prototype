@@ -1804,7 +1804,7 @@ function renderSquad(){
  $("#squadStart").textContent=loreMode?"Начать испытание":"Начать бой";
  const intro=$("#squadIntro");
  if(intro)intro.textContent=loreMode
-  ?(mandatoryIds.length===2?"«Пять теней»: Рен и Нада обязательны. Остальных героев выбираешь ты.":"«Пять теней»: обязательны "+mandatoryNames+". Свободных мест: "+(MAX_SQUAD-mandatoryIds.length)+"."):squadReturnScreen==="mainCampaign"?"Пролёт без отметки · выбери от 1 до 5 доступных героев.":"Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.";
+  ?(mandatoryIds.length===2?"«Пять теней»: Рен и Нада обязательны. Остальных героев выбираешь ты.":"«Пять теней»: обязательны "+mandatoryNames+". Свободных мест: "+(MAX_SQUAD-mandatoryIds.length)+"."):squadReturnScreen==="mainCampaign"?(chosen.length===1?"Один герой — риск поражения. Рен — атака, Арт — страховка.":"Рен — атака, Арт — страховка. Рекомендуем обоих."):"Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.";
  const disband=$("#squadDisband");
  if(disband)disband.textContent=loreMode?"Убрать остальных":"Распустить";
  $("#squadStart").disabled=chosen.length===0||(loreMode&&!requiredLoreSquadReady());
@@ -2076,6 +2076,7 @@ function showScreen(id){
   const npcHold=battleIsNpcChallengePilot&&activeChallengeId==="T-04";
   if(tacticalGoalCard){
    tacticalGoalCard.hidden=!trial&&!npcHold&&!battleIsFirstPlay;
+   tacticalGoalCard.classList?.toggle("first-session-goal",battleIsFirstPlay);
    // First-time players must see the objective before choosing an action.
    // Other battles keep their established collapsed default.
    tacticalGoalCard.classList?.toggle("collapsed",!battleIsFirstPlay);

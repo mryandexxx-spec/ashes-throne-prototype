@@ -5,8 +5,8 @@ const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("n
 const origin=process.env.GAME_ORIGIN||"http://127.0.0.1:8765/";
 const url=origin+(origin.includes("?")?"&":"?")+"skipFirstPlay=1";
 const dest=path.join(process.cwd(),"artifacts","main-campaign");fs.mkdirSync(dest,{recursive:true});
-async function tapFighter(page,id){
- const point=await page.evaluate(id=>{
+async function tapFighter(page,id,probeOnly=false){
+ const handle=await page.waitForFunction(id=>{
   const canvas=document.querySelector("#renderCanvas"),rect=canvas.getBoundingClientRect();
   const camera=arenaCamera,m=meshes[id];
   if(!m||!scene||!camera)return null;
@@ -23,10 +23,27 @@ async function tapFighter(page,id){
     if(fighterId(scene.pick(sx,sy)?.pickedMesh)===id)return {x:rect.left+sx,y:rect.top+sy};
    }
   }
+  // Imported GLB geometry can extend beyond its invisible capsule anchors.
+  // Sample the live, visible pickable meshes' projected bounds as well.
+  for(const part of scene.meshes.filter(p=>p.isPickable&&p.isVisible&&p.isEnabled()&&p.getTotalVertices()>0&&fighterId(p)===id)){
+   const box=part.getBoundingInfo().boundingBox;
+   const corners=box.vectorsWorld.map(v=>BABYLON.Vector3.Project(v,BABYLON.Matrix.Identity(),scene.getTransformMatrix(),vp));
+   const xs=corners.map(p=>p.x*rect.width/width),ys=corners.map(p=>p.y*rect.height/height);
+   const left=Math.max(0,Math.min(...xs)),right=Math.min(rect.width-1,Math.max(...xs));
+   const top=Math.max(0,Math.min(...ys)),bottom=Math.min(rect.height-1,Math.max(...ys));
+   if(right<left||bottom<top)continue;
+   for(const fy of [.5,.25,.75,.1,.9])for(const fx of [.5,.25,.75,.1,.9]){
+    const sx=left+(right-left)*fx,sy=top+(bottom-top)*fy;
+    if(document.elementFromPoint(rect.left+sx,rect.top+sy)!==canvas)continue;
+    if(fighterId(scene.pick(sx,sy)?.pickedMesh)===id)return {x:rect.left+sx,y:rect.top+sy};
+   }
+  }
   return null;
- },id);
+ },id,{timeout:12000,polling:250});
+ const point=await handle.jsonValue();await handle.dispose();
  assert.ok(point,"real visible pickable canvas point for "+id);
- await page.touchscreen.tap(point.x,point.y);
+ if(!probeOnly)await page.touchscreen.tap(point.x,point.y);
+ return point;
 }
 async function run(name,browserType,viewport){
  const browser=await browserType.launch(name==="chromium"?{headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage"]}:{headless:true});
@@ -71,6 +88,8 @@ async function run(name,browserType,viewport){
   await page.locator("#battle.active").waitFor({timeout:30000});
   await page.waitForFunction(()=>state.active&&battleIsMainCampaign&&!visualActionPending()&&!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:60000});
   assert.equal(await page.evaluate(()=>state.fighters.filter(f=>f.side==="enemy").every(f=>f.id.startsWith("npc-cam-m1-"))),true);
+  for(const id of await page.evaluate(()=>state.fighters.filter(f=>f.hp>0).map(f=>f.id)))await tapFighter(page,id,true);
+  await page.screenshot({path:path.join(dest,key+"-"+(manual?"manual":"auto")+"-battle.png")});
   for(let i=0;i<2;i++)await page.locator("#autoSpeedBtn").tap();
   if(manual){
    for(let i=0;i<45;i++){
@@ -99,6 +118,9 @@ async function run(name,browserType,viewport){
   await page.locator("#mainCampaignNode").tap();
   await page.locator("#squadDisband").tap();
   await page.locator('#squadRoster .squad-choice[data-hero-id="art"]').tap();
+  assert.match(await page.locator("#squadIntro").innerText(),/Один герой — риск поражения/);
+  assert.equal(await page.locator("#squadStart").isEnabled(),true,"advice is not a mandatory lock");
+  await visibleTarget("#squadStart");
   assert.equal(await fight(),"enemy","one starter vs two NPCs");
   assert.equal((await inspect()).proof.best,0);assert.equal((await inspect()).currency,before.currency);
   assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
@@ -107,6 +129,9 @@ async function run(name,browserType,viewport){
   await page.locator("#mainCampaignResultRetry").tap();
   await page.locator("#squadDisband").tap();
   for(const id of ["ren","art"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
+  assert.match(await page.locator("#squadIntro").innerText(),/Рен — атака, Арт — страховка/);
+  await visibleTarget("#squadStart");
+  await page.screenshot({path:path.join(dest,key+"-squad.png")});
   assert.equal(await fight(true),"ally","manual basic attacks with the two fresh starters");
   const won=await inspect();assert.ok(won.proof.best>0);assert.equal(won.currency,before.currency);assert.equal(won.receipts,0);
   await noOverflow();await visibleTarget("#mainCampaignResultClaim");await visibleTarget("#mainCampaignResultBack");

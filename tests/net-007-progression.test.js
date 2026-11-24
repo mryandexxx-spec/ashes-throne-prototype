@@ -8,14 +8,16 @@ const fresh=()=>({saveVersion:3,currency:0,accountXp:0,
  materials:{Fe:0,Le:0,Cl:0,Wo:0,Fa:0,Th:0,Gl:0},
  skillMaterials:{manual1:0,manual2:0,seal:0},
  heroStars:Star.fromLegacy()});
-test("NET-007 combat bonus is capped at 18% and never changes speed",()=>{
+test("NET-007 primary multiplier is capped at 18%; profile secondary growth is additive, speed fixed",()=>{
  const main=Profiles.ren;
  const base=Bridge.apply({id:"ren"},{level:30,stars:1},main,Core);
  const max=Bridge.apply({id:"ren"},{level:30,stars:7},main,Core);
  assert.ok(max.hp>base.hp&&max.physicalAttack>base.physicalAttack);
  assert.ok(max.physicalDefense>base.physicalDefense);
  assert.equal(max.speed,base.speed);
- assert.equal(max.critChance,base.critChance);
+ // PROGRESSIONSTATS004 (PR #457): secondary specialization is additive, not a second multiplier.
+ assert.ok(Math.abs(max.critChance-base.critChance-6*main.growth.star.critChance)<1e-9);
+ assert.equal(max.hp,Math.round(main.combatStats.hp+29*main.growth.level.hp+main.combatStats.hp*.18));
  assert.equal(Star.combatMultiplier(1),1);
  assert.equal(Star.combatMultiplier(7),1.18);
  assert.equal(Star.combatMultiplier(8),1);

@@ -68,9 +68,9 @@ test("game routes both promotions through presentation after transactions",()=>{
  assert.equal((game.match(/GearPromotionUI\.show\(/g)||[]).length,2);
  assert.ok(game.indexOf("persistProgress()")<game.indexOf("GearPromotionUI.show("));
  assert.match(html,/id="gearPromotionPortrait"/);
- assert.match(html,/gear-promotion-ui\.js\?v=0\.3\.237/);
- assert.match(html,/gear-promotion-ui\.css\?v=0\.3\.237/);
- assert.match(html,/v0\.3\.237 · HEROLEVELSLIDER001/);
+ assert.ok(html.includes('src="gear-promotion-ui.js?v='+require("../package.json").version+'"'));
+ assert.ok(html.includes('href="gear-promotion-ui.css?v='+require("../package.json").version+'"'));
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+require("../package.json").version+' · '));
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.match(css,/safe-area-inset-bottom/);
  assert.match(css,/min-height:44px/);
@@ -124,7 +124,7 @@ test("portrait uses contain without zoom/cropping; all versions and calls are wi
  assert.match(game,/GearPromotionUI\.showStar\(/);
  assert.match(game,/GearPromotionUI\.showLevel\(/);
  assert.match(html,/id="gearPromotionResourceIcon"/);
- assert.match(html,/v0\.3\.237 · HEROLEVELSLIDER001/);
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+require("../package.json").version+' · '));
 });
 
 
@@ -181,5 +181,5 @@ test("long results have a scroll region while existing portrait and Continue rem
  assert.match(css,/-webkit-overflow-scrolling:touch/);
  assert.match(css,/#gearPromotionClose\{[^}]*min-height:44px/);
  assert.match(css,/object-fit:contain/);
- assert.match(html,/v0\.3\.237 · HEROLEVELSLIDER001/);
+ assert.ok(html.includes('id="buildVersion">Прототип · v'+require("../package.json").version+' · '));
 });

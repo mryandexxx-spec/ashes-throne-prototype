@@ -4,6 +4,7 @@
 
 - **Играть:** https://mryandexxx-spec.github.io/ashes-throne-prototype/ (номер сборки в футере)
 - **Текущее состояние:** [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md)
+- **Активная работа First Session 2.0:** [контракт](docs/FIRST_SESSION_2_0.md) · [продолжить из нового чата](docs/FIRST_SESSION_HANDOFF.md)
 - **Дорожная карта и следующая задача:** [docs/ROADMAP.md](docs/ROADMAP.md); сюжетные этапы — [docs/LORE_CAMPAIGN_PROGRESS.md](docs/LORE_CAMPAIGN_PROGRESS.md)
 - **История изменений:** [docs/CHANGELOG.md](docs/CHANGELOG.md)
 - **Дизайн игры:** [docs/Pepelny_tron_GDD_3.0.md](docs/Pepelny_tron_GDD_3.0.md), бой — [docs/Combat_Specification_1.0.md](docs/Combat_Specification_1.0.md)

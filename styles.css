@@ -5310,3 +5310,20 @@ body:has(#storyDemo.active)::before{
  #heroDetail .hero-ability-thumb{width:36px;height:36px}
  #battle .npc-ability-thumb{width:28px;height:28px}
 }
+
+/* CAM-001B: compact map, no new WebGL resources. */
+.main-campaign-map{padding:clamp(10px,2vw,24px);min-width:0;border:1px solid #806443;border-radius:12px;color:#f4e8d4;background:linear-gradient(105deg,rgba(23,22,21,.95),rgba(44,36,29,.88)),url("assets/campaign-cover-throne.webp") center/cover}
+.main-campaign-map header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.main-campaign-map h3,.main-campaign-map p{margin:4px 0}
+.main-campaign-route{display:grid;grid-template-columns:minmax(0,1.4fr) auto minmax(0,1fr);gap:12px;align-items:center;margin:12px 0}
+.main-campaign-node{min-width:0;border:1px solid #bd925b;background:#211e1c;border-radius:10px;padding:12px;display:grid;gap:6px;overflow-wrap:anywhere}
+.main-campaign-node .eyebrow,.main-campaign-node small{color:#d6bd98}
+#mainCampaignStars{color:#efca7b;font-size:1.1rem}
+.main-campaign-next[data-unlocked="false"]{border-color:#6e6258;color:#c0b6a8;background:#292725}
+.main-campaign-next[data-unlocked="true"]{border-color:#e3bc79}
+.main-campaign-link{color:#c49c63;font-size:1.35rem}
+.main-campaign-claim{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.main-campaign-map button,#mainCampaignResult button{min-height:44px;touch-action:manipulation}
+#mainCampaignClaim[hidden],#mainCampaignResultClaim[hidden]{display:none!important}
+@media(orientation:landscape) and (max-height:540px){.main-campaign-map{padding:10px}.main-campaign-route{gap:8px;margin:8px 0}.main-campaign-node{padding:8px;gap:4px}.main-campaign-node p{font-size:.85rem}.main-campaign-node small{font-size:.75rem}}
+@media(max-width:560px){.main-campaign-route{grid-template-columns:minmax(0,1fr)}.main-campaign-link{transform:rotate(90deg);justify-self:center}}

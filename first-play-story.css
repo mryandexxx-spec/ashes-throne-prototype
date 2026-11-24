@@ -199,3 +199,10 @@
 #firstPlay .fp-story-header-actions{display:flex;gap:6px;align-items:center;pointer-events:auto}
 #firstPlay .fp-story-header-actions [hidden]{display:none!important}
 #firstPlay #firstPlayStory[data-phase="briefing"] .fp-story-context:not([hidden]){display:block;color:#f7ebda;font-size:clamp(12px,1.5vw,15px);line-height:1.2}
+
+/* P1-C: readable diegetic document, no new portrait or invented seal. */
+#firstPlay .fp-story-document:not([hidden]){align-self:center;box-sizing:border-box;width:min(330px,70%);padding:7px 13px;background:linear-gradient(118deg,#e5cfa5,#c6ac82);color:#35281e;border:1px solid #a58b62;border-radius:2px;box-shadow:0 4px 15px #0008;font-family:Georgia,serif;transform:rotate(-1deg)}
+#firstPlay .fp-story-document span{display:block;font-size:10px;letter-spacing:.11em;border-bottom:1px solid #81694c;padding-bottom:3px;margin-bottom:4px}
+#firstPlay .fp-story-document p{font-size:clamp(13px,1.6vw,17px);line-height:1.2;margin:2px 0;font-weight:600}
+#firstPlay .fp-story-document p:last-child{border-top:1px solid #99825b;padding-top:3px;color:#654123}
+@media(max-height:370px){#firstPlay .fp-story-document:not([hidden]){padding:4px 10px}#firstPlay .fp-story-document p{font-size:12px}#firstPlay #firstPlayStorySound{padding-inline:7px}}

@@ -102,6 +102,9 @@ async function run(label,engine,viewport){
    bounds.scene.top>=0&&bounds.scene.bottom<=bounds.height+1,
    label+": story viewport within landscape screen");
   const next=page.locator("#firstPlayStoryNext"),pause=page.locator("#firstPlayStoryPause");
+  const sound=page.locator("#firstPlayStorySound");
+  assert.equal(await sound.getAttribute("aria-pressed"),"false");
+  assert.equal(await page.locator("#firstPlayStoryDocument").isVisible(),false);
   await page.waitForFunction(()=>document.querySelector("#firstPlayStoryImage")?.naturalWidth>=1600,null,{timeout:12000});
   assert.equal(await pause.getAttribute("aria-pressed"),"true",label+": reduced motion defaults to manual reading");
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
@@ -190,8 +193,9 @@ async function run(label,engine,viewport){
    else assert.doesNotMatch(await page.locator("#firstPlayStoryContext").innerText(),/Эффект вашего приказа/);
    await page.locator("#firstPlayStoryNext").click();
    assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
-   assert.match(await page.locator("#firstPlayStoryLine").innerText(),/безопасен/);
-   assert.match(await page.locator("#firstPlayStoryLine").innerText(),/снять крепления/);
+   assert.equal(await page.locator("#firstPlayStoryDocument").isVisible(),true);
+   assert.match(await page.locator("#firstPlayStoryDocument").innerText(),/Переход безопасен/);
+   assert.match(await page.locator("#firstPlayStoryDocument").innerText(),/Крепления снять/);
    assert.equal(await page.locator("#firstPlayStoryCue").isVisible(),true);
    assert.match(await page.locator("#firstPlayStoryContext").innerText(),/установить источник распоряжения/);
    assert.doesNotMatch(await page.locator("#firstPlayStoryContext").innerText(),/Эффект вашего приказа/);

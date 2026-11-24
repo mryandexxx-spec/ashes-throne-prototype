@@ -1,4 +1,4 @@
-/* FIRSTPLAY001: isolated first-session gameplay checkpoint, no wallet mutation. */
+/* FIRSTSESSION P1-A: isolated first-play checkpoint and proof for one wallet receipt. */
 const FirstPlayCore=(()=>{
  "use strict";
  const KEY="ashes-throne.first-play.v1";
@@ -63,6 +63,39 @@ const FirstPlayCore=(()=>{
    return {ok:true,removed:keys.length};
   }catch(_){return {ok:false,removed:null};}
  }
- return Object.freeze({KEY,CHOICES,EFFECTS,PHASES,fresh,valid,load,save,choose,prepare,start,finish,complete,skip,followUp,resetGameStorage});
+ // P1-A prototype reward budget: enough for the existing L1 -> L2 purchase (39).
+ // The amount is test content, not an approved economy curve.
+ const REWARD_SOURCE=Object.freeze({sourceId:"first-report",kind:"first-clear",
+  reward:Object.freeze({currency:40,accountXp:0,materials:Object.freeze({})}),energyCost:0});
+ const REWARD_OCCURRENCE="once",REWARD_RECEIPT="first-clear:first-report:once";
+ const wonProof=s=>valid(s)&&s.phase==="done"&&s.choice!==null;
+ const rewardClaimed=p=>Array.isArray(p?.rewardReceipts)&&p.rewardReceipts.some(row=>row.id===REWARD_RECEIPT);
+ function authorizeReward({storage,sourceId,kind,occurrenceId,count}={}){
+  if(sourceId!==REWARD_SOURCE.sourceId||kind!==REWARD_SOURCE.kind||
+     occurrenceId!==REWARD_OCCURRENCE||count!==1)return false;
+  try{return wonProof(JSON.parse(storage.getItem(KEY)));}catch(_){return false;}
+ }
+ function rewardStatus(state,profile,available){
+  if(!wonProof(state))return "locked";
+  if(rewardClaimed(profile))return "claimed";
+  return available&&profile?.saveVersion===3?"claimable":"blocked";
+ }
+ async function claimReward({storageProvider,heroes,exclusive,day}={}){
+  const result=await RewardPolicyCore.claim({
+   source:REWARD_SOURCE,occurrenceId:REWARD_OCCURRENCE,count:1,day,heroes,
+   storageProvider,authorize:authorizeReward,exclusive
+  });
+  if(!result.ok)return result;
+  try{
+   const profile=ProgressV3Core.validateActive(JSON.parse(storageProvider().getItem(ProgressV3Core.KEY)),heroes);
+   if(!profile||!rewardClaimed(profile)||profile.revision!==result.revision||
+      result.receiptId!==REWARD_RECEIPT)return {ok:false,code:"REWARD_SYNC_FAILED"};
+   const runtime=ProgressV3Core.toRuntime(profile,heroes);
+   return runtime&&runtime.saveRevision===result.revision?
+    {ok:true,receiptId:result.receiptId,runtime}:{ok:false,code:"REWARD_SYNC_FAILED"};
+  }catch(_){return {ok:false,code:"REWARD_SYNC_FAILED"};}
+ }
+ return Object.freeze({KEY,CHOICES,EFFECTS,PHASES,fresh,valid,load,save,choose,prepare,start,finish,complete,skip,followUp,resetGameStorage,
+  REWARD_SOURCE,REWARD_OCCURRENCE,REWARD_RECEIPT,wonProof,rewardClaimed,authorizeReward,rewardStatus,claimReward});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=FirstPlayCore;

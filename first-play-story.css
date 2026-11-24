@@ -206,3 +206,9 @@
 #firstPlay .fp-story-document p{font-size:clamp(13px,1.6vw,17px);line-height:1.2;margin:2px 0;font-weight:600}
 #firstPlay .fp-story-document p:last-child{border-top:1px solid #99825b;padding-top:3px;color:#654123}
 @media(max-height:370px){#firstPlay .fp-story-document:not([hidden]){padding:4px 10px}#firstPlay .fp-story-document p{font-size:12px}#firstPlay #firstPlayStorySound{padding-inline:7px}}
+
+/* P1-C2: protect the upper action zone on wide mobile screens; keep DOM clue away from faces. */
+#firstPlay #firstPlayStory[data-art="conflict"] .fp-story-art img,
+#firstPlay #firstPlayStory[data-art="aftermath"] .fp-story-art img,
+#firstPlay #firstPlayStory[data-art="document"] .fp-story-art img{transform:scale(1);object-position:center 20%}
+#firstPlay #firstPlayStory[data-art="document"] .fp-story-document:not([hidden]){align-self:flex-end;transform:none}

@@ -35,5 +35,7 @@ test("M1 starter balance baseline, 32 seeded runs for each legal manual/auto str
   const rows=Array.from({length:32},(_,i)=>run(Math.imul(i+1,0x9e3779b1)>>>0,policy,ids));
   const summary={policy,ids,wins:rows.filter(x=>x.win).length,perfect:rows.filter(x=>x.stars===3).length,avgActions:rows.reduce((n,x)=>n+x.actions,0)/rows.length};
   console.log("CAMROSTER_BALANCE",JSON.stringify(summary));
+  if(ids.length===2)assert.ok(summary.wins>=28,policy+" starter victory rate: "+summary.wins+"/32");
+  else assert.equal(summary.wins,0,"solo Art is not the intended squad");
  }
 });

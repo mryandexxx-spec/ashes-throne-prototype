@@ -60,10 +60,11 @@ const MainCampaignCore=(()=>{
   }catch(_){return {ok:false,code:"REWARD_SYNC_FAILED"};}
  }
  function enemies(npcs){
-  return [["npc-pass-guard","npc-cam-m1-guard"],["npc-trail-interceptor","npc-cam-m1-interceptor"]].map(([archetype,id])=>{
+  // Starter encounter only: do not change shared NPC profiles or scale to owned heroes.
+  return [["npc-pass-guard","npc-cam-m1-guard",90,15,14],["npc-trail-interceptor","npc-cam-m1-interceptor",65,10,19]].map(([archetype,id,hp,protection,physicalAttack])=>{
    const npc=npcs.spawn(archetype,{instanceId:id});
    if(!npc)throw Error("CAM001B_NPC_MISSING");
-   return npc;
+   return {...npc,hp,protection,physicalAttack};
   });
  }
  return Object.freeze({KEY,ID,TITLE,SOURCE,RECEIPT,load,score,record,claimed,status,authorize,claim,enemies});

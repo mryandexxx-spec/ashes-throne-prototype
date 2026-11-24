@@ -7,31 +7,33 @@ const fs=require("node:fs");
 const path=require("node:path");
 const Story=require("../first-play-story-core.js");
 const root=path.join(__dirname,"..");
-const expected=Object.freeze({warning:941,conflict:941,artSupport:941,renRoute:941,decision:941});
-for(const [name,height] of Object.entries(expected)){
- test("FIRSTPLAY007 "+name+" loads high-resolution replaceable WebP art",()=>{
-  for(const [kind,extension] of [["ART","webp"]]){
-   const file=Story[kind][name];
-   const slug=name==="artSupport"?"art-support":name==="renRoute"?"ren-route":name;
-   assert.equal(file,"assets/cutscenes/first-report/v5/"+slug+"."+extension);
-   const bytes=fs.readFileSync(path.join(root,file));
-   assert.ok(bytes.length>150_000,kind+" was excessively compressed");
-   assert.ok(bytes.length<650_000,kind+" exceeds mobile art budget");
-   if(extension==="webp"){
-    assert.equal(bytes.toString("ascii",0,4),"RIFF");
-    assert.equal(bytes.toString("ascii",8,12),"WEBP");
-    assert.equal(bytes.toString("ascii",12,16),"VP8 ");
-    assert.equal(bytes.toString("hex",23,26),"9d012a");
-    assert.equal(bytes.readUInt16LE(26)&0x3fff,1672);
-    assert.equal(bytes.readUInt16LE(28)&0x3fff,height);
-   }else{
-    assert.equal(bytes.toString("ascii",4,12),"ftypavif");
-    const pos=bytes.indexOf(Buffer.from("ispe"));
-    assert.ok(pos>=0,"AVIF must include image dimensions");
-    assert.equal(bytes.readUInt32BE(pos+8),1672);
-    assert.equal(bytes.readUInt32BE(pos+12),height);
-   }
-  }
+// Retain the original v5 resolution/budget checks. P1-C2 deliberately uses
+// native generated widescreen panels, plus a separate closer document crop;
+// do not upscale files merely to meet the retired 1672px v5 art contract.
+const expected=Object.freeze({
+ warning:["v5/warning",1672,941,150_000,650_000],
+ conflict:["v6/conflict",1254,624,100_000,220_000],
+ artSupport:["v5/art-support",1672,941,150_000,650_000],
+ renRoute:["v5/ren-route",1672,941,150_000,650_000],
+ decision:["v5/decision",1672,941,150_000,650_000],
+ aftermath:["v6/rescue",1254,630,90_000,220_000],
+ document:["v6/document",684,384,30_000,100_000]
+});
+for(const [name,[slug,width,height,minBytes,maxBytes]] of Object.entries(expected)){
+ test("First Play "+name+" loads a native-resolution replaceable WebP",()=>{
+  const file=Story.ART[name];
+  assert.equal(file,"assets/cutscenes/first-report/"+slug+".webp");
+  assert.equal(Story.AVIF[name],null);
+  const bytes=fs.readFileSync(path.join(root,file));
+  assert.ok(bytes.length>minBytes,"art was excessively compressed");
+  assert.ok(bytes.length<maxBytes,"art exceeds mobile budget");
+  assert.equal(bytes.toString("ascii",0,4),"RIFF");
+  assert.equal(bytes.readUInt32LE(4)+8,bytes.length);
+  assert.equal(bytes.toString("ascii",8,12),"WEBP");
+  assert.equal(bytes.toString("ascii",12,16),"VP8 ");
+  assert.equal(bytes.toString("hex",23,26),"9d012a");
+  assert.equal(bytes.readUInt16LE(26)&0x3fff,width);
+  assert.equal(bytes.readUInt16LE(28)&0x3fff,height);
  });
 }
 test("FIRSTPLAY004 permanently eliminates stale HQ overlay markup and renderer",()=>{

@@ -794,6 +794,34 @@ function firstPlayStorySetCursor(next){
  // Story-page position is convenience state, not a second gameplay save.
  return FirstPlayStoryCore.save(next,()=>window.localStorage);
 }
+// P1-C: opt-in audio only; no context is constructed until the user taps Sound.
+const firstPlaySound=typeof FirstPlaySound!=="undefined"?FirstPlaySound.create(window.AudioContext||window.webkitAudioContext):null;
+let firstPlaySoundRequested=false,firstPlaySoundRequest=0;
+function firstPlaySoundStop(disable=false){
+ if(disable){firstPlaySoundRequested=false;firstPlaySoundRequest++;firstPlaySound?.disable();}
+ else firstPlaySound?.stop();
+ const button=$("#firstPlayStorySound");
+ if(button){button.textContent=firstPlaySoundRequested?"Звук: вкл.":"Звук: выкл.";button.setAttribute("aria-pressed",String(firstPlaySoundRequested));}
+}
+function syncFirstPlaySound(){
+ if(!firstPlaySoundRequested||!firstPlaySound||!$("#firstPlay")?.classList.contains("active")||
+  document.visibilityState==="hidden"||window.innerWidth<window.innerHeight||
+  (firstPlayState?.phase==="briefing"&&firstPlayStoryPaused)){firstPlaySound?.stop();return;}
+ const frame=FirstPlayStoryCore.frame(firstPlayState.phase,firstPlayState.choice,firstPlayStoryCursor);
+ const cue=firstPlayState.phase==="won"?(firstPlayStoryCursor.step===0?"rescue":"document"):frame.art;
+ firstPlaySound.play(cue,[firstPlayState.phase,firstPlayStoryCursor.step,frame.art].join(":"));
+}
+$("#firstPlayStorySound")?.addEventListener("click",async()=>{
+ if(!firstPlaySound||firstPlaySoundRequested){firstPlaySoundStop(true);return;}
+ const ticket=++firstPlaySoundRequest;
+ firstPlaySoundRequested=true;
+ const enabled=await firstPlaySound.enable();
+ if(ticket!==firstPlaySoundRequest)return;
+ if(!enabled||!$("#firstPlay")?.classList.contains("active")){firstPlaySoundStop(true);return;}
+ const button=$("#firstPlayStorySound");
+ if(button){button.textContent="Звук: вкл.";button.setAttribute("aria-pressed","true");}
+ syncFirstPlaySound();
+});
 let firstPlayStoryTimer=null,firstPlayStoryManualAt=-Infinity;
 let firstPlayStoryPaused=typeof window.matchMedia==="function"&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let firstPlayStoryClock={step:null,remaining:0,started:0};
@@ -836,6 +864,11 @@ function renderFirstPlay(){
  if(name)name.textContent=cast?.label||scene.speaker;
  if(line)line.textContent=scene.text;
  if(cueNode){cueNode.textContent=scene.cue||"";cueNode.hidden=!scene.cue;}
+ const documentProp=$("#firstPlayStoryDocument");
+ if(documentProp){documentProp.hidden=!scene.document;
+  $("#firstPlayStoryDocumentFirst").textContent=scene.document?.[0]||"";
+  $("#firstPlayStoryDocumentSecond").textContent=scene.document?.[1]||"";}
+ syncFirstPlaySound();
  if(story){
   story.dataset.speaker=scene.speakerId||"unknown";
   story.dataset.shot=scene.shot||"wide";
@@ -956,9 +989,9 @@ $("#firstPlayStoryPause")?.addEventListener("click",()=>{
  if(firstPlayState?.phase!=="briefing")return;
  firstPlayStoryPaused=!firstPlayStoryPaused;renderFirstPlay();
 });
-document.addEventListener("visibilitychange",scheduleFirstPlayStory);
-window.addEventListener?.("resize",scheduleFirstPlayStory);
-window.addEventListener?.("pagehide",stopFirstPlayStoryTimer);
+document.addEventListener("visibilitychange",()=>{scheduleFirstPlayStory();syncFirstPlaySound();});
+window.addEventListener?.("resize",()=>{scheduleFirstPlayStory();syncFirstPlaySound();});
+window.addEventListener?.("pagehide",()=>{stopFirstPlayStoryTimer();firstPlaySoundStop(true);});
 window.addEventListener?.("pageshow",scheduleFirstPlayStory);
 window.matchMedia?.("(prefers-reduced-motion: reduce)")?.addEventListener?.("change",event=>{
  if(event.matches){firstPlayStoryPaused=true;if($("#firstPlay")?.classList.contains("active"))renderFirstPlay();}
@@ -1852,7 +1885,7 @@ function showScreen(id){
  if(id==="signalOperations")renderSignalOperations();
  if(id==="signalOperationResult")renderSignalOperationResult();
  if(id==="storyDemo")renderStoryDemo();
- if(id==="firstPlay")renderFirstPlay();else stopFirstPlayStoryTimer();
+ if(id==="firstPlay")renderFirstPlay();else{stopFirstPlayStoryTimer();firstPlaySoundStop(true);}
  if(id==="loreTrainingResult")renderLoreTrainingResult();
  if(id==="loreRequiredBattleResult")renderLoreRequiredBattleResult();
  if(id==="heroDetail")renderHeroDetail();

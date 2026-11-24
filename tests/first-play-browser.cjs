@@ -54,6 +54,9 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStoryVoice").isVisible(),true,
    label+": worker portrait is visible");
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
+  assert.equal(await page.locator("#firstPlayStoryCue").isVisible(),true);
+  assert.match(await page.locator("#firstPlayStoryCue").innerText(),/ревёт вода/);
+  assert.match(await page.locator("#firstPlayStoryLine").innerText(),/назад не пройдём/);
   await page.waitForFunction(()=>document.querySelector("#firstPlayStoryCharacterPortrait")?.dataset.loading==="false");
   await page.waitForTimeout(500);
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-opening.png")});
@@ -65,8 +68,14 @@ async function run(label,engine,viewport){
    "/v5/conflict.",{timeout:12000});
   assert.match(await page.locator("#firstPlayStoryImage").evaluate(n=>n.currentSrc),
    /v5\/conflict\.webp$/);
+  assert.match(await page.locator("#firstPlayStoryLine").innerText(),/осмотр/);
+  await page.locator("#firstPlayStoryNext").click();
+  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
+  assert.match(await page.locator("#firstPlayStoryLine").innerText(),/охранник/);
   await page.locator("#firstPlayStoryNext").click();
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
+  assert.match(await page.locator("#firstPlayStoryLine").innerText(),/канате/);
+  assert.equal(await page.locator("#firstPlayStoryCue").isVisible(),true);
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true);
   assert.equal(await page.locator("#firstPlayStoryVoice").isVisible(),true);
   assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/assets\/art-portrait-ui\.webp\?v=2$/);
@@ -90,6 +99,7 @@ async function run(label,engine,viewport){
   await page.locator("#firstPlayStoryNext").click();
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РЕН ТЕРЕН");
   assert.equal(await page.locator("#firstPlayStory").getAttribute("data-shot"),"route");
+  assert.match(await page.locator("#firstPlayStoryLine").innerText(),/ступени/);
   await page.waitForFunction(()=>document.querySelector("#firstPlayStoryImage")?.currentSrc.includes("/v5/ren-route."),null,{timeout:12000});
   assert.match(await page.locator("#firstPlayStoryCharacterPortrait").getAttribute("src"),/assets\/ren-portrait-ui\.webp$/);
   await page.waitForFunction(()=>document.querySelector("#firstPlayStoryCharacterPortrait")?.complete&&
@@ -99,12 +109,19 @@ async function run(label,engine,viewport){
   await page.reload({waitUntil:"load",timeout:60000});
   await page.locator("#firstPlay.active").waitFor({state:"visible",timeout:30000});
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РЕН ТЕРЕН");
+  await page.locator("#firstPlayStoryNext").click();
+  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"АРТ");
+  assert.match(await page.locator("#firstPlayStoryLine").innerText(),/нижнее крепление/);
+  await page.locator("#firstPlayStoryNext").click();
+  assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РЕН ТЕРЕН");
+  assert.match(await page.locator("#firstPlayStoryLine").innerText(),/прикрыть спуск/);
   // Skip the remaining *cutscene*, never the mandatory order or battle.
   await page.locator("#firstPlayStorySkip").click();
   await page.waitForFunction(()=>document.querySelector("#firstPlayStoryCharacterPortrait")?.dataset.loading==="false");
   await page.waitForTimeout(500);
   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-decision.png")});
   assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),true);
+  assert.match(await page.locator("#firstPlayStoryLine").innerText(),/С чего начинаем/);
   assert.equal(await page.locator("#firstPlayStoryFight").isVisible(),false);
   assert.equal(await page.locator("#firstPlayStoryCharacter").isVisible(),true,
    label+": master has his own painted portrait");
@@ -175,6 +192,11 @@ async function run(label,engine,viewport){
    assert.match(await page.locator("#firstPlayStoryContext").innerText(),/Эффект вашего приказа/);
    await page.locator("#firstPlayStoryNext").click();
    assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
+   assert.match(await page.locator("#firstPlayStoryLine").innerText(),/безопасен/);
+   assert.match(await page.locator("#firstPlayStoryLine").innerText(),/снять крепления/);
+   assert.equal(await page.locator("#firstPlayStoryCue").isVisible(),true);
+   assert.equal(await page.locator("#firstPlayStoryContext").isVisible(),false,
+    label+": final mystery must not be crowded out by repeated combat buffs");
    assert.equal(await page.locator("#firstPlayStoryFinish").isVisible(),true);
    await page.locator("#firstPlayStoryFinish").click();
   }

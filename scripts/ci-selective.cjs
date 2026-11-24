@@ -29,7 +29,7 @@ const network=any(f=>/^(network-|net-|weekly-threat-|tests\/network-)/.test(f));
 const hero=any(f=>/^(hero-card|hero-stats|gear-|tests\/hero-card)/.test(f));
 // Roster/save schema changes require the full regression, not only squad/hero smoke.
 const audit=any(f=>f.startsWith(".github/workflows/")||f==="scripts/ci-selective.cjs"||
- ["hero-collection-core.js","progress-v3-core.js","star-core.js","resource-icon-ui.js"].includes(f));
+ ["hero-collection-core.js","progress-v3-core.js","star-core.js","resource-icon-ui.js","first-play-core.js"].includes(f));
 const firstplay=any(f=>/^(first-play(?:[-.]|$)|tests\/first-play(?:[-.]|$))/.test(f));
 const scopes={squad,battle,lore,network,hero,audit,firstplay};
 const tests=new Set();

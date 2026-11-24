@@ -27,3 +27,5 @@
 - Если в GitHub Rulesets/Branch Protection указаны старые обязательные check names, заменить их на \`CI / selective smoke / Diff-aware Node smoke\` — иначе merge будет ждать отключённые проверки.
 - Оставлены без изменений процедуры публикации GitHub Pages; merge в \`main\` сам по себе не доказывает публикацию.
 - Автоматическая эмуляция WebKit **не эквивалентна** проверке на физическом iPhone Safari.
+
+**FIRSTSESSIONP0B:** изменение `first-play-core.js` (контракт checkpoint) также запускает полный Node audit, как остальные изменения ядра сохранений. Обычные изменения иллюстраций/CSS/сценария не получают этот дополнительный audit.

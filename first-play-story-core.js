@@ -36,15 +36,13 @@ const FirstPlayStoryCore=(()=>{
  });
  // FIRSTPLAY008: action leads to an observation, a response and a new decision.
  // Local gameplay proposal; approved Five Shadows history is unchanged.
+ // FIRSTSESSIONP0B: four existing illustrations, not new commissioned art.
+ // The final shot waits for the commander; no forced battle after a timer.
  const INTRO=Object.freeze([
-  {art:"warning",shot:"workers",speakerId:"worker",speaker:"РАБОЧИЙ",cue:"Под настилом ревёт вода. Крайние доски трещат.",text:"Мастер! Край пошёл! Мы назад не пройдём!",detail:"Рабочие застряли на повреждённом пролёте."},
-  {art:"conflict",shot:"workers",speakerId:"master",speaker:"МАСТЕР",text:"Я вас на осмотр звал. А тут уже разбирают крепления, пока мои люди на мосту.",detail:"Мастер вызвал помощь для осмотра, но демонтаж начался до вывода рабочих."},
-  {art:"conflict",shot:"workers",speakerId:"worker",speaker:"РАБОЧИЙ",text:"Сборщик всё тянет железо. Я просил их прекратить — охранник встал на сходе и вытащил оружие.",detail:"Охранник склада защищает продолжающего демонтаж сборщика и препятствует подходу к рабочим."},
-  {art:"artSupport",shot:"supports",speakerId:"art",speaker:"АРТ",cue:"Арт поднимает вынутый штифт. В опоре пустое гнездо.",text:"На этот край не ступайте. Балка теперь на канате держится. Ещё рывок — сорвётся.",detail:"Снятый штифт подтверждает причину повреждения. Настил небезопасен."},
-  {art:"renRoute",shot:"route",speakerId:"ren",speaker:"РЕН",cue:"Ниже пролёта видна узкая лестница.",text:"Под мостом ступени есть. До рабочих доберёмся снизу. Только у схода тот охранник.",detail:"Рен показывает обход. Проход к лестнице удерживают противники."},
-  {art:"artSupport",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Прежде чем вести туда людей, проверю нижнее крепление. Если и его сняли — назад.",detail:"Арт предлагает разведать нижнюю опору прежде, чем рисковать людьми."},
-  {art:"renRoute",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Пока мы проверяем, люди останутся там. Я могу отвлечь охранника и прикрыть спуск.",detail:"Рен предлагает удерживать проход, пока рабочие отходят."},
-  {art:"decision",shot:"wide",speakerId:"master",speaker:"МАСТЕР",cue:"Рабочие ждут у стойки. Канат снова натягивается.",text:"Я удержу их на месте. Складские сами не уйдут. С чего начинаем?",detail:"Приказ определит подготовку отряда к столкновению у нижнего схода.",choice:true}
+  {art:"warning",shot:"wide",speakerId:"worker",speaker:"РАБОЧИЙ",text:"Мастер! Доски уходят из-под ног!",duration:4000,detail:"Рабочие застряли на повреждённом пролёте."},
+  {art:"conflict",shot:"workers",speakerId:"master",speaker:"МАСТЕР",text:"Я вас на осмотр звал! Прекратите разборку, там люди!",cue:"Сборщик тянет крепление, охранник закрывает сход.",duration:6500,detail:"Демонтаж продолжается, доступ к рабочим закрыт."},
+  {art:"artSupport",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Штифт вынули. На этот настил не ступайте.",duration:5000,detail:"Крепление снято; настил небезопасен."},
+  {art:"renRoute",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Под мостом ступени. Уберём охрану со схода — выведем людей.",detail:"Вы командуете полевой группой. Прикройте отход рабочих."}
  ]);
  const RESPONSE=Object.freeze({
   survey:{art:"artSupport",shot:"supports",speakerId:"art",speaker:"АРТ",
@@ -72,17 +70,17 @@ const FirstPlayStoryCore=(()=>{
    detail:"Пока Рен удерживал проход, рабочие успели отойти."})
  });
  const ORDER_LABELS=Object.freeze({survey:"Арт · скорость +30",cover:"Рен · запас защиты +35"});
- const fresh=()=>({version:1,part:"intro",step:0});
- function isValid(c){return !!c&&c.version===1&&["intro","outro"].includes(c.part)&&
+ const fresh=()=>({version:2,part:"intro",step:0});
+ function isValid(c){return !!c&&[1,2].includes(c.version)&&["intro","outro"].includes(c.part)&&
   Number.isInteger(c.step)&&c.step>=0&&
-  (c.part==="intro"?c.step<=INTRO.length:c.step<OUTRO.length);}
+  (c.part==="intro"?c.step<=(c.version===1?8:INTRO.length):c.step<OUTRO.length);}
  function normalize(saved,phase){
-  if(phase==="won")return saved?.part==="outro"&&isValid(saved)?
-   {version:1,part:"outro",step:Math.min(saved.step,OUTRO.length-1)}:
-   {version:1,part:"outro",step:0};
-  if(phase==="ready")return {version:1,part:"intro",step:INTRO.length};
-  if(phase==="briefing")return saved?.part==="intro"&&isValid(saved)?
-   {version:1,part:"intro",step:Math.min(saved.step,INTRO.length-1)}:fresh();
+  if(phase==="won")return {version:2,part:"outro",step:saved?.part==="outro"&&isValid(saved)?Math.min(saved.step,OUTRO.length-1):0};
+  if(phase==="ready")return {version:2,part:"intro",step:INTRO.length};
+  if(phase==="briefing"&&saved?.part==="intro"&&isValid(saved)){
+   const step=saved.version===1?[0,1,1,2,3,2,3,3,3][saved.step]:saved.step;
+   return {version:2,part:"intro",step:Math.min(step,INTRO.length-1)};
+  }
   return fresh();
  }
  function load(storageProvider,phase){
@@ -112,8 +110,8 @@ const FirstPlayStoryCore=(()=>{
   return null;
  }
  function skipNarration(phase,choice,cursor){
-  if(phase==="briefing")return {action:"decision",cursor:{version:1,part:"intro",step:INTRO.length-1}};
-  if(phase==="ready"&&choice)return {action:"battle"};
+  if(phase==="briefing")return {action:"battle"};
+  if(phase==="ready")return {action:"battle"};
   if(phase==="won")return {action:"finish"};
   return {action:"none"};
  }

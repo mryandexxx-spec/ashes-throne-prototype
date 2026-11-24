@@ -59,3 +59,15 @@ test("reset unavailable storage fails without a success claim",()=>{
  const result=Core.resetGameStorage(()=>{throw Error("storage blocked");});
  assert.equal(result.ok,false);
 });
+
+test("P0-B neutral checkpoint survives reload, defeat and actual victory without any bonus",()=>{
+ const s=storage(),provide=()=>s;
+ const neutral=Core.prepare(Core.fresh());
+ assert.equal(neutral.choice,"neutral");assert.equal(Core.EFFECTS[neutral.choice],undefined);
+ assert.equal(Core.prepare(neutral),null);
+ const battle=Core.start(neutral);assert.equal(Core.save(battle,provide),true);
+ assert.deepEqual(Core.load(provide).state,neutral);
+ const retry=Core.finish(battle,false);assert.deepEqual(retry,neutral);
+ assert.equal(Core.complete(retry),null);assert.equal(Core.complete(Core.finish(Core.start(retry),true)).phase,"done");
+ for(const choice of ["survey","cover"]){const legacy=Core.choose(Core.fresh(),choice);assert.equal(Core.prepare(legacy),null);assert.equal(Core.save(Core.start(legacy),provide),true);assert.deepEqual(Core.load(provide).state,legacy);}
+});

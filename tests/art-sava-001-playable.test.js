@@ -33,7 +33,7 @@ function old8(){
 test("ARTSAVA001 exposes permanent selectable heroes with typed 14-stat profiles and equipment",()=>{
  assert.deepEqual(ids.filter(id=>!H.IDS.includes(id)),[]);
  for(const [id,classId] of [["art","tank"],["sava","support"]]){
-  assert.ok(H.START.includes(id));
+  assert.ok(H.PLAYABLE.includes(id));
   assert.equal(V.TEST_CLASSES[id],classId);
   assert.ok(K.HERO_IDS.includes(id));
   assert.equal(P.maxLevelOf(id),85);

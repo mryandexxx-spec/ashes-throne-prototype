@@ -11,7 +11,7 @@ test("ROSTERDOSSIER001: playable roster does not contain five retired test fight
  assert.deepEqual(allyIds,active);
  for(const id of retired)assert.ok(!allyIds.includes(id));
  const collection=read("hero-collection-core.js");
- assert.match(collection,/const START=Object\.freeze\(\["ren","nada","liora","art","sava"\]\)/);
+ assert.match(collection,/const PLAYABLE=Object\.freeze\(\["ren","nada","liora","art","sava"\]\)/);
  assert.match(collection,/const MISSION_UNLOCKS=Object\.freeze\(\{\}\)/);
 });
 test("ROSTERDOSSIER001: legacy glyph never stacks atop atlas art",()=>{

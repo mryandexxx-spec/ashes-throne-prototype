@@ -29,11 +29,17 @@ const RewardPolicyCore=(()=>{
       !obj(source.reward.heroShards)||typeof StarCore==="undefined"||
       Object.keys(source.reward.heroShards).some(id=>
        !StarCore.IDS.includes(id)||!nonneg(source.reward.heroShards[id]))))||
+    (source.reward.heroGrants!==undefined&&(source.kind!=="first-clear"||
+      source.energyCost!==0||source.maxPerDay!==undefined||typeof StarCore==="undefined"||
+      !Array.isArray(source.reward.heroGrants)||!source.reward.heroGrants.length||
+      new Set(source.reward.heroGrants).size!==source.reward.heroGrants.length||
+      source.reward.heroGrants.some(id=>!StarCore.PLAYABLE.includes(id)||StarCore.START.includes(id))))||
     (source.maxPerDay!==undefined&&(!Number.isSafeInteger(source.maxPerDay)||source.maxPerDay<1)))
    return false;
   return source.reward.currency>0||source.reward.accountXp>0||
    Object.values(source.reward.materials).some(n=>n>0)||
-   Object.values(source.reward.heroShards||{}).some(n=>n>0);
+   Object.values(source.reward.heroShards||{}).some(n=>n>0)||
+   (source.reward.heroGrants?.length||0)>0;
  }
  function receiptId(source,occurrenceId){
   return source.kind+":"+source.sourceId+":"+occurrenceId;
@@ -43,6 +49,7 @@ const RewardPolicyCore=(()=>{
   const serial=source.kind==="serial"?Number(occurrenceId):null;
   if(source.kind==="serial"&&(!nonneg(serial)||serial<1||
     String(serial)!==occurrenceId))return failure("INVALID_SERIAL");
+  if(source.reward.heroGrants&&occurrenceId!=="once")return failure("INVALID_OCCURRENCE");
   if(!ID.test(occurrenceId||""))return failure("INVALID_OCCURRENCE");
   if(!Number.isSafeInteger(count)||count<1||count>100||
    (source.kind!=="repeat"&&count!==1))return failure("INVALID_COUNT");
@@ -103,7 +110,7 @@ const RewardPolicyCore=(()=>{
   }
   return Object.freeze({ok:true,serial,
    receipt:source.kind==="serial"?null:Object.freeze({id,sourceId:source.sourceId,day,count}),
-   delta:Object.freeze({energy,currency,accountXp,materials,heroShards})});
+   delta:Object.freeze({energy,currency,accountXp,materials,heroShards,heroGrants:Object.freeze([...(source.reward.heroGrants||[])])})});
  }
  /* No localStorage compare-and-swap exists. A caller-provided exclusive lock is
     mandatory; without it claim fails closed. The proof callback MUST re-read
@@ -164,6 +171,13 @@ const RewardPolicyCore=(()=>{
       }
      }
     }else next.rewardReceipts=(next.rewardReceipts||[]).concat([plan.receipt]);
+    if(d.heroGrants.length){
+     if(!Array.isArray(next.unlockedHeroes)||!StarCore.valid(next.heroStars))return failure("INVALID_HERO_GRANT");
+     for(const id of d.heroGrants){
+      if(!heroes.some(h=>h.side==="ally"&&h.id===id))return failure("INVALID_HERO_GRANT");
+      if(StarCore.rankOf(next,id)===0&&!StarCore.directGrant(next,id))return failure("INVALID_HERO_GRANT");
+     }
+    }
     if(!ProgressV3Core.validateActive(next,heroes))return failure("INVALID_CANDIDATE");
     const encoded=JSON.stringify(next);
     try{

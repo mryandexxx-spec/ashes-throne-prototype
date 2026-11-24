@@ -1390,7 +1390,7 @@ function heroOwned(id){
 }
 function heroUnlockLabel(id){
  const mission=typeof HeroCollectionCore!=="undefined"?HeroCollectionCore.unlockMission(id):null;
- return ["ren","nada","liora","art","sava"].includes(id)?"Доступен с начала (тест)":mission?(MissionData.get(mission)?.title||"миссия"):"сюжетное прохождение";
+ return HeroCollectionCore.START.includes(id)?"Доступен с начала":mission?(MissionData.get(mission)?.title||"миссия"):"Основная кампания · будущая сюжетная глава";
 }
 function defaultSquad(){
  // Prefer the five playable heroes, not demonstration capsules on a new profile.
@@ -1445,7 +1445,7 @@ let loreSquadSlots=null;
 let networkSquadSlots=null;
 function isLoreRequiredSquad(){return squadReturnScreen==="loreRequired";}
 function prepareLoreRequiredSlots(current){
- const slots=current.slice(0,MAX_SQUAD);
+ const slots=current.slice(0,MAX_SQUAD).map(id=>heroOwned(id)?id:null);
  while(slots.length<MAX_SQUAD)slots.push(null);
  const mandatory=requiredLoreHeroIds();
  for(const heroId of mandatory){
@@ -1474,9 +1474,11 @@ function setSquadSlots(slots){
   saveSquad();
  }
 }
+function squadHeroAvailable(id){return heroOwned(id)||(isLoreRequiredSquad()&&requiredLoreHeroIds().includes(id));}
+function squadHeroStats(hero){return heroOwned(hero.id)?progressedHero(hero):progressedHero(hero,true);}
 function requiredLoreSquadReady(){
  const ids=squadSlots();
- return requiredLoreHeroIds().every(id=>ids.includes(id)&&heroOwned(id));
+ return requiredLoreHeroIds().every(id=>ids.includes(id)&&squadHeroAvailable(id));
 }
 let undersizedSquadConfirmed=false;
 function resetSquadWarning(){
@@ -1486,7 +1488,7 @@ function resetSquadWarning(){
 }
 function eligibleSquadCount(){
  // ALLIES is the available/selectable roster, capped to five battle slots.
- return Math.min(MAX_SQUAD,ALLIES.filter(h=>heroOwned(h.id)).length);
+ return Math.min(MAX_SQUAD,ALLIES.filter(h=>squadHeroAvailable(h.id)).length);
 }
 let state=CombatCore.createBattle([...ALLIES,...ENEMIES.slice(0,2)]);
 // Stats-002C [TEST PILOT]: provisional combat profiles, not canonical identities.
@@ -1505,16 +1507,16 @@ function equippedPilotStats(hero,profile){
 }
 // STATS-001B: the two production heroes use one stat source, directly.
 // Other fighters remain test mannequins under their existing demo rules.
-function progressedHero(hero){
+function progressedHero(hero,guest=false){
  let h;
  if((["ren","nada","liora","art","sava"].includes(hero.id))&&
     typeof HeroStatsCore!=="undefined"&&
     typeof HeroStatsProfiles!=="undefined"&&
     typeof HeroStatsCombatBridge!=="undefined"){
-  const level=ProgressCore.levelOf(progress,hero.id);
-  const stars=typeof StarCore!=="undefined"?StarCore.rankOf(progress,hero.id):1;
+  const level=guest?1:ProgressCore.levelOf(progress,hero.id);
+  const stars=guest?1:typeof StarCore!=="undefined"?StarCore.rankOf(progress,hero.id):1;
   if(level===null||stars===null||stars<1)return null;
-  const gearBonuses=ProgressCore.gearBonuses(progress,hero.id);
+  const gearBonuses=guest?{stats:{}}:ProgressCore.gearBonuses(progress,hero.id);
   h=HeroStatsCombatBridge.apply(hero,{
    level,stars,gearPercent:gearBonuses,gearStats:gearBonuses.stats
   },HeroStatsProfiles[hero.id],HeroStatsCore);
@@ -1524,7 +1526,7 @@ function progressedHero(hero){
   h=equippedPilotStats(calculated,PILOT_HERO_STATS[hero.id]);
  }
  return typeof SkillCore==="undefined"?h:
-  {...h,skillLevels:Object.fromEntries(SkillCore.UPGRADABLE_IDS.map(id=>[id,SkillCore.level(progress,hero.id,id)]))};
+  {...h,skillLevels:Object.fromEntries(SkillCore.UPGRADABLE_IDS.map(id=>[id,guest?1:SkillCore.level(progress,hero.id,id)]))};
 }
 function progressedEnemy(enemy){
  const h=equippedPilotStats({...enemy},PILOT_ENEMY_STATS);
@@ -1546,8 +1548,8 @@ function selectedParty(){
  // Only occupied positions enter battle, ordered by their actual slot.
  // An empty leader position does NOT transfer leadership to slot 2.
  return squadSlots().filter(Boolean)
-  .filter(heroOwned)
-  .map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(progressedHero);
+  .filter(squadHeroAvailable)
+  .map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(squadHeroStats);
 }
 function battleLineup(){
  if(battleIsMainCampaign)return [...selectedParty(),...MainCampaignCore.enemies(NpcEnemyData)];
@@ -1707,8 +1709,8 @@ function renderSquad(){
  const slots=ids.map(id=>ALLIES.find(h=>h.id===id)||null);
  $("#squadCount").textContent=chosen.length+"/"+MAX_SQUAD;
  // A selected hero belongs to the formation, not to the available roster.
- $("#squadRoster").innerHTML=ALLIES.map(progressedHero).filter(h=>h&&!ids.includes(h.id)).map(h=>{
-  const owned=heroOwned(h.id);
+ $("#squadRoster").innerHTML=ALLIES.map(h=>squadHeroAvailable(h.id)?squadHeroStats(h):h).filter(h=>h&&!ids.includes(h.id)).map(h=>{
+  const owned=squadHeroAvailable(h.id);
   const required=loreMode&&mandatoryIds.includes(h.id);
   const meta=owned?squadHeroSummary(h):"";
   const portrait=squadPortrait(h.id);
@@ -1717,7 +1719,7 @@ function renderSquad(){
    '" '+(required?'aria-disabled="true" data-squad-required="true" title="Обязательный герой сюжетного боя"':"")+
    (owned?"":" disabled")+'>'+
    '<span class="squad-glyph">'+(portrait?'<img src="'+portrait+'" alt="" loading="lazy">':owned?h.glyph:"♙")+'</span>'+
-   '<span class="squad-choice-detail"><b>'+(owned?h.name:"Закрытый герой")+'</b>'+
+   '<span class="squad-choice-detail"><b>'+h.name+'</b>'+
    '<small>'+(owned?meta:"Открывается: "+heroUnlockLabel(h.id))+'</small></span>'+
    '<strong aria-hidden="true">'+(owned?"+":"🔒")+'</strong></button>';
  }).join("");
@@ -1726,12 +1728,12 @@ function renderSquad(){
  const slotHost=$("#squadSlots");
  const slotHtml=Array.from({length:MAX_SQUAD},(_,i)=>{
   const h=slots[i];
-  const p=h?progressedHero(h):null;
+  const p=h?squadHeroStats(h):null;
   const locked=loreMode&&h&&mandatoryIds.includes(h.id);
   const label=h?h.name:"Свободно";
   const portrait=h?squadPortrait(h.id):null;
   const avatar=portrait?'<img class="squad-slot-fallback" src="'+portrait+'" alt="" loading="lazy">':(h?'<span class="squad-slot-glyph" aria-hidden="true">'+h.glyph+'</span>':"");
-  const meta=p?squadHeroSummary(p):"";
+  const meta=p?(heroOwned(h.id)?squadHeroSummary(p):"Сюжетный союзник · только в хронике"):"";
   return '<div class="squad-slot '+(i===0?'squad-slot-leader ':'')+
    (h?'filled ':'')+(locked?'squad-slot-required ':'')+
    '" data-squad-index="'+i+'"'+(locked?' data-squad-required="true"':'')+(h?' data-model-id="'+h.id+'" data-hero-id="'+h.id+'" role="button" tabindex="0"':'')+
@@ -2867,17 +2869,16 @@ function showLockedHero(id){
  lockedStarHeroId=id;
  const cost=StarCore.costOf(progress,id),amount=StarCore.shardsOf(progress,id);
  if(cost===null||amount===null)return false;
- $("#lockedHeroTitle").textContent="Неизвестный герой";
- $("#lockedHeroSource").textContent="Прямое получение: "+heroUnlockLabel(id)+
-  ". Альтернатива — открыть за "+cost+" осколков. Боевые возможности закрыты до получения.";
+ $("#lockedHeroTitle").textContent=ALLIES.find(h=>h.id===id).name;
+ $("#lockedHeroSource").textContent=heroUnlockLabel(id)+". Герой присоединится в ходе сюжета. Этот эпизод ещё недоступен.";
  $("#lockedHeroStars").innerHTML=starGlyphs(0);
  $("#lockedHeroShards").textContent=amount+" / "+cost;
  $("#lockedHeroProgress").max=cost;
  $("#lockedHeroProgress").value=Math.min(cost,amount);
- $("#lockedHeroUnlock").disabled=saveBlocked||amount<cost;
- $("#lockedHeroUnlock").textContent="Открыть за "+cost+" осколков";
+ $("#lockedHeroUnlock").disabled=true;
+ $("#lockedHeroUnlock").hidden=true;
  $("#lockedHeroNotice").textContent=saveBlocked?"Сохранение недоступно.":
-  "Тестовые осколки доступны через кнопку ресурсов в меню.";
+  "Осколки пригодятся для повышения звёзд после вступления героя.";
  const dialog=$("#lockedHeroDialog");
  if(!dialog.open)dialog.showModal();
  return true;
@@ -2939,7 +2940,7 @@ function rosterOrder(entries,filter,sort){
 function renderHeroes(){
  const ownedCount=ALLIES.filter(h=>heroOwned(h.id)).length;
  const count=$("#rosterCount");if(count)count.textContent="Получено "+ownedCount+" из "+ALLIES.length;
- const entries=ALLIES.map(progressedHero).map((h,index)=>{
+ const entries=ALLIES.map(h=>heroOwned(h.id)?progressedHero(h):h).map((h,index)=>{
   const owned=heroOwned(h.id);
   const rank=typeof StarCore!=="undefined"?StarCore.rankOf(progress,h.id):null;
   const gear=owned&&typeof ProgressCore!=="undefined"?ProgressCore.gearState(progress,h.id):null;
@@ -2965,9 +2966,9 @@ function renderHeroes(){
     owned&&h.id==="art"?'<img class="art-collection-portrait" src="assets/art-portrait-roster.webp?v=2" width="384" height="192" loading="lazy" decoding="async" alt="">':
     owned&&h.id==="sava"?'<img class="sava-collection-portrait" src="assets/sava-portrait-roster.webp?v=2" width="384" height="192" loading="lazy" decoding="async" alt="">':owned?h.glyph:"🔒";
   const starInfo=owned&&rank!==null?'<span class="hero-star-summary" aria-label="Ранг '+rank+' из 7">'+starGlyphs(rank)+'</span>':"";
-  const name=owned?h.name:"Неизвестный герой";
+  const name=h.name;
   const levelLine=owned?"Ур. "+h.level+" · "+h.role:"Условия получения";
-  const progressLine=!owned?'<div class="roster-shard-track" aria-hidden="true"><span style="width:'+progressPercent+'%"></span></div><span class="roster-shard-value">Осколки '+safeAmount+' / '+safeCost+'</span>':"";
+  const progressLine=!owned?'<span class="roster-shard-value">Сюжетное получение</span>':"";
   const gearLabel=owned&&Number.isFinite(tier)?"G"+tier:"";
   // Identity tags come from the existing profile registry; no invented factions for demo heroes.
   const profile=owned&&typeof HeroProfileData!=="undefined"?HeroProfileData.get(h.id):null;

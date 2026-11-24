@@ -72,11 +72,8 @@ async function run(label,engine,viewport){
    assert.match(await page.locator("#firstPlayStoryContext").innerText(),choice==="survey"?/Арт.*30.*скорости/:/Рен.*Protection/);
    await page.locator("#firstPlayStoryFight").click();
   }else{
-   // Skip from a fresh briefing must enter the same real neutral encounter.
-   await page.evaluate(()=>localStorage.removeItem(FirstPlayStoryCore.KEY));
-   await page.reload({waitUntil:"load",timeout:60000});
-   await page.locator("#firstPlay.active").waitFor({state:"visible",timeout:30000});
-   await page.locator("#firstPlayStorySkip").click();
+   // The final shot's own command enters the real neutral encounter.
+   await page.locator("#firstPlayStoryFight").click();
   }
   await page.locator("#battle.active").waitFor({state:"visible",timeout:60000});
   const detail=await page.evaluate(()=>({
@@ -128,6 +125,7 @@ async function run(label,engine,viewport){
    assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),
     choice==="cover"?"РЕН ТЕРЕН":"АРТ");
    if(choice!=="neutral")assert.match(await page.locator("#firstPlayStoryContext").innerText(),/Эффект вашего приказа/);
+   else assert.doesNotMatch(await page.locator("#firstPlayStoryContext").innerText(),/Эффект вашего приказа/);
    await page.locator("#firstPlayStoryNext").click();
    assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
    assert.match(await page.locator("#firstPlayStoryLine").innerText(),/безопасен/);
@@ -175,6 +173,14 @@ async function run(label,engine,viewport){
    label+": dialogue and next button must stay within landscape screen");
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"РАБОЧИЙ");
   assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.campaign.v1")),null);
+  if(choice==="neutral"){
+   // A fresh restart offers the same neutral encounter through Skip.
+   await page.locator("#firstPlayStorySkip").click();
+   await page.locator("#battle.active").waitFor({state:"visible",timeout:60000});
+   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem(FirstPlayCore.KEY))),
+    {version:1,phase:"battle",choice:"neutral"});
+   assert.equal(await page.locator("#tacticalGoalText").isVisible(),true);
+  }
   assert.deepEqual(errors,[]);
   console.log("FIRSTSESSIONP0B "+label+" "+viewport.width+"x"+viewport.height+
    " verified; battle: "+result.winner+" in "+result.steps+" actions");

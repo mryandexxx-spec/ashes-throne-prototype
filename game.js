@@ -714,22 +714,30 @@ function firstPlayStorySetCursor(next){
 }
 let firstPlayStoryTimer=null,firstPlayStoryManualAt=-Infinity;
 let firstPlayStoryPaused=typeof window.matchMedia==="function"&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let firstPlayStoryClock={step:null,remaining:0,started:0};
 function stopFirstPlayStoryTimer(){
- if(firstPlayStoryTimer!==null){clearTimeout(firstPlayStoryTimer);firstPlayStoryTimer=null;}
+ if(firstPlayStoryTimer!==null){
+  clearTimeout(firstPlayStoryTimer);firstPlayStoryTimer=null;
+  firstPlayStoryClock.remaining=Math.max(0,firstPlayStoryClock.remaining-(Date.now()-firstPlayStoryClock.started));
+ }
 }
 function scheduleFirstPlayStory(){
  stopFirstPlayStoryTimer();
- if(firstPlayStoryPaused||firstPlayState?.phase!=="briefing"||
-  document.visibilityState==="hidden"||window.innerWidth<window.innerHeight||
-  !$("#firstPlay")?.classList.contains("active"))return;
+ if(firstPlayState?.phase!=="briefing"||!$("#firstPlay")?.classList.contains("active"))return;
  const frame=FirstPlayStoryCore.frame("briefing",null,firstPlayStoryCursor);
- if(!frame.duration)return;
+ const step=firstPlayStoryCursor.step;
+ if(firstPlayStoryClock.step!==step)firstPlayStoryClock={step,remaining:frame.duration||0,started:0};
+ // A frame gets its reading time after its image loads (or errors to text fallback).
+ // Pause/background/portrait preserve the remaining time rather than skipping ahead.
+ if(!frame.duration||firstPlayStoryPaused||document.visibilityState==="hidden"||
+  window.innerWidth<window.innerHeight||$("#firstPlayStoryImage")?.complete===false)return;
+ firstPlayStoryClock.started=Date.now();
  firstPlayStoryTimer=setTimeout(()=>{
-  firstPlayStoryTimer=null;
+  firstPlayStoryTimer=null;firstPlayStoryClock.remaining=0;
   if(!firstPlayStoryPaused&&document.visibilityState!=="hidden"&&
    !(window.innerWidth<window.innerHeight)&&$("#firstPlay")?.classList.contains("active")&&
    firstPlayState?.phase==="briefing")firstPlayStoryNext();
- },frame.duration);
+ },firstPlayStoryClock.remaining);
 }
 function renderFirstPlay(){
  if(!firstPlayState||typeof FirstPlayStoryCore==="undefined")return;
@@ -799,7 +807,7 @@ function renderFirstPlay(){
   const showNote=firstPlayState.phase==="ready"||
    (firstPlayState.phase==="briefing"&&firstPlayStoryCursor.step===FirstPlayStoryCore.INTRO.length-1)||
    (firstPlayState.phase==="won"&&firstPlayStoryCursor.step===0);
-  const label=firstPlayState.phase==="won"&&firstPlayState.choice?
+  const label=firstPlayState.phase==="won"&&FirstPlayStoryCore.ORDER_LABELS[firstPlayState.choice]?
    "Эффект вашего приказа в бою: "+(FirstPlayStoryCore.ORDER_LABELS[firstPlayState.choice]||"")+". ":"";
   context.textContent=showNote?label+(scene.detail||""):"";
   context.hidden=!showNote;
@@ -844,10 +852,12 @@ $("#firstPlayStoryCharacterPortrait")?.addEventListener("error",()=>{
 $("#firstPlayStoryImage")?.addEventListener("load",event=>{
  // A deferred error from a previous source must never leave the real art hidden.
  if(event.currentTarget.naturalWidth>0)event.currentTarget.hidden=false;
+ scheduleFirstPlayStory();
 });
 $("#firstPlayStoryImage")?.addEventListener("error",event=>{
  // Keep the story readable when no art is available, not after a valid load.
  if(!event.currentTarget.naturalWidth)event.currentTarget.hidden=true;
+ scheduleFirstPlayStory();
 });
 function firstPlayStoryNext(event){
  if(event){const now=Date.now();if(now-firstPlayStoryManualAt<350)return;firstPlayStoryManualAt=now;}

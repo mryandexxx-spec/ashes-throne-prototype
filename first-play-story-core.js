@@ -34,40 +34,53 @@ const FirstPlayStoryCore=(()=>{
   renRoute:Object.freeze({focus:"ren",purpose:"Рен находит нижний путь"}),
   decision:Object.freeze({focus:"group",purpose:"Герои и рабочие присутствуют в точке выбора"})
  });
+ // FIRSTPLAY008: action leads to an observation, a response and a new decision.
+ // Local gameplay proposal; approved Five Shadows history is unchanged.
  const INTRO=Object.freeze([
-  {art:"warning",shot:"workers",speakerId:"worker",speaker:"РАБОЧИЙ",text:"Не тяни! Держи за стойку!",detail:"На переходе срывается крепление. Двое ремонтников остаются над пропастью."},
-  {art:"conflict",shot:"workers",speakerId:"master",speaker:"МАСТЕР",text:"Брось груз! Людей сорвёшь!",detail:"Вооружённые сборщики продолжают выносить разобранные крепления."},
-  {art:"artSupport",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Не на настил. С этого края крепление сняли.",detail:"Арт проверяет опору и останавливает Рена."},
-  {art:"renRoute",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Снизу пройти можно. Я видел ступени.",detail:"Рен ищет другой путь к рабочим."},
-  {art:"decision",shot:"wide",speakerId:"master",speaker:"МАСТЕР",text:"Мы вас на проверку звали. Теперь людей надо снимать.",detail:"Решение командира: как подготовить помощь?",choice:true}
+  {art:"warning",shot:"workers",speakerId:"worker",speaker:"РАБОЧИЙ",cue:"Под настилом ревёт вода. Крайние доски трещат.",text:"Мастер! Край пошёл! Мы назад не пройдём!",detail:"Рабочие застряли на повреждённом пролёте."},
+  {art:"conflict",shot:"workers",speakerId:"master",speaker:"МАСТЕР",text:"Я вас на осмотр звал. А тут уже разбирают крепления, пока мои люди на мосту.",detail:"Мастер вызвал помощь для осмотра, но демонтаж начался до вывода рабочих."},
+  {art:"conflict",shot:"workers",speakerId:"worker",speaker:"РАБОЧИЙ",text:"Сборщик всё тянет железо. Я просил их прекратить — охранник встал на сходе и вытащил оружие.",detail:"Охранник склада защищает продолжающего демонтаж сборщика и препятствует подходу к рабочим."},
+  {art:"artSupport",shot:"supports",speakerId:"art",speaker:"АРТ",cue:"Арт поднимает вынутый штифт. В опоре пустое гнездо.",text:"На этот край не ступайте. Балка теперь на канате держится. Ещё рывок — сорвётся.",detail:"Снятый штифт подтверждает причину повреждения. Настил небезопасен."},
+  {art:"renRoute",shot:"route",speakerId:"ren",speaker:"РЕН",cue:"Ниже пролёта видна узкая лестница.",text:"Под мостом ступени есть. До рабочих доберёмся снизу. Только у схода тот охранник.",detail:"Рен показывает обход. Проход к лестнице удерживают противники."},
+  {art:"artSupport",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Прежде чем вести туда людей, проверю нижнее крепление. Если и его сняли — назад.",detail:"Арт предлагает разведать нижнюю опору прежде, чем рисковать людьми."},
+  {art:"renRoute",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Пока мы проверяем, люди останутся там. Я могу отвлечь охранника и прикрыть спуск.",detail:"Рен предлагает удерживать проход, пока рабочие отходят."},
+  {art:"decision",shot:"wide",speakerId:"master",speaker:"МАСТЕР",cue:"Рабочие ждут у стойки. Канат снова натягивается.",text:"Я удержу их на месте. Складские сами не уйдут. С чего начинаем?",detail:"Приказ определит подготовку отряда к столкновению у нижнего схода.",choice:true}
  ]);
  const RESPONSE=Object.freeze({
-  survey:{art:"artSupport",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Под нижним краем. Я посмотрел — пока держит.",detail:"Приказ выполнен: Арт получает +30 к скорости на предстоящий бой.",effect:"survey"},
-  cover:{art:"renRoute",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Хорошо. Только отпустишь по моему знаку.",detail:"Приказ выполнен: Рен получает +35 очков к запасу защиты (Protection) на предстоящий бой.",effect:"cover"}
+  survey:{art:"artSupport",shot:"supports",speakerId:"art",speaker:"АРТ",
+   text:"Нижнюю лестницу проверил. Ступени держат. Проведу быстро, но охранник ещё у выхода.",
+   detail:"Приказ выполнен: Арт получает +30 к скорости на предстоящий бой.",effect:"survey"},
+  cover:{art:"renRoute",shot:"route",speakerId:"ren",speaker:"РЕН",
+   text:"Встану у лестницы. Пока я держу проход, пусть выводят людей по одному. Не толпой.",
+   detail:"Приказ выполнен: Рен получает +35 очков к запасу защиты (Protection) на предстоящий бой.",effect:"cover"}
  });
  const OUTRO=Object.freeze([
-  {art:"aftermath",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Эту сторону закрываем. Ни сверху, ни снизу не пускать.",detail:"После победы рабочие возвращаются на безопасный участок."},
-  {art:"aftermath",shot:"wide",speakerId:"master",speaker:"МАСТЕР",text:"Я их сюда сам направил. По этому списку.",detail:"Переход одновременно помечен безопасным и переданным под разборку."}
+  {art:"aftermath",shot:"supports",speakerId:"art",speaker:"АРТ",
+   text:"Рабочие на берегу. К переходу никого не подпускайте, пока не вернут крепления.",
+   detail:"После реального исхода боя рабочих вывели на безопасный участок."},
+  {art:"aftermath",shot:"wide",speakerId:"master",speaker:"МАСТЕР",
+   cue:"Мастер расправляет помятый лист с отметками.",
+   text:"Я их сам туда послал. Вот по этому листу. Здесь: «переход безопасен». А ниже — «снять крепления». Кто это подписал?",
+   detail:"В одном документе пролёт отмечен безопасным и переданным под разборку."}
  ]);
- // The same real victory reaches the same factual final clue, but the immediate
- // debrief reflects the command that the player actually gave.
  const OUTRO_BRANCH=Object.freeze({
   survey:Object.freeze({art:"aftermath",shot:"supports",speakerId:"art",speaker:"АРТ",
-   text:"Нижний край проверили заранее. Это и дало нам время вывести людей.",
-   detail:"Арт воспользовался разведанным проходом; после операции этот путь закрывают до ремонта."}),
+   text:"Все вышли по нижним ступеням. Теперь лестницу закрыть до ремонта.",
+   detail:"Подход, который проверил Арт, помог вывести рабочих после столкновения."}),
   cover:Object.freeze({art:"aftermath",shot:"route",speakerId:"ren",speaker:"РЕН",
-   text:"Пока они отходили, проход удержали. Теперь его можно закрывать.",
-   detail:"Прикрытие Рена позволило рабочим отойти без нового риска на повреждённом настиле."})
+   text:"Все прошли, пока мы удерживали лестницу. Никого больше туда не пускайте.",
+   detail:"Пока Рен удерживал проход, рабочие успели отойти."})
  });
  const ORDER_LABELS=Object.freeze({survey:"Арт · скорость +30",cover:"Рен · запас защиты +35"});
  const fresh=()=>({version:1,part:"intro",step:0});
  function isValid(c){return !!c&&c.version===1&&["intro","outro"].includes(c.part)&&
-  Number.isInteger(c.step)&&c.step>=0&&c.step<=5;}
+  Number.isInteger(c.step)&&c.step>=0&&
+  (c.part==="intro"?c.step<=INTRO.length:c.step<OUTRO.length);}
  function normalize(saved,phase){
   if(phase==="won")return saved?.part==="outro"&&isValid(saved)?
    {version:1,part:"outro",step:Math.min(saved.step,OUTRO.length-1)}:
    {version:1,part:"outro",step:0};
-  if(phase==="ready")return {version:1,part:"intro",step:5};
+  if(phase==="ready")return {version:1,part:"intro",step:INTRO.length};
   if(phase==="briefing")return saved?.part==="intro"&&isValid(saved)?
    {version:1,part:"intro",step:Math.min(saved.step,INTRO.length-1)}:fresh();
   return fresh();

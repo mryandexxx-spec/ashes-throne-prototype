@@ -714,6 +714,7 @@ function renderFirstPlay(){
  firstPlayStoryCursor=FirstPlayStoryCore.normalize(firstPlayStoryCursor,firstPlayState.phase);
  const scene=FirstPlayStoryCore.frame(firstPlayState.phase,firstPlayState.choice,firstPlayStoryCursor);
  const name=$("#firstPlayStorySpeaker"),line=$("#firstPlayStoryLine"),
+  cueNode=$("#firstPlayStoryCue"),
   image=$("#firstPlayStoryImage"),art=FirstPlayStoryCore.ART[scene.art],
   source=$("#firstPlayStorySource"),avif=FirstPlayStoryCore.AVIF[scene.art],
   cast=FirstPlayStoryCore.CAST[scene.speakerId],
@@ -722,6 +723,7 @@ function renderFirstPlay(){
   voice=$("#firstPlayStoryVoice"),story=$("#firstPlayStory");
  if(name)name.textContent=cast?.label||scene.speaker;
  if(line)line.textContent=scene.text;
+ if(cueNode){cueNode.textContent=scene.cue||"";cueNode.hidden=!scene.cue;}
  if(story){
   story.dataset.speaker=scene.speakerId||"unknown";
   story.dataset.shot=scene.shot||"wide";
@@ -772,7 +774,8 @@ function renderFirstPlay(){
  }
  const context=$("#firstPlayStoryContext");
  if(context){
-  const showNote=firstPlayState.phase==="ready"||firstPlayState.phase==="won";
+  const showNote=firstPlayState.phase==="ready"||
+   (firstPlayState.phase==="won"&&firstPlayStoryCursor.step===0);
   const label=firstPlayState.phase==="won"&&firstPlayState.choice?
    "Эффект вашего приказа в бою: "+(FirstPlayStoryCore.ORDER_LABELS[firstPlayState.choice]||"")+". ":"";
   context.textContent=showNote?label+(scene.detail||""):"";

@@ -330,7 +330,7 @@ async function run(label,engine,viewport){
     // The actual onboarding route reaches a real M1 battle, not just a map.
     await page.locator("#mainCampaignNode").tap();
     await page.locator("#squadDisband").tap();
-    for(const id of ["ren","nada","liora","art","sava"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
+    for(const id of ["ren","art"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
     await page.locator("#squadStart").tap();
     if(await page.locator("#squad.active").isVisible())await page.locator("#squadStart").tap();
     await page.locator("#battle.active").waitFor({state:"visible",timeout:60000});

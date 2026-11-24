@@ -24,8 +24,8 @@ const squad=any(f=>["game.js","index.html","styles.css","squad-stage-3d.js","tes
  || /^assets\/.*\.glb$/.test(f)||/^assets\/resources\//.test(f));
 const battle=any(f=>/^(combat-|arena-|battle-|npc-|enemy-|tests\/arena-fix-001)/.test(f)
  || f==="combat-core.js" || f==="arena-world-hud.js");
-const lore=any(f=>/^(lore-|story-|tests\/lore-campaign)/.test(f));
-const network=any(f=>/^(network-|net-|weekly-threat-|tests\/network-)/.test(f));
+const lore=any(f=>/^(lore-|story-|tests\/lore-campaign)/.test(f)||["hero-collection-core.js","star-core.js","reward-policy-core.js","progress-v3-core.js"].includes(f));
+const network=any(f=>/^(network-|net-|weekly-threat-|tests\/network-)/.test(f)||["hero-collection-core.js","star-core.js","reward-policy-core.js","progress-v3-core.js"].includes(f));
 const hero=any(f=>/^(hero-card|hero-stats|gear-|tests\/hero-card)/.test(f));
 // Roster/save schema changes require the full regression, not only squad/hero smoke.
 const audit=any(f=>f.startsWith(".github/workflows/")||f==="scripts/ci-selective.cjs"||

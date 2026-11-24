@@ -56,6 +56,7 @@ async function run(name,browserType,viewport){
  try{
   await page.goto(url,{waitUntil:"load",timeout:60000});await ready();
   assert.equal(await page.locator("#hqFirstSessionAction").isVisible(),false,"developer bypass must not create an onboarding quest");
+  assert.deepEqual(await page.evaluate(()=>ALLIES.filter(h=>heroOwned(h.id)).map(h=>h.id).sort()),["art","ren"]);
   await showMap();
   await routeReady();await visibleTarget("#mainCampaignMapPin");await page.screenshot({path:path.join(dest,key+"-locked.png")});
   const before=await inspect();assert.equal(before.proof.best,0);assert.equal(before.receipts,0);assert.equal(before.first,false);
@@ -63,15 +64,15 @@ async function run(name,browserType,viewport){
   await page.locator("#squadBack").tap();await routeReady();
   await page.locator("#mainCampaignNode").tap();
   await page.locator("#squadDisband").tap();
-  await page.locator('#squadRoster .squad-choice[data-hero-id="nada"]').tap();
-  assert.equal(await fight(),"enemy","one starter support vs two full NPCs");
+  await page.locator('#squadRoster .squad-choice[data-hero-id="art"]').tap();
+  assert.equal(await fight(),"enemy","one starter vs two NPCs");
   assert.equal((await inspect()).proof.best,0);assert.equal((await inspect()).currency,before.currency);
   assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
   assert.equal(await page.locator("#mainCampaignResultReward").isVisible(),false);
   await visibleTarget("#mainCampaignResultBack");await visibleTarget("#mainCampaignResultRetry");
   await page.locator("#mainCampaignResultRetry").tap();
   await page.locator("#squadDisband").tap();
-  for(const id of ["ren","nada","liora","art","sava"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
+  for(const id of ["ren","art"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
   assert.equal(await fight(),"ally");
   const won=await inspect();assert.ok(won.proof.best>0);assert.equal(won.currency,before.currency);assert.equal(won.receipts,0);
   await noOverflow();await visibleTarget("#mainCampaignResultClaim");await visibleTarget("#mainCampaignResultBack");

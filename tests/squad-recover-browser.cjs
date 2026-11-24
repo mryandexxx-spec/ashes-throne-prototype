@@ -17,6 +17,9 @@ async function check(browserName,engine,viewport){
   await page.goto(origin+(origin.includes("?")?"&":"?")+"skipFirstPlay=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof openSquad==="function"&&typeof SquadStage3D!=="undefined",null,{timeout:60000});
   await page.evaluate(()=>{
+   // Explicit late-collection fixture: this test measures five GLBs, not acquisition.
+   for(const id of ["nada","liora","sava"])if(!heroOwned(id))StarCore.directGrant(progress,id);
+   if(!persistProgress())throw Error("TEST_FIXTURE_SAVE_FAILED");
    setSquadSlots(["ren","nada","liora","art","sava"]);
    openSquad("home");
   });

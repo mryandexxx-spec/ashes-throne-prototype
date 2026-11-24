@@ -9,7 +9,7 @@ function setup(){
  const provider=()=>storage;let pending=Promise.resolve();
  const exclusive=fn=>{const next=pending.then(fn);pending=next.catch(()=>{});return next};
  const loaded=S.load(heroes,provider);assert.equal(loaded.blocked,false);
- const args={source:{sourceId:"test-fictional-recruit",kind:"first-clear",energyCost:0,reward:{currency:0,accountXp:0,materials:{},heroGrants:["nada"]}},occurrenceId:"once",day:"2026-11-24",heroes,storageProvider:provider,exclusive,authorize:({storage})=>storage.getItem("test-proof")==="won"};
+ const args={source:{sourceId:"main-cam-test-fictional-recruit",kind:"first-clear",energyCost:0,reward:{currency:0,accountXp:0,materials:{},heroGrants:["nada"]}},occurrenceId:"once",day:"2026-11-24",heroes,storageProvider:provider,exclusive,authorize:({storage})=>storage.getItem("test-proof")==="won"};
  return {map,storage,provider,args,loaded,fail:()=>{fail=true}};
 }
 test("fresh two, locked three, no real M1 recruitment and no shard shortcut",()=>{

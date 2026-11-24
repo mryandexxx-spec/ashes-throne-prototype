@@ -29,7 +29,7 @@ const RewardPolicyCore=(()=>{
       !obj(source.reward.heroShards)||typeof StarCore==="undefined"||
       Object.keys(source.reward.heroShards).some(id=>
        !StarCore.IDS.includes(id)||!nonneg(source.reward.heroShards[id]))))||
-    (source.reward.heroGrants!==undefined&&(source.kind!=="first-clear"||
+    (source.reward.heroGrants!==undefined&&(source.kind!=="first-clear"||!source.sourceId.startsWith("main-cam-")||
       source.energyCost!==0||source.maxPerDay!==undefined||typeof StarCore==="undefined"||
       !Array.isArray(source.reward.heroGrants)||!source.reward.heroGrants.length||
       new Set(source.reward.heroGrants).size!==source.reward.heroGrants.length||

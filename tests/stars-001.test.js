@@ -7,8 +7,10 @@ const {Star,H,S}=vm.runInNewContext(files.map(read).join("\n")+
  "\n({Star:StarCore,H:HeroCollectionCore,S:SaveCore})");
 const roster=["ren","nada","liora","art","sava"];
 const inactive=["kael","lyra","darin","medic-demo","test-area-damage"];
-assert.deepEqual(Array.from(Star.START),roster);
-assert.deepEqual(Array.from(H.START),roster);
+assert.deepEqual(Array.from(Star.PLAYABLE),roster);
+assert.deepEqual(Array.from(H.PLAYABLE),roster);
+assert.deepEqual(Array.from(Star.START),["ren","art"]);
+assert.deepEqual(Array.from(H.START),["ren","art"]);
 assert.equal(Star.MAX,7);
 assert.deepEqual(Array.from(Star.COST),[10,15,25,30,65,85,100]);
 const data=new Map(),storage={getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)};
@@ -16,7 +18,9 @@ const provider=()=>storage,allies=roster.map(id=>({id,side:"ally"}));
 let p=S.load(allies,provider).progress;
 assert.equal(p.saveVersion,3);
 assert.equal(Star.valid(p.heroStars),true);
-for(const id of roster){assert.equal(Star.rankOf(p,id),1);assert.equal(H.owned(p,id),true);}
+for(const id of roster){const starter=H.START.includes(id);assert.equal(Star.rankOf(p,id),starter?1:0);assert.equal(H.owned(p,id),starter);}
+// Explicit full-collection fixture for the historical rank progression checks.
+for(const id of roster.filter(id=>!H.START.includes(id)))assert.equal(Star.directGrant(p,id),true);
 for(const id of inactive){
  assert.equal(H.owned(p,id),false);
  assert.equal(Star.add(p,id,10),false);

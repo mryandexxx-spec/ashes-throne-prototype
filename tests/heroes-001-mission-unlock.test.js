@@ -15,15 +15,15 @@ const allies=playable.map(id=>({id,side:"ally"}));
 const db=new Map(),get=()=>({getItem:key=>db.get(key)??null,setItem:(key,val)=>db.set(key,val)});
 
 test("DEMOROSTER001: only five story heroes belong to playable progress",()=>{
- assert.deepEqual(Array.from(H.START),playable);
- assert.deepEqual(Array.from(H.START),playable);
- assert.deepEqual(Array.from(StarCore.START),playable);
+ assert.deepEqual(Array.from(H.PLAYABLE),playable);
+ assert.deepEqual(Array.from(H.START),["ren","art"]);
+ assert.deepEqual(Array.from(StarCore.START),["ren","art"]);
  assert.ok(playable.every(id=>SkillCore.HERO_IDS.includes(id)));
  const fresh=SaveCore.load(allies,get);
  assert.equal(fresh.progress.saveVersion,3);
- assert.deepEqual(Array.from(fresh.progress.unlockedHeroes),playable);
- assert.deepEqual(Array.from(Object.keys(fresh.progress.heroStars)).filter(id=>fresh.progress.heroStars[id].rank>0).sort(),playable.slice().sort());
- assert.ok(playable.every(id=>H.owned(fresh.progress,id)));
+ assert.deepEqual(Array.from(fresh.progress.unlockedHeroes),["ren","art"]);
+ assert.deepEqual(Array.from(Object.keys(fresh.progress.heroStars)).filter(id=>fresh.progress.heroStars[id].rank>0).sort(),["art","ren"]);
+ assert.ok(playable.every(id=>H.owned(fresh.progress,id)===H.START.includes(id)));
  assert.ok(retired.every(id=>!H.owned(fresh.progress,id)));
  for(const mission of ["black-pass-ambush","demo-mission-2","demo-mission-3"]){
   assert.equal(H.reward(mission),null);
@@ -43,6 +43,9 @@ test("DEMOROSTER001: precise old ten-hero save is pruned with a backup, without 
  const store=get(),now=1700000000000;
  const fresh=V.fresh(allies,now);
  fresh.heroes.ren.level=1;
+ // The historical save being migrated actually owned all five real heroes.
+ fresh.unlockedHeroes=playable.slice();
+ fresh.heroStars=StarCore.fromLegacy(playable);
  for(const id of retired){
   fresh.heroes[id]={classId:({kael:"tank",lyra:"ranged",darin:"melee","medic-demo":"support","test-area-damage":"mage"})[id],
    level:1,gear:{tier:1,installedByTier:{"1":Array(6).fill(null)}}};

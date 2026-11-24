@@ -60,6 +60,7 @@ async function run(name,type,w,h){
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
   await prepareStory(page);
   const baseline=await state(page);
+  assert.equal(await page.evaluate(()=>heroOwned("nada")),false,"Narrative guest is not a collection unlock");
   await enterRequiredSquad(page);
   assert.equal(await page.locator("#squadIntro").innerText(),
    "«Пять теней»: Рен и Нада обязательны. Остальных героев выбираешь ты.");

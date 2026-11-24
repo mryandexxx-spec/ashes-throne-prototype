@@ -1464,6 +1464,7 @@ function prepareLoreRequiredSlots(current){
  return slots;
 }
 function setSquadSlots(slots){
+ slots=slots.map(id=>squadHeroAvailable(id)?id:null);
  if(isLoreRequiredSquad()){
   loreSquadSlots=slots.slice(0,MAX_SQUAD);
  }else if(["network","weekly"].includes(squadReturnScreen)&&networkSquadSlots){
@@ -2872,7 +2873,7 @@ function showLockedHero(id){
  $("#lockedHeroTitle").textContent=ALLIES.find(h=>h.id===id).name;
  $("#lockedHeroSource").textContent=heroUnlockLabel(id)+". Герой присоединится в ходе сюжета. Этот эпизод ещё недоступен.";
  $("#lockedHeroStars").innerHTML=starGlyphs(0);
- $("#lockedHeroShards").textContent=amount+" / "+cost;
+ $("#lockedHeroShards").textContent=String(amount);
  $("#lockedHeroProgress").max=cost;
  $("#lockedHeroProgress").value=Math.min(cost,amount);
  $("#lockedHeroUnlock").disabled=true;
@@ -4576,7 +4577,7 @@ function resetBattle(){
  const realHeroFight=allies.length>0&&
   allies.every(f=>["ren","nada","liora","art","sava"].includes(f.id));
  state=CombatCore.createBattle(lineup,waves,{
-  leaderId:storyTrialParty&&battleIsStoryDemo?null:selectedLeaderId,
+  leaderId:storyTrialParty&&battleIsStoryDemo?null:battleIsLoreRequired?squadSlots()[0]:selectedLeaderId,
   ...(battleIsFirstPlay?{leaderId:null,tacticalObjective:{
    kind:"hold-or-defeat",protectAllyId:"ren",allyActionsToHold:6
   }}:{}),

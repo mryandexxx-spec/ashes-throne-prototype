@@ -64,6 +64,8 @@ const SkillCore=(()=>{
   if(!progress||progress.saveVersion!==3||!HERO_IDS.includes(id)||
     !(IDS.includes(abilityId)||(abilityId==="passive"&&PASSIVE_IDS.includes(id))))
    return "Навык недоступен.";
+  if(typeof StarCore!=="undefined"&&StarCore.PLAYABLE.includes(id)&&StarCore.rankOf(progress,id)===0)
+   return "Сначала получите героя в кампании.";
   if(progress.passiveLevels!==undefined&&!validPassiveLevels(progress.passiveLevels))
    return "Данные пассивных навыков повреждены.";
   if(progress.skillLevels!==undefined&&!validLevels(progress.skillLevels))return "Данные навыков повреждены.";

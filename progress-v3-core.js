@@ -67,12 +67,15 @@ const ProgressV3Core=(()=>{
  function fresh(heroes,now=Date.now()){
   const ids=allyIds(heroes);
   if(!ids||!nonneg(now))return null;
+  const starters=typeof HeroCollectionCore!=="undefined"?HeroCollectionCore.START.slice():
+   typeof StarCore!=="undefined"?StarCore.START.slice():undefined;
   return validate({
    version:VERSION,accountXp:0,currency:0,legacyC:0,
    energy:{value:ProgressCore.ENERGY_MAX,updatedAt:now},
    claimedMissions:[],
-   unlockedHeroes:typeof HeroCollectionCore!=="undefined"?HeroCollectionCore.START.slice():undefined,
-   ...(typeof StarCore!=="undefined"?{heroStars:StarCore.fromLegacy(StarCore.START)}:{}),
+   unlockedHeroes:typeof HeroCollectionCore!=="undefined"?starters:undefined,
+   ...(typeof StarCore!=="undefined"&&typeof HeroCollectionCore!=="undefined"?{heroStars:StarCore.fromLegacy(starters)}:
+    typeof StarCore!=="undefined"?{heroStars:StarCore.fromLegacy(undefined)}:{}),
    heroes:Object.fromEntries(ids.map(id=>[id,cleanHero(id)])),
    materials:Object.fromEntries(MATERIALS.map(id=>[id,0])),
    migration:{strategy:"clean-heroes-v1",sourceVersion:null}

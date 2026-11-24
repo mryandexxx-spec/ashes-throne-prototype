@@ -24,7 +24,7 @@ function oldProfile(count=7){
 }
 test("Liora playable pilot has a real persistent ID but no approved backstory",()=>{
  assert.ok(collection.IDS.includes("liora"));
- assert.ok(collection.START.includes("liora"));
+ assert.ok(collection.PLAYABLE.includes("liora")&&!collection.START.includes("liora"));
  assert.ok(stars.IDS.includes("liora"));
  assert.ok(skills.HERO_IDS.includes("liora"));
  assert.equal(v3.TEST_CLASSES.liora,"tank");

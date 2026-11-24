@@ -67,7 +67,11 @@ const SaveCore=(()=>{
     if(restored)return {progress:restored,available:true,fresh:stage.status==="staged"&&stage.profile.migration.sourceVersion===null,blocked:false};
    }
    // Damaged saves must not be silently overwritten by a new profile.
-   const fallback=ProgressCore.createProgress(heroes);
+   // Use the current roster shape for an in-memory, write-blocked preview:
+   // v2 fallback has no stars and would crash a rank-dependent starter card.
+   const preview=typeof HeroCollectionCore!=="undefined"&&typeof StarCore!=="undefined"?
+    ProgressV3Core.fresh(heroes):null;
+   const fallback=(preview&&ProgressV3Core.toRuntime(preview,heroes))||ProgressCore.createProgress(heroes);
    fallback.saveBlocked=true;
    return {progress:fallback,available:false,fresh:true,blocked:true,
     reason:stage.reason??"invalid-v3"};

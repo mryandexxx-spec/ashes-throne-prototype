@@ -34,7 +34,7 @@ assert.equal(battle.fighters.filter(f=>f.side==="enemy").length,2);
 const game=read("game.js"),html=read("index.html"),pkg=JSON.parse(read("package.json"));
 assert.match(game,/if\(battleIsStoryDemo&&storyTrialParty\)/);
 assert.match(game,/StoryTrialData\.heroes\(\)/);
-assert.match(game,/storyTrialParty&&battleIsStoryDemo\?null:selectedLeaderId/);
+assert.match(game,/storyTrialParty&&battleIsStoryDemo\?null:/);
 assert.match(html,/id="storyDemoTrialFight"/);
 assert.match(html,/src="story-trial-data.js"/);
 assert.ok(!read("hero-collection-core.js").includes("trial-ren"));

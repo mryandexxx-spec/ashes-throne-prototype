@@ -35,7 +35,7 @@ test("LOREARTSAVA001: normal squad is the template; mandatory heroes fit five sl
  const factory=vm.runInNewContext(
   '(function(trials,context){const LoreCampaignTrials=trials;'+
   'const loreRequiredContext=context;const MAX_SQUAD=5;'+
-  'let squadReturnScreen="loreRequired";'+game.slice(begin,end)+
+  'const heroOwned=id=>["kael","lyra","darin","medic-demo","test-area-damage"].includes(id);let squadReturnScreen="loreRequired";'+game.slice(begin,end)+
   'return {requiredLoreHeroIds,prepareLoreRequiredSlots};})'
  );
  const ordinary=["kael","lyra","darin","medic-demo","test-area-damage"];
@@ -53,7 +53,7 @@ test("LOREARTSAVA001: normal squad is the template; mandatory heroes fit five sl
   for(const id of mandatory)assert.ok(slots.includes(id),name+" "+id);
   assert.deepEqual(ordinary,original,"Original saved formation is untouched");
  }
- assert.match(game,/requiredLoreHeroIds\(\)\.every\(id=>ids\.includes\(id\)&&heroOwned\(id\)\)/);
+ assert.match(game,/requiredLoreHeroIds\(\)\.every\(id=>ids\.includes\(id\)&&squadHeroAvailable\(id\)\)/);
  assert.match(game,/if\(isLoreRequiredSquad\(\)&&requiredLoreHeroIds\(\)\.includes\(id\)\)return false/);
  assert.match(game,/slots\.map\(id=>requiredLoreHeroIds\(\)\.includes\(id\)\?id:null\)/);
  assert.match(game,/mandatoryIds\.length===2\?/,"Existing two-hero intro remains compatible");

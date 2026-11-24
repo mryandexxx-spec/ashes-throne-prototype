@@ -22,11 +22,12 @@ const any=fn=>changed.some(fn);
 const squad=any(f=>["game.js","index.html","styles.css","squad-stage-3d.js","tests/squad-recover-browser.cjs",
  "resource-icon-ui.js","resource-icon-ui.css","tests/resource-icon-ui-browser.cjs"].includes(f)
  || /^assets\/.*\.glb$/.test(f)||/^assets\/resources\//.test(f));
-const battle=any(f=>/^(combat-|arena-|battle-|npc-|enemy-|tests\/arena-fix-001)/.test(f)
+const rosterOwnership=any(f=>["hero-collection-core.js","star-core.js","progress-v3-core.js"].includes(f));
+const battle=rosterOwnership||any(f=>/^(combat-|arena-|battle-|npc-|enemy-|tests\/arena-fix-001)/.test(f)
  || f==="combat-core.js" || f==="arena-world-hud.js");
-const lore=any(f=>/^(lore-|story-|tests\/lore-campaign)/.test(f));
-const network=any(f=>/^(network-|net-|weekly-threat-|tests\/network-)/.test(f));
-const hero=any(f=>/^(hero-card|hero-stats|gear-|tests\/hero-card)/.test(f));
+const lore=any(f=>/^(lore-|story-|tests\/lore-campaign)/.test(f)||["hero-collection-core.js","star-core.js","reward-policy-core.js","progress-v3-core.js"].includes(f));
+const network=any(f=>/^(network-|net-|weekly-threat-|tests\/network-)/.test(f)||["hero-collection-core.js","star-core.js","reward-policy-core.js","progress-v3-core.js"].includes(f));
+const hero=rosterOwnership||any(f=>/^(hero-card|hero-stats|gear-|tests\/hero-card)/.test(f));
 // Roster/save schema changes require the full regression, not only squad/hero smoke.
 const audit=any(f=>f.startsWith(".github/workflows/")||f==="scripts/ci-selective.cjs"||
  ["hero-collection-core.js","progress-v3-core.js","star-core.js","resource-icon-ui.js","first-play-core.js","tests/campaign-hub-001.test.js"].includes(f));

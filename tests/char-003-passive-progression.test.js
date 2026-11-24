@@ -6,13 +6,15 @@ const modules=["gear-data.js","hero-collection-core.js","skill-core.js",
  "star-core.js","progress-core.js","save-core.js","progress-v3-core.js",
  "ability-data.js","ability-info.js"];
 const a=vm.runInNewContext(modules.map(read).join("\n")+
- "\n({SkillCore,ProgressCore,ProgressV3Core,AbilityData,AbilityInfo})");
+ "\n({SkillCore,ProgressCore,ProgressV3Core,AbilityData,AbilityInfo,StarCore})");
 const roster=["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora"]
  .map(id=>({id,side:"ally"}));
 function profile(){
  const fresh=a.ProgressV3Core.fresh(roster,1000);
  const p=a.ProgressV3Core.toRuntime(fresh,roster);
  assert.ok(p);
+ // The passive progression fixture represents an already recruited Nada.
+ assert.ok(a.StarCore.directGrant(p,"nada"));
  return {fresh,p};
 }
 test("CHAR003 previous v3 saves have implicit L1 passives without rewriting old fields",()=>{
@@ -98,7 +100,7 @@ test("CHAR003 v3 saves and reloads both passive levels, rejects corrupt and pres
 test("CHAR003 card and skill dialog expose only actual playable passives",()=>{
  const source=read("game.js");
  assert.match(source,/SkillCore\.UPGRADABLE_IDS\.includes\(info\.id\)/);
- assert.match(source,/SkillCore\.UPGRADABLE_IDS\.map\(id=>\[id,SkillCore\.level/);
+ assert.match(source,/SkillCore\.UPGRADABLE_IDS\.map\(id=>\[id,guest\?1:SkillCore\.level/);
  assert.match(source,/SkillCore\.level\(progress,selectedHeroId,id\)===null/);
 });
 

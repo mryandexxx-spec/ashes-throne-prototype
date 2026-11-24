@@ -5,7 +5,7 @@ const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const scripts=["gear-data.js","hero-collection-core.js","skill-core.js","star-core.js",
  "progress-core.js","save-core.js","progress-v3-core.js"];
 const source=scripts.map(file=>fs.readFileSync(path.join(__dirname,"..",file),"utf8")).join("\n");
-const api=vm.runInNewContext(source+"\n({ProgressCore,ProgressV3Core})");
+const api=vm.runInNewContext(source+"\n({ProgressCore,ProgressV3Core,StarCore})");
 const roster=["kael","lyra","darin","medic-demo","test-area-damage","ren","nada"]
  .map(id=>({id,side:"ally"}));
 
@@ -13,6 +13,7 @@ test("PROG085 v3 roundtrip preserves L85 Ren/Nada and mannequin L1",()=>{
  const fresh=api.ProgressV3Core.fresh(roster,123456);
  const progress=api.ProgressV3Core.toRuntime(fresh,roster);
  assert.ok(progress);
+ assert.ok(api.StarCore.directGrant(progress,"nada"));
  progress.accountXp=api.ProgressCore.xpThresholdForLevel(85);
  progress.currency=500000;
  assert.equal(api.ProgressCore.upgradeMany(progress,"ren",85).to,85);

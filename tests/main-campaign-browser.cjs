@@ -5,6 +5,29 @@ const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("n
 const origin=process.env.GAME_ORIGIN||"http://127.0.0.1:8765/";
 const url=origin+(origin.includes("?")?"&":"?")+"skipFirstPlay=1";
 const dest=path.join(process.cwd(),"artifacts","main-campaign");fs.mkdirSync(dest,{recursive:true});
+async function tapFighter(page,id){
+ const point=await page.evaluate(id=>{
+  const canvas=document.querySelector("#renderCanvas"),rect=canvas.getBoundingClientRect();
+  const camera=arenaCamera,m=meshes[id];
+  if(!m||!scene||!camera)return null;
+  const width=engine.getRenderWidth(),height=engine.getRenderHeight();
+  const vp=camera.viewport.toGlobal(width,height);
+  const fighterId=mesh=>{while(mesh&&!mesh.metadata?.fighterId)mesh=mesh.parent;return mesh?.metadata?.fighterId;};
+  for(const part of [m.body,m.head,m.base]){
+   const p=BABYLON.Vector3.Project(part.getAbsolutePosition(),BABYLON.Matrix.Identity(),scene.getTransformMatrix(),vp);
+   const x=p.x*rect.width/width,y=p.y*rect.height/height;
+   for(const dy of [0,-8,8,-16,16,-24,24])for(const dx of [0,-8,8,-16,16]){
+    const sx=x+dx,sy=y+dy;
+    if(sx<0||sy<0||sx>=rect.width||sy>=rect.height)continue;
+    if(document.elementFromPoint(rect.left+sx,rect.top+sy)!==canvas)continue;
+    if(fighterId(scene.pick(sx,sy)?.pickedMesh)===id)return {x:rect.left+sx,y:rect.top+sy};
+   }
+  }
+  return null;
+ },id);
+ assert.ok(point,"real visible pickable canvas point for "+id);
+ await page.touchscreen.tap(point.x,point.y);
+}
 async function run(name,browserType,viewport){
  const browser=await browserType.launch(name==="chromium"?{headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage"]}:{headless:true});
  const page=await browser.newPage({viewport,hasTouch:true,reducedMotion:"reduce"});
@@ -42,20 +65,32 @@ async function run(name,browserType,viewport){
   await visibleTarget(selector);
   assert.equal(await page.locator("#campaignMainContent #storyDemoOpen").count(),0);
  };
- const fight=async()=>{
+ const fight=async(manual=false)=>{
   await page.locator("#squadStart").tap();
   if(await page.locator("#squad.active").isVisible())await page.locator("#squadStart").tap();
   await page.locator("#battle.active").waitFor({timeout:30000});
   await page.waitForFunction(()=>state.active&&battleIsMainCampaign&&!visualActionPending()&&!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:60000});
   assert.equal(await page.evaluate(()=>state.fighters.filter(f=>f.side==="enemy").every(f=>f.id.startsWith("npc-cam-m1-"))),true);
   for(let i=0;i<2;i++)await page.locator("#autoSpeedBtn").tap();
-  await page.locator("#autoBattleBtn").tap();
+  if(manual){
+   for(let i=0;i<45;i++){
+    await page.waitForFunction(()=>!state.active||(!visualActionPending()&&!isVisualTransition()&&!document.querySelector("#basicAbilityBtn").disabled),null,{timeout:30000});
+    const turn=await page.evaluate(()=>({active:state.active,actions:state.allyActions,
+     target:state.fighters.filter(f=>f.side==="enemy"&&f.hp>0).sort((a,b)=>a.hp+a.protection-b.hp-b.protection)[0]?.id,
+     selected:state.fighters[state.selectedEnemy]?.id}));
+    if(!turn.active)break;
+    if(turn.target&&turn.target!==turn.selected)await tapFighter(page,turn.target);
+    await page.locator("#basicAbilityBtn").tap();
+    await page.waitForFunction(n=>!state.active||state.allyActions>n,turn.actions,{timeout:15000});
+   }
+  }else await page.locator("#autoBattleBtn").tap();
   await page.locator("#mainCampaignResult.active").waitFor({timeout:180000});
   return page.evaluate(()=>state.winner);
  };
  try{
   await page.goto(url,{waitUntil:"load",timeout:60000});await ready();
   assert.equal(await page.locator("#hqFirstSessionAction").isVisible(),false,"developer bypass must not create an onboarding quest");
+  assert.deepEqual(await page.evaluate(()=>ALLIES.filter(h=>heroOwned(h.id)).map(h=>h.id).sort()),["art","ren"]);
   await showMap();
   await routeReady();await visibleTarget("#mainCampaignMapPin");await page.screenshot({path:path.join(dest,key+"-locked.png")});
   const before=await inspect();assert.equal(before.proof.best,0);assert.equal(before.receipts,0);assert.equal(before.first,false);
@@ -63,16 +98,16 @@ async function run(name,browserType,viewport){
   await page.locator("#squadBack").tap();await routeReady();
   await page.locator("#mainCampaignNode").tap();
   await page.locator("#squadDisband").tap();
-  await page.locator('#squadRoster .squad-choice[data-hero-id="nada"]').tap();
-  assert.equal(await fight(),"enemy","one starter support vs two full NPCs");
+  await page.locator('#squadRoster .squad-choice[data-hero-id="art"]').tap();
+  assert.equal(await fight(),"enemy","one starter vs two NPCs");
   assert.equal((await inspect()).proof.best,0);assert.equal((await inspect()).currency,before.currency);
   assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
   assert.equal(await page.locator("#mainCampaignResultReward").isVisible(),false);
   await visibleTarget("#mainCampaignResultBack");await visibleTarget("#mainCampaignResultRetry");
   await page.locator("#mainCampaignResultRetry").tap();
   await page.locator("#squadDisband").tap();
-  for(const id of ["ren","nada","liora","art","sava"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
-  assert.equal(await fight(),"ally");
+  for(const id of ["ren","art"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
+  assert.equal(await fight(true),"ally","manual basic attacks with the two fresh starters");
   const won=await inspect();assert.ok(won.proof.best>0);assert.equal(won.currency,before.currency);assert.equal(won.receipts,0);
   await noOverflow();await visibleTarget("#mainCampaignResultClaim");await visibleTarget("#mainCampaignResultBack");
   assert.match(await page.locator("#mainCampaignResultRewardAmount").innerText(),/40/);

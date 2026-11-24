@@ -17,8 +17,8 @@ test("permanent Nada is a separate playable hero, not the story fixture",()=>{
  assert.equal(nada?.name,"Нада");
  assert.match(nada.biography,/документ/);
  assert.ok(trial.profiles.some(hero=>hero.id==="trial-nada"));
- assert.ok(collection.IDS.includes("nada")&&collection.START.includes("nada"));
- assert.ok(stars.IDS.includes("nada")&&stars.START.includes("nada"));
+ assert.ok(collection.IDS.includes("nada")&&collection.PLAYABLE.includes("nada")&&!collection.START.includes("nada"));
+ assert.ok(stars.IDS.includes("nada")&&stars.PLAYABLE.includes("nada")&&!stars.START.includes("nada"));
  assert.ok(skills.HERO_IDS.includes("nada"));
  assert.equal(trial.profiles.some(hero=>hero.id==="nada"),false);
  const game=root("game.js"),defs=game.slice(0,game.indexOf("const $="));

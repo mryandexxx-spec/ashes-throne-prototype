@@ -3,7 +3,8 @@
 const StarCore=(()=>{
  "use strict";
  const IDS=Object.freeze(["kael","lyra","darin","medic-demo","test-area-damage","ren","nada","liora","art","sava"]);
- const START=Object.freeze(["ren","nada","liora","art","sava"]);
+ const PLAYABLE=Object.freeze(["ren","nada","liora","art","sava"]);
+ const START=Object.freeze(["ren","art"]);
  const COST=Object.freeze([10,15,25,30,65,85,100]);
  const MAX=7, TOTAL=COST.reduce((sum,n)=>sum+n,0);
  const STAR_BONUS_PER_RANK=0.03, EXCESS_SHARD_CURRENCY=80;
@@ -58,7 +59,7 @@ const StarCore=(()=>{
  // Shards may be earned before a hero joins; all shard sources will call this.
  function add(progress,id,amount){
   const current=state(progress,id);
-  if(!START.includes(id)||!current||!Number.isSafeInteger(amount)||amount<=0)return false;
+  if(!PLAYABLE.includes(id)||!current||!Number.isSafeInteger(amount)||amount<=0)return false;
   if(current.rank===MAX){
    const refund=amount*EXCESS_SHARD_CURRENCY;
    if(!Number.isSafeInteger(refund)||!validCount(progress.currency)||
@@ -70,7 +71,7 @@ const StarCore=(()=>{
  }
  function directGrant(progress,id){
   const current=state(progress,id);
-  if(!START.includes(id)||!current||current.rank!==0)return false;
+  if(!PLAYABLE.includes(id)||!current||current.rank!==0)return false;
   if(progress.unlockedHeroes!==undefined&&
      (!Array.isArray(progress.unlockedHeroes)||!IDS.includes(id)))return false;
   current.rank=1;syncOwned(progress,id);
@@ -78,7 +79,9 @@ const StarCore=(()=>{
  }
  function promote(progress,id){
   const current=state(progress,id),cost=costOf(progress,id);
-  if(!START.includes(id)||!current||cost===null||current.shards<cost)return null;
+  if(!PLAYABLE.includes(id)||!current||cost===null||current.shards<cost)return null;
+  // Campaign recruitment is not purchasable with shards, even from debug stock.
+  if(current.rank===0)return null;
   if(current.rank===0&&progress.unlockedHeroes!==undefined&&
     !Array.isArray(progress.unlockedHeroes))return null;
   const nextRank=current.rank+1,extra=nextRank===MAX?current.shards-cost:0;
@@ -95,15 +98,15 @@ const StarCore=(()=>{
  // shard requirement per hero; repeats cannot mint more for already-full stock.
  function refillTest(progress){
   if(!valid(progress?.heroStars))return false;
-  for(const id of START){
+  for(const id of PLAYABLE){
    const s=progress.heroStars[id];
-   if(s.rank===MAX)continue;
+   if(s.rank===0||s.rank===MAX)continue;
    const minimum=TOTAL-usedThrough(s.rank);
    if(s.shards<minimum)s.shards=minimum;
   }
   return true;
  }
- return Object.freeze({IDS,START,COST,MAX,TOTAL,STAR_BONUS_PER_RANK,
+ return Object.freeze({IDS,PLAYABLE,START,COST,MAX,TOTAL,STAR_BONUS_PER_RANK,
   EXCESS_SHARD_CURRENCY,COMBAT_BONUS_STATS,combatMultiplier,valid,fromLegacy,
   rankOf,shardsOf,costOf,remaining,usedThrough,add,directGrant,promote,refillTest});
 })();

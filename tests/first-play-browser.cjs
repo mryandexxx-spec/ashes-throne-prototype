@@ -122,6 +122,8 @@ async function run(label,engine,viewport){
   }else await next.click();
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
   assert.match(await page.locator("#firstPlayStoryCue").innerText(),/охранник/);
+  await page.waitForFunction(()=>{const i=document.querySelector("#firstPlayStoryImage");return i?.complete&&i.naturalWidth>0&&i.currentSrc.includes("/v6/conflict.webp");},null,{timeout:12000});
+  await page.screenshot({path:path.join(dest,label+"-p1c2-conflict.png")});
   await page.reload({waitUntil:"load",timeout:60000});
   await page.locator("#firstPlay.active").waitFor({state:"visible",timeout:30000});
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
@@ -186,6 +188,8 @@ async function run(label,engine,viewport){
    await page.evaluate(()=>document.querySelector("#firstPlaySkip").click());
   }else{
    assert.equal(await page.evaluate(()=>firstPlayState.phase),"won");
+   await page.waitForFunction(()=>{const i=document.querySelector("#firstPlayStoryImage");return i?.complete&&i.naturalWidth>0&&i.currentSrc.includes("/v6/rescue.webp");},null,{timeout:12000});
+   await page.screenshot({path:path.join(dest,label+"-p1c2-rescue.png")});
    assert.equal(await page.locator("#firstPlayStoryFinish").isVisible(),false);
    assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),
     choice==="cover"?"РЕН ТЕРЕН":"АРТ");
@@ -196,6 +200,8 @@ async function run(label,engine,viewport){
    assert.equal(await page.locator("#firstPlayStoryDocument").isVisible(),true);
    assert.match(await page.locator("#firstPlayStoryDocument").innerText(),/Переход безопасен/);
    assert.match(await page.locator("#firstPlayStoryDocument").innerText(),/Крепления снять/);
+   await page.waitForFunction(()=>{const i=document.querySelector("#firstPlayStoryImage");return i?.complete&&i.naturalWidth>0&&i.currentSrc.includes("/v6/document.webp");},null,{timeout:12000});
+   await page.screenshot({path:path.join(dest,label+"-p1c2-document.png")});
    assert.equal(await page.locator("#firstPlayStoryCue").isVisible(),true);
    assert.match(await page.locator("#firstPlayStoryContext").innerText(),/установить источник распоряжения/);
    assert.doesNotMatch(await page.locator("#firstPlayStoryContext").innerText(),/Эффект вашего приказа/);

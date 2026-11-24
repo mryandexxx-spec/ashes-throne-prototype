@@ -24,14 +24,16 @@ test("existing mission identifiers, state and rewards stay stable",()=>{
  assert.match(html,/id="campaignMissions"/);
  assert.match(game,/CampaignCore\.recordResult/);
 });
-test("existing battles remain in training and story trial in main",()=>{
+test("existing battles remain in training and story trial moves to test tools",()=>{
  const training=html.slice(html.indexOf('id="campaignTrainingContent"'),html.indexOf('id="campaignMainContent"'));
  const main=html.slice(html.indexOf('id="campaignMainContent"'),html.indexOf('id="heroGearDialog"'));
  const lore=html.slice(html.indexOf('id="campaignLoreContent"'),html.indexOf('id="campaignTrainingContent"'));
  assert.match(training,/id="campaignMissions"/);
  assert.match(training,/id="energyStatus"/);
  assert.doesNotMatch(training,/id="storyDemoOpen"/);
- assert.match(main,/id="storyDemoOpen"/);
+ assert.doesNotMatch(main,/id="storyDemoOpen"/);
+ const dev=html.slice(html.indexOf('class="hq-test-menu"'),html.indexOf("</details>",html.indexOf('class="hq-test-menu"')));
+ assert.match(dev,/id="storyDemoOpen"/);
  assert.doesNotMatch(main,/id="campaignMissions"/);
  assert.doesNotMatch(lore,/data-campaign-mission/);
  assert.match(lore,/Загрузка игрового пилота «Пять теней»/);

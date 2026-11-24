@@ -15,6 +15,21 @@ Six original skill documents and their references were copied from [awesome-game
 - `game-feel` — responsiveness, hit feedback, animations; preserve actual turn rules and `prefers-reduced-motion`.
 - `save-systems` — audit save/load/rollback/migrations of existing browser storage. Do NOT use Godot file-rename recipes in `localStorage`.
 
+## Narrative skills — NARRATIVE-SKILLS-001
+
+Навыки для сценаристики, диалогов, первого опыта и катсцен; игровых правил не добавляют. Сначала приватные AGENTS.md, WORLD_STATUS.md, региональный CURRENT.md, актуальные утверждённые материалы и релевантные открытые PR. Приватный каталог — AI_SKILLS.md; для диалогов сверять речевые паспорта и регламент письма. Не копировать приватные материалы в публичный репозиторий.
+
+| Навык | Использование |
+|---|---|
+| [story-structure-game](../.agents/skills/story-structure-game/SKILL.md) | Арки, темп, последствия, проверка ветвей. Самостоятельные побочные истории допустимы; не навязывать единственный шаблон. |
+| [character-design-narrative](../.agents/skills/character-design-narrative/SKILL.md) | Мотивы, отношения и голоса; канонические паспорта выше шаблона. |
+| [quest-narrative-coherence](../.agents/skills/quest-narrative-coherence/SKILL.md) | Проверка миссий, времени и состояния; НЕ создавать конкурирующие world-lore/quest-registry и не менять канон/экономику автоматически. |
+| [onboarding-tutorial-design](../.agents/skills/onboarding-tutorial-design/SKILL.md) | Первый опыт, обучение через действие, аудит новичка. |
+| [dialogue-systems](../.agents/skills/dialogue-systems/SKILL.md) | Ветвление, состояние, достижимость, повтор; сохранять наш JS runtime, не переносить Ink/Yarn/Godot, не исполнять примеры с eval. |
+| [ashes-cutscene-director](../.agents/skills/ashes-cutscene-director/SKILL.md) | Собственный обязательный skill для сюжетных сцен/катсцен; для 3D вместе с ashes-babylonjs. |
+
+Оригинальные внешние skills и references/templates импортированы без редакции. Команды, инструменты и новые реестры в них не являются разрешением на их выполнение или установку. Применять совместимые шаги; конфликтующие требования не применять. [Источники и лицензии](NARRATIVE_SKILLS_SOURCES.md). [Пробный аудит](NARRATIVE_SKILLS_PILOT.md). Нет автоматической установки в ChatGPT web.
+
 ## Mandatory precedence
 First read `docs/AI_WORKFLOW.md`, `docs/PROJECT_STATUS.md`, `docs/ROADMAP.md`, `docs/TECHNICAL_STATUS.md`, latest approved GDD, Combat Specification and relevant current code. Follow approved owner decisions, canonical world source for fiction, existing tests and interfaces. This upstream library supports 12 engines but **does not provide a Babylon.js-specific skill**. Godot/Unity/three.js/Python snippets are concepts, not code to paste into the browser game.
 

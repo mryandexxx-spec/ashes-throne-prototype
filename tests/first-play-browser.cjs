@@ -57,9 +57,16 @@ async function manualFirstBattle(page,label){
     await special.tap();
     await tapFighter(page,"ren");
     await page.waitForFunction(n=>state.allyActions>n,turn.actions,{timeout:10000});
-   }else if(label==="webkit"){
-    await basic.tap(); // suggested skill is not mandatory
-   }else await special.tap();
+   }else{
+    const other=await page.evaluate(()=>state.fighters.find((f,i)=>f.side==="enemy"&&f.hp>0&&i!==state.selectedEnemy)?.id);
+    if(other){
+     await tapFighter(page,other);
+     assert.equal(await page.evaluate(()=>state.fighters[state.selectedEnemy]?.id),other);
+     assert.equal(await page.evaluate(()=>state.allyActions),turn.actions);
+    }
+    if(label==="webkit")await basic.tap(); // suggested skill is not mandatory
+    else await special.tap();
+   }
    seen.add(turn.id);
   }else{
    assert.equal(await special.evaluate(n=>n.classList.contains("fp-recommended")),false);
@@ -235,6 +242,48 @@ async function run(label,engine,viewport){
    assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem(FirstPlayCore.KEY))),
     {version:1,phase:"battle",choice:"neutral"});
    assert.equal(await page.locator("#tacticalGoalText").isVisible(),true);
+   // Reload while a real battle is in progress: recover at the ready checkpoint,
+   // never falsely mark the operation won or reuse the taught-actor flags.
+   await page.reload({waitUntil:"load",timeout:60000});
+   await page.locator("#firstPlay.active").waitFor({state:"visible",timeout:30000});
+   assert.equal(await page.evaluate(()=>firstPlayState.phase),"ready");
+   await page.locator("#firstPlayStoryFight").tap();
+   await page.locator("#battle.active").waitFor({state:"visible",timeout:60000});
+   await page.waitForFunction(()=>!visualActionPending()&&!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:30000});
+   assert.match(await page.locator("#actionHint").innerText(),/Выберите способность/);
+   // Test-only adverse combat fixture: weaken Ren, strengthen enemies, guarantee
+   // hits. Do NOT assign winner/phase or invoke a synthetic outcome. Real manual
+   // taps and the ordinary enemy AI must produce defeat through CombatCore.
+   await page.evaluate(()=>{
+    const ren=state.fighters.find(f=>f.id==="ren");
+    ren.hp=1;ren.protection=0;
+    state.hitChecks=false;
+    for(const f of state.fighters.filter(f=>f.side==="enemy")){
+     f.hp=f.maxHp=10000;f.atk=f.physicalAttack=1000;f.assaultFocus=true;
+    }
+    syncBattleUI();
+   });
+   for(let i=0;i<6&&await page.evaluate(()=>state.active);i++){
+    await page.waitForFunction(()=>!state.active||(!visualActionPending()&&!document.querySelector("#basicAbilityBtn").disabled),null,{timeout:30000});
+    if(await page.evaluate(()=>state.active))await page.locator("#basicAbilityBtn").tap();
+   }
+   assert.equal(await page.evaluate(()=>state.winner),"enemy");
+   await page.locator("#firstPlay.active").waitFor({state:"visible",timeout:30000});
+   assert.equal(await page.evaluate(()=>firstPlayState.phase),"ready");
+   assert.equal(await page.locator("#firstPlayStoryFinish").isVisible(),false);
+   assert.match(await page.locator("#firstPlayStoryFight").innerText(),/Повторить бой/);
+   await page.locator("#firstPlayStoryFight").tap();
+   await page.locator("#battle.active").waitFor({state:"visible",timeout:60000});
+   await page.waitForFunction(()=>!visualActionPending()&&!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:30000});
+   assert.ok(await page.evaluate(()=>state.fighters.find(f=>f.id==="ren").hp>1));
+   assert.match(await page.locator("#actionHint").innerText(),/Выберите способность/);
+   const auto=page.locator("#autoBattleBtn");
+   await auto.tap();
+   assert.equal(await auto.getAttribute("aria-pressed"),"true");
+   assert.equal(await page.locator("#specialAbilityBtn").evaluate(n=>n.classList.contains("fp-recommended")),false);
+   await auto.tap();
+   assert.equal(await auto.getAttribute("aria-pressed"),"false");
+   await page.waitForFunction(()=>!state.active||!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:30000});
   }
   assert.deepEqual(errors,[]);
   console.log("FIRSTSESSIONP0C "+label+" "+viewport.width+"x"+viewport.height+

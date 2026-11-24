@@ -12,7 +12,7 @@ test("intro narration can be skipped without skipping the mandatory order",()=>{
  const state=First.fresh();
  const result=Story.skipNarration(state.phase,state.choice,Story.fresh());
  assert.equal(result.action,"decision");
- assert.equal(result.cursor.step,4);
+ assert.equal(result.cursor.step,Story.INTRO.length-1);
  assert.equal(Story.frame(state.phase,state.choice,result.cursor).choice,true);
  assert.equal(First.start(state),null);
 });
@@ -20,7 +20,7 @@ test("both orders lead to distinct responses and real combat state",()=>{
  for(const choice of ["survey","cover"]){
   const selected=First.choose(First.fresh(),choice);
   const cursor=Story.normalize(Story.fresh(),selected.phase);
-  assert.equal(cursor.step,5);
+  assert.equal(cursor.step,Story.INTRO.length);
   assert.equal(Story.frame(selected.phase,choice,cursor).speaker,choice==="survey"?"АРТ":"РЕН");
   assert.equal(Story.skipNarration(selected.phase,choice,cursor).action,"battle");
   assert.equal(First.start(selected).phase,"battle");
@@ -31,7 +31,7 @@ test("scene resumes after reload, retry never invents a victory",()=>{
  const cursor={version:1,part:"intro",step:2};
  assert.equal(Story.save(cursor,()=>st),true);
  assert.deepEqual(Story.load(()=>st,"briefing"),cursor);
- assert.equal(Story.load(()=>st,"ready").step,5);
+ assert.equal(Story.load(()=>st,"ready").step,Story.INTRO.length);
  assert.equal(Story.load(()=>st,"won").part,"outro");
  const persisted=Story.save({version:1,part:"outro",step:1},()=>st);
  assert.equal(persisted,true);
@@ -61,11 +61,11 @@ test("speaker portraits are the exact Ren/Art game assets",()=>{
  assert.equal(Story.CAST.master.portrait,"assets/cutscenes/first-report/v5/master-portrait.webp");
  assert.equal(Story.CAST.worker.npc,true);
  assert.equal(Story.CAST.master.npc,true);
- assert.deepEqual(Story.INTRO.map(x=>x.speakerId),["worker","master","art","ren","master"]);
+ assert.deepEqual(Story.INTRO.map(x=>x.speakerId),["worker","master","worker","art","ren","art","ren","master"]);
  assert.equal(Story.RESPONSE.survey.speakerId,"art");
  assert.equal(Story.RESPONSE.cover.speakerId,"ren");
  assert.deepEqual(Story.OUTRO.map(x=>x.speakerId),["art","master"]);
- assert.deepEqual(Story.INTRO.map(x=>x.shot),["workers","workers","supports","route","wide"]);
+ assert.deepEqual(Story.INTRO.map(x=>x.shot),["workers","workers","workers","supports","route","supports","route","wide"]);
  assert.equal(Story.RESPONSE.survey.shot,"supports");
  assert.equal(Story.RESPONSE.cover.shot,"route");
  assert.deepEqual(Story.OUTRO.map(x=>x.shot),["supports","wide"]);
@@ -81,11 +81,9 @@ test("every first-play beat has a separate character-led illustration",()=>{
   assert.equal(Story.AVIF[key],null);
   assert.ok(Story.STORYBOARD[key]?.purpose);
  }
- assert.equal(Story.INTRO[0].art,"warning");
- assert.equal(Story.INTRO[1].art,"conflict");
- assert.equal(Story.INTRO[2].art,"artSupport");
- assert.equal(Story.INTRO[3].art,"renRoute");
- assert.equal(Story.INTRO[4].art,"decision");
+ assert.deepEqual(Story.INTRO.map(x=>x.art),
+  ["warning","conflict","conflict","artSupport","renRoute","artSupport","renRoute","decision"]);
+ assert.equal(Story.INTRO.at(-1).choice,true);
  assert.equal(Story.RESPONSE.survey.art,"artSupport");
  assert.equal(Story.RESPONSE.cover.art,"renRoute");
  assert.equal(Story.OUTRO[1].art,"aftermath");
@@ -121,4 +119,27 @@ test("both orders cause distinct local debriefs, while the final clue converges"
  const last=Story.advance("won",start);
  assert.deepEqual(Story.frame("won","survey",last),Story.frame("won","cover",last));
  assert.equal(Story.skipNarration("won","survey",last).action,"finish");
+});
+
+test("player learns the incident, the obstruction and both practical ways to respond",()=>{
+ const lines=Story.INTRO.map(x=>x.text);
+ assert.equal(lines.length,8);
+ assert.match(lines[0],/край|назад/i);
+ assert.match(lines[1],/осмотр|креплен/i);
+ assert.match(lines[2],/сборщик/i);
+ assert.match(lines[2],/охранник/i);
+ assert.match(lines[3],/канат/i);
+ assert.match(lines[4],/ступен/i);
+ assert.match(lines[5],/проверю/i);
+ assert.match(lines[6],/прикрыть/i);
+ assert.match(lines[7],/С чего начинаем/);
+ assert.ok(Story.INTRO[0].cue&&Story.INTRO[3].cue&&Story.INTRO[4].cue,
+  "action cues must appear before the decision");
+ assert.ok(Story.OUTRO[1].cue,"final reveal gets a visible staging cue");
+ assert.match(Story.OUTRO[1].text,/безопасен/);
+ assert.match(Story.OUTRO[1].text,/снять крепления/);
+ const html=require("node:fs").readFileSync(require("node:path").join(__dirname,"..","index.html"),"utf8");
+ const js=require("node:fs").readFileSync(require("node:path").join(__dirname,"..","game.js"),"utf8");
+ assert.match(html,/id="firstPlayStoryCue"/);
+ assert.match(js,/cueNode\.textContent=scene\.cue/);
 });

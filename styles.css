@@ -5390,20 +5390,22 @@ button.main-campaign-pin:disabled{opacity:.65}
 #app:has(#mainCampaignResult.active)>.topbar .brand strong{font-family:Georgia,serif;color:#f4e4c8}
 #app:has(#mainCampaignResult.active)>footer{color:#c5ae91;border-top:1px solid #bd925c4f}
 
-/* FIRSTSESSION-COMBAT-UX: keep the introductory objective above the centre
-   rather than over the enemy line. The existing toggle, text and progress
-   track remain visible and interactive; no camera or combat rule changes. */
+/* FIRSTSESSION-COMBAT-UX: low landscape prologue objective occupies the
+   unused left-side space beside the turn queue, below the top controls.
+   Keep both the enemy line and the centre of the arena unobstructed. */
 @media (orientation:landscape) and (max-height:430px) and (min-width:700px){
  #battle.battle-screen .battle-goal-corner:has(#tacticalGoalCard.first-session-goal:not([hidden])){
-  left:50%;right:auto;transform:translateX(-50%);align-items:center;
+  --fp-goal-left:max(60px,calc(env(safe-area-inset-left,0px) + 52px));
+  top:calc(max(6px,env(safe-area-inset-top,0px)) + 50px);
+  left:var(--fp-goal-left);right:auto;transform:none;align-items:flex-start;
  }
  #battle.battle-screen .battle-goal-corner #tacticalGoalCard.first-session-goal{
-  width:min(350px,42vw);padding:3px 8px;gap:2px;
+  width:min(190px,calc(255px - var(--fp-goal-left)));padding:3px 7px;gap:2px;
  }
  #battle.battle-screen .battle-goal-corner #tacticalGoalCard.first-session-goal .tactical-goal-header{
-  min-height:32px;
+  min-height:44px;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;
  }
  #battle.battle-screen .battle-goal-corner #tacticalGoalCard.first-session-goal p{
-  font-size:10px;line-height:1.2;margin:0;
+  font-size:11px;line-height:1.25;margin:0;
  }
 }

@@ -41,6 +41,15 @@ const FirstPlayCore=(()=>{
  function skip(state){
   return valid(state)&&state.phase!=="done"?{version:1,phase:"done",choice:null}:null;
  }
+ // P0-D: derive the next suggestion from existing checkpoints, never grant rewards.
+ // A full skip has choice=null; only a real completed first victory qualifies.
+ function followUp(state,operations,available){
+  if(!valid(state)||state.phase!=="done"||state.choice===null)return null;
+  if(!available)return "unavailable";
+  if(!operations||!Array.isArray(operations.history))return "unavailable";
+  if(operations.history.some(e=>e.outcome==="success"&&e.ledgerSecured===true))return null;
+  return operations.active?"resume":"available";
+ }
  // Debug-only: delete only the game's own localStorage namespace, never clear
  // unrelated data on the shared origin. A caller must obtain user confirmation.
  function resetGameStorage(provider){
@@ -54,6 +63,6 @@ const FirstPlayCore=(()=>{
    return {ok:true,removed:keys.length};
   }catch(_){return {ok:false,removed:null};}
  }
- return Object.freeze({KEY,CHOICES,EFFECTS,PHASES,fresh,valid,load,save,choose,prepare,start,finish,complete,skip,resetGameStorage});
+ return Object.freeze({KEY,CHOICES,EFFECTS,PHASES,fresh,valid,load,save,choose,prepare,start,finish,complete,skip,followUp,resetGameStorage});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=FirstPlayCore;

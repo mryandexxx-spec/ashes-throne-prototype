@@ -185,9 +185,23 @@ test("ARENAUI003B: a number never rises into its target's label, even when the l
  assert.equal(g.spawn("x",[{cls:"damage",text:"−1"}],{x:10,y:84}),1);
  assert.equal(typeof f.relayout,"function");
 });
-test("ARENAUI003B: labels show names only for the acting hero and the target; marks stay as icons",()=>{
+test("ARENAUI003B: names stay limited to the actor, selected enemy and First Play support target; marks stay as icons",()=>{
  assert.match(game,/const targeted=!!actor&&h\.hp>0&&!support&&h\.side==="enemy"&&state\.fighters\[state\.selectedEnemy\]\?\.id===h\.id;/);
- assert.match(game,/const named=active\|\|targeted;/);
+ // FIRSTSESSIONP0C: Ren is identified when he is a valid First Play support target.
+ // Evaluate the actual production predicate, including the ordinary battle boundary.
+ const predicate=/const named=([^;]+);/.exec(game)?.[1];
+ assert.ok(predicate,"production name predicate exists");
+ const vm=require("node:vm");
+ for(const battleIsFirstPlay of [false,true])
+  for(const active of [false,true])
+   for(const targeted of [false,true])
+    for(const support of [false,true])
+     for(const focused of [false,true])
+      for(const id of ["ren","art","ves"]){
+       const actual=vm.runInNewContext(predicate,{battleIsFirstPlay,active,targeted,support,focused,h:{id}});
+       const expected=active||targeted||(battleIsFirstPlay&&support&&focused&&id==="ren");
+       assert.equal(actual,expected,JSON.stringify({battleIsFirstPlay,active,targeted,support,focused,id}));
+      }
  assert.match(game,/\$\{named\?`<div class="arena-indicator-name"\$\{h\.side==="enemy"\?` style="max-width:\$\{nameW\}px"`:""\}>\$\{h\.name\}<\/div>`:""\}/);
  assert.match(game,/data-name-w="\$\{nameW\}"/,"the reserved band and the name cap are the same number");
  assert.match(game,/const markIcon=!named&&markClass\?`<span class="arena-effect mark \$\{markClass\}"/);

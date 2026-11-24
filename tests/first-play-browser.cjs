@@ -193,8 +193,8 @@ async function run(label,engine,viewport){
    assert.match(await page.locator("#firstPlayStoryLine").innerText(),/безопасен/);
    assert.match(await page.locator("#firstPlayStoryLine").innerText(),/снять крепления/);
    assert.equal(await page.locator("#firstPlayStoryCue").isVisible(),true);
-   assert.equal(await page.locator("#firstPlayStoryContext").isVisible(),false,
-    label+": final mystery must not be crowded out by repeated combat buffs");
+   assert.match(await page.locator("#firstPlayStoryContext").innerText(),/установить источник распоряжения/);
+   assert.doesNotMatch(await page.locator("#firstPlayStoryContext").innerText(),/Эффект вашего приказа/);
    assert.equal(await page.locator("#firstPlayStoryFinish").isVisible(),true);
    await page.locator("#firstPlayStoryFinish").click();
   }
@@ -210,6 +210,34 @@ async function run(label,engine,viewport){
   await page.locator("#home.active").waitFor({state:"visible",timeout:12000});
   assert.equal(await page.locator("#hqFirstPlayCard").count(),0,
    label+": completed operation must not cover HQ");
+  const cta=page.locator("#hqFirstSessionAction");
+  assert.equal(await cta.isVisible(),result.winner==="ally");
+  if(result.winner==="ally"){
+   const rect=await cta.boundingBox();
+   assert.ok(rect&&rect.height>=44&&rect.x>=0&&rect.x+rect.width<=viewport.width+1&&rect.y+rect.height<=viewport.height+1);
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+   const wallet=await page.evaluate(()=>({currency:progress.currency,xp:progress.accountXp}));
+   await cta.tap();
+   await page.locator("#operations.active").waitFor({state:"visible"});
+   await page.locator("[data-ops-new]").tap();
+   await page.locator('[data-ops-order="register"]').tap();
+   assert.equal(await page.evaluate(()=>operationProgress.active.orders[0]),"register");
+   await page.locator("#opsFirstSessionHome").tap();
+   await page.locator("#home.active").waitFor({state:"visible"});
+   assert.match(await cta.innerText(),/Продолжить/);
+   assert.deepEqual(await page.evaluate(()=>({currency:progress.currency,xp:progress.accountXp})),wallet);
+   await page.screenshot({path:path.join(dest,label+"-"+viewport.width+"x"+viewport.height+"-hq-next.png")});
+   await page.reload({waitUntil:"load",timeout:60000});
+   await page.waitForFunction(()=>typeof firstPlayState!=="undefined"&&typeof firstSessionFollowUp==="function",null,{timeout:60000});
+   if(await page.locator("#loginCalendar.active").count())await page.locator('#loginCalendar [data-screen="home"]').click();
+   await page.locator("#home.active").waitFor({state:"visible",timeout:30000});
+   assert.match(await cta.innerText(),/Продолжить/);
+   await cta.tap();
+   await page.locator("#operations.active").waitFor({state:"visible"});
+   assert.equal(await page.evaluate(()=>operationProgress.active.orders[0]),"register");
+   await page.locator("#opsFirstSessionHome").tap();
+   await page.locator("#home.active").waitFor({state:"visible"});
+  }
   await page.locator("#hqMoreToggle").click();
   await page.locator("#home .hq-test-menu summary").click();
   await page.locator("#devStartOver").click();
@@ -286,7 +314,7 @@ async function run(label,engine,viewport){
    await page.waitForFunction(()=>!state.active||!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:30000});
   }
   assert.deepEqual(errors,[]);
-  console.log("FIRSTSESSIONP0C "+label+" "+viewport.width+"x"+viewport.height+
+  console.log("FIRSTSESSIONP0D "+label+" "+viewport.width+"x"+viewport.height+
    " verified; battle: "+result.winner+" in "+result.steps+" actions");
  }finally{await browser.close();}
 }

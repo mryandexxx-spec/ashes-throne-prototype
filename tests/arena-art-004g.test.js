@@ -39,7 +39,7 @@ test("ARENA-ART-004G: battle menu — goal, replay, retreat (old ✕ path)",()=>
  assert.match(block,/\.battle-menu-item\{\n min-height:44px/);
 });
 
-test("ARENA-ART-004G: vertical turn queue at the left; objective folded in the top-right corner",()=>{
+test("ARENA-ART-004G: vertical turn queue at the left; objective in the top-right corner, expanded only in First Play",()=>{
  assert.match(block,/#battle\.battle-screen \.battle-queue\{\n top:calc\(max\(6px,env\(safe-area-inset-top,0px\)\) \+ 52px\);left:max\(10px,env\(safe-area-inset-left,0px\)\);\n transform:none/);
  assert.match(block,/\.turn-queue-bar\{flex-direction:column/);
  assert.match(block,/\.turn-queue\{flex-direction:column\}/);
@@ -51,7 +51,8 @@ test("ARENA-ART-004G: vertical turn queue at the left; objective folded in the t
  assert.match(block,/#battleChallengeGoal:not\(\[hidden\]\)\{\n position:relative;display:block;width:44px;height:44px/);
  assert.match(block,/\.tactical-goal-card\.collapsed p\{display:none\}/);
  assert.match(game,/objective\.classList\?\.remove\?\.\("expanded"\);/,"each battle starts folded");
- assert.match(game,/tacticalGoalCard\.classList\?\.add\?\.\("collapsed"\);/);
+ assert.match(game,/tacticalGoalCard\.classList\?\.toggle\("collapsed",!battleIsFirstPlay\);/);
+ assert.match(game,/\$\("#tacticalGoalToggle"\)\?\.setAttribute\?\.\("aria-expanded",String\(battleIsFirstPlay\)\);/);
 });
 
 test("ARENA-ART-004G: fighter card shows the portrait",()=>{

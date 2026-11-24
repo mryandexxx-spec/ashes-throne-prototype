@@ -4,7 +4,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const vm=require("node:vm");
-const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
+const src=["initiative-model.js","ability-data.js","combat-core.js","progress-core.js","save-core.js","mission-data.js","campaign-core.js","campaign-data.js","battle-speed.js","animation-profiles.js","battle-animation.js","gear-promotion-ui.js","game.js"].map(n=>fs.readFileSync(path.join(__dirname,"..",n),"utf8")).join("\n");
 const ids=["home","collection","campaign","squad","battle","heroList","combatants",
  "battleStatus","turnChip","actionTitle","actionHint","battleRetryBtn",
  "basicAbilityBtn","specialAbilityBtn","battleMessage","renderCanvas",
@@ -40,6 +40,7 @@ const document={
  },
  addEventListener(){}
 };
+require("./legacy-promotion-dom.cjs").install(document,elements);
 let meshCreates=0,engineCreates=0,rendersStarted=0;
 class Mesh {
  constructor(){this.position={};this.visible=true;}
@@ -231,9 +232,9 @@ assert.equal(elements.gearTier.textContent,"G2 · 0/6");
 assert.equal(elements.gearPromotionDialog.open,true);
 assert.match(elements.gearPromotionLevel.textContent,/G1 → G2/);
 assert.match(elements.gearPromotionCost.textContent,/250/);
-assert.match(elements.gearPromotionStats.textContent,new RegExp("Здоровье: "+fromHp+" → "));
-assert.match(elements.gearPromotionStats.textContent,new RegExp("Атака: "+fromAtk+" → "));
-assert.match(elements.gearPromotionStats.textContent,/Скорость: 110 → 110/);
+assert.match(elements.gearPromotionStats.textContent,new RegExp("Здоровье"+fromHp+" → "));
+assert.match(elements.gearPromotionStats.textContent,new RegExp("Атака"+fromAtk+" → "));
+assert.doesNotMatch(elements.gearPromotionStats.textContent,/Скорость/,"unchanged speed is not a reward");
 assert.equal(JSON.parse(savedData.get("ashes-throne.progress.v2")).gear.kael.tier,2,"promotion is persisted");
 click(elements.gearEquipNext);
 assert.equal(api.getCurrency(),beforePromotion-250,"cannot pay twice through second press");

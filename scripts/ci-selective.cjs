@@ -38,7 +38,7 @@ if(battle)for(const f of ["tests/combat-014a-leader-contract.test.js","tests/ren
 if(lore)for(const f of ["tests/lore-campaign-required-combat.test.js","tests/lore-campaign-battle-briefs.test.js"])tests.add(f);
 if(network)for(const f of ["tests/network-004-pilot.test.js","tests/network-ux-004-board.test.js"])tests.add(f);
 if(hero)tests.add("tests/hq-ui.test.js");
-if(firstplay)for(const f of ["tests/first-play.test.js","tests/first-play-story.test.js"])tests.add(f);
+if(firstplay)for(const f of ["tests/first-play.test.js","tests/first-play-story.test.js","tests/first-play-art.test.js"])tests.add(f);
 for(const f of changed)if(/^tests\/[^/]+\.test\.js$/.test(f))tests.add(f);
 const existing=[...tests].filter(f=>fs.existsSync(f)).sort();
 console.log("CI changed files:",JSON.stringify(changed));

@@ -58,7 +58,7 @@ const FirstPlayStoryCore=(()=>{
  const OUTRO=Object.freeze([
   {art:"aftermath",shot:"supports",speakerId:"art",speaker:"АРТ",
    text:"Все на площадке. К переходу никого не подпускайте, пока не вернут крепления.",
-   detail:"После реального исхода боя рабочих вывели на безопасный участок."},
+   detail:"Эвакуация завершена."},
   {art:"document",shot:"wide",speakerId:"master",speaker:"МАСТЕР",
    cue:"Мастер показывает помятый лист.",
    text:"Я их туда отправил по этому листу. Кто это подписал?",

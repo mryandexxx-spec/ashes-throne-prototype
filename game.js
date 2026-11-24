@@ -330,7 +330,7 @@ const loadedProgress=storageAdapter?storageAdapter.load(ALLIES,()=>window.localS
 const progress=loadedProgress?loadedProgress.progress:ProgressCore.createProgress(ALLIES);
 const saveBlocked=Boolean(loadedProgress?.blocked);
 let saveAvailable=loadedProgress?loadedProgress.available:false;
-// FIRSTPLAY001: independent intro checkpoint; gameplay wallet untouched.
+// FIRSTPLAY001: independent intro checkpoint; reward uses the shared wallet policy.
 const firstPlayLoaded=typeof FirstPlayCore!=="undefined"?
  FirstPlayCore.load(()=>window.localStorage):null;
 let firstPlayState=firstPlayLoaded?.state||null;
@@ -489,21 +489,74 @@ function firstSessionFollowUp(){
  return firstPlayEligible&&typeof FirstPlayCore!=="undefined"&&typeof FirstPlayCore.followUp==="function"?
   FirstPlayCore.followUp(firstPlayState,operationProgress,!operationSaveBlocked&&operationSaveAvailable&&!saveBlocked):null;
 }
+// P1-A: reward -> existing hero card -> existing operation, no forced tutorial.
+let firstSessionClaiming=false,firstSessionRewardNotice="";
+function firstSessionAction(){
+ const follow=firstSessionFollowUp();
+ if(!firstPlayEligible||!firstPlayState)return null;
+ const writable=!saveBlocked&&saveAvailable&&typeof ProgressWriterCore!=="undefined"&&ProgressWriterCore.isOwner();
+ const reward=FirstPlayCore.rewardStatus(firstPlayState,progress,writable);
+ if(reward==="claimable")return "reward";
+ if(reward==="blocked"&&FirstPlayCore.wonProof(firstPlayState)&&!FirstPlayCore.rewardClaimed(progress))
+  return follow==="resume"?"resume":"reward-blocked";
+ if(follow==="available"&&reward==="claimed"&&writable&&heroOwned("ren")&&
+    ProgressCore.levelOf(progress,"ren")===1&&ProgressCore.upgradePlan(progress,"ren",1)?.levels===1)
+  return "upgrade";
+ return follow;
+}
 function renderFirstSessionFollowUp(){
- const panel=$("#hqFirstSession"),action=$("#hqFirstSessionAction"),detail=$("#hqFirstSessionDetail");
+ const panel=$("#hqFirstSession"),action=$("#hqFirstSessionAction"),detail=$("#hqFirstSessionDetail"),
+  title=$("#hqFirstSessionTitle");
  if(!panel||!action||!detail)return;
- const status=firstSessionFollowUp();
+ const status=firstSessionAction();
  panel.hidden=!status;
  if(!status)return;
- detail.textContent=status==="unavailable"?"Реестр пока недоступен. Можно подготовить героев.":
+ if(title)title.textContent=status==="reward"||status==="reward-blocked"?"Первое донесение":
+  status==="upgrade"?"Подготовить Рена":"Установить источник распоряжения";
+ detail.textContent=firstSessionRewardNotice||(status==="reward"?
+  "Рабочие спасены. Награда за операцию — "+FirstPlayCore.REWARD_SOURCE.reward.currency+" кромов.":
+  status==="reward-blocked"?"Награда доступна после восстановления сохранения. Можно подготовить героев.":
+  status==="upgrade"?"Увеличьте уровень героя: 1 → 2. Это усилит его в следующих боях.":
+  status==="unavailable"?"Реестр пока недоступен. Можно подготовить героев.":
   status==="resume"?"Продолжите начатый перехват документов. Учебная операция.":
-  "Следующий шаг — сверка реестра и перехват документов. Учебная операция.";
- action.textContent=status==="unavailable"?"К героям ›":status==="resume"?"Продолжить ›":"Два курьера ›";
+  "Следующий шаг — сверка реестра и перехват документов. Учебная операция.");
+ action.textContent=firstSessionClaiming?"Сохраняем…":status==="reward"?"Забрать награду":
+  status==="upgrade"?"Усилить Рена ›":status==="unavailable"||status==="reward-blocked"?"К героям ›":
+  status==="resume"?"Продолжить ›":"Два курьера ›";
+ action.disabled=firstSessionClaiming;
+}
+async function claimFirstSessionReward(){
+ if(firstSessionClaiming||firstSessionAction()!=="reward")return;
+ firstSessionClaiming=true;firstSessionRewardNotice="";renderFirstSessionFollowUp();
+ try{
+  const result=await FirstPlayCore.claimReward({
+   storageProvider:()=>window.localStorage,heroes:ALLIES,
+   exclusive:ProgressWriterCore.exclusive,day:dailyDay()
+  });
+  if(!result.ok){
+   if(["SAVE_OUTCOME_UNKNOWN","REWARD_SYNC_FAILED","EXCLUSIVE_LOCK_FAILED","STALE_WALLET",
+       "WALLET_READ_FAILED","INVALID_WALLET","ALREADY_CLAIMED"].includes(result.code)){
+    window.walletWriterHalt?.();
+    firstSessionRewardNotice="Проверьте баланс после перезагрузки игры.";
+   }else firstSessionRewardNotice="Награда пока не сохранена. Можно повторить попытку.";
+   return;
+  }
+  Object.keys(progress).forEach(key=>delete progress[key]);
+  Object.assign(progress,result.runtime);saveAvailable=true;
+  renderAccountHeader();renderPlayerProfile();renderDailyTasks();renderHeroes();
+ }catch(_){
+  window.walletWriterHalt?.();
+  firstSessionRewardNotice="Проверьте баланс после перезагрузки игры.";
+ }finally{
+  firstSessionClaiming=false;renderFirstSessionFollowUp();
+ }
 }
 $("#hqFirstSessionAction")?.addEventListener("click",()=>{
- if(!$("#home")?.classList.contains("active"))return;
- const status=firstSessionFollowUp();
- if(status)showScreen(status==="unavailable"?"collection":"operations");
+ if(!$("#home")?.classList.contains("active")||firstSessionClaiming)return;
+ const status=firstSessionAction();
+ if(status==="reward"){void claimFirstSessionReward();return;}
+ if(status==="upgrade"){openHeroDetail("ren");return;}
+ if(status)showScreen(status==="unavailable"||status==="reward-blocked"?"collection":"operations");
 });
 // HQ-UI-001: use existing progress/state; this view does not own game rules.
 function renderHeadquarters(){

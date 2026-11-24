@@ -300,7 +300,9 @@ function queueAutoAction(){
   const before=state.fighters.map(f=>({...f}));
   // Combat-015B: plan only when the scheduled auto step actually executes.
   const plan=AutoDecision.chooseAction(state);
+  const tutorialActor=state.fighters[state.currentActor]?.id;
   if(!CombatCore.performAutoAction(state,plan)){setAutoBattle(false);return;}
+  if(battleIsFirstPlay&&tutorialActor)firstPlayTaughtActors.add(tutorialActor);
   captureResolvedVisuals(before);
   selectedAbility="basic";
   syncBattleUI();
@@ -433,6 +435,8 @@ let networkPilot=null,battleIsNetwork=false,networkResultRecorded=false,networkR
 let weeklySession=null,battleIsWeekly=false,weeklyResultRecorded=false,weeklyResultReady=false;
 let battleIsCampaign=false;
 let battleIsFirstPlay=false;
+// Presentation-only, reset on each real battle attempt; no persisted tutorial state.
+let firstPlayTaughtActors=new Set();
 let battleIsNpcMissionPilot=false; // NPC roster, normal campaign rewards and saves.
 let battleIsLoreTraining=false; // Noncanonical combat, no costs or rewards.
 let battleIsLoreRequired=false;
@@ -3986,6 +3990,7 @@ function syncBattleUI(){
  if(isVisualTransition()){
   const transitionStatus=$("#battleStatus");
   if(transitionStatus)transitionStatus.textContent=visualTransition==="wave"?"Завершение волны":"Завершение боя";
+  $("#specialAbilityBtn")?.classList.remove("fp-recommended");
   const transitionHint=$("#actionHint");
   if(transitionHint){transitionHint.hidden=true;transitionHint.textContent="";}
   $("#battleRetryBtn").hidden=true;
@@ -4109,12 +4114,21 @@ function syncBattleUI(){
  basicButton.classList.toggle("selected",false);
  specialButton.classList.toggle("selected",supportTarget);
  // A hint appears only when the next tap is not the obvious "tap an enemy".
- const hintText=autoBattle?"Автобой. Нажми «Ручной бой», чтобы управлять.":
+ let hintText=autoBattle?"Автобой. Нажми «Ручной бой», чтобы управлять.":
   supportTarget?(needsOtherAlly?"Коснись другого союзника: себя выбрать нельзя.":"Коснись союзника, чтобы применить способность."):
   actor&&!visualBusy&&CombatCore.abilityTargetSide(state,"special")==="all-enemies"?"Курсор отмечает основную цель. Учебный широкий удар поражает всех живых врагов.":
   actor&&!visualBusy&&!validTarget?"Коснись противника, чтобы выбрать цель.":"";
+ const teaching=!!(battleIsFirstPlay&&actor&&!autoBattle&&!visualBusy&&!firstPlayTaughtActors.has(actor.id));
+ const recommend=teaching&&specialReady&&["art","ren"].includes(actor.id);
+ specialButton.classList.toggle("fp-recommended",!!recommend&&!supportTarget);
+ if(teaching){
+  if(supportTarget)hintText="Коснитесь Рена: Арт примет часть его урона. Повторный тап по способности — отмена.";
+  else if(recommend&&actor.id==="art")hintText="Выберите способность. Страховочный узел поможет защитить Рена.";
+  else if(recommend&&actor.id==="ren")hintText="Выберите способность. Найти брешь — ослабить атаки врага.";
+  else hintText=validTarget?"Выберите способность.":"Коснитесь противника, чтобы выбрать цель.";
+ }
  const hint=$("#actionHint");
- if(hint){hint.textContent=hintText;hint.hidden=!hintText;}
+ if(hint){if(hint.textContent!==hintText)hint.textContent=hintText;hint.hidden=!hintText;}
  renderActiveHero(actor);
  renderTurnQueue();
  const retry=$("#battleRetryBtn");if(retry)retry.hidden=!!state.active;
@@ -4168,7 +4182,7 @@ function renderArenaIndicators(){
   // ARENA-UI-003B: the name only over the acting hero and the selected target;
   // everyone else shows bars and effect icons. A battle-intel mark stays as an icon.
   const targeted=!!actor&&h.hp>0&&!support&&h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id;
-  const named=active||targeted;
+  const named=active||targeted||(battleIsFirstPlay&&support&&focused&&h.id==="ren");
   // The band reserved for an enemy target's hanging name; the name is capped to
   // it (ellipsis), so a wider system font can never spill over a neighbour.
   const nameW=Math.min(150,Math.round(h.name.length*7+10));
@@ -4236,6 +4250,7 @@ function positionArenaIndicators(){
  if(arenaHudLayout)arenaHudLayout.place();
 }
 function resetBattle(){
+ firstPlayTaughtActors.clear();
  // ARENA-UI-003: owner ability art is listed once per session; redraw on arrival.
  if(typeof ArenaUI003!=="undefined"&&typeof fetch==="function")
   void ArenaUI003.loadManifest().then(found=>{
@@ -4322,7 +4337,9 @@ function applyManualAbility(abilityId){
  // recipients atomically. Single-target behavior stays unchanged.
  if(side!=="enemy"&&side!=="ally"&&side!=="self"&&side!=="all-enemies"&&side!=="all-allies")return false;
  const before=state.fighters.map(f=>({...f}));
+ const tutorialActor=state.fighters[state.currentActor]?.id;
  if(!CombatCore.performPlayerAbility(state,abilityId))return false;
+ if(battleIsFirstPlay&&tutorialActor)firstPlayTaughtActors.add(tutorialActor);
  captureResolvedVisuals(before);
  selectedAbility="basic";
  hideAbilityTooltip();
@@ -4334,7 +4351,7 @@ function pressAbility(abilityId){
  hideAbilityTooltip();
  if(!state.active||autoBattle||isVisualTransition()||visualActionPending()||!CombatCore.abilityReady(state,abilityId))return;
  if(CombatCore.abilityTargetSide(state,abilityId)==="ally"){
-  selectedAbility="special";
+  selectedAbility=battleIsFirstPlay&&selectedAbility==="special"?"basic":"special";
   syncBattleUI();
  }else{
   selectedAbility="basic";
@@ -4575,6 +4592,8 @@ function selectArenaTarget(pickedMesh){
  if(index<0)return false;
  const side=CombatCore.abilityTargetSide(state,selectedAbility);
  if(state.fighters[index].side!==side)return false;
+ // A first-play target tap must not resolve a support skill on the caster.
+ if(battleIsFirstPlay&&side==="ally"&&state.fighters[index].id===state.fighters[state.currentActor]?.id)return false;
  const picked=side==="ally"?CombatCore.chooseAlly(state,index):CombatCore.chooseEnemy(state,index);
  if(picked){
   if(side==="ally"&&selectedAbility==="special")applyManualAbility("special");

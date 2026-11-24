@@ -19,13 +19,13 @@
  transition:transform .55s ease-out,object-position .55s ease-out,opacity .4s ease
 }
 #firstPlay #firstPlayStory[data-shot="workers"] .fp-story-art img{
- transform:scale(1.18);transform-origin:83% 27%;object-position:70% 39%
+ transform:scale(1.035);transform-origin:70% 40%;object-position:center 44%
 }
 #firstPlay #firstPlayStory[data-shot="supports"] .fp-story-art img{
- transform:scale(1.2);transform-origin:56% 76%;object-position:57% 62%
+ transform:scale(1.055);transform-origin:53% 67%;object-position:center 48%
 }
 #firstPlay #firstPlayStory[data-shot="route"] .fp-story-art img{
- transform:scale(1.15);transform-origin:27% 67%;object-position:35% 65%
+ transform:scale(1.025);transform-origin:36% 65%;object-position:center 49%
 }
 #firstPlay #firstPlayStory[data-shot="wide"] .fp-story-art img{
  transform:scale(1);object-position:center 43%
@@ -183,4 +183,13 @@
  animation:none!important;transition:none!important
  }
  #firstPlay .fp-story-choice{transition:none!important}
+}
+
+/* FIRSTPLAY007: people in the illustration carry the action, not portraits. */
+#firstPlay #firstPlayStory[data-art="decision"] .fp-story-art img{transform:scale(1);object-position:center 44%}
+#firstPlay #firstPlayStory[data-art="artSupport"] .fp-story-art img{transform:scale(1.035);object-position:center 52%}
+#firstPlay #firstPlayStory[data-art="renRoute"] .fp-story-art img{transform:scale(1);object-position:center 47%}
+#firstPlay .fp-story-art{animation-duration:14s}
+@media(prefers-reduced-motion:reduce){
+ #firstPlay .fp-story-art{animation:none!important}
 }

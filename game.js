@@ -475,6 +475,75 @@ let storyDemoState=null;
 let missionResultShown=false;
 let missionResultRecorded=false;
 let activeMissionId=null;
+// CAM-001B — separate main story mode; existing squad, arena and v3 writer.
+let battleIsMainCampaign=false,mainCampaignResult=null,mainCampaignClaiming=false,mainCampaignNotice="";
+const mainCampaignStorage=()=>window.localStorage;
+function mainCampaignWritable(){
+ return typeof MainCampaignCore!=="undefined"&&!saveBlocked&&saveAvailable&&progress.saveVersion===3&&
+  typeof ProgressWriterCore!=="undefined"&&ProgressWriterCore.canPersist();
+}
+function renderMainCampaign(){
+ if(typeof MainCampaignCore==="undefined"||!$("#mainCampaignMap"))return;
+ const proof=MainCampaignCore.load(mainCampaignStorage);
+ const status=MainCampaignCore.status(proof,progress);
+ const best=proof?.best||0;
+ $("#mainCampaignProgress").textContent="Миссии: "+(best>0?1:0)+"/1 · Звёзды: "+best+"/3";
+ $("#mainCampaignStars").textContent="★".repeat(best)+"☆".repeat(3-best);
+ $("#mainCampaignNode").textContent=best?"Повторить бой":"Выбрать отряд";
+ $("#mainCampaignNode").disabled=!mainCampaignWritable()||status==="blocked"||mainCampaignClaiming;
+ $("#mainCampaignClaim").hidden=status!=="claimable";
+ $("#mainCampaignClaim").disabled=!mainCampaignWritable()||mainCampaignClaiming;
+ $("#mainCampaignNext").dataset.unlocked=String(status==="claimed");
+ $("#mainCampaignNextStatus").textContent=status==="claimed"?"Путь открыт · следующий эпизод готовится":"Закрыто до первой победы и награды";
+ $("#mainCampaignNotice").textContent=mainCampaignNotice||(status==="blocked"||(!mainCampaignWritable()&&!mainCampaignClaiming)?
+  "Сохранение недоступно. Проверьте данные браузера и перезагрузите игру.":status==="claimed"?
+  "Награда получена. Повторы бесплатны, только для улучшения звёзд.":status==="claimable"?
+  "Победа сохранена. Заберите награду.":"Первый бой бесплатный. Награда за первую победу: "+MainCampaignCore.SOURCE.reward.currency+" кромов.");
+}
+function openMainCampaignMission(){
+ if(!mainCampaignWritable()||mainCampaignClaiming||MainCampaignCore.status(MainCampaignCore.load(mainCampaignStorage),progress)==="blocked")return false;
+ mainCampaignNotice="";activeMissionId=null;openSquad("mainCampaign");return true;
+}
+function renderMainCampaignResult(){
+ if(!mainCampaignResult||typeof MainCampaignCore==="undefined")return;
+ const result=mainCampaignResult,proof=MainCampaignCore.load(mainCampaignStorage);
+ const status=MainCampaignCore.status(proof,progress);
+ $("#mainCampaignResultTitle").textContent=result.earned?"Победа":"Поражение";
+ $("#mainCampaignResultStars").textContent="★".repeat(result.earned)+"☆".repeat(3-result.earned)+" · Лучший результат: "+(proof?.best||0)+"/3";
+ $("#mainCampaignResultText").textContent=mainCampaignNotice||(!result.ok?
+  "Не удалось подтвердить сохранение. Перезагрузите игру и проверьте карту.":!result.earned?
+  "Отряд потерпел поражение. Награды нет. Можно изменить состав и повторить.":
+  status==="claimed"?"Результат сохранён. Разовая награда уже получена.":
+  "Результат сохранён. Заберите "+MainCampaignCore.SOURCE.reward.currency+" кромов за первую победу.");
+ $("#mainCampaignResultClaim").hidden=status!=="claimable"||!result.earned||!result.ok;
+ $("#mainCampaignResultClaim").disabled=!mainCampaignWritable()||mainCampaignClaiming;
+ $("#mainCampaignResultRetry").disabled=mainCampaignClaiming||!result.ok||!mainCampaignWritable();
+ $("#mainCampaignResultBack").disabled=mainCampaignClaiming;
+}
+async function claimMainCampaignReward(){
+ if(mainCampaignClaiming||!mainCampaignWritable()||MainCampaignCore.status(MainCampaignCore.load(mainCampaignStorage),progress)!=="claimable")return;
+ mainCampaignClaiming=true;mainCampaignNotice="";renderMainCampaign();renderMainCampaignResult();
+ try{
+  const result=await MainCampaignCore.claim({storageProvider:mainCampaignStorage,heroes:ALLIES,
+   exclusive:ProgressWriterCore.exclusive,day:dailyDay()});
+  if(!result.ok){
+   if(["SAVE_OUTCOME_UNKNOWN","REWARD_SYNC_FAILED","EXCLUSIVE_LOCK_FAILED","STALE_WALLET","WALLET_READ_FAILED","INVALID_WALLET","ALREADY_CLAIMED"].includes(result.code))
+    window.walletWriterHalt?.();
+   mainCampaignNotice="Награда не подтверждена. Проверьте баланс после перезагрузки.";
+   return;
+  }
+  Object.keys(progress).forEach(key=>delete progress[key]);Object.assign(progress,result.runtime);
+  saveAvailable=true;mainCampaignNotice="Награда получена. Следующий путь открыт.";
+  renderAccountHeader();renderPlayerProfile();renderDailyTasks();renderHeroes();
+ }catch(_){window.walletWriterHalt?.();mainCampaignNotice="Проверьте баланс после перезагрузки.";}
+ finally{mainCampaignClaiming=false;renderMainCampaign();renderMainCampaignResult();}
+}
+$("#mainCampaignNode")?.addEventListener("click",()=>{if($("#campaign")?.classList.contains("active")&&selectedCampaignPath==="main")openMainCampaignMission();});
+$("#mainCampaignClaim")?.addEventListener("click",()=>void claimMainCampaignReward());
+$("#mainCampaignResultClaim")?.addEventListener("click",()=>void claimMainCampaignReward());
+$("#mainCampaignResultRetry")?.addEventListener("click",()=>{if($("#mainCampaignResult")?.classList.contains("active"))openMainCampaignMission();});
+$("#mainCampaignResultBack")?.addEventListener("click",()=>{if(!mainCampaignClaiming)showScreen("mainCampaign");});
+
 let lastMissionStars=0;
 let lastMissionReward=null;
 let lastUnlockedHeroId=null;
@@ -1470,6 +1539,7 @@ function selectedParty(){
   .map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(progressedHero);
 }
 function battleLineup(){
+ if(battleIsMainCampaign)return [...selectedParty(),...MainCampaignCore.enemies(NpcEnemyData)];
  if(battleIsFirstPlay){
   const art=progressedHero(ALLIES.find(h=>h.id==="art"));
   const ren=progressedHero(ALLIES.find(h=>h.id==="ren"));
@@ -1720,7 +1790,7 @@ function renderSquad(){
  $("#squadStart").textContent=loreMode?"Начать испытание":"Начать бой";
  const intro=$("#squadIntro");
  if(intro)intro.textContent=loreMode
-  ?(mandatoryIds.length===2?"«Пять теней»: Рен и Нада обязательны. Остальных героев выбираешь ты.":"«Пять теней»: обязательны "+mandatoryNames+". Свободных мест: "+(MAX_SQUAD-mandatoryIds.length)+"."):"Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.";
+  ?(mandatoryIds.length===2?"«Пять теней»: Рен и Нада обязательны. Остальных героев выбираешь ты.":"«Пять теней»: обязательны "+mandatoryNames+". Свободных мест: "+(MAX_SQUAD-mandatoryIds.length)+"."):squadReturnScreen==="mainCampaign"?"Пролёт без отметки · выбери от 1 до 5 доступных героев.":"Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.";
  const disband=$("#squadDisband");
  if(disband)disband.textContent=loreMode?"Убрать остальных":"Распустить";
  $("#squadStart").disabled=chosen.length===0||(loreMode&&!requiredLoreSquadReady());
@@ -1838,6 +1908,8 @@ function renderStoryDemo(){
  $("#storyDemoAgain").hidden=view.kind!=="defeat"&&view.kind!=="ending";
 }
 function showScreen(id){
+ const mainCampaignReturn=id==="mainCampaign";
+ if(mainCampaignReturn)id="campaign";
  if(id!=="operations")firstReportOperationRequested=false;
  // Release the squad WebGL context synchronously BEFORE entering combat.
  // The MutationObserver remains a fallback for external screen changes.
@@ -1894,7 +1966,8 @@ function showScreen(id){
   markLoginCalendarSeen();
   renderLoginCalendar();
  }
- if(id==="campaign"){if(previousScreenId!=="campaign")showCampaignPath(null);renderCampaign();}
+ if(id==="campaign"){if(previousScreenId!=="campaign")showCampaignPath(null);renderCampaign();if(mainCampaignReturn)showCampaignPath("main");}
+ if(id==="mainCampaignResult")renderMainCampaignResult();
  if(id==="challenges")renderChallenges();
  if(id==="operations")renderOperations();
  if(id==="network"&&typeof NetworkNavigation!=="undefined"){
@@ -1923,6 +1996,8 @@ function showScreen(id){
   missionEntryPaid=false;
   missionResultSaveFailed=false;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
+   battleIsMainCampaign=squadReturnScreen==="mainCampaign"&&typeof MainCampaignCore!=="undefined";
+   if(battleIsMainCampaign){mainCampaignResult=null;mainCampaignNotice="";}
   battleIsFirstPlay=squadReturnScreen==="firstPlay"&&firstPlayState?.phase==="battle";
   battleIsNpcMissionPilot=battleIsCampaign&&NPC_MISSION_PILOT_ENABLED&&
    typeof NpcMissionPilot!=="undefined"&&!!NpcMissionPilot.get(activeMissionId);
@@ -1953,7 +2028,7 @@ function showScreen(id){
      ((battleIsNpcChallengePilot?NpcChallengePilot.title(activeChallengeId):null)||
       ChallengeCore.get(activeChallengeId).title):
    battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
-   battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
+   battleIsMainCampaign?MainCampaignCore.TITLE:battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
   const trial=battleIsLoreRequired?ActiveLoreCampaign.encounter(loreRequiredContext?.nodeId):null;
   const objective=$("#battleChallengeGoal");
   if(objective){
@@ -2110,6 +2185,7 @@ function animateHQSelectionFx(button){
 document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click",()=>{
  if(b.matches?.("#home .hq-station")){animateHQSelectionFx(b);return;}
  resetHQSelectionFx();
+ if(b.dataset.screen==="home"&&battleIsMainCampaign&&$("#battle")?.classList.contains("active")){showScreen("mainCampaign");return;}
  if(b.dataset.screen==="home"&&battleIsLoreRequired&&$("#battle")?.classList.contains("active")){
   LoreCampaignUI.cancelRequiredBattle();returnToLoreMap();return;
  }
@@ -2712,6 +2788,7 @@ if(squadLeaderButton&&squadLeaderTooltip){
 const retryLoad=$("#retryBattleLoad");
 if(retryLoad)retryLoad.addEventListener("click",()=>window.location.reload());
 $("#squadStart").addEventListener("click",()=>{
+ if(squadReturnScreen==="mainCampaign"&&(!$("#squad")?.classList.contains("active")||!mainCampaignWritable()))return;
  const count=selectedParty().length;
  if(isLoreRequiredSquad()&&!requiredLoreSquadReady()){
   const warning=$("#squadWarning");
@@ -3654,6 +3731,7 @@ function showCampaignPath(path){
  }
  if(title)title.textContent=selectedCampaignPath?CAMPAIGN_PATH_TITLES[selectedCampaignPath]:"Выбор кампании";
  if(back)back.textContent=selectedCampaignPath?"← К выбору":"← В штаб";
+ if(selectedCampaignPath==="main")renderMainCampaign();
  // LOREMAP001: open the non-combat lore map through the existing hub.
  if(selectedCampaignPath==="lore"&&typeof LoreCampaignUI!=="undefined"&&
    typeof LoreCampaignAct2!=="undefined"&&typeof LoreCampaignCore!=="undefined"){
@@ -4055,7 +4133,12 @@ function syncBattleUI(){
  if(!state.active){cancelAutoTimer();autoBattle=false;}
  // Commit battle outcome immediately as before, even if the player leaves
  // the arena before the final animation ends. Only visual navigation waits.
- if(battleIsCampaign&&!state.active&&!missionResultRecorded){
+ if(battleIsMainCampaign&&!state.active&&!missionResultRecorded){
+   missionResultRecorded=true;
+   mainCampaignResult=MainCampaignCore.record(state,mainCampaignStorage);
+   if(!mainCampaignResult.ok)mainCampaignNotice="Сохранение не подтверждено. Вернитесь на карту или перезагрузите игру.";
+  }
+  if(battleIsCampaign&&!state.active&&!missionResultRecorded){
   const firstClear=state.winner==="ally"&&!campaignProgress.completed[activeMissionId];
   const beforeCampaign=JSON.parse(JSON.stringify(campaignProgress));
   const beforeWallet=progress.saveVersion===3?JSON.parse(JSON.stringify(progress)):null;
@@ -4225,7 +4308,10 @@ function syncBattleUI(){
  if(battleIsFirstPlay&&!state.active&&!missionResultShown){
   missionResultShown=true;showScreen("firstPlay");return;
  }
- if(battleIsCampaign&&!state.active&&!missionResultShown){
+ if(battleIsMainCampaign&&!state.active&&!missionResultShown){
+   missionResultShown=true;showScreen("mainCampaignResult");return;
+  }
+  if(battleIsCampaign&&!state.active&&!missionResultShown){
   missionResultShown=true;
   renderMissionResult();
   showScreen("missionResult");
@@ -4532,7 +4618,7 @@ $("#basicAbilityBtn").addEventListener("click",()=>pressAbility("basic"));
 $("#specialAbilityBtn").addEventListener("click",()=>pressAbility("special"));
 $("#powerfulAbilityBtn")?.addEventListener("click",()=>pressAbility("powerful"));
 $("#battleRetryBtn").addEventListener("click",()=>{
- if(!state.active&&!isVisualTransition())openSquad(battleIsLoreRequired?"loreRequired":battleIsLoreTraining?"loreTraining":battleIsSignal?"signalOperations":battleIsOperation?"operations":battleIsChallenge?"challenges":"home");
+ if(!state.active&&!isVisualTransition())openSquad(battleIsMainCampaign?"mainCampaign":battleIsLoreRequired?"loreRequired":battleIsLoreTraining?"loreTraining":battleIsSignal?"signalOperations":battleIsOperation?"operations":battleIsChallenge?"challenges":"home");
 });
 const autoBattleControl=$("#autoBattleBtn");
 if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.active)setAutoBattle(!autoBattle);});

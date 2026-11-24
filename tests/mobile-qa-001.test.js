@@ -63,14 +63,19 @@ test("MOBILEQA001: a new screen opens scrolled to top except the roster return",
  const g=read("game.js");
  assert.match(g,/previousScreenId!==id&&!restoresRoster[^\n]*\n\s*window\.scrollTo\(0,0\)/);
 });
-test("MOBILEQA001: landscape CSS keeps message beside the panel, 44px controls and fading cache monitor",()=>{
+test("MOBILEQA001: landscape CSS keeps message beside the panel, 44px controls and in-flow cache monitor",()=>{
  const css=read("styles.css");
  const block=css.slice(css.indexOf("/* MOBILEQA001"));
  assert.ok(block.length>0);
  assert.match(block,/\.battle-screen \.battle-message,[\s\S]*?transform:none;[\s\S]*?max-width:calc\(100vw - min\(370px,61vw\)/);
  assert.match(block,/auto-speed-btn\{min-width:44px\}/);
- assert.match(block,/\.hq-screen \.hq-model-cache\{[\s\S]*?top:calc\(env\(safe-area-inset-top,0px\) \+ 50px\);bottom:auto;/);
- assert.match(block,/hq-model-cache\[data-state="ready"\]\{animation:mobileqa001-cache-out \.4s ease 4s forwards\}/);
+ // FIRSTSESSIONP2A moved the cache into the document flow and hides it on success.
+ const cache=css.match(/\.hq-screen \.hq-model-cache\{([^}]+)\}/);
+ assert.ok(cache,"cache status exists");
+ assert.match(cache[1],/position:relative;flex:0 0 auto;min-width:0/);
+ assert.match(cache[1],/pointer-events:none/);
+ assert.match(cache[1],/env\(safe-area-inset-right\).*env\(safe-area-inset-left\)/);
+ assert.match(css,/\.hq-screen \.hq-model-cache\[data-state="ready"\]\{display:none\}/);
  assert.match(block,/prefers-reduced-motion/);
 });
 test("MOBILEQA001: long gear caption gets a soft hyphen only in display",()=>{

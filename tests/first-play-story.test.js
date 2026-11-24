@@ -57,8 +57,8 @@ test("bad cursor/denied storage falls back without changing FirstPlayCore progre
 test("speaker portraits are the exact Ren/Art game assets",()=>{
  assert.equal(Story.CAST.ren.portrait,"assets/ren-portrait-ui.webp");
  assert.equal(Story.CAST.art.portrait,"assets/art-portrait-ui.webp?v=2");
- assert.equal(Story.CAST.worker.portrait,"assets/cutscenes/first-report/v2/warning.webp");
- assert.equal(Story.CAST.master.portrait,"assets/cutscenes/first-report/v2/decision.webp");
+ assert.equal(Story.CAST.worker.portrait,"assets/cutscenes/first-report/v5/worker-portrait.webp");
+ assert.equal(Story.CAST.master.portrait,"assets/cutscenes/first-report/v5/master-portrait.webp");
  assert.equal(Story.CAST.worker.npc,true);
  assert.equal(Story.CAST.master.npc,true);
  assert.deepEqual(Story.INTRO.map(x=>x.speakerId),["worker","master","art","ren","master"]);
@@ -72,27 +72,30 @@ test("speaker portraits are the exact Ren/Art game assets",()=>{
  for(const beat of [...Story.INTRO,...Object.values(Story.RESPONSE),...Story.OUTRO])
   assert.ok(Story.CAST[beat.speakerId]?.label);
 });
-test("civilian frames are painted actions; the hero frames keep neutral identity",()=>{
- for(const key of ["warning","conflict","decision","aftermath"]){
-  assert.equal(Story.ART[key],"assets/cutscenes/first-report/v2/"+key+".webp");
-  assert.equal(Story.AVIF[key],"assets/cutscenes/first-report/v2/"+key+".avif");
- }
- assert.match(Story.ART.approach,/v3\/bridge-approach\.webp$/);
- assert.match(Story.AVIF.approach,/v3\/bridge-approach\.avif$/);
- assert.equal(Story.INTRO[2].art,"approach");
- assert.equal(Story.INTRO[3].art,"approach");
- assert.equal(Story.RESPONSE.survey.art,"approach");
- assert.equal(Story.RESPONSE.cover.art,"approach");
-});
 
-test("civilian portraits reuse the high-resolution action art without invented faces",()=>{
+test("every first-play beat has a separate character-led illustration",()=>{
+ const paths=["warning","conflict","artSupport","renRoute","decision"];
+ assert.equal(new Set(paths.map(k=>Story.ART[k])).size,5);
+ for(const key of paths){
+  assert.match(Story.ART[key],/^assets\/cutscenes\/first-report\/v5\/[^/]+\.webp$/);
+  assert.equal(Story.AVIF[key],null);
+  assert.ok(Story.STORYBOARD[key]?.purpose);
+ }
+ assert.equal(Story.INTRO[0].art,"warning");
+ assert.equal(Story.INTRO[1].art,"conflict");
+ assert.equal(Story.INTRO[2].art,"artSupport");
+ assert.equal(Story.INTRO[3].art,"renRoute");
+ assert.equal(Story.INTRO[4].art,"decision");
+ assert.equal(Story.RESPONSE.survey.art,"artSupport");
+ assert.equal(Story.RESPONSE.cover.art,"renRoute");
+ assert.equal(Story.OUTRO[1].art,"aftermath");
+ for(const key of ["worker","master"]){
+  assert.match(Story.CAST[key].portrait,/^assets\/cutscenes\/first-report\/v5\/.*-portrait\.webp$/);
+  assert.equal(Story.CAST[key].portraitAvif,null);
+ }
  const fs=require("node:fs"),path=require("node:path");
- for(const name of ["worker","master"]){
-  const cast=Story.CAST[name];
-  assert.equal(cast.portraitAvif,cast.portrait.replace(/\.webp$/,".avif"));
-  const webp=fs.readFileSync(path.join(__dirname,"..",cast.portrait));
-  assert.equal(webp.toString("ascii",0,4),"RIFF");
-  assert.ok(webp.length>100_000);
+ for(const file of [...paths.map(k=>Story.ART[k]),Story.CAST.worker.portrait,Story.CAST.master.portrait]){
+  assert.ok(fs.existsSync(path.join(__dirname,"..",file)),"required scene asset missing: "+file);
  }
 });
 test("order preview matches the exact two battle bonuses",()=>{

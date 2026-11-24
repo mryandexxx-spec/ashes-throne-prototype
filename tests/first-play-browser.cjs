@@ -101,6 +101,13 @@ async function run(label,engine,viewport){
   assert.ok(bounds.scene.left>=0&&bounds.scene.right<=bounds.width+1&&
    bounds.scene.top>=0&&bounds.scene.bottom<=bounds.height+1,
    label+": story viewport within landscape screen");
+
+  const compactStoryFrame=async()=>{
+   const bounds=await page.evaluate(()=>{const f=document.querySelector("#firstPlayStory .fp-story-footer").getBoundingClientRect(),h=document.querySelector("#firstPlayStory .fp-story-header").getBoundingClientRect();return {top:f.top,bottom:f.bottom,headerBottom:h.bottom,height:innerHeight,overflow:document.documentElement.scrollWidth>innerWidth+1}});
+   assert.equal(bounds.overflow,false);
+   assert.ok(bounds.top>bounds.headerBottom,"story art must not be hidden by overlapping header/footer");
+   assert.ok(bounds.bottom<=bounds.height+1);
+  };
   const next=page.locator("#firstPlayStoryNext"),pause=page.locator("#firstPlayStoryPause");
   const sound=page.locator("#firstPlayStorySound");
   assert.equal(await sound.getAttribute("aria-pressed"),"false");
@@ -123,6 +130,7 @@ async function run(label,engine,viewport){
   assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),"МАСТЕР УЧАСТКА");
   assert.match(await page.locator("#firstPlayStoryCue").innerText(),/охранник/);
   await page.waitForFunction(()=>{const i=document.querySelector("#firstPlayStoryImage");return i?.complete&&i.naturalWidth>0&&i.currentSrc.includes("/v6/conflict.webp");},null,{timeout:12000});
+  await compactStoryFrame();
   await page.screenshot({path:path.join(dest,label+"-p1c2-conflict.png")});
   await page.reload({waitUntil:"load",timeout:60000});
   await page.locator("#firstPlay.active").waitFor({state:"visible",timeout:30000});
@@ -189,7 +197,8 @@ async function run(label,engine,viewport){
   }else{
    assert.equal(await page.evaluate(()=>firstPlayState.phase),"won");
    await page.waitForFunction(()=>{const i=document.querySelector("#firstPlayStoryImage");return i?.complete&&i.naturalWidth>0&&i.currentSrc.includes("/v6/rescue.webp");},null,{timeout:12000});
-   await page.screenshot({path:path.join(dest,label+"-p1c2-rescue.png")});
+   await compactStoryFrame();
+  await page.screenshot({path:path.join(dest,label+"-p1c2-rescue.png")});
    assert.equal(await page.locator("#firstPlayStoryFinish").isVisible(),false);
    assert.equal(await page.locator("#firstPlayStorySpeaker").textContent(),
     choice==="cover"?"РЕН ТЕРЕН":"АРТ");
@@ -201,7 +210,8 @@ async function run(label,engine,viewport){
    assert.match(await page.locator("#firstPlayStoryDocument").innerText(),/Переход безопасен/);
    assert.match(await page.locator("#firstPlayStoryDocument").innerText(),/Крепления снять/);
    await page.waitForFunction(()=>{const i=document.querySelector("#firstPlayStoryImage");return i?.complete&&i.naturalWidth>0&&i.currentSrc.includes("/v6/document.webp");},null,{timeout:12000});
-   await page.screenshot({path:path.join(dest,label+"-p1c2-document.png")});
+   await compactStoryFrame();
+  await page.screenshot({path:path.join(dest,label+"-p1c2-document.png")});
    assert.equal(await page.locator("#firstPlayStoryCue").isVisible(),true);
    assert.match(await page.locator("#firstPlayStoryContext").innerText(),/установить источник распоряжения/);
    assert.doesNotMatch(await page.locator("#firstPlayStoryContext").innerText(),/Эффект вашего приказа/);

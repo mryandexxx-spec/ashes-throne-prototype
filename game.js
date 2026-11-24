@@ -496,6 +496,9 @@ function renderMainCampaign(){
  $("#mainCampaignStars").textContent="★".repeat(best)+"☆".repeat(3-best);
  $("#mainCampaignNode").textContent=best?"Повторить бой":"Выбрать отряд";
  $("#mainCampaignNode").disabled=!mainCampaignWritable()||status==="blocked"||mainCampaignClaiming;
+ $("#mainCampaignMapPin").disabled=$("#mainCampaignNode").disabled;
+ $("#mainCampaignMapPin").setAttribute("aria-label",MainCampaignCore.TITLE+" — "+$("#mainCampaignNode").textContent);
+ $("#mainCampaignPinSymbol").textContent=best?"✓":"⚔";
  $("#mainCampaignClaim").hidden=status!=="claimable";
  $("#mainCampaignClaim").disabled=!mainCampaignWritable()||mainCampaignClaiming;
  $("#mainCampaignNext").dataset.unlocked=String(status==="claimed");
@@ -550,7 +553,9 @@ async function claimMainCampaignReward(){
  }catch(_){window.walletWriterHalt?.();mainCampaignNotice="Проверьте баланс после перезагрузки.";}
  finally{mainCampaignClaiming=false;renderMainCampaign();renderMainCampaignResult();}
 }
-$("#mainCampaignNode")?.addEventListener("click",()=>{if($("#campaign")?.classList.contains("active")&&selectedCampaignPath==="main")openMainCampaignMission();});
+for(const id of ["#mainCampaignNode","#mainCampaignMapPin"]){
+ $(id)?.addEventListener("click",()=>{if($("#campaign")?.classList.contains("active")&&selectedCampaignPath==="main")openMainCampaignMission();});
+}
 $("#mainCampaignClaim")?.addEventListener("click",()=>void claimMainCampaignReward());
 $("#mainCampaignResultClaim")?.addEventListener("click",()=>void claimMainCampaignReward());
 $("#mainCampaignResultRetry")?.addEventListener("click",()=>{if($("#mainCampaignResult")?.classList.contains("active"))openMainCampaignMission();});

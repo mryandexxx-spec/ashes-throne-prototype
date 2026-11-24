@@ -5381,3 +5381,11 @@ body:has(#storyDemo.active)::before{
 }
 @media(orientation:portrait) and (max-width:640px){.main-campaign-map{grid-template-columns:1fr}.main-campaign-chart{min-height:220px}}
 @media(prefers-reduced-motion:reduce){.main-campaign-map button,#mainCampaignResult button{transition:none}}
+
+button.main-campaign-pin{border:0;background:none;padding:0;transform:translateX(-50%);min-height:44px}
+button.main-campaign-pin:hover{transform:translateX(-50%);filter:brightness(1.08)}
+button.main-campaign-pin:disabled{opacity:.65}
+#app:has(#mainCampaignResult.active)>.topbar{height:clamp(42px,6.5dvh,60px);border-bottom:1px solid #b28e5b7a;background:linear-gradient(180deg,#262322,#1c1c20);color:#e8c895}
+#app:has(#mainCampaignResult.active)>.topbar .brand small{display:none}
+#app:has(#mainCampaignResult.active)>.topbar .brand strong{font-family:Georgia,serif;color:#f4e4c8}
+#app:has(#mainCampaignResult.active)>footer{color:#c5ae91;border-top:1px solid #bd925c4f}

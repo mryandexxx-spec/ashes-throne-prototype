@@ -297,6 +297,9 @@ async function run(label,engine,viewport){
     assert.equal(await page.evaluate(()=>selectedCampaignPath),"main");
     assert.equal(await page.locator("#campaignHub").isVisible(),false);
     assert.equal(await page.locator("#operations.active").count(),0);
+    const startBounds=await page.locator("#mainCampaignNode").boundingBox();
+    assert.ok(startBounds&&startBounds.y>=0&&startBounds.height>=44&&startBounds.y+startBounds.height<=viewport.height+1,"M1 start must fit without scrolling");
+    assert.equal(await page.locator("#campaignMainContent #storyDemoOpen").count(),0);
    };
    const homeFromMap=async()=>{
     await page.locator("#campaignBackButton").tap();

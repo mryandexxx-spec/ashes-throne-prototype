@@ -27,6 +27,21 @@ async function run(name,browserType,viewport){
   receipts:(progress.rewardReceipts||[]).filter(r=>r.id===MainCampaignCore.RECEIPT).length,
   energy:progress.energy.value,training:localStorage.getItem(CampaignCore.KEY),daily:JSON.stringify(progress.daily),first:FirstPlayCore.wonProof(firstPlayState)}));
  const noOverflow=async()=>assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),"horizontal overflow");
+ // Playwright tap scrolls a target into view automatically; measure BEFORE tapping.
+ const visibleTarget=async selector=>{
+  const geometry=await page.locator(selector).evaluate(el=>{
+   const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+   return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height,hit:el.contains(hit),vw:innerWidth,vh:innerHeight,scrollY};
+  });
+  assert.ok(geometry.x>=0&&geometry.y>=0&&geometry.right<=geometry.vw+1&&geometry.bottom<=geometry.vh+1&&geometry.width>=44&&geometry.height>=44&&geometry.hit,selector+" must be visible and tappable without scroll: "+JSON.stringify(geometry));
+  assert.ok(geometry.scrollY<=1,"route/result should open at the top: "+JSON.stringify(geometry));
+ };
+ const routeReady=async(selector="#mainCampaignNode")=>{
+  await page.locator("#mainCampaignMap").waitFor();
+  await noOverflow();
+  await visibleTarget(selector);
+  assert.equal(await page.locator("#campaignMainContent #storyDemoOpen").count(),0);
+ };
  const fight=async()=>{
   await page.locator("#squadStart").tap();
   if(await page.locator("#squad.active").isVisible())await page.locator("#squadStart").tap();
@@ -42,35 +57,41 @@ async function run(name,browserType,viewport){
   await page.goto(url,{waitUntil:"load",timeout:60000});await ready();
   assert.equal(await page.locator("#hqFirstSessionAction").isVisible(),false,"developer bypass must not create an onboarding quest");
   await showMap();
-  await noOverflow();await page.screenshot({path:path.join(dest,key+"-locked.png")});
+  await routeReady();await visibleTarget("#mainCampaignMapPin");await page.screenshot({path:path.join(dest,key+"-locked.png")});
   const before=await inspect();assert.equal(before.proof.best,0);assert.equal(before.receipts,0);assert.equal(before.first,false);
-  await page.locator("#mainCampaignNode").tap();
-  await page.locator("#squadBack").tap();await page.locator("#mainCampaignMap").waitFor();
+  await page.locator("#mainCampaignMapPin").tap();
+  await page.locator("#squadBack").tap();await routeReady();
   await page.locator("#mainCampaignNode").tap();
   await page.locator("#squadDisband").tap();
   await page.locator('#squadRoster .squad-choice[data-hero-id="nada"]').tap();
   assert.equal(await fight(),"enemy","one starter support vs two full NPCs");
   assert.equal((await inspect()).proof.best,0);assert.equal((await inspect()).currency,before.currency);
   assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
+  assert.equal(await page.locator("#mainCampaignResultReward").isVisible(),false);
+  await visibleTarget("#mainCampaignResultBack");await visibleTarget("#mainCampaignResultRetry");
   await page.locator("#mainCampaignResultRetry").tap();
   await page.locator("#squadDisband").tap();
   for(const id of ["ren","nada","liora","art","sava"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
   assert.equal(await fight(),"ally");
   const won=await inspect();assert.ok(won.proof.best>0);assert.equal(won.currency,before.currency);assert.equal(won.receipts,0);
-  await noOverflow();await page.screenshot({path:path.join(dest,key+"-victory.png")});
+  await noOverflow();await visibleTarget("#mainCampaignResultClaim");await visibleTarget("#mainCampaignResultBack");
+  assert.match(await page.locator("#mainCampaignResultRewardAmount").innerText(),/40/);
+  await page.screenshot({path:path.join(dest,key+"-victory.png")});
   // Reload BEFORE claiming. Proof survives and the next path is still locked.
   await page.reload({waitUntil:"load",timeout:60000});await ready();await showMap();
   assert.equal((await inspect()).proof.best,won.proof.best);
   assert.equal(await page.locator("#mainCampaignNext").getAttribute("data-unlocked"),"false");
+  await routeReady("#mainCampaignClaim");
   await page.locator("#mainCampaignClaim").tap();
   await page.waitForFunction(()=>MainCampaignCore.claimed(progress)&&!mainCampaignClaiming,null,{timeout:20000});
   const paid=await inspect();assert.equal(paid.currency,before.currency+40);assert.equal(paid.receipts,1);
   assert.equal(await page.locator("#mainCampaignNext").getAttribute("data-unlocked"),"true");
-  await page.screenshot({path:path.join(dest,key+"-unlocked.png")});
+  await routeReady();await page.screenshot({path:path.join(dest,key+"-unlocked.png")});
   await page.locator("#mainCampaignNode").tap();
   assert.equal(await fight(),"ally");
   assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
-  await page.locator("#mainCampaignResultBack").tap();await page.locator("#mainCampaignMap").waitFor();
+  await visibleTarget("#mainCampaignResultBack");
+  await page.locator("#mainCampaignResultBack").tap();await routeReady();
   const after=await inspect();assert.equal(after.currency,paid.currency);assert.equal(after.receipts,1);
   assert.equal(after.energy,before.energy);assert.equal(after.training,before.training);assert.equal(after.first,false);
   assert.ok(after.proof.best>=won.proof.best);

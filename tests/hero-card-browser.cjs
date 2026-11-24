@@ -43,6 +43,12 @@ const {chromium,webkit}=require('playwright');
    await page.screenshot({path:`artifacts/hero-card-${useWebkit?'webkit':'chromium'}-${w}x${h}.png`});
   }
 
+  // CAM-ROSTER: the starter card was checked on a fresh profile above.
+  // The inherited five-dossier and late progression cases require explicit ownership.
+  await page.evaluate(()=>{
+   for(const id of ["nada","liora","sava"])if(!StarCore.directGrant(progress,id))throw Error("TEST_GRANT_FAILED");
+   if(!persistProgress())throw Error("TEST_FIXTURE_SAVE_FAILED");
+  });
   // ROSTERDOSSIER001: all five heroes use one responsive ability/action layout.
   for(const heroId of ['ren','nada','liora','art','sava']){
    await page.evaluate(id=>{selectedHeroId=id;showScreen('heroDetail');},heroId);

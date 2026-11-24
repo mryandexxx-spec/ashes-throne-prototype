@@ -10,7 +10,7 @@ fs.mkdirSync(dest,{recursive:true});
 // Read-only projection and picking identify a real tappable point on the canvas.
 // The touchscreen tap itself follows the same pointer path as a player's tap.
 async function tapFighter(page,id,probeOnly=false){
- const point=await page.evaluate(id=>{
+ const handle=await page.waitForFunction(id=>{
   const canvas=document.querySelector("#renderCanvas"),rect=canvas.getBoundingClientRect();
   const camera=arenaCamera,m=meshes[id];
   if(!m||!scene||!camera)return null;
@@ -27,8 +27,24 @@ async function tapFighter(page,id,probeOnly=false){
     if(fighterId(scene.pick(sx,sy)?.pickedMesh)===id)return {x:rect.left+sx,y:rect.top+sy};
    }
   }
+  // Imported GLB geometry can extend beyond its invisible capsule anchors.
+  // Sample the live, visible pickable meshes' projected bounds as well.
+  for(const part of scene.meshes.filter(p=>p.isPickable&&p.isVisible&&p.isEnabled()&&p.getTotalVertices()>0&&fighterId(p)===id)){
+   const box=part.getBoundingInfo().boundingBox;
+   const corners=box.vectorsWorld.map(v=>BABYLON.Vector3.Project(v,BABYLON.Matrix.Identity(),scene.getTransformMatrix(),vp));
+   const xs=corners.map(p=>p.x*rect.width/width),ys=corners.map(p=>p.y*rect.height/height);
+   const left=Math.max(0,Math.min(...xs)),right=Math.min(rect.width-1,Math.max(...xs));
+   const top=Math.max(0,Math.min(...ys)),bottom=Math.min(rect.height-1,Math.max(...ys));
+   if(right<left||bottom<top)continue;
+   for(const fy of [.5,.25,.75,.1,.9])for(const fx of [.5,.25,.75,.1,.9]){
+    const sx=left+(right-left)*fx,sy=top+(bottom-top)*fy;
+    if(document.elementFromPoint(rect.left+sx,rect.top+sy)!==canvas)continue;
+    if(fighterId(scene.pick(sx,sy)?.pickedMesh)===id)return {x:rect.left+sx,y:rect.top+sy};
+   }
+  }
   return null;
- },id);
+ },id,{timeout:12000,polling:250});
+ const point=await handle.jsonValue();await handle.dispose();
  assert.ok(point,"real visible pickable canvas point for "+id);
  if(!probeOnly)await page.touchscreen.tap(point.x,point.y);
  return point;
@@ -46,7 +62,7 @@ async function probeBattleTargets(page){
   for(const [id,node] of Object.entries(indicatorNodes)){
    if(getComputedStyle(node).display==="none")continue;
    const n=node.getBoundingClientRect();
-   if(n.width&&n.height&&intersects(g,n))clashes.push(id);
+   if(n.width&&n.height&&intersects(g,n))clashes.push({id,goal:[g.x,g.y,g.width,g.height],label:[n.x,n.y,n.width,n.height]});
   }
   for(const el of document.querySelectorAll("#battleMenuBtn,#autoBattleBtn,#autoSpeedBtn,#battleLog summary")){
    const n=el.getBoundingClientRect();

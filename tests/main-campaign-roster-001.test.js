@@ -47,3 +47,40 @@ test("failed write does not grant, repeat source disallowed",async()=>{
  fail();assert.equal((await R.claim(args)).code,"SAVE_OUTCOME_UNKNOWN");
  assert.equal(map.get(V.KEY),old);
 });
+
+test("unknown write outcome after durable grant recovers once, without losing pre-earned shards",async()=>{
+ const {map,storage,provider,args,loaded}=setup();
+ assert.equal(Star.add(loaded.progress,"nada",20),true);
+ assert.equal(S.save(loaded.progress,provider),true);
+ storage.setItem("test-proof","won");
+ const realSet=storage.setItem;
+ storage.setItem=(k,v)=>{realSet(k,v);if(k===V.KEY)throw Error("write succeeded before exception")};
+ const source={...args.source,reward:{...args.source.reward,currency:40,heroGrants:["nada","liora"]}};
+ const claim={...args,source};
+ assert.equal((await R.claim(claim)).code,"SAVE_OUTCOME_UNKNOWN");
+ storage.setItem=realSet;
+ const recovered=S.load(heroes,provider);
+ assert.equal(recovered.blocked,false);
+ assert.equal(recovered.progress.currency,40);
+ assert.equal(recovered.progress.rewardReceipts.length,1);
+ for(const id of ["nada","liora"]){assert.equal(H.owned(recovered.progress,id),true);assert.equal(Star.rankOf(recovered.progress,id),1)}
+ assert.equal(Star.shardsOf(recovered.progress,"nada"),20);
+ assert.equal(H.owned(recovered.progress,"sava"),false);
+ const durable=map.get(V.KEY);
+ assert.equal((await R.claim(claim)).code,"ALREADY_CLAIMED");
+ assert.equal(map.get(V.KEY),durable);
+});
+test("already-owned hero in a later first-clear grant keeps its rank and shards",async()=>{
+ const {map,storage,provider,args,loaded}=setup(),p=loaded.progress;
+ assert.equal(Star.directGrant(p,"nada"),true);
+ assert.equal(Star.add(p,"nada",40),true);
+ assert.ok(Star.promote(p,"nada"));
+ const rank=Star.rankOf(p,"nada"),shards=Star.shardsOf(p,"nada");
+ assert.equal(S.save(p,provider),true);
+ storage.setItem("test-proof","won");
+ assert.equal((await R.claim(args)).ok,true);
+ const restored=S.load(heroes,provider).progress;
+ assert.equal(Star.rankOf(restored,"nada"),rank);
+ assert.equal(Star.shardsOf(restored,"nada"),shards);
+ assert.equal(restored.unlockedHeroes.filter(id=>id==="nada").length,1);
+});

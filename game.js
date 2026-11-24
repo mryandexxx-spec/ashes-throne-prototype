@@ -823,6 +823,25 @@ $("#firstPlayStorySound")?.addEventListener("click",async()=>{
  syncFirstPlaySound();
 });
 let firstPlayStoryTimer=null,firstPlayStoryManualAt=-Infinity;
+let firstPlayNextImage=null,firstPlayNextURL=null;
+function clearFirstPlayNext(){firstPlayNextImage=null;firstPlayNextURL=null;}
+function preloadFirstPlayNext(){
+ if(!firstPlayState||!$("#firstPlay")?.classList.contains("active")||
+  document.visibilityState==="hidden"||window.innerWidth<window.innerHeight||
+  typeof window.Image!=="function")return;
+ const cursor=FirstPlayStoryCore.advance(firstPlayState.phase,firstPlayStoryCursor);
+ if(!cursor){clearFirstPlayNext();return;}
+ const next=FirstPlayStoryCore.frame(firstPlayState.phase,firstPlayState.choice,cursor);
+ const url=FirstPlayStoryCore.ART[next.art];
+ if(!url||url===firstPlayNextURL)return;
+ // One adjacent frame, only after the visible frame has loaded. No preload of
+ // the entire sequence or of an unearned victory while combat owns the screen.
+ firstPlayNextURL=url;
+ firstPlayNextImage=new window.Image();
+ firstPlayNextImage.decoding="async";
+ firstPlayNextImage.fetchPriority="low";
+ firstPlayNextImage.src=url;
+}
 let firstPlayStoryPaused=typeof window.matchMedia==="function"&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let firstPlayStoryClock={step:null,remaining:0,started:0};
 function stopFirstPlayStoryTimer(){
@@ -947,6 +966,7 @@ function renderFirstPlay(){
   pause.textContent=firstPlayStoryPaused?"Продолжить":"Пауза";
   pause.setAttribute("aria-pressed",String(firstPlayStoryPaused));}
  scheduleFirstPlayStory();
+ if(image?.complete)preloadFirstPlayNext();
  if(finish)finish.hidden=!lastOutro;
  const notice=$("#firstPlayStoryNotice");
  let warning=firstPlayFailure?"Группе пока не удалось удержать проход. Можно повторить бой.":firstPlaySaveFailed?
@@ -968,11 +988,17 @@ $("#firstPlayStoryImage")?.addEventListener("load",event=>{
  // A deferred error from a previous source must never leave the real art hidden.
  if(event.currentTarget.naturalWidth>0)event.currentTarget.hidden=false;
  scheduleFirstPlayStory();
+ preloadFirstPlayNext();
 });
 $("#firstPlayStoryImage")?.addEventListener("error",event=>{
  // Keep the story readable when no art is available, not after a valid load.
- if(!event.currentTarget.naturalWidth)event.currentTarget.hidden=true;
+ if(!event.currentTarget.naturalWidth){
+  event.currentTarget.hidden=true;
+  const surface=$("#firstPlayStory .fp-story-art");
+  if(surface?.style)surface.style.backgroundImage="";
+ }
  scheduleFirstPlayStory();
+ preloadFirstPlayNext();
 });
 function firstPlayStoryNext(event){
  if(event){const now=Date.now();if(now-firstPlayStoryManualAt<350)return;firstPlayStoryManualAt=now;}
@@ -1885,7 +1911,7 @@ function showScreen(id){
  if(id==="signalOperations")renderSignalOperations();
  if(id==="signalOperationResult")renderSignalOperationResult();
  if(id==="storyDemo")renderStoryDemo();
- if(id==="firstPlay")renderFirstPlay();else{stopFirstPlayStoryTimer();firstPlaySoundStop(true);}
+ if(id==="firstPlay")renderFirstPlay();else{stopFirstPlayStoryTimer();firstPlaySoundStop(true);clearFirstPlayNext();}
  if(id==="loreTrainingResult")renderLoreTrainingResult();
  if(id==="loreRequiredBattleResult")renderLoreRequiredBattleResult();
  if(id==="heroDetail")renderHeroDetail();

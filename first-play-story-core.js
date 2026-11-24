@@ -17,30 +17,33 @@ const FirstPlayStoryCore=(()=>{
  // Art/shot IDs are intentionally narrative, not universal UI component names.
  const ART=Object.freeze({
   warning:"assets/cutscenes/first-report/v5/warning.webp",
-  conflict:"assets/cutscenes/first-report/v5/conflict.webp",
+  conflict:"assets/cutscenes/first-report/v6/conflict.webp",
   artSupport:"assets/cutscenes/first-report/v5/art-support.webp",
   renRoute:"assets/cutscenes/first-report/v5/ren-route.webp",
   decision:"assets/cutscenes/first-report/v5/decision.webp",
-  aftermath:"assets/cutscenes/first-report/v2/aftermath.webp"
+  aftermath:"assets/cutscenes/first-report/v6/rescue.webp",
+  document:"assets/cutscenes/first-report/v6/document.webp"
  });
  const AVIF=Object.freeze({
   warning:null,conflict:null,artSupport:null,renRoute:null,decision:null,
-  aftermath:"assets/cutscenes/first-report/v2/aftermath.avif"
+  aftermath:null,document:null
  });
  const STORYBOARD=Object.freeze({
   warning:Object.freeze({focus:"workers",purpose:"Рабочие удерживают повреждённый переход"}),
-  conflict:Object.freeze({focus:"master",purpose:"Мастер требует немедленно снять людей"}),
+  conflict:Object.freeze({focus:"master",purpose:"Мастер требует прекратить демонтаж; охранник закрывает сход"}),
   artSupport:Object.freeze({focus:"art",purpose:"Арт показывает снятое крепление"}),
   renRoute:Object.freeze({focus:"ren",purpose:"Рен находит нижний путь"}),
-  decision:Object.freeze({focus:"group",purpose:"Герои и рабочие присутствуют в точке выбора"})
+  decision:Object.freeze({focus:"group",purpose:"Герои и рабочие присутствуют в точке выбора"}),
+  aftermath:Object.freeze({focus:"survivors",purpose:"Рабочие спасены и помогают друг другу на каменной площадке"}),
+  document:Object.freeze({focus:"master",purpose:"Мастер показывает противоречивое распоряжение"})
  });
  // FIRSTPLAY008: action leads to an observation, a response and a new decision.
  // Local gameplay proposal; approved Five Shadows history is unchanged.
- // FIRSTSESSIONP0B: four existing illustrations, not new commissioned art.
+ // FIRSTSESSIONP1C2: distinct obstruction, rescue and document images; same four intro beats.
  // The final shot waits for the commander; no forced battle after a timer.
  const INTRO=Object.freeze([
   {art:"warning",shot:"wide",speakerId:"worker",speaker:"РАБОЧИЙ",text:"Мастер! Доски уходят из-под ног!",duration:4000,detail:"Рабочие застряли на повреждённом пролёте."},
-  {art:"conflict",shot:"workers",speakerId:"master",speaker:"МАСТЕР",text:"Я вас на осмотр звал! Прекратите разборку, там люди!",cue:"Сборщик тянет крепление, охранник закрывает сход.",duration:6500,detail:"Демонтаж продолжается, доступ к рабочим закрыт."},
+  {art:"conflict",shot:"workers",speakerId:"master",speaker:"МАСТЕР",text:"Я вас на осмотр звал! Там люди, прекратите разборку!",cue:"Сборщик снимает крепёж, охранник не даёт пройти.",duration:6500,detail:"Демонтаж продолжается, доступ к рабочим закрыт."},
   {art:"artSupport",shot:"supports",speakerId:"art",speaker:"АРТ",text:"Штифт вынули. На этот настил не ступайте.",duration:5000,detail:"Крепление снято; настил небезопасен."},
   {art:"renRoute",shot:"route",speakerId:"ren",speaker:"РЕН",text:"Под мостом ступени. Уберём охрану со схода — выведем людей.",detail:"Вы командуете полевой группой. Прикройте отход рабочих."}
  ]);
@@ -54,11 +57,11 @@ const FirstPlayStoryCore=(()=>{
  });
  const OUTRO=Object.freeze([
   {art:"aftermath",shot:"supports",speakerId:"art",speaker:"АРТ",
-   text:"Рабочие на берегу. К переходу никого не подпускайте, пока не вернут крепления.",
-   detail:"После реального исхода боя рабочих вывели на безопасный участок."},
-  {art:"aftermath",shot:"wide",speakerId:"master",speaker:"МАСТЕР",
-   cue:"Мастер расправляет помятый лист с отметками.",
-   text:"Я их сам туда послал. По этому листу. Кто это подписал?",
+   text:"Все на площадке. К переходу никого не подпускайте, пока не вернут крепления.",
+   detail:"Эвакуация завершена."},
+  {art:"document",shot:"wide",speakerId:"master",speaker:"МАСТЕР",
+   cue:"Мастер показывает помятый лист.",
+   text:"Я их туда отправил по этому листу. Кто это подписал?",
    document:Object.freeze(["Переход безопасен","Крепления снять"]),
    detail:"В одном документе пролёт отмечен безопасным и переданным под разборку."}
  ]);

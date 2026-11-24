@@ -206,3 +206,25 @@
 #firstPlay .fp-story-document p{font-size:clamp(13px,1.6vw,17px);line-height:1.2;margin:2px 0;font-weight:600}
 #firstPlay .fp-story-document p:last-child{border-top:1px solid #99825b;padding-top:3px;color:#654123}
 @media(max-height:370px){#firstPlay .fp-story-document:not([hidden]){padding:4px 10px}#firstPlay .fp-story-document p{font-size:12px}#firstPlay #firstPlayStorySound{padding-inline:7px}}
+
+/* P1-C2: protect the upper action zone on wide mobile screens; keep DOM clue away from faces. */
+#firstPlay #firstPlayStory[data-art="conflict"] .fp-story-art img,
+#firstPlay #firstPlayStory[data-art="aftermath"] .fp-story-art img,
+#firstPlay #firstPlayStory[data-art="document"] .fp-story-art img{transform:scale(1);object-position:center 20%}
+#firstPlay #firstPlayStory[data-art="document"] .fp-story-document:not([hidden]){align-self:flex-end;transform:none}
+
+/* P1-C2: one compact action row on landscape. Keep the spear, the evacuated
+   workers and the master's face above the dialogue even at 844×320. */
+@media(min-width:620px) and (orientation:landscape){
+ #firstPlay #firstPlayStory:is([data-art="conflict"],[data-art="aftermath"],[data-art="document"]) .fp-story-footer{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:4px 8px
+ }
+ #firstPlay #firstPlayStory:is([data-art="conflict"],[data-art="aftermath"],[data-art="document"]) .fp-story-dialogue{grid-column:1;grid-row:1}
+ #firstPlay #firstPlayStory:is([data-art="conflict"],[data-art="aftermath"]) .fp-story-controls{grid-column:2;grid-row:1;align-self:end}
+ #firstPlay #firstPlayStory:is([data-art="conflict"],[data-art="aftermath"]) .fp-story-context:not([hidden]){grid-column:1/-1;grid-row:2}
+ #firstPlay #firstPlayStory[data-art="document"] .fp-story-footer{grid-template-columns:minmax(0,1fr) minmax(220px,34%)}
+ #firstPlay #firstPlayStory[data-art="document"] .fp-story-document:not([hidden]){grid-column:2;grid-row:1;width:100%;align-self:end}
+ #firstPlay #firstPlayStory[data-art="document"] .fp-story-controls{grid-column:2;grid-row:2}
+ #firstPlay #firstPlayStory[data-art="document"] .fp-story-context:not([hidden]){grid-column:1;grid-row:2;align-self:center}
+ #firstPlay #firstPlayStory[data-art="aftermath"] .fp-story-art img{object-position:center 35%}
+}

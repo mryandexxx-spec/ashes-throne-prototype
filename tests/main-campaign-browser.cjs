@@ -12,6 +12,9 @@ async function run(name,browserType,viewport){
  const key=name+"-"+viewport.width+"x"+viewport.height;
  const ready=async()=>{
   await page.waitForFunction(()=>typeof MainCampaignCore!=="undefined"&&typeof openSquad==="function"&&document.querySelector("#walletWriterNotice")?.style.display==="none",null,{timeout:60000});
+  // The existing daily login calendar can open on a fresh or reloaded profile.
+  await page.locator("#home.active, #loginCalendar.active").waitFor({timeout:30000});
+  if(await page.locator("#loginCalendar.active").isVisible())await page.locator('#loginCalendar [data-screen="home"]').tap();
   await page.locator("#home.active").waitFor({timeout:30000});
  };
  const showMap=async()=>{

@@ -491,7 +491,7 @@ function firstSessionFollowUp(){
 }
 // P1-A: reward -> existing hero card -> existing operation, no forced tutorial.
 let firstSessionClaiming=false,firstSessionRewardNotice="",firstReportOperationRequested=false;
-const storyOperation=run=>run?.operationId===OperationCore.STORY_ID;
+const storyOperation=run=>!!run&&typeof OperationCore.STORY_ID==="string"&&run.operationId===OperationCore.STORY_ID;
 function firstSessionAction(){
  const follow=firstSessionFollowUp();
  if(!firstPlayEligible||!firstPlayState)return null;
@@ -2302,7 +2302,8 @@ function newOperation(){
  const last=operationProgress.history[operationProgress.history.length-1];
  const variant=last?.variantId==="A"?"B":"A";
  const runId="ops-"+Date.now().toString(36)+"-"+(++operationRunCounter);
- const scenario=firstReportOperationRequested&&firstSessionFollowUp()==="available"?OperationCore.STORY_ID:OperationCore.ID;
+ if(firstReportOperationRequested&&firstSessionFollowUp()!=="available")return false;
+ const scenario=firstReportOperationRequested?OperationCore.STORY_ID:OperationCore.ID;
  const run=OperationCore.start(variant,runId,scenario);
  const saved=commitOperation(run);
  if(saved)renderOperations();

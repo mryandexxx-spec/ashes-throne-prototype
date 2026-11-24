@@ -78,8 +78,8 @@
 }
 #firstPlay .fp-story-cue:not([hidden]){
  display:block;align-self:flex-start;
- font:italic 500 clamp(10px,1.15vw,12px)/1.16 Georgia,serif;
- color:#d1c4af;text-shadow:0 1px 3px #000b;
+ font:italic 550 clamp(12px,1.45vw,14px)/1.15 Georgia,serif;
+ color:#f1dfc5;text-shadow:0 1px 3px #000b;
  max-width:100%;overflow-wrap:break-word;
 }
 #firstPlay .fp-story-speaker{
@@ -118,7 +118,7 @@
  #firstPlay .fp-story-voice{flex-basis:48px;height:48px}
  #firstPlay .fp-story-line{font-size:clamp(12px,1.8vw,16px)}
  #firstPlay .fp-story-speaker{font-size:10px}
- #firstPlay .fp-story-cue:not([hidden]){font-size:10px;line-height:1.1}
+ #firstPlay .fp-story-cue:not([hidden]){font-size:12px;line-height:1.12}
  #firstPlay .fp-story-button{padding:4px 7px}
 }
 @media(prefers-reduced-motion:reduce){

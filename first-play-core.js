@@ -9,7 +9,7 @@ const FirstPlayCore=(()=>{
  const PHASES=Object.freeze(["briefing","ready","battle","won","done"]);
  const fresh=()=>({version:1,phase:"briefing",choice:null});
  const valid=s=>!!s&&s.version===1&&PHASES.includes(s.phase)&&
-  (s.choice===null||CHOICES.includes(s.choice))&&
+  (s.choice===null||s.choice==="neutral"||CHOICES.includes(s.choice))&&
   (s.phase==="briefing"||s.phase==="done"||s.choice!==null);
  function load(provider){
   try{
@@ -30,6 +30,7 @@ const FirstPlayCore=(()=>{
   if(!valid(state)||!CHOICES.includes(choice)||!["briefing","ready"].includes(state.phase))return null;
   return {version:1,phase:"ready",choice};
  }
+ function prepare(state){return valid(state)&&state.phase==="briefing"?{version:1,phase:"ready",choice:"neutral"}:null;}
  function start(state){return valid(state)&&state.phase==="ready"?{...state,phase:"battle"}:null;}
  function finish(state,won){
   return valid(state)&&state.phase==="battle"?{...state,phase:won?"won":"ready"}:null;
@@ -53,6 +54,6 @@ const FirstPlayCore=(()=>{
    return {ok:true,removed:keys.length};
   }catch(_){return {ok:false,removed:null};}
  }
- return Object.freeze({KEY,CHOICES,EFFECTS,PHASES,fresh,valid,load,save,choose,start,finish,complete,skip,resetGameStorage});
+ return Object.freeze({KEY,CHOICES,EFFECTS,PHASES,fresh,valid,load,save,choose,prepare,start,finish,complete,skip,resetGameStorage});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=FirstPlayCore;

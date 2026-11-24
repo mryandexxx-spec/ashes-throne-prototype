@@ -712,6 +712,25 @@ function firstPlayStorySetCursor(next){
  // Story-page position is convenience state, not a second gameplay save.
  return FirstPlayStoryCore.save(next,()=>window.localStorage);
 }
+let firstPlayStoryTimer=null,firstPlayStoryManualAt=-Infinity;
+let firstPlayStoryPaused=typeof window.matchMedia==="function"&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function stopFirstPlayStoryTimer(){
+ if(firstPlayStoryTimer!==null){clearTimeout(firstPlayStoryTimer);firstPlayStoryTimer=null;}
+}
+function scheduleFirstPlayStory(){
+ stopFirstPlayStoryTimer();
+ if(firstPlayStoryPaused||firstPlayState?.phase!=="briefing"||
+  document.visibilityState==="hidden"||window.innerWidth<window.innerHeight||
+  !$("#firstPlay")?.classList.contains("active"))return;
+ const frame=FirstPlayStoryCore.frame("briefing",null,firstPlayStoryCursor);
+ if(!frame.duration)return;
+ firstPlayStoryTimer=setTimeout(()=>{
+  firstPlayStoryTimer=null;
+  if(!firstPlayStoryPaused&&document.visibilityState!=="hidden"&&
+   !(window.innerWidth<window.innerHeight)&&$("#firstPlay")?.classList.contains("active")&&
+   firstPlayState?.phase==="briefing")firstPlayStoryNext();
+ },frame.duration);
+}
 function renderFirstPlay(){
  if(!firstPlayState||typeof FirstPlayStoryCore==="undefined")return;
  firstPlayStoryCursor=FirstPlayStoryCore.normalize(firstPlayStoryCursor,firstPlayState.phase);
@@ -778,6 +797,7 @@ function renderFirstPlay(){
  const context=$("#firstPlayStoryContext");
  if(context){
   const showNote=firstPlayState.phase==="ready"||
+   (firstPlayState.phase==="briefing"&&firstPlayStoryCursor.step===FirstPlayStoryCore.INTRO.length-1)||
    (firstPlayState.phase==="won"&&firstPlayStoryCursor.step===0);
   const label=firstPlayState.phase==="won"&&firstPlayState.choice?
    "Эффект вашего приказа в бою: "+(FirstPlayStoryCore.ORDER_LABELS[firstPlayState.choice]||"")+". ":"";
@@ -786,18 +806,24 @@ function renderFirstPlay(){
  }
  const orderSignal=$("#firstPlayStoryOrderSignal");
  if(orderSignal){
-  const chosen=firstPlayState.phase==="ready"||firstPlayState.phase==="won";
+  const chosen=!!FirstPlayStoryCore.ORDER_LABELS[firstPlayState.choice]&&(firstPlayState.phase==="ready"||firstPlayState.phase==="won");
   orderSignal.textContent=chosen?(FirstPlayStoryCore.ORDER_LABELS[firstPlayState.choice]||""):"";
   orderSignal.hidden=!chosen;
  }
- const decision=firstPlayState.phase==="briefing"&&!!scene.choice;
+ const lastIntro=firstPlayState.phase==="briefing"&&firstPlayStoryCursor.step===FirstPlayStoryCore.INTRO.length-1;
  const won=firstPlayState.phase==="won";
  const lastOutro=won&&firstPlayStoryCursor.step===FirstPlayStoryCore.OUTRO.length-1;
  const next=$("#firstPlayStoryNext"),choices=$("#firstPlayStoryChoices"),
   fight=$("#firstPlayStoryFight"),finish=$("#firstPlayStoryFinish");
- if(next)next.hidden=decision||firstPlayState.phase==="ready"||lastOutro;
- if(choices)choices.hidden=!decision;
- if(fight)fight.hidden=firstPlayState.phase!=="ready";
+ if(next)next.hidden=lastIntro||firstPlayState.phase==="ready"||lastOutro;
+ if(choices)choices.hidden=true;
+ if(fight){fight.hidden=firstPlayState.phase!=="ready"&&!lastIntro;
+  fight.textContent=firstPlayFailure?"Повторить бой":"Прикрыть отход ⚔";}
+ const pause=$("#firstPlayStoryPause");
+ if(pause){pause.hidden=firstPlayState.phase!=="briefing"||lastIntro;
+  pause.textContent=firstPlayStoryPaused?"Продолжить":"Пауза";
+  pause.setAttribute("aria-pressed",String(firstPlayStoryPaused));}
+ scheduleFirstPlayStory();
  if(finish)finish.hidden=!lastOutro;
  const notice=$("#firstPlayStoryNotice");
  let warning=firstPlayFailure?"Группе пока не удалось удержать проход. Можно повторить бой.":firstPlaySaveFailed?
@@ -823,18 +849,28 @@ $("#firstPlayStoryImage")?.addEventListener("error",event=>{
  // Keep the story readable when no art is available, not after a valid load.
  if(!event.currentTarget.naturalWidth)event.currentTarget.hidden=true;
 });
-function firstPlayStoryNext(){
+function firstPlayStoryNext(event){
+ if(event){const now=Date.now();if(now-firstPlayStoryManualAt<350)return;firstPlayStoryManualAt=now;}
  const next=FirstPlayStoryCore.advance(firstPlayState?.phase,firstPlayStoryCursor);
  if(next){firstPlayStorySetCursor(next);renderFirstPlay();}
 }
 function firstPlayStorySkip(){
  const result=FirstPlayStoryCore.skipNarration(firstPlayState?.phase,firstPlayState?.choice,firstPlayStoryCursor);
- if(result.action==="decision"){
-  firstPlayStorySetCursor(result.cursor);renderFirstPlay();
- }else if(result.action==="battle")firstPlayStartBattle();
+ if(result.action==="battle")firstPlayStartBattle();
  else if(result.action==="finish")$("#firstPlayContinue")?.click();
 }
 $("#firstPlayStoryNext")?.addEventListener("click",firstPlayStoryNext);
+$("#firstPlayStoryPause")?.addEventListener("click",()=>{
+ if(firstPlayState?.phase!=="briefing")return;
+ firstPlayStoryPaused=!firstPlayStoryPaused;renderFirstPlay();
+});
+document.addEventListener("visibilitychange",scheduleFirstPlayStory);
+window.addEventListener?.("resize",scheduleFirstPlayStory);
+window.addEventListener?.("pagehide",stopFirstPlayStoryTimer);
+window.addEventListener?.("pageshow",scheduleFirstPlayStory);
+window.matchMedia?.("(prefers-reduced-motion: reduce)")?.addEventListener?.("change",event=>{
+ if(event.matches){firstPlayStoryPaused=true;if($("#firstPlay")?.classList.contains("active"))renderFirstPlay();}
+});
 $("#firstPlayStorySkip")?.addEventListener("click",firstPlayStorySkip);
 $("#firstPlayStorySurvey")?.addEventListener("click",()=>firstPlayChoose("survey"));
 $("#firstPlayStoryCover")?.addEventListener("click",()=>firstPlayChoose("cover"));
@@ -862,10 +898,11 @@ function firstPlayChoose(choice){
  firstPlayFailure=false;renderFirstPlay();
 }
 function firstPlayStartBattle(){
- if(!firstPlayEligible||firstPlayState?.phase!=="ready")return;
- const next=FirstPlayCore.start(firstPlayState);
+ if(!firstPlayEligible||!["briefing","ready"].includes(firstPlayState?.phase))return;
+ const prepared=firstPlayState.phase==="briefing"?FirstPlayCore.prepare(firstPlayState):firstPlayState;
+ const next=FirstPlayCore.start(prepared);
  if(!firstPlayStore(next)){firstPlayNotice("Не удалось сохранить начало боя.");return;}
- firstPlayFailure=false;squadReturnScreen="firstPlay";showScreen("battle");
+ stopFirstPlayStoryTimer();firstPlayFailure=false;squadReturnScreen="firstPlay";showScreen("battle");
 }
 function firstPlayFinish(won){
  const next=FirstPlayCore.finish(firstPlayState,won);
@@ -1722,7 +1759,7 @@ function showScreen(id){
  if(id==="signalOperations")renderSignalOperations();
  if(id==="signalOperationResult")renderSignalOperationResult();
  if(id==="storyDemo")renderStoryDemo();
- if(id==="firstPlay")renderFirstPlay();
+ if(id==="firstPlay")renderFirstPlay();else stopFirstPlayStoryTimer();
  if(id==="loreTrainingResult")renderLoreTrainingResult();
  if(id==="loreRequiredBattleResult")renderLoreRequiredBattleResult();
  if(id==="heroDetail")renderHeroDetail();

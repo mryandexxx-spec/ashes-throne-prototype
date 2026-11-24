@@ -194,3 +194,8 @@
 @media(prefers-reduced-motion:reduce){
  #firstPlay .fp-story-art{animation:none!important}
 }
+
+/* FIRSTSESSIONP0B: pause and skip stay in the safe header; a hidden control never takes space. */
+#firstPlay .fp-story-header-actions{display:flex;gap:6px;align-items:center;pointer-events:auto}
+#firstPlay .fp-story-header-actions [hidden]{display:none!important}
+#firstPlay #firstPlayStory[data-phase="briefing"] .fp-story-context:not([hidden]){display:block;color:#f7ebda;font-size:clamp(12px,1.5vw,15px);line-height:1.2}

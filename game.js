@@ -487,18 +487,23 @@ function renderMainCampaign(){
  const proof=MainCampaignCore.load(mainCampaignStorage);
  const status=MainCampaignCore.status(proof,progress);
  const best=proof?.best||0;
+ $("#mainCampaignMap").dataset.status=status;
  $("#mainCampaignProgress").textContent="Миссии: "+(best>0?1:0)+"/1 · Звёзды: "+best+"/3";
+ $("#mainCampaignRewardAmount").textContent=MainCampaignCore.SOURCE.reward.currency+" кромов";
+ $("#mainCampaignRewardLabel").textContent=status==="claimed"?"Получено":status==="claimable"?"Доступно":"За первую победу";
+ $("#mainCampaignNode").classList.toggle("primary",status!=="claimable");
+ $("#mainCampaignNode").classList.toggle("ghost",status==="claimable");
  $("#mainCampaignStars").textContent="★".repeat(best)+"☆".repeat(3-best);
  $("#mainCampaignNode").textContent=best?"Повторить бой":"Выбрать отряд";
  $("#mainCampaignNode").disabled=!mainCampaignWritable()||status==="blocked"||mainCampaignClaiming;
  $("#mainCampaignClaim").hidden=status!=="claimable";
  $("#mainCampaignClaim").disabled=!mainCampaignWritable()||mainCampaignClaiming;
  $("#mainCampaignNext").dataset.unlocked=String(status==="claimed");
- $("#mainCampaignNextStatus").textContent=status==="claimed"?"Путь открыт · следующий эпизод готовится":"Закрыто до первой победы и награды";
+ $("#mainCampaignNextStatus").textContent=status==="claimed"?"Путь открыт · эпизод готовится":"После победы и награды";
  $("#mainCampaignNotice").textContent=mainCampaignNotice||(status==="blocked"||(!mainCampaignWritable()&&!mainCampaignClaiming)?
   "Сохранение недоступно. Проверьте данные браузера и перезагрузите игру.":status==="claimed"?
-  "Награда получена. Повторы бесплатны, только для улучшения звёзд.":status==="claimable"?
-  "Победа сохранена. Заберите награду.":"Первый бой бесплатный. Награда за первую победу: "+MainCampaignCore.SOURCE.reward.currency+" кромов.");
+  "Повторы бесплатны, только для улучшения звёзд.":status==="claimable"?
+  "Победа сохранена. Заберите награду.":"Первый бой бесплатный.");
 }
 function openMainCampaignMission(){
  if(!mainCampaignWritable()||mainCampaignClaiming||MainCampaignCore.status(MainCampaignCore.load(mainCampaignStorage),progress)==="blocked")return false;
@@ -515,7 +520,14 @@ function renderMainCampaignResult(){
   "Отряд потерпел поражение. Награды нет. Можно изменить состав и повторить.":
   status==="claimed"?"Результат сохранён. Разовая награда уже получена.":
   "Результат сохранён. Заберите "+MainCampaignCore.SOURCE.reward.currency+" кромов за первую победу.");
+ const rewardVisible=!!result.earned&&result.ok&&(status==="claimable"||status==="claimed");
+ $("#mainCampaignResult").dataset.outcome=result.earned?"victory":"defeat";
+ $("#mainCampaignResultReward").hidden=!rewardVisible;
+ $("#mainCampaignResultRewardAmount").textContent=MainCampaignCore.SOURCE.reward.currency+" кромов";
+ $("#mainCampaignResultRewardLabel").textContent=status==="claimed"?"Разовая награда получена":"Награда за первую победу";
  $("#mainCampaignResultClaim").hidden=status!=="claimable"||!result.earned||!result.ok;
+ $("#mainCampaignResultBack").classList.toggle("primary",$("#mainCampaignResultClaim").hidden);
+ $("#mainCampaignResultBack").classList.toggle("ghost",!$("#mainCampaignResultClaim").hidden);
  $("#mainCampaignResultClaim").disabled=!mainCampaignWritable()||mainCampaignClaiming;
  $("#mainCampaignResultRetry").disabled=mainCampaignClaiming||!result.ok||!mainCampaignWritable();
  $("#mainCampaignResultBack").disabled=mainCampaignClaiming;
@@ -2247,7 +2259,7 @@ hqHome?.addEventListener?.("pointermove",event=>{
 for(const type of ["pointerup","pointercancel","pointerleave"])hqHome?.addEventListener?.(type,cancelHQTooltip);
 
 $("#storyDemoOpen")?.addEventListener("click",beginStoryDemo);
-$("#storyDemoBack")?.addEventListener("click",()=>showScreen("campaign"));
+$("#storyDemoBack")?.addEventListener("click",()=>showScreen("home"));
 $("#storyDemoNext")?.addEventListener("click",()=>{
  if(StoryDemoCore.next(storyDemoState))renderStoryDemo();
 });
@@ -3718,6 +3730,7 @@ const CAMPAIGN_PATH_TITLES=Object.freeze({training:"Учебная кампан�
 function showCampaignPath(path){
  selectedCampaignPath=Object.prototype.hasOwnProperty.call(CAMPAIGN_PATH_TITLES,path)?path:null;
  const hub=$("#campaignHub"),title=$("#campaignPageTitle"),back=$("#campaignBackButton");
+ if($("#campaign")?.dataset)$("#campaign").dataset.campaignView=selectedCampaignPath||"hub";
  if(hub)hub.hidden=selectedCampaignPath!==null;
  for(const key of Object.keys(CAMPAIGN_PATH_TITLES)){
   const section=$("#campaign"+key[0].toUpperCase()+key.slice(1)+"Content");
@@ -3725,7 +3738,7 @@ function showCampaignPath(path){
  }
  if(title)title.textContent=selectedCampaignPath?CAMPAIGN_PATH_TITLES[selectedCampaignPath]:"Выбор кампании";
  if(back)back.textContent=selectedCampaignPath?"← К выбору":"← В штаб";
- if(selectedCampaignPath==="main")renderMainCampaign();
+ if(selectedCampaignPath==="main"){renderMainCampaign();if(typeof window.scrollTo==="function")window.scrollTo(0,0);}
  // LOREMAP001: open the non-combat lore map through the existing hub.
  if(selectedCampaignPath==="lore"&&typeof LoreCampaignUI!=="undefined"&&
    typeof LoreCampaignAct2!=="undefined"&&typeof LoreCampaignCore!=="undefined"){

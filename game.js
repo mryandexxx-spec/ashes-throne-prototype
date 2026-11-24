@@ -484,11 +484,33 @@ let missionEntryPaid=false;
 let missionResultSaveFailed=false;
 let simulationMissionId=null;
 
+// P0-D: a compact, optional next action, driven by actual first-play and OPS checkpoints.
+function firstSessionFollowUp(){
+ return firstPlayEligible&&typeof FirstPlayCore!=="undefined"&&typeof FirstPlayCore.followUp==="function"?
+  FirstPlayCore.followUp(firstPlayState,operationProgress,!operationSaveBlocked&&operationSaveAvailable&&!saveBlocked):null;
+}
+function renderFirstSessionFollowUp(){
+ const panel=$("#hqFirstSession"),action=$("#hqFirstSessionAction"),detail=$("#hqFirstSessionDetail");
+ if(!panel||!action||!detail)return;
+ const status=firstSessionFollowUp();
+ panel.hidden=!status;
+ if(!status)return;
+ detail.textContent=status==="unavailable"?"Реестр пока недоступен. Можно подготовить героев.":
+  status==="resume"?"Продолжите начатый перехват документов. Учебная операция.":
+  "Следующий шаг — сверка реестра и перехват документов. Учебная операция.";
+ action.textContent=status==="unavailable"?"К героям ›":status==="resume"?"Продолжить ›":"Два курьера ›";
+}
+$("#hqFirstSessionAction")?.addEventListener("click",()=>{
+ if(!$("#home")?.classList.contains("active"))return;
+ const status=firstSessionFollowUp();
+ if(status)showScreen(status==="unavailable"?"collection":"operations");
+});
 // HQ-UI-001: use existing progress/state; this view does not own game rules.
 function renderHeadquarters(){
  const root=$("#home");
  if(!root||typeof root.querySelectorAll!=="function"||typeof PlayerProfileCore==="undefined"||typeof ChallengeCore==="undefined"||typeof CampaignData==="undefined")return;
  const set=(selector,value)=>{const node=$(selector);if(node)node.textContent=String(value);};
+ renderFirstSessionFollowUp();
  set("#hqNickname",playerNickname);
  const level=ProgressCore.accountLevel(progress);
  set("#hqLevel","Ур. "+level+" · тест");
@@ -810,10 +832,10 @@ function renderFirstPlay(){
  if(context){
   const showNote=firstPlayState.phase==="ready"||
    (firstPlayState.phase==="briefing"&&firstPlayStoryCursor.step===FirstPlayStoryCore.INTRO.length-1)||
-   (firstPlayState.phase==="won"&&firstPlayStoryCursor.step===0);
-  const label=firstPlayState.phase==="won"&&FirstPlayStoryCore.ORDER_LABELS[firstPlayState.choice]?
+   (firstPlayState.phase==="won");
+  const label=firstPlayState.phase==="won"&&firstPlayStoryCursor.step===0&&FirstPlayStoryCore.ORDER_LABELS[firstPlayState.choice]?
    "Эффект вашего приказа в бою: "+(FirstPlayStoryCore.ORDER_LABELS[firstPlayState.choice]||"")+". ":"";
-  context.textContent=showNote?label+(scene.detail||""):"";
+  context.textContent=showNote?(firstPlayState.phase==="won"&&firstPlayStoryCursor.step>0?"Следующая цель: установить источник распоряжения.":label+(scene.detail||"")):"";
   context.hidden=!showNote;
  }
  const orderSignal=$("#firstPlayStoryOrderSignal");
@@ -2120,6 +2142,7 @@ function renderOperationResult(){
   (operationSaveBlocked?"Прогресс недоступен.":"Итог хранится в этом браузере.");
 }
 function renderOperations(){
+ const back=$("#opsFirstSessionHome");if(back)back.hidden=!firstSessionFollowUp();
  const run=operationProgress.active;
  const status=$("#opsSaveStatus"),phase=$("#opsPhase"),report=$("#opsReport");
  const actions=$("#opsActions"),warning=$("#opsNotice"),history=$("#opsHistory");

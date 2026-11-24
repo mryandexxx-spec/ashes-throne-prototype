@@ -31,7 +31,8 @@ const hero=any(f=>/^(hero-card|hero-stats|gear-|tests\/hero-card)/.test(f));
 const audit=any(f=>f.startsWith(".github/workflows/")||f==="scripts/ci-selective.cjs"||
  ["hero-collection-core.js","progress-v3-core.js","star-core.js","resource-icon-ui.js","first-play-core.js"].includes(f));
 const firstplay=any(f=>/^(first-play(?:[-.]|$)|tests\/first-play(?:[-.]|$))/.test(f));
-const scopes={squad,battle,lore,network,hero,audit,firstplay};
+const maincampaign=any(f=>/^(main-campaign-|tests\/main-campaign-)/.test(f));
+const scopes={squad,battle,lore,network,hero,audit,firstplay,maincampaign};
 const tests=new Set();
 if(squad)for(const f of ["tests/squad-001.test.js","tests/combat-014b-leader-squad.test.js","tests/ui-hero-002-squad.test.js","tests/squad-recover-3d.test.js"])tests.add(f);
 if(battle)for(const f of ["tests/combat-014a-leader-contract.test.js","tests/ren-status-h-full-battle-model.test.js"])tests.add(f);

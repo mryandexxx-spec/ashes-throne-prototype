@@ -515,9 +515,9 @@ function renderMainCampaignResult(){
   "Отряд потерпел поражение. Награды нет. Можно изменить состав и повторить.":
   status==="claimed"?"Результат сохранён. Разовая награда уже получена.":
   "Результат сохранён. Заберите "+MainCampaignCore.SOURCE.reward.currency+" кромов за первую победу.");
- $("#mainCampaignResultClaim").hidden=status!=="claimable";
+ $("#mainCampaignResultClaim").hidden=status!=="claimable"||!result.earned||!result.ok;
  $("#mainCampaignResultClaim").disabled=!mainCampaignWritable()||mainCampaignClaiming;
- $("#mainCampaignResultRetry").disabled=mainCampaignClaiming||!mainCampaignWritable();
+ $("#mainCampaignResultRetry").disabled=mainCampaignClaiming||!result.ok||!mainCampaignWritable();
  $("#mainCampaignResultBack").disabled=mainCampaignClaiming;
 }
 async function claimMainCampaignReward(){
@@ -538,11 +538,11 @@ async function claimMainCampaignReward(){
  }catch(_){window.walletWriterHalt?.();mainCampaignNotice="Проверьте баланс после перезагрузки.";}
  finally{mainCampaignClaiming=false;renderMainCampaign();renderMainCampaignResult();}
 }
-$("#mainCampaignNode")?.addEventListener("click",openMainCampaignMission);
+$("#mainCampaignNode")?.addEventListener("click",()=>{if($("#campaign")?.classList.contains("active")&&selectedCampaignPath==="main")openMainCampaignMission();});
 $("#mainCampaignClaim")?.addEventListener("click",()=>void claimMainCampaignReward());
 $("#mainCampaignResultClaim")?.addEventListener("click",()=>void claimMainCampaignReward());
-$("#mainCampaignResultRetry")?.addEventListener("click",openMainCampaignMission);
-$("#mainCampaignResultBack")?.addEventListener("click",()=>showScreen("mainCampaign"));
+$("#mainCampaignResultRetry")?.addEventListener("click",()=>{if($("#mainCampaignResult")?.classList.contains("active"))openMainCampaignMission();});
+$("#mainCampaignResultBack")?.addEventListener("click",()=>{if(!mainCampaignClaiming)showScreen("mainCampaign");});
 
 let lastMissionStars=0;
 let lastMissionReward=null;
@@ -4136,6 +4136,7 @@ function syncBattleUI(){
  if(battleIsMainCampaign&&!state.active&&!missionResultRecorded){
    missionResultRecorded=true;
    mainCampaignResult=MainCampaignCore.record(state,mainCampaignStorage);
+   if(!mainCampaignResult.ok)mainCampaignNotice="Сохранение не подтверждено. Вернитесь на карту или перезагрузите игру.";
   }
   if(battleIsCampaign&&!state.active&&!missionResultRecorded){
   const firstClear=state.winner==="ally"&&!campaignProgress.completed[activeMissionId];

@@ -84,3 +84,22 @@ test("already-owned hero in a later first-clear grant keeps its rank and shards"
  assert.equal(Star.shardsOf(restored,"nada"),shards);
  assert.equal(restored.unlockedHeroes.filter(id=>id==="nada").length,1);
 });
+
+test("corrupt or inaccessible wallet renders a two-starter preview without resetting storage",()=>{
+ const {map,storage,provider}=setup();
+ for(const mode of ["corrupt","denied"]){
+  map.set(V.KEY,"{broken");
+  const denied={getItem(){throw Error("storage denied")},setItem(){throw Error("must not write")}};
+  const source=mode==="corrupt"?provider:()=>denied;
+  const loaded=S.load(heroes,source);
+  assert.equal(loaded.blocked,true);
+  assert.equal(loaded.available,false);
+  assert.equal(loaded.progress.saveBlocked,true);
+  assert.equal(loaded.progress.saveVersion,3);
+  assert.deepEqual(Array.from(loaded.progress.unlockedHeroes),["ren","art"]);
+  for(const id of ["ren","art"])assert.equal(Star.rankOf(loaded.progress,id),1);
+  for(const id of ["nada","liora","sava"])assert.equal(Star.rankOf(loaded.progress,id),0);
+  assert.equal(S.save(loaded.progress,source),false);
+  assert.equal(map.get(V.KEY),"{broken");
+ }
+});

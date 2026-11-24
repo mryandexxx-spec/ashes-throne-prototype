@@ -4122,7 +4122,7 @@ function syncBattleUI(){
  const recommend=teaching&&specialReady&&["art","ren"].includes(actor.id);
  specialButton.classList.toggle("fp-recommended",!!recommend&&!supportTarget);
  if(teaching){
-  if(supportTarget)hintText="Коснитесь Рена: Арт примет часть его урона. Повторный тап по способности — отмена.";
+  if(supportTarget)hintText="Коснитесь Рена: Арт примет часть урона за Рена. Повторный тап по способности — отмена.";
   else if(recommend&&actor.id==="art")hintText="Выберите способность. Страховочный узел поможет защитить Рена.";
   else if(recommend&&actor.id==="ren")hintText="Выберите способность. Найти брешь — ослабить атаки врага.";
   else hintText=validTarget?"Выберите способность.":"Коснитесь противника, чтобы выбрать цель.";

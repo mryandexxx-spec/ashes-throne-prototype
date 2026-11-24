@@ -74,6 +74,8 @@ function fakeOperationUI(){
   OperationCore:ops,window:{localStorage:store},Date,
   operationProgress:ops.fresh(),operationSaveBlocked:false,
   operationSaveAvailable:true,operationNotice:"",operationRunCounter:0,
+  firstReportOperationRequested:false,firstSessionFollowUp:()=>null,
+  storyOperation:run=>!!run&&run.operationId===ops.STORY_ID,
   $:key=>nodes.get(key.slice(1))||null,
   openSquad:name=>squad.push(name),
   showScreen:name=>screen.push(name)

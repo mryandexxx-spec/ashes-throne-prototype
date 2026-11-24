@@ -3,7 +3,7 @@ const test=require("node:test"),assert=require("node:assert/strict"),fs=require(
 const read=f=>fs.readFileSync(path.join(__dirname,"..",f),"utf8");
 const game=read("game.js");
 const files=["gear-data.js","progress-core.js","star-core.js","skill-core.js","hero-collection-core.js","daily-core.js","login-core.js","progress-v3-core.js","save-core.js","hero-stats-core.js","hero-stats-profiles.js","hero-stats-combat-bridge.js","initiative-model.js","combat-status-core.js","ability-data.js","battle-rng.js","combat-core.js","auto-decision.js","enemy-decision.js","npc-enemy-data.js","main-campaign-core.js"];
-const source=files.map(read).join("\n")+"\n"+game.slice(0,game.indexOf("const $="))+"\nlet progress;\n"+game.slice(game.indexOf("const PILOT_HERO_STATS="),game.indexOf("function hasLeaderSkill"))+"\n({ALLIES:HEROES.filter(h=>h.side==="ally"),SaveCore,MainCampaignCore,NpcEnemyData,CombatCore,AutoDecision,AbilityData,progressedHero,setProgress:p=>{progress=p;}})";
+const source=files.map(read).join("\n")+"\n"+game.slice(0,game.indexOf("const $="))+"\nlet progress;\n"+game.slice(game.indexOf("const PILOT_HERO_STATS="),game.indexOf("function hasLeaderSkill"))+"\n({ALLIES:HEROES.filter(h=>h.side==='ally'),SaveCore,MainCampaignCore,NpcEnemyData,CombatCore,AutoDecision,AbilityData,progressedHero,setProgress:p=>{progress=p;}})";
 const {ALLIES,SaveCore,MainCampaignCore,NpcEnemyData,CombatCore:C,AutoDecision:A,AbilityData,progressedHero,setProgress}=vm.runInNewContext(source);
 const map=new Map(),storage={getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v)};
 const p=SaveCore.load(ALLIES,()=>storage).progress;setProgress(p);

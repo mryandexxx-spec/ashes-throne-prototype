@@ -39,7 +39,9 @@ async function run(name,browserType,viewport){
   return page.evaluate(()=>state.winner);
  };
  try{
-  await page.goto(url,{waitUntil:"load",timeout:60000});await ready();await showMap();
+  await page.goto(url,{waitUntil:"load",timeout:60000});await ready();
+  assert.equal(await page.locator("#hqFirstSessionAction").isVisible(),false,"developer bypass must not create an onboarding quest");
+  await showMap();
   await noOverflow();await page.screenshot({path:path.join(dest,key+"-locked.png")});
   const before=await inspect();assert.equal(before.proof.best,0);assert.equal(before.receipts,0);assert.equal(before.first,false);
   await page.locator("#mainCampaignNode").tap();

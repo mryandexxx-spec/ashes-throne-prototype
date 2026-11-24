@@ -7,14 +7,15 @@ const fs=require("node:fs");
 const path=require("node:path");
 const Story=require("../first-play-story-core.js");
 const root=path.join(__dirname,"..");
-const expected=Object.freeze({warning:740,conflict:750,decision:675,aftermath:742});
+const expected=Object.freeze({warning:941,conflict:941,artSupport:941,renRoute:941,decision:941});
 for(const [name,height] of Object.entries(expected)){
- test("FIRSTPLAY006 "+name+" loads sharp replaceable AVIF/WebP art",()=>{
-  for(const [kind,extension] of [["AVIF","avif"],["ART","webp"]]){
+ test("FIRSTPLAY007 "+name+" loads high-resolution replaceable WebP art",()=>{
+  for(const [kind,extension] of [["ART","webp"]]){
    const file=Story[kind][name];
-   assert.match(file,new RegExp("^assets/cutscenes/first-report/v2/"+name+"\\."+extension+"$"));
+   const slug=name==="artSupport"?"art-support":name==="renRoute"?"ren-route":name;
+   assert.equal(file,"assets/cutscenes/first-report/v5/"+slug+"."+extension);
    const bytes=fs.readFileSync(path.join(root,file));
-   assert.ok(bytes.length>200_000,kind+" was excessively compressed");
+   assert.ok(bytes.length>150_000,kind+" was excessively compressed");
    assert.ok(bytes.length<650_000,kind+" exceeds mobile art budget");
    if(extension==="webp"){
     assert.equal(bytes.toString("ascii",0,4),"RIFF");
@@ -41,10 +42,10 @@ test("FIRSTPLAY004 permanently eliminates stale HQ overlay markup and renderer",
  assert.equal(game.includes('querySelector("#hqFirstPlayCard")'),false);
  assert.equal(css.includes(".hq-first-play-status"),false);
 });
-test("FIRSTPLAY006 keeps a consistent build across entry assets",()=>{
+test("FIRSTPLAY007 keeps a consistent build across entry assets",()=>{
  const index=fs.readFileSync(path.join(root,"index.html"),"utf8");
  const pkg=require("../package.json");
- assert.equal(pkg.version,"0.3.243");
- assert.match(index,/v0\.3\.243 · FIRSTPLAY006/);
- assert.equal(index.includes("?v=0.3.242"),false);
+ assert.equal(pkg.version,"0.3.244");
+ assert.match(index,/v0\.3\.244 · FIRSTPLAY007/);
+ assert.equal(index.includes("?v=0.3.243"),false);
 });

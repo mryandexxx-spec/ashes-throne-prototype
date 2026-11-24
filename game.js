@@ -725,6 +725,7 @@ function renderFirstPlay(){
  if(story){
   story.dataset.speaker=scene.speakerId||"unknown";
   story.dataset.shot=scene.shot||"wide";
+  story.dataset.art=scene.art||"unknown";
   story.dataset.phase=firstPlayState.phase;
   story.dataset.order=firstPlayState.choice||"none";
  }
@@ -760,7 +761,8 @@ function renderFirstPlay(){
   }
   image.onload=()=>{artSurface.style.backgroundImage="";};
  }
- if(source&&avif&&source.getAttribute("srcset")!==avif)source.setAttribute("srcset",avif);
+ // Remove stale AVIF on shots that only have WebP assets.
+ if(source&&source.getAttribute("srcset")!==(avif||""))source.setAttribute("srcset",avif||"");
  if(artChanged){
   image.hidden=false;
   image.src=art;

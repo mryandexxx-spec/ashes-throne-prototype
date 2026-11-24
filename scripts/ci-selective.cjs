@@ -30,13 +30,15 @@ const hero=any(f=>/^(hero-card|hero-stats|gear-|tests\/hero-card)/.test(f));
 // Roster/save schema changes require the full regression, not only squad/hero smoke.
 const audit=any(f=>f.startsWith(".github/workflows/")||f==="scripts/ci-selective.cjs"||
  ["hero-collection-core.js","progress-v3-core.js","star-core.js","resource-icon-ui.js"].includes(f));
-const scopes={squad,battle,lore,network,hero,audit};
+const firstplay=any(f=>/^(first-play(?:[-.]|$)|tests\/first-play(?:[-.]|$))/.test(f));
+const scopes={squad,battle,lore,network,hero,audit,firstplay};
 const tests=new Set();
 if(squad)for(const f of ["tests/squad-001.test.js","tests/combat-014b-leader-squad.test.js","tests/ui-hero-002-squad.test.js","tests/squad-recover-3d.test.js"])tests.add(f);
 if(battle)for(const f of ["tests/combat-014a-leader-contract.test.js","tests/ren-status-h-full-battle-model.test.js"])tests.add(f);
 if(lore)for(const f of ["tests/lore-campaign-required-combat.test.js","tests/lore-campaign-battle-briefs.test.js"])tests.add(f);
 if(network)for(const f of ["tests/network-004-pilot.test.js","tests/network-ux-004-board.test.js"])tests.add(f);
 if(hero)tests.add("tests/hq-ui.test.js");
+if(firstplay)for(const f of ["tests/first-play.test.js","tests/first-play-story.test.js"])tests.add(f);
 for(const f of changed)if(/^tests\/[^/]+\.test\.js$/.test(f))tests.add(f);
 const existing=[...tests].filter(f=>fs.existsSync(f)).sort();
 console.log("CI changed files:",JSON.stringify(changed));

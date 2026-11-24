@@ -75,3 +75,47 @@ test("P1-A: failure to write wallet cannot create receipt or credit",async()=>{
  assert.equal((await f.claim()).code,"SAVE_OUTCOME_UNKNOWN");
  assert.equal(f.read().currency,0);assert.equal(f.read().rewardReceipts,undefined);
 });
+
+const Ops=require("../operation-core.js");
+function finishStoryRun(progress,id,operationId=Ops.STORY_ID,choice="ledger"){
+ let run=Ops.start("A",id,operationId);
+ for(const step of [x=>x,x=>Ops.order(x,"register"),x=>Ops.order(x,"observe"),x=>Ops.intercept(x,"north"),
+    x=>Ops.battleEnded(x,id,{active:false,winner:"ally"}),x=>Ops.finish(x,choice)]){
+  run=step(run);assert.ok(run);
+  progress=Ops.stage(progress,run);assert.ok(progress);
+ }
+ return progress;
+}
+test("P1-B: independent story completion, training cannot answer incident; true success survives history trimming",()=>{
+ const start=Ops.fresh(),story=Ops.STORY_ID;
+ const training=finishStoryRun(start,"training",Ops.ID);
+ assert.equal(Core.followUp(done,training,true,story),"available");
+ let active=Ops.stage(training,Ops.start("A","story",story));
+ assert.equal(Core.followUp(done,active,true,story),"resume");
+ assert.equal(Ops.stage(active,Ops.order(Ops.start("A","story",Ops.ID),"register")),null);
+ assert.equal(Core.followUp(done,Ops.stage(start,Ops.start("A","training2")),true,story),"training-active");
+ const actual=finishStoryRun(training,"story",story,"leave");
+ assert.equal(actual.history.at(-1).operationId,story);
+ assert.equal(actual.history.at(-1).ledgerSecured,false);
+ assert.equal(Core.followUp(done,actual,true,story),null);
+ let history=actual;
+ for(let i=0;i<22;i++)history=finishStoryRun(history,"extra-"+i,Ops.ID);
+ assert.equal(history.history.length,20);
+ assert.equal(Core.followUp(done,history,true,story),null);
+ const store=new Map();
+ const storage={getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)};
+ assert.equal(Ops.save(history,()=>storage),true);
+ assert.equal(Core.followUp(done,Ops.load(()=>storage).progress,true,story),null);
+});
+test("P1-B: wrong route, defeat, or skip cannot complete narrative objective",()=>{
+ let p=Ops.fresh(),run=Ops.start("A","wrong",Ops.STORY_ID);
+ for(const next of [run,Ops.order(run,"register")]){
+  p=Ops.stage(p,next);run=next;
+ }
+ run=Ops.order(run,"observe");p=Ops.stage(p,run);
+ run=Ops.intercept(run,"south");p=Ops.stage(p,run);
+ run=Ops.battleEnded(run,"wrong",{active:false,winner:"ally"});p=Ops.stage(p,run);
+ assert.equal(p.history.at(-1).outcome,"wrongTarget");
+ assert.equal(Core.followUp(done,p,true,Ops.STORY_ID),"available");
+ assert.equal(Core.followUp(Core.skip(Core.fresh()),p,true,Ops.STORY_ID),null);
+});

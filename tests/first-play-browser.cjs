@@ -237,12 +237,13 @@ async function run(label,engine,viewport){
    if(await page.locator("#gearPromotionDialog").evaluate(n=>n.open))await page.locator("#gearPromotionClose").tap();
    await page.locator("#detailHome").tap();
    await page.locator("#home.active").waitFor({state:"visible"});
-   assert.match(await cta.innerText(),/Два курьера/);
+   assert.match(await cta.innerText(),/По следу/);
    const wallet=await page.evaluate(()=>({currency:progress.currency,xp:progress.accountXp}));
    assert.equal(wallet.currency,beforeReward.currency+1);
    await cta.tap();
    await page.locator("#operations.active").waitFor({state:"visible"});
    await page.locator("[data-ops-new]").tap();
+   assert.equal(await page.evaluate(()=>operationProgress.active.operationId),"first-report-02");
    await page.locator('[data-ops-order="register"]').tap();
    assert.equal(await page.evaluate(()=>operationProgress.active.orders[0]),"register");
    await page.locator("#opsFirstSessionHome").tap();
@@ -261,8 +262,44 @@ async function run(label,engine,viewport){
    await cta.tap();
    await page.locator("#operations.active").waitFor({state:"visible"});
    assert.equal(await page.evaluate(()=>operationProgress.active.orders[0]),"register");
-   await page.locator("#opsFirstSessionHome").tap();
-   await page.locator("#home.active").waitFor({state:"visible"});
+   assert.equal(await page.evaluate(()=>operationProgress.active.operationId),"first-report-02");
+   if(label==="chromium"){
+    // Complete the real second operation with ordinary player inputs.
+    await page.locator('[data-ops-order="observe"]').tap();
+    const mark=await page.locator("#opsAuthentic").innerText();
+    const north=await page.locator("#opsNorthMark").innerText();
+    await page.locator(mark===north?"#opsNorth":"#opsSouth").tap();
+    await page.locator("#squad.active").waitFor({state:"visible",timeout:30000});
+    await page.locator("#squadStart").tap();
+    await page.locator("#battle.active").waitFor({state:"visible",timeout:60000});
+    assert.equal(await page.evaluate(()=>state.fighters.find(f=>f.id==="ren")?.level),2);
+    await page.locator("#autoSpeedBtn").tap();await page.locator("#autoSpeedBtn").tap();
+    for(let i=0;i<70&&await page.evaluate(()=>state.active);i++){
+     await page.waitForFunction(()=>!state.active||(!visualActionPending()&&!isVisualTransition()&&
+      !document.querySelector("#basicAbilityBtn").disabled),null,{timeout:30000});
+     if(!await page.evaluate(()=>state.active))break;
+     const actions=await page.evaluate(()=>state.allyActions);
+     await page.locator("#basicAbilityBtn").tap();
+     await page.waitForFunction(n=>!state.active||state.allyActions>n,actions,{timeout:15000});
+    }
+    assert.equal(await page.evaluate(()=>state.winner),"ally");
+    await page.locator("#operations.active").waitFor({state:"visible",timeout:30000});
+    await page.locator('[data-ops-finish="ledger"]').tap();
+    await page.locator("#operationResult.active").waitFor({state:"visible"});
+    assert.match(await page.locator("#operationResultText").innerText(),/нет имени отправителя/);
+    assert.equal(await page.evaluate(()=>operationProgress.history.at(-1).operationId),"first-report-02");
+    assert.equal(await page.evaluate(()=>operationProgress.history.at(-1).ledgerSecured),true);
+    assert.equal(await page.locator("#operationResultNetwork").isVisible(),true);
+    await page.screenshot({path:path.join(dest,"p1b-real-operation-result.png")});
+    await page.locator("#operationResultNetwork").tap();
+    await page.locator("#network.active").waitFor({state:"visible"});
+    await page.evaluate(()=>showScreen("home")); // return check; all mission actions above used real taps
+    await page.locator("#home.active").waitFor({state:"visible"});
+    assert.equal(await cta.isVisible(),false);
+   }else{
+    await page.locator("#opsFirstSessionHome").tap();
+    await page.locator("#home.active").waitFor({state:"visible"});
+   }
   }
   await page.locator("#hqMoreToggle").click();
   await page.locator("#home .hq-test-menu summary").click();
@@ -340,7 +377,7 @@ async function run(label,engine,viewport){
    await page.waitForFunction(()=>!state.active||!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:30000});
   }
   assert.deepEqual(errors,[]);
-  console.log("FIRSTSESSIONP1A "+label+" "+viewport.width+"x"+viewport.height+
+  console.log("FIRSTSESSIONP1B "+label+" "+viewport.width+"x"+viewport.height+
    " verified; battle: "+result.winner+" in "+result.steps+" actions");
  }finally{await browser.close();}
 }

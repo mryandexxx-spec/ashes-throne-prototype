@@ -2,7 +2,7 @@
  * No campaign, challenge, account progress, rewards or combat formulas are changed. */
 const OperationCore=(()=>{
  "use strict";
- const KEY="ashes-throne.operations.v1", VERSION=1, ID="OPS-001";
+ const KEY="ashes-throne.operations.v1", VERSION=1, ID="OPS-001", STORY_ID="first-report-02";
  const VARIANTS=Object.freeze({
   A:Object.freeze({authentic:"diamond",north:"diamond",south:"circle",correct:"north"}),
   B:Object.freeze({authentic:"circle",north:"diamond",south:"circle",correct:"south"})
@@ -38,7 +38,7 @@ const OperationCore=(()=>{
  function validRun(r){
   const keys=["operationId","runId","variantId","phase","orders","target",
    "battleResult","finalChoice","outcome"];
-  if(!exact(r,keys)||r.operationId!==ID||
+  if(!exact(r,keys)||!has([ID,STORY_ID],r.operationId)||
    typeof r.runId!=="string"||!r.runId.trim()||r.runId.length>128||
    !own(VARIANTS,r.variantId)||!has(PHASES,r.phase)||!validOrders(r.orders))return false;
   const n=r.orders.length, hasTarget=r.target==="north"||r.target==="south"||
@@ -60,9 +60,9 @@ const OperationCore=(()=>{
   return r.outcome==="success"&&r.battleResult==="ally"&&correctTarget(r)&&
    has(CHOICES,r.finalChoice)&& (r.finalChoice!=="both"||has(r.orders,"extract"));
  }
- function start(variantId,runId){
-  if(!own(VARIANTS,variantId)||typeof runId!=="string"||!runId.trim()||runId.length>128)return null;
-  return {operationId:ID,runId,variantId,phase:"order1",orders:[],
+ function start(variantId,runId,operationId=ID){
+  if(!has([ID,STORY_ID],operationId)||!own(VARIANTS,variantId)||typeof runId!=="string"||!runId.trim()||runId.length>128)return null;
+  return {operationId,runId,variantId,phase:"order1",orders:[],
    target:null,battleResult:null,finalChoice:null,outcome:null};
  }
  function order(run,action){
@@ -115,12 +115,14 @@ const OperationCore=(()=>{
  function summary(run){
   if(!validRun(run)||run.phase!=="done")return null;
   return {runId:run.runId,variantId:run.variantId,outcome:run.outcome,
+   ...(run.operationId===STORY_ID?{operationId:STORY_ID}:{}),
    coverPreserved:run.finalChoice==="cover"||run.finalChoice==="both",
    ledgerSecured:run.finalChoice==="ledger"||run.finalChoice==="both"};
  }
  const HISTORY_KEYS=["runId","variantId","outcome","coverPreserved","ledgerSecured"];
  function validHistory(e){
-  return exact(e,HISTORY_KEYS)&&typeof e.runId==="string"&&!!e.runId.trim()&&
+  return (exact(e,HISTORY_KEYS)||
+   (exact(e,[...HISTORY_KEYS,"operationId"])&&e.operationId===STORY_ID))&&typeof e.runId==="string"&&!!e.runId.trim()&&
    e.runId.length<=128&&own(VARIANTS,e.variantId)&&
    has(["success","wrongTarget","defeat","abandoned"],e.outcome)&&
    typeof e.coverPreserved==="boolean"&&typeof e.ledgerSecured==="boolean"&&
@@ -141,7 +143,7 @@ const OperationCore=(()=>{
    progress.history.some(h=>h.runId===run.runId))return null;
   if(progress.active){
    if(progress.active.runId!==run.runId||
-    progress.active.variantId!==run.variantId)return null;
+    progress.active.variantId!==run.variantId||progress.active.operationId!==run.operationId)return null;
    const phases={order1:["order2","done"],order2:["target","done"],
     target:["battle","done"],battle:["final","done"],final:["done"]};
    if(!has(phases[progress.active.phase]||[],run.phase))return null;
@@ -150,7 +152,11 @@ const OperationCore=(()=>{
   }else if(run.phase!=="order1")return null;
   if(run.phase==="done"){
    const result=summary(run);
-   return {active:null,history:[...progress.history,result].slice(-20)};
+   const history=[...progress.history,result];
+   // Keep the story completion proof when normal training history rolls over.
+   const pinned=history.findIndex(e=>e.operationId===STORY_ID&&e.outcome==="success");
+   if(history.length>20)history.splice(pinned===0?1:0,history.length-20);
+   return {active:null,history};
   }
   return {active:copy(run),history:progress.history.slice()};
  }
@@ -178,7 +184,7 @@ const OperationCore=(()=>{
    return true;
   }catch(_){return false;}
  }
- return Object.freeze({KEY,VERSION,ID,start,order,availableOrders,intel,
+ return Object.freeze({KEY,VERSION,ID,STORY_ID,start,order,availableOrders,intel,
   targetAssessment,intercept,battlePlan,battleEnded,finalChoices,finish,abandon,
   summary,fresh,validRun,validProgress,stage,load,save});
 })();

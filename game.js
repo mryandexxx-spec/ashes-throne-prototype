@@ -487,10 +487,11 @@ let simulationMissionId=null;
 // P0-D: a compact, optional next action, driven by actual first-play and OPS checkpoints.
 function firstSessionFollowUp(){
  return firstPlayEligible&&typeof FirstPlayCore!=="undefined"&&typeof FirstPlayCore.followUp==="function"?
-  FirstPlayCore.followUp(firstPlayState,operationProgress,!operationSaveBlocked&&operationSaveAvailable&&!saveBlocked):null;
+  FirstPlayCore.followUp(firstPlayState,operationProgress,!operationSaveBlocked&&operationSaveAvailable&&!saveBlocked,OperationCore.STORY_ID):null;
 }
 // P1-A: reward -> existing hero card -> existing operation, no forced tutorial.
-let firstSessionClaiming=false,firstSessionRewardNotice="";
+let firstSessionClaiming=false,firstSessionRewardNotice="",firstReportOperationRequested=false;
+const storyOperation=run=>!!run&&typeof OperationCore.STORY_ID==="string"&&run.operationId===OperationCore.STORY_ID;
 function firstSessionAction(){
  const follow=firstSessionFollowUp();
  if(!firstPlayEligible||!firstPlayState)return null;
@@ -498,7 +499,7 @@ function firstSessionAction(){
  const reward=FirstPlayCore.rewardStatus(firstPlayState,progress,writable);
  if(reward==="claimable")return "reward";
  if(reward==="blocked"&&FirstPlayCore.wonProof(firstPlayState)&&!FirstPlayCore.rewardClaimed(progress))
-  return follow==="resume"?"resume":"reward-blocked";
+  return ["resume","training-active"].includes(follow)?follow:"reward-blocked";
  if(follow==="available"&&reward==="claimed"&&writable&&heroOwned("ren")&&
     ProgressCore.levelOf(progress,"ren")===1&&ProgressCore.upgradePlan(progress,"ren",1)?.levels===1)
   return "upgrade";
@@ -518,11 +519,12 @@ function renderFirstSessionFollowUp(){
   status==="reward-blocked"?"Награда доступна после восстановления сохранения. Можно подготовить героев.":
   status==="upgrade"?"Увеличьте уровень героя: 1 → 2. Это усилит его в следующих боях.":
   status==="unavailable"?"Реестр пока недоступен. Можно подготовить героев.":
-  status==="resume"?"Продолжите начатый перехват документов. Учебная операция.":
-  "Следующий шаг — сверка реестра и перехват документов. Учебная операция.");
+  status==="resume"?"Продолжите перехват копии распоряжения.":
+  status==="training-active"?"Сначала завершите или прервите текущую учебную операцию.":
+  "Мастер указал реестр, через который прошло распоряжение. Проверьте отправку.");
  action.textContent=firstSessionClaiming?"Сохраняем…":status==="reward"?"Забрать награду":
   status==="upgrade"?"Усилить Рена ›":status==="unavailable"||status==="reward-blocked"?"К героям ›":
-  status==="resume"?"Продолжить ›":"Два курьера ›";
+  status==="resume"||status==="training-active"?"Продолжить ›":"По следу ›";
  action.disabled=firstSessionClaiming;
 }
 async function claimFirstSessionReward(){
@@ -556,6 +558,7 @@ $("#hqFirstSessionAction")?.addEventListener("click",()=>{
  const status=firstSessionAction();
  if(status==="reward"){void claimFirstSessionReward();return;}
  if(status==="upgrade"){openHeroDetail("ren");return;}
+ if(status==="available"||status==="resume"){firstReportOperationRequested=true;showScreen("operations");return;}
  if(status)showScreen(status==="unavailable"||status==="reward-blocked"?"collection":"operations");
 });
 // HQ-UI-001: use existing progress/state; this view does not own game rules.
@@ -1776,6 +1779,7 @@ function renderStoryDemo(){
  $("#storyDemoAgain").hidden=view.kind!=="defeat"&&view.kind!=="ending";
 }
 function showScreen(id){
+ if(id!=="operations")firstReportOperationRequested=false;
  // Release the squad WebGL context synchronously BEFORE entering combat.
  // The MutationObserver remains a fallback for external screen changes.
  if(id!=="squad"&&typeof SquadStage3D!=="undefined")SquadStage3D.dispose();
@@ -1881,7 +1885,7 @@ function showScreen(id){
    battleIsWeekly?"ГЛАВНАЯ УГРОЗА · ИСПЫТАНИЕ НЕДЕЛИ":battleIsNetwork?(NETWORK_PILOT_ENABLED?"РАЗВЕДСЕТЬ · ПРОБНЫЙ БОЙ (ВНЕ КАНОНА)":
    "РАЗВЕДСЕТЬ · ДОБЫЧА РЕСУРСОВ"):
    battleIsSignal?"РАЗВЕДОПЕРАЦИЯ · ТРЕВОЖНЫЙ СИГНАЛ":
-   battleIsOperation?"РАЗВЕДОПЕРАЦИЯ · ДВА КУРЬЕРА":
+   battleIsOperation?(storyOperation(operationProgress.active)?"ПО СЛЕДУ РАСПОРЯЖЕНИЯ":"РАЗВЕДОПЕРАЦИЯ · ДВА КУРЬЕРА"):
    battleIsLoreRequired?"ПЯТЬ ТЕНЕЙ · ОБЯЗАТЕЛЬНЫЙ БОЙ"+
     (loreRequiredContext?.battleNarrative?.title?" · "+loreRequiredContext.battleNarrative.title:"")+
     " (ИГРОВАЯ АДАПТАЦИЯ)":
@@ -1912,7 +1916,7 @@ function showScreen(id){
      battleIsLoreRequired?"Победите, чтобы открыть следующий эпизод. Бой относится к игровой адаптации.":battleIsLoreTraining?(NPC_PILOT_ENABLED?"Пробный состав: человек, сарх и лаун-лекарь. Вне канона, без наград, энергии и влияния на хронику.":"Учебные противники. Без наград, энергии и влияния на хронику."):battleIsSignal?signalProgress.active?.assault==="quiet"?
      "Тихий штурм: первым обезвредь связного. Два стража одним действием — сигнал подавлен.":
      "Окружение: две волны, сигнал подавлен после победы, но скрытность потеряна.":
-    battleIsOperation?"Перехватить подлинный пакет.":!def?"":def.kind==="tactical"?
+    battleIsOperation?(storyOperation(operationProgress.active)?"Получить копию распоряжения.":"Перехватить подлинный пакет."):!def?"":def.kind==="tactical"?
     "Цель: "+(priority?.name||"отмеченный враг")+" должен погибнуть первым и отдельно от остальных.":
     "Цель: пройти "+(def.futureWaves.length+1)+" волны, сохранив отряд.");
    // ARENA-ART-004G: a new battle starts with the objective folded in its corner.
@@ -2173,6 +2177,14 @@ function commitOperation(next){
 }
 function operationResultText(entry){
  if(!entry)return "Пока нет завершённых операций.";
+ if(storyOperation(entry)){
+  if(entry.outcome==="defeat")return "Отряд отступил. Копия распоряжения не получена. Можно повторить перехват.";
+  if(entry.outcome==="wrongTarget")return "В пакете нет нужного распоряжения. Проверьте отметки в реестре и выберите другой маршрут.";
+  if(entry.outcome==="abandoned")return "Перехват прерван. Документ не получен.";
+  if(entry.outcome==="success")return "Копия распоряжения получена. На ней есть отметка приёма, но нет имени отправителя."+
+   (entry.ledgerSecured?" В журнале найден маршрут передачи.":" Маршрут передачи пока неизвестен.")+
+   " Источник распоряжения предстоит установить.";
+ }
  if(entry.outcome==="defeat")return "Отряд потерпел поражение. Подлинный пакет не захвачен.";
  if(entry.outcome==="wrongTarget")return "Охрана побеждена, но перехвачена пустышка. Главная цель не выполнена.";
  if(entry.outcome==="abandoned")return "Отряд отступил. Операция завершена без выполнения задачи.";
@@ -2191,12 +2203,27 @@ function renderOperationResult(){
   last?.outcome==="defeat"?"Отряд разбит":
   last?.outcome==="abandoned"?"Операция прервана":"Итоги операции";
  if(desc)desc.textContent=operationResultText(last);
- if(meta)meta.textContent="OPS-001 · Учебный сценарий, без энергии, наград и изменения кампании. "+
-  (operationSaveBlocked?"Прогресс недоступен.":"Итог хранится в этом браузере.");
+ const story=storyOperation(last),success=story&&last.outcome==="success";
+ const tag=$("#operationResultTag"),again=$("#operationResultAgain"),back=$("#operationResultBack"),next=$("#operationResultNetwork");
+ if(tag)tag.textContent=story?"ПЕРВОЕ ДОНЕСЕНИЕ · ПЕРЕХВАТ":"OPS-001 · УЧЕБНАЯ ОПЕРАЦИЯ";
+ if(meta)meta.textContent=(story?(success?"Разведсеть позволяет собирать материалы и осколки для развития героев.":"Проверьте подготовку отряда и сведения о маршрутах."):
+  "OPS-001 · Учебный сценарий, без энергии, наград и изменения кампании.")+
+  (operationSaveBlocked?" Прогресс недоступен.":"");
+ if(again){again.hidden=success;again.textContent=story?"Повторить перехват":"Новая операция";}
+ if(back){back.hidden=success;back.textContent=story?"К заданию":"К операциям";}
+ if(next)next.hidden=!success;
 }
 function renderOperations(){
  const back=$("#opsFirstSessionHome");if(back)back.hidden=!firstSessionFollowUp();
  const run=operationProgress.active;
+ const story=storyOperation(run)||(!run&&firstReportOperationRequested&&firstSessionFollowUp()==="available");
+ const heading=$("#opsHeading"),eyebrow=$("#opsEyebrow"),tag=$("#opsScenarioTag"),guide=$("#opsGuide"),signal=$("#opsSignalEntry"),mapHelp=$("#opsMapHelp");
+ if(heading)heading.textContent=story?"По следу распоряжения":"Учебные разведоперации";
+ if(eyebrow)eyebrow.textContent=story?"ПЕРВОЕ ДОНЕСЕНИЕ":"УЧЕБНЫЕ ОПЕРАЦИИ";
+ if(tag)tag.textContent=story?"ПЕРЕХВАТ КОПИИ":"OPS-001 · ДВА КУРЬЕРА";
+ if(guide)guide.hidden=story;
+ if(signal)signal.hidden=story;
+ if(mapHelp)mapHelp.textContent=story?"Сопоставьте отметку реестра со знаком курьера.":"◈ и ○ — учебные знаки. До разведки знак может быть неизвестен.";
  const status=$("#opsSaveStatus"),phase=$("#opsPhase"),report=$("#opsReport");
  const actions=$("#opsActions"),warning=$("#opsNotice"),history=$("#opsHistory");
  if(!status||!phase||!report||!actions||!warning||!history)return;
@@ -2224,8 +2251,10 @@ function renderOperations(){
   '<button type="button" class="'+kind+'" '+attr+'="'+value+'">'+label+'</button>';
  const quit=button("data-ops-abandon","yes","Прервать операцию");
  if(!run){
-  phase.textContent="БРИФИНГ · ДВА КУРЬЕРА";
-  report.textContent="Курьеры несут подлинный пакет и пустышку. Отдай два приказа, выбери точку перехвата и выиграй пошаговый бой. Это неканоническая учебная операция.";
+  phase.textContent=story?"БРИФИНГ · КОПИЯ РАСПОРЯЖЕНИЯ":"БРИФИНГ · ДВА КУРЬЕРА";
+  report.textContent=story?
+   "Мастер указал, где сверяют распоряжения. По реестру две посылки уже отправлены, но лишь одна содержит нужную копию. Курьеры отказались вернуть документ. Сопоставьте отметки и перехватите нужного.":
+   "Курьеры несут подлинный пакет и пустышку. Отдай два приказа, выбери точку перехвата и выиграй пошаговый бой. Это неканоническая учебная операция.";
   const disabled=operationSaveBlocked||!operationSaveAvailable;
   actions.innerHTML=button("data-ops-new","yes","Начать операцию","primary").replace(
    "<button",'<button'+(disabled?" disabled":""));
@@ -2259,7 +2288,7 @@ function renderOperations(){
   actions.innerHTML=button("data-ops-fight","yes","Выбрать отряд и начать бой","primary")+quit;
  }else if(run.phase==="final"){
   phase.textContent="ПОСЛЕ БОЯ · ЗАКЛЮЧИТЕЛЬНОЕ РЕШЕНИЕ";
-  report.textContent=common+"Подлинник захвачен. Выбери действия до прибытия подкрепления. "+
+  report.textContent=common+(story?"Копия распоряжения захвачена. Выберите действие до прибытия подкрепления. ":"Подлинник захвачен. Выбери действия до прибытия подкрепления. ")+
    (intel.extractionPrepared?"Подготовленный отход позволяет выполнить обе дополнительные цели.":
    "Без подготовки отхода можно выполнить только одну дополнительную цель.");
   const labels={cover:"Скрыть следы",ledger:"Забрать маршрутный журнал",
@@ -2273,7 +2302,9 @@ function newOperation(){
  const last=operationProgress.history[operationProgress.history.length-1];
  const variant=last?.variantId==="A"?"B":"A";
  const runId="ops-"+Date.now().toString(36)+"-"+(++operationRunCounter);
- const run=OperationCore.start(variant,runId);
+ if(firstReportOperationRequested&&firstSessionFollowUp()!=="available")return false;
+ const scenario=firstReportOperationRequested?OperationCore.STORY_ID:OperationCore.ID;
+ const run=OperationCore.start(variant,runId,scenario);
  const saved=commitOperation(run);
  if(saved)renderOperations();
  return saved;
@@ -2305,12 +2336,16 @@ $("#operations")?.addEventListener("click",event=>{
  if(node.dataset.opsFinish){changeOperation(OperationCore.finish(run,node.dataset.opsFinish));return;}
  if(node.dataset.opsAbandon)changeOperation(OperationCore.abandon(run));
 });
-$("#operationResultBack")?.addEventListener("click",()=>showScreen("operations"));
+$("#operationResultBack")?.addEventListener("click",()=>{
+ firstReportOperationRequested=storyOperation(operationProgress.history.at(-1));showScreen("operations");
+});
 $("#operationResultAgain")?.addEventListener("click",()=>{
  if(operationProgress.active)return showScreen("operations");
+ firstReportOperationRequested=storyOperation(operationProgress.history.at(-1));
  if(newOperation())showScreen("operations");
 });
 $("#operationResultHome")?.addEventListener("click",()=>showScreen("home"));
+$("#operationResultNetwork")?.addEventListener("click",()=>showScreen("network"));
 
 // OPS-002B: separate UI and save; the accepted OPS-001 courier flow is untouched.
 const SIGNAL_PREPARATION_LABELS=Object.freeze({

@@ -43,10 +43,14 @@ const FirstPlayCore=(()=>{
  }
  // P0-D: derive the next suggestion from existing checkpoints, never grant rewards.
  // A full skip has choice=null; only a real completed first victory qualifies.
- function followUp(state,operations,available){
+ function followUp(state,operations,available,storyId=null){
   if(!valid(state)||state.phase!=="done"||state.choice===null)return null;
   if(!available)return "unavailable";
   if(!operations||!Array.isArray(operations.history))return "unavailable";
+  if(storyId){
+   if(operations.history.some(e=>e.operationId===storyId&&e.outcome==="success"))return null;
+   return operations.active?(operations.active.operationId===storyId?"resume":"training-active"):"available";
+  }
   if(operations.history.some(e=>e.outcome==="success"&&e.ledgerSecured===true))return null;
   return operations.active?"resume":"available";
  }

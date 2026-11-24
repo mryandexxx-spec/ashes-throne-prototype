@@ -126,8 +126,9 @@ test("P0-B four readable beats show incident, obstruction and actionable objecti
  assert.match(lines[3],/ступени/i);assert.match(Story.INTRO.at(-1).detail,/командуете.*Прикройте/);
  assert.equal(Story.INTRO.slice(0,-1).reduce((n,x)=>n+x.duration,0),15500);
  assert.equal(Story.INTRO.at(-1).duration,undefined);
- assert.ok(Story.OUTRO[1].cue);assert.match(Story.OUTRO[1].text,/безопасен/);
- assert.match(Story.OUTRO[1].text,/снять крепления/);
+ assert.ok(Story.OUTRO[1].cue);
+ assert.deepEqual(Story.OUTRO[1].document,["Переход безопасен","Крепления снять"]);
+ assert.doesNotMatch(Story.OUTRO[1].text,/безопасен|снять крепления/);
 });
 test("old narration cursors migrate to four shots, ready and victory remain intact",()=>{
  for(let i=0;i<=8;i++){const old={version:1,part:"intro",step:i};

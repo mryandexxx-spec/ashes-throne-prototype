@@ -339,6 +339,9 @@ const firstPlayEligible=!FIRST_PLAY_TEST_BYPASS&&!!firstPlayLoaded?.available&&
  !firstPlayLoaded.blocked&&!saveBlocked&&
  (firstPlayLoaded.exists||Boolean(loadedProgress?.fresh));
 let firstPlayFailure=false,firstPlaySaveFailed=false;
+// FIRSTSESSION P0-A: don't interrupt the just-completed operation with an
+// automatic calendar. Manual calendar navigation/claim and next boot still work.
+let deferLoginCalendarForFirstSession=false;
 let firstPlayBootCheckpointWritten=!!firstPlayLoaded?.exists;
 let firstPlayStoryCursor=typeof FirstPlayStoryCore!=="undefined"?
  FirstPlayStoryCore.load(()=>window.localStorage,firstPlayState?.phase):null;
@@ -878,14 +881,17 @@ $("#firstPlayBattle")?.addEventListener("click",firstPlayStartBattle);
 $("#firstPlaySkip")?.addEventListener("click",()=>{
  const next=FirstPlayCore.skip(firstPlayState);
  if(!firstPlayStore(next)){firstPlayNotice("Не удалось сохранить пропуск вступления.");return;}
+ deferLoginCalendarForFirstSession=true;
  squadReturnScreen="home";showScreen("home");
 });
 $("#firstPlayContinue")?.addEventListener("click",()=>{
  const next=FirstPlayCore.complete(firstPlayState);
  if(!firstPlayStore(next)){firstPlayNotice("Не удалось сохранить окончание вступления.");return;}
+ deferLoginCalendarForFirstSession=true;
  squadReturnScreen="home";showScreen("home");
 });
 function maybeOpenLoginOnEntry(){
+ if(deferLoginCalendarForFirstSession)return false;
  if(firstPlayEligible&&firstPlayState?.phase!=="done")return false;
  if(document.hidden||saveBlocked||progress.saveVersion!==3||
     !$("#home")?.classList.contains("active"))return false;
@@ -1792,14 +1798,16 @@ function showScreen(id){
   const npcHold=battleIsNpcChallengePilot&&activeChallengeId==="T-04";
   if(tacticalGoalCard){
    tacticalGoalCard.hidden=!trial&&!npcHold&&!battleIsFirstPlay;
-   tacticalGoalCard.classList?.add?.("collapsed");
-   $("#tacticalGoalToggle")?.setAttribute?.("aria-expanded","false");
+   // First-time players must see the objective before choosing an action.
+   // Other battles keep their established collapsed default.
+   tacticalGoalCard.classList?.toggle("collapsed",!battleIsFirstPlay);
+   $("#tacticalGoalToggle")?.setAttribute?.("aria-expanded",String(battleIsFirstPlay));
    if(trial){
     tacticalGoalCard.querySelector("strong").textContent=trial.goalTitle;
     tacticalGoalCard.querySelector("p").textContent=trial.goalText;
    }else if(battleIsFirstPlay){
-    tacticalGoalCard.querySelector("strong").textContent="УДЕРЖАТЬ ПРОХОД";
-    tacticalGoalCard.querySelector("p").textContent="Защитите Рена до завершения вывода рабочих или победите противников.";
+    tacticalGoalCard.querySelector("strong").textContent="ПРИКРОЙТЕ ОТХОД";
+    tacticalGoalCard.querySelector("p").textContent="Сохраните Рена в строю 6 действий союзников или победите противников.";
    }else if(npcHold){
     tacticalGoalCard.querySelector("strong").textContent="ПРИКРЫТЬ ОТХОД";
     tacticalGoalCard.querySelector("p").textContent=NpcChallengePilot.goal(activeChallengeId,
@@ -3813,7 +3821,7 @@ function syncBattleUI(){
   if(counter){
    counter.hidden=!(timed||state.totalWaves>1||o?.kind==="priority-first");
    if(timed)counter.textContent=Math.min(state.allyActions,o.allyActionsToHold)+
-    "/"+o.allyActionsToHold+" действий";
+    "/"+o.allyActionsToHold+(battleIsFirstPlay?" · эвакуация":" действий");
    else if(state.totalWaves>1)counter.textContent="Волна "+state.wave+"/"+state.totalWaves;
    else if(o?.kind==="priority-first")counter.textContent=state.priorityCleared?
     "Приоритет выполнен":"Сначала отмеченный";

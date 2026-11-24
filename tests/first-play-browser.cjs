@@ -157,6 +157,14 @@ async function run(label,engine,viewport){
   }));
   assert.deepEqual(detail.lineup.map(f=>f.id),["art","ren","npc-first-guard","npc-first-interceptor"]);
   assert.equal(detail.tactical.kind,"hold-or-defeat");
+  assert.equal(await page.locator("#tacticalGoalToggle").getAttribute("aria-expanded"),"true");
+  assert.equal(await page.locator("#tacticalGoalText").isVisible(),true);
+  assert.match(await page.locator("#tacticalGoalText").innerText(),/6 действий союзников/);
+  assert.match(await page.locator("#tacticalGoalCounter").innerText(),/0\/6 · эвакуация/);
+  await page.locator("#tacticalGoalToggle").click();
+  assert.equal(await page.locator("#tacticalGoalToggle").getAttribute("aria-expanded"),"false");
+  await page.locator("#tacticalGoalToggle").click();
+  assert.equal(await page.locator("#tacticalGoalToggle").getAttribute("aria-expanded"),"true");
   assert.equal(detail.choice,choice);
   if(choice==="survey")assert.ok(detail.lineup[0].speed>118,label+": survey bonus changes combat speed");
   else assert.ok(await page.evaluate(()=>state.fighters.find(f=>f.id==="ren").protection>=35),
@@ -200,8 +208,15 @@ async function run(label,engine,viewport){
    assert.equal(await page.locator("#firstPlayStoryFinish").isVisible(),true);
    await page.locator("#firstPlayStoryFinish").click();
   }
-  if(await page.locator("#loginCalendar.active").count())
-   await page.locator('#loginCalendar [data-screen="home"]').click();
+  await page.locator("#home.active").waitFor({state:"visible",timeout:12000});
+  assert.equal(await page.locator("#loginCalendar.active").count(),0,
+   label+": no automatic calendar interruption after first play");
+  await page.evaluate(()=>document.dispatchEvent(new Event("visibilitychange")));
+  assert.equal(await page.locator("#loginCalendar.active").count(),0,
+   label+": returning focus must not interrupt first-session HQ");
+  await page.locator('#home .hq-quick-actions [data-screen="loginCalendar"]').click();
+  await page.locator("#loginCalendar.active").waitFor({state:"visible",timeout:12000});
+  await page.locator('#loginCalendar [data-screen="home"]').click();
   await page.locator("#home.active").waitFor({state:"visible",timeout:12000});
   assert.equal(await page.locator("#hqFirstPlayCard").count(),0,
    label+": completed operation must not cover HQ");

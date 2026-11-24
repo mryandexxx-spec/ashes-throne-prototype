@@ -5389,3 +5389,21 @@ button.main-campaign-pin:disabled{opacity:.65}
 #app:has(#mainCampaignResult.active)>.topbar .brand small{display:none}
 #app:has(#mainCampaignResult.active)>.topbar .brand strong{font-family:Georgia,serif;color:#f4e4c8}
 #app:has(#mainCampaignResult.active)>footer{color:#c5ae91;border-top:1px solid #bd925c4f}
+
+/* FIRSTSESSION-COMBAT-UX: keep the introductory objective above the centre
+   rather than over the enemy line. The existing toggle, text and progress
+   track remain visible and interactive; no camera or combat rule changes. */
+@media (orientation:landscape) and (max-height:430px) and (min-width:700px){
+ #battle.battle-screen .battle-goal-corner:has(#tacticalGoalCard.first-session-goal:not([hidden])){
+  left:50%;right:auto;transform:translateX(-50%);align-items:center;
+ }
+ #battle.battle-screen .battle-goal-corner #tacticalGoalCard.first-session-goal{
+  width:min(350px,42vw);padding:3px 8px;gap:2px;
+ }
+ #battle.battle-screen .battle-goal-corner #tacticalGoalCard.first-session-goal .tactical-goal-header{
+  min-height:32px;
+ }
+ #battle.battle-screen .battle-goal-corner #tacticalGoalCard.first-session-goal p{
+  font-size:10px;line-height:1.2;margin:0;
+ }
+}

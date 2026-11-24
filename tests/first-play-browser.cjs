@@ -236,6 +236,35 @@ async function run(label,engine,viewport){
    const rect=await cta.boundingBox();
    assert.ok(rect&&rect.height>=44&&rect.x>=0&&rect.x+rect.width<=viewport.width+1&&rect.y+rect.height<=viewport.height+1);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+   // Test every visual cache state synchronously; do not alter real loader progress.
+   // Hit-testing alone misses a pointer-events:none overlay, so also compare geometry.
+   const dockStates=await page.evaluate(()=>{
+    const dock=document.getElementById("assetLoadDock");
+    const action=document.getElementById("hqFirstSessionAction");
+    const strip=document.getElementById("hqFirstSession");
+    const pan=document.getElementById("hqPan");
+    const nav=document.querySelector("#home .hq-bottom");
+    const old=dock.dataset.state;
+    const overlaps=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+    try{
+     return ["active","partial","ready"].map(state=>{
+      dock.dataset.state=state;
+      const d=dock.getBoundingClientRect(),a=action.getBoundingClientRect();
+      const visible=getComputedStyle(dock).display!=="none";
+      return {state,visible,overlaps:visible&&[action,strip,pan,nav].some(el=>overlaps(d,el.getBoundingClientRect())),
+       actionHit:action.contains(document.elementFromPoint(a.left+a.width/2,a.top+a.height/2)),
+       actionHeight:a.height,panHeight:pan.getBoundingClientRect().height,
+       overflow:document.documentElement.scrollWidth>innerWidth+1};
+     });
+    }finally{dock.dataset.state=old;}
+   });
+   for(const state of dockStates){
+    assert.equal(state.visible,state.state!=="ready",label+": cache visibility "+state.state);
+    assert.equal(state.overlaps,false,label+": visual cache overlap "+state.state);
+    assert.equal(state.actionHit,true,label+": action hit target "+state.state);
+    assert.ok(state.actionHeight>=44&&state.panHeight>0,label+": compact HQ layout");
+    assert.equal(state.overflow,false,label+": cache state overflow "+state.state);
+   }
    const beforeReward=await page.evaluate(()=>({currency:progress.currency,xp:progress.accountXp}));
    assert.match(await cta.innerText(),/Забрать награду/);
    await cta.tap();

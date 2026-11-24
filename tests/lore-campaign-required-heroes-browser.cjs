@@ -49,18 +49,39 @@ async function state(page){
   loreSave:localStorage.getItem("ashes-throne.lore-campaign.v1")
  }));
 }
-async function run(name,type,w,h){
+async function run(name,type,w,h,fullRoster=false){
  const args=name==="chromium"?{headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage"]}:{headless:true};
  const browser=await type.launch(args);
  const page=await browser.newPage({viewport:{width:w,height:h},hasTouch:true});
  const errors=[];page.on("pageerror",e=>errors.push(e.message));
- const tag=name+"-"+w+"x"+h;
+ const tag=name+"-"+w+"x"+h+(fullRoster?"-owned-five":"");
  try{
   await page.goto(origin+(origin.includes("?")?"&":"?")+"skipFirstPlay=1",{waitUntil:"load",timeout:60000});
   await page.waitForFunction(()=>typeof showScreen==="function",null,{timeout:60000});
+  assert.deepEqual(await page.evaluate(()=>ALLIES.filter(h=>heroOwned(h.id)).map(h=>h.id).sort()),["art","ren"]);
+  // Exercise the locked dossier from the real collection on a fresh profile.
+  await page.evaluate(()=>showScreen("collection"));
+  assert.equal(await page.locator("#rosterCount").innerText(),"Получено 2 из 5");
+  for(const id of ["nada","liora","sava"]){
+   await page.locator('[data-open-hero="'+id+'"]').tap();
+   assert.equal(await page.locator("#lockedHeroDialog").isVisible(),true);
+   assert.equal(await page.locator("#lockedHeroUnlock").isVisible(),false);
+   assert.match(await page.locator("#lockedHeroSource").innerText(),/будущая сюжетная глава/);
+   await page.locator("#lockedHeroClose").tap();
+   assert.equal(await page.evaluate(heroId=>heroOwned(heroId),id),false);
+  }
+  await page.evaluate(()=>showScreen("home"));
+  // Preserve the original five-owned-hero regression as a distinct test fixture.
+  if(fullRoster)await page.evaluate(()=>{
+   for(const id of ["nada","liora","sava"])if(!StarCore.directGrant(progress,id))throw Error("TEST_GRANT_FAILED");
+   if(!persistProgress())throw Error("TEST_FIXTURE_SAVE_FAILED");
+   openSquad("home");
+   for(const id of ["nada","liora","sava"])if(!toggleSquadHero(id))throw Error("TEST_SQUAD_FAILED");
+   showScreen("home");
+  });
   await prepareStory(page);
   const baseline=await state(page);
-  assert.equal(await page.evaluate(()=>heroOwned("nada")),false,"Narrative guest is not a collection unlock");
+  assert.equal(await page.evaluate(()=>heroOwned("nada")),fullRoster,"Narrative guest is not a collection unlock");
   await enterRequiredSquad(page);
   assert.equal(await page.locator("#squadIntro").innerText(),
    "«Пять теней»: Рен и Нада обязательны. Остальных героев выбираешь ты.");
@@ -87,9 +108,16 @@ async function run(name,type,w,h){
   assert.equal(await page.locator("#squadCount").innerText(),"2/5");
   // Optional allies are still freely selectable.
   const extras=page.locator('#squadRoster .squad-choice:not(.chosen):not([disabled])');
+  if(!fullRoster){
+   for(const id of ["liora","sava"]){
+    assert.equal(await page.locator('#squadRoster [data-hero-id="'+id+'"]').isDisabled(),true);
+    assert.equal(await page.evaluate(heroId=>toggleSquadHero(heroId),id),false);
+   }
+   assert.equal(await extras.count(),1,"Only owned Art is optional on a fresh profile");
+  }
   let added=0;
   while(await extras.count()&&added++<3)await extras.first().click();
-  assert.equal(await page.locator("#squadCount").innerText(),"5/5");
+  assert.equal(await page.locator("#squadCount").innerText(),fullRoster?"5/5":"3/5");
   const chosen=await state(page);
   assert.ok(chosen.lore.includes("ren")&&chosen.lore.includes("nada"));
   const geometry=await page.evaluate(()=>({
@@ -108,7 +136,7 @@ async function run(name,type,w,h){
   await page.locator(".lore-list-node").first().click();
   await enterRequiredSquad(page);
   assert.equal(await page.locator("#squadSlots [data-squad-required=true]").count(),2);
-  assert.equal(await page.locator("#squadCount").innerText(),"5/5");
+  assert.equal(await page.locator("#squadCount").innerText(),fullRoster?"5/5":"3/5");
   await page.locator("#squadStart").click();
   await page.locator("#battle").waitFor({state:"visible",timeout:30000});
   const combat=await page.evaluate(()=>({
@@ -120,6 +148,8 @@ async function run(name,type,w,h){
   assert.equal(combat.gpu,true);
   assert.ok(combat.fighters.includes("ren")&&combat.fighters.includes("nada"));
   assert.equal(new Set(combat.fighters).size,combat.fighters.length);
+  assert.equal(combat.fighters.length,fullRoster?5:3);
+  if(!fullRoster)assert.deepEqual(combat.fighters.slice().sort(),["art","nada","ren"]);
   // ARENA-ART-004D: ves/shade stand-in models play real clip lengths; auto battle at x4.
   await page.evaluate(()=>setAutoSpeed(4));
   await page.locator("#autoBattleBtn").click();
@@ -132,6 +162,7 @@ async function run(name,type,w,h){
   assert.equal(after.savedFormation,baseline.savedFormation);
   assert.equal(after.wallet,baseline.wallet);
   assert.equal(after.campaign,baseline.campaign);
+  assert.equal(await page.evaluate(()=>heroOwned("nada")),fullRoster);
   assert.deepEqual(JSON.parse(after.loreSave).stories["five-shadows"].battleClearedNodeIds,
    ["five-shadows:fs-01"]);
   // Ordinary battle: no required badges, saved global formation still applied.
@@ -182,5 +213,6 @@ async function run(name,type,w,h){
 }
 (async()=>{
  for(const [name,type] of [["chromium",chromium],["webkit",webkit]])
-  for(const [w,h] of [[844,390],[932,430]])await run(name,type,w,h);
+  for(const [w,h] of [[844,390],[932,430],[844,320]])await run(name,type,w,h);
+ await run("chromium",chromium,844,390,true);
 })().catch(e=>{console.error(e);process.exitCode=1;});

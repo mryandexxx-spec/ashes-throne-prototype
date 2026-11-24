@@ -64,7 +64,7 @@ const MainCampaignCore=(()=>{
   return [["npc-pass-guard","npc-cam-m1-guard",90,15,14],["npc-trail-interceptor","npc-cam-m1-interceptor",65,10,19]].map(([archetype,id,hp,protection,physicalAttack])=>{
    const npc=npcs.spawn(archetype,{instanceId:id});
    if(!npc)throw Error("CAM001B_NPC_MISSING");
-   return {...npc,hp,protection,physicalAttack};
+   return {...npc,hp,protection,maxProtection:protection,physicalAttack,atk:physicalAttack};
   });
  }
  return Object.freeze({KEY,ID,TITLE,SOURCE,RECEIPT,load,score,record,claimed,status,authorize,claim,enemies});

@@ -9,6 +9,7 @@ const map=new Map(),storage={getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(
 const p=SaveCore.load(ALLIES,()=>storage).progress;setProgress(p);
 const party=["ren","art"].map(id=>progressedHero(ALLIES.find(h=>h.id===id)));
 assert.ok(party.every(h=>h.level===1));
+assert.ok(MainCampaignCore.enemies(NpcEnemyData).every(h=>h.atk===h.physicalAttack&&h.protection===h.maxProtection));
 function run(seed,policy,ids=["ren","art"]){
  const b=C.createBattle([...party.filter(h=>ids.includes(h.id)),...MainCampaignCore.enemies(NpcEnemyData)],[],{leaderId:ids[0],rngSeed:seed,hitChecks:true,critChecks:true,penetrationChecks:true,statusChecks:true});
  C.advanceToPlayerTurn(b);

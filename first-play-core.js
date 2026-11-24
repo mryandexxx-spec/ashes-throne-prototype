@@ -84,6 +84,17 @@ const FirstPlayCore=(()=>{
   if(rewardClaimed(profile))return "claimed";
   return available&&profile?.saveVersion===3?"claimable":"blocked";
  }
+ // CAM001FP: derive the optional HQ action from the actual receipts and M1 proof.
+ function campaignAction(state,profile,{writable=false,canUpgrade=false,campaignStatus="blocked"}={}){
+  const reward=rewardStatus(state,profile,writable);
+  if(reward==="locked")return null;
+  if(reward==="claimable")return "reward";
+  if(reward==="blocked")return "reward-blocked";
+  if(campaignStatus==="claimed")return null;
+  if(campaignStatus==="claimable")return "campaign-reward";
+  if(campaignStatus==="locked"&&writable&&canUpgrade)return "upgrade";
+  return "campaign";
+ }
  async function claimReward({storageProvider,heroes,exclusive,day}={}){
   const result=await RewardPolicyCore.claim({
    source:REWARD_SOURCE,occurrenceId:REWARD_OCCURRENCE,count:1,day,heroes,
@@ -100,6 +111,6 @@ const FirstPlayCore=(()=>{
   }catch(_){return {ok:false,code:"REWARD_SYNC_FAILED"};}
  }
  return Object.freeze({KEY,CHOICES,EFFECTS,PHASES,fresh,valid,load,save,choose,prepare,start,finish,complete,skip,followUp,resetGameStorage,
-  REWARD_SOURCE,REWARD_OCCURRENCE,REWARD_RECEIPT,wonProof,rewardClaimed,authorizeReward,rewardStatus,claimReward});
+  REWARD_SOURCE,REWARD_OCCURRENCE,REWARD_RECEIPT,wonProof,rewardClaimed,authorizeReward,rewardStatus,campaignAction,claimReward});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=FirstPlayCore;

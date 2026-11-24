@@ -553,26 +553,22 @@ let missionEntryPaid=false;
 let missionResultSaveFailed=false;
 let simulationMissionId=null;
 
-// P0-D: a compact, optional next action, driven by actual first-play and OPS checkpoints.
+// Legacy OPS checkpoint helper: preserve existing operation recovery and rules.
 function firstSessionFollowUp(){
  return firstPlayEligible&&typeof FirstPlayCore!=="undefined"&&typeof FirstPlayCore.followUp==="function"?
   FirstPlayCore.followUp(firstPlayState,operationProgress,!operationSaveBlocked&&operationSaveAvailable&&!saveBlocked,OperationCore.STORY_ID):null;
 }
-// P1-A: reward -> existing hero card -> existing operation, no forced tutorial.
+// CAM001FP: reward -> existing hero card -> main campaign map, no forced tutorial.
 let firstSessionClaiming=false,firstSessionRewardNotice="",firstReportOperationRequested=false;
 const storyOperation=run=>!!run&&typeof OperationCore.STORY_ID==="string"&&run.operationId===OperationCore.STORY_ID;
 function firstSessionAction(){
- const follow=firstSessionFollowUp();
  if(!firstPlayEligible||!firstPlayState)return null;
  const writable=!saveBlocked&&saveAvailable&&typeof ProgressWriterCore!=="undefined"&&ProgressWriterCore.isOwner();
- const reward=FirstPlayCore.rewardStatus(firstPlayState,progress,writable);
- if(reward==="claimable")return "reward";
- if(reward==="blocked"&&FirstPlayCore.wonProof(firstPlayState)&&!FirstPlayCore.rewardClaimed(progress))
-  return ["resume","training-active"].includes(follow)?follow:"reward-blocked";
- if(follow==="available"&&reward==="claimed"&&writable&&heroOwned("ren")&&
-    ProgressCore.levelOf(progress,"ren")===1&&ProgressCore.upgradePlan(progress,"ren",1)?.levels===1)
-  return "upgrade";
- return follow;
+ const campaignStatus=typeof MainCampaignCore==="undefined"?"blocked":
+  MainCampaignCore.status(MainCampaignCore.load(mainCampaignStorage),progress);
+ const canUpgrade=writable&&heroOwned("ren")&&ProgressCore.levelOf(progress,"ren")===1&&
+  ProgressCore.upgradePlan(progress,"ren",1)?.levels===1;
+ return FirstPlayCore.campaignAction(firstPlayState,progress,{writable,canUpgrade,campaignStatus});
 }
 function renderFirstSessionFollowUp(){
  const panel=$("#hqFirstSession"),action=$("#hqFirstSessionAction"),detail=$("#hqFirstSessionDetail"),
@@ -582,18 +578,16 @@ function renderFirstSessionFollowUp(){
  panel.hidden=!status;
  if(!status)return;
  if(title)title.textContent=status==="reward"||status==="reward-blocked"?"Первое донесение":
-  status==="upgrade"?"Подготовить Рена":"Установить источник распоряжения";
+  status==="upgrade"?"Подготовить Рена":status==="campaign-reward"?"Пролёт без отметки":"Установить источник распоряжения";
  detail.textContent=firstSessionRewardNotice||(status==="reward"?
   "Рабочие спасены. Награда за операцию — "+FirstPlayCore.REWARD_SOURCE.reward.currency+" кромов.":
   status==="reward-blocked"?"Награда доступна после восстановления сохранения. Можно подготовить героев.":
   status==="upgrade"?"Увеличьте уровень героя: 1 → 2. Это усилит его в следующих боях.":
-  status==="unavailable"?"Реестр пока недоступен. Можно подготовить героев.":
-  status==="resume"?"Продолжите перехват копии распоряжения.":
-  status==="training-active"?"Сначала завершите или прервите текущую учебную операцию.":
-  "Мастер указал реестр, через который прошло распоряжение. Проверьте отправку.");
+  status==="campaign-reward"?"Победа сохранена. Заберите награду на карте кампании.":
+  "Продолжите расследование в основной кампании.");
  action.textContent=firstSessionClaiming?"Сохраняем…":status==="reward"?"Забрать награду":
-  status==="upgrade"?"Усилить Рена ›":status==="unavailable"||status==="reward-blocked"?"К героям ›":
-  status==="resume"||status==="training-active"?"Продолжить ›":"По следу ›";
+  status==="upgrade"?"Усилить Рена ›":status==="reward-blocked"?"К героям ›":
+  status==="campaign-reward"?"К награде ›":"В кампанию ›";
  action.disabled=firstSessionClaiming;
 }
 async function claimFirstSessionReward(){
@@ -627,8 +621,8 @@ $("#hqFirstSessionAction")?.addEventListener("click",()=>{
  const status=firstSessionAction();
  if(status==="reward"){void claimFirstSessionReward();return;}
  if(status==="upgrade"){openHeroDetail("ren");return;}
- if(status==="available"||status==="resume"){firstReportOperationRequested=true;showScreen("operations");return;}
- if(status)showScreen(status==="unavailable"||status==="reward-blocked"?"collection":"operations");
+ if(status==="campaign"||status==="campaign-reward"){showScreen("mainCampaign");return;}
+ if(status==="reward-blocked")showScreen("collection");
 });
 // HQ-UI-001: use existing progress/state; this view does not own game rules.
 function renderHeadquarters(){

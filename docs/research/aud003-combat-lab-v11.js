@@ -18,12 +18,23 @@ raider:[112,33,129,["hit",1],["mark",1.1,2],["execute",1.4,3]]
 };
 const teams=[["ren","art","nada","medic","breaker"],["ranger","liora","sava","medic","breaker"],["ren","liora","nada","ranger","sava"],["ren","art"],["ren","art","nada"],["ranger","liora","sava"],["art","nada","medic","sava","breaker"],["ren","art","nada","medic"],["ranger","liora","sava","breaker"]];
 const enemies={assault:["guard","charger","healer","raider","raider"],intercept:["captain","guard","healer","raider","charger"],hold:["charger","charger","raider","raider","guard"]};
+/* Optional B12 experiments. Without opt.lab, historical V11 behavior is unchanged. */
+function spawn(id,i,n,opt){
+const [hp,atk,speed,...skills]=K[id],ally=i<n;
+const x={id,i,side:ally?0:1,hp:hp*(ally?1:opt.ehp??1),max:hp*(ally?1:opt.ehp??1),atk:atk*(ally?1:opt.eatk??.78),speed:115+(speed*(ally?opt.aspeed??1:opt.espeed??1)-115)*(opt.speedScale??1),skills,cd:[0,0,0],meter:0,own:0,mark:null,guard:null,charge:null};
+if(opt.lab){const u=opt.lab.units?.[(ally?"a":"e")+(ally?i:i-n)]||{};x.hp=x.max*=u.hp??1;x.atk*=u.atk??1;x.speed*=u.speed??1;x.armor=u.armor??0;x.passive=u.passive??"none";x.passivePower=u.passivePower??0;x.protection=x.max*((u.protection??0)+(x.passive==="opening"?x.passivePower:0));x.skills=skills.map((a,j)=>u.skills?.[j]??a);}
+return x;
+}
+function tie(s,a,b){if(s.opt.lab?.tie!=="seeded")return a.i-b.i;
+const rank=x=>{let h=(s.opt.lab.seed??0)>>>0;const ordinal=s.f.slice(0,x.i).filter(z=>z.side===x.side&&z.id===x.id).length;for(const ch of x.id+":"+x.side+":"+ordinal)h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0;return h;};return rank(a)-rank(b)||a.i-b.i;}
+function trust(s,id){return s.opt.lab?.trust?.[id]??s.opt.trust;}
 function fresh(team,mode,opt={}){
 const e=(opt.enemyTeam??enemies[mode]).slice(0,team.length), all=[...team,...e],n=team.length;
-const f=all.map((id,i)=>{const [hp,atk,speed,...skills]=K[id];const ally=i<n;
-return {id,i,side:ally?0:1,hp:hp*(ally?1:opt.ehp??1),max:hp*(ally?1:opt.ehp??1),atk:atk*(ally?1:opt.eatk??.78),speed:115+(speed*(ally?opt.aspeed??1:opt.espeed??1)-115)*(opt.speedScale??1),skills,cd:[0,0,0],meter:0,own:0,mark:null,guard:null,charge:null}});
+const f=all.map((id,i)=>spawn(id,i,n,opt));
 if(mode==="hold")f.push({id:"escort",i:f.length,side:0,hp:115,max:115,atk:0,speed:0,skills:[],cd:[],meter:0,own:0,mark:null,guard:null,charge:null});
-return {f,n,mode,opt,t:0,actions:0,turns:0,active:-1,reason:null,stats:{mark:0,cover:0,reply:0,signal:0,assist:0,interrupt:0,heal:0},use:{},blocked:0,escort:mode==="hold"?f.length-1:-1,priority:mode==="intercept"?n:-1};
+const s={f,n,mode,opt,t:0,actions:0,turns:0,active:-1,reason:null,stats:{mark:0,cover:0,reply:0,signal:0,assist:0,interrupt:0,heal:0},use:{},blocked:0,escort:mode==="hold"?f.length-1:-1,priority:mode==="intercept"?n:-1};
+if(opt.lab){s.wave=1;Object.assign(s.stats,{armor:0,protection:0,passive:0,leader:0,waves:0});for(const x of f.filter(x=>!x.side&&x.speed>0)){const d=x.max*(opt.lab.openingGuard??0);if(d>0){giveGuard(s,f[0],x,d);s.stats.leader+=d;}}}
+return s;
 }
 const alive=(s,side)=>s.f.filter(x=>x.side===side&&x.hp>1e-8);
 const fighters=(s,side)=>alive(s,side).filter(x=>x.speed>0);
@@ -31,7 +42,11 @@ const copy=s=>({...s,f:s.f.map(x=>({...x,cd:[...x.cd]})),stats:{...s.stats},use:
 function finish(s){
 if(s.reason)return s.reason;
 if(!fighters(s,0).length||s.escort>=0&&s.f[s.escort].hp<=0)return s.reason="loss";
-if(!fighters(s,1).length||s.priority>=0&&s.f[s.priority].hp<=0)return s.reason="win";
+if(!fighters(s,1).length){
+const wave=s.mode==="assault"&&s.opt.lab?.waves?.[s.wave-1];
+if(wave){s.f.splice(s.n,s.f.length-s.n,...wave.map((id,j)=>spawn(id,s.n+j,s.n,s.opt)));for(const a of s.f.slice(0,s.n)){if(a.mark?.owner>=s.n)a.mark=null;if(a.guard?.owner>=s.n)a.guard=null;}s.wave++;s.stats.waves++;return null;}
+return s.reason="win";}
+if(s.priority>=0&&s.f[s.priority].hp<=0)return s.reason="win";
 if(s.mode==="intercept"&&s.blocked>=(s.opt.blocksNeeded??2))return s.reason="win";
 if(s.turns>=180||s.t>160)return s.reason="limit";
 return null;
@@ -45,10 +60,11 @@ let end=s.mode==="hold"?(s.opt.holdTime??25):s.mode==="intercept"?(s.opt.interce
 if(s.t+dt>=end-1e-9){s.t=end;s.reason=s.mode==="hold"?"win":"loss";return}
 for(let x of all)x.meter+=dt*x.speed;s.t+=dt;
 let ready=all.filter(x=>x.meter>=1000-1e-6);
-let a=ready.sort((x,y)=>x.i-y.i)[0];if(!a)throw Error("initiative");
+let a=ready.sort((x,y)=>tie(s,x,y))[0];if(!a)throw Error("initiative");
 s.active=a.i;a.meter=Math.max(0,a.meter-1000);a.own++;a.cd=a.cd.map(x=>Math.max(0,x-1));
 for(let x of s.f){if(x.guard&&x.guard.time<=s.t)x.guard=null;}if(a.guard&&a.guard.expires<=a.own)a.guard=null;
 if(a.mark&&a.mark.expires<=a.own)a.mark=null;
+if(a.passive==="recover"&&a.hp>0){const recovered=Math.min(a.max-a.hp,a.max*a.passivePower);a.hp+=recovered;if(a.side===0)s.stats.passive+=recovered;}
 s.turns++;if(a.side===0)s.actions++;
 }
 function enumerate(s,policy="tactical"){
@@ -57,7 +73,7 @@ if(a.charge)return [{k:"resolve",j:0,b:a.charge.target,v:a.charge.mult}];
 if(s.mode==="intercept"&&a.i===s.priority)return [{k:"escape",j:0,b:a.i,v:0}];
 let out=[];
 for(let j=0;j<3;j++){
-if(a.cd[j]||policy==="basic"&&a.side===0&&j!==0)continue;
+if(a.cd[j]||policy==="basic"&&(a.side===0||s.opt.lab?.strictBasic)&&j!==0)continue;
 let [k,v]=a.skills[j];if(k==="signal"&&s.opt.pureSignal)k="tempo";
 let targets=["cover","heal","tempo"].includes(k)?al.filter(x=>k!=="tempo"||x!==a&&x.speed>0):["teamcover","teamheal"].includes(k)?[a]:en;
 for(let b of targets){
@@ -71,11 +87,13 @@ function damage(s,a,b,d,roll=1,react=false){
 if(a.hp<=0||b.hp<=0)return 0;
 d*=roll;
 if(!react&&b.mark&&b.mark.owner!==a.i){d*=1+(s.opt.noMark&&a.side===0?0:.25);b.mark=null;if(a.side===0)s.stats.mark++}
+if(b.armor){const reduced=d*b.armor;d-=reduced;if(b.side===0)s.stats.armor+=reduced;}
 let reply=null;
 if(b.guard){let g=b.guard;b.guard=null;let p=Math.min(g.amount,d);d-=p;
 if(b.side===0)s.stats.cover+=p;
-if(!react&&p>0&&g.owner!==b.i&&s.f[g.owner].hp>0&&b.atk>0&&!s.opt.noReply&&!(s.opt.trust==="art_shelter"&&s.f[g.owner].id==="art"))reply=b.atk*(s.opt.trust==="art_response"&&s.f[g.owner].id==="art"?.65:.48);
+if(!react&&p>0&&g.owner!==b.i&&s.f[g.owner].hp>0&&b.atk>0&&!s.opt.noReply&&!(trust(s,"art")==="art_shelter"&&s.f[g.owner].id==="art"))reply=b.atk*(trust(s,"art")==="art_response"&&s.f[g.owner].id==="art"?.65:.48);
 }
+if(b.protection>0){const absorbed=Math.min(d,b.protection);b.protection-=absorbed;d-=absorbed;if(b.side===0)s.stats.protection+=absorbed;}
 let prev=b.hp;b.hp=Math.max(0,b.hp-d);
 if(b.hp>0&&b.charge?.escape&&a.side===0){let left=b.charge.left-(prev-b.hp);if(left<=0){b.charge=null;s.blocked++;s.stats.interrupt++;}else b.charge={...b.charge,left};}
 if(b.hp<=0){b.charge=null;b.mark=null;b.guard=null;}
@@ -83,7 +101,7 @@ if(reply&&b.hp>0&&a.hp>0){damage(s,b,a,reply,1,true);if(b.side===0)s.stats.reply
 return prev-b.hp;
 }
 function giveGuard(s,a,b,d){
-if(a.id==="art"&&a.side===0){if(s.opt.trust==="art_shelter")d*=1.20;if(s.opt.trust==="art_response")d*=.85;}
+if(a.id==="art"&&a.side===0){if(trust(s,"art")==="art_shelter")d*=1.20;if(trust(s,"art")==="art_response")d*=.85;}
 if(!b.guard||b.guard.amount<d)b.guard={amount:d,owner:a.i,expires:b.speed>0?b.own+2:Infinity,time:s.t+14};
 }
 function tempo(s,a,b,amount){
@@ -99,7 +117,7 @@ function assistant(s,a){return fighters(s,a.side).filter(x=>x!==a).sort((x,y)=>y
 function act(s,o,roll=1){
 if(s.reason||s.active<0||!Number.isFinite(roll)||roll<.9-1e-9||roll>1.1+1e-9||!enumerate(s).some(x=>x.k===o.k&&x.j===o.j&&x.b===o.b&&x.v===o.v))throw Error("illegal command");
 let a=s.f[s.active],b=s.f[o.b],{k,v,j}=o,d=a.atk*v;
-if(k==="signal"&&a.side===0&&s.opt.trust==="sava_tempo")d*=.85;
+if(k==="signal"&&a.side===0&&trust(s,"sava")==="sava_tempo")d*=.85;
 if(a.hp<=0)throw Error("dead active");
 if(a.side===0)s.use[k]=(s.use[k]||0)+1;
 if(j)a.cd[j]=a.skills[j][2]+1;
@@ -112,7 +130,7 @@ damage(s,a,b,d,roll);
 if(k==="mark"&&b.hp>0)b.mark={owner:a.i,expires:b.own+2};
 if(k==="disrupt"&&b.charge){let escape=b.charge.escape;b.charge=null;if(a.side===0){s.stats.interrupt++;if(escape)s.blocked++}}
 if(k==="assist"&&b.hp>0){const h=assistant(s,a);if(h){damage(s,h,b,h.atk*.5,roll,true);if(a.side===0)s.stats.assist++;}}
-if(k==="signal"&&a.hp>0&&!s.opt.noTempo)tempo(s,a,signalTarget(s,a),s.opt.trust==="sava_tempo"&&a.side===0?300:250);
+if(k==="signal"&&a.hp>0&&!s.opt.noTempo)tempo(s,a,signalTarget(s,a),trust(s,"sava")==="sava_tempo"&&a.side===0?300:250);
 }else if(k==="cover")giveGuard(s,a,b,d);
 else if(k==="teamcover")for(let x of alive(s,a.side))giveGuard(s,a,x,d);
 else if(k==="heal"||k==="teamheal"){for(let x of k==="heal"?[b]:alive(s,a.side)){let h=Math.min(x.max-x.hp,d);x.hp+=h;if(a.side===0)s.stats.heal+=h}}
@@ -122,7 +140,7 @@ s.active=-1;finish(s);
 }
 function estimate(s,a,o,policy){
 let b=s.f[o.b],{k,v}=o,en=alive(s,1-a.side),al=alive(s,a.side),d=a.atk*v;
-let dmg=(x,raw)=>Math.max(0,raw*(x.mark&&x.mark.owner!==a.i?1.25:1)-(x.guard?.amount||0));
+let dmg=(x,raw)=>Math.max(0,raw*(x.mark&&x.mark.owner!==a.i?(s.opt.lab&&s.opt.noMark&&a.side===0?1:1.25):1)*(1-(x.armor||0))-(x.guard?.amount||0)-(x.protection||0));
 let hit=dmg(b,d),lethal=hit>=b.hp,base=Math.min(b.hp,hit)+(lethal?32:0)+(1-b.hp/b.max)*7;
 if(s.mode==="intercept"&&a.side===0&&b.i===s.priority)base+=16;
 if(s.mode==="intercept"&&a.side===1&&k==="cover"&&b.i===s.priority)base+=0;
@@ -160,7 +178,7 @@ function pick(s,policy){const a=s.f[s.active];let opts=enumerate(s,policy);retur
 function utility(s,side){
 if(s.reason==="win"||s.reason==="loss"){let bonus=s.f.slice(0,s.n).reduce((n,x)=>n+x.hp,0)*.1+(s.escort>=0?s.f[s.escort].hp:0)-s.t*.15;return (side===0?1:-1)*(s.reason==="win"?10000+bonus:-10000+bonus);}
 let val=0;
-for(let x of s.f){let sign=x.side===side?1:-1;val+=sign*(x.hp+(x.hp>0&&x.speed>0?35:0)+(x.guard?x.guard.amount*.28:0)+(x.charge?5:0));}
+for(let x of s.f){let sign=x.side===side?1:-1;val+=sign*(x.hp+(x.hp>0&&x.speed>0?35:0)+(x.guard?x.guard.amount*.28:0)+(x.protection||0)*.65+(x.charge?5:0));}
 if(s.escort>=0){let e=s.f[s.escort],danger=fighters(s,1).filter(x=>x.charge?.target===s.escort).reduce((n,x)=>n+x.atk*x.charge.mult,0);val+=(side===0?1:-1)*(e.hp*2.5-Math.max(0,danger-(e.guard?.amount||0))*1.25);}
 if(s.priority>=0)val+=(side===0?1:-1)*(-s.f[s.priority].hp*.55+s.blocked*55-(s.f[s.priority].charge?.escape?s.f[s.priority].charge.left*.5:0));
 return val;
@@ -191,6 +209,6 @@ let rs=Array.from({length:count},(_,i)=>sim(team,mode,policy,Math.imul(i+1+seedO
 let avg=f=>+(rs.reduce((n,x)=>n+f(x),0)/rs.length).toFixed(2);
 return {wins:rs.filter(x=>x.win).length,quality:rs.filter(x=>x.win&&(mode==="hold"?x.escort>=90:mode==="intercept"?x.hp>=.7:x.hp>=.35)).length,n:count,limits:rs.filter(x=>x.limit).length,hp:avg(x=>x.hp),actions:avg(x=>x.actions),time:avg(x=>x.time),escort:mode==="hold"?avg(x=>x.escort):null,blocks:avg(x=>x.blocked),stats:Object.fromEntries(Object.keys(rs[0].stats).map(k=>[k,avg(x=>x.stats[k])])),use:Object.fromEntries(["cover","teamcover","heal","teamheal","tempo","signal","assist","mark","disrupt"].map(k=>[k,avg(x=>x.use[k]||0)]))};
 }
-return {teams,sim,aggregate,fresh,act,next,enumerate,damage,tempo,copy,pick,rollout,finish};
+return {teams,sim,aggregate,fresh,act,next,enumerate,damage,tempo,copy,pick,rollout,finish,tie};
 }
 if(typeof module!=="undefined")module.exports=labV11;

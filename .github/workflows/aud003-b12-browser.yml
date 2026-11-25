@@ -1,0 +1,42 @@
+name: AUD003-B12 combat lab
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'combat-lab/**'
+      - 'docs/research/aud003-combat-lab-v11.js'
+      - 'tests/aud003-b12-*'
+      - '.github/workflows/aud003-b12-browser.yml'
+permissions:
+  contents: read
+concurrency:
+  group: aud003-b12-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Historical and adapter contracts
+        run: |
+          node docs/research/aud003-v11-contract-tests.js
+          node --test tests/aud003-b12-*.test.js
+      - name: Chromium and WebKit mobile scenarios
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/lab-http.log 2>&1 &
+          sleep 2
+          node tests/aud003-b12-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aud003-b12-browser-evidence
+          path: artifacts/aud003-b12-browser/
+          if-no-files-found: ignore

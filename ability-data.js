@@ -214,8 +214,30 @@ const AbilityData=(()=>{
  }
  // A leveled playable hero carries an immutable battle snapshot of skillLevels.
  // Other fixtures and unupgraded actors continue to use the original data.
+ // Experimental rules, selected only on a native CombatCore battle snapshot.
+ function combat2Ability(actor,id,base){
+  if(!base)return base;
+  if(id==="leader"&&["art","sava"].includes(actor.id))return null;
+  if(actor.id==="art"){
+   if(id==="basic")return {...base,fieldNote:"Одиночная атака."};
+   if(id==="special")return {...base,combat2Cover:true,fieldNote:"Даёт заряд защиты и восстанавливает защиту другого союзника."};
+   if(id==="passive")return {...base,combatRules:{combat2PreparedGuard:true}};
+  }
+  if(actor.id!=="sava")return base;
+  const level=actor.skillLevels?.[id],i=Number.isInteger(level)&&level>=1&&level<=6?level-1:0;
+  const curve=values=>values[i];
+  if(id==="basic")return {...base,multiplier:curve([.75,.78,.82,.85,.88,.92]),nextAllyMeter:curve([50,55,60,65,70,75]),fieldNote:"Ускоряет ближайшего другого неготового союзника."};
+  if(id==="special")return {...base,signalMeter:curve([250,260,270,280,290,300]),signalTurns:1,cooldown:2,combat2Signal:true};
+  if(id==="powerful")return {id,name:base.name,kind:"damage",target:"enemy",damageType:"physical",multiplier:curve([.8,.82,.84,.86,.88,.9]),cooldown:3,weakening:0,combat2Assist:curve([.5,.52,.54,.56,.58,.6])};
+  if(id==="passive")return {...base,combatRules:{combat2Boost:curve([50,55,60,65,70,80])}};
+  return base;
+ }
  function get(actor,abilityId){
   const ability=rawGet(actor,abilityId);
+  if(actor?.side==="ally"&&actor.combat2===true){
+   const base=typeof SkillCore!=="undefined"?SkillCore.apply(ability,actor,abilityId):ability;
+   return combat2Ability(actor,abilityId,base);
+  }
   return typeof SkillCore!=="undefined"?SkillCore.apply(ability,actor,abilityId):ability;
  }
  // Missing damageType is explicitly legacy: its historical general atk

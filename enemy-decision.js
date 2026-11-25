@@ -17,6 +17,7 @@ const EnemyDecision=(()=>{
    if(!opponents.length)return null;
    // A stable tie break always uses the fighter's original roster index.
    const byLowestHp=(a,b)=>battle.fighters[a].hp-battle.fighters[b].hp||a-b;
+   const compareHp=battle.combat2?(a,b)=>battle.fighters[a].hp-battle.fighters[b].hp||battle.fighters[a].id.localeCompare(battle.fighters[b].id):byLowestHp;
    const byLowestRatio=(a,b)=>hpRatio(battle.fighters[a])-hpRatio(battle.fighters[b])||a-b;
    const first=opponents[0];
    // Escort objective: attackers actively threaten the protected hero.
@@ -24,7 +25,7 @@ const EnemyDecision=(()=>{
    const escortTarget=actor.assaultFocus===true&&["hold-or-defeat","protect-and-defeat"].includes(battle.tacticalObjective?.kind)
      ?opponents.find(i=>battle.fighters[i].id===battle.tacticalObjective.protectAllyId):-1;
    const weak=Number.isInteger(escortTarget)&&escortTarget>=0
-     ?escortTarget:opponents.slice().sort(byLowestHp)[0];
+     ?escortTarget:opponents.slice().sort(compareHp)[0];
    const can=id=>CombatCore.actorAbilityReady(battle,actorIndex,id);
    const ability=id=>can(id)?AbilityData.get(actor,id):null;
    const decision=(abilityId,targetIndex)=>({abilityId,targetIndex});
@@ -61,7 +62,7 @@ const EnemyDecision=(()=>{
        const weakening=Number.isSafeInteger(def.weakening)&&def.weakening>0&&unweakened.length>0;
        const stronger=def.multiplier>1;
        if(!group&&!stronger&&!weakening)continue;
-       const chosen=weakening&&!stronger?unweakened.slice().sort(byLowestHp)[0]:weak;
+       const chosen=weakening&&!stronger?unweakened.slice().sort(compareHp)[0]:weak;
        // Higher raw multiplier breaks ties between two offensive abilities.
        candidates.push({abilityId:id,targetIndex:chosen,
          priority:group?70:stronger?60+Math.min(9,Math.round((def.multiplier-1)*10)):50,

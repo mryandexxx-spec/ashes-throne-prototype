@@ -61,6 +61,7 @@ let all=s.f.filter(x=>x.hp>0&&x.speed>0);
 let dt=Math.min(...all.map(x=>Math.max(0,1000-x.meter)/x.speed));
 let end=s.mode==="hold"?(s.opt.holdTime??25):s.mode==="intercept"?(s.opt.interceptTime??34):Infinity;
 // Clock resolves before any actor at exact deadline. No bonus action increments time.
+if(s.opt.lab&&s.t+dt>(s.opt.lab.maxTime??160)&&((s.opt.lab.maxTime??160)<end)){s.t=s.opt.lab.maxTime??160;terminal(s,"limit");return}
 if(s.t+dt>=end-1e-9){s.t=end;event(s,"deadline",{mode:s.mode});terminal(s,s.mode==="hold"?"win":"loss");return}
 for(let x of all)x.meter+=dt*x.speed;s.t+=dt;
 let ready=all.filter(x=>x.meter>=1000-1e-6);
@@ -123,13 +124,15 @@ function signalTarget(s,a){
 return fighters(s,a.side).filter(x=>x!==a&&x.meter<950).sort((x,y)=>(1000-x.meter)/x.speed-(1000-y.meter)/y.speed||x.i-y.i)[0];
 }
 function assistant(s,a){return fighters(s,a.side).filter(x=>x!==a).sort((x,y)=>y.atk-x.atk||x.i-y.i)[0]}
-function act(s,o,roll=1){
-if(s.reason||s.active<0||!Number.isFinite(roll)||roll<.9-1e-9||roll>1.1+1e-9||!enumerate(s).some(x=>x.k===o.k&&x.j===o.j&&x.b===o.b&&x.v===o.v))throw Error("illegal command");
-let a=s.f[s.active],b=s.f[o.b],{k,v,j}=o,d=a.atk*v;
+function actionPower(s,a,k,v){let d=a.atk*v;
 if(k==="signal"&&a.side===0&&trust(s,"sava")==="sava_tempo")d*=.85;
 if(a.side===0&&a.id==="ren"&&k==="mark"&&trust(s,"ren")==="ren_precision")d*=.8;
 if(a.side===0&&a.id==="nada"&&k==="disrupt"&&trust(s,"nada")==="nada_observe")d*=.75;
 if(a.side===0&&a.id==="liora"&&trust(s,"liora")==="liora_formation"){if(k==="teamcover")d*=1.25;if(k==="cover")d*=.8;}
+return d;}
+function act(s,o,roll=1){
+if(s.reason||s.active<0||!Number.isFinite(roll)||roll<.9-1e-9||roll>1.1+1e-9||!enumerate(s).some(x=>x.k===o.k&&x.j===o.j&&x.b===o.b&&x.v===o.v))throw Error("illegal command");
+let a=s.f[s.active],b=s.f[o.b],{k,v,j}=o,d=actionPower(s,a,k,v);
 const hadCharge=!!b.charge;
 event(s,"action",{source:subject(a),target:subject(b),kind:k,slot:j,multiplier:v,base:a.atk*v,adjusted:d,roll});
 if(a.hp<=0)throw Error("dead active");
@@ -154,7 +157,7 @@ for(let x of s.f){if(x.guard&&x.guard.time<=s.t)x.guard=null;if(x.mark&&x.hp<=0)
 s.active=-1;finish(s);
 }
 function estimate(s,a,o,policy){
-let b=s.f[o.b],{k,v}=o,en=alive(s,1-a.side),al=alive(s,a.side),d=a.atk*v;
+let b=s.f[o.b],{k,v}=o,en=alive(s,1-a.side),al=alive(s,a.side),d=s.opt.lab?actionPower(s,a,k,v):a.atk*v;
 let dmg=(x,raw)=>Math.max(0,raw*(x.mark&&x.mark.owner!==a.i?(s.opt.lab&&s.opt.noMark&&a.side===0?1:1+(x.mark.bonus??.25)):1)*(1-(x.armor||0))-(x.guard?.amount||0)-(x.protection||0));
 let hit=dmg(b,d),lethal=hit>=b.hp,base=Math.min(b.hp,hit)+(lethal?32:0)+(1-b.hp/b.max)*7;
 if(s.mode==="intercept"&&a.side===0&&b.i===s.priority)base+=16;

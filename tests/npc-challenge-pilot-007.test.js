@@ -264,6 +264,6 @@ test("007: approved objectives persist through the existing v1 schema",()=>{
  assert.doesNotMatch(game,/NPC-пробы T-01…T-04/);
  assert.match(game,/ChallengeCore\.resultEarned\(challengeProgress,activeChallengeId/);
  assert.match(game,/if\(battleIsChallenge&&!state.active&&!challengeResultRecorded\)/);
- assert.match(game,/ChallengeCore\.save\(outcome\.candidate,\(\)=>window\.localStorage,challengeSaveBlocked\)/);
+ assert.match(game,/ChallengeCore\.save\(outcome\.candidate,\(\)=>gameStorage\(\),challengeSaveBlocked\)/);
  assert.equal(Q.get("N-04").thirdStarActionLimit,null);
 });

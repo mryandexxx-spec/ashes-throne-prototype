@@ -112,6 +112,8 @@ async function run(name,browserType,viewport){
   assert.deepEqual(await page.evaluate(()=>ALLIES.filter(h=>heroOwned(h.id)).map(h=>h.id).sort()),["art","ren"]);
   await showMap();
   await routeReady();await visibleTarget("#mainCampaignMapPin");await page.screenshot({path:path.join(dest,key+"-locked.png")});
+  assert.match(await page.locator("#mainCampaignBrief").innerText(),/Мастер просит сохранить снятый крепёж/);
+  assert.doesNotMatch(await page.locator("#mainCampaignBrief").innerText(),/спасли|эвакуировали|Крепёж сохранён/);
   const before=await inspect();assert.equal(before.proof.best,0);assert.equal(before.receipts,0);assert.equal(before.first,false);
   await page.locator("#mainCampaignMapPin").tap();
   await page.locator("#squadBack").tap();await routeReady();
@@ -125,6 +127,7 @@ async function run(name,browserType,viewport){
   assert.equal((await inspect()).proof.best,0);assert.equal((await inspect()).currency,before.currency);
   assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
   assert.equal(await page.locator("#mainCampaignResultReward").isVisible(),false);
+  assert.doesNotMatch(await page.locator("#mainCampaignResultText").innerText(),/Крепёж сохранён|следующий пункт доставки/);
   await visibleTarget("#mainCampaignResultBack");await visibleTarget("#mainCampaignResultRetry");
   await page.locator("#mainCampaignResultRetry").tap();
   await page.locator("#squadDisband").tap();
@@ -133,6 +136,8 @@ async function run(name,browserType,viewport){
   await visibleTarget("#squadStart");
   await page.screenshot({path:path.join(dest,key+"-squad.png")});
   assert.equal(await fight(true),"ally","manual basic attacks with the two fresh starters");
+  assert.match(await page.locator("#mainCampaignResultText").innerText(),/Крепёж сохранён для проверки/);
+  assert.match(await page.locator("#mainCampaignResultText").innerText(),/следующий пункт доставки/);
   const won=await inspect();assert.ok(won.proof.best>0);assert.equal(won.currency,before.currency);assert.equal(won.receipts,0);
   await noOverflow();await visibleTarget("#mainCampaignResultClaim");await visibleTarget("#mainCampaignResultBack");
   assert.match(await page.locator("#mainCampaignResultRewardAmount").innerText(),/40/);
@@ -140,6 +145,7 @@ async function run(name,browserType,viewport){
   // Reload BEFORE claiming. Proof survives and the next path is still locked.
   await page.reload({waitUntil:"load",timeout:60000});await ready();await showMap();
   assert.equal((await inspect()).proof.best,won.proof.best);
+  assert.match(await page.locator("#mainCampaignBrief").innerText(),/Крепёж сохранён/);
   assert.equal(await page.locator("#mainCampaignNext").getAttribute("data-unlocked"),"false");
   await routeReady("#mainCampaignClaim");
   await page.locator("#mainCampaignClaim").tap();

@@ -1,5 +1,5 @@
 ## 25.11.2026 — CAM-002-B-ART (draft, not released)
-- Generated two chapter-II shots; prepared view-only art binding and browser regression. Actual WebP delivery pending; no published version change. See CAM_002_B_ART.md.
+- Generated two chapter-II shots; prepared view-only art binding and browser regression. Both exact WebP files delivered and read-back Git blob SHAs verified in commit 7f6a51cbd6200b4d4adfd50c05e7fa8b6ee40b27, PR #521; browser CI/visual review pending, no published version change. See CAM_002_B_ART.md.
 
 **[РЕАЛИЗОВАНО в main — CAM-001-M1-NARRATIVE, 25.11.2026] v0.3.260 CAM001M1N.** [PR #515](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/515) слит, squash `e9ba00a236c3444d56f1b91a7a098e9fbb649606`; 4 применимых CI jobs success (Node smoke, First Play, M1, mobile squad). [PR #514](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/514) закрыл документацию боевого UX, main `997821159a1ff8d05efcaf490bf3ccb1a89130b3`, Pages #45556251746 success; реальный iPhone и прямое прохождение опубликованной версии не проверены. Бриф и видимое следствие победы сохранены, skip/loss/reload/replay проверяются. [Контракт](CAM_001_M1_NARRATIVE_INTEGRATION.md). Владелец принял 0.2 как рабочее направление (запись приватного draft #77, commit e58c3c8399f371d39294ae8cd29cbd7361f893bc), не окончательный канон.
 

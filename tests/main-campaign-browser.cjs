@@ -86,12 +86,26 @@ async function run(name,browserType,viewport){
   await page.waitForFunction(({selector,suffix})=>{const im=document.querySelector(selector);return im?.complete&&im.naturalWidth===1536&&im.naturalHeight===512&&im.getAttribute("src").endsWith(suffix)&&im.getBoundingClientRect().width>0&&im.getBoundingClientRect().height>0;},{selector,suffix},{timeout:20000});
   await page.locator(selector).evaluate(async im=>{await im.decode();await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});
  };
- const fight=async(manual=false,second=false)=>{
+ const fight=async(manual=false,second=false,expectedIds=["ren","art"])=>{
+  // Fix only the launch seed, never combat results, clocks during play or saves.
+  // Seed 7 exercises real solo losses and team wins in both chapters.
+  await page.evaluate(()=>{
+   const original=resetBattle;
+   resetBattle=function(...args){
+    const now=Date.now;
+    try{Date.now=()=>7;return original.apply(this,args);}
+    finally{Date.now=now;resetBattle=original;}
+   };
+  });
   await page.locator("#squadStart").tap();
   if(await page.locator("#squad.active").isVisible())await page.locator("#squadStart").tap();
   await page.locator("#battle.active").waitFor({timeout:30000});
   await page.waitForFunction(()=>state.active&&battleIsMainCampaign&&!visualActionPending()&&!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:60000});
-  assert.equal(await page.evaluate(second=>state.fighters.filter(f=>f.side==="enemy").every(f=>f.id.startsWith(second?"npc-cam-m2-":"npc-cam-m1-"))&&state.mainCampaignMissionId===(second?MainCampaignCore.II_ID:MainCampaignCore.ID),second),true);
+  const launched=await page.evaluate(()=>({allies:state.fighters.filter(f=>f.side==="ally").map(f=>f.id).sort(),enemies:state.fighters.filter(f=>f.side==="enemy").map(f=>f.id).sort(),mission:state.mainCampaignMissionId,seed:state.rng?.seed}));
+  assert.deepEqual(launched.allies,[...expectedIds].sort(),"actual battle party, not only the squad UI");
+  assert.deepEqual(launched.enemies,second?["npc-cam-m2-guard","npc-cam-m2-interceptor"]:["npc-cam-m1-guard","npc-cam-m1-interceptor"]);
+  assert.equal(launched.mission,second?"main-cam-002-m1":"main-cam-001-m1");
+  assert.equal(launched.seed,7,"real battle must use the reproducible fixture seed");
   for(const id of await page.evaluate(()=>state.fighters.filter(f=>f.hp>0).map(f=>f.id)))await tapFighter(page,id,true);
   await page.screenshot({path:path.join(dest,key+"-"+(second?"II":"I")+"-"+(manual?"manual":"auto")+"-battle.png")});
   for(let i=0;i<2;i++)await page.locator("#autoSpeedBtn").tap();
@@ -127,7 +141,7 @@ async function run(name,browserType,viewport){
   assert.match(await page.locator("#squadIntro").innerText(),/Один герой — риск поражения/);
   assert.equal(await page.locator("#squadStart").isEnabled(),true,"advice is not a mandatory lock");
   await visibleTarget("#squadStart");
-  assert.equal(await fight(),"enemy","one starter vs two NPCs");
+  assert.equal(await fight(false,false,["art"]),"enemy","one starter vs two NPCs");
   assert.equal((await inspect()).proof.best,0);assert.equal((await inspect()).currency,before.currency);
   assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
   assert.equal(await page.locator("#mainCampaignResultReward").isVisible(),false);
@@ -188,7 +202,7 @@ async function run(name,browserType,viewport){
   if(viewport.height===320){
    await page.locator("#squadDisband").tap();
    await page.locator('#squadRoster .squad-choice[data-hero-id="art"]').tap();
-   assert.equal(await fight(false,true),"enemy","one starter should lose chapter II");
+   assert.equal(await fight(false,true,["art"]),"enemy","one starter should lose chapter II");
    assert.equal((await inspectII()).proof.best,0);assert.equal((await inspectII()).rank,0);
    assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
    assert.doesNotMatch(await page.locator("#mainCampaignResultText").innerText(),/Рабочий свободен|Нада предлагает/);
@@ -218,7 +232,7 @@ async function run(name,browserType,viewport){
   if(viewport.height===320){
    await page.locator("#squadDisband").tap();
    for(const id of ["ren","art","nada"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
-   assert.equal(await fight(false,true),"ally");
+   assert.equal(await fight(false,true,["ren","art","nada"]),"ally");
    assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
    await page.locator("#mainCampaignResultBack").tap();
    assert.equal((await inspectII()).receipts,1);

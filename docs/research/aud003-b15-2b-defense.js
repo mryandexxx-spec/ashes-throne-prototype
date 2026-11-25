@@ -165,7 +165,8 @@ function policy(ctx,b,mode){
  return lab.plan(api,b,true);
 }
 function run(ctx,squad,scenario,seed,mode="tactical"){
- const {lab,api}=ctx,b=lab.start(api,squad,scenario,seed),allies=()=>b.fighters.filter(f=>f.side==="ally"),max=sum(allies(),f=>f.maxHp+f.maxProtection);
+ const order=squad.includes("liora")?["liora",...squad.filter(id=>id!=="liora")]:squad;
+ const {lab,api}=ctx,b=lab.start(api,order,scenario,seed),allies=()=>b.fighters.filter(f=>f.side==="ally"),max=sum(allies(),f=>f.maxHp+f.maxProtection);
  let actions=0,defense=0,tauntActions=0,areaHits=0,damage=0;
  while(b.active&&actions<160){
   const actor=b.fighters[b.currentActor],p=policy(ctx,b,mode);

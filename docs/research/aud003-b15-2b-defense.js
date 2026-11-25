@@ -6,7 +6,10 @@ const CONFIGS={
  "both-noreact":{art:true,react:false,liora:true},
  "both-leader5":{art:true,react:true,liora:true,leader:5},
  "both-leader10":{art:true,react:true,liora:true,leader:10},
- "ref-leader10":{leader:10}
+ "ref-leader10":{leader:10},
+ "both-flex":{art:true,react:true,liora:true,artCap:true},
+ "both-recover":{art:true,react:true,liora:true,recover:true},
+ "both-earlypassive":{art:true,react:true,liora:true,earlyPassive:true}
 };
 const TIERS={early:{skill:1,level:2,rush:.9,hold:1.05,area:.95},trained:{skill:6,level:12,rush:1.12,hold:1.30,area:1.15}};
 const SQUADS=[["ren","art"],["ren","art","nada"],["ren","liora","nada"],["art","nada","sava"],["liora","nada","sava"],["ren","art","liora"],["b14-striker","liora","b14-medic","sava"],["ren","art","nada","liora","sava"]];
@@ -19,12 +22,12 @@ function kit(actor,id,base,c){
  if(actor.id==="art"&&c.art){
   if(id==="passive")return {...base,combatRules:{b15React:!!c.react,fraction:curve([.4,.42,.44,.46,.48,.5]),cap:curve([.6,.65,.7,.75,.8,.9])}};
   if(id==="basic")return {...base,multiplier:curve([1,1.04,1.08,1.12,1.18,1.24])};
-  if(id==="special")return {...base,insurancePercent:curve([40,42,44,46,48,50]),insuranceTurns:2,cooldown:2,b15Guard:{kind:"art",hits:1,turns:2,fraction:curve([.4,.42,.44,.46,.48,.5]),cap:curve([.8,.85,.9,.95,1,1.1])}};
+  if(id==="special")return {...base,insurancePercent:curve([40,42,44,46,48,50]),insuranceTurns:2,cooldown:2,b15Guard:{kind:"art",hits:1,turns:2,fraction:curve(c.artCap?[.5,.52,.54,.56,.58,.6]:[.4,.42,.44,.46,.48,.5]),cap:curve(c.artCap?[1.1,1.15,1.2,1.25,1.3,1.4]:[.8,.85,.9,.95,1,1.1]),recover:c.recover?.35:0}};
   if(id==="powerful"){const a={...base,multiplier:curve([1.05,1.09,1.13,1.17,1.21,1.25]),cooldown:3,weakening:0,b15Disrupt:true};delete a.disruptTurns;delete a.disruptDelay;return a;}
  }
  if(actor.id==="liora"&&c.liora){
   const group={kind:"liora",hits:1,turns:2,fraction:curve([.3,.32,.34,.36,.38,.4]),cap:curve([.65,.7,.75,.8,.85,.9])};
-  if(id==="passive")return {...base,combatRules:{b15Threshold:curve([35,35,38,38,40,40]),b15Guard:group}};
+  if(id==="passive")return {...base,combatRules:{b15Threshold:curve(c.earlyPassive?[45,45,48,48,50,50]:[35,35,38,38,40,40]),b15Guard:group}};
   if(id==="basic")return {...base,multiplier:curve([.9,.95,1,1.04,1.08,1.15])};
   if(id==="special")return {...base,guardHits:2,tauntTurns:2,cooldown:3,b15Guard:{kind:"liora",hits:2,turns:2,fraction:curve([.35,.38,.4,.42,.45,.48]),cap:.9}};
   if(id==="powerful")return {...base,guardHits:1,cooldown:3,b15Guard:group};
@@ -45,7 +48,9 @@ function primitives(){
   if(old&&old.hits>=fresh.hits&&old.fraction>=fresh.fraction&&old.capDamage>=fresh.capDamage&&old.turns>=fresh.turns)return false;
   if(old&&old.hits>fresh.hits&&old.fraction>=fresh.fraction&&old.capDamage>=fresh.capDamage)return false;
   target.b15Guards=target.b15Guards.filter(x=>x!==old);target.b15Guards.push(fresh);
-  b15count(b,g.kind+"Granted",g.hits);return true;
+  b15count(b,g.kind+"Granted",g.hits);
+  if(g.recover>0){const restored=Math.max(0,Math.min(target.maxProtection-target.protection,Math.round(owner.physicalAttack*g.recover)));target.protection+=restored;b15count(b,"artRestored",restored);}
+  return true;
  }
  function b15guard(b,target,damage,direct){
   b15prune(b);
@@ -56,7 +61,7 @@ function primitives(){
   if(target.guardHits>0)options.push({g:null,blocked:damage-Math.round(damage*.5)});
   options.sort((a,z)=>z.blocked-a.blocked||String(a.g?.owner??"native").localeCompare(String(z.g?.owner??"native")));
   const best=options[0];if(!best||best.blocked<=0)return damage;
-  if(best.g){best.g.hits--;b15count(b,best.g.kind+"GuardBlocked",best.blocked);b15count(b,best.g.kind+"GuardUsed");if(best.g.kind==="art"&&b.b15Root)b.b15Root.artGuard=true;}
+  if(best.g){if(target.side==="ally"&&damage>=target.hp+target.protection&&damage-best.blocked<target.hp+target.protection)b15count(b,best.g.kind+"LocalLethalGuard");best.g.hits--;b15count(b,best.g.kind+"GuardBlocked",best.blocked);b15count(b,best.g.kind+"GuardUsed");if(best.g.kind==="art"&&b.b15Root)b.b15Root.artGuard=true;}
   else{target.guardHits--;b15count(b,"nativeGuardBlocked",best.blocked);}
   b15prune(b);return damage-best.blocked;
  }
@@ -67,7 +72,7 @@ function primitives(){
   if(!art)return hpLoss;
   const rules=passiveCombatRules(art),n=Math.min(hpLoss,Math.round(hpLoss*rules.fraction),Math.round(art.physicalAttack*rules.cap),art.protection);
   if(n<=0)return hpLoss;
-  art.protection-=n;art.b15ReactUsed=true;root.reacted=true;b15count(b,"artReactBlocked",n);b15count(b,"artReactUsed");return hpLoss-n;
+  if(hpLoss>=target.hp&&hpLoss-n<target.hp)b15count(b,"artLocalLethalReact");art.protection-=n;art.b15ReactUsed=true;root.reacted=true;b15count(b,"artReactBlocked",n);b15count(b,"artReactUsed");return hpLoss-n;
  }
  function b15finish(b,actor){
   const root=b.b15Root;
@@ -191,7 +196,7 @@ function summarize(rows){const n=rows.length,out={n,w:sum(rows,x=>x.w),q:sum(row
 }
 function experiment(source,labSource,count=20,holdout=false){
  const seeds=Array.from({length:count},(_,i)=>Math.imul(i+(holdout?61139:41131),0x9e3779b1)>>>0),cells=[];
- for(const tier of Object.keys(TIERS))for(const variant of (holdout?["ref","both","both-leader10","both-noreact"]:Object.keys(CONFIGS))){
+ for(const tier of Object.keys(TIERS))for(const variant of (holdout?["ref","both","both-leader10","both-noreact","both-flex","both-recover","both-earlypassive"]:Object.keys(CONFIGS).filter(v=>!["both-flex","both-recover","both-earlypassive"].includes(v)))){
   const ctx=setup(source,labSource,variant,tier,{reverse:holdout});
   for(const squad of SQUADS){
    if(variant.includes("leader")&&!squad.includes("liora"))continue;

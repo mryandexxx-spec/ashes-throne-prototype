@@ -14,8 +14,8 @@ const VARIANTS={
  "recover-nopassive":{label:"Прикрытие без пассива Савы",def:"both-recover",sava:"nopassive",preserve:true,share:10,recovery:.65,cap:1},
  scaled:{label:"Защита от Protection",def:"both-recover",sava:"cap",preserve:true,share:10,recovery:.65,scaled:true},
  "scaled-group":{label:"Protection + 2 заряда на L4",def:"both-recover",sava:"cap",preserve:true,share:10,recovery:.65,scaled:true,group2:true},
- "art-only":{label:"Новая страховка Арта",def:"art",sava:"cap",preserve:true,share:10,recovery:.65,scaled:true},
- "liora-only":{label:"Новая защита Лиоры",def:"liora",sava:"cap",preserve:true,share:10,scaled:true,group2:true}
+ "art-only":{label:"Арт + Сава · консервативный",def:"art",sava:"cap",preserve:true,share:10,recovery:.65,scaled:true},
+ "liora-only":{label:"Лиора + Сава",def:"liora",sava:"cap",preserve:true,share:10,scaled:true,group2:true}
 };
 const SQUADS={
  starter:["ren","art"],three:["ren","art","nada"],tempo:["ren","art","sava"],support:["art","nada","sava"],
@@ -62,7 +62,7 @@ function combinedKit(actor,id,base,c,markKit,defKit,savaKit){
  if(c.marks)a=markKit(actor,id,a,c.marks);
  if(c.defConfig)a=defKit(actor,id,a,c.defConfig);
  if(c.savaConfig)a=savaKit(actor,id,a,c.savaConfig);
- if(c.preserve&&["art","liora"].includes(actor.id)&&a?.kind==="damage"&&base?.kind==="damage")a={...a,multiplier:base.multiplier};
+ if(c.preserve&&["art","liora"].includes(actor?.id)&&a?.kind==="damage"&&base?.kind==="damage")a={...a,multiplier:base.multiplier};
  if(c.recovery&&actor.id==="art"&&id==="special"&&a?.b15Guard)a={...a,b15Guard:{...a.b15Guard,recover:c.recovery}};
  if(c.group2&&actor.id==="liora"&&id==="powerful"&&a?.b15Guard&&(actor.skillLevels?.powerful??1)>=4)a={...a,guardHits:2,b15Guard:{...a.b15Guard,hits:2}};
  return a;

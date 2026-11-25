@@ -86,14 +86,28 @@ async function run(name,browserType,viewport){
   await page.waitForFunction(({selector,suffix})=>{const im=document.querySelector(selector);return im?.complete&&im.naturalWidth===1536&&im.naturalHeight===512&&im.getAttribute("src").endsWith(suffix)&&im.getBoundingClientRect().width>0&&im.getBoundingClientRect().height>0;},{selector,suffix},{timeout:20000});
   await page.locator(selector).evaluate(async im=>{await im.decode();await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});
  };
- const fight=async(manual=false)=>{
+ const fight=async(manual=false,second=false,expectedIds=["ren","art"])=>{
+  // Fix only the launch seed, never combat results, clocks during play or saves.
+  // Seed 7 exercises real solo losses and team wins in both chapters.
+  await page.evaluate(()=>{
+   const original=resetBattle;
+   resetBattle=function(...args){
+    const now=Date.now;
+    try{Date.now=()=>7;return original.apply(this,args);}
+    finally{Date.now=now;resetBattle=original;}
+   };
+  });
   await page.locator("#squadStart").tap();
   if(await page.locator("#squad.active").isVisible())await page.locator("#squadStart").tap();
   await page.locator("#battle.active").waitFor({timeout:30000});
   await page.waitForFunction(()=>state.active&&battleIsMainCampaign&&!visualActionPending()&&!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:60000});
-  assert.equal(await page.evaluate(()=>state.fighters.filter(f=>f.side==="enemy").every(f=>f.id.startsWith("npc-cam-m1-"))),true);
+  const launched=await page.evaluate(()=>({allies:state.fighters.filter(f=>f.side==="ally").map(f=>f.id).sort(),enemies:state.fighters.filter(f=>f.side==="enemy").map(f=>f.id).sort(),mission:state.mainCampaignMissionId,seed:state.rng?.seed}));
+  assert.deepEqual(launched.allies,[...expectedIds].sort(),"actual battle party, not only the squad UI");
+  assert.deepEqual(launched.enemies,second?["npc-cam-m2-guard","npc-cam-m2-interceptor"]:["npc-cam-m1-guard","npc-cam-m1-interceptor"]);
+  assert.equal(launched.mission,second?"main-cam-002-m1":"main-cam-001-m1");
+  assert.equal(launched.seed,7,"real battle must use the reproducible fixture seed");
   for(const id of await page.evaluate(()=>state.fighters.filter(f=>f.hp>0).map(f=>f.id)))await tapFighter(page,id,true);
-  await page.screenshot({path:path.join(dest,key+"-"+(manual?"manual":"auto")+"-battle.png")});
+  await page.screenshot({path:path.join(dest,key+"-"+(second?"II":"I")+"-"+(manual?"manual":"auto")+"-battle.png")});
   for(let i=0;i<2;i++)await page.locator("#autoSpeedBtn").tap();
   if(manual){
    for(let i=0;i<45;i++){
@@ -115,7 +129,7 @@ async function run(name,browserType,viewport){
   assert.equal(await page.locator("#hqFirstSessionAction").isVisible(),false,"developer bypass must not create an onboarding quest");
   assert.deepEqual(await page.evaluate(()=>ALLIES.filter(h=>heroOwned(h.id)).map(h=>h.id).sort()),["art","ren"]);
   await showMap();
-  await routeReady();await visibleTarget("#mainCampaignMapPin");await loadedShot("#mainCampaignSceneArt","warehouse-conflict.webp");await page.screenshot({path:path.join(dest,key+"-locked.png")});
+  await routeReady();assert.equal(await page.locator("#mainCampaignNext").isDisabled(),true);await visibleTarget("#mainCampaignMapPin");await loadedShot("#mainCampaignSceneArt","warehouse-conflict.webp");await page.screenshot({path:path.join(dest,key+"-locked.png")});
   assert.match(await page.locator("#mainCampaignBrief").innerText(),/Мастер просит сохранить снятый крепёж/);
   assert.doesNotMatch(await page.locator("#mainCampaignBrief").innerText(),/спасли|эвакуировали|Крепёж сохранён/);
   const before=await inspect();assert.equal(before.proof.best,0);assert.equal(before.receipts,0);assert.equal(before.first,false);
@@ -127,7 +141,7 @@ async function run(name,browserType,viewport){
   assert.match(await page.locator("#squadIntro").innerText(),/Один герой — риск поражения/);
   assert.equal(await page.locator("#squadStart").isEnabled(),true,"advice is not a mandatory lock");
   await visibleTarget("#squadStart");
-  assert.equal(await fight(),"enemy","one starter vs two NPCs");
+  assert.equal(await fight(false,false,["art"]),"enemy","one starter vs two NPCs");
   assert.equal((await inspect()).proof.best,0);assert.equal((await inspect()).currency,before.currency);
   assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
   assert.equal(await page.locator("#mainCampaignResultReward").isVisible(),false);
@@ -173,8 +187,63 @@ async function run(name,browserType,viewport){
   assert.equal((await inspect()).receipts,1);
   assert.equal(await page.locator("#mainCampaignClaim").isVisible(),false);
   assert.equal(await page.locator("#mainCampaignNext").getAttribute("data-unlocked"),"true");
+  const inspectII=()=>page.evaluate(()=>({proof:MainCampaignCore.proofFor(MainCampaignCore.II_ID,()=>localStorage),
+   status:MainCampaignCore.statusFor(MainCampaignCore.II_ID,()=>localStorage,progress),
+   receipts:(progress.rewardReceipts||[]).filter(r=>r.id===MainCampaignCore.mission(MainCampaignCore.II_ID).receipt).length,
+   rank:StarCore.rankOf(progress,"nada"),heroes:ALLIES.filter(h=>heroOwned(h.id)).map(h=>h.id).sort(),
+   currency:progress.currency,energy:progress.energy.value,m1:MainCampaignCore.load(()=>localStorage).best}));
+  const iiBefore=await inspectII();assert.equal(iiBefore.status,"ready");assert.equal(iiBefore.rank,0);
+  await visibleTarget("#mainCampaignNext");await page.locator("#mainCampaignNext").tap();await routeReady();
+  assert.equal(await page.locator("#mainCampaignMap").getAttribute("data-mission"),"II");
+  assert.match(await page.locator("#mainCampaignBrief").innerText(),/Защитите его/);
+  assert.equal(await page.locator("#mainCampaignSceneArt").isVisible(),false,"do not display M1 art in chapter II");
+  await page.screenshot({path:path.join(dest,key+"-II-map.png")});
+  await page.locator("#mainCampaignNode").tap();
+  if(viewport.height===320){
+   await page.locator("#squadDisband").tap();
+   await page.locator('#squadRoster .squad-choice[data-hero-id="art"]').tap();
+   assert.equal(await fight(false,true,["art"]),"enemy","one starter should lose chapter II");
+   assert.equal((await inspectII()).proof.best,0);assert.equal((await inspectII()).rank,0);
+   assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
+   assert.doesNotMatch(await page.locator("#mainCampaignResultText").innerText(),/Рабочий свободен|Нада предлагает/);
+   await page.locator("#mainCampaignResultRetry").tap();
+  }
+  await page.locator("#squadDisband").tap();
+  for(const id of ["ren","art"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
+  assert.equal(await page.locator('#squadRoster .squad-choice[data-hero-id="nada"]').isEnabled(),false,"no guest Nada");
+  assert.equal(await fight(true,true),"ally","real manual victory with fresh two heroes");
+  assert.match(await page.locator("#mainCampaignResultText").innerText(),/Рабочий свободен/);
+  assert.equal(await page.locator("#mainCampaignResultArt").isVisible(),false);
+  await visibleTarget("#mainCampaignResultClaim");await visibleTarget("#mainCampaignResultBack");
+  await page.screenshot({path:path.join(dest,key+"-II-victory.png")});
+  const iiWon=await inspectII();assert.equal(iiWon.status,"claimable");assert.ok(iiWon.proof.best>0);assert.equal(iiWon.rank,0);
+  await page.reload({waitUntil:"load",timeout:60000});await ready();await showMap();
+  assert.equal((await inspectII()).status,"claimable");
+  await page.locator("#mainCampaignNext").tap();await routeReady("#mainCampaignClaim");
+  assert.match(await page.locator("#mainCampaignClaim").innerText(),/Принять Наду/);
+  await page.locator("#mainCampaignClaim").tap();
+  await page.waitForFunction(()=>!mainCampaignClaiming&&heroOwned("nada"),null,{timeout:20000});
+  const iiPaid=await inspectII();assert.equal(iiPaid.status,"claimed");assert.equal(iiPaid.rank,1);assert.equal(iiPaid.receipts,1);
+  assert.deepEqual(iiPaid.heroes,["art","nada","ren"]);assert.equal(iiPaid.currency,iiBefore.currency);
+  assert.equal(iiPaid.energy,iiBefore.energy);assert.equal(iiPaid.m1,iiBefore.m1);
+  assert.match(await page.locator("#mainCampaignNotice").innerText(),/глава III готовится/);
+  await page.locator("#mainCampaignNode").tap();
+  assert.equal(await page.locator('#squadRoster .squad-choice[data-hero-id="nada"]').isEnabled(),true);
+  if(viewport.height===320){
+   await page.locator("#squadDisband").tap();
+   for(const id of ["ren","art","nada"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
+   assert.equal(await fight(false,true,["ren","art","nada"]),"ally");
+   assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
+   await page.locator("#mainCampaignResultBack").tap();
+   assert.equal((await inspectII()).receipts,1);
+  }else await page.locator("#squadBack").tap();
+  await page.reload({waitUntil:"load",timeout:60000});await ready();await showMap();
+  assert.equal((await inspectII()).rank,1);assert.equal((await inspectII()).receipts,1);
+  assert.equal(await page.locator("#mainCampaignMap").getAttribute("data-mission"),"I");
+  await page.locator("#mainCampaignNext").tap();await routeReady();
+  assert.equal(await page.locator("#mainCampaignClaim").isVisible(),false);
   await noOverflow();assert.deepEqual(errors,[]);
-  console.log("CAM001B_BROWSER_PASS",key,after);
+  console.log("CAM001B_AND_CAM002B_BROWSER_PASS",key,after,await inspectII());
  }catch(error){console.error("CAM001B_BROWSER_FAIL",key,errors);await page.screenshot({path:path.join(dest,key+"-fail.png"),fullPage:true}).catch(()=>{});throw error;}
  finally{await browser.close();}
 }

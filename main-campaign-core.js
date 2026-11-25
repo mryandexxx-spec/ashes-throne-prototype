@@ -67,6 +67,105 @@ const MainCampaignCore=(()=>{
    return {...npc,hp,protection,maxProtection:protection,physicalAttack,atk:physicalAttack};
   });
  }
- return Object.freeze({KEY,ID,TITLE,SOURCE,RECEIPT,load,score,record,claimed,status,authorize,claim,enemies});
+ 
+ // CAM-002-B foundation: per-mission proof keys, same atomic wallet receipt.
+ // Mission proof and receipts remain independent of navigation.
+ const II_ID="main-cam-002-m1",II_TITLE="За каменным ребром";
+ function enemiesFor(id,npcs){
+  if(id===ID)return enemies(npcs);
+  if(id!==II_ID)throw Error("CAMPAIGN_UNKNOWN_MISSION");
+  // Provisional encounter: reuse tested starter roles and nearly identical total HP.
+  return [["npc-pass-guard","npc-cam-m2-guard","Сторож",82,15,14],
+   ["npc-trail-interceptor","npc-cam-m2-interceptor","Сторож у выхода",75,10,19]].map(([archetype,instanceId,name,hp,protection,physicalAttack])=>{
+    const npc=npcs.spawn(archetype,{instanceId});
+    if(!npc)throw Error("CAM002B_NPC_MISSING");
+    return {...npc,name,hp,protection,maxProtection:protection,physicalAttack,atk:physicalAttack};
+   });
+ }
+ const II_SOURCE=Object.freeze({sourceId:II_ID,kind:"first-clear",energyCost:0,
+  reward:Object.freeze({currency:0,accountXp:0,materials:Object.freeze({}),heroGrants:Object.freeze(["nada"])})});
+ const MISSIONS=Object.freeze([
+  Object.freeze({id:ID,key:KEY,source:SOURCE,receipt:RECEIPT,previous:null}),
+  Object.freeze({id:II_ID,key:"ashes-throne.main-campaign.002-m1.v1",source:II_SOURCE,receipt:"first-clear:"+II_ID+":once",previous:ID})
+ ]);
+ function mission(id){return MISSIONS.find(m=>m.id===id)||null;}
+ function proofFor(id,provider){
+  const m=mission(id);if(!m)return null;
+  if(id===ID)return load(provider);
+  try{
+   const storage=provider();if(!storage)return null;
+   const raw=storage.getItem(m.key);
+   if(raw===null)return {version:1,best:0};
+   const data=JSON.parse(raw);
+   return data?.version===1&&data.missionId===id&&Number.isInteger(data.best)&&data.best>=0&&data.best<=3?
+    {version:1,best:data.best}:null;
+  }catch(_){return null;}
+ }
+ function hasReceipt(m,wallet){
+  return Array.isArray(wallet?.rewardReceipts)&&wallet.rewardReceipts.some(r=>r.id===m.receipt&&r.sourceId===m.id);
+ }
+ function statusFor(id,provider,wallet){
+  const m=mission(id);if(!m)return "blocked";
+  const proof=proofFor(id,provider);if(!proof)return "blocked";
+  if(m.previous){
+   const previous=statusFor(m.previous,provider,wallet);
+   if(previous!=="claimed")return proof.best>0||hasReceipt(m,wallet)||previous==="blocked"?"blocked":"locked";
+  }
+  if(hasReceipt(m,wallet))return proof.best>0&&(!m.source.reward.heroGrants||
+   (typeof StarCore!=="undefined"&&m.source.reward.heroGrants.every(hero=>StarCore.rankOf(wallet,hero)>0)))?"claimed":"blocked";
+  return proof.best>0?"claimable":"ready";
+ }
+ function readWallet(provider,heroes){
+  try{
+   const raw=provider().getItem(ProgressV3Core.KEY);
+   return raw===null?null:ProgressV3Core.validateActive(JSON.parse(raw),heroes);
+  }catch(_){return null;}
+ }
+ // The caller must use the immutable mission identity captured when the battle starts.
+ // This is local progression, not an anti-cheat server boundary.
+ function recordFor(id,battle,provider,heroes){
+  const m=mission(id);if(!m)return {ok:false,earned:0,best:0};
+  if(id===ID)return record(battle,provider);
+  const proof=proofFor(id,provider),wallet=readWallet(provider,heroes);
+  // II only: require the identity captured at launch, not the currently selected map node.
+  if(battle?.mainCampaignMissionId!==id)return {ok:false,earned:0,best:proof?.best||0};
+  const earned=score(battle);
+  if(earned&&(!battle.fighters.some(f=>f.side==="enemy")||battle.fighters.some(f=>f.side==="enemy"&&!(f.hp<=0))))
+   return {ok:false,earned:0,best:proof?.best||0};
+  if(!proof||!wallet)return {ok:false,earned,best:proof?.best||0};
+  const current=statusFor(id,provider,wallet);
+  if(current==="blocked"||current==="locked")return {ok:false,earned:0,best:proof.best};
+  if(!earned)return {ok:true,earned:0,best:proof.best};
+  if(typeof window!=="undefined"&&(typeof ProgressWriterCore==="undefined"||
+    !ProgressWriterCore.canPersist()))return {ok:false,earned,best:proof.best};
+  const best=Math.max(proof.best,earned);
+  if(best===proof.best)return {ok:true,earned,best};
+  try{
+   const storage=provider(),encoded=JSON.stringify({version:1,missionId:id,best});
+   storage.setItem(m.key,encoded);
+   return storage.getItem(m.key)===encoded?{ok:true,earned,best}:{ok:false,earned,best:proof.best};
+  }catch(_){return {ok:false,earned,best:proof.best};}
+ }
+ async function claimFor(id,options){
+  const m=mission(id);if(!m)return {ok:false,code:"UNKNOWN_MISSION"};
+  if(id===ID)return claim(options);
+  const {storageProvider,heroes,exclusive,day}=options;
+  const result=await RewardPolicyCore.claim({source:m.source,occurrenceId:"once",count:1,day,heroes,storageProvider,exclusive,
+   authorize:({storage,sourceId,kind,occurrenceId,count})=>{
+    const provider=()=>storage,wallet=readWallet(provider,heroes);
+    return !!wallet&&sourceId===id&&kind==="first-clear"&&occurrenceId==="once"&&count===1&&statusFor(id,provider,wallet)==="claimable";
+   }});
+  if(!result.ok)return result;
+  try{
+   const profile=readWallet(storageProvider,heroes);
+   const runtime=profile&&ProgressV3Core.toRuntime(profile,heroes);
+   if(!runtime||statusFor(id,storageProvider,runtime)!=="claimed"||
+      runtime.saveRevision!==result.revision||result.receiptId!==m.receipt||
+      m.source.reward.heroGrants.some(hero=>!(StarCore.rankOf(runtime,hero)>0)))
+    return {ok:false,code:"REWARD_SYNC_FAILED"};
+   return {ok:true,runtime};
+  }catch(_){return {ok:false,code:"REWARD_SYNC_FAILED"};}
+ }
+ return Object.freeze({KEY,ID,TITLE,SOURCE,RECEIPT,load,score,record,claimed,status,authorize,claim,enemies,enemiesFor,II_ID,II_TITLE,MISSIONS,mission,proofFor,statusFor,recordFor,claimFor});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=MainCampaignCore;

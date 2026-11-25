@@ -4,6 +4,7 @@
  */
 "use strict";
 const VARIANTS=["b14","b15","b15-no-share","b15-nada3","b15-ren12"];
+const REFINEMENTS=["b15-nada-adaptive","b15-nada-cd1"];
 const TIERS={
  early:{skill:1,level:2,stars:1,rush:.90,mixed:.72},
  trained:{skill:6,level:12,stars:1,rush:1.12,mixed:.90}
@@ -39,11 +40,12 @@ function kit(actor,id,base,v){
   // Deliberately low-damage three-stack alternative, not a non-damaging skill:
   // native hit/resist contract still applies. An exact non-damaging variant is future work.
   if(v==="b15-nada3"&&id==="special"){a.multiplier=[.25,.27,.29,.31,.33,.35][i];a.cooldown=3;a.onHitStatus.stacks=3;}
+  if(id==="special"&&level>=5){if(v==="b15-nada-adaptive")a.onHitStatus.stacks=3;if(v==="b15-nada-cd1")a.cooldown=1;}
  }
  return a;
 }
 function setup(source,labSource,variant,tier){
- if(!VARIANTS.includes(variant)||!TIERS[tier])throw Error("invalid configuration");
+ if(![...VARIANTS,...REFINEMENTS].includes(variant)||!TIERS[tier])throw Error("invalid configuration");
  const t=TIERS[tier];
  let s=source,l=labSource;
  l=replaceOnce(l,"skillLevels:{basic:1,special:1,powerful:1,passive:1}","skillLevels:"+JSON.stringify({basic:t.skill,special:t.skill,powerful:t.skill,passive:t.skill}));
@@ -129,9 +131,25 @@ function experiment(source,labSource,count=20){
  }
  return {checks,seedCount:count,seeds,tiers:TIERS,battles:sum(cells,c=>c.n),cells};
 }
-if(typeof module!=="undefined")module.exports={setup,kit,run,experiment,contracts,VARIANTS,TIERS,SQUADS};
+function refine(source,labSource,count=20){
+ if(!Number.isInteger(count)||count<1||count>60)throw Error("count");
+ const seeds=Array.from({length:count},(_,i)=>Math.imul(i+28133,0x9e3779b1)>>>0);
+ const checks=contracts(source,labSource),cells=[];
+ for(const tier of Object.keys(TIERS))for(const variant of tier==="early"?["b14","b15"]:["b14","b15","b15-nada3",...REFINEMENTS]){
+  const ctx=setup(source,labSource,variant,tier);
+  for(const squad of SQUADS.filter(s=>s.includes("nada")||s.length===2))for(const scenario of ["rush","mixed"]){
+   cells.push({tier,variant,squad:squad.join("+"),scenario,policy:"tactical",...summarize(seeds.map(seed=>run(ctx,squad,scenario,seed)))});
+  }
+ }
+ const a=setup(source,labSource,"b15-nada-adaptive","trained"),b=setup(source,labSource,"b15-nada-cd1","trained");
+ const f={id:"nada",side:"ally",skillLevels:{special:6}};
+ if(a.api.D.get(f,"special").onHitStatus.stacks!==3||a.api.D.get(f,"special").cooldown!==2||b.api.D.get(f,"special").onHitStatus.stacks!==2||b.api.D.get(f,"special").cooldown!==1)throw Error("refinement definitions");
+ checks.push("refined L6 three stacks/CD2 versus two stacks/CD1");
+ return {checks,seedCount:count,seeds,tiers:TIERS,battles:sum(cells,c=>c.n),cells};
+}
+if(typeof module!=="undefined")module.exports={setup,kit,run,experiment,refine,contracts,VARIANTS,REFINEMENTS,TIERS,SQUADS};
 if(typeof require!=="undefined"&&typeof module!=="undefined"&&require.main===module){
  const fs=require("node:fs"),lab=require("../../combat-lab-real/engine.js");
  const source=lab.files.map(f=>fs.readFileSync(f,"utf8")).join("\n"),labSource=fs.readFileSync("combat-lab-real/engine.js","utf8");
- console.log(JSON.stringify(experiment(source,labSource,Number(process.argv[2]||20)),null,2));
+ console.log(JSON.stringify((process.argv[3]==="refine"?refine:experiment)(source,labSource,Number(process.argv[2]||20)),null,2));
 }

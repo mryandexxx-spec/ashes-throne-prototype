@@ -4209,14 +4209,13 @@ $("#battleMenuGoal")?.addEventListener("click",()=>{closeBattleMenu();setBattleG
 function replayBattle(){
  closeBattleMenu();
  if(!state.active)return false;
- if(battleIsCombat2Arena){showScreen("battle");return true;}
  const mode=squadReturnScreen||"home";
  openSquad(mode);
  undersizedSquadConfirmed=true; // this squad was already confirmed for the fight
  $("#squadStart")?.click?.();
  return true;
 }
-$("#battleMenuRetry")?.addEventListener("click",replayBattle);
+$("#battleMenuRetry")?.addEventListener("click",()=>{if(battleIsCombat2Arena&&state.active){closeBattleMenu();showScreen("battle");}else replayBattle();});
 // Retreat keeps the old ✕ behaviour: the shared [data-screen] handler below.
 $("#battleMenuRetreat")?.addEventListener("click",closeBattleMenu);
 document.addEventListener("pointerdown",event=>{
@@ -5197,8 +5196,9 @@ function renderBattleFrame(){
  if(combat2InputBlocked()){
   const live=presentationFighters().filter(f=>f.hp>0);
   const ready=!battleAssetGate&&live.every(f=>meshes[f.id]?.body?.isEnabled()&&indicatorNodes[f.id]&&indicatorNodes[f.id].style.display!=="none");
-  combat2EntryFrames=ready?combat2EntryFrames+1:0;
-  if(combat2EntryFrames>=2){combat2EntryPending=false;syncBattleUI();}
+  combat2EntryFrames=!battleAssetGate?combat2EntryFrames+1:0;
+  // Do not deadlock on an offscreen indicator or an optional asset failure.
+  if((ready&&combat2EntryFrames>=2)||combat2EntryFrames>=12){combat2EntryPending=false;syncBattleUI();}
  }
  // Draw the last animation frame before revealing the next wave/result.
  finishVisualTransition();

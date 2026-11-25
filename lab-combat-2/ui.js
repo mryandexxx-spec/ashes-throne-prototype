@@ -11,7 +11,7 @@ function bar(v,m,c){const d=make("div",undefined,"bar "+c),i=make("i");i.style.w
 function title(id){return b.fighters.find(f=>f.id===id)?.name??id??"";}
 function record(){
  const threat=b.b14Trace??[];history.push(...threat.slice(traceCursor));traceCursor=threat.length;
- for(const e of b.events){if(e.type==="ability")history.push(title(e.actorId)+" · "+(ctx.api.D.get(b.fighters.find(f=>f.id===e.actorId),e.abilityId)?.name??e.abilityId)+" → "+title(e.targetId));
+ for(const e of b.events){if(e.type==="ability"){const f=b.fighters.find(f=>f.id===e.actorId);history.push(title(e.actorId)+" · "+(f?ctx.api.D.get(f,e.abilityId)?.name??e.abilityId:e.abilityId)+" → "+title(e.targetId));}
   if(e.type==="damage")history.push((e.assist?"Помощь · ":"")+title(e.actorId)+" → "+title(e.targetId)+": "+(e.hpDamage??e.amount)+" HP, "+(e.protectionDamage??0)+" Protection");
   if(e.type==="b15-meter")history.push("Инициатива "+title(e.targetId)+" +"+Math.round(e.amount)+(e.cross?" · раньше угрозы":""));
   if(e.type==="read-move-predicted")history.push("Наблюдение: атака ослаблена");
@@ -68,7 +68,8 @@ function render(){
   el.onclick=()=>{if(f.side==="ally")ally=i;else enemy=i;render();};$(f.side==="ally"?"allies":"enemies").append(el);
  }
  for(const [side,id] of [["ally","allyCount"],["enemy","enemyCount"]]){const units=b.fighters.filter(f=>f.side===side);$(id).textContent=units.filter(f=>f.hp>0).length+"/"+units.length;}
- const threats=b.fighters.filter(f=>f.side==="enemy"&&f.hp>0&&f.b14Prepared).map(f=>f.name+" → "+title(f.b14Prepared));
+ const taunter=b.fighters.find(f=>f.side==="ally"&&f.hp>0&&ctx.api.T.read(f,"taunt"));
+ const threats=b.fighters.filter(f=>f.side==="enemy"&&f.hp>0&&f.b14Prepared).map(f=>f.name+" → "+title(f.b14Prepared)+(taunter&&taunter.id!==f.b14Prepared?" (провокация: "+taunter.name+")":""));
  $("threat").textContent=threats.length?"⚠ "+threats.join(" · "):b.tacticalObjective?.kind==="hold-or-defeat"?"Удержать "+title(b.tacticalObjective.protectAllyId)+" · "+Math.min(b.allyActions,8)+"/8":b.tacticalObjective?.kind==="priority-first"&&!b.priorityCleared?"Сначала "+title(b.tacticalObjective.priorityEnemyId):"Нет объявленных атак";
  $("skills").replaceChildren();
  if(b.active&&a){
@@ -80,7 +81,7 @@ function render(){
    button.disabled=auto||!E.legal(ctx,b,id,target,ally,enemy);button.onclick=()=>command({abilityId:id,targetIndex:target,helper:ally,enemy});$("skills").append(button);
   }
  }else{const end=make("button",b.winner==="ally"?"Победа · начать заново":"Поражение · попробовать снова","primary");end.style.gridColumn="1/-1";end.onclick=()=>start(opts);$("skills").append(end);}
- $("choice").textContent="Цель: "+(title(b.fighters[enemy]?.id)||"—")+" · союзник: "+(title(b.fighters[ally]?.id)||"—");
+ if(b.active){const state=b.fighters.filter(f=>f.hp>0).map(f=>({...f,meter:f.id===a.id?Math.max(0,f.meter-1000):f.meter})),next=[];for(let i=0;i<3;i++){const n=ctx.api.I.nextActor(state,f=>ctx.api.C.effectiveStat(b,f,"speed"));if(!n)break;next.push(title(n.id));ctx.api.I.finishTurn(state,n.id);}$("choice").textContent="Далее без новых эффектов: "+next.join(" → ");}else $("choice").textContent="Без наград и сохранений";
  $("autostep").disabled=!b.active||auto;$("autorun").disabled=!b.active;$("restart").disabled=false;$("compare").disabled=false;
  if(!b.active)stop();
 }
@@ -92,7 +93,7 @@ function command(p){
 }
 function tick(){if(!auto||!b.active){stop();render();return;}const p=E.plan(ctx,b);if(!command(p)){stop();render();return;}if(auto&&b.active)timer=setTimeout(tick,100);else{stop();render();}}
 $("autostep").onclick=()=>{if(!auto&&b?.active)command(E.plan(ctx,b));};$("autorun").onclick=()=>{if(auto){stop();render();return;}if(b?.active){auto=true;$("autorun").textContent="Стоп";render();tick();}};
-$("restart").onclick=()=>{if(opts)start(opts);};$("setupbtn").onclick=()=>{stop();if(b)render();$("setup").showModal();};$("start").onclick=()=>{try{start(options());$("setup").close();}catch(e){$("error").textContent=e.message;}};
+$("restart").onclick=()=>{if(opts)start(opts);};$("setupbtn").onclick=()=>{stop();if(b)render();$("setup").showModal();};$("start").onclick=()=>{try{$("setupError").textContent="";if(!$("seed").checkValidity()||$("seed").value==="")throw Error("Seed — целое число от 0 до 4294967295");start(options());$("setup").close();}catch(e){$("setupError").textContent=e.message;}};
 $("journalbtn").onclick=()=>{stop();if(b)render();$("loglist").textContent=history.join("\n")||"Пока нет действий.";$("journal").showModal();};
 document.querySelectorAll("[data-close]").forEach(button=>button.onclick=()=>$(button.dataset.close).close());
 $("compare").onclick=()=>{if(!opts)return;stop();render();const rows=$("compareRows");rows.replaceChildren();$("comparison").showModal();try{for(const id of [...new Set(["ref","sava","art-only",opts.variant])]){

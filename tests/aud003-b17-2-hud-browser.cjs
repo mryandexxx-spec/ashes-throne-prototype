@@ -38,6 +38,7 @@ async function autoUntil(page,predicate,max=120){
   await setup(page,"tempo");
   await autoUntil(page,async()=>await page.locator("#actor").textContent()==="Сава"&&!(await page.locator('[data-skill="powerful"]').isDisabled()),20);
   const before=await page.locator(".unit .numbers").allTextContents();
+  if(!(await page.locator('[data-skill="special"]').isDisabled())){await page.locator('[data-skill="special"]').tap();await page.locator('[data-fighter="ren"]').tap();assert.match(await page.locator("#preview").textContent(),/Инициатива/);await page.locator("#cancel").tap();assert.deepEqual(await page.locator(".unit .numbers").allTextContents(),before);}
   await page.locator('[data-skill="powerful"]').tap();assert.equal(await page.locator("#confirm").isDisabled(),true);
   await page.locator('[data-fighter="ren"]').tap();assert.equal(await page.locator("#confirm").isDisabled(),false);
   assert.match(await page.locator("#preview").textContent(),/Сава \+ Рен/);
@@ -55,6 +56,7 @@ async function autoUntil(page,predicate,max=120){
   assert.match(await page.locator("#stage").textContent(),/2\/2/);await layout(page);
   await page.screenshot({path:out+"/"+name+"-"+width+"x"+height+"-result.png"});
   await page.locator("#restart").tap();assert.equal(await page.locator("#enemies .unit").count(),3);
+  await page.locator("#autoRun").tap();await page.waitForTimeout(200);if(await page.locator("#autoRun").textContent()==="Стоп")await page.locator("#autoRun").tap();assert.equal(await page.locator("#autoRun").textContent(),"Авто");assert.equal(await page.locator("#error").textContent(),"");
   assert.doesNotMatch(await page.locator("#actor").textContent(),/Победа|Поражение/);
   if(width===844&&height===390){await setup(page,"tempo","mid");await autoUntil(page,async()=>/Победа|Поражение/.test(await page.locator("#actor").textContent()));assert.equal(await page.locator("#actor").textContent(),"Поражение");await page.locator("#restart").tap();assert.doesNotMatch(await page.locator("#actor").textContent(),/Победа|Поражение/);}
   assert.deepEqual(errors,[]);assert.deepEqual(bad,[]);await page.close();console.log(name,width,height,"PASS");

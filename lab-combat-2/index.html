@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#151916"><title>Пепельный престол · Combat 2.0 — лаборатория</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<header><div class="brand"><b>ПЕПЕЛЬНЫЙ ПРЕСТОЛ</b><small>COMBAT 2.0 · B15.2D</small></div><div class="tools"><button id="setupbtn" aria-label="Настройки боя">Настройки</button><button id="compare">Сравнить</button><button id="restart">Повтор</button><button id="journalbtn">Журнал</button></div></header>
+<section id="status" aria-live="polite"><span id="scenarioLabel">Загрузка реального ядра…</span><b id="turn"></b></section>
+<section id="arena" aria-label="Боевой состав"><div class="side"><h2>СОЮЗНИКИ <span id="allyCount"></span></h2><div id="allies"></div></div><div class="side"><h2>ПРОТИВНИКИ <span id="enemyCount"></span></h2><div id="enemies"></div></div></section>
+<footer><div id="threat" aria-live="polite"></div><div id="feedback" aria-live="polite">Выбери цель, затем способность.</div><div id="skills" class="actions"></div><div class="controls"><button id="autostep">Автоход</button><button id="autorun">Автобой</button><span id="choice"></span><span id="error" role="alert"></span></div></footer>
+</main>
+<dialog id="setup"><header><h2>Настройка боя</h2><button class="close" data-close="setup">Закрыть</button></header><div class="settings">
+<label>Набор навыков<select id="variant"></select></label><label>Развитие<select id="tier"></select></label>
+<label>Состав<select id="squad"></select></label><label>Задача<select id="scenario"></select></label>
+<label>Давление<select id="difficulty"><option value="normal">Обычное</option><option value="hard">Сложное</option></select></label><label>Порядок слотов<select id="order"><option value="normal">Обычный</option><option value="allies">Союзники наоборот</option><option value="enemies">Враги наоборот</option><option value="both">Оба наоборот</option></select></label>
+<label>Seed<input type="number" id="seed" min="0" max="4294967295" step="1" value="7" inputmode="numeric"></label><label class="check"><input type="checkbox" id="leader"> Лиора — лидер (+10% Protection)</label></div>
+<p>Лаборатория реального CombatCore, не основная игра. ★ и G-ступени настоящие, давление NPC исследовательское. Звёздочка в имени — абстрактная тестовая роль, не канонический герой. Результаты не начисляют наград и ничего не сохраняют.</p><p><b>Рекомендуемый тест:</b> B14.6 → новый Сава → Арт + Сава. Сравни на одном seed. Полный B15 оставлен для проверки его недостатков.</p><p id="setupError" role="alert" style="color:#ff9f91"></p><button id="start" class="primary">Начать бой</button></dialog>
+<dialog id="journal"><header><h2>Журнал текущего боя</h2><button data-close="journal">Закрыть</button></header><div id="loglist"></div></dialog>
+<dialog id="comparison"><header><h2>Одинаковый seed и отряды</h2><button data-close="comparison">Закрыть</button></header><p>Автоматические тактические прогоны с одинаковыми настройками. Это не оценка действий игрока.</p><div id="compareRows"></div></dialog>
+<script src="engine.js"></script><script src="ui.js"></script></body></html>

@@ -29,7 +29,8 @@ function fakeUI(){
   Uint32Array,Math,Date,$:query=>nodes.get(query.slice(1))||null,
   showScreen:id=>views.push(id),openSquad:id=>squad.push(id)
  };
- const ui=vm.runInNewContext(game.slice(start,end)+
+ const storageSource=game.match(/const COMBAT2_PILOT=[\s\S]*?function gameStorage\(\)\{[^}]+\}/)[0];
+ const ui=vm.runInNewContext(storageSource+"\n"+game.slice(start,end)+
   "\n({renderSignalOperations,renderSignalOperationResult,createSignalOperation,changeSignalOperation})",context);
  function click(data){
   const target={dataset:data,disabled:false,closest(){return this}};
@@ -60,7 +61,7 @@ test("OPS-002B exposes separate touch UI, real battle routing and version",()=>{
   'if(battleIsSignal&&!state.active&&!missionResultShown)',
   'if(id==="signalOperations")renderSignalOperations()',
   'if(id==="signalOperationResult")renderSignalOperationResult()',
-  'SignalOperationCore.save(candidate,()=>window.localStorage,signalSaveBlocked)',
+  'SignalOperationCore.save(candidate,()=>gameStorage(),signalSaveBlocked)',
   'openSquad("signalOperations")'
  ];
  for(const token of tokens)assert.ok(game.includes(token),token);

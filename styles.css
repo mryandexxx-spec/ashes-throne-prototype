@@ -5411,7 +5411,8 @@ button.main-campaign-pin:disabled{opacity:.65}
 }
 
 /* CAM001M1ART: persistent illustrated briefing, no additional modal or timer. */
-#mainCampaignMap .main-campaign-chart{background:#242b2d;}
+#mainCampaignMap .main-campaign-chart{background:#242b2d url("assets/main-campaign-route.svg") center/cover no-repeat;}
+#mainCampaignMap .main-campaign-scene-art[hidden]{display:none!important;}
 #mainCampaignMap .main-campaign-scene-art{position:absolute;inset:0;z-index:-2;display:block;width:100%;height:100%;object-fit:cover;object-position:50% 44%;pointer-events:none;}
 #mainCampaignMap .main-campaign-chart::before{background:linear-gradient(180deg,#171b20c4 0%,#171b2026 31%,#171b2010 43%,#171b20aa 70%,#171b20f5 100%);}
 #mainCampaignMap .main-campaign-chart-head{z-index:1;pointer-events:none;}
@@ -5419,7 +5420,7 @@ button.main-campaign-pin:disabled{opacity:.65}
 #mainCampaignMap .main-campaign-chart-caption{font-size:11px;color:#f6e8d1;line-height:1.2;text-shadow:0 1px 4px #000;}
 #mainCampaignMap .main-campaign-pin strong,#mainCampaignMap .main-campaign-pin small{background:#1c1a1be8;border-radius:4px;padding:2px 4px;}
 #mainCampaignResult .main-campaign-result-art[hidden]{display:none!important;}
-#mainCampaignResult[data-story="confirmed"] .mission-result-card{max-width:860px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:12px;align-items:stretch;text-align:center;}
+#mainCampaignResult[data-story="confirmed"][data-art="ready"] .mission-result-card{max-width:860px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:12px;align-items:stretch;text-align:center;}
 #mainCampaignResult .main-campaign-result-art{min-width:0;min-height:0;position:relative;overflow:hidden;border-radius:7px;margin:0;background:#242b2d;}
 #mainCampaignResult .main-campaign-result-art img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:51% center;}
 #mainCampaignResult .main-campaign-result-body{min-width:0;}
@@ -5430,10 +5431,10 @@ button.main-campaign-pin:disabled{opacity:.65}
  #mainCampaignMap .main-campaign-next .main-campaign-pin-symbol{width:32px;height:32px;}
  #mainCampaignMap .main-campaign-next strong,#mainCampaignMap .main-campaign-next small{padding:1px 4px;}
  #mainCampaignMap .main-campaign-chart-caption{font-size:10px;}
- #mainCampaignResult[data-story="confirmed"] .mission-result-card{grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:9px;}
+ #mainCampaignResult[data-story="confirmed"][data-art="ready"] .mission-result-card{grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:9px;}
  #mainCampaignResult .mission-result-actions button{flex:1 1 80px;padding:5px;font-size:12px;}
 }
 @media(orientation:portrait) and (max-width:640px){
- #mainCampaignResult[data-story="confirmed"] .mission-result-card{grid-template-columns:1fr;}
+ #mainCampaignResult[data-story="confirmed"][data-art="ready"] .mission-result-card{grid-template-columns:1fr;}
  #mainCampaignResult .main-campaign-result-art{aspect-ratio:3/1;}
 }

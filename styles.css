@@ -5438,3 +5438,15 @@ button.main-campaign-pin:disabled{opacity:.65}
  #mainCampaignResult[data-story="confirmed"][data-art="ready"] .mission-result-card{grid-template-columns:1fr;}
  #mainCampaignResult .main-campaign-result-art{aspect-ratio:3/1;}
 }
+
+/* B17.3B2 — test setup only, no global layout changes. */
+#combat2ArenaSetup .combat2-setup{max-width:760px;margin:0 auto;padding:16px;border:1px solid #8f7549;border-radius:14px;background:#181e29;color:#e7dac2}
+#combat2ArenaSetup h1{font-size:clamp(20px,3vw,32px);margin:6px 0}
+#combat2ArenaSetup p{margin:6px 0 12px;font-size:13px;line-height:1.35}
+#combat2ArenaSetup .combat2-setup-fields{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.4fr) minmax(90px,.8fr);gap:8px;margin-bottom:12px}
+#combat2ArenaSetup label{display:grid;gap:4px;min-width:0;color:#cbb78d;font-size:12px}
+#combat2ArenaSetup select,#combat2ArenaSetup input{width:100%;min-width:0;min-height:44px;box-sizing:border-box;background:#111822;color:#f4ead6;border:1px solid #8f7549;border-radius:6px;padding:6px;font-size:14px}
+#combat2ArenaSetup #combat2ArenaStart{min-height:44px;min-width:130px}
+#combat2ArenaSetup a{color:#e9cb91;font-size:13px}
+#combat2ArenaNotice:empty{display:none}
+@media(max-width:560px) and (orientation:portrait){#combat2ArenaSetup .combat2-setup-fields{grid-template-columns:minmax(0,1fr)}}

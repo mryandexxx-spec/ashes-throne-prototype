@@ -18,7 +18,7 @@ test("001 NPCs are normal challenge and campaign encounters, not opt-in previews
  assert.match(g,/NpcChallengePilot\.spawn\(activeChallengeId\)/);
  assert.match(g,/NpcMissionPilot\.spawn\(activeMissionId\)/);
  assert.match(g,/ChallengeCore\.resultEarned\(challengeProgress,activeChallengeId,/);
- assert.match(g,/ChallengeCore\.save\(outcome\.candidate,\(\)=>window\.localStorage,challengeSaveBlocked\)/);
+ assert.match(g,/ChallengeCore\.save\(outcome\.candidate,\(\)=>gameStorage\(\),challengeSaveBlocked\)/);
  assert.match(g,/if\(battleIsCampaign&&!state\.active&&!missionResultRecorded\)/);
  assert.match(g,/ProgressCore\.spendEnergy\(progress,activeMissionId\)/);
  assert.match(g,/ProgressCore\.claimFirstClear\(progress,activeMissionId,state\)/);

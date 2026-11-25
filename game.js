@@ -489,6 +489,9 @@ function renderMainCampaign(){
  const best=proof?.best||0;
  $("#mainCampaignMap").dataset.status=status;
  $("#mainCampaignProgress").textContent="Миссии: "+(best>0?1:0)+"/1 · Звёзды: "+best+"/3";
+ $("#mainCampaignBrief").textContent=best>0&&status!=="blocked"?
+  "Крепёж сохранён. На ярлыке указан следующий пункт доставки.":
+  "Мастер просит сохранить снятый крепёж для проверки. Охрана мешает.";
  $("#mainCampaignRewardAmount").textContent=MainCampaignCore.SOURCE.reward.currency+" кромов";
  $("#mainCampaignRewardLabel").textContent=status==="claimed"?"Получено":status==="claimable"?"Доступно":"За первую победу";
  $("#mainCampaignNode").classList.toggle("primary",status!=="claimable");
@@ -518,11 +521,13 @@ function renderMainCampaignResult(){
  const status=MainCampaignCore.status(proof,progress);
  $("#mainCampaignResultTitle").textContent=result.earned?"Победа":"Поражение";
  $("#mainCampaignResultStars").textContent="★".repeat(result.earned)+"☆".repeat(3-result.earned)+" · Лучший результат: "+(proof?.best||0)+"/3";
- $("#mainCampaignResultText").textContent=mainCampaignNotice||(!result.ok?
+ const resultMessage=mainCampaignNotice||(!result.ok?
   "Не удалось подтвердить сохранение. Перезагрузите игру и проверьте карту.":!result.earned?
   "Отряд потерпел поражение. Награды нет. Можно изменить состав и повторить.":
   status==="claimed"?"Результат сохранён. Разовая награда уже получена.":
   "Результат сохранён. Заберите "+MainCampaignCore.SOURCE.reward.currency+" кромов за первую победу.");
+ const storyConfirmed=!!result.earned&&result.ok&&(proof?.best||0)>0&&status!=="blocked";
+ $("#mainCampaignResultText").textContent=(storyConfirmed?"Крепёж сохранён для проверки. На ярлыке — следующий пункт доставки. ":"")+resultMessage;
  const rewardVisible=!!result.earned&&result.ok&&(status==="claimable"||status==="claimed");
  $("#mainCampaignResult").dataset.outcome=result.earned?"victory":"defeat";
  $("#mainCampaignResultReward").hidden=!rewardVisible;

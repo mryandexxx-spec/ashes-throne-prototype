@@ -26,7 +26,7 @@ test("pilot uses the real player squad and custom enemy waves, leaving campaign 
   'ChallengeCore.start(activeChallengeId,',
   'ChallengeCore.capture(challengeTracker,state.events||[])',
   'ChallengeCore.result(challengeProgress,activeChallengeId,state,challengeTracker)',
-  'ChallengeCore.save(outcome.candidate,()=>window.localStorage,challengeSaveBlocked)',
+  'ChallengeCore.save(outcome.candidate,()=>gameStorage(),challengeSaveBlocked)',
   'renderChallengeResult()',
   'showScreen("challengeResult")',
   'activeMissionId=null'

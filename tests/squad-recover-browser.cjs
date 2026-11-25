@@ -175,5 +175,9 @@ async function check(browserName,engine,viewport){
  // existing squad browser job to preserve the selective CI workflow.
  require("node:child_process").execFileSync(process.execPath,
   [require.resolve("./first-play-browser.cjs")],
-  {stdio:"inherit",timeout:480000});
+  // The nested First Play suite now includes two full manual campaign routes,
+  // auto/reload and additional onboarding cases. Two runs hit the old 8 min
+  // aggregate cap after passing both manual routes. Keep every individual
+  // assertion/timeout unchanged; budget the full sequential suite separately.
+  {stdio:"inherit",timeout:720000});
 })().catch(error=>{console.error(error);process.exitCode=1;});

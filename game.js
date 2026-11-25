@@ -49,6 +49,14 @@ const NPC_CHALLENGE_VISUALS=NPC_CHALLENGE_PILOT_ENABLED&&typeof NpcChallengePilo
 const COMBAT_VISUALS=HEROES.concat(NPC_PILOT_VISUALS.filter(Boolean));
 const encounterNpcVisualIds=new Set();
 const $=s=>document.querySelector(s);
+// B17.3A: same campaign/save/receipt code, but isolated to this tab.
+// Never fall back to the live wallet when sessionStorage is unavailable.
+const COMBAT2_PILOT=typeof location!=="undefined"&&/(?:^|[?&])combat2Pilot=1(?:&|$)/.test(location.search);
+function gameStorage(){return COMBAT2_PILOT?window.sessionStorage:window.localStorage;}
+if(COMBAT2_PILOT){
+ document.title="ТЕСТ Combat 2.0 · Пепельный престол";
+ const version=$("#buildVersion");if(version)version.textContent+=" · ТЕСТОВЫЙ СЕАНС";
+}
 // ENV022: default temporary concept-art backdrop. Combat visuals stay unchanged.
 // Fixed image has no parallax; it is NOT a rendered/reconstructed 3D environment.
 const ENV022_CONCEPT_PREVIEW=typeof location!=="undefined" &&
@@ -204,7 +212,29 @@ let indicatorNodes={}; // Rebuilt on combat HUD changes, not each animation fram
 let arenaHudLayout=null; // Dune-inspired independent 2D packing; no combat ownership.
 let inspectionId=null,inspectionGesture=null,suppressInspectionPick=false;
 const INSPECT_HOLD_MS=400,INSPECT_MOVE_PX=12;
-let selectedAbility="basic"; // "special" is only armed while choosing an ally.
+let selectedAbility="basic"; // Legacy special and native two-target selection.
+let combat2Choice=-1;
+function combat2Selection(){
+ const actor=state?.fighters?.[state.currentActor],d=state?.combat2&&actor?AbilityData.get(actor,selectedAbility):null;
+ return d&&(d.combat2Assist||d.combat2Signal)?d:null;
+}
+function clearCombat2Selection(){combat2Choice=-1;}
+function combat2ThreatText(){
+ if(!state?.combat2||!state.active)return "";
+ const taunt=state.fighters.find(f=>f.side==="ally"&&f.hp>0&&CombatStatusCore.read(f,"taunt"));
+ return state.fighters.filter(f=>f.hp>0&&f.side==="enemy"&&f.combat2Prepared).map(f=>{
+  const target=state.fighters.find(a=>a.id===f.combat2Prepared&&a.hp>0);
+  if(!target||CombatStatusCore.read(f,"disrupted-plan"))return f.name+": атака сорвана";
+  return f.name+" → "+(taunt??target).name+(taunt&&taunt.id!==target.id?" (провокация)":"");
+ }).join(" · ");
+}
+function combat2SelectionText(d,actor){
+ const f=state.fighters[combat2Choice];
+ if(!f||f.side!=="ally"||f.hp<=0||f.id===actor.id)return d.combat2Assist?"Выбери помощника. Тап по навыку — отмена.":"Выбери союзника. Тап по навыку — отмена.";
+ if(d.combat2Assist)return f.name+" → "+(state.fighters[state.selectedEnemy]?.name??"враг")+". Повторный тап по навыку — удар; базовая — отмена.";
+ const p=CombatCore.previewSignal(state,actor,d.signalMeter+(actor.combat2Boost??0),f);
+ return p?.gain>0?f.name+" +"+Math.round(p.gain)+" инициативы"+(p.cross?" · раньше врага":"")+". Повторный тап — сигнал; базовая — отмена.":"Нет прироста. Выбери другого союзника или отмени.";
+}
 let abilityHintGesture=null,abilityHintSuppressClick=null;
 // Combat-004: manual remains the default. Only one cancellable timer may run.
 let autoBattle=false;
@@ -237,7 +267,12 @@ function captureResolvedVisuals(beforeFighters){
   team.forEach((f,i)=>{positions[f.id]={...formationPosition(side,i,team.length),choreographyReady:f.id!=="ren"||renGlbRuntime?.isReady===true};});
  }
  // HUDSYNC001: the pre-action snapshot lets the HUD hold HP until each blow is drawn.
- BattleAnimation.enqueue(state.events,positions,beforeFighters||null);
+ // An assist is a visual action, not a second CombatCore command.
+ const visualEvents=state.combat2?state.events.flatMap((event,index,all)=>{
+  const first=event.assist&&!all.slice(0,index).some(e=>e.assist&&e.rootId===event.rootId);
+  return first?[{type:"ability",actorId:event.actorId,targetId:event.targetId,abilityId:"basic"},event]:[event];
+ }):state.events;
+ BattleAnimation.enqueue(visualEvents,positions,beforeFighters||null);
  const events=state.events||[];
  const waveChanged=events.some(event=>event.type==="wave-start");
  const ended=events.some(event=>event.type==="battle-end");
@@ -267,14 +302,14 @@ const AUTO_STEP_MS=350;
 const BATTLE_SPEED_SAVE_KEY="ashes-throne.battle-speed.v1";
 function restoreBattleSpeed(){
  try{
-  const raw=window.localStorage?.getItem(BATTLE_SPEED_SAVE_KEY);
+  const raw=gameStorage()?.getItem(BATTLE_SPEED_SAVE_KEY);
   const stored=raw===null||raw===undefined?null:Number(raw);
   if(BattleSpeed.levels.includes(stored))BattleSpeed.set(stored);
  }catch(error){/* Private browsing or unavailable storage: use in-memory speed. */}
 }
 restoreBattleSpeed();
 function persistBattleSpeed(){
- try{window.localStorage?.setItem(BATTLE_SPEED_SAVE_KEY,String(BattleSpeed.get()));}
+ try{gameStorage()?.setItem(BATTLE_SPEED_SAVE_KEY,String(BattleSpeed.get()));}
  catch(error){/* Speed selection must still work when storage is blocked. */}
 }
 function setAutoSpeed(speed){
@@ -312,7 +347,7 @@ function setAutoBattle(enabled){
  cancelAutoTimer();
  // Autoplay remains a normal tactical option; the mission must make it meaningful.
  autoBattle=!!enabled&&state.active&&$("#battle").classList.contains("active");
- if(autoBattle)selectedAbility="basic";
+ if(autoBattle){selectedAbility="basic";clearCombat2Selection();}
  const button=$("#autoBattleBtn");
  if(button){
   button.textContent=autoBattle?"Ручной бой":"Автобой";
@@ -326,13 +361,13 @@ const ALLIES=HEROES.filter(h=>h.side==="ally");
 const ENEMIES=HEROES.filter(h=>h.side==="enemy");
 const MAX_SQUAD=5;
 const storageAdapter=typeof SaveCore==="undefined"?null:SaveCore;
-const loadedProgress=storageAdapter?storageAdapter.load(ALLIES,()=>window.localStorage):null;
+const loadedProgress=storageAdapter?storageAdapter.load(ALLIES,()=>gameStorage()):null;
 const progress=loadedProgress?loadedProgress.progress:ProgressCore.createProgress(ALLIES);
 const saveBlocked=Boolean(loadedProgress?.blocked);
 let saveAvailable=loadedProgress?loadedProgress.available:false;
 // FIRSTPLAY001: independent intro checkpoint; reward uses the shared wallet policy.
 const firstPlayLoaded=typeof FirstPlayCore!=="undefined"?
- FirstPlayCore.load(()=>window.localStorage):null;
+ FirstPlayCore.load(()=>gameStorage()):null;
 let firstPlayState=firstPlayLoaded?.state||null;
 // Existing headless/browser regressions can bypass the narrative entry explicitly.
 const FIRST_PLAY_TEST_BYPASS=typeof location!=="undefined"&&
@@ -346,8 +381,8 @@ let firstPlayFailure=false,firstPlaySaveFailed=false;
 let deferLoginCalendarForFirstSession=false;
 let firstPlayBootCheckpointWritten=!!firstPlayLoaded?.exists;
 let firstPlayStoryCursor=typeof FirstPlayStoryCore!=="undefined"?
- FirstPlayStoryCore.load(()=>window.localStorage,firstPlayState?.phase):null;
-const campaignLoaded=CampaignCore.load(()=>window.localStorage);
+ FirstPlayStoryCore.load(()=>gameStorage(),firstPlayState?.phase):null;
+const campaignLoaded=CampaignCore.load(()=>gameStorage());
 const campaignProgress=progress.saveVersion===3?campaignLoaded.campaign:
  (loadedProgress?.fresh?CampaignCore.fresh():campaignLoaded.campaign);
 let campaignSaveAvailable=campaignLoaded.available;
@@ -362,11 +397,11 @@ if(progress.saveVersion===3&&!saveBlocked){
    recovered=true;
   }
  }
- if(recovered)campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
+ if(recovered)campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>gameStorage());
 }
 // PROFILE-001: nickname is independent from immutable-progress v3 save.
 const playerProfileLoaded=typeof PlayerProfileCore!=="undefined"
-  ?PlayerProfileCore.load(()=>window.localStorage)
+  ?PlayerProfileCore.load(()=>gameStorage())
   :{profile:{nickname:"Странник"},available:false,blocked:false};
 let playerNickname=playerProfileLoaded.profile.nickname;
 function renderPlayerProfile(){
@@ -419,7 +454,7 @@ $("#playerNicknameForm")?.addEventListener("submit",event=>{
  }
  const nick=PlayerProfileCore.normalizeNick(input.value);
  if(!nick){notice.textContent="Ник должен содержать 2–24 символа без управляющих знаков и скобок < >.";return;}
- if(!PlayerProfileCore.save({nickname:nick},()=>window.localStorage)){
+ if(!PlayerProfileCore.save({nickname:nick},()=>gameStorage())){
   notice.textContent="Не удалось сохранить ник. Старое имя оставлено без изменений.";return;
  }
  playerNickname=nick;
@@ -446,7 +481,7 @@ let battleIsStoryDemo=false;
 let battleIsChallenge=false;
 let battleIsNpcChallengePilot=false; // NPC objectives, normal saved challenge scores.
 const challengeLoaded=typeof ChallengeCore!=="undefined"?
- ChallengeCore.load(()=>window.localStorage):
+ ChallengeCore.load(()=>gameStorage()):
  {progress:{bestStars:{"T-01":0,"N-01":0}},available:false,blocked:true};
 let challengeProgress=challengeLoaded.progress;
 let challengeSaveBlocked=challengeLoaded.blocked;
@@ -455,7 +490,7 @@ let activeChallengeId=null,challengeTracker=null;
 let selectedChallengeKind=null;
 let challengeResultRecorded=false,challengeLastStars=0,challengeSaveFailed=false;
 // OPS-001B: independent checkpoint; never part of campaign or the player wallet.
-const operationLoaded=typeof OperationCore!=="undefined"?OperationCore.load(()=>window.localStorage):
+const operationLoaded=typeof OperationCore!=="undefined"?OperationCore.load(()=>gameStorage()):
  {progress:{active:null,history:[]},available:false,blocked:true};
 let operationProgress=operationLoaded.progress;
 let operationSaveBlocked=operationLoaded.blocked;
@@ -464,7 +499,7 @@ let operationNotice="",operationRunCounter=0,operationBattleRunId=null;
 let battleIsOperation=false,operationResultRecorded=false;
 // OPS-002B: isolated signal-post pilot; no use of the OPS-001 record key.
 const signalLoaded=typeof SignalOperationCore!=="undefined"?
- SignalOperationCore.load(()=>window.localStorage):
+ SignalOperationCore.load(()=>gameStorage()):
  {progress:{active:null,history:[]},available:false,blocked:true};
 let signalProgress=signalLoaded.progress;
 let signalSaveBlocked=signalLoaded.blocked,signalSaveAvailable=signalLoaded.available;
@@ -478,7 +513,7 @@ let activeMissionId=null;
 // CAM-001B — separate main story mode; existing squad, arena and v3 writer.
 let battleIsMainCampaign=false,mainCampaignResult=null,mainCampaignClaiming=false,mainCampaignNotice="";
 let mainCampaignSelectedId=null,mainCampaignPendingId=null,battleMainCampaignId=null;
-const mainCampaignStorage=()=>window.localStorage;
+const mainCampaignStorage=()=>gameStorage();
 function mainCampaignWritable(){
  return typeof MainCampaignCore!=="undefined"&&!saveBlocked&&saveAvailable&&progress.saveVersion===3&&
   typeof ProgressWriterCore!=="undefined"&&ProgressWriterCore.canPersist();
@@ -693,7 +728,7 @@ async function claimFirstSessionReward(){
  firstSessionClaiming=true;firstSessionRewardNotice="";renderFirstSessionFollowUp();
  try{
   const result=await FirstPlayCore.claimReward({
-   storageProvider:()=>window.localStorage,heroes:ALLIES,
+   storageProvider:()=>gameStorage(),heroes:ALLIES,
    exclusive:ProgressWriterCore.exclusive,day:dailyDay()
   });
   if(!result.ok){
@@ -927,18 +962,18 @@ for(const buttonId of ["dailyClaimAll","netuxDailyClaimAll"]){
 const LOGIN_CALENDAR_SEEN_KEY="ashes-throne.login-calendar-seen.v1";
 let loginCalendarSeenDay=null;
 try{
- const raw=window.localStorage?.getItem(LOGIN_CALENDAR_SEEN_KEY);
+ const raw=gameStorage()?.getItem(LOGIN_CALENDAR_SEEN_KEY);
  if(typeof raw==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(raw))loginCalendarSeenDay=raw;
 }catch(_){/* Unavailable storage disables only cross-reload prompt suppression. */}
 function markLoginCalendarSeen(){
  const day=dailyDay();
  if(!day||(loginCalendarSeenDay&&day<=loginCalendarSeenDay))return;
  loginCalendarSeenDay=day;
- try{window.localStorage?.setItem(LOGIN_CALENDAR_SEEN_KEY,day);}
+ try{gameStorage()?.setItem(LOGIN_CALENDAR_SEEN_KEY,day);}
  catch(_){/* Keep once-per-session guarantee without overwriting game data. */}
 }
 function firstPlayStore(next){
- if(!next||!FirstPlayCore.save(next,()=>window.localStorage)){
+ if(!next||!FirstPlayCore.save(next,()=>gameStorage())){
   firstPlaySaveFailed=true;return false;
  }
  firstPlayState=next;firstPlaySaveFailed=false;return true;
@@ -953,7 +988,7 @@ function firstPlayStorySetCursor(next){
  if(!next||typeof FirstPlayStoryCore==="undefined")return false;
  firstPlayStoryCursor=next;
  // Story-page position is convenience state, not a second gameplay save.
- return FirstPlayStoryCore.save(next,()=>window.localStorage);
+ return FirstPlayStoryCore.save(next,()=>gameStorage());
 }
 // P1-C: opt-in audio only; no context is constructed until the user taps Sound.
 const firstPlaySound=typeof FirstPlaySound!=="undefined"?FirstPlaySound.create(window.AudioContext||window.webkitAudioContext):null;
@@ -1222,7 +1257,7 @@ function firstPlayFinish(won){
  if(!firstPlayStore(next)){firstPlayState=next;firstPlaySaveFailed=true;}
  firstPlayFailure=!won;
  firstPlayStoryCursor=FirstPlayStoryCore.normalize(null,won?"won":"ready");
- FirstPlayStoryCore.save(firstPlayStoryCursor,()=>window.localStorage);
+ FirstPlayStoryCore.save(firstPlayStoryCursor,()=>gameStorage());
 }
 $("#firstPlaySurvey")?.addEventListener("click",()=>firstPlayChoose("survey"));
 $("#firstPlayCover")?.addEventListener("click",()=>firstPlayChoose("cover"));
@@ -1403,7 +1438,7 @@ $("#loginClaim")?.addEventListener("click",()=>{
  $("#loginCalendarStatus").textContent="Награда дня "+reward.day+" получена и сохранена.";
 });
 function persistProgress(){
- if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>window.localStorage);
+ if(storageAdapter)saveAvailable=storageAdapter.save(progress,()=>gameStorage());
  // An unknown write outcome requires a reload: continuing risks a duplicate spend.
  if(!saveAvailable&&progress.saveVersion===3)window.walletWriterHalt?.();
  renderAccountHeader();
@@ -1484,7 +1519,7 @@ function defaultSquad(){
 function loadSquad(){
  const fallback=defaultSquad();
  try{
-  const raw=window.localStorage.getItem(SQUAD_SAVE_KEY);
+  const raw=gameStorage().getItem(SQUAD_SAVE_KEY);
   if(raw===null)return fallback;
   const parsed=JSON.parse(raw);
   if(!parsed||parsed.version!==1||
@@ -1504,7 +1539,7 @@ function loadSquad(){
 }
 function saveSquad(){
  try{
-  window.localStorage.setItem(SQUAD_SAVE_KEY,JSON.stringify({
+  gameStorage().setItem(SQUAD_SAVE_KEY,JSON.stringify({
    version:1,leaderId:selectedLeaderId,regularIds:selectedPartyIds
   }));
   return true;
@@ -2026,7 +2061,7 @@ function showScreen(id){
   if(typeof closeHQMenu==="function")closeHQMenu();
   if(typeof cancelHQTooltip==="function")cancelHQTooltip();
  }
- if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();closeBattleMenu();}
+ if(id!=="battle"){clearCombat2Selection();closeFighterInspection();hideAbilityTooltip();closeBattleMenu();}
  if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();arenaFeedback?.clear(arenaCamera);closeBattleAssetGate();stopBattleRendering();disposeArenaEnv006();}
  if(id!=="heroDetail"&&typeof RenCard3D!=="undefined")RenCard3D.dispose();
  // Combat-008A: release the document scroll while the arena owns the viewport.
@@ -2313,7 +2348,7 @@ $("#devRestartConfirm")?.addEventListener("click",()=>{
   if(status){status.hidden=false;status.textContent="Сохранение сейчас недоступно или выполняется запись. Закройте другие вкладки и повторите.";}
   return;
  }
- const cleared=FirstPlayCore.resetGameStorage(()=>window.localStorage);
+ const cleared=FirstPlayCore.resetGameStorage(()=>gameStorage());
  if(!cleared.ok){
   if(status){status.hidden=false;status.textContent="Не удалось очистить локальные игровые данные. Перезапуск отменён.";}
   return;
@@ -2403,7 +2438,7 @@ function commitOperation(next){
   return false;
  }
  if(operationSaveBlocked||!operationSaveAvailable||
-    !OperationCore.save(candidate,()=>window.localStorage,operationSaveBlocked)){
+    !OperationCore.save(candidate,()=>gameStorage(),operationSaveBlocked)){
   operationNotice="Не удалось сохранить операцию. Изменение не применено; проверь доступность хранилища Safari.";
   return false;
  }
@@ -2597,7 +2632,7 @@ function commitSignalOperation(next){
   return false;
  }
  if(signalSaveBlocked||!signalSaveAvailable||
-  !SignalOperationCore.save(candidate,()=>window.localStorage,signalSaveBlocked)){
+  !SignalOperationCore.save(candidate,()=>gameStorage(),signalSaveBlocked)){
   signalNotice="Сохранение не удалось. Изменение не применено, проверь данные Safari.";
   return false;
  }
@@ -3777,7 +3812,7 @@ function loreRewardStatus(act){
     typeof LoreActOneRewardCore==="undefined"||
     typeof ProgressWriterCore==="undefined"||!ProgressWriterCore.isOwner())return "blocked";
  return LoreActOneRewardCore.statusForAct(act,{
-  storageProvider:()=>window.localStorage,heroes:ALLIES
+  storageProvider:()=>gameStorage(),heroes:ALLIES
  });
 }
 const loreRewardSource=act=>typeof LoreActOneRewardCore!=="undefined"?
@@ -3792,7 +3827,7 @@ async function claimLoreReward(act){
  loreRewardClaiming=true;
  try{
   const result=await LoreActOneRewardCore.claimForAct(act,{
-   storageProvider:()=>window.localStorage,heroes:ALLIES,
+   storageProvider:()=>gameStorage(),heroes:ALLIES,
    exclusive:ProgressWriterCore.exclusive,day:DailyCore.localDay()
   });
   if(!result.ok){
@@ -3839,6 +3874,7 @@ function showCampaignPath(path){
   const loreRoot=$("#loreCampaignRoot");
   if(loreRoot&&LoreCampaignUI.mount(loreRoot,ActiveLoreCampaign.data,LoreCampaignCore,{
    pack:ActiveLoreCampaign.pack,
+   ...(COMBAT2_PILOT?{storage:gameStorage()}:{}),
    onStartRequiredBattle:openLoreRequiredBattle,
    onStartTraining:openLoreTraining,
    onClaimActReward:claimLoreReward,
@@ -4077,7 +4113,7 @@ function npcCombatMarker(fighter){
 // cursor), so the old target card is gone. Turn order, the acting hero and
 // round ability icons are drawn from CombatCore state; nothing here changes it.
 let turnQueueSignature="",turnQueueCollapsed=false;
-try{turnQueueCollapsed=window.localStorage?.getItem?.("ashes-throne.arena-queue-collapsed")==="1";}catch(e){}
+try{turnQueueCollapsed=gameStorage()?.getItem?.("ashes-throne.arena-queue-collapsed")==="1";}catch(e){}
 function renderTurnQueue(){
  const list=$("#turnQueue"),bar=$("#turnQueueBar");
  if(!list||typeof ArenaUI003==="undefined")return;
@@ -4101,7 +4137,7 @@ function renderTurnQueue(){
 }
 $("#turnQueueToggle")?.addEventListener("click",()=>{
  turnQueueCollapsed=!turnQueueCollapsed;
- try{window.localStorage?.setItem?.("ashes-throne.arena-queue-collapsed",turnQueueCollapsed?"1":"0");}catch(e){}
+ try{gameStorage()?.setItem?.("ashes-throne.arena-queue-collapsed",turnQueueCollapsed?"1":"0");}catch(e){}
  renderTurnQueue();
  arenaHudLayout?.avoid?.(arenaHudObstacles());
 });
@@ -4271,7 +4307,7 @@ function syncBattleUI(){
   }
   lastMissionStars=result.earned;
   if(walletSaved&&result.improved)
-   campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>window.localStorage);
+   campaignSaveAvailable=CampaignCore.save(campaignProgress,()=>gameStorage());
   missionResultRecorded=true;
  }
  if(battleIsWeekly&&!state.active&&!weeklyResultRecorded){
@@ -4327,7 +4363,7 @@ function syncBattleUI(){
   challengeLastStars=outcome?.earned||0;
   if(challengeSaveBlocked||!challengeSaveAvailable||!outcome)challengeSaveFailed=true;
   else if(outcome.improved){
-   if(ChallengeCore.save(outcome.candidate,()=>window.localStorage,challengeSaveBlocked))
+   if(ChallengeCore.save(outcome.candidate,()=>gameStorage(),challengeSaveBlocked))
     challengeProgress=outcome.candidate;
    else challengeSaveFailed=true;
   }
@@ -4432,7 +4468,7 @@ function syncBattleUI(){
  const specialReady=CombatCore.abilityReady(state,"special");
  const powerful=actor?AbilityData.get(actor,"powerful"):null;
  const powerfulReady=!!powerful&&CombatCore.abilityReady(state,"powerful");
- if(!specialReady)selectedAbility="basic";
+ if(selectedAbility==="special"&&!specialReady||selectedAbility==="powerful"&&!powerfulReady){selectedAbility="basic";clearCombat2Selection();}
  const supportTarget=!!actor&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
  const needsOtherAlly=supportTarget&&["insurance","signal"].includes(AbilityData.get(actor,"special")?.kind);
  const targetIndex=supportTarget?state.selectedAlly:state.selectedEnemy;
@@ -4470,6 +4506,7 @@ function syncBattleUI(){
   actor?.powerfulCooldown||0,slotState(powerfulReady,actor?.powerfulCooldown||0));
  basicButton.classList.toggle("selected",false);
  specialButton.classList.toggle("selected",supportTarget);
+ powerfulButton?.classList.toggle("selected",!!combat2Selection()?.combat2Assist);
  // A hint appears only when the next tap is not the obvious "tap an enemy".
  let hintText=autoBattle?"Автобой. Нажми «Ручной бой», чтобы управлять.":
   supportTarget?(needsOtherAlly?"Коснись другого союзника: себя выбрать нельзя.":"Коснись союзника, чтобы применить способность."):
@@ -4479,11 +4516,14 @@ function syncBattleUI(){
  const recommend=teaching&&specialReady&&["art","ren"].includes(actor.id);
  specialButton.classList.toggle("fp-recommended",!!recommend&&!supportTarget);
  if(teaching){
-  if(supportTarget)hintText="Коснитесь Рена: Арт примет часть урона за Рена. Повторный тап по способности — отмена.";
+  if(supportTarget)hintText=state.combat2?"Коснитесь Рена: Арт восстановит защиту и прикроет его. Повторный тап — отмена.":"Коснитесь Рена: Арт примет часть урона за Рена. Повторный тап по способности — отмена.";
   else if(recommend&&actor.id==="art")hintText="Выберите способность. Страховочный узел поможет защитить Рена.";
   else if(recommend&&actor.id==="ren")hintText="Выберите способность. Найти брешь — ослабить атаки врага.";
   else hintText=validTarget?"Выберите способность.":"Коснитесь противника, чтобы выбрать цель.";
  }
+ const selection=actor&&combat2Selection();
+ if(selection&&!autoBattle&&!visualBusy)hintText=combat2SelectionText(selection,actor);
+ else if(state.combat2&&!autoBattle&&!visualBusy&&combat2ThreatText())hintText="⚠ "+combat2ThreatText()+(hintText?" · "+hintText:"");
  const hint=$("#actionHint");
  if(hint){if(hint.textContent!==hintText)hint.textContent=hintText;hint.hidden=!hintText;}
  renderActiveHero(actor);
@@ -4523,15 +4563,18 @@ function renderArenaIndicators(){
      `<span class="arena-effect" title="Провокация: одиночные враги атакуют этого героя. Осталось ${CombatStatusCore.read(h,"taunt").remaining} хода(ов).">⚑${CombatStatusCore.read(h,"taunt").remaining}</span>`:"",
    typeof CombatStatusCore!=="undefined"&&CombatStatusCore.read(h,"disrupted-plan")?
      `<span class="arena-effect debuff" title="Срыв ритма: следующая особая/мощная способность потеряет продолжение.">✕${CombatStatusCore.read(h,"disrupted-plan").remaining}</span>`:"",
+   state.combat2&&h.combat2Prepared?`<span class="arena-effect debuff" title="Готовит мощный удар.">⚠</span>`:"",
+   state.combat2&&h.combat2Boost?`<span class="arena-effect" title="Усиление следующего сигнала.">+${h.combat2Boost}</span>`:"",
    h.insurance?`<span class="arena-effect" title="Страховка Арта: часть прямого HP-урона получит Арт.">⛓${h.insurance.remaining}</span>`:"",
    h.fieldSignal?`<span class="arena-effect" title="Сигнал Савы: ускорен ближайший ход.">⚑${h.fieldSignal.remaining}</span>`:"",
    h.tacticalFocus?`<span class="arena-effect" title="Собранность Арта: ответ по нападавшему.">✦</span>`:""].join("");
   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
   const active=actor?.id===h.id;
-  const support=!!actor&&!autoBattle&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
+  const joint=!!actor&&!autoBattle&&!!combat2Selection()?.combat2Assist;
+  const support=!!actor&&!autoBattle&&(joint||selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally");
   // A group ability does not change focus on turn start: exactly one
   // primary enemy remains selected until the player taps a different one.
-  const onlyOther=support&&["insurance","signal"].includes(AbilityData.get(actor,"special")?.kind);
+  const onlyOther=support&&(joint||["insurance","signal"].includes(AbilityData.get(actor,"special")?.kind));
   const npcMark=npcCombatMarker(h);
   const focused=!!actor&&!autoBattle&&h.hp>0&&(support?
    h.side==="ally"&&(!onlyOther||h.id!==actor.id):
@@ -4539,7 +4582,7 @@ function renderArenaIndicators(){
   // ARENA-UI-003B: the name only over the acting hero and the selected target;
   // everyone else shows bars and effect icons. A battle-intel mark stays as an icon.
   const targeted=!!actor&&h.hp>0&&!support&&h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id;
-  const named=active||targeted||(battleIsFirstPlay&&support&&focused&&h.id==="ren");
+  const named=active||targeted||(battleIsFirstPlay&&support&&focused&&h.id==="ren")||(state.combat2&&support&&state.fighters[combat2Choice]?.id===h.id);
   // The band reserved for an enemy target's hanging name; the name is capped to
   // it (ellipsis), so a wider system font can never spill over a neighbour.
   const nameW=Math.min(150,Math.round(h.name.length*7+10));
@@ -4639,7 +4682,7 @@ function resetBattle(){
  challengeTracker=battleIsChallenge?ChallengeCore.start(activeChallengeId,
   battleIsNpcChallengePilot?NpcChallengePilot.trackerTargets(activeChallengeId):null):null;
  lastMissionStars=0;
- selectedAbility="basic";
+ selectedAbility="basic";clearCombat2Selection();
  if(battleIsWeekly){
    const snap=weeklySession?.read();
    const launched=snap&&WeeklyThreatCore.startBattle(snap,selectedParty(),CombatCore,squadSlots()[0]);
@@ -4664,6 +4707,7 @@ function resetBattle(){
  const realHeroFight=allies.length>0&&
   allies.every(f=>["ren","nada","liora","art","sava"].includes(f.id));
  state=CombatCore.createBattle(lineup,waves,{
+  ...(COMBAT2_PILOT&&realHeroFight&&(battleIsFirstPlay||battleIsMainCampaign)?{combat2:true}:{}),
   leaderId:storyTrialParty&&battleIsStoryDemo?null:battleIsLoreRequired?squadSlots()[0]:selectedLeaderId,
   ...(battleIsFirstPlay?{leaderId:null,tacticalObjective:{
    kind:"hold-or-defeat",protectAllyId:"ren",allyActionsToHold:6
@@ -4696,7 +4740,8 @@ function applyManualAbility(abilityId){
  if(side!=="enemy"&&side!=="ally"&&side!=="self"&&side!=="all-enemies"&&side!=="all-allies")return false;
  const before=state.fighters.map(f=>({...f}));
  const tutorialActor=state.fighters[state.currentActor]?.id;
- if(!CombatCore.performPlayerAbility(state,abilityId))return false;
+ if(!CombatCore.performPlayerAbility(state,abilityId,state.combat2&&combat2Selection()?.combat2Assist?combat2Choice:undefined))return false;
+ clearCombat2Selection();
  if(battleIsFirstPlay&&tutorialActor)firstPlayTaughtActors.add(tutorialActor);
  captureResolvedVisuals(before);
  selectedAbility="basic";
@@ -4708,6 +4753,23 @@ function pressAbility(abilityId){
  if(abilityHintSuppressClick===abilityId){abilityHintSuppressClick=null;return;}
  hideAbilityTooltip();
  if(!state.active||autoBattle||isVisualTransition()||visualActionPending()||!CombatCore.abilityReady(state,abilityId))return;
+ const actor=state.fighters[state.currentActor],d=state.combat2?AbilityData.get(actor,abilityId):null;
+ if(state.combat2&&combat2Selection()&&abilityId==="basic"){selectedAbility="basic";clearCombat2Selection();syncBattleUI();return;}
+ if(d&&(d.combat2Assist||d.combat2Signal)){
+  if(selectedAbility===abilityId){
+   if(combat2Choice>=0){
+    if(d.combat2Signal){
+     const f=state.fighters[combat2Choice],p=f&&CombatCore.previewSignal(state,actor,d.signalMeter+(actor.combat2Boost??0),f);
+     if(!p||p.gain<=0){syncBattleUI();return;}
+     if(!CombatCore.chooseAlly(state,combat2Choice))return;
+    }
+    applyManualAbility(abilityId);return;
+   }
+   selectedAbility="basic";clearCombat2Selection();
+  }else{selectedAbility=abilityId;clearCombat2Selection();}
+  syncBattleUI();return;
+ }
+ clearCombat2Selection();
  if(CombatCore.abilityTargetSide(state,abilityId)==="ally"){
   selectedAbility=battleIsFirstPlay&&selectedAbility==="special"?"basic":"special";
   syncBattleUI();
@@ -4764,10 +4826,13 @@ function showAbilityTooltip(abilityId){
  else if(definition.kind==="heal")
   effects.push("Восстанавливает до "+definition.healAmount+" HP.");
  effects.push("Цель: "+({ally:"союзник",enemy:"противник",self:"сам герой","all-allies":"все живые союзники","all-enemies":"все живые противники"}[definition.target]||"неизвестная")+".");
- if(definition.kind==="insurance")effects.push("Страховка: Арт принимает "+definition.insurancePercent+"% первого реального HP-урона другого союзника после обычной защиты. Не массовый щит.");
- if(definition.kind==="signal")effects.push("Сигнал: выбранный союзник получает +"+definition.signalMeter+" инициативы, без дополнительного хода.");
+ if(definition.combat2Cover)effects.push("Прикрытие: минимум один заряд защиты и восстановление 65% атаки Арта в Protection союзника; HP Арта не расходуется.");
+ else if(definition.kind==="insurance")effects.push("Страховка: Арт принимает "+definition.insurancePercent+"% первого реального HP-урона другого союзника после обычной защиты. Не массовый щит.");
+ if(definition.combat2Signal)effects.push("Сигнал: +"+(definition.signalMeter+(actor.combat2Boost??0))+" инициативы до 950, без лишнего хода.");
+ else if(definition.kind==="signal")effects.push("Сигнал: выбранный союзник получает +"+definition.signalMeter+" инициативы, без дополнительного хода.");
+ if(definition.combat2Assist)effects.push("Выберите помощника: "+Math.round(definition.combat2Assist*100)+"% его физической атаки, не выше атаки Савы до крита. Ход помощника не расходуется.");
  if(definition.kind==="coordinate")effects.push("Согласованный шаг: две атаки разных героев по одному врагу; на развитых уровнях также связка защита → действие защищённого.");
- if(definition.disruptTurns)effects.push("Срыв ритма: противник теряет вторичное действие следующей особой/мощной способности. Зацепки Нады остаются.");
+ if(definition.disruptTurns)effects.push(state.combat2?"Срыв ритма: объявленный мощный удар заменяется обычной атакой. Зацепки Нады остаются.":"Срыв ритма: противник теряет вторичное действие следующей особой/мощной способности. Зацепки Нады остаются.");
  if(definition.cooldown)effects.push("Перезарядка: "+definition.cooldown+" хода.");
  $("#abilityTooltipTitle").textContent=definition.name;
  $("#abilityTooltipText").textContent=effects.join(" ");
@@ -4874,6 +4939,8 @@ function renderFighterInspection(){
   if(readMove)effects.push("Просчитанный ход: "+readMove.stacks+"/4 зацепки, "+readMove.remaining+
    " ход(а). При 3+ особая/мощная атака сохраняется, но имеет −20 п.п. точности, −20 п.п. эффективности наложения эффектов и −30% урона (−3 зацепки).");
  }
+ if(state.combat2&&fighter.combat2Prepared)effects.push("Готовит мощный удар: "+(state.fighters.find(f=>f.id===fighter.combat2Prepared)?.name??"цель выбыла"));
+ if(state.combat2&&fighter.combat2Boost)effects.push("Усиление сигнала: +"+fighter.combat2Boost);
  $("#inspectEffects").textContent=effects.length?effects.join(" · "):"Активных эффектов нет";
  const npcAbilities=$("#inspectNpcAbilities");
  if(npcAbilities){
@@ -4944,11 +5011,19 @@ document.addEventListener("keydown",event=>{
 // Manual target picking is independent of which 3D mesh part was touched.
 function selectArenaTarget(pickedMesh){
  if(!state.active||autoBattle||isVisualTransition()||!pickedMesh)return false;
+ if(state.combat2&&visualActionPending())return false;
  let mesh=pickedMesh;
  while(mesh&&!mesh.metadata?.fighterId)mesh=mesh.parent;
  const id=mesh?.metadata?.fighterId;
  const index=state.fighters.findIndex(f=>f.id===id&&f.hp>0);
  if(index<0)return false;
+ const choice= combat2Selection();
+ if(choice){
+  const f=state.fighters[index];
+  if(f.side==="enemy"&&choice.combat2Assist){const ok=CombatCore.chooseEnemy(state,index);if(ok)syncBattleUI();return ok;}
+  if(f.side!=="ally"||index===state.currentActor)return false;
+  combat2Choice=index;syncBattleUI();return true;
+ }
  const side=CombatCore.abilityTargetSide(state,selectedAbility);
  if(state.fighters[index].side!==side)return false;
  // A first-play target tap must not resolve a support skill on the caster.
@@ -5508,7 +5583,7 @@ if(typeof NetworkPilotSession!=="undefined"&&
    Object.assign(progress,runtime);
    renderAccountHeader();renderHeroes();renderPlayerProfile();
   },
-  storageProvider:()=>window.localStorage,
+  storageProvider:()=>gameStorage(),
   exclusive:ProgressWriterCore.exclusive,
   ownsLock:ProgressWriterCore.isOwner,
   now:()=>Date.now(),
@@ -5523,7 +5598,7 @@ if(typeof NetworkPilotSession!=="undefined"&&
    onBackToFinder:()=>showScreen("heroDetail")})){
   if(!NETWORK_PILOT_ENABLED&&typeof WeeklyThreatCore!=="undefined"&&typeof WeeklyThreatUI!=="undefined"){
      weeklySession=WeeklyThreatCore.create({
-      storageProvider:()=>window.localStorage,
+      storageProvider:()=>gameStorage(),
       exclusive:ProgressWriterCore.exclusive,ownsLock:ProgressWriterCore.isOwner,
       now:()=>Date.now(),day:dailyDay,heroes:ALLIES,
       onCredit:runtime=>{

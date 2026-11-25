@@ -78,6 +78,21 @@ const AutoDecision = (() => {
     const enemies = living(battle, "enemy");
     if (!enemies.length) return null;
     const allies = living(battle, "ally");
+    if(battle.combat2&&actor.id==="sava"){
+      const enemy=enemies.slice().sort((a,z)=>(a.fighter.hp+(a.fighter.protection??0))-(z.fighter.hp+(z.fighter.protection??0))||a.index-z.index)[0];
+      const others=allies.filter(x=>x.index!==battle.currentActor);
+      const helper=others.slice().sort((a,z)=>z.fighter.physicalAttack-a.fighter.physicalAttack||a.index-z.index)[0];
+      const signal=AbilityData.get(actor,"special"),power=AbilityData.get(actor,"powerful"),basic=AbilityData.get(actor,"basic");
+      const pool=enemy.fighter.hp+(enemy.fighter.protection??0);
+      const estimate=actor.physicalAttack*power.multiplier+(helper?Math.min(helper.fighter.physicalAttack*power.combat2Assist,actor.physicalAttack):0);
+      const powerful=helper&&CombatCore.abilityReady(battle,"powerful");
+      const joint={abilityId:"powerful",targetIndex:enemy.index,helperIndex:helper?.index};
+      if(powerful&&pool>actor.physicalAttack*basic.multiplier&&pool<=estimate*.85)return joint;
+      const options=others.map(x=>({index:x.index,...CombatCore.previewSignal(battle,actor,signal.signalMeter+(actor.combat2Boost??0),x.fighter)})).filter(x=>x.gain>0).sort((a,z)=>Number(z.cross)-Number(a.cross)||Number(z.changed)-Number(a.changed)||z.gain-a.gain||a.index-z.index);
+      if(CombatCore.abilityReady(battle,"special")&&options[0]?.cross)return {abilityId:"special",targetIndex:options[0].index};
+      if(powerful&&pool>actor.physicalAttack*basic.multiplier*.8)return joint;
+      return {abilityId:"basic",targetIndex:enemy.index};
+    }
     // The planner never mutates selection or spends cooldowns. Combat-015B
     // must apply chooseEnemy/chooseAlly, then performPlayerAbility.
     const candidates = ["special", "powerful"]

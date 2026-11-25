@@ -1,0 +1,975 @@
+[
+  {
+    "id": "signal",
+    "config": {
+      "version": 1,
+      "team": [
+        "art",
+        "sava",
+        "ren",
+        "nada"
+      ],
+      "enemyTeam": [
+        "captain",
+        "charger",
+        "guard",
+        "raider"
+      ],
+      "mode": "intercept",
+      "seed": 12345,
+      "playerAI": "tactical",
+      "enemyAI": "tactical",
+      "opt": {
+        "eatk": 0.72,
+        "ehp": 1,
+        "aspeed": 1,
+        "espeed": 1,
+        "speedScale": 1,
+        "holdTime": 50,
+        "interceptTime": 60,
+        "blocksNeeded": 2,
+        "escapeThreshold": 55,
+        "depth": 4,
+        "horizon": 0,
+        "trust": "base",
+        "diverse": true,
+        "noMark": false,
+        "noReply": false,
+        "noTempo": false,
+        "pureSignal": false
+      },
+      "ext": {
+        "tie": "seeded",
+        "units": {
+          "e0": {
+            "hp": 0.4
+          },
+          "e1": {
+            "hp": 1.4
+          }
+        },
+        "maxTime": 180,
+        "maxTurns": 180
+      }
+    },
+    "plan": [
+      {
+        "turn": 1,
+        "active": 2,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 5,
+          "v": 1
+        }
+      }
+    ],
+    "before": {
+      "turn": 3,
+      "active": 1,
+      "command": {
+        "k": "signal",
+        "j": 1,
+        "b": 4,
+        "v": 0.85
+      },
+      "threats": [],
+      "cd": [
+        0,
+        0,
+        0
+      ],
+      "recipient": {
+        "slot": 0,
+        "id": "art",
+        "conditional": true
+      },
+      "commandCount": 2
+    },
+    "expected": {
+      "command": {
+        "k": "signal",
+        "j": 1,
+        "b": 4,
+        "v": 0.85
+      },
+      "eventTypes": [
+        "action",
+        "damage",
+        "tempo",
+        "ready"
+      ],
+      "events": [
+        {
+          "type": "damage",
+          "t": 7.999999999999999,
+          "turn": 3,
+          "source": {
+            "slot": 1,
+            "id": "sava"
+          },
+          "target": {
+            "slot": 4,
+            "id": "captain"
+          },
+          "raw": 20.4,
+          "roll": 1.0086311588995158,
+          "markFactor": 1,
+          "markConsumed": false,
+          "armorPrevented": 0,
+          "guardPrevented": 0,
+          "barrierPrevented": 0,
+          "hpBefore": 70,
+          "hpAfter": 49.42392435844988,
+          "hpLoss": 20.57607564155012,
+          "reaction": false
+        },
+        {
+          "type": "tempo",
+          "t": 7.999999999999999,
+          "turn": 3,
+          "source": {
+            "slot": 1,
+            "id": "sava"
+          },
+          "target": {
+            "slot": 0,
+            "id": "art"
+          },
+          "amount": 70.00000000000011,
+          "requested": 250
+        }
+      ]
+    }
+  },
+  {
+    "id": "disrupt",
+    "config": {
+      "version": 1,
+      "team": [
+        "art",
+        "sava",
+        "ren",
+        "nada"
+      ],
+      "enemyTeam": [
+        "captain",
+        "charger",
+        "guard",
+        "raider"
+      ],
+      "mode": "intercept",
+      "seed": 12345,
+      "playerAI": "tactical",
+      "enemyAI": "tactical",
+      "opt": {
+        "eatk": 0.72,
+        "ehp": 1,
+        "aspeed": 1,
+        "espeed": 1,
+        "speedScale": 1,
+        "holdTime": 50,
+        "interceptTime": 60,
+        "blocksNeeded": 2,
+        "escapeThreshold": 55,
+        "depth": 4,
+        "horizon": 0,
+        "trust": "base",
+        "diverse": true,
+        "noMark": false,
+        "noReply": false,
+        "noTempo": false,
+        "pureSignal": false
+      },
+      "ext": {
+        "tie": "seeded",
+        "units": {
+          "e0": {
+            "hp": 0.4
+          },
+          "e1": {
+            "hp": 1.4
+          }
+        },
+        "maxTime": 180,
+        "maxTurns": 180
+      }
+    },
+    "plan": [
+      {
+        "turn": 1,
+        "active": 2,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 5,
+          "v": 1
+        }
+      },
+      {
+        "turn": 3,
+        "active": 1,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 7,
+          "v": 1
+        }
+      },
+      {
+        "turn": 4,
+        "active": 3,
+        "command": {
+          "k": "mark",
+          "j": 0,
+          "b": 4,
+          "v": 0.8
+        }
+      },
+      {
+        "turn": 6,
+        "active": 0,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 6,
+          "v": 1
+        }
+      },
+      {
+        "turn": 9,
+        "active": 2,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 5,
+          "v": 1
+        }
+      },
+      {
+        "turn": 11,
+        "active": 1,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 7,
+          "v": 1
+        }
+      }
+    ],
+    "before": {
+      "turn": 12,
+      "active": 3,
+      "command": {
+        "k": "disrupt",
+        "j": 1,
+        "b": 5,
+        "v": 0.85
+      },
+      "threats": [
+        {
+          "slot": 5,
+          "target": 0
+        }
+      ],
+      "cd": [
+        0,
+        0,
+        0
+      ],
+      "recipient": null,
+      "commandCount": 11
+    },
+    "expected": {
+      "command": {
+        "k": "disrupt",
+        "j": 1,
+        "b": 5,
+        "v": 0.85
+      },
+      "eventTypes": [
+        "action",
+        "damage",
+        "interrupt",
+        "expire",
+        "ready"
+      ],
+      "events": [
+        {
+          "type": "damage",
+          "t": 16.39344262295082,
+          "turn": 12,
+          "source": {
+            "slot": 3,
+            "id": "nada"
+          },
+          "target": {
+            "slot": 5,
+            "id": "charger"
+          },
+          "raw": 19.55,
+          "roll": 1.048760244483128,
+          "markFactor": 1,
+          "markConsumed": false,
+          "armorPrevented": 0,
+          "guardPrevented": 0,
+          "barrierPrevented": 0,
+          "hpBefore": 127.45438206195831,
+          "hpAfter": 106.95111928231316,
+          "hpLoss": 20.503262779645155,
+          "reaction": false
+        },
+        {
+          "type": "interrupt",
+          "t": 16.39344262295082,
+          "turn": 12,
+          "source": {
+            "slot": 3,
+            "id": "nada"
+          },
+          "target": {
+            "slot": 5,
+            "id": "charger"
+          },
+          "reason": "disrupt"
+        }
+      ]
+    }
+  },
+  {
+    "id": "guard-multi",
+    "config": {
+      "version": 1,
+      "team": [
+        "ren",
+        "art",
+        "nada",
+        "sava"
+      ],
+      "enemyTeam": [
+        "charger",
+        "charger",
+        "guard",
+        "raider"
+      ],
+      "mode": "hold",
+      "seed": 12416,
+      "playerAI": "tactical",
+      "enemyAI": "tactical",
+      "opt": {
+        "eatk": 0.82,
+        "ehp": 1,
+        "aspeed": 1,
+        "espeed": 1,
+        "speedScale": 1,
+        "holdTime": 50,
+        "interceptTime": 60,
+        "blocksNeeded": 2,
+        "escapeThreshold": 55,
+        "depth": 4,
+        "horizon": 0,
+        "trust": "base",
+        "diverse": true,
+        "noMark": false,
+        "noReply": false,
+        "noTempo": false,
+        "pureSignal": false
+      },
+      "ext": {
+        "tie": "seeded",
+        "units": {
+          "e0": {
+            "hp": 1.4
+          },
+          "e1": {
+            "hp": 0.4
+          }
+        },
+        "maxTime": 180,
+        "maxTurns": 180
+      }
+    },
+    "plan": [
+      {
+        "turn": 1,
+        "active": 0,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 6,
+          "v": 1
+        }
+      },
+      {
+        "turn": 3,
+        "active": 3,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 4,
+          "v": 1
+        }
+      },
+      {
+        "turn": 4,
+        "active": 2,
+        "command": {
+          "k": "mark",
+          "j": 0,
+          "b": 5,
+          "v": 0.8
+        }
+      }
+    ],
+    "before": {
+      "turn": 7,
+      "active": 1,
+      "command": {
+        "k": "cover",
+        "j": 1,
+        "b": 8,
+        "v": 1.05
+      },
+      "threats": [
+        {
+          "slot": 4,
+          "target": 8
+        },
+        {
+          "slot": 5,
+          "target": 8
+        }
+      ],
+      "cd": [
+        0,
+        0,
+        0
+      ],
+      "recipient": null,
+      "commandCount": 6
+    },
+    "expected": {
+      "command": {
+        "k": "cover",
+        "j": 1,
+        "b": 8,
+        "v": 1.05
+      },
+      "eventTypes": [
+        "action",
+        "guard",
+        "ready"
+      ],
+      "events": [
+        {
+          "type": "guard",
+          "t": 9.09090909090909,
+          "turn": 7,
+          "source": {
+            "slot": 1,
+            "id": "art"
+          },
+          "target": {
+            "slot": 8,
+            "id": "escort"
+          },
+          "amount": 26.25,
+          "expires": null,
+          "time": 23.09090909090909
+        }
+      ]
+    }
+  },
+  {
+    "id": "kill",
+    "config": {
+      "version": 1,
+      "team": [
+        "ren",
+        "art",
+        "nada",
+        "sava"
+      ],
+      "enemyTeam": [
+        "charger",
+        "charger",
+        "guard",
+        "raider"
+      ],
+      "mode": "hold",
+      "seed": 12416,
+      "playerAI": "tactical",
+      "enemyAI": "tactical",
+      "opt": {
+        "eatk": 0.82,
+        "ehp": 1,
+        "aspeed": 1,
+        "espeed": 1,
+        "speedScale": 1,
+        "holdTime": 50,
+        "interceptTime": 60,
+        "blocksNeeded": 2,
+        "escapeThreshold": 55,
+        "depth": 4,
+        "horizon": 0,
+        "trust": "base",
+        "diverse": true,
+        "noMark": false,
+        "noReply": false,
+        "noTempo": false,
+        "pureSignal": false
+      },
+      "ext": {
+        "tie": "seeded",
+        "units": {
+          "e0": {
+            "hp": 1.4
+          },
+          "e1": {
+            "hp": 0.4
+          }
+        },
+        "maxTime": 180,
+        "maxTurns": 180
+      }
+    },
+    "plan": [
+      {
+        "turn": 1,
+        "active": 0,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 6,
+          "v": 1
+        }
+      },
+      {
+        "turn": 3,
+        "active": 3,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 4,
+          "v": 1
+        }
+      },
+      {
+        "turn": 4,
+        "active": 2,
+        "command": {
+          "k": "mark",
+          "j": 0,
+          "b": 5,
+          "v": 0.8
+        }
+      },
+      {
+        "turn": 7,
+        "active": 1,
+        "command": {
+          "k": "disrupt",
+          "j": 2,
+          "b": 4,
+          "v": 1.1
+        }
+      },
+      {
+        "turn": 9,
+        "active": 0,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 6,
+          "v": 1
+        }
+      },
+      {
+        "turn": 11,
+        "active": 3,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 4,
+          "v": 1
+        }
+      },
+      {
+        "turn": 12,
+        "active": 2,
+        "command": {
+          "k": "disrupt",
+          "j": 1,
+          "b": 5,
+          "v": 0.85
+        }
+      },
+      {
+        "turn": 15,
+        "active": 1,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 4,
+          "v": 1
+        }
+      },
+      {
+        "turn": 18,
+        "active": 3,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 7,
+          "v": 1
+        }
+      },
+      {
+        "turn": 19,
+        "active": 2,
+        "command": {
+          "k": "mark",
+          "j": 0,
+          "b": 4,
+          "v": 0.8
+        }
+      },
+      {
+        "turn": 24,
+        "active": 3,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 5,
+          "v": 1
+        }
+      },
+      {
+        "turn": 25,
+        "active": 2,
+        "command": {
+          "k": "mark",
+          "j": 0,
+          "b": 6,
+          "v": 0.8
+        }
+      }
+    ],
+    "before": {
+      "turn": 30,
+      "active": 3,
+      "command": {
+        "k": "hit",
+        "j": 0,
+        "b": 5,
+        "v": 1
+      },
+      "threats": [
+        {
+          "slot": 4,
+          "target": 8
+        },
+        {
+          "slot": 5,
+          "target": 8
+        }
+      ],
+      "cd": [
+        0,
+        0,
+        0
+      ],
+      "recipient": null,
+      "commandCount": 29
+    },
+    "expected": {
+      "command": {
+        "k": "hit",
+        "j": 0,
+        "b": 5,
+        "v": 1
+      },
+      "eventTypes": [
+        "action",
+        "damage",
+        "death",
+        "ready"
+      ],
+      "events": [
+        {
+          "type": "damage",
+          "t": 39.99999999999999,
+          "turn": 30,
+          "source": {
+            "slot": 3,
+            "id": "sava"
+          },
+          "target": {
+            "slot": 5,
+            "id": "charger"
+          },
+          "raw": 24,
+          "roll": 1.0363704114221037,
+          "markFactor": 1,
+          "markConsumed": false,
+          "armorPrevented": 0,
+          "guardPrevented": 0,
+          "barrierPrevented": 0,
+          "hpBefore": 14.534740193625911,
+          "hpAfter": 0,
+          "hpLoss": 14.534740193625911,
+          "reaction": false
+        },
+        {
+          "type": "death",
+          "t": 39.99999999999999,
+          "turn": 30,
+          "target": {
+            "slot": 5,
+            "id": "charger"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "cooldown",
+    "config": {
+      "version": 1,
+      "team": [
+        "ren",
+        "art",
+        "nada",
+        "sava"
+      ],
+      "enemyTeam": [
+        "charger",
+        "charger",
+        "guard",
+        "raider"
+      ],
+      "mode": "hold",
+      "seed": 14120,
+      "playerAI": "tactical",
+      "enemyAI": "tactical",
+      "opt": {
+        "eatk": 0.82,
+        "ehp": 1,
+        "aspeed": 1,
+        "espeed": 1,
+        "speedScale": 1,
+        "holdTime": 50,
+        "interceptTime": 60,
+        "blocksNeeded": 2,
+        "escapeThreshold": 55,
+        "depth": 4,
+        "horizon": 0,
+        "trust": "base",
+        "diverse": true,
+        "noMark": false,
+        "noReply": false,
+        "noTempo": false,
+        "pureSignal": false
+      },
+      "ext": {
+        "tie": "seeded",
+        "units": {
+          "e0": {
+            "hp": 0.4
+          },
+          "e1": {
+            "hp": 1.4
+          }
+        },
+        "maxTime": 180,
+        "maxTurns": 180
+      }
+    },
+    "plan": [
+      {
+        "turn": 1,
+        "active": 0,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 6,
+          "v": 1
+        }
+      },
+      {
+        "turn": 3,
+        "active": 3,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 4,
+          "v": 1
+        }
+      },
+      {
+        "turn": 4,
+        "active": 2,
+        "command": {
+          "k": "mark",
+          "j": 0,
+          "b": 5,
+          "v": 0.8
+        }
+      },
+      {
+        "turn": 7,
+        "active": 1,
+        "command": {
+          "k": "disrupt",
+          "j": 2,
+          "b": 4,
+          "v": 1.1
+        }
+      },
+      {
+        "turn": 9,
+        "active": 0,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 6,
+          "v": 1
+        }
+      },
+      {
+        "turn": 11,
+        "active": 3,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 4,
+          "v": 1
+        }
+      },
+      {
+        "turn": 12,
+        "active": 2,
+        "command": {
+          "k": "disrupt",
+          "j": 1,
+          "b": 5,
+          "v": 0.85
+        }
+      },
+      {
+        "turn": 14,
+        "active": 1,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 5,
+          "v": 1
+        }
+      },
+      {
+        "turn": 17,
+        "active": 3,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 5,
+          "v": 1
+        }
+      },
+      {
+        "turn": 18,
+        "active": 2,
+        "command": {
+          "k": "mark",
+          "j": 0,
+          "b": 6,
+          "v": 0.8
+        }
+      },
+      {
+        "turn": 20,
+        "active": 1,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 5,
+          "v": 1
+        }
+      },
+      {
+        "turn": 23,
+        "active": 3,
+        "command": {
+          "k": "hit",
+          "j": 0,
+          "b": 5,
+          "v": 1
+        }
+      },
+      {
+        "turn": 24,
+        "active": 2,
+        "command": {
+          "k": "mark",
+          "j": 0,
+          "b": 6,
+          "v": 0.8
+        }
+      }
+    ],
+    "before": {
+      "turn": 26,
+      "active": 1,
+      "command": {
+        "k": "cover",
+        "j": 1,
+        "b": 8,
+        "v": 1.05
+      },
+      "threats": [
+        {
+          "slot": 5,
+          "target": 8
+        }
+      ],
+      "cd": [
+        0,
+        0,
+        1
+      ],
+      "recipient": null,
+      "commandCount": 25
+    },
+    "expected": {
+      "command": {
+        "k": "cover",
+        "j": 1,
+        "b": 8,
+        "v": 1.05
+      },
+      "eventTypes": [
+        "action",
+        "guard",
+        "ready"
+      ],
+      "events": [
+        {
+          "type": "guard",
+          "t": 36.36363636363636,
+          "turn": 26,
+          "source": {
+            "slot": 1,
+            "id": "art"
+          },
+          "target": {
+            "slot": 8,
+            "id": "escort"
+          },
+          "amount": 26.25,
+          "expires": null,
+          "time": 50.36363636363636
+        }
+      ]
+    }
+  }
+]

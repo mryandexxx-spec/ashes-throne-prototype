@@ -501,6 +501,7 @@ async function probeFreshOpening(name,type,viewport){
  }finally{await browser.close();}
 }
 (async()=>{
+ await require("./first-play-closeout-browser.cjs")();
  await run("chromium",chromium,{width:844,height:390});
  await run("webkit",webkit,{width:932,height:430});
  await run("chromium-short",chromium,{width:844,height:320});

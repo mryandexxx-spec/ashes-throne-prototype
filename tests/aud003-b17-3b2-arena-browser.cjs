@@ -112,6 +112,11 @@ async function run(){
  }
  async function autoEnd(label,winner,expectedWave){
   const button=page.locator("#autoBattleBtn");await ready();if(await page.evaluate(()=>state.active))await button.tap();
+  if(expectedWave===2){
+   await page.waitForFunction(()=>state.wave===2&&state.active&&!isVisualTransition(),null,{timeout:240000});
+   await button.tap();await ready();await visual(label+"-wave2");
+   if(await page.evaluate(()=>state.active))await button.tap();
+  }
   await page.waitForFunction(()=>!state.active&&!isVisualTransition()&&!visualActionPending(),null,{timeout:240000});
   const result=await page.evaluate(()=>({winner:state.winner,wave:state.wave,actions:state.allyActions,remaining:state.fighters.map(f=>[f.id,f.hp,f.protection]),receipts:progress.rewardReceipts?.length??0}));
   report(label,result);await take(label);assert.equal(result.winner,winner);assert.equal(result.wave,expectedWave);assert.equal(await wallet(),base,"finish cannot grant rewards");
@@ -132,15 +137,15 @@ async function run(){
   base=await wallet();
   if(group==="interaction"){
    await setup("full","early");
-   await speed(3);await selection("powerful");await selection("special");await autoEnd("full-manual-auto","ally",1);await retreat();
-   await setup("loss","early");await speed(3);const first=await autoEnd("defeat","enemy",1);await repeat();await speed(2);const second=await autoEnd("defeat-replay","enemy",1);assert.deepEqual(second,first,"same seed and policy across presentation speeds");await retreat();
+   await speed(4);await selection("powerful");await selection("special");await autoEnd("full-manual-auto","ally",1);await retreat();
+   await setup("loss","early");await speed(4);const first=await autoEnd("defeat","enemy",1);await repeat();await speed(2);const second=await autoEnd("defeat-replay","enemy",1);assert.deepEqual(second,first,"same seed and policy across presentation speeds");await retreat();
   }else if(group==="waves"){
-   await setup("waves","mid");await speed(3);await autoEnd("waves-mid-result","ally",2);await retreat();
-   await setup("boss","max");await speed(3);await autoEnd("boss-max-result","ally",1);await retreat();
+   await setup("waves","mid");await speed(4);await autoEnd("waves-mid-result","ally",2);await retreat();
+   await setup("boss","max");await speed(4);await autoEnd("boss-max-result","ally",1);await retreat();
   }else{
-   await setup("full","uneven");await speed(3);await autoEnd("uneven-result","ally",1);await retreat();
-   await setup("armored","early");await speed(3);await autoEnd("armored-result","ally",1);await retreat();
-   await setup("threats","early");await speed(3);await autoEnd("threats-result","ally",1);await retreat();
+   await setup("full","uneven");await speed(4);await autoEnd("uneven-result","ally",1);await retreat();
+   await setup("armored","early");await speed(4);await autoEnd("armored-result","ally",1);await retreat();
+   await setup("threats","early");await speed(4);await autoEnd("threats-result","ally",1);await retreat();
   }
   assert.deepEqual(errors,[]);report("PASS",{baseUnchanged:await wallet()===base});
  }catch(error){report("FAIL",{error:String(error)});await take("failure").catch(()=>{});throw error;}finally{await browser.close();}

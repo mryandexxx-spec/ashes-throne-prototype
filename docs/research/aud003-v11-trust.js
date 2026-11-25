@@ -1,0 +1,3 @@
+/* Run node docs/research/aud003-v11-trust.js */
+function trustStudy(L){let rows=[];for(let ti of [3,4,0,6])for(let trust of [null,"art_shelter","art_response"]){let mode=ti<=0||ti===6?"assault":"hold",opt={trust,...(mode==="assault"?{enemyTeam:["charger","charger","charger","guard","healer"]}:{})};let a=L.aggregate(L.teams[ti],mode,"rollout",opt,100,67000);rows.push({team:ti+1,mode,trust,...a});}for(let ti of [1,2,5])for(let trust of [null,"sava_tempo"]){let a=L.aggregate(L.teams[ti],"hold","rollout",{trust},100,69000);rows.push({team:ti+1,mode:"hold",trust,...a});}return rows;}
+console.log(JSON.stringify(trustStudy(require('./aud003-combat-lab-v11.js')()),null,2));

@@ -81,15 +81,17 @@ function branch(candidate,seed){
 return {candidates,simulate,party,branch,enemies};`)();
 }
 const policies=["basic","damage","native","cover","priority"];
+// Disperse adjacent seed indexes; low consecutive seeds can share RNG prefixes.
+function seedAt(i){let x=(i+0x9e3779b9)>>>0;x=Math.imul(x^(x>>>16),0x85ebca6b);x=Math.imul(x^(x>>>13),0xc2b2ae35);return (x^(x>>>16))>>>0;}
 function aggregate(a){
  const sum=k=>a.reduce((n,x)=>n+x[k],0);
  return {n:a.length,wins:sum("w"),three:a.filter(x=>x.stars===3).length,meanActions:+(sum("actions")/a.length).toFixed(2),meanHp:+(sum("hp")/a.length).toFixed(2),dead:sum("dead"),threats:sum("threats"),cancels:sum("cancels"),reacts:sum("reacts"),restored:sum("restores"),opportunities:sum("opportunities")};
 }
 function run(api,{start=1001,count=64,ids=api.candidates.map(c=>c[0]),level=2,kit=false,selectedPolicies=policies}={}){
- return ids.map(id=>{const c=api.candidates.find(x=>x[0]===id);if(!c)throw Error("unknown "+id);return {id,stats:Object.fromEntries(selectedPolicies.map(p=>[p,aggregate(Array.from({length:count},(_,i)=>api.simulate(c,start+i,p,level,kit)))]))};});
+ return ids.map(id=>{const c=api.candidates.find(x=>x[0]===id);if(!c)throw Error("unknown "+id);return {id,stats:Object.fromEntries(selectedPolicies.map(p=>[p,aggregate(Array.from({length:count},(_,i)=>api.simulate(c,seedAt(start+i),p,level,kit)))]))};});
 }
 function branches(api,id,start=7001,count=64){
- const c=api.candidates.find(x=>x[0]===id);const a=Array.from({length:count},(_,i)=>api.branch(c,start+i)).filter(Boolean);
+ const c=api.candidates.find(x=>x[0]===id);const a=Array.from({length:count},(_,i)=>api.branch(c,seedAt(start+i))).filter(Boolean);
  return {id,seeds:count,eligible:a.length,choices:Object.fromEntries(["basic","special","powerful"].map(k=>[k,a.length?aggregate(a.map(x=>x.variants[k].end)):null])),examples:a.slice(0,2)};
 }
 if(typeof module!=="undefined")module.exports={files,build,run,branches};

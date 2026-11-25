@@ -1,0 +1,51 @@
+name: Combat 2.0 · native 3D arena
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'game.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'combat2-arena-pilot.js'
+      - 'combat-2-hud/model.js'
+      - 'tests/aud003-b17-3b2-*'
+      - '.github/workflows/aud003-b17-3b2.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: combat2-native-arena-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  arena:
+    name: ${{ matrix.browser }} · ${{ matrix.group }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+        group: [interaction, waves, progression]
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Existing 3D arena, real input, geometry/HUD, no reward
+        env:
+          ARENA_BROWSER: ${{ matrix.browser }}
+          ARENA_GROUP: ${{ matrix.group }}
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/combat2-arena-http.log 2>&1 &
+          sleep 2
+          node tests/aud003-b17-3b2-arena-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: combat2-arena-${{ matrix.browser }}-${{ matrix.group }}
+          path: artifacts/combat2-arena/
+          if-no-files-found: ignore

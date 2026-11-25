@@ -95,13 +95,13 @@ function stopWorker(){if(worker){worker.terminate();worker=null;}}
 function setBatchBusy(b){$("batch").disabled=$("compare").disabled=b;}
 function validCount(){const n=Number($("count").value);if(!Number.isInteger(n)||n<1||n>100){$("batchStatus").textContent="Допустимо 1–100 боёв на конфигурацию";return 0;}return n;}
 function beginBatch(jobs,n,seed,meta){
- const token=++serial;stopWorker();let rows={};lastBatch=null;$("results").replaceChildren();setBatchBusy(true);
+ const token=++serial;stopWorker();let rows={};lastBatch=null;$("results").replaceChildren();$("batchStatus").textContent="Запуск серии…";$("batchStatus").dataset.engine="pending";setBatchBusy(true);
  const progress=(label,i)=>{$("batchStatus").textContent=(aiNames[label]||label)+" · "+i+"/"+n;};
  const row=(label,value)=>{rows[label]=value;drawResults(rows);};
  const done=()=>{if(token!==serial)return;lastBatch={...meta,n,seed,rows};$("batchStatus").textContent="Готово. Одинаковые seed; качество зависит от типа миссии.";setBatchBusy(false);stopWorker();};
  const fail=e=>{if(token!==serial)return;$("batchStatus").textContent="Ошибка серии: "+e;setBatchBusy(false);stopWorker();};
- async function fallback(){rows={};$("results").replaceChildren();try{for(const job of jobs){let rs=[];for(let i=0;i<n;i++){if(token!==serial)return;rs.push(M.run({...job.config,seed:(seed+Math.imul(i,0x9e3779b1))>>>0}));progress(job.label,i+1);await new Promise(r=>setTimeout(r,0));}row(job.label,M.summarize(rs));}done();}catch(e){fail(e.message);}}
- try{if(typeof Worker!=="function")return fallback();worker=new Worker("worker.js");worker.onmessage=e=>{if(token!==serial)return;const x=e.data;if(x.type==="progress")progress(x.label,x.done);if(x.type==="row")row(x.label,x.result);if(x.type==="done")done();if(x.type==="error")fail(x.message);};worker.onerror=()=>{if(token!==serial)return;stopWorker();fallback();};worker.postMessage({jobs,n,seed});}catch(e){stopWorker();fallback();}
+ async function fallback(){$("batchStatus").dataset.engine="fallback";rows={};$("results").replaceChildren();try{for(const job of jobs){let rs=[];for(let i=0;i<n;i++){if(token!==serial)return;rs.push(M.run({...job.config,seed:(seed+Math.imul(i,0x9e3779b1))>>>0}));progress(job.label,i+1);await new Promise(r=>setTimeout(r,0));}row(job.label,M.summarize(rs));}done();}catch(e){fail(e.message);}}
+ try{if(typeof Worker!=="function")return fallback();worker=new Worker("worker.js");worker.onmessage=e=>{if(token!==serial)return;const x=e.data;$("batchStatus").dataset.engine="worker";if(x.type==="progress")progress(x.label,x.done);if(x.type==="row")row(x.label,x.result);if(x.type==="done")done();if(x.type==="error")fail(x.message);};worker.onerror=()=>{if(token!==serial)return;stopWorker();fallback();};worker.postMessage({jobs,n,seed});}catch(e){stopWorker();fallback();}
 }
 function batch(){const n=validCount();if(!n)return;const c=M.validate(session.config);beginBatch(M.policies.map(p=>({label:p,config:{...c,playerAI:p}})),n,c.seed,{config:c});}
 function compare(){const n=validCount();if(!n)return;if(!saved.length){$("batchStatus").textContent="Сохраните хотя бы одну конфигурацию";return;}const base=M.validate(session.config),configs=[base,...saved.slice(0,4).map(c=>M.validate(c))];beginBatch(configs.map((config,k)=>({config,label:k===0?"Текущая":"Сохранённая "+k})),n,base.seed,{configs});}

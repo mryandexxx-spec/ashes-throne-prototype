@@ -82,6 +82,9 @@ async function run(name,browserType,viewport){
   await visibleTarget(selector);
   assert.equal(await page.locator("#campaignMainContent #storyDemoOpen").count(),0);
  };
+ const loadedShot=async(selector,suffix)=>{
+  await page.waitForFunction(({selector,suffix})=>{const im=document.querySelector(selector);return im?.complete&&im.naturalWidth===1536&&im.naturalHeight===512&&im.getAttribute("src").endsWith(suffix)&&im.getBoundingClientRect().width>0&&im.getBoundingClientRect().height>0;},{selector,suffix},{timeout:20000});
+ };
  const fight=async(manual=false)=>{
   await page.locator("#squadStart").tap();
   if(await page.locator("#squad.active").isVisible())await page.locator("#squadStart").tap();
@@ -111,7 +114,7 @@ async function run(name,browserType,viewport){
   assert.equal(await page.locator("#hqFirstSessionAction").isVisible(),false,"developer bypass must not create an onboarding quest");
   assert.deepEqual(await page.evaluate(()=>ALLIES.filter(h=>heroOwned(h.id)).map(h=>h.id).sort()),["art","ren"]);
   await showMap();
-  await routeReady();await visibleTarget("#mainCampaignMapPin");await page.screenshot({path:path.join(dest,key+"-locked.png")});
+  await routeReady();await visibleTarget("#mainCampaignMapPin");await loadedShot("#mainCampaignSceneArt","warehouse-conflict.webp");await page.screenshot({path:path.join(dest,key+"-locked.png")});
   assert.match(await page.locator("#mainCampaignBrief").innerText(),/Мастер просит сохранить снятый крепёж/);
   assert.doesNotMatch(await page.locator("#mainCampaignBrief").innerText(),/спасли|эвакуировали|Крепёж сохранён/);
   const before=await inspect();assert.equal(before.proof.best,0);assert.equal(before.receipts,0);assert.equal(before.first,false);
@@ -127,6 +130,7 @@ async function run(name,browserType,viewport){
   assert.equal((await inspect()).proof.best,0);assert.equal((await inspect()).currency,before.currency);
   assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
   assert.equal(await page.locator("#mainCampaignResultReward").isVisible(),false);
+  assert.equal(await page.locator("#mainCampaignResultArt").isVisible(),false,"no victory shot on defeat");
   assert.doesNotMatch(await page.locator("#mainCampaignResultText").innerText(),/Крепёж сохранён|следующий пункт доставки/);
   await visibleTarget("#mainCampaignResultBack");await visibleTarget("#mainCampaignResultRetry");
   await page.locator("#mainCampaignResultRetry").tap();
@@ -141,11 +145,14 @@ async function run(name,browserType,viewport){
   const won=await inspect();assert.ok(won.proof.best>0);assert.equal(won.currency,before.currency);assert.equal(won.receipts,0);
   await noOverflow();await visibleTarget("#mainCampaignResultClaim");await visibleTarget("#mainCampaignResultBack");
   assert.match(await page.locator("#mainCampaignResultRewardAmount").innerText(),/40/);
+  await loadedShot("#mainCampaignResultArt img","warehouse-proof.webp");
+  await visibleTarget("#mainCampaignResultRetry");
   await page.screenshot({path:path.join(dest,key+"-victory.png")});
   // Reload BEFORE claiming. Proof survives and the next path is still locked.
   await page.reload({waitUntil:"load",timeout:60000});await ready();await showMap();
   assert.equal((await inspect()).proof.best,won.proof.best);
   assert.match(await page.locator("#mainCampaignBrief").innerText(),/Крепёж сохранён/);
+  await loadedShot("#mainCampaignSceneArt","warehouse-proof.webp");
   assert.equal(await page.locator("#mainCampaignNext").getAttribute("data-unlocked"),"false");
   await routeReady("#mainCampaignClaim");
   await page.locator("#mainCampaignClaim").tap();

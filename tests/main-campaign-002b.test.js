@@ -1,7 +1,7 @@
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm"),path=require("node:path");
-const files=["gear-data.js","progress-core.js","star-core.js","skill-core.js","hero-collection-core.js","daily-core.js","login-core.js","progress-v3-core.js","save-core.js","reward-policy-core.js","main-campaign-core.js"];
-const {S,V,C,Star}=vm.runInNewContext(files.map(f=>fs.readFileSync(path.join(__dirname,"..",f),"utf8")).join("\n")+"\n({S:SaveCore,V:ProgressV3Core,C:MainCampaignCore,Star:StarCore})");
+const files=["gear-data.js","progress-core.js","star-core.js","skill-core.js","hero-collection-core.js","daily-core.js","login-core.js","progress-v3-core.js","save-core.js","reward-policy-core.js","npc-enemy-data.js","main-campaign-core.js"];
+const {S,V,C,Star,N}=vm.runInNewContext(files.map(f=>fs.readFileSync(path.join(__dirname,"..",f),"utf8")).join("\n")+"\n({S:SaveCore,V:ProgressV3Core,C:MainCampaignCore,Star:StarCore,N:NpcEnemyData})");
 const heroes=["ren","nada","liora","art","sava"].map(id=>({id,side:"ally"}));
 const win={active:false,winner:"ally",allyActions:8,fighters:[{side:"ally",hp:8},{side:"ally",hp:0},{side:"enemy",hp:0}]};
 function setup(){
@@ -87,4 +87,13 @@ test("chapter II rejects unbound, foreign, and inconsistent terminal battle stat
  }
  assert.equal((await x.claim()).code,"PROOF_NOT_PERSISTED");assert.equal(Star.rankOf(x.read(),"nada"),0);
  assert.equal(x.record(win).ok,true);assert.equal((await x.claim()).ok,true);
+});
+
+test("chapter II encounter has isolated instances and preserves M1 definitions",()=>{
+ const first=C.enemiesFor(C.ID,N),second=C.enemiesFor(C.II_ID,N);
+ assert.deepEqual(first,C.enemies(N));
+ assert.equal(first.length,2);assert.equal(second.length,2);
+ assert.ok(second.every(f=>f.id.startsWith("npc-cam-m2-")&&f.side==="enemy"&&f.hp>0));
+ assert.equal(new Set([...first,...second].map(f=>f.id)).size,4);
+ assert.throws(()=>C.enemiesFor("unknown",N),/CAMPAIGN_UNKNOWN_MISSION/);
 });

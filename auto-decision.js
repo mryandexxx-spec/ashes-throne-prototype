@@ -78,20 +78,49 @@ const AutoDecision = (() => {
     const enemies = living(battle, "enemy");
     if (!enemies.length) return null;
     const allies = living(battle, "ally");
-    if(battle.combat2&&actor.id==="sava"){
-      const enemy=enemies.slice().sort((a,z)=>(a.fighter.hp+(a.fighter.protection??0))-(z.fighter.hp+(z.fighter.protection??0))||a.index-z.index)[0];
+    // Combat 2.0 uses the same tactical choices as the pinned accepted lab candidate.
+    // This branch is read-only; legacy auto remains unchanged.
+    const focus=battle.combat2?enemies.find(x=>!battle.priorityCleared&&x.fighter.id===battle.tacticalObjective?.priorityEnemyId):null;
+    if(battle.combat2){
+      const pool=x=>x.fighter.hp+(x.fighter.protection??0);
+      const ratio=x=>pool(x)/(x.fighter.maxHp+(x.fighter.maxProtection??0));
+      const enemy=enemies.slice().sort((a,z)=>pool(a)-pool(z)||a.index-z.index)[0];
+      const target=focus??enemy;
       const others=allies.filter(x=>x.index!==battle.currentActor);
-      const helper=others.slice().sort((a,z)=>z.fighter.physicalAttack-a.fighter.physicalAttack||a.index-z.index)[0];
-      const signal=AbilityData.get(actor,"special"),power=AbilityData.get(actor,"powerful"),basic=AbilityData.get(actor,"basic");
-      const pool=enemy.fighter.hp+(enemy.fighter.protection??0);
-      const estimate=actor.physicalAttack*power.multiplier+(helper?Math.min(helper.fighter.physicalAttack*power.combat2Assist,actor.physicalAttack):0);
-      const powerful=helper&&CombatCore.abilityReady(battle,"powerful");
-      const joint={abilityId:"powerful",targetIndex:enemy.index,helperIndex:helper?.index};
-      if(powerful&&pool>actor.physicalAttack*basic.multiplier&&pool<=estimate*.85)return joint;
-      const options=others.map(x=>({index:x.index,...CombatCore.previewSignal(battle,actor,signal.signalMeter+(actor.combat2Boost??0),x.fighter)})).filter(x=>x.gain>0).sort((a,z)=>Number(z.cross)-Number(a.cross)||Number(z.changed)-Number(a.changed)||z.gain-a.gain||a.index-z.index);
-      if(CombatCore.abilityReady(battle,"special")&&options[0]?.cross)return {abilityId:"special",targetIndex:options[0].index};
-      if(powerful&&pool>actor.physicalAttack*basic.multiplier*.8)return joint;
-      return {abilityId:"basic",targetIndex:enemy.index};
+      const threats=enemies.filter(x=>x.fighter.combat2Prepared);
+      const taunter=allies.find(x=>CombatStatusCore.read(x.fighter,"taunt"));
+      const warned=threats.map(x=>taunter??allies.find(a=>a.fighter.id===x.fighter.combat2Prepared)).filter(Boolean);
+      const ready=id=>CombatCore.abilityReady(battle,id);
+      const pick=(abilityId,targetIndex)=>({abilityId,targetIndex});
+      if(actor.id==="art"){
+        const threat=threats.find(x=>!focus||x.index===focus.index);
+        if(threat&&ready("powerful"))return pick("powerful",threat.index);
+        const recipient=others.slice().sort((a,z)=>Number(warned.includes(z))-Number(warned.includes(a))||ratio(a)-ratio(z))[0];
+        if(recipient&&ready("special")&&!recipient.fighter.guardHits&&(warned.includes(recipient)||ratio(recipient)<.6))return pick("special",recipient.index);
+        return pick(ready("powerful")?"powerful":"basic",target.index);
+      }
+      if(actor.id==="liora"){
+        const area=enemies.some(x=>AbilityData.get(x.fighter,"powerful")?.target==="all-enemies"&&x.fighter.powerfulCooldown===0);
+        const endangered=allies.filter(x=>!x.fighter.guardHits&&(ratio(x)<.7||warned.includes(x)||area));
+        if(ready("powerful")&&endangered.length>=2&&(area||warned.length>=2||endangered.length>=3))return pick("powerful",battle.currentActor);
+        if(ready("special")&&!CombatStatusCore.read(actor,"taunt")&&ratio(allies.find(x=>x.index===battle.currentActor))>.45&&others.some(x=>warned.includes(x)||ratio(x)<.65))return pick("special",battle.currentActor);
+        if(ready("powerful")&&endangered.length>=2)return pick("powerful",battle.currentActor);
+        return pick("basic",target.index);
+      }
+      if(actor.id==="nada"&&ready("special")&&(CombatStatusCore.read((focus??threats[0]??enemy).fighter,"read-move")?.stacks??0)<2)
+        return pick("special",(focus??threats[0]??enemy).index);
+      if(actor.id==="sava"){
+        const helper=others.slice().sort((a,z)=>z.fighter.physicalAttack-a.fighter.physicalAttack||a.index-z.index)[0];
+        const signal=AbilityData.get(actor,"special"),power=AbilityData.get(actor,"powerful"),basic=AbilityData.get(actor,"basic");
+        const estimate=actor.physicalAttack*power.multiplier+(helper?Math.min(helper.fighter.physicalAttack*power.combat2Assist,actor.physicalAttack):0);
+        const powerful=helper&&ready("powerful");
+        const joint={abilityId:"powerful",targetIndex:target.index,helperIndex:helper?.index};
+        if(powerful&&pool(enemy)>actor.physicalAttack*basic.multiplier&&pool(enemy)<=estimate*.85)return joint;
+        const options=others.map(x=>({index:x.index,...CombatCore.previewSignal(battle,actor,signal.signalMeter+(actor.combat2Boost??0),x.fighter)})).filter(x=>x.gain>0).sort((a,z)=>Number(z.cross)-Number(a.cross)||Number(z.changed)-Number(a.changed)||z.gain-a.gain||a.index-z.index);
+        if(ready("special")&&options[0]?.cross)return pick("special",options[0].index);
+        if(powerful&&pool(enemy)>actor.physicalAttack*basic.multiplier*.8)return joint;
+        return pick("basic",target.index);
+      }
     }
     // The planner never mutates selection or spends cooldowns. Combat-015B
     // must apply chooseEnemy/chooseAlly, then performPlayerAbility.
@@ -101,8 +130,12 @@ const AutoDecision = (() => {
     // Equal priorities prefer special to powerful (stable candidate order).
     const best = candidates.reduce((winner, candidate) =>
       !winner || candidate.priority > winner.priority ? candidate : winner, null);
-    if (best) return {abilityId: best.abilityId, targetIndex: best.targetIndex};
-    return {abilityId: "basic", targetIndex: lowestHp(enemies).index};
+    if (best) {
+      const mode=AbilityData.get(actor,best.abilityId).target;
+      if(focus&&mode==="all-enemies")return {abilityId:"basic",targetIndex:focus.index};
+      return {abilityId:best.abilityId,targetIndex:focus&&mode==="enemy"?focus.index:best.targetIndex};
+    }
+    return {abilityId: "basic", targetIndex: (focus??lowestHp(enemies)).index};
   }
   return Object.freeze({chooseAction});
 })();

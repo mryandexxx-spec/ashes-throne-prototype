@@ -55,6 +55,14 @@ async function run(name,type,viewport,skip=false){
  const report=(label,extra={})=>{const e={label,elapsedMs:Date.now()-start,taps,...extra};events.push(e);console.log("AUD003-A",key,JSON.stringify(e));fs.writeFileSync(path.join(dest,key+".json"),JSON.stringify({key,events,errors},null,2));};
  const wait=async(sel)=>page.locator(sel).waitFor({state:"visible",timeout:60000});
  const tap=async sel=>{await wait(sel);await page.locator(sel).tap();taps++;};
+ // The production story intentionally ignores Next taps within 350 ms.
+ // Respect that input guard and prove each tap actually advanced the cursor.
+ const storyNext=async()=>{
+  const previous=await page.evaluate(()=>firstPlayStoryCursor.step);
+  await page.waitForFunction(()=>Date.now()-firstPlayStoryManualAt>=350,null,{timeout:5000});
+  await tap("#firstPlayStoryNext");
+  await page.waitForFunction(step=>firstPlayStoryCursor.step===step+1,previous,{timeout:5000});
+ };
  const screenshot=async label=>{assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),"horizontal overflow "+label);await page.screenshot({path:path.join(dest,key+"-"+label+".png")});};
  const inspect=()=>page.evaluate(()=>({phase:firstPlayState.phase,choice:firstPlayState.choice,won:FirstPlayCore.wonProof(firstPlayState),ren:progress.levels.ren,
   owned:ALLIES.filter(h=>heroOwned(h.id)).map(h=>h.id).sort(),nada:StarCore.rankOf(progress,"nada"),currency:progress.currency,xp:progress.accountXp,energy:progress.energy.value,ops:JSON.stringify(operationProgress),
@@ -100,9 +108,9 @@ async function run(name,type,viewport,skip=false){
   await page.goto(origin,{waitUntil:"load",timeout:60000});await ready();await wait("#firstPlay.active");
   const initial=await inspect();assert.deepEqual(initial.owned,["art","ren"]);assert.equal(initial.phase,"briefing");assert.deepEqual(initial.receipts,[0,0,0]);assert.deepEqual(initial.best,[0,0]);report("cold-first-play",initial);await screenshot("opening");
   if(skip){await tap("#firstPlayStorySkip");await wait("#battle.active");await page.reload({waitUntil:"load",timeout:60000});await ready();await wait("#firstPlay.active");assert.equal((await inspect()).phase,"ready");assert.deepEqual((await inspect()).receipts,[0,0,0]);report("skip-reload-ready");await tap("#firstPlayStoryFight");}
-  else{for(let i=0;i<4&&!(await page.locator("#firstPlayStoryFight").isVisible());i++)await tap("#firstPlayStoryNext");assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);await screenshot("handoff");await tap("#firstPlayStoryFight");}
+  else{for(let i=0;i<4&&!(await page.locator("#firstPlayStoryFight").isVisible());i++)await storyNext();assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);await screenshot("handoff");await tap("#firstPlayStoryFight");}
   assert.equal((await inspect()).choice,"neutral");await battle("FP",true,skip);assert.equal((await inspect()).phase,"won");
-  for(let i=0;i<3&&!(await page.locator("#firstPlayStoryFinish").isVisible());i++)await tap("#firstPlayStoryNext");await tap("#firstPlayStoryFinish");await home();
+  for(let i=0;i<3&&!(await page.locator("#firstPlayStoryFinish").isVisible());i++)await storyNext();await tap("#firstPlayStoryFinish");await home();
   assert.equal((await inspect()).won,true);assert.match(await page.locator("#hqFirstSessionAction").innerText(),/Забрать награду/);await screenshot("HQ-reward");
   await tap("#hqFirstSessionAction");await page.waitForFunction(()=>FirstPlayCore.rewardClaimed(progress)&&!firstSessionClaiming,null,{timeout:20000});
   let p=await inspect();assert.deepEqual(p.receipts,[1,0,0]);assert.equal(p.currency,initial.currency+40);assert.match(await page.locator("#hqFirstSessionAction").innerText(),/Усилить Рена/);report("FP-claimed",p);

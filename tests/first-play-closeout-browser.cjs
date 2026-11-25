@@ -53,6 +53,7 @@ async function run(name,type,viewport,skip=false){
  const key=name+"-"+viewport.width+"x"+viewport.height+(skip?"-skip-auto":"-manual");
  const start=Date.now(),events=[],errors=[];let taps=0;
  page.on("pageerror",e=>errors.push(e.message));
+ const liveUntouched=async()=>{if(pilot)assert.deepEqual(await page.evaluate(()=>["ashes-throne.first-play.v1","ashes-throne.progress.v3"].map(key=>localStorage.getItem(key))),["pilot-live-sentinel","pilot-live-sentinel"]);};
  const report=(label,extra={})=>{const e={label,elapsedMs:Date.now()-start,taps,...extra};events.push(e);console.log("AUD003-A",key,JSON.stringify(e));fs.writeFileSync(path.join(dest,key+".json"),JSON.stringify({key,events,errors},null,2));};
  const wait=async(sel)=>page.locator(sel).waitFor({state:"visible",timeout:60000});
  const tap=async sel=>{await wait(sel);await page.locator(sel).tap();taps++;};
@@ -106,11 +107,11 @@ async function run(name,type,viewport,skip=false){
   await tap("#squadStart");if(await page.locator("#squad.active").isVisible())await tap("#squadStart");
  };
  try{
-  if(pilot)await page.addInitScript(()=>{localStorage.setItem("ashes-throne.first-play.v1","pilot-live-sentinel");localStorage.setItem("ashes-throne.progress.v3","pilot-live-sentinel");});
+  if(pilot)await page.addInitScript(()=>{for(const key of ["ashes-throne.first-play.v1","ashes-throne.progress.v3"])if(localStorage.getItem(key)===null)localStorage.setItem(key,"pilot-live-sentinel");});
   await page.goto(origin.toString(),{waitUntil:"load",timeout:60000});await ready();await wait("#firstPlay.active");
   if(pilot)assert.equal(await page.evaluate(()=>gameStorage()===sessionStorage),true);
   const initial=await inspect();assert.deepEqual(initial.owned,["art","ren"]);assert.equal(initial.phase,"briefing");assert.deepEqual(initial.receipts,[0,0,0]);assert.deepEqual(initial.best,[0,0]);report("cold-first-play",initial);await screenshot("opening");
-  if(skip){await tap("#firstPlayStorySkip");await wait("#battle.active");await page.reload({waitUntil:"load",timeout:60000});await ready();await wait("#firstPlay.active");assert.equal((await inspect()).phase,"ready");assert.deepEqual((await inspect()).receipts,[0,0,0]);report("skip-reload-ready");await tap("#firstPlayStoryFight");}
+  if(skip){await tap("#firstPlayStorySkip");await wait("#battle.active");await liveUntouched();await page.reload({waitUntil:"load",timeout:60000});await ready();await wait("#firstPlay.active");assert.equal((await inspect()).phase,"ready");assert.deepEqual((await inspect()).receipts,[0,0,0]);report("skip-reload-ready");await tap("#firstPlayStoryFight");}
   else{for(let i=0;i<4&&!(await page.locator("#firstPlayStoryFight").isVisible());i++)await storyNext();assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);await screenshot("handoff");await tap("#firstPlayStoryFight");}
   assert.equal((await inspect()).choice,"neutral");await battle("FP",true,skip);assert.equal((await inspect()).phase,"won");
   for(let i=0;i<3&&!(await page.locator("#firstPlayStoryFinish").isVisible());i++)await storyNext();await tap("#firstPlayStoryFinish");await home();
@@ -125,11 +126,11 @@ async function run(name,type,viewport,skip=false){
   await tap("#mainCampaignNext");await wait("#mainCampaignMap");assert.equal(await page.locator("#mainCampaignMap").getAttribute("data-mission"),"II");await screenshot("II-map");
   await squad();await battle("II");won=await inspect();assert.deepEqual(won.statuses,["claimed","claimable"]);assert.equal(won.nada,0);assert.deepEqual(won.receipts,[1,1,0]);report("II-proof",won);
   // Reload before the reward: proof and same profile must persist.
-  await page.reload({waitUntil:"load",timeout:60000});await home();assert.deepEqual((await inspect()).statuses,["claimed","claimable"]);await map();await tap("#mainCampaignNext");await wait("#mainCampaignClaim");assert.match(await page.locator("#mainCampaignClaim").innerText(),/Принять Наду/);await tap("#mainCampaignClaim");await page.waitForFunction(()=>heroOwned("nada")&&!mainCampaignClaiming,null,{timeout:20000});
+  await liveUntouched();await page.reload({waitUntil:"load",timeout:60000});await home();assert.deepEqual((await inspect()).statuses,["claimed","claimable"]);await map();await tap("#mainCampaignNext");await wait("#mainCampaignClaim");assert.match(await page.locator("#mainCampaignClaim").innerText(),/Принять Наду/);await tap("#mainCampaignClaim");await page.waitForFunction(()=>heroOwned("nada")&&!mainCampaignClaiming,null,{timeout:20000});
   paid=await inspect();assert.equal(paid.nada,1);assert.deepEqual(paid.owned,["art","nada","ren"]);assert.deepEqual(paid.receipts,[1,1,1]);assert.deepEqual(paid.statuses,["claimed","claimed"]);assert.equal(paid.currency,p.currency+40);assert.equal(paid.energy,initial.energy);assert.equal(paid.ops,initial.ops);assert.match(await page.locator("#mainCampaignNotice").innerText(),/глава III готовится/);report("Nada-claimed",paid);await screenshot("II-claimed");
   await tap("#mainCampaignNode");assert.ok(await page.locator('#squadRoster .squad-choice[data-hero-id="nada"]').isEnabled());await tap("#squadBack");await backHome();
   await tap('#home .hq-station[data-screen="collection"]');await wait("#collection.active");await tap('#collection [data-open-hero="nada"]');await wait("#heroDetail.active");assert.equal(await page.evaluate(()=>selectedHeroId),"nada");await screenshot("Nada-card");await tap("#detailHome");await home();
-  await page.reload({waitUntil:"load",timeout:60000});await home();const final=await inspect();assert.deepEqual(final.receipts,[1,1,1]);assert.deepEqual(final.statuses,["claimed","claimed"]);assert.equal(final.nada,1);assert.equal(final.ren,2);assert.equal(final.currency,paid.currency);await map();await tap("#mainCampaignNext");assert.equal(await page.locator("#mainCampaignClaim").isVisible(),false);if(pilot){assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.progress.v3")),"pilot-live-sentinel");assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.first-play.v1")),"pilot-live-sentinel");}assert.deepEqual(errors,[]);report("PASS",final);await screenshot("persisted-II");
+  await liveUntouched();await page.reload({waitUntil:"load",timeout:60000});await home();const final=await inspect();assert.deepEqual(final.receipts,[1,1,1]);assert.deepEqual(final.statuses,["claimed","claimed"]);assert.equal(final.nada,1);assert.equal(final.ren,2);assert.equal(final.currency,paid.currency);await map();await tap("#mainCampaignNext");assert.equal(await page.locator("#mainCampaignClaim").isVisible(),false);if(pilot){assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.progress.v3")),"pilot-live-sentinel");assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.first-play.v1")),"pilot-live-sentinel");}assert.deepEqual(errors,[]);report("PASS",final);await screenshot("persisted-II");
  }catch(e){report("FAIL",{error:String(e)});await page.screenshot({path:path.join(dest,key+"-fail.png")}).catch(()=>{});throw e;}
  finally{await browser.close();}
 }

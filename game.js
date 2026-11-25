@@ -240,10 +240,10 @@ function combat2ThreatText(){
 }
 function combat2SelectionText(d,actor){
  const f=state.fighters[combat2Choice];
- if(!f||f.side!=="ally"||f.hp<=0||f.id===actor.id)return d.combat2Assist?"Выбери помощника. Тап по навыку — отмена.":"Выбери союзника. Тап по навыку — отмена.";
- if(d.combat2Assist)return f.name+" → "+(state.fighters[state.selectedEnemy]?.name??"враг")+". Повторный тап по навыку — удар; базовая — отмена.";
+ if(!f||f.side!=="ally"||f.hp<=0||f.id===actor.id)return d.combat2Assist?"Выбери помощника · навык — отмена":"Выбери союзника · навык — отмена";
+ if(d.combat2Assist)return f.name+" + "+actor.name+" → "+(state.fighters[state.selectedEnemy]?.name??"враг")+"\nНавык — удар · базовая — отмена";
  const p=CombatCore.previewSignal(state,actor,d.signalMeter+(actor.combat2Boost??0),f);
- return p?.gain>0?f.name+" +"+Math.round(p.gain)+" инициативы"+(p.cross?" · раньше врага":"")+". Повторный тап — сигнал; базовая — отмена.":"Нет прироста. Выбери другого союзника или отмени.";
+ return p?.gain>0?f.name+" +"+Math.round(p.gain)+" инициативы"+(p.cross?" · раньше врага":"")+"\nНавык — сигнал · базовая — отмена":"Нет прироста · выбери другого союзника";
 }
 let abilityHintGesture=null,abilityHintSuppressClick=null;
 // Combat-004: manual remains the default. Only one cancellable timer may run.
@@ -4541,7 +4541,7 @@ function syncBattleUI(){
  if(selection&&!autoBattle&&!visualBusy)hintText=combat2SelectionText(selection,actor);
  else if(state.combat2&&!autoBattle&&!visualBusy&&combat2ThreatText())hintText="⚠ "+combat2ThreatText()+(hintText?" · "+hintText:"");
  const hint=$("#actionHint");
- if(hint){if(hint.textContent!==hintText)hint.textContent=hintText;hint.hidden=!hintText;}
+ if(hint){if(hint.textContent!==hintText)hint.textContent=hintText;hint.hidden=!hintText;hint.classList.toggle("combat2-tactical-hint",!!state.combat2&&!autoBattle&&!visualBusy&&!!(selection||combat2ThreatText()));}
  renderActiveHero(actor);
  renderTurnQueue();
  const retry=$("#battleRetryBtn");if(retry)retry.hidden=!!state.active;
@@ -4605,7 +4605,7 @@ function renderArenaIndicators(){
   const markClass=npcMark==="first"||npcMark==="signal"?"must-first":npcMark==="hunter"?"assault-hunter":"";
   const markIcon=!named&&markClass?`<span class="arena-effect mark ${markClass}" title="${NpcBattleIntel.markerLabel(npcMark)}">${markClass==="must-first"?"①":"!"}</span>`:"";
   return `<div class="arena-indicator ${h.side} ${active?"acting":""} ${targeted?"targeted":""} ${named?"named":""} ${markClass}" data-fighter-id="${h.id}"${named&&h.side==="enemy"?` data-name-w="${nameW}"`:""} aria-label="${h.name}${npcMark?", "+NpcBattleIntel.markerLabel(npcMark):""}: здоровье ${Math.max(0,view.hp)} из ${h.maxHp}, инициатива ${Math.round(h.meter||0)} из 1000">
-   ${focused?`<div class="arena-focus-cursor ${support?"available":"locked"}" aria-hidden="true">▼</div>`:""}
+   ${focused?`<div class="arena-focus-cursor ${support&&h.side==="ally"?"available":"locked"}" aria-hidden="true">▼</div>`:""}
    ${named?`<div class="arena-indicator-name"${h.side==="enemy"?` style="max-width:${nameW}px"`:""}>${h.name}</div>`:""}
    ${protectionLine}
    <div class="arena-health" title="HP ${Math.max(0,view.hp)} / ${h.maxHp}"><span style="width:${health}%"></span></div>
@@ -5591,7 +5591,7 @@ function updateMeshes(){
     const targetSide=actor?CombatCore.abilityTargetSide(state,selectedAbility):null;
     const selected=choosing&&member.side==="ally"?h.id===state.fighters[combat2Choice]?.id:member.side===targetSide&&h.id===state.fighters[targetSide==="ally"?state.selectedAlly:state.selectedEnemy]?.id;
     if(mesh.base.av001Ring&&typeof ArenaVis001!=="undefined")
-     ArenaVis001.setMark(mesh.base,selected?(targetSide==="ally"?"ally":"enemy"):actor?.id===h.id?"active":null,BABYLON,scene);
+     ArenaVis001.setMark(mesh.base,selected?member.side:actor?.id===h.id?"active":null,BABYLON,scene);
     else if(mesh.base.material&&BABYLON.Color3)mesh.base.material.emissiveColor=selected
      ?new BABYLON.Color3(.48,.37,.12):new BABYLON.Color3(0,0,0);
     mesh.body.position.y=.8;

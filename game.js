@@ -4577,11 +4577,11 @@ function renderArenaIndicators(){
   const onlyOther=support&&(joint||["insurance","signal"].includes(AbilityData.get(actor,"special")?.kind));
   const npcMark=npcCombatMarker(h);
   const focused=!!actor&&!autoBattle&&h.hp>0&&(support?
-   h.side==="ally"&&(!onlyOther||h.id!==actor.id):
+   (h.side==="ally"&&(!onlyOther||h.id!==actor.id))||(joint&&state.fighters[state.selectedEnemy]?.id===h.id):
    h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
   // ARENA-UI-003B: the name only over the acting hero and the selected target;
   // everyone else shows bars and effect icons. A battle-intel mark stays as an icon.
-  const targeted=!!actor&&h.hp>0&&!support&&h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id;
+  const targeted=!!actor&&h.hp>0&&(!support||joint)&&h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id;
   const named=active||targeted||(battleIsFirstPlay&&support&&focused&&h.id==="ren")||(state.combat2&&support&&state.fighters[combat2Choice]?.id===h.id);
   // The band reserved for an enemy target's hanging name; the name is capped to
   // it (ellipsis), so a wider system font can never spill over a neighbour.
@@ -5552,8 +5552,9 @@ function updateMeshes(){
    mesh.body.position.x=mesh.head.position.x=mesh.base.position.x=x;
    mesh.body.position.z=mesh.head.position.z=mesh.base.position.z=z;
    const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
+    const choosing=!!combat2Selection();
     const targetSide=actor?CombatCore.abilityTargetSide(state,selectedAbility):null;
-    const selected=member.side===targetSide&&h.id===state.fighters[targetSide==="ally"?state.selectedAlly:state.selectedEnemy]?.id;
+    const selected=choosing&&member.side==="ally"?h.id===state.fighters[combat2Choice]?.id:member.side===targetSide&&h.id===state.fighters[targetSide==="ally"?state.selectedAlly:state.selectedEnemy]?.id;
     if(mesh.base.av001Ring&&typeof ArenaVis001!=="undefined")
      ArenaVis001.setMark(mesh.base,selected?(targetSide==="ally"?"ally":"enemy"):actor?.id===h.id?"active":null,BABYLON,scene);
     else if(mesh.base.material&&BABYLON.Color3)mesh.base.material.emissiveColor=selected

@@ -84,6 +84,7 @@ async function run(name,browserType,viewport){
  };
  const loadedShot=async(selector,suffix)=>{
   await page.waitForFunction(({selector,suffix})=>{const im=document.querySelector(selector);return im?.complete&&im.naturalWidth===1536&&im.naturalHeight===512&&im.getAttribute("src").endsWith(suffix)&&im.getBoundingClientRect().width>0&&im.getBoundingClientRect().height>0;},{selector,suffix},{timeout:20000});
+  await page.locator(selector).evaluate(async im=>{await im.decode();await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});
  };
  const fight=async(manual=false)=>{
   await page.locator("#squadStart").tap();

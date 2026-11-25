@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id),E=B15D,labels={starter:"Рен + Арт · 2",three:"Рен + Арт + Нада · 3",tempo:"Рен + Арт + Сава · 3",support:"Арт + Нада + Сава · 3",four:"Четыре героя",full:"Все пять героев",alternative:"Без Рена · тестовая роль*",independent:"Без Рена и Нады · роли*"};
 let input,cal,ctx,b,opts,enemy=-1,ally=-1,history=[],traceCursor=0,auto=false,timer=null,lastStats={};
 const cache=new Map(),pct=(v,m)=>Math.max(0,Math.min(100,100*v/Math.max(1,m))),make=(tag,t,c)=>{const el=document.createElement(tag);if(t!==undefined)el.textContent=t;if(c)el.className=c;return el;};
-function context(v){if(!cache.has(v))cache.set(v,E.setup(input,v));return cache.get(v);}
+function context(v){if(!cache.has(v)){if(cache.size>=4)cache.delete(cache.keys().next().value);cache.set(v,E.setup(input,v));}return cache.get(v);}
 function chooseSelect(el,values,initial){for(const [value,label] of Object.entries(values)){const o=make("option",label);o.value=value;el.append(o);}el.value=initial;}
 function stop(){auto=false;if(timer!==null)clearTimeout(timer);timer=null;$("autorun").textContent="Автобой";}
 function valid(i,side){return Number.isInteger(i)&&b?.fighters[i]?.side===side&&b.fighters[i].hp>0;}
@@ -91,7 +91,7 @@ function command(p){
   record();$("feedback").textContent=b.message+(b.active?"":" · "+b.allyActions+" действий");$("error").textContent="";render();return true;
  }catch(err){stop();$("error").textContent=String(err.message??err);render();return false;}
 }
-function tick(){if(!auto||!b.active){stop();render();return;}const p=E.plan(ctx,b);if(!command(p)){stop();render();return;}if(auto&&b.active)timer=setTimeout(tick,100);else{stop();render();}}
+function tick(){if(!auto||!b.active){stop();render();return;}if(b.allyActions>=240){stop();render();$("error").textContent="Предел исследовательского автобоя: 240 действий";return;}const p=E.plan(ctx,b);if(!command(p)){stop();render();return;}if(auto&&b.active)timer=setTimeout(tick,100);else{stop();render();}}
 $("autostep").onclick=()=>{if(!auto&&b?.active)command(E.plan(ctx,b));};$("autorun").onclick=()=>{if(auto){stop();render();return;}if(b?.active){auto=true;$("autorun").textContent="Стоп";render();tick();}};
 $("restart").onclick=()=>{if(opts)start(opts);};$("setupbtn").onclick=()=>{stop();if(b)render();$("setup").showModal();};$("start").onclick=()=>{try{$("setupError").textContent="";if(!$("seed").checkValidity()||$("seed").value==="")throw Error("Seed — целое число от 0 до 4294967295");start(options());$("setup").close();}catch(e){$("setupError").textContent=e.message;}};
 $("journalbtn").onclick=()=>{stop();if(b)render();$("loglist").textContent=history.join("\n")||"Пока нет действий.";$("journal").showModal();};
@@ -105,7 +105,7 @@ async function boot(){try{
  input=E.loadSources(a.labSource,a.source,a.extra,p.parts);cal=c.selected;
  chooseSelect($("variant"),Object.fromEntries(["ref","sava","art-only","full","bridge","recover","scaled","scaled-group","liora-only","bridge-noshare","recover-nopassive","legacy"].map(id=>[id,E.VARIANTS[id].label])),"sava");
  chooseSelect($("tier"),E.TIER_LABEL,"early");chooseSelect($("squad"),labels,"full");chooseSelect($("scenario"),Object.fromEntries(Object.entries(E.SCENARIOS).map(([k,v])=>[k,v.label])),"duel");
- start(options());document.documentElement.dataset.ready="true";
+ $("squad").onchange=()=>{const ok=E.SQUADS[$("squad").value].includes("liora");$("leader").disabled=!ok;if(!ok)$("leader").checked=false;};$("squad").onchange();start(options());document.documentElement.dataset.ready="true";
  }catch(e){$("scenarioLabel").textContent="Ошибка загрузки";$("error").textContent=e.message;document.documentElement.dataset.ready="error";}}
  boot();
 })();

@@ -82,8 +82,8 @@ async function run(name,browserType,viewport){
   await visibleTarget(selector);
   assert.equal(await page.locator("#campaignMainContent #storyDemoOpen").count(),0);
  };
- const loadedShot=async(selector,suffix)=>{
-  await page.waitForFunction(({selector,suffix})=>{const im=document.querySelector(selector);return im?.complete&&im.naturalWidth===1536&&im.naturalHeight===512&&im.getAttribute("src").endsWith(suffix)&&im.getBoundingClientRect().width>0&&im.getBoundingClientRect().height>0;},{selector,suffix},{timeout:20000});
+ const loadedShot=async(selector,suffix,width=1536,height=512)=>{
+  await page.waitForFunction(({selector,suffix,width,height})=>{const im=document.querySelector(selector);return im?.complete&&im.naturalWidth===width&&im.naturalHeight===height&&im.getAttribute("src").endsWith(suffix)&&im.getBoundingClientRect().width>0&&im.getBoundingClientRect().height>0;},{selector,suffix,width,height},{timeout:20000});
   await page.locator(selector).evaluate(async im=>{await im.decode();await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));});
  };
  const fight=async(manual=false,second=false,expectedIds=["ren","art"])=>{
@@ -196,7 +196,8 @@ async function run(name,browserType,viewport){
   await visibleTarget("#mainCampaignNext");await page.locator("#mainCampaignNext").tap();await routeReady();
   assert.equal(await page.locator("#mainCampaignMap").getAttribute("data-mission"),"II");
   assert.match(await page.locator("#mainCampaignBrief").innerText(),/Защитите его/);
-  assert.equal(await page.locator("#mainCampaignSceneArt").isVisible(),false,"do not display M1 art in chapter II");
+  await loadedShot("#mainCampaignSceneArt","m2/shelter-conflict.webp",1152,384);
+  await visibleTarget("#mainCampaignNode");await visibleTarget("#mainCampaignNext");
   await page.screenshot({path:path.join(dest,key+"-II-map.png")});
   await page.locator("#mainCampaignNode").tap();
   if(viewport.height===320){
@@ -205,6 +206,7 @@ async function run(name,browserType,viewport){
    assert.equal(await fight(false,true,["art"]),"enemy","one starter should lose chapter II");
    assert.equal((await inspectII()).proof.best,0);assert.equal((await inspectII()).rank,0);
    assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
+   assert.equal(await page.locator("#mainCampaignResultArt").isVisible(),false,"II defeat must not show the witness");
    assert.doesNotMatch(await page.locator("#mainCampaignResultText").innerText(),/Рабочий свободен|Нада предлагает/);
    await page.locator("#mainCampaignResultRetry").tap();
   }
@@ -213,13 +215,15 @@ async function run(name,browserType,viewport){
   assert.equal(await page.locator('#squadRoster .squad-choice[data-hero-id="nada"]').isEnabled(),false,"no guest Nada");
   assert.equal(await fight(true,true),"ally","real manual victory with fresh two heroes");
   assert.match(await page.locator("#mainCampaignResultText").innerText(),/Рабочий свободен/);
-  assert.equal(await page.locator("#mainCampaignResultArt").isVisible(),false);
+  await loadedShot("#mainCampaignResultArt img","m2/shelter-witness.webp",1152,384);
+  await noOverflow();await visibleTarget("#mainCampaignResultRetry");
   await visibleTarget("#mainCampaignResultClaim");await visibleTarget("#mainCampaignResultBack");
   await page.screenshot({path:path.join(dest,key+"-II-victory.png")});
   const iiWon=await inspectII();assert.equal(iiWon.status,"claimable");assert.ok(iiWon.proof.best>0);assert.equal(iiWon.rank,0);
   await page.reload({waitUntil:"load",timeout:60000});await ready();await showMap();
   assert.equal((await inspectII()).status,"claimable");
   await page.locator("#mainCampaignNext").tap();await routeReady("#mainCampaignClaim");
+  await loadedShot("#mainCampaignSceneArt","m2/shelter-witness.webp",1152,384);
   assert.match(await page.locator("#mainCampaignClaim").innerText(),/Принять Наду/);
   await page.locator("#mainCampaignClaim").tap();
   await page.waitForFunction(()=>!mainCampaignClaiming&&heroOwned("nada"),null,{timeout:20000});
@@ -233,6 +237,7 @@ async function run(name,browserType,viewport){
    await page.locator("#squadDisband").tap();
    for(const id of ["ren","art","nada"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
    assert.equal(await fight(false,true,["ren","art","nada"]),"ally");
+   await loadedShot("#mainCampaignResultArt img","m2/shelter-witness.webp",1152,384);
    assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
    await page.locator("#mainCampaignResultBack").tap();
    assert.equal((await inspectII()).receipts,1);
@@ -240,7 +245,9 @@ async function run(name,browserType,viewport){
   await page.reload({waitUntil:"load",timeout:60000});await ready();await showMap();
   assert.equal((await inspectII()).rank,1);assert.equal((await inspectII()).receipts,1);
   assert.equal(await page.locator("#mainCampaignMap").getAttribute("data-mission"),"I");
+  await loadedShot("#mainCampaignSceneArt","m1/warehouse-proof.webp");
   await page.locator("#mainCampaignNext").tap();await routeReady();
+  await loadedShot("#mainCampaignSceneArt","m2/shelter-witness.webp",1152,384);
   assert.equal(await page.locator("#mainCampaignClaim").isVisible(),false);
   await noOverflow();assert.deepEqual(errors,[]);
   console.log("CAM001B_AND_CAM002B_BROWSER_PASS",key,after,await inspectII());

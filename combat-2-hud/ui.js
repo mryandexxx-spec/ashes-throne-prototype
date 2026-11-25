@@ -54,12 +54,12 @@ function render(){
  const selectedEnemy=session.enemy,selectedAlly=session.ally;
  for(const f of b.fighters){
   const chosen=f.side==="ally"?f.id===selectedAlly:f.id===selectedEnemy,labels=statuses(f),el=make("button",undefined,"unit"+(chosen?" selected":"")+(f.id===a?.id?" current":"")+(f.hp<=0?" dead":"")+(f.combat2Prepared?" threatened":""));
-  el.dataset.fighter=f.id;el.disabled=!active||running||f.hp<=0||(f.side==="ally"&&(!session.pending||f.id===a.id));
+  el.dataset.fighter=f.id;el.disabled=!active||running||f.hp<=0;
   el.setAttribute("aria-pressed",String(chosen));el.setAttribute("aria-label",f.name+" · "+f.hp+" HP · "+f.protection+" защита · "+labels.join(", "));
   el.title=el.getAttribute("aria-label");
   el.append(face(f),make("b",short(f)),make("span",f.hp+"/"+f.maxHp+" · "+f.protection,"numbers"));
   const bars=make("div",undefined,"bars");bars.append(bar(f.hp,f.maxHp,"hp"),bar(f.protection,f.maxProtection,"prot"),bar(f.meter,1000,"meter"));
-  el.append(bars,make("span",labels.join(" · "),"unit-status"));el.onclick=()=>{session.select(f.id);render();};
+  el.append(bars,make("span",labels.join(" · "),"unit-status"));el.onclick=()=>{if(f.side==="enemy"||session.pending)session.select(f.id);$("feedback").textContent=f.name+" · "+(labels.join(" · ")||"Нет активных эффектов");render();};
   $(f.side==="ally"?"allies":"enemies").append(el);
  }
  for(const [side,id] of [["ally","allyCount"],["enemy","enemyCount"]]){const units=b.fighters.filter(f=>f.side===side);$(id).textContent=units.filter(f=>f.hp>0).length+"/"+units.length;}
@@ -76,7 +76,7 @@ function render(){
   const copy=make("div",undefined,"copy");copy.append(make("b",d?.name??label),make("small",cd?"Осталось "+cd:ready?(d.combat2Assist?"Выбрать помощника":d.target==="ally"?"Выбрать союзника":d.target==="self"?"На себя":d.target==="all-allies"?"На отряд":d.target==="all-enemies"?"Все враги":"Выбранная цель"):reason??""));
   el.append(face,copy);el.setAttribute("aria-label",d?.name??label);el.onclick=()=>perform(()=>session.skill(id));$("skills").append(el);
  }
- $("selection").hidden=!session.pending;
+ $("selection").hidden=!session.pending;$("screen").classList.toggle("choosing",!!session.pending);
  if(session.pending){const d=session.info(session.pending).d,p=session.preview();$("selectTitle").textContent=d?.name??"Выбор цели";$("preview").textContent=p.text??"";$("confirm").disabled=!p.ok;}
  $("autoStep").disabled=!active||running||!!session.pending;$("autoRun").disabled=!active||!!session.pending;$("infoBtn").disabled=!active||running;
  if(!active)stop();

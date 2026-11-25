@@ -341,7 +341,7 @@ function queueAutoAction(){
     !$("#battle").classList.contains("active"))return;
  autoTimer=setTimeout(()=>{
   autoTimer=null;
-  if(isVisualTransition()||visualActionPending()||combat2InputBlocked()||!autoBattle||!state.active||document.hidden||
+  if(isVisualTransition()||visualActionPending()||!autoBattle||!state.active||document.hidden||combat2InputBlocked()||
      !$("#battle").classList.contains("active"))return;
   const before=state.fighters.map(f=>({...f}));
   // Combat-015B: plan only when the scheduled auto step actually executes.
@@ -4754,7 +4754,7 @@ function resetBattle(){
 }
 // Combat-009: instant offensive abilities; allied skills wait for an ally tap.
 function applyManualAbility(abilityId){
- if(autoBattle||isVisualTransition()||visualActionPending()||combat2InputBlocked()||!CombatCore.abilityReady(state,abilityId))return false;
+ if(autoBattle||isVisualTransition()||visualActionPending()||!CombatCore.abilityReady(state,abilityId)||combat2InputBlocked())return false;
  const side=CombatCore.abilityTargetSide(state,abilityId);
  const targets=CombatCore.abilityTargetIndices(state,side);
  if(!targets.length)return false;
@@ -4777,7 +4777,7 @@ function applyManualAbility(abilityId){
 function pressAbility(abilityId){
  if(abilityHintSuppressClick===abilityId){abilityHintSuppressClick=null;return;}
  hideAbilityTooltip();
- if(!state.active||autoBattle||isVisualTransition()||visualActionPending()||combat2InputBlocked()||!CombatCore.abilityReady(state,abilityId))return;
+ if(!state.active||autoBattle||isVisualTransition()||visualActionPending()||!CombatCore.abilityReady(state,abilityId)||combat2InputBlocked())return;
  const actor=state.fighters[state.currentActor],d=state.combat2?AbilityData.get(actor,abilityId):null;
  if(state.combat2&&combat2Selection()&&abilityId==="basic"){selectedAbility="basic";clearCombat2Selection();syncBattleUI();return;}
  if(d&&(d.combat2Assist||d.combat2Signal)){

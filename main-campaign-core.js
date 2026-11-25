@@ -69,8 +69,19 @@ const MainCampaignCore=(()=>{
  }
  
  // CAM-002-B foundation: per-mission proof keys, same atomic wallet receipt.
- // No new mission is reachable from the live UI until its battle adapter is wired.
- const II_ID="main-cam-002-m1";
+ // Mission proof and receipts remain independent of navigation.
+ const II_ID="main-cam-002-m1",II_TITLE="За каменным ребром";
+ function enemiesFor(id,npcs){
+  if(id===ID)return enemies(npcs);
+  if(id!==II_ID)throw Error("CAMPAIGN_UNKNOWN_MISSION");
+  // Provisional encounter: reuse tested starter roles and nearly identical total HP.
+  return [["npc-pass-guard","npc-cam-m2-guard","Сторож",82,15,14],
+   ["npc-trail-interceptor","npc-cam-m2-interceptor","Сторож у выхода",75,10,19]].map(([archetype,instanceId,name,hp,protection,physicalAttack])=>{
+    const npc=npcs.spawn(archetype,{instanceId});
+    if(!npc)throw Error("CAM002B_NPC_MISSING");
+    return {...npc,name,hp,protection,maxProtection:protection,physicalAttack,atk:physicalAttack};
+   });
+ }
  const II_SOURCE=Object.freeze({sourceId:II_ID,kind:"first-clear",energyCost:0,
   reward:Object.freeze({currency:0,accountXp:0,materials:Object.freeze({}),heroGrants:Object.freeze(["nada"])})});
  const MISSIONS=Object.freeze([
@@ -155,6 +166,6 @@ const MainCampaignCore=(()=>{
    return {ok:true,runtime};
   }catch(_){return {ok:false,code:"REWARD_SYNC_FAILED"};}
  }
- return Object.freeze({KEY,ID,TITLE,SOURCE,RECEIPT,load,score,record,claimed,status,authorize,claim,enemies,II_ID,MISSIONS,mission,proofFor,statusFor,recordFor,claimFor});
+ return Object.freeze({KEY,ID,TITLE,SOURCE,RECEIPT,load,score,record,claimed,status,authorize,claim,enemies,enemiesFor,II_ID,II_TITLE,MISSIONS,mission,proofFor,statusFor,recordFor,claimFor});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=MainCampaignCore;

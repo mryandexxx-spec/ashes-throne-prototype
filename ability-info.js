@@ -21,6 +21,25 @@ const AbilityInfo=(()=>{
    status:"not-assigned",description:slotId==="leader"?
     "Лидерская способность этому демонстрационному герою не назначена.":
     "Способность пока не определена.",meta:[]};
+  // Native candidate descriptions must follow the actual battle definition,
+  // not the legacy insurance / fieldSignal / coordination fields.
+  if(actor?.combat2===true&&actor.side==="ally"){
+   let description=null;
+   const rules=a.combatRules;
+   if(a.combat2Cover)description="Другому живому союзнику даёт не менее одного заряда защиты и восстанавливает запас Protection на 65% физической атаки Арта, до максимума. HP Арта не расходуется.";
+   else if(rules?.combat2PreparedGuard)description="Один раз между ходами Арта прикрывает другого союзника от объявленного мощного удара. Снижает урон на 40%, но не более 85% физической атаки Арта и двойного остатка его Protection. Арт расходует половину предотвращённого урона в Protection с округлением вверх, не HP.";
+   else if(actor.id==="art"&&a.disruptTurns)description="Наносит "+Math.round(a.multiplier*100)+"% от действующей атаки. Срывает объявленный мощный удар: враг вместо него совершает обычную атаку. Зацепки Нады сохраняются.";
+   else if(a.combat2Signal)description="Другой живой союзник получает до "+(a.signalMeter+(actor.combat2Boost??0))+" инициативы, не выше 950. Уже набранная инициатива не уменьшается. Без дополнительного хода; если прироста нет, способность не расходуется.";
+   else if(a.combat2Assist)description="Сава наносит "+Math.round(a.multiplier*100)+"% от действующей атаки. Другой выбранный живой союзник наносит "+Math.round(a.combat2Assist*100)+"% своей эффективной физической атаки, не выше физической атаки Савы до крита. Если цель погибла от первого удара, помощник не атакует. Его ход и перезарядки не расходуются.";
+   else if(Number.isFinite(rules?.combat2Boost))description="Если совместный удар помощника нанёс урон HP или Protection, следующий Сигнал Савы получает +"+rules.combat2Boost+" инициативы. Бонус не складывается; исчезает при смерти Савы или смене волны.";
+   else if(actor.id==="sava"&&slotId==="basic"&&a.nextAllyMeter>0)description="Наносит "+Math.round(a.multiplier*100)+"% от действующей атаки. При попадании ближайший к ходу другой неготовый союзник получает до "+a.nextAllyMeter+" инициативы (до 950).";
+   if(description!==null){
+    const meta=slotId==="passive"?[]:["Цель: "+(a.combat2Assist?"враг и другой союзник":a.combat2Cover||a.combat2Signal?"другой союзник":TARGET[a.target]||"не указана")];
+    if(a.cooldown>0)meta.push("Перезарядка: "+a.cooldown+" собственных действия героя");
+    if(a.damageType==="physical")meta.push("Физический урон");
+    return {id:slot.id,label:slot.label,name:a.name,status:"available",description,meta};
+   }
+  }
   if(slotId==="passive"){
    const hasCombatRules=!!a.combatRules;
    const hasEffects=!!(a.triggers?.length||a.modifiers?.length||hasCombatRules);

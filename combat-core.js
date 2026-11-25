@@ -340,12 +340,14 @@ const CombatCore = (() => {
     // Called AFTER the normal finishTurn: any meter gained here moves a *future*
     // turn, never generates an immediate free action.
     if(actor.side!=="ally")return;
-    if(battle.combat2&&actor.id==="art")delete actor.combat2ReactUsed;
-    if(battle.combat2&&actor.id==="sava"&&ability.id==="basic"&&ability.nextAllyMeter>0){
-      const other=battle.fighters.filter(f=>f.side==="ally"&&f.hp>0&&f.id!==actor.id&&f.meter<950).sort((a,z)=>combat2Time(battle,a)-combat2Time(battle,z)||a.index-z.index)[0];
-      if(other)combat2Grant(battle,actor,other,ability.nextAllyMeter,"basic");
-    }else if(actor.id==="sava"&&ability.id==="basic"&&ability.nextAllyMeter>0)
+    if(actor.id==="sava"&&ability.id==="basic"&&ability.nextAllyMeter>0){
+      if(battle.combat2){
+        const other=battle.fighters.filter(f=>f.side==="ally"&&f.hp>0&&f.id!==actor.id&&f.meter<950).sort((a,z)=>combat2Time(battle,a)-combat2Time(battle,z)||a.index-z.index)[0];
+        if(other)combat2Grant(battle,actor,other,ability.nextAllyMeter,"basic");
+      }else
       grantTacticalMeter(battle,actor,ability.nextAllyMeter);
+    }
+    if(battle.combat2&&actor.id==="art")delete actor.combat2ReactUsed;
     if(actor.fieldSignal){
       battle.events.push({type:"field-signal-used",actorId:actor.id,
         sourceId:actor.fieldSignal.ownerId});

@@ -1,0 +1,8513 @@
+{
+  "seeds": [
+    4208712419,
+    2568180884,
+    927649349,
+    3582085110,
+    1941553575,
+    301022040,
+    2955457801,
+    1314926266,
+    3969362027,
+    2328830492,
+    688298957,
+    3342734718,
+    1702203183,
+    61671648,
+    2716107409,
+    1075575874,
+    3730011635,
+    2089480100,
+    448948565,
+    3103384326
+  ],
+  "tiers": {
+    "early": {
+      "skill": 1,
+      "level": 2,
+      "rush": 0.9,
+      "hold": 1.05,
+      "area": 0.95
+    },
+    "trained": {
+      "skill": 6,
+      "level": 12,
+      "rush": 1.12,
+      "hold": 1.3,
+      "area": 1.15
+    }
+  },
+  "holdout": true,
+  "battles": 6120,
+  "cells": [
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+art",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 12,
+      "q": 6,
+      "pool": 0.231,
+      "actions": 15.8,
+      "defense": 1.35,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 183.5,
+      "stats": {},
+      "threat": {
+        "prepared": 106,
+        "resolved": 56,
+        "cancelled": 35,
+        "reacted": 24
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+art",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 19,
+      "q": 19,
+      "pool": 0.653,
+      "actions": 7.95,
+      "defense": 0.9,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 73.5,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 17,
+        "reacted": 19
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.724,
+      "actions": 15.3,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 66.45,
+      "stats": {},
+      "threat": {
+        "prepared": 72,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 20
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.836,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 3,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 17
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+art+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 15,
+      "pool": 0.626,
+      "actions": 13.8,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 95.45,
+      "stats": {},
+      "threat": {
+        "prepared": 41,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 19
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.742,
+      "actions": 13.7,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 66.95,
+      "stats": {},
+      "threat": {
+        "prepared": 60,
+        "resolved": 55,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.827,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 36.3,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 38,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.613,
+      "actions": 13.55,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 106.7,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 36,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.426,
+      "actions": 20.55,
+      "defense": 2.1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 179.25,
+      "stats": {},
+      "threat": {
+        "prepared": 108,
+        "resolved": 55,
+        "cancelled": 30,
+        "reacted": 34
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.75,
+      "actions": 8,
+      "defense": 0.1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 13.3,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 20
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "art+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 15,
+      "q": 0,
+      "pool": 0.101,
+      "actions": 19.25,
+      "defense": 1.55,
+      "tauntActions": 0,
+      "areaHits": 2,
+      "damage": 301.3,
+      "stats": {},
+      "threat": {
+        "prepared": 80,
+        "resolved": 38,
+        "cancelled": 40,
+        "reacted": 20
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.349,
+      "actions": 22.15,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 224.05,
+      "stats": {},
+      "threat": {
+        "prepared": 106,
+        "resolved": 91,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.734,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 78.75,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 18,
+      "q": 0,
+      "pool": 0.161,
+      "actions": 21.6,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 2,
+      "damage": 280.55,
+      "stats": {},
+      "threat": {
+        "prepared": 79,
+        "resolved": 72,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.763,
+      "actions": 17.05,
+      "defense": 2.05,
+      "tauntActions": 1.15,
+      "areaHits": 0,
+      "damage": 62.15,
+      "stats": {},
+      "threat": {
+        "prepared": 78,
+        "resolved": 43,
+        "cancelled": 16,
+        "reacted": 22
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.848,
+      "actions": 8,
+      "defense": 0.2,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 8.2,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 0,
+        "reacted": 19
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.649,
+      "actions": 17.05,
+      "defense": 2.25,
+      "tauntActions": 1,
+      "areaHits": 1.05,
+      "damage": 92.7,
+      "stats": {},
+      "threat": {
+        "prepared": 60,
+        "resolved": 21,
+        "cancelled": 17,
+        "reacted": 21
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.833,
+      "actions": 17.05,
+      "defense": 1.05,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 31.7,
+      "stats": {},
+      "threat": {
+        "prepared": 61,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.916,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 3.3,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.751,
+      "actions": 18.2,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 77.45,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.945,
+      "actions": 16,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {},
+      "threat": {
+        "prepared": 60,
+        "resolved": 38,
+        "cancelled": 2,
+        "reacted": 20
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.969,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 19
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "ref",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.825,
+      "actions": 16.35,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 10.75,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 18
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+art",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 9,
+      "q": 1,
+      "pool": 0.114,
+      "actions": 14.8,
+      "defense": 1.1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 215.6,
+      "stats": {
+        "artDisruptApplied": 41,
+        "artReactBlocked": 286,
+        "artReactUsed": 22,
+        "artGranted": 22,
+        "artGuardBlocked": 182,
+        "artGuardUsed": 21,
+        "artFallbackAttempt": 1
+      },
+      "threat": {
+        "prepared": 111,
+        "resolved": 60,
+        "cancelled": 35,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+art",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 18,
+      "q": 18,
+      "pool": 0.576,
+      "actions": 7.9,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 99.9,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artReactBlocked": 147,
+        "artReactUsed": 20,
+        "artGranted": 20,
+        "artGuardBlocked": 147,
+        "artGuardUsed": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 17,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 19,
+      "pool": 0.688,
+      "actions": 15.05,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 82,
+      "stats": {
+        "artDisruptApplied": 18,
+        "artReactBlocked": 161,
+        "artReactUsed": 19,
+        "artGranted": 20,
+        "artGuardBlocked": 172,
+        "artGuardUsed": 19
+      },
+      "threat": {
+        "prepared": 70,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.822,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 15.85,
+      "stats": {
+        "artDisruptApplied": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+art+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 4,
+      "pool": 0.599,
+      "actions": 14.05,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 108.85,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artGranted": 20,
+        "artGuardBlocked": 168,
+        "artGuardUsed": 20,
+        "artReactBlocked": 83,
+        "artReactUsed": 18
+      },
+      "threat": {
+        "prepared": 47,
+        "resolved": 20,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.723,
+      "actions": 13.9,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 88.7,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 502,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 55,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.811,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 44.2,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 385,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 38,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 16,
+      "pool": 0.591,
+      "actions": 13.75,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 118.75,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 455,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 36,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.301,
+      "actions": 20.65,
+      "defense": 2,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 219.8,
+      "stats": {
+        "artDisruptApplied": 38,
+        "artReactBlocked": 496,
+        "artReactUsed": 40,
+        "artGranted": 40,
+        "artGuardBlocked": 345,
+        "artGuardUsed": 40,
+        "artLocalLethalGuard": 1
+      },
+      "threat": {
+        "prepared": 119,
+        "resolved": 61,
+        "cancelled": 28,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.718,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 56.85,
+      "stats": {
+        "artDisruptApplied": 20,
+        "artGranted": 20,
+        "artGuardBlocked": 190,
+        "artGuardUsed": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "art+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 14,
+      "q": 0,
+      "pool": 0.043,
+      "actions": 18.9,
+      "defense": 1.1,
+      "tauntActions": 0,
+      "areaHits": 2,
+      "damage": 328.4,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artReactBlocked": 190,
+        "artReactUsed": 20,
+        "artGranted": 22,
+        "artGuardBlocked": 211,
+        "artGuardUsed": 22,
+        "artFallbackAttempt": 14,
+        "artLocalLethalGuard": 4
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 39,
+        "cancelled": 40,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.319,
+      "actions": 22.4,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 235.95,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 500,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 111,
+        "resolved": 94,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.719,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 86.35,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 376,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 13,
+      "q": 0,
+      "pool": 0.114,
+      "actions": 21.45,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 2,
+      "damage": 301.85,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 544,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 74,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 17,
+      "pool": 0.704,
+      "actions": 17.9,
+      "defense": 2.3,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 102.9,
+      "stats": {
+        "artDisruptApplied": 36,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 498,
+        "lioraGuardUsed": 40,
+        "artGranted": 26,
+        "artGuardBlocked": 160,
+        "artGuardUsed": 19,
+        "artReactBlocked": 43,
+        "artReactUsed": 9
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 44,
+        "cancelled": 22,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.812,
+      "actions": 8,
+      "defense": 0.95,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 46.45,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artGranted": 19,
+        "artReactBlocked": 27,
+        "artReactUsed": 3,
+        "artGuardBlocked": 12,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 14,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 10,
+      "pool": 0.582,
+      "actions": 16.25,
+      "defense": 2,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 125.35,
+      "stats": {
+        "artDisruptApplied": 35,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 399,
+        "lioraGuardUsed": 40,
+        "artGranted": 20,
+        "artGuardBlocked": 178,
+        "artGuardUsed": 20,
+        "artReactBlocked": 16,
+        "artReactUsed": 2
+      },
+      "threat": {
+        "prepared": 58,
+        "resolved": 21,
+        "cancelled": 24,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.818,
+      "actions": 18.15,
+      "defense": 1.1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 50.9,
+      "stats": {
+        "lioraGranted": 48,
+        "lioraGuardBlocked": 509,
+        "lioraGuardUsed": 42
+      },
+      "threat": {
+        "prepared": 61,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.916,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 3.3,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.728,
+      "actions": 19.3,
+      "defense": 1.3,
+      "tauntActions": 1.15,
+      "areaHits": 1,
+      "damage": 85.3,
+      "stats": {
+        "lioraGranted": 58,
+        "lioraGuardBlocked": 491,
+        "lioraGuardUsed": 44
+      },
+      "threat": {
+        "prepared": 43,
+        "resolved": 21,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.938,
+      "actions": 16,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 4.2,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 399,
+        "lioraGuardUsed": 40,
+        "artDisruptApplied": 2
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 38,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.965,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "artDisruptApplied": 13,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 308,
+        "lioraGuardUsed": 36
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.812,
+      "actions": 16.4,
+      "defense": 1.25,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 26.8,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 390,
+        "lioraGuardUsed": 40,
+        "artDisruptApplied": 2,
+        "artGranted": 5,
+        "artGuardBlocked": 18,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.729,
+      "actions": 13.9,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 72.7,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 502,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 55,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.817,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 39.2,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 385,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 38,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 18,
+      "pool": 0.601,
+      "actions": 13.8,
+      "defense": 1.05,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 112.8,
+      "stats": {
+        "lioraGranted": 43,
+        "lioraGuardBlocked": 455,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 36,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.326,
+      "actions": 22.35,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 230.7,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 500,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 110,
+        "resolved": 93,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.726,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 81.35,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 376,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 16,
+      "q": 0,
+      "pool": 0.136,
+      "actions": 21.7,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 2,
+      "damage": 290.2,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 544,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 81,
+        "resolved": 75,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 19,
+      "pool": 0.702,
+      "actions": 18.05,
+      "defense": 2.45,
+      "tauntActions": 1.05,
+      "areaHits": 0,
+      "damage": 100.7,
+      "stats": {
+        "artDisruptApplied": 36,
+        "lioraGranted": 45,
+        "lioraGuardBlocked": 503,
+        "lioraGuardUsed": 41,
+        "artGranted": 27,
+        "artGuardBlocked": 144,
+        "artGuardUsed": 17,
+        "artReactBlocked": 36,
+        "artReactUsed": 4
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 44,
+        "cancelled": 23,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.817,
+      "actions": 8,
+      "defense": 0.6,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 34.6,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artGranted": 12,
+        "artReactBlocked": 22,
+        "artReactUsed": 3,
+        "artGuardBlocked": 12,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 14,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 11,
+      "pool": 0.593,
+      "actions": 16.45,
+      "defense": 2,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 122.1,
+      "stats": {
+        "artDisruptApplied": 34,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 399,
+        "lioraGuardUsed": 40,
+        "artGranted": 20,
+        "artGuardBlocked": 178,
+        "artGuardUsed": 20,
+        "artReactBlocked": 24,
+        "artReactUsed": 3
+      },
+      "threat": {
+        "prepared": 58,
+        "resolved": 22,
+        "cancelled": 22,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.823,
+      "actions": 18.15,
+      "defense": 1.1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 44.1,
+      "stats": {
+        "lioraGranted": 48,
+        "lioraGuardBlocked": 509,
+        "lioraGuardUsed": 42
+      },
+      "threat": {
+        "prepared": 61,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.918,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 1.7,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.734,
+      "actions": 19.3,
+      "defense": 1.3,
+      "tauntActions": 1.15,
+      "areaHits": 1,
+      "damage": 74.35,
+      "stats": {
+        "lioraGranted": 58,
+        "lioraGuardBlocked": 491,
+        "lioraGuardUsed": 44
+      },
+      "threat": {
+        "prepared": 43,
+        "resolved": 21,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.94,
+      "actions": 16,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0.85,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 399,
+        "lioraGuardUsed": 40,
+        "artDisruptApplied": 2
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 38,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.966,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "artDisruptApplied": 13,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 308,
+        "lioraGuardUsed": 36
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-leader10",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.816,
+      "actions": 16.4,
+      "defense": 1.25,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 20,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 390,
+        "lioraGuardUsed": 40,
+        "artDisruptApplied": 2,
+        "artGranted": 5
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+art",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 5,
+      "q": 0,
+      "pool": 0.027,
+      "actions": 14.6,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 243.95,
+      "stats": {
+        "artDisruptApplied": 44,
+        "artGranted": 20,
+        "artGuardBlocked": 174,
+        "artGuardUsed": 20,
+        "artFallbackAttempt": 1
+      },
+      "threat": {
+        "prepared": 115,
+        "resolved": 64,
+        "cancelled": 38,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+art",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 17,
+      "q": 17,
+      "pool": 0.579,
+      "actions": 7.85,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 106.4,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artGranted": 20,
+        "artGuardBlocked": 147,
+        "artGuardUsed": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 17,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 16,
+      "pool": 0.695,
+      "actions": 14.95,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 88.25,
+      "stats": {
+        "artDisruptApplied": 18,
+        "artGranted": 20,
+        "artGuardBlocked": 158,
+        "artGuardUsed": 19
+      },
+      "threat": {
+        "prepared": 71,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.822,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 15.85,
+      "stats": {
+        "artDisruptApplied": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+art+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 4,
+      "pool": 0.605,
+      "actions": 14.05,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 109.45,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artGranted": 20,
+        "artGuardBlocked": 168,
+        "artGuardUsed": 20
+      },
+      "threat": {
+        "prepared": 48,
+        "resolved": 20,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.723,
+      "actions": 13.9,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 88.7,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 502,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 55,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.811,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 44.2,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 385,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 38,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 16,
+      "pool": 0.591,
+      "actions": 13.75,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 118.75,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 455,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 36,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.312,
+      "actions": 20.4,
+      "defense": 2,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 225.35,
+      "stats": {
+        "artDisruptApplied": 41,
+        "artGranted": 40,
+        "artGuardBlocked": 345,
+        "artGuardUsed": 40,
+        "artLocalLethalGuard": 2
+      },
+      "threat": {
+        "prepared": 120,
+        "resolved": 62,
+        "cancelled": 31,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.718,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 56.85,
+      "stats": {
+        "artDisruptApplied": 20,
+        "artGranted": 20,
+        "artGuardBlocked": 190,
+        "artGuardUsed": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "art+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 13,
+      "q": 0,
+      "pool": 0.053,
+      "actions": 18.6,
+      "defense": 1.1,
+      "tauntActions": 0,
+      "areaHits": 2,
+      "damage": 323.6,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artGranted": 22,
+        "artGuardBlocked": 211,
+        "artGuardUsed": 22,
+        "artFallbackAttempt": 13,
+        "artLocalLethalGuard": 5
+      },
+      "threat": {
+        "prepared": 81,
+        "resolved": 40,
+        "cancelled": 40,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.319,
+      "actions": 22.4,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 235.95,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 500,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 111,
+        "resolved": 94,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.719,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 86.35,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 376,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 13,
+      "q": 0,
+      "pool": 0.114,
+      "actions": 21.45,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 2,
+      "damage": 301.85,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 544,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 74,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 17,
+      "pool": 0.704,
+      "actions": 17.9,
+      "defense": 2.3,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 105,
+      "stats": {
+        "artDisruptApplied": 36,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 498,
+        "lioraGuardUsed": 40,
+        "artGranted": 26,
+        "artGuardBlocked": 160,
+        "artGuardUsed": 19
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 44,
+        "cancelled": 22,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.808,
+      "actions": 8,
+      "defense": 0.95,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 49.9,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artGranted": 19,
+        "artGuardBlocked": 21,
+        "artGuardUsed": 3
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 14,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 10,
+      "pool": 0.584,
+      "actions": 16.25,
+      "defense": 2,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 125.35,
+      "stats": {
+        "artDisruptApplied": 35,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 399,
+        "lioraGuardUsed": 40,
+        "artGranted": 20,
+        "artGuardBlocked": 178,
+        "artGuardUsed": 20
+      },
+      "threat": {
+        "prepared": 58,
+        "resolved": 21,
+        "cancelled": 24,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.818,
+      "actions": 18.15,
+      "defense": 1.1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 50.9,
+      "stats": {
+        "lioraGranted": 48,
+        "lioraGuardBlocked": 509,
+        "lioraGuardUsed": 42
+      },
+      "threat": {
+        "prepared": 61,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.916,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 3.3,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.728,
+      "actions": 19.3,
+      "defense": 1.3,
+      "tauntActions": 1.15,
+      "areaHits": 1,
+      "damage": 85.3,
+      "stats": {
+        "lioraGranted": 58,
+        "lioraGuardBlocked": 491,
+        "lioraGuardUsed": 44
+      },
+      "threat": {
+        "prepared": 43,
+        "resolved": 21,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.938,
+      "actions": 16,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 4.2,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 399,
+        "lioraGuardUsed": 40,
+        "artDisruptApplied": 2
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 38,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.965,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "artDisruptApplied": 13,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 308,
+        "lioraGuardUsed": 36
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-noreact",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.812,
+      "actions": 16.4,
+      "defense": 1.25,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 26.8,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 390,
+        "lioraGuardUsed": 40,
+        "artDisruptApplied": 2,
+        "artGranted": 5,
+        "artGuardBlocked": 18,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+art",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 9,
+      "q": 1,
+      "pool": 0.114,
+      "actions": 14.85,
+      "defense": 1.1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 215.45,
+      "stats": {
+        "artDisruptApplied": 41,
+        "artReactBlocked": 286,
+        "artReactUsed": 22,
+        "artGranted": 22,
+        "artGuardBlocked": 232,
+        "artGuardUsed": 21,
+        "artFallbackAttempt": 1
+      },
+      "threat": {
+        "prepared": 111,
+        "resolved": 60,
+        "cancelled": 35,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+art",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 18,
+      "q": 18,
+      "pool": 0.582,
+      "actions": 7.9,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 97.8,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artReactBlocked": 147,
+        "artReactUsed": 20,
+        "artGranted": 20,
+        "artGuardBlocked": 193,
+        "artGuardUsed": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 17,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 19,
+      "pool": 0.692,
+      "actions": 15.05,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 80.1,
+      "stats": {
+        "artDisruptApplied": 18,
+        "artReactBlocked": 161,
+        "artReactUsed": 19,
+        "artGranted": 20,
+        "artGuardBlocked": 212,
+        "artGuardUsed": 19
+      },
+      "threat": {
+        "prepared": 70,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.822,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 15.85,
+      "stats": {
+        "artDisruptApplied": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+art+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 4,
+      "pool": 0.605,
+      "actions": 14.05,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 107.95,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artGranted": 20,
+        "artGuardBlocked": 226,
+        "artGuardUsed": 20,
+        "artReactBlocked": 83,
+        "artReactUsed": 18
+      },
+      "threat": {
+        "prepared": 45,
+        "resolved": 20,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.723,
+      "actions": 13.9,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 88.7,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 502,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 55,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.811,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 44.2,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 385,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 38,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 16,
+      "pool": 0.591,
+      "actions": 13.75,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 118.75,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 455,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 36,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.359,
+      "actions": 20.7,
+      "defense": 2,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 198.8,
+      "stats": {
+        "artDisruptApplied": 38,
+        "artReactBlocked": 443,
+        "artReactUsed": 36,
+        "artGranted": 40,
+        "artGuardBlocked": 440,
+        "artGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 113,
+        "resolved": 56,
+        "cancelled": 30,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.724,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 53.85,
+      "stats": {
+        "artDisruptApplied": 20,
+        "artGranted": 20,
+        "artGuardBlocked": 250,
+        "artGuardUsed": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "art+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 9,
+      "q": 0,
+      "pool": 0.042,
+      "actions": 18.65,
+      "defense": 1.5,
+      "tauntActions": 0,
+      "areaHits": 2,
+      "damage": 328.65,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artReactBlocked": 190,
+        "artReactUsed": 20,
+        "artGranted": 30,
+        "artGuardBlocked": 372,
+        "artGuardUsed": 30,
+        "artFallbackAttempt": 15,
+        "artLocalLethalGuard": 5
+      },
+      "threat": {
+        "prepared": 79,
+        "resolved": 39,
+        "cancelled": 40,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.319,
+      "actions": 22.4,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 235.95,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 500,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 111,
+        "resolved": 94,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.719,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 86.35,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 376,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 13,
+      "q": 0,
+      "pool": 0.114,
+      "actions": 21.45,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 2,
+      "damage": 301.85,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 544,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 74,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 19,
+      "pool": 0.707,
+      "actions": 18,
+      "defense": 2.4,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 101,
+      "stats": {
+        "artDisruptApplied": 36,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 498,
+        "lioraGuardUsed": 40,
+        "artGranted": 28,
+        "artGuardBlocked": 202,
+        "artGuardUsed": 19,
+        "artReactBlocked": 43,
+        "artReactUsed": 9
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 44,
+        "cancelled": 22,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.813,
+      "actions": 8,
+      "defense": 0.95,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 46.25,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artGranted": 19,
+        "artReactBlocked": 27,
+        "artReactUsed": 3,
+        "artGuardBlocked": 16,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 14,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 10,
+      "pool": 0.584,
+      "actions": 16.25,
+      "defense": 2,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 124.3,
+      "stats": {
+        "artDisruptApplied": 35,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 399,
+        "lioraGuardUsed": 40,
+        "artGranted": 20,
+        "artGuardBlocked": 221,
+        "artGuardUsed": 20,
+        "artReactBlocked": 16,
+        "artReactUsed": 2
+      },
+      "threat": {
+        "prepared": 58,
+        "resolved": 21,
+        "cancelled": 24,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.818,
+      "actions": 18.15,
+      "defense": 1.1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 50.9,
+      "stats": {
+        "lioraGranted": 48,
+        "lioraGuardBlocked": 509,
+        "lioraGuardUsed": 42
+      },
+      "threat": {
+        "prepared": 61,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.916,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 3.3,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.728,
+      "actions": 19.3,
+      "defense": 1.3,
+      "tauntActions": 1.15,
+      "areaHits": 1,
+      "damage": 85.3,
+      "stats": {
+        "lioraGranted": 58,
+        "lioraGuardBlocked": 491,
+        "lioraGuardUsed": 44
+      },
+      "threat": {
+        "prepared": 43,
+        "resolved": 21,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.938,
+      "actions": 16,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 4.2,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 399,
+        "lioraGuardUsed": 40,
+        "artDisruptApplied": 2
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 38,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.965,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "artDisruptApplied": 13,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 308,
+        "lioraGuardUsed": 36
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-flex",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.813,
+      "actions": 16.4,
+      "defense": 1.25,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 26.6,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 390,
+        "lioraGuardUsed": 40,
+        "artDisruptApplied": 2,
+        "artGranted": 5,
+        "artGuardBlocked": 22,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+art",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 11,
+      "q": 2,
+      "pool": 0.129,
+      "actions": 15.15,
+      "defense": 1.2,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 211.7,
+      "stats": {
+        "artDisruptApplied": 42,
+        "artReactBlocked": 286,
+        "artReactUsed": 22,
+        "artGranted": 24,
+        "artRestored": 192,
+        "artGuardBlocked": 198,
+        "artGuardUsed": 23,
+        "artLocalLethalGuard": 1,
+        "artLocalLethalReact": 2,
+        "artFallbackAttempt": 1
+      },
+      "threat": {
+        "prepared": 110,
+        "resolved": 60,
+        "cancelled": 36,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+art",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 18,
+      "q": 18,
+      "pool": 0.597,
+      "actions": 7.9,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 92.7,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artReactBlocked": 147,
+        "artReactUsed": 20,
+        "artGranted": 20,
+        "artRestored": 160,
+        "artGuardBlocked": 147,
+        "artGuardUsed": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 17,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.704,
+      "actions": 15.1,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 74.65,
+      "stats": {
+        "artDisruptApplied": 18,
+        "artReactBlocked": 161,
+        "artReactUsed": 19,
+        "artGranted": 20,
+        "artRestored": 160,
+        "artGuardBlocked": 172,
+        "artGuardUsed": 19
+      },
+      "threat": {
+        "prepared": 70,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.822,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 15.85,
+      "stats": {
+        "artDisruptApplied": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+art+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 5,
+      "pool": 0.611,
+      "actions": 13.95,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 106.55,
+      "stats": {
+        "artDisruptApplied": 18,
+        "artGranted": 20,
+        "artRestored": 160,
+        "artGuardBlocked": 168,
+        "artGuardUsed": 20,
+        "artReactBlocked": 83,
+        "artReactUsed": 18
+      },
+      "threat": {
+        "prepared": 43,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.723,
+      "actions": 13.9,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 88.7,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 502,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 55,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.811,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 44.2,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 385,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 38,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 16,
+      "pool": 0.591,
+      "actions": 13.75,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 118.75,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 455,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 36,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.379,
+      "actions": 20.75,
+      "defense": 2.05,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 192.1,
+      "stats": {
+        "artDisruptApplied": 35,
+        "artReactBlocked": 443,
+        "artReactUsed": 36,
+        "artGranted": 41,
+        "artRestored": 328,
+        "artGuardBlocked": 341,
+        "artGuardUsed": 41,
+        "artLocalLethalReact": 1,
+        "artLocalLethalGuard": 1
+      },
+      "threat": {
+        "prepared": 113,
+        "resolved": 56,
+        "cancelled": 27,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.734,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 48.85,
+      "stats": {
+        "artDisruptApplied": 20,
+        "artGranted": 20,
+        "artRestored": 160,
+        "artGuardBlocked": 190,
+        "artGuardUsed": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "art+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 8,
+      "q": 0,
+      "pool": 0.05,
+      "actions": 18.85,
+      "defense": 1.6,
+      "tauntActions": 0,
+      "areaHits": 2,
+      "damage": 325.15,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artReactBlocked": 190,
+        "artReactUsed": 20,
+        "artGranted": 32,
+        "artRestored": 256,
+        "artGuardBlocked": 313,
+        "artGuardUsed": 32,
+        "artFallbackAttempt": 15,
+        "artLocalLethalGuard": 1
+      },
+      "threat": {
+        "prepared": 79,
+        "resolved": 38,
+        "cancelled": 40,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.319,
+      "actions": 22.4,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 235.95,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 500,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 111,
+        "resolved": 94,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.719,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 86.35,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 376,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 13,
+      "q": 0,
+      "pool": 0.114,
+      "actions": 21.45,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 2,
+      "damage": 301.85,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 544,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 74,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.725,
+      "actions": 18.05,
+      "defense": 2.45,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 95.2,
+      "stats": {
+        "artDisruptApplied": 36,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 498,
+        "lioraGuardUsed": 40,
+        "artGranted": 29,
+        "artRestored": 232,
+        "artGuardBlocked": 160,
+        "artGuardUsed": 19,
+        "artReactBlocked": 43,
+        "artReactUsed": 9
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 44,
+        "cancelled": 22,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.827,
+      "actions": 8,
+      "defense": 0.95,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 45.65,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artGranted": 19,
+        "artRestored": 152,
+        "artReactBlocked": 27,
+        "artReactUsed": 3,
+        "artGuardBlocked": 12,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 14,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 11,
+      "pool": 0.596,
+      "actions": 16.55,
+      "defense": 2,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 121.05,
+      "stats": {
+        "artDisruptApplied": 34,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 399,
+        "lioraGuardUsed": 40,
+        "artGranted": 20,
+        "artRestored": 160,
+        "artGuardBlocked": 178,
+        "artGuardUsed": 20,
+        "artReactBlocked": 26,
+        "artReactUsed": 3
+      },
+      "threat": {
+        "prepared": 58,
+        "resolved": 22,
+        "cancelled": 22,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.818,
+      "actions": 18.15,
+      "defense": 1.1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 50.9,
+      "stats": {
+        "lioraGranted": 48,
+        "lioraGuardBlocked": 509,
+        "lioraGuardUsed": 42
+      },
+      "threat": {
+        "prepared": 61,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.916,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 3.3,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.728,
+      "actions": 19.3,
+      "defense": 1.3,
+      "tauntActions": 1.15,
+      "areaHits": 1,
+      "damage": 85.3,
+      "stats": {
+        "lioraGranted": 58,
+        "lioraGuardBlocked": 491,
+        "lioraGuardUsed": 44
+      },
+      "threat": {
+        "prepared": 43,
+        "resolved": 21,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.938,
+      "actions": 16,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 4.2,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 399,
+        "lioraGuardUsed": 40,
+        "artDisruptApplied": 2
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 38,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.965,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "artDisruptApplied": 13,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 308,
+        "lioraGuardUsed": 36
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-recover",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.815,
+      "actions": 16.4,
+      "defense": 1.25,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 26,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 390,
+        "lioraGuardUsed": 40,
+        "artDisruptApplied": 2,
+        "artGranted": 5,
+        "artRestored": 40,
+        "artGuardBlocked": 18,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+art",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 9,
+      "q": 1,
+      "pool": 0.114,
+      "actions": 14.8,
+      "defense": 1.1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 215.6,
+      "stats": {
+        "artDisruptApplied": 41,
+        "artReactBlocked": 286,
+        "artReactUsed": 22,
+        "artGranted": 22,
+        "artGuardBlocked": 182,
+        "artGuardUsed": 21,
+        "artFallbackAttempt": 1
+      },
+      "threat": {
+        "prepared": 111,
+        "resolved": 60,
+        "cancelled": 35,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+art",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 18,
+      "q": 18,
+      "pool": 0.576,
+      "actions": 7.9,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 99.9,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artReactBlocked": 147,
+        "artReactUsed": 20,
+        "artGranted": 20,
+        "artGuardBlocked": 147,
+        "artGuardUsed": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 17,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 19,
+      "pool": 0.688,
+      "actions": 15.05,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 82,
+      "stats": {
+        "artDisruptApplied": 18,
+        "artReactBlocked": 161,
+        "artReactUsed": 19,
+        "artGranted": 20,
+        "artGuardBlocked": 172,
+        "artGuardUsed": 19
+      },
+      "threat": {
+        "prepared": 70,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.822,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 15.85,
+      "stats": {
+        "artDisruptApplied": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 4,
+      "pool": 0.599,
+      "actions": 14.05,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 108.85,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artGranted": 20,
+        "artGuardBlocked": 168,
+        "artGuardUsed": 20,
+        "artReactBlocked": 83,
+        "artReactUsed": 18
+      },
+      "threat": {
+        "prepared": 47,
+        "resolved": 20,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.723,
+      "actions": 13.9,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 88.7,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 502,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 55,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.811,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 44.2,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 385,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 38,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 16,
+      "pool": 0.591,
+      "actions": 13.75,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 118.75,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 455,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 36,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.301,
+      "actions": 20.65,
+      "defense": 2,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 219.8,
+      "stats": {
+        "artDisruptApplied": 38,
+        "artReactBlocked": 496,
+        "artReactUsed": 40,
+        "artGranted": 40,
+        "artGuardBlocked": 345,
+        "artGuardUsed": 40,
+        "artLocalLethalGuard": 1
+      },
+      "threat": {
+        "prepared": 119,
+        "resolved": 61,
+        "cancelled": 28,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.718,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 56.85,
+      "stats": {
+        "artDisruptApplied": 20,
+        "artGranted": 20,
+        "artGuardBlocked": 190,
+        "artGuardUsed": 20
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "art+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 14,
+      "q": 0,
+      "pool": 0.043,
+      "actions": 18.9,
+      "defense": 1.1,
+      "tauntActions": 0,
+      "areaHits": 2,
+      "damage": 328.4,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artReactBlocked": 190,
+        "artReactUsed": 20,
+        "artGranted": 22,
+        "artGuardBlocked": 211,
+        "artGuardUsed": 22,
+        "artFallbackAttempt": 14,
+        "artLocalLethalGuard": 4
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 39,
+        "cancelled": 40,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.319,
+      "actions": 22.4,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 235.95,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 500,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 111,
+        "resolved": 94,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.719,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 86.35,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 376,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 13,
+      "q": 0,
+      "pool": 0.114,
+      "actions": 21.45,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 2,
+      "damage": 301.85,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 544,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 74,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 17,
+      "pool": 0.704,
+      "actions": 17.9,
+      "defense": 2.3,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 102.9,
+      "stats": {
+        "artDisruptApplied": 36,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 498,
+        "lioraGuardUsed": 40,
+        "artGranted": 26,
+        "artGuardBlocked": 160,
+        "artGuardUsed": 19,
+        "artReactBlocked": 43,
+        "artReactUsed": 9
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 44,
+        "cancelled": 22,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.812,
+      "actions": 8,
+      "defense": 0.95,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 46.45,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artGranted": 19,
+        "artReactBlocked": 27,
+        "artReactUsed": 3,
+        "artGuardBlocked": 12,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 14,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 10,
+      "pool": 0.582,
+      "actions": 16.25,
+      "defense": 2,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 125.35,
+      "stats": {
+        "artDisruptApplied": 35,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 399,
+        "lioraGuardUsed": 40,
+        "artGranted": 20,
+        "artGuardBlocked": 178,
+        "artGuardUsed": 20,
+        "artReactBlocked": 16,
+        "artReactUsed": 2
+      },
+      "threat": {
+        "prepared": 58,
+        "resolved": 21,
+        "cancelled": 24,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.818,
+      "actions": 18.15,
+      "defense": 1.1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 50.9,
+      "stats": {
+        "lioraGranted": 48,
+        "lioraGuardBlocked": 509,
+        "lioraGuardUsed": 42
+      },
+      "threat": {
+        "prepared": 61,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.916,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 3.3,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.728,
+      "actions": 19.3,
+      "defense": 1.3,
+      "tauntActions": 1.15,
+      "areaHits": 1,
+      "damage": 85.3,
+      "stats": {
+        "lioraGranted": 58,
+        "lioraGuardBlocked": 491,
+        "lioraGuardUsed": 44
+      },
+      "threat": {
+        "prepared": 43,
+        "resolved": 21,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.938,
+      "actions": 16,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 4.2,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 399,
+        "lioraGuardUsed": 40,
+        "artDisruptApplied": 2
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 38,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.965,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "artDisruptApplied": 13,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 308,
+        "lioraGuardUsed": 36
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "early",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.812,
+      "actions": 16.4,
+      "defense": 1.25,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 26.8,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 390,
+        "lioraGuardUsed": 40,
+        "artDisruptApplied": 2,
+        "artGranted": 5,
+        "artGuardBlocked": 18,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+art",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 19,
+      "q": 18,
+      "pool": 0.573,
+      "actions": 13.55,
+      "defense": 1.45,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 104.6,
+      "stats": {},
+      "threat": {
+        "prepared": 81,
+        "resolved": 44,
+        "cancelled": 14,
+        "reacted": 22
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+art",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.73,
+      "actions": 8,
+      "defense": 0.8,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 59,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 0,
+        "reacted": 17
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.877,
+      "actions": 10.9,
+      "defense": 0.5,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 17.4,
+      "stats": {},
+      "threat": {
+        "prepared": 60,
+        "resolved": 38,
+        "cancelled": 2,
+        "reacted": 20
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.867,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 2.6,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 14
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+art+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.779,
+      "actions": 10.95,
+      "defense": 0.65,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 31.5,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 17
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.896,
+      "actions": 11.75,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {},
+      "threat": {
+        "prepared": 60,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.927,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0.55,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.78,
+      "actions": 11.65,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 15.25,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 3,
+      "pool": 0.608,
+      "actions": 16.1,
+      "defense": 1.3,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 139.5,
+      "stats": {},
+      "threat": {
+        "prepared": 80,
+        "resolved": 40,
+        "cancelled": 33,
+        "reacted": 20
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.781,
+      "actions": 8,
+      "defense": 0.2,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 26.6,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 20
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "art+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 1,
+      "pool": 0.567,
+      "actions": 14.65,
+      "defense": 1.25,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 144.65,
+      "stats": {},
+      "threat": {
+        "prepared": 60,
+        "resolved": 20,
+        "cancelled": 24,
+        "reacted": 20
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 19,
+      "pool": 0.659,
+      "actions": 18,
+      "defense": 1.95,
+      "tauntActions": 1.95,
+      "areaHits": 0,
+      "damage": 99.35,
+      "stats": {},
+      "threat": {
+        "prepared": 80,
+        "resolved": 80,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.875,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 14.1,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.596,
+      "actions": 16.8,
+      "defense": 1.4,
+      "tauntActions": 1.25,
+      "areaHits": 1,
+      "damage": 125.8,
+      "stats": {},
+      "threat": {
+        "prepared": 60,
+        "resolved": 46,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.864,
+      "actions": 12.5,
+      "defense": 1.05,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 5.85,
+      "stats": {},
+      "threat": {
+        "prepared": 61,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 20
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.859,
+      "actions": 8,
+      "defense": 0.15,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 10.85,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 1,
+        "reacted": 18
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.772,
+      "actions": 12.2,
+      "defense": 1.3,
+      "tauntActions": 1.1,
+      "areaHits": 1,
+      "damage": 29.8,
+      "stats": {},
+      "threat": {
+        "prepared": 42,
+        "resolved": 20,
+        "cancelled": 1,
+        "reacted": 20
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.862,
+      "actions": 17.35,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 17.7,
+      "stats": {},
+      "threat": {
+        "prepared": 60,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.912,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 7.8,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.764,
+      "actions": 16.8,
+      "defense": 1.05,
+      "tauntActions": 1.05,
+      "areaHits": 1,
+      "damage": 37.65,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.966,
+      "actions": 12.6,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {},
+      "threat": {
+        "prepared": 58,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 18
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.977,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 16
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "ref",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.863,
+      "actions": 12.4,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 0.15,
+      "stats": {},
+      "threat": {
+        "prepared": 38,
+        "resolved": 0,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+art",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 19,
+      "q": 14,
+      "pool": 0.481,
+      "actions": 13.05,
+      "defense": 1.15,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 135.2,
+      "stats": {
+        "artDisruptApplied": 34,
+        "artReactBlocked": 84,
+        "artReactUsed": 22,
+        "artGranted": 23,
+        "artGuardBlocked": 213,
+        "artGuardUsed": 18,
+        "artLocalLethalReact": 1
+      },
+      "threat": {
+        "prepared": 83,
+        "resolved": 45,
+        "cancelled": 8,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+art",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.67,
+      "actions": 8,
+      "defense": 0.75,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 80.1,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artReactBlocked": 212,
+        "artReactUsed": 16,
+        "artGranted": 15,
+        "artGuardBlocked": 173,
+        "artGuardUsed": 15
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.856,
+      "actions": 10.9,
+      "defense": 0.45,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 22.85,
+      "stats": {
+        "artReactBlocked": 179,
+        "artReactUsed": 16,
+        "artGranted": 9,
+        "artDisruptApplied": 2,
+        "artGuardBlocked": 70,
+        "artGuardUsed": 7
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 38,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.86,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 5.6,
+      "stats": {
+        "artDisruptApplied": 18
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+art+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.75,
+      "actions": 10.8,
+      "defense": 0.9,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 46.35,
+      "stats": {
+        "artDisruptApplied": 2,
+        "artReactBlocked": 107,
+        "artReactUsed": 17,
+        "artGranted": 18,
+        "artGuardBlocked": 168,
+        "artGuardUsed": 18
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.879,
+      "actions": 11.75,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 4.15,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 684,
+        "lioraGuardUsed": 38
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.901,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 8.25,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 559,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.754,
+      "actions": 11.65,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 40.6,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 722,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.514,
+      "actions": 16.9,
+      "defense": 1.9,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 177.6,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artReactBlocked": 93,
+        "artReactUsed": 20,
+        "artGranted": 38,
+        "artGuardBlocked": 323,
+        "artGuardUsed": 35
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 40,
+        "cancelled": 38,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.773,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 38.5,
+      "stats": {
+        "artDisruptApplied": 20,
+        "artGranted": 20,
+        "artGuardBlocked": 170,
+        "artGuardUsed": 16
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "art+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.452,
+      "actions": 16.55,
+      "defense": 1.85,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 186.95,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artReactBlocked": 282,
+        "artReactUsed": 20,
+        "artGranted": 37,
+        "artGuardBlocked": 341,
+        "artGuardUsed": 33
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 20,
+        "cancelled": 36,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 14,
+      "pool": 0.621,
+      "actions": 18.2,
+      "defense": 1.7,
+      "tauntActions": 1.4,
+      "areaHits": 0,
+      "damage": 135.8,
+      "stats": {
+        "lioraGranted": 74,
+        "lioraGuardBlocked": 877,
+        "lioraGuardUsed": 47
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 74,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.824,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 42.25,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 637,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 12,
+      "pool": 0.542,
+      "actions": 16.75,
+      "defense": 1.15,
+      "tauntActions": 1.05,
+      "areaHits": 1,
+      "damage": 156.35,
+      "stats": {
+        "lioraGranted": 49,
+        "lioraGuardBlocked": 774,
+        "lioraGuardUsed": 43,
+        "lioraPassiveUsed": 1
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 51,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.816,
+      "actions": 14.4,
+      "defense": 1.75,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 51.35,
+      "stats": {
+        "artDisruptApplied": 21,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 712,
+        "lioraGuardUsed": 39,
+        "artGranted": 15,
+        "artGuardBlocked": 78,
+        "artGuardUsed": 6,
+        "artReactBlocked": 8,
+        "artReactUsed": 1
+      },
+      "threat": {
+        "prepared": 68,
+        "resolved": 41,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.852,
+      "actions": 8,
+      "defense": 0.45,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 27,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artReactBlocked": 79,
+        "artReactUsed": 12,
+        "artGranted": 9,
+        "artGuardBlocked": 23,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.717,
+      "actions": 13.35,
+      "defense": 1.85,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 75.25,
+      "stats": {
+        "artDisruptApplied": 18,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 720,
+        "lioraGuardUsed": 40,
+        "artGranted": 17,
+        "artGuardBlocked": 189,
+        "artGuardUsed": 15,
+        "artReactBlocked": 5,
+        "artReactUsed": 1
+      },
+      "threat": {
+        "prepared": 44,
+        "resolved": 20,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.835,
+      "actions": 17.55,
+      "defense": 1.05,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 49.65,
+      "stats": {
+        "lioraGranted": 44,
+        "lioraGuardBlocked": 780,
+        "lioraGuardUsed": 41
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.912,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 7.8,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.77,
+      "actions": 17.3,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 72.6,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 726,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.964,
+      "actions": 12.55,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "artDisruptApplied": 20,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 538,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 58,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.977,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 422,
+        "lioraGuardUsed": 33,
+        "artDisruptApplied": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.863,
+      "actions": 12.3,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 1.2,
+      "stats": {
+        "artDisruptApplied": 20,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 478,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 38,
+        "resolved": 0,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.882,
+      "actions": 11.75,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 2.35,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 684,
+        "lioraGuardUsed": 38
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.904,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 5.25,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 559,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.76,
+      "actions": 11.65,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 35.5,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 722,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 15,
+      "pool": 0.634,
+      "actions": 18.1,
+      "defense": 1.7,
+      "tauntActions": 1.4,
+      "areaHits": 0,
+      "damage": 128.1,
+      "stats": {
+        "lioraGranted": 74,
+        "lioraGuardBlocked": 877,
+        "lioraGuardUsed": 47
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 74,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.829,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 36.25,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 637,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 17,
+      "pool": 0.557,
+      "actions": 17,
+      "defense": 1.3,
+      "tauntActions": 1.15,
+      "areaHits": 1,
+      "damage": 147.65,
+      "stats": {
+        "lioraGranted": 56,
+        "lioraGuardBlocked": 771,
+        "lioraGuardUsed": 42,
+        "lioraPassiveUsed": 2
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 47,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.821,
+      "actions": 14.35,
+      "defense": 1.7,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 45.9,
+      "stats": {
+        "artDisruptApplied": 21,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 712,
+        "lioraGuardUsed": 39,
+        "artGranted": 14,
+        "artGuardBlocked": 78,
+        "artGuardUsed": 6,
+        "artReactBlocked": 5,
+        "artReactUsed": 1
+      },
+      "threat": {
+        "prepared": 68,
+        "resolved": 41,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.855,
+      "actions": 8,
+      "defense": 0.2,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 17.95,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artReactBlocked": 62,
+        "artReactUsed": 5,
+        "artGranted": 4,
+        "artGuardBlocked": 9,
+        "artGuardUsed": 1
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.724,
+      "actions": 13.3,
+      "defense": 1.8,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 67.7,
+      "stats": {
+        "artDisruptApplied": 18,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 720,
+        "lioraGuardUsed": 40,
+        "artGranted": 16,
+        "artGuardBlocked": 189,
+        "artGuardUsed": 15,
+        "artReactBlocked": 2,
+        "artReactUsed": 1
+      },
+      "threat": {
+        "prepared": 44,
+        "resolved": 20,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.836,
+      "actions": 17.75,
+      "defense": 1.05,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 41.05,
+      "stats": {
+        "lioraGranted": 44,
+        "lioraGuardBlocked": 780,
+        "lioraGuardUsed": 41
+      },
+      "threat": {
+        "prepared": 61,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.915,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 2.65,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.773,
+      "actions": 17.25,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 63,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 726,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.965,
+      "actions": 12.55,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "artDisruptApplied": 20,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 538,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 58,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.978,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 422,
+        "lioraGuardUsed": 33,
+        "artDisruptApplied": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-leader10",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.866,
+      "actions": 12.3,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 0.35,
+      "stats": {
+        "artDisruptApplied": 20,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 478,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 38,
+        "resolved": 0,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+art",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 18,
+      "q": 13,
+      "pool": 0.467,
+      "actions": 13.15,
+      "defense": 1.1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 144.85,
+      "stats": {
+        "artDisruptApplied": 35,
+        "artGranted": 22,
+        "artGuardBlocked": 213,
+        "artGuardUsed": 18,
+        "artLocalLethalGuard": 1
+      },
+      "threat": {
+        "prepared": 85,
+        "resolved": 46,
+        "cancelled": 9,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+art",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 19,
+      "q": 19,
+      "pool": 0.678,
+      "actions": 7.95,
+      "defense": 0.85,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 87.5,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artGranted": 17,
+        "artGuardBlocked": 195,
+        "artGuardUsed": 17
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.852,
+      "actions": 11.05,
+      "defense": 0.55,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 34.7,
+      "stats": {
+        "artGranted": 11,
+        "artDisruptApplied": 2,
+        "artGuardBlocked": 97,
+        "artGuardUsed": 10
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 38,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.86,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 5.6,
+      "stats": {
+        "artDisruptApplied": 18
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+art+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.75,
+      "actions": 10.8,
+      "defense": 0.9,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 51.7,
+      "stats": {
+        "artDisruptApplied": 2,
+        "artGranted": 18,
+        "artGuardBlocked": 168,
+        "artGuardUsed": 18
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.879,
+      "actions": 11.75,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 4.15,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 684,
+        "lioraGuardUsed": 38
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.901,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 8.25,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 559,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.754,
+      "actions": 11.65,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 40.6,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 722,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.515,
+      "actions": 16.9,
+      "defense": 1.9,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 181.65,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artGranted": 38,
+        "artGuardBlocked": 323,
+        "artGuardUsed": 35
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 40,
+        "cancelled": 38,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.773,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 38.5,
+      "stats": {
+        "artDisruptApplied": 20,
+        "artGranted": 20,
+        "artGuardBlocked": 170,
+        "artGuardUsed": 16
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "art+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.425,
+      "actions": 16.85,
+      "defense": 2,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 211.25,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artGranted": 40,
+        "artGuardBlocked": 368,
+        "artGuardUsed": 36,
+        "artLocalLethalGuard": 3
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 20,
+        "cancelled": 39,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 14,
+      "pool": 0.621,
+      "actions": 18.2,
+      "defense": 1.7,
+      "tauntActions": 1.4,
+      "areaHits": 0,
+      "damage": 135.8,
+      "stats": {
+        "lioraGranted": 74,
+        "lioraGuardBlocked": 877,
+        "lioraGuardUsed": 47
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 74,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.824,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 42.25,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 637,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 12,
+      "pool": 0.542,
+      "actions": 16.75,
+      "defense": 1.15,
+      "tauntActions": 1.05,
+      "areaHits": 1,
+      "damage": 156.35,
+      "stats": {
+        "lioraGranted": 49,
+        "lioraGuardBlocked": 774,
+        "lioraGuardUsed": 43,
+        "lioraPassiveUsed": 1
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 51,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.816,
+      "actions": 14.4,
+      "defense": 1.75,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 51.75,
+      "stats": {
+        "artDisruptApplied": 21,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 712,
+        "lioraGuardUsed": 39,
+        "artGranted": 15,
+        "artGuardBlocked": 78,
+        "artGuardUsed": 6
+      },
+      "threat": {
+        "prepared": 68,
+        "resolved": 41,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.852,
+      "actions": 8,
+      "defense": 0.5,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 32.2,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artGranted": 10,
+        "artGuardBlocked": 23,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.717,
+      "actions": 13.35,
+      "defense": 1.85,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 75.5,
+      "stats": {
+        "artDisruptApplied": 18,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 720,
+        "lioraGuardUsed": 40,
+        "artGranted": 17,
+        "artGuardBlocked": 189,
+        "artGuardUsed": 15
+      },
+      "threat": {
+        "prepared": 44,
+        "resolved": 20,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.835,
+      "actions": 17.55,
+      "defense": 1.05,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 49.65,
+      "stats": {
+        "lioraGranted": 44,
+        "lioraGuardBlocked": 780,
+        "lioraGuardUsed": 41
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.912,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 7.8,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.77,
+      "actions": 17.3,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 72.6,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 726,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.964,
+      "actions": 12.55,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "artDisruptApplied": 20,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 538,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 58,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.977,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 422,
+        "lioraGuardUsed": 33,
+        "artDisruptApplied": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-noreact",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.863,
+      "actions": 12.3,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 1.2,
+      "stats": {
+        "artDisruptApplied": 20,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 478,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 38,
+        "resolved": 0,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+art",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 19,
+      "q": 14,
+      "pool": 0.485,
+      "actions": 13.05,
+      "defense": 1.15,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 133.8,
+      "stats": {
+        "artDisruptApplied": 34,
+        "artReactBlocked": 84,
+        "artReactUsed": 22,
+        "artGranted": 23,
+        "artGuardBlocked": 251,
+        "artGuardUsed": 18,
+        "artLocalLethalReact": 1
+      },
+      "threat": {
+        "prepared": 83,
+        "resolved": 45,
+        "cancelled": 8,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+art",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.674,
+      "actions": 8,
+      "defense": 0.75,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 78.6,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artReactBlocked": 212,
+        "artReactUsed": 16,
+        "artGranted": 15,
+        "artGuardBlocked": 203,
+        "artGuardUsed": 15
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.857,
+      "actions": 10.9,
+      "defense": 0.45,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 22.5,
+      "stats": {
+        "artReactBlocked": 179,
+        "artReactUsed": 16,
+        "artGranted": 9,
+        "artDisruptApplied": 2,
+        "artGuardBlocked": 77,
+        "artGuardUsed": 7
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 38,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.86,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 5.6,
+      "stats": {
+        "artDisruptApplied": 18
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+art+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.752,
+      "actions": 10.8,
+      "defense": 0.9,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 45.45,
+      "stats": {
+        "artDisruptApplied": 2,
+        "artReactBlocked": 107,
+        "artReactUsed": 17,
+        "artGranted": 18,
+        "artGuardBlocked": 186,
+        "artGuardUsed": 18
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.879,
+      "actions": 11.75,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 4.15,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 684,
+        "lioraGuardUsed": 38
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.901,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 8.25,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 559,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.754,
+      "actions": 11.65,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 40.6,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 722,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.518,
+      "actions": 16.9,
+      "defense": 1.9,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 175.45,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artReactBlocked": 93,
+        "artReactUsed": 20,
+        "artGranted": 38,
+        "artGuardBlocked": 380,
+        "artGuardUsed": 35
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 40,
+        "cancelled": 38,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.775,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 37.6,
+      "stats": {
+        "artDisruptApplied": 20,
+        "artGranted": 20,
+        "artGuardBlocked": 188,
+        "artGuardUsed": 16
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "art+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.453,
+      "actions": 16.55,
+      "defense": 1.85,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 186.1,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artReactBlocked": 282,
+        "artReactUsed": 20,
+        "artGranted": 37,
+        "artGuardBlocked": 398,
+        "artGuardUsed": 33
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 20,
+        "cancelled": 36,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 14,
+      "pool": 0.621,
+      "actions": 18.2,
+      "defense": 1.7,
+      "tauntActions": 1.4,
+      "areaHits": 0,
+      "damage": 135.8,
+      "stats": {
+        "lioraGranted": 74,
+        "lioraGuardBlocked": 877,
+        "lioraGuardUsed": 47
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 74,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.824,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 42.25,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 637,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 12,
+      "pool": 0.542,
+      "actions": 16.75,
+      "defense": 1.15,
+      "tauntActions": 1.05,
+      "areaHits": 1,
+      "damage": 156.35,
+      "stats": {
+        "lioraGranted": 49,
+        "lioraGuardBlocked": 774,
+        "lioraGuardUsed": 43,
+        "lioraPassiveUsed": 1
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 51,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.817,
+      "actions": 14.4,
+      "defense": 1.75,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 50.75,
+      "stats": {
+        "artDisruptApplied": 21,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 712,
+        "lioraGuardUsed": 39,
+        "artGranted": 15,
+        "artGuardBlocked": 90,
+        "artGuardUsed": 6,
+        "artReactBlocked": 8,
+        "artReactUsed": 1
+      },
+      "threat": {
+        "prepared": 68,
+        "resolved": 41,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.852,
+      "actions": 8,
+      "defense": 0.45,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 26.75,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artReactBlocked": 79,
+        "artReactUsed": 12,
+        "artGranted": 9,
+        "artGuardBlocked": 28,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.719,
+      "actions": 13.35,
+      "defense": 1.85,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 73.65,
+      "stats": {
+        "artDisruptApplied": 18,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 720,
+        "lioraGuardUsed": 40,
+        "artGranted": 17,
+        "artGuardBlocked": 221,
+        "artGuardUsed": 15,
+        "artReactBlocked": 5,
+        "artReactUsed": 1
+      },
+      "threat": {
+        "prepared": 44,
+        "resolved": 20,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.835,
+      "actions": 17.55,
+      "defense": 1.05,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 49.65,
+      "stats": {
+        "lioraGranted": 44,
+        "lioraGuardBlocked": 780,
+        "lioraGuardUsed": 41
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.912,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 7.8,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.77,
+      "actions": 17.3,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 72.6,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 726,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.964,
+      "actions": 12.55,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "artDisruptApplied": 20,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 538,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 58,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.977,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 422,
+        "lioraGuardUsed": 33,
+        "artDisruptApplied": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-flex",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.863,
+      "actions": 12.3,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 1.2,
+      "stats": {
+        "artDisruptApplied": 20,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 478,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 38,
+        "resolved": 0,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+art",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 19,
+      "q": 16,
+      "pool": 0.51,
+      "actions": 13.05,
+      "defense": 1.2,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 127.2,
+      "stats": {
+        "artDisruptApplied": 34,
+        "artReactBlocked": 84,
+        "artReactUsed": 22,
+        "artGranted": 24,
+        "artRestored": 216,
+        "artGuardBlocked": 213,
+        "artGuardUsed": 18
+      },
+      "threat": {
+        "prepared": 83,
+        "resolved": 45,
+        "cancelled": 8,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+art",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.687,
+      "actions": 8,
+      "defense": 0.75,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 73.35,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artReactBlocked": 212,
+        "artReactUsed": 16,
+        "artGranted": 15,
+        "artRestored": 135,
+        "artGuardBlocked": 173,
+        "artGuardUsed": 15
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.863,
+      "actions": 10.9,
+      "defense": 0.45,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 19.7,
+      "stats": {
+        "artReactBlocked": 179,
+        "artReactUsed": 16,
+        "artGranted": 9,
+        "artRestored": 81,
+        "artDisruptApplied": 2,
+        "artGuardBlocked": 70,
+        "artGuardUsed": 7
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 38,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.86,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 5.6,
+      "stats": {
+        "artDisruptApplied": 18
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+art+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.764,
+      "actions": 10.8,
+      "defense": 0.9,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 38.5,
+      "stats": {
+        "artDisruptApplied": 2,
+        "artReactBlocked": 107,
+        "artReactUsed": 17,
+        "artGranted": 18,
+        "artRestored": 162,
+        "artGuardBlocked": 168,
+        "artGuardUsed": 18
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.879,
+      "actions": 11.75,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 4.15,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 684,
+        "lioraGuardUsed": 38
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.901,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 8.25,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 559,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.754,
+      "actions": 11.65,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 40.6,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 722,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.538,
+      "actions": 16.9,
+      "defense": 1.9,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 166.05,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artReactBlocked": 93,
+        "artReactUsed": 20,
+        "artGranted": 38,
+        "artRestored": 342,
+        "artGuardBlocked": 323,
+        "artGuardUsed": 35
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 40,
+        "cancelled": 38,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.789,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 31.3,
+      "stats": {
+        "artDisruptApplied": 20,
+        "artGranted": 20,
+        "artRestored": 180,
+        "artGuardBlocked": 170,
+        "artGuardUsed": 16
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "art+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.485,
+      "actions": 16.5,
+      "defense": 1.8,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 171.75,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artReactBlocked": 282,
+        "artReactUsed": 20,
+        "artGranted": 36,
+        "artRestored": 324,
+        "artGuardBlocked": 327,
+        "artGuardUsed": 32
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 20,
+        "cancelled": 35,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 14,
+      "pool": 0.621,
+      "actions": 18.2,
+      "defense": 1.7,
+      "tauntActions": 1.4,
+      "areaHits": 0,
+      "damage": 135.8,
+      "stats": {
+        "lioraGranted": 74,
+        "lioraGuardBlocked": 877,
+        "lioraGuardUsed": 47
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 74,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.824,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 42.25,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 637,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 12,
+      "pool": 0.542,
+      "actions": 16.75,
+      "defense": 1.15,
+      "tauntActions": 1.05,
+      "areaHits": 1,
+      "damage": 156.35,
+      "stats": {
+        "lioraGranted": 49,
+        "lioraGuardBlocked": 774,
+        "lioraGuardUsed": 43,
+        "lioraPassiveUsed": 1
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 51,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.827,
+      "actions": 14.4,
+      "defense": 1.75,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 48.65,
+      "stats": {
+        "artDisruptApplied": 21,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 712,
+        "lioraGuardUsed": 39,
+        "artGranted": 15,
+        "artRestored": 135,
+        "artGuardBlocked": 78,
+        "artGuardUsed": 6,
+        "artReactBlocked": 8,
+        "artReactUsed": 1
+      },
+      "threat": {
+        "prepared": 68,
+        "resolved": 41,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.858,
+      "actions": 8,
+      "defense": 0.45,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 26.1,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artReactBlocked": 79,
+        "artReactUsed": 12,
+        "artGranted": 9,
+        "artRestored": 81,
+        "artGuardBlocked": 23,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.729,
+      "actions": 13.35,
+      "defense": 1.85,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 68.5,
+      "stats": {
+        "artDisruptApplied": 18,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 720,
+        "lioraGuardUsed": 40,
+        "artGranted": 17,
+        "artRestored": 153,
+        "artGuardBlocked": 189,
+        "artGuardUsed": 15,
+        "artReactBlocked": 5,
+        "artReactUsed": 1
+      },
+      "threat": {
+        "prepared": 44,
+        "resolved": 20,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.835,
+      "actions": 17.55,
+      "defense": 1.05,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 49.65,
+      "stats": {
+        "lioraGranted": 44,
+        "lioraGuardBlocked": 780,
+        "lioraGuardUsed": 41
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.912,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 7.8,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.77,
+      "actions": 17.3,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 72.6,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 726,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.964,
+      "actions": 12.55,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "artDisruptApplied": 20,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 538,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 58,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.977,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 422,
+        "lioraGuardUsed": 33,
+        "artDisruptApplied": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-recover",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.863,
+      "actions": 12.3,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 1.2,
+      "stats": {
+        "artDisruptApplied": 20,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 478,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 38,
+        "resolved": 0,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+art",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 19,
+      "q": 14,
+      "pool": 0.481,
+      "actions": 13.05,
+      "defense": 1.15,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 135.2,
+      "stats": {
+        "artDisruptApplied": 34,
+        "artReactBlocked": 84,
+        "artReactUsed": 22,
+        "artGranted": 23,
+        "artGuardBlocked": 213,
+        "artGuardUsed": 18,
+        "artLocalLethalReact": 1
+      },
+      "threat": {
+        "prepared": 83,
+        "resolved": 45,
+        "cancelled": 8,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+art",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.67,
+      "actions": 8,
+      "defense": 0.75,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 80.1,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artReactBlocked": 212,
+        "artReactUsed": 16,
+        "artGranted": 15,
+        "artGuardBlocked": 173,
+        "artGuardUsed": 15
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.856,
+      "actions": 10.9,
+      "defense": 0.45,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 22.85,
+      "stats": {
+        "artReactBlocked": 179,
+        "artReactUsed": 16,
+        "artGranted": 9,
+        "artDisruptApplied": 2,
+        "artGuardBlocked": 70,
+        "artGuardUsed": 7
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 38,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.86,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 5.6,
+      "stats": {
+        "artDisruptApplied": 18
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.75,
+      "actions": 10.8,
+      "defense": 0.9,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 46.35,
+      "stats": {
+        "artDisruptApplied": 2,
+        "artReactBlocked": 107,
+        "artReactUsed": 17,
+        "artGranted": 18,
+        "artGuardBlocked": 168,
+        "artGuardUsed": 18
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.879,
+      "actions": 11.75,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 4.15,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 684,
+        "lioraGuardUsed": 38
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.901,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 8.25,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 559,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+liora+nada",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.754,
+      "actions": 11.65,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 40.6,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 722,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.514,
+      "actions": 16.9,
+      "defense": 1.9,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 177.6,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artReactBlocked": 93,
+        "artReactUsed": 20,
+        "artGranted": 38,
+        "artGuardBlocked": 323,
+        "artGuardUsed": 35
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 40,
+        "cancelled": 38,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.773,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 38.5,
+      "stats": {
+        "artDisruptApplied": 20,
+        "artGranted": 20,
+        "artGuardBlocked": 170,
+        "artGuardUsed": 16
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "art+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 0,
+      "pool": 0.452,
+      "actions": 16.55,
+      "defense": 1.85,
+      "tauntActions": 0,
+      "areaHits": 1,
+      "damage": 186.95,
+      "stats": {
+        "artDisruptApplied": 40,
+        "artReactBlocked": 282,
+        "artReactUsed": 20,
+        "artGranted": 37,
+        "artGuardBlocked": 341,
+        "artGuardUsed": 33
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 20,
+        "cancelled": 36,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 14,
+      "pool": 0.62,
+      "actions": 17.95,
+      "defense": 1.4,
+      "tauntActions": 1.4,
+      "areaHits": 0,
+      "damage": 136.55,
+      "stats": {
+        "lioraGranted": 63,
+        "lioraGuardBlocked": 890,
+        "lioraGuardUsed": 48,
+        "lioraPassiveUsed": 7
+      },
+      "threat": {
+        "prepared": 80,
+        "resolved": 74,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.824,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 42.25,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 637,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 40,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "liora+nada+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 12,
+      "pool": 0.542,
+      "actions": 16.75,
+      "defense": 1.15,
+      "tauntActions": 1.05,
+      "areaHits": 1,
+      "damage": 156.35,
+      "stats": {
+        "lioraGranted": 49,
+        "lioraGuardBlocked": 774,
+        "lioraGuardUsed": 43,
+        "lioraPassiveUsed": 1
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 51,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+liora",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.816,
+      "actions": 14.4,
+      "defense": 1.75,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 51.35,
+      "stats": {
+        "artDisruptApplied": 21,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 712,
+        "lioraGuardUsed": 39,
+        "artGranted": 15,
+        "artGuardBlocked": 78,
+        "artGuardUsed": 6,
+        "artReactBlocked": 8,
+        "artReactUsed": 1
+      },
+      "threat": {
+        "prepared": 68,
+        "resolved": 41,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+liora",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.852,
+      "actions": 8,
+      "defense": 0.45,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 27,
+      "stats": {
+        "artDisruptApplied": 19,
+        "artReactBlocked": 79,
+        "artReactUsed": 12,
+        "artGranted": 9,
+        "artGuardBlocked": 23,
+        "artGuardUsed": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 21,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+liora",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.717,
+      "actions": 13.35,
+      "defense": 1.85,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 75.25,
+      "stats": {
+        "artDisruptApplied": 18,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 720,
+        "lioraGuardUsed": 40,
+        "artGranted": 17,
+        "artGuardBlocked": 189,
+        "artGuardUsed": 15,
+        "artReactBlocked": 5,
+        "artReactUsed": 1
+      },
+      "threat": {
+        "prepared": 44,
+        "resolved": 20,
+        "cancelled": 1,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.835,
+      "actions": 17.55,
+      "defense": 1.05,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 49.65,
+      "stats": {
+        "lioraGranted": 44,
+        "lioraGuardBlocked": 780,
+        "lioraGuardUsed": 41
+      },
+      "threat": {
+        "prepared": 60,
+        "resolved": 41,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.912,
+      "actions": 8,
+      "defense": 0,
+      "tauntActions": 0,
+      "areaHits": 0,
+      "damage": 7.8,
+      "stats": {},
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "b14-striker+liora+b14-medic+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.77,
+      "actions": 17.3,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 72.6,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 726,
+        "lioraGuardUsed": 40
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 20,
+        "cancelled": 0,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "rush",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.964,
+      "actions": 12.55,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "artDisruptApplied": 20,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 538,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 58,
+        "resolved": 20,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "hold",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.977,
+      "actions": 8,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 0,
+      "damage": 0,
+      "stats": {
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 422,
+        "lioraGuardUsed": 33,
+        "artDisruptApplied": 2
+      },
+      "threat": {
+        "prepared": 40,
+        "resolved": 18,
+        "cancelled": 2,
+        "reacted": 0
+      }
+    },
+    {
+      "tier": "trained",
+      "variant": "both-earlypassive",
+      "squad": "ren+art+nada+liora+sava",
+      "scenario": "area",
+      "mode": "tactical",
+      "n": 20,
+      "w": 20,
+      "q": 20,
+      "pool": 0.863,
+      "actions": 12.3,
+      "defense": 1,
+      "tauntActions": 1,
+      "areaHits": 1,
+      "damage": 1.2,
+      "stats": {
+        "artDisruptApplied": 20,
+        "lioraGranted": 40,
+        "lioraGuardBlocked": 478,
+        "lioraGuardUsed": 39
+      },
+      "threat": {
+        "prepared": 38,
+        "resolved": 0,
+        "cancelled": 20,
+        "reacted": 0
+      }
+    }
+  ],
+  "baseCommit": "9e6db7b2f2f310bdb301913ca2e47df641000b7d",
+  "sourceBlobs": {
+    "initiative-model.js": "2720ceb038986f6fba26ed365e66c939a2a37814",
+    "combat-status-core.js": "7d9b74b995ba5ee690b487084aa50dbf9db9c868",
+    "ability-data.js": "aaf938d82a9acb2260e67fce064b6a2be30a87a8",
+    "battle-rng.js": "b2574ce84889ed9adf44d7c883b502091d99a5d8",
+    "combat-core.js": "f7ba7490b0187e64244b91cfa85d467e776e2f29",
+    "auto-decision.js": "53b8cd1ee5c73aecf4f9f1834a1b9318c58be2bc",
+    "enemy-decision.js": "8ff37ee738bde2db1aa855c83a0af98d29e55d9a",
+    "npc-enemy-data.js": "78ae7459a665adf71a5a8685d32481fe446ecd6f",
+    "hero-stats-core.js": "676e11faf4385d406087a5eaa9731937fb62ae4f",
+    "hero-stats-profiles.js": "145a39d541c8f67dff2fb3cc8c18cbfa91bde029",
+    "star-core.js": "92acd34eb68006eb165dd27791c397b7a73ee593",
+    "hero-stats-combat-bridge.js": "9e1f76d466380022283336a6e586307dd4d68710",
+    "skill-core.js": "ede7168e858d58f9539239622dc1dc6e7b0976a2"
+  },
+  "labBlob": "df4320f2fe6e63b15a377e53d2f13e92ef54adcd",
+  "runnerBlob": "8d8b6b99fcf364c016305a0e565319e919b05098"
+}

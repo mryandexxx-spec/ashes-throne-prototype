@@ -10,7 +10,7 @@ const presets={
  waves:{label:"Две волны · 5 героев",ids:["ren","art","nada","liora","sava"],foes:["npc-trail-interceptor","npc-ridge-slinger","npc-pass-guard"],next:["npc-ridge-slinger","npc-trail-interceptor","npc-pass-guard","npc-field-medic"]},
  tempo:{label:"Совместный удар · 2 героя",ids:["sava","ren"],foes:["npc-pass-guard","npc-watch-captain"]}
 };
-function makeBattle({preset="full",tier="early",seed=7,hard=false}={}){
+function buildSetup({preset="full",tier="early",seed=7,hard=false,heroTiers={}}={}){
  const p=presets[preset],t=tiers[tier];
  if(!p||!t||!Number.isSafeInteger(seed)||seed<0||seed>0xffffffff)throw Error("Неверные параметры");
  const ids=StarCore.PLAYABLE,roster=ids.map(id=>({id,side:"ally"}));
@@ -18,11 +18,12 @@ function makeBattle({preset="full",tier="early",seed=7,hard=false}={}){
  if(!progress)throw Error("Не удалось собрать тестовый отряд");
  progress.currency=100000000;for(const id of GearData.MATERIALS)progress.materials[id]=1000000;
  const party=p.ids.map(id=>{
+  const t=tiers[heroTiers[id]??tier];if(!t)throw Error("Неверный уровень героя");
   progress.heroStars[id].rank=t.stars;progress.levels[id]=t.level;
   for(let i=1;i<=t.gear;i++){for(const slot of GearData.SLOTS){const item=ProgressCore.itemOffer(progress,id,slot.id)[0];if(!item||!ProgressCore.equipItem(progress,id,item.id))throw Error("Снаряжение "+id);}
    if(i<t.gear&&!ProgressCore.promoteGear(progress,id))throw Error("Ранг "+id);}
   const gear=ProgressCore.gearBonuses(progress,id);
-  return HeroStatsCombatBridge.apply({id,side:"ally",name:names[id],tags:["gardens-over-abyss"],skillLevels:{basic:t.skill,special:t.skill,powerful:t.skill,passive:t.skill}},{level:t.level,stars:t.stars,gearPercent:gear,gearStats:gear.stats},HeroStatsProfiles[id],HeroStatsCore);
+  return {...HeroStatsCombatBridge.apply({id,side:"ally",name:names[id],tags:["gardens-over-abyss"],skillLevels:{basic:t.skill,special:t.skill,powerful:t.skill,passive:t.skill}},{level:t.level,stars:t.stars,gearPercent:gear,gearStats:gear.stats},HeroStatsProfiles[id],HeroStatsCore),gearTier:t.gear};
  });
  // Reuse previously calibrated research pressure, not campaign balance.
  const scale=({early:p.ids.length<=3?1.512:1.242,mid:6.355,max:p.ids.length===3?16.5:19.8}[tier])*(hard?1:.78)*(preset==="waves"?.88:1);
@@ -30,7 +31,11 @@ function makeBattle({preset="full",tier="early",seed=7,hard=false}={}){
   const n=NpcEnemyData.spawn(id,{instanceId:"w"+w+"-e"+i}),pool=scale*.75,attack=scale*({early:1.35,mid:1.45,max:2.65}[tier]);
   return {...n,hp:Math.max(1,Math.round(n.hp*pool)),protection:Math.round(n.protection*pool),maxProtection:Math.round(n.protection*pool),physicalAttack:Math.max(1,Math.round(n.physicalAttack*attack)),atk:Math.max(1,Math.round(n.physicalAttack*attack))};
  });
- const b=CombatCore.createBattle([...party,...foes(p.foes,1)],p.next?[foes(p.next,2)]:[],{combat2:true,rngSeed:seed,hitChecks:true,critChecks:true,penetrationChecks:true,statusChecks:true,leaderId:null});
+ return {lineup:[...party,...foes(p.foes,1)],waves:p.next?[foes(p.next,2)]:[],options:{combat2:true,rngSeed:seed,hitChecks:true,critChecks:true,penetrationChecks:true,statusChecks:true,leaderId:null}};
+}
+function makeBattle(opts){
+ const setup=buildSetup(opts);
+ const b=CombatCore.createBattle(setup.lineup,setup.waves,setup.options);
  CombatCore.advanceToPlayerTurn(b);return b;
 }
 function create(b){
@@ -78,6 +83,6 @@ function describe(a,d){
  if(a.id==="sava"&&d.id==="basic")s+=" Ближайшему неготовому союзнику +"+d.nextAllyMeter+" инициативы.";
  return s;
 }
-return Object.freeze({names,tiers,presets,makeBattle,create,describe});
+return Object.freeze({names,tiers,presets,buildSetup,makeBattle,create,describe});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=Combat2HUD;

@@ -11,27 +11,27 @@
   ],
   "selected": {
     "early": {
-      "2": 1.566,
-      "3": 1.836,
-      "4": 1.296,
-      "5": 1.296
+      "2": 1.512,
+      "3": 1.512,
+      "4": 1.242,
+      "5": 1.242
     },
     "mid": {
-      "2": 6.2,
-      "3": 6.2,
-      "4": 6.2,
-      "5": 5.27
+      "2": 6.355,
+      "3": 6.355,
+      "4": 6.355,
+      "5": 6.355
     },
     "max": {
-      "2": 15.51,
-      "3": 15.51,
-      "4": 15.51,
-      "5": 15.51
+      "2": 19.8,
+      "3": 16.5,
+      "4": 19.8,
+      "5": 19.8
     },
     "uneven": {
-      "2": 5.405,
-      "3": 5.405,
-      "4": 5.405,
+      "2": 6.9,
+      "3": 6.9,
+      "4": 5.75,
       "5": 3.91
     }
   },
@@ -39,21 +39,22 @@
     {
       "tier": "early",
       "squad": "starter",
+      "size": 2,
+      "scale": 1.512,
+      "score": 0.4666,
       "n": 8,
-      "scale": 1.566,
-      "score": 0.6772,
-      "w": 8,
+      "w": 7,
       "q": 7,
-      "pool": 0.567,
-      "actions": 23.125,
+      "pool": 0.591,
+      "actions": 15.625,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 29,
-        "art:powerful": 26,
-        "ren:special": 23,
-        "art:basic": 41,
-        "ren:basic": 45,
-        "art:special": 21
+        "ren:powerful": 21,
+        "art:powerful": 17,
+        "ren:special": 15,
+        "art:basic": 28,
+        "ren:basic": 30,
+        "art:special": 14
       },
       "stats": {},
       "threat": {
@@ -64,121 +65,60 @@
       },
       "events": {
         "death": 17,
-        "miss": 11
+        "miss": 7
       }
     },
     {
       "tier": "early",
       "squad": "starter",
+      "size": 2,
+      "scale": 1.242,
+      "score": 0.9408000000000001,
       "n": 8,
-      "scale": 1.296,
-      "score": 0.9384,
       "w": 8,
       "q": 8,
-      "pool": 0.794,
-      "actions": 17.25,
+      "pool": 0.798,
+      "actions": 13.75,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 23,
+        "ren:powerful": 16,
         "art:powerful": 16,
-        "ren:special": 22,
-        "art:basic": 29,
-        "ren:basic": 34,
+        "ren:special": 16,
+        "art:basic": 18,
+        "ren:basic": 30,
         "art:special": 14
       },
       "stats": {},
       "threat": {
         "prepared": 8,
         "resolved": 1,
-        "cancelled": 7,
-        "reacted": 1
-      },
-      "events": {
-        "death": 16,
-        "miss": 9
-      }
-    },
-    {
-      "tier": "early",
-      "squad": "starter",
-      "n": 8,
-      "scale": 1.08,
-      "score": 0.9563999999999999,
-      "w": 8,
-      "q": 8,
-      "pool": 0.824,
-      "actions": 14.375,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 18,
-        "art:powerful": 16,
-        "ren:special": 17,
-        "art:basic": 27,
-        "ren:basic": 30,
-        "art:special": 7
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 8,
-        "resolved": 1,
         "cancelled": 6,
         "reacted": 1
       },
       "events": {
         "death": 16,
-        "miss": 6,
-        "status-resisted": 2
+        "miss": 7
       }
     },
     {
       "tier": "early",
       "squad": "starter",
+      "size": 2,
+      "scale": 1.026,
+      "score": 0.9576,
       "n": 8,
-      "scale": 0.918,
-      "score": 0.9714,
       "w": 8,
       "q": 8,
-      "pool": 0.849,
-      "actions": 11.875,
+      "pool": 0.826,
+      "actions": 10.875,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
-        "art:powerful": 15,
-        "ren:special": 16,
-        "art:basic": 25,
-        "ren:basic": 22,
-        "art:special": 1
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 8,
-        "resolved": 1,
-        "cancelled": 6,
-        "reacted": 1
-      },
-      "events": {
-        "death": 16,
-        "miss": 6,
-        "status-resisted": 1
-      }
-    },
-    {
-      "tier": "early",
-      "squad": "starter",
-      "n": 8,
-      "scale": 0.702,
-      "score": 1.002,
-      "w": 8,
-      "q": 8,
-      "pool": 0.9,
-      "actions": 9.375,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 16,
-        "art:powerful": 8,
-        "ren:special": 13,
-        "art:basic": 22,
-        "ren:basic": 16
+        "art:powerful": 11,
+        "ren:special": 15,
+        "art:basic": 21,
+        "ren:basic": 20,
+        "art:special": 4
       },
       "stats": {},
       "threat": {
@@ -189,196 +129,224 @@
       },
       "events": {
         "death": 16,
-        "miss": 4
-      }
-    },
-    {
-      "tier": "early",
-      "squad": "starter",
-      "n": 8,
-      "scale": 1.836,
-      "score": 1.9436,
-      "w": 1,
-      "q": 1,
-      "pool": 0.074,
-      "actions": 20.125,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 18,
-        "art:powerful": 30,
-        "ren:special": 13,
-        "art:basic": 67,
-        "ren:basic": 23,
-        "art:special": 10
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 13,
-        "resolved": 1,
-        "cancelled": 8,
-        "reacted": 1
-      },
-      "events": {
-        "death": 23,
-        "miss": 10,
+        "miss": 4,
         "status-resisted": 1
       }
     },
     {
       "tier": "early",
       "squad": "starter",
+      "size": 2,
+      "scale": 0.81,
+      "score": 0.9948,
       "n": 8,
-      "scale": 2.16,
-      "score": 2.3379999999999996,
-      "w": 0,
-      "q": 0,
-      "pool": 0,
-      "actions": 11.125,
+      "w": 8,
+      "q": 8,
+      "pool": 0.888,
+      "actions": 8.25,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 10,
-        "art:powerful": 18,
-        "ren:special": 8,
-        "art:basic": 30,
-        "ren:basic": 16,
-        "art:special": 7
+        "ren:powerful": 12,
+        "art:powerful": 8,
+        "ren:special": 10,
+        "art:basic": 20,
+        "ren:basic": 16
       },
       "stats": {},
       "threat": {
-        "prepared": 16,
-        "resolved": 6,
-        "cancelled": 10,
-        "reacted": 1
+        "prepared": 7,
+        "resolved": 0,
+        "cancelled": 2,
+        "reacted": 0
       },
       "events": {
-        "death": 20,
-        "miss": 11
+        "death": 16,
+        "miss": 4,
+        "status-resisted": 1
       }
     },
     {
       "tier": "early",
       "squad": "starter",
+      "size": 2,
+      "scale": 0.594,
+      "score": 1.032,
       "n": 8,
-      "scale": 2.538,
+      "w": 8,
+      "q": 8,
+      "pool": 0.95,
+      "actions": 6.875,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "art:basic": 16,
+        "ren:basic": 15
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 7,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 16,
+        "miss": 4,
+        "status-resisted": 1
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "starter",
+      "size": 2,
+      "scale": 1.836,
+      "score": 1.542,
+      "n": 8,
+      "w": 2,
+      "q": 2,
+      "pool": 0.16,
+      "actions": 15,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 15,
+        "art:powerful": 21,
+        "ren:special": 12,
+        "art:special": 10,
+        "ren:basic": 20,
+        "art:basic": 42
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 11,
+        "resolved": 2,
+        "cancelled": 7,
+        "reacted": 1
+      },
+      "events": {
+        "death": 21,
+        "miss": 8
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "starter",
+      "size": 2,
+      "scale": 2.214,
       "score": 2.3379999999999996,
+      "n": 8,
       "w": 0,
       "q": 0,
       "pool": 0,
-      "actions": 10.125,
+      "actions": 11.75,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 9,
+        "ren:powerful": 10,
         "art:powerful": 17,
         "ren:special": 9,
         "art:special": 8,
         "ren:basic": 17,
-        "art:basic": 21
+        "art:basic": 33
       },
       "stats": {},
       "threat": {
-        "prepared": 16,
-        "resolved": 8,
-        "cancelled": 8,
-        "reacted": 2
+        "prepared": 13,
+        "resolved": 4,
+        "cancelled": 7,
+        "reacted": 1
       },
       "events": {
-        "death": 17,
+        "death": 21,
+        "miss": 8
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "starter",
+      "size": 2,
+      "scale": 2.7,
+      "score": 2.3379999999999996,
+      "n": 8,
+      "w": 0,
+      "q": 0,
+      "pool": 0,
+      "actions": 7.5,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "art:powerful": 10,
+        "ren:special": 8,
+        "art:special": 8,
+        "ren:basic": 10,
+        "art:basic": 16
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 15,
+        "resolved": 6,
+        "cancelled": 7,
+        "reacted": 1
+      },
+      "events": {
+        "death": 18,
+        "miss": 9
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "starter",
+      "size": 2,
+      "scale": 3.24,
+      "score": 2.3379999999999996,
+      "n": 8,
+      "w": 0,
+      "q": 0,
+      "pool": 0,
+      "actions": 6.75,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "art:special": 7,
+        "ren:basic": 8,
+        "art:basic": 15
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 14,
+        "resolved": 3,
+        "cancelled": 7,
+        "reacted": 1
+      },
+      "events": {
+        "death": 16,
         "miss": 9
       }
     },
     {
       "tier": "early",
       "squad": "three",
+      "size": 3,
+      "scale": 1.512,
+      "score": 0.8436,
       "n": 8,
-      "scale": 1.836,
-      "score": 0.26100000000000007,
-      "w": 7,
-      "q": 5,
-      "pool": 0.375,
-      "actions": 30.5,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 23,
-        "nada:special": 18,
-        "art:powerful": 21,
-        "ren:special": 23,
-        "nada:powerful": 8,
-        "art:special": 22,
-        "ren:basic": 45,
-        "nada:basic": 42,
-        "art:basic": 42
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 24,
-        "resolved": 10,
-        "cancelled": 8,
-        "reacted": 10
-      },
-      "events": {
-        "read-move-predicted": 9,
-        "death": 28,
-        "miss": 8,
-        "status-resisted": 2
-      }
-    },
-    {
-      "tier": "early",
-      "squad": "three",
-      "n": 8,
-      "scale": 1.566,
-      "score": 0.822,
       "w": 8,
       "q": 8,
-      "pool": 0.6,
-      "actions": 25.875,
+      "pool": 0.636,
+      "actions": 19.125,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 24,
+        "ren:powerful": 16,
         "nada:special": 16,
-        "art:powerful": 16,
-        "ren:special": 24,
-        "nada:powerful": 8,
-        "art:special": 16,
-        "ren:basic": 32,
-        "nada:basic": 41,
-        "art:basic": 30
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 21,
-        "resolved": 8,
-        "cancelled": 8,
-        "reacted": 8
-      },
-      "events": {
-        "read-move-predicted": 8,
-        "death": 24,
-        "status-resisted": 1,
-        "miss": 10
-      }
-    },
-    {
-      "tier": "early",
-      "squad": "three",
-      "n": 8,
-      "scale": 1.296,
-      "score": 0.8892,
-      "w": 8,
-      "q": 8,
-      "pool": 0.712,
-      "actions": 23.125,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 23,
-        "nada:special": 16,
-        "art:powerful": 16,
-        "ren:special": 17,
+        "art:powerful": 15,
+        "ren:special": 16,
         "nada:powerful": 8,
         "art:special": 14,
-        "ren:basic": 32,
-        "nada:basic": 34,
-        "art:basic": 25
+        "ren:basic": 27,
+        "nada:basic": 24,
+        "art:basic": 17
       },
       "stats": {},
       "threat": {
@@ -388,68 +356,34 @@
         "reacted": 8
       },
       "events": {
+        "death": 24,
         "read-move-predicted": 8,
-        "death": 24,
-        "status-resisted": 2,
-        "miss": 8
+        "miss": 9,
+        "status-resisted": 1
       }
     },
     {
       "tier": "early",
       "squad": "three",
+      "size": 3,
+      "scale": 1.242,
+      "score": 0.9198,
       "n": 8,
-      "scale": 1.08,
-      "score": 0.9390000000000001,
       "w": 8,
       "q": 8,
-      "pool": 0.795,
-      "actions": 16.625,
+      "pool": 0.763,
+      "actions": 16.375,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
-        "nada:special": 15,
-        "art:powerful": 15,
-        "ren:special": 15,
+        "nada:special": 14,
+        "art:powerful": 9,
+        "ren:special": 14,
         "nada:powerful": 8,
-        "art:basic": 20,
+        "art:special": 11,
         "ren:basic": 22,
-        "nada:basic": 18,
-        "art:special": 4
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 16,
-        "resolved": 8,
-        "cancelled": 8,
-        "reacted": 8
-      },
-      "events": {
-        "death": 24,
-        "read-move-predicted": 7,
-        "miss": 5,
-        "status-resisted": 3
-      }
-    },
-    {
-      "tier": "early",
-      "squad": "three",
-      "n": 8,
-      "scale": 0.918,
-      "score": 0.963,
-      "w": 8,
-      "q": 8,
-      "pool": 0.835,
-      "actions": 14.125,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 16,
-        "nada:special": 13,
-        "art:powerful": 11,
-        "ren:special": 12,
-        "nada:powerful": 8,
-        "art:basic": 23,
-        "ren:basic": 16,
-        "nada:basic": 14
+        "nada:basic": 20,
+        "art:basic": 17
       },
       "stats": {},
       "threat": {
@@ -460,7 +394,7 @@
       },
       "events": {
         "death": 24,
-        "read-move-predicted": 5,
+        "read-move-predicted": 6,
         "miss": 5,
         "status-resisted": 1
       }
@@ -468,128 +402,301 @@
     {
       "tier": "early",
       "squad": "three",
+      "size": 3,
+      "scale": 1.026,
+      "score": 0.966,
       "n": 8,
-      "scale": 0.702,
-      "score": 1.0128,
       "w": 8,
       "q": 8,
-      "pool": 0.918,
-      "actions": 12.625,
+      "pool": 0.84,
+      "actions": 13.75,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 15,
+        "ren:powerful": 16,
         "nada:special": 8,
         "art:powerful": 8,
-        "ren:special": 8,
-        "nada:powerful": 7,
-        "art:basic": 23,
+        "ren:special": 14,
+        "nada:powerful": 8,
+        "art:basic": 24,
         "ren:basic": 16,
         "nada:basic": 16
       },
       "stats": {},
       "threat": {
-        "prepared": 15,
-        "resolved": 7,
-        "cancelled": 7,
-        "reacted": 7
+        "prepared": 16,
+        "resolved": 0,
+        "cancelled": 8,
+        "reacted": 0
       },
       "events": {
         "death": 24,
-        "miss": 1
+        "miss": 3
       }
     },
     {
       "tier": "early",
       "squad": "three",
+      "size": 3,
+      "scale": 0.81,
+      "score": 1.02,
       "n": 8,
-      "scale": 2.16,
-      "score": 1.9472,
-      "w": 1,
-      "q": 1,
-      "pool": 0.068,
-      "actions": 16.625,
+      "w": 8,
+      "q": 8,
+      "pool": 0.93,
+      "actions": 10.75,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 16,
-        "nada:special": 10,
-        "art:powerful": 16,
-        "ren:special": 13,
-        "nada:powerful": 8,
-        "art:special": 11,
-        "ren:basic": 21,
-        "art:basic": 26,
-        "nada:basic": 12
+        "ren:powerful": 8,
+        "nada:special": 8,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "nada:powerful": 7,
+        "art:basic": 16,
+        "ren:basic": 16,
+        "nada:basic": 15
       },
       "stats": {},
       "threat": {
-        "prepared": 25,
-        "resolved": 15,
-        "cancelled": 10,
-        "reacted": 11
+        "prepared": 15,
+        "resolved": 0,
+        "cancelled": 7,
+        "reacted": 0
       },
       "events": {
-        "read-move-predicted": 9,
-        "death": 30,
-        "miss": 13,
+        "death": 24,
+        "miss": 2
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "three",
+      "size": 3,
+      "scale": 0.594,
+      "score": 1.0434,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.969,
+      "actions": 8.75,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "nada:special": 8,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "nada:basic": 16,
+        "art:basic": 14,
+        "ren:basic": 8
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 24,
+        "miss": 4
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "three",
+      "size": 3,
+      "scale": 1.836,
+      "score": 1.335,
+      "n": 8,
+      "w": 3,
+      "q": 2,
+      "pool": 0.13,
+      "actions": 17.625,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 15,
+        "nada:special": 10,
+        "art:powerful": 20,
+        "ren:special": 11,
+        "nada:powerful": 8,
+        "art:special": 11,
+        "ren:basic": 22,
+        "art:basic": 35,
+        "nada:basic": 9
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 21,
+        "resolved": 11,
+        "cancelled": 8,
+        "reacted": 8
+      },
+      "events": {
+        "read-move-predicted": 8,
+        "death": 33,
+        "miss": 9,
         "status-resisted": 1
       }
     },
     {
       "tier": "early",
       "squad": "three",
-      "n": 8,
-      "scale": 2.538,
+      "size": 3,
+      "scale": 2.214,
       "score": 2.3379999999999996,
+      "n": 8,
       "w": 0,
       "q": 0,
       "pool": 0,
-      "actions": 10.875,
+      "actions": 10,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 9,
+        "ren:powerful": 10,
         "nada:special": 8,
-        "art:powerful": 10,
-        "ren:special": 9,
-        "nada:powerful": 8,
-        "art:special": 8,
-        "ren:basic": 16,
-        "art:basic": 17,
-        "nada:basic": 2
+        "art:powerful": 11,
+        "ren:special": 8,
+        "art:basic": 19,
+        "ren:basic": 13,
+        "nada:powerful": 5,
+        "art:special": 5,
+        "nada:basic": 1
       },
       "stats": {},
       "threat": {
-        "prepared": 24,
-        "resolved": 14,
-        "cancelled": 8,
-        "reacted": 9
+        "prepared": 21,
+        "resolved": 11,
+        "cancelled": 10,
+        "reacted": 8
       },
       "events": {
-        "read-move-predicted": 8,
-        "death": 27,
+        "death": 30,
+        "read-move-predicted": 5,
         "status-resisted": 1,
-        "miss": 6
+        "miss": 4
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "three",
+      "size": 3,
+      "scale": 2.7,
+      "score": 2.3379999999999996,
+      "n": 8,
+      "w": 0,
+      "q": 0,
+      "pool": 0,
+      "actions": 7,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "nada:special": 8,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "art:basic": 16,
+        "ren:basic": 8
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 16,
+        "resolved": 8,
+        "cancelled": 8,
+        "reacted": 8
+      },
+      "events": {
+        "death": 24,
+        "miss": 2
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "three",
+      "size": 3,
+      "scale": 3.24,
+      "score": 2.3379999999999996,
+      "n": 8,
+      "w": 0,
+      "q": 0,
+      "pool": 0,
+      "actions": 7,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "nada:special": 8,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "art:basic": 16,
+        "ren:basic": 8
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 16,
+        "resolved": 8,
+        "cancelled": 8,
+        "reacted": 8
+      },
+      "events": {
+        "death": 24,
+        "miss": 2
       }
     },
     {
       "tier": "early",
       "squad": "four",
+      "size": 4,
+      "scale": 1.242,
+      "score": 0.787,
       "n": 8,
-      "scale": 1.296,
-      "score": 0.5154000000000001,
       "w": 8,
-      "q": 5,
-      "pool": 0.714,
-      "actions": 32.125,
+      "q": 7,
+      "pool": 0.75,
+      "actions": 23.25,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 24,
+        "ren:powerful": 16,
+        "sava:special": 17,
+        "nada:special": 16,
+        "liora:special": 8,
+        "ren:special": 16,
+        "sava:basic": 31,
+        "nada:powerful": 8,
+        "liora:basic": 29,
+        "ren:basic": 22,
+        "nada:basic": 23
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 15,
+        "resolved": 15,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 33,
+        "read-move-predicted": 7,
+        "status-resisted": 2,
+        "miss": 7
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "four",
+      "size": 4,
+      "scale": 1.512,
+      "score": 0.8144000000000001,
+      "n": 8,
+      "w": 8,
+      "q": 1,
+      "pool": 0.629,
+      "actions": 28,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 22,
         "sava:special": 24,
-        "nada:special": 23,
+        "nada:special": 20,
         "liora:special": 8,
         "ren:special": 20,
-        "sava:basic": 46,
-        "nada:powerful": 9,
-        "liora:basic": 40,
+        "sava:basic": 42,
+        "nada:powerful": 8,
+        "liora:basic": 17,
         "ren:basic": 32,
         "nada:basic": 31
       },
@@ -601,182 +708,35 @@
         "reacted": 0
       },
       "events": {
-        "death": 35,
-        "read-move-predicted": 8,
-        "status-resisted": 4,
-        "miss": 9
-      }
-    },
-    {
-      "tier": "early",
-      "squad": "four",
-      "n": 8,
-      "scale": 1.566,
-      "score": 0.9202000000000001,
-      "w": 8,
-      "q": 0,
-      "pool": 0.597,
-      "actions": 36.75,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 28,
-        "sava:special": 32,
-        "nada:special": 20,
-        "liora:special": 8,
-        "ren:special": 24,
-        "sava:basic": 52,
-        "nada:powerful": 16,
-        "liora:basic": 22,
-        "ren:basic": 46,
-        "nada:basic": 46
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 16,
-        "resolved": 16,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "death": 40,
+        "death": 39,
         "read-move-predicted": 8,
         "status-resisted": 6,
-        "miss": 15
+        "miss": 7
       }
     },
     {
       "tier": "early",
       "squad": "four",
+      "size": 4,
+      "scale": 1.026,
+      "score": 0.9984,
       "n": 8,
-      "scale": 1.08,
-      "score": 0.9468000000000001,
       "w": 8,
       "q": 8,
-      "pool": 0.808,
-      "actions": 27.375,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 18,
-        "sava:special": 24,
-        "nada:special": 18,
-        "liora:special": 8,
-        "ren:special": 16,
-        "sava:basic": 34,
-        "nada:powerful": 8,
-        "liora:basic": 40,
-        "ren:basic": 29,
-        "nada:basic": 24
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 16,
-        "resolved": 15,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "death": 32,
-        "read-move-predicted": 8,
-        "status-resisted": 5,
-        "miss": 6
-      }
-    },
-    {
-      "tier": "early",
-      "squad": "four",
-      "n": 8,
-      "scale": 0.918,
-      "score": 0.984,
-      "w": 8,
-      "q": 8,
-      "pool": 0.87,
-      "actions": 23,
+      "pool": 0.894,
+      "actions": 17.75,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
         "sava:special": 16,
         "nada:special": 16,
         "liora:special": 8,
-        "ren:special": 16,
-        "sava:basic": 31,
-        "nada:powerful": 8,
-        "liora:basic": 32,
-        "ren:basic": 18,
-        "nada:basic": 23
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 15,
-        "resolved": 14,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "death": 32,
-        "read-move-predicted": 7,
-        "status-resisted": 2,
-        "miss": 8
-      }
-    },
-    {
-      "tier": "early",
-      "squad": "four",
-      "n": 8,
-      "scale": 1.836,
-      "score": 0.9994000000000001,
-      "w": 8,
-      "q": 0,
-      "pool": 0.311,
-      "actions": 44.125,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 29,
-        "sava:special": 44,
-        "nada:special": 24,
-        "liora:special": 8,
-        "ren:special": 27,
-        "sava:basic": 75,
-        "nada:powerful": 16,
-        "liora:basic": 12,
-        "ren:basic": 43,
-        "nada:basic": 75
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 20,
-        "resolved": 16,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "read-move-predicted": 8,
-        "death": 43,
-        "status-resisted": 3,
-        "miss": 11
-      }
-    },
-    {
-      "tier": "early",
-      "squad": "four",
-      "n": 8,
-      "scale": 0.702,
-      "score": 1.0302,
-      "w": 8,
-      "q": 8,
-      "pool": 0.947,
-      "actions": 16,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 15,
-        "sava:special": 16,
-        "nada:special": 13,
-        "liora:special": 8,
         "ren:special": 8,
-        "sava:basic": 16,
+        "sava:basic": 20,
         "nada:powerful": 8,
-        "liora:basic": 17,
+        "liora:basic": 22,
         "ren:basic": 16,
-        "nada:basic": 11
+        "nada:basic": 12
       },
       "stats": {},
       "threat": {
@@ -787,106 +747,298 @@
       },
       "events": {
         "death": 32,
-        "miss": 5
+        "miss": 7
       }
     },
     {
       "tier": "early",
       "squad": "four",
+      "size": 4,
+      "scale": 0.81,
+      "score": 1.0146,
       "n": 8,
-      "scale": 2.16,
-      "score": 2.3379999999999996,
-      "w": 0,
-      "q": 0,
-      "pool": 0,
-      "actions": 40.25,
+      "w": 8,
+      "q": 8,
+      "pool": 0.921,
+      "actions": 15.25,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 20,
+        "ren:powerful": 11,
+        "sava:special": 16,
+        "nada:special": 8,
+        "liora:special": 8,
+        "ren:special": 8,
+        "sava:basic": 16,
+        "nada:powerful": 8,
+        "liora:basic": 16,
+        "ren:basic": 16,
+        "nada:basic": 15
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 8,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 32,
+        "miss": 2
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "four",
+      "size": 4,
+      "scale": 0.594,
+      "score": 1.0362,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.957,
+      "actions": 12.75,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "sava:special": 8,
+        "nada:special": 8,
+        "liora:special": 7,
+        "ren:special": 8,
+        "sava:basic": 16,
+        "nada:powerful": 7,
+        "liora:basic": 16,
+        "ren:basic": 15,
+        "nada:basic": 9
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 7,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 32,
+        "miss": 3
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "four",
+      "size": 4,
+      "scale": 1.836,
+      "score": 1.1478249999999999,
+      "n": 8,
+      "w": 5,
+      "q": 0,
+      "pool": 0.143,
+      "actions": 37.375,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 18,
         "sava:special": 36,
         "nada:special": 20,
         "liora:special": 8,
-        "ren:special": 20,
-        "sava:basic": 83,
-        "nada:powerful": 20,
-        "liora:basic": 10,
-        "ren:basic": 32,
-        "nada:basic": 73
+        "ren:special": 18,
+        "sava:basic": 86,
+        "nada:powerful": 16,
+        "ren:basic": 29,
+        "nada:basic": 60,
+        "liora:basic": 8
       },
       "stats": {},
       "threat": {
-        "prepared": 24,
-        "resolved": 20,
+        "prepared": 16,
+        "resolved": 16,
         "cancelled": 0,
         "reacted": 0
       },
       "events": {
-        "read-move-predicted": 12,
-        "status-resisted": 4,
-        "death": 51,
-        "miss": 16
+        "death": 52,
+        "read-move-predicted": 8,
+        "miss": 9,
+        "status-resisted": 2
       }
     },
     {
       "tier": "early",
       "squad": "four",
+      "size": 4,
+      "scale": 2.214,
+      "score": 2.104,
       "n": 8,
-      "scale": 2.538,
-      "score": 2.3379999999999996,
-      "w": 0,
+      "w": 1,
       "q": 0,
-      "pool": 0,
-      "actions": 23,
+      "pool": 0.015,
+      "actions": 29.875,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
-        "sava:special": 17,
+        "sava:special": 30,
         "nada:special": 22,
         "liora:special": 8,
-        "ren:special": 15,
-        "sava:basic": 27,
-        "nada:powerful": 18,
-        "liora:basic": 9,
-        "ren:basic": 25,
-        "nada:basic": 27
+        "ren:special": 16,
+        "sava:basic": 61,
+        "nada:powerful": 15,
+        "ren:basic": 22,
+        "nada:basic": 42,
+        "liora:basic": 7
       },
       "stats": {},
       "threat": {
-        "prepared": 24,
-        "resolved": 24,
+        "prepared": 17,
+        "resolved": 17,
         "cancelled": 0,
         "reacted": 0
       },
       "events": {
-        "read-move-predicted": 17,
-        "death": 42,
-        "miss": 13
+        "death": 52,
+        "read-move-predicted": 9,
+        "status-resisted": 2,
+        "miss": 9
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "four",
+      "size": 4,
+      "scale": 2.7,
+      "score": 2.3379999999999996,
+      "n": 8,
+      "w": 0,
+      "q": 0,
+      "pool": 0,
+      "actions": 16.375,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 15,
+        "sava:special": 11,
+        "nada:special": 18,
+        "liora:special": 8,
+        "ren:special": 9,
+        "sava:basic": 20,
+        "nada:powerful": 15,
+        "ren:basic": 16,
+        "nada:basic": 16,
+        "liora:basic": 3
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 22,
+        "resolved": 22,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 41,
+        "read-move-predicted": 16,
+        "miss": 12,
+        "status-resisted": 1
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "four",
+      "size": 4,
+      "scale": 3.24,
+      "score": 2.3379999999999996,
+      "n": 8,
+      "w": 0,
+      "q": 0,
+      "pool": 0,
+      "actions": 12.75,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 9,
+        "sava:special": 15,
+        "nada:special": 9,
+        "liora:special": 8,
+        "ren:special": 8,
+        "sava:basic": 17,
+        "nada:powerful": 9,
+        "ren:basic": 10,
+        "nada:basic": 15,
+        "liora:basic": 2
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 17,
+        "resolved": 17,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 35,
+        "read-move-predicted": 9,
+        "miss": 7
       }
     },
     {
       "tier": "early",
       "squad": "full",
+      "size": 5,
+      "scale": 1.242,
+      "score": 0.7434000000000001,
       "n": 8,
-      "scale": 1.296,
-      "score": 0.6464,
       "w": 8,
-      "q": 6,
-      "pool": 0.724,
-      "actions": 50.625,
+      "q": 2,
+      "pool": 0.719,
+      "actions": 36.125,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 25,
-        "sava:special": 32,
-        "nada:special": 23,
-        "art:powerful": 22,
+        "ren:powerful": 24,
+        "sava:special": 24,
+        "nada:special": 21,
+        "art:powerful": 16,
+        "liora:special": 8,
+        "ren:special": 17,
+        "sava:basic": 41,
+        "nada:powerful": 11,
+        "art:special": 14,
+        "liora:basic": 29,
+        "ren:basic": 32,
+        "nada:basic": 26,
+        "art:basic": 26
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 15,
+        "resolved": 6,
+        "cancelled": 8,
+        "reacted": 6
+      },
+      "events": {
+        "death": 46,
+        "read-move-predicted": 6,
+        "miss": 10,
+        "status-resisted": 2
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "full",
+      "size": 5,
+      "scale": 1.512,
+      "score": 0.9085750000000001,
+      "n": 8,
+      "w": 8,
+      "q": 0,
+      "pool": 0.562,
+      "actions": 44.625,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 28,
+        "sava:special": 28,
+        "nada:special": 24,
+        "art:powerful": 21,
         "liora:special": 8,
         "ren:special": 24,
-        "sava:basic": 55,
+        "sava:basic": 45,
         "nada:powerful": 16,
         "art:special": 22,
-        "liora:basic": 56,
-        "ren:basic": 47,
-        "nada:basic": 41,
+        "liora:basic": 19,
+        "ren:basic": 46,
+        "nada:basic": 42,
         "art:basic": 33,
         "liora:powerful": 1
       },
@@ -898,162 +1050,83 @@
         "reacted": 8
       },
       "events": {
-        "death": 42,
-        "read-move-predicted": 9,
+        "death": 52,
+        "read-move-predicted": 10,
         "miss": 15,
-        "status-resisted": 2
+        "status-resisted": 1
       }
     },
     {
       "tier": "early",
       "squad": "full",
+      "size": 5,
+      "scale": 1.026,
+      "score": 0.9708,
       "n": 8,
-      "scale": 1.08,
-      "score": 0.9264,
       "w": 8,
       "q": 8,
-      "pool": 0.774,
-      "actions": 40.75,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 24,
-        "sava:special": 24,
-        "nada:special": 16,
-        "art:powerful": 16,
-        "liora:special": 9,
-        "ren:special": 22,
-        "sava:basic": 48,
-        "nada:powerful": 16,
-        "art:basic": 26,
-        "liora:basic": 46,
-        "ren:basic": 32,
-        "nada:basic": 32,
-        "art:special": 14,
-        "liora:powerful": 1
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 16,
-        "resolved": 7,
-        "cancelled": 8,
-        "reacted": 7
-      },
-      "events": {
-        "death": 40,
-        "read-move-predicted": 8,
-        "status-resisted": 6,
-        "miss": 6
-      }
-    },
-    {
-      "tier": "early",
-      "squad": "full",
-      "n": 8,
-      "scale": 1.566,
-      "score": 0.9622000000000002,
-      "w": 8,
-      "q": 0,
-      "pool": 0.373,
-      "actions": 62.125,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 30,
-        "sava:special": 39,
-        "nada:special": 33,
-        "art:powerful": 33,
-        "liora:special": 8,
-        "ren:special": 27,
-        "sava:basic": 65,
-        "nada:powerful": 20,
-        "art:special": 34,
-        "liora:basic": 17,
-        "ren:basic": 48,
-        "nada:basic": 83,
-        "art:basic": 60
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 16,
-        "resolved": 8,
-        "cancelled": 8,
-        "reacted": 8
-      },
-      "events": {
-        "read-move-predicted": 21,
-        "miss": 22,
-        "death": 60,
-        "status-resisted": 11
-      }
-    },
-    {
-      "tier": "early",
-      "squad": "full",
-      "n": 8,
-      "scale": 0.918,
-      "score": 0.972,
-      "w": 8,
-      "q": 8,
-      "pool": 0.85,
-      "actions": 35.5,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 21,
-        "sava:special": 24,
-        "nada:special": 22,
-        "art:powerful": 16,
-        "liora:special": 9,
-        "ren:special": 16,
-        "sava:basic": 38,
-        "nada:powerful": 8,
-        "art:basic": 26,
-        "liora:basic": 38,
-        "ren:basic": 30,
-        "nada:basic": 24,
-        "art:special": 12
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 15,
-        "resolved": 6,
-        "cancelled": 8,
-        "reacted": 6
-      },
-      "events": {
-        "death": 40,
-        "miss": 8,
-        "status-resisted": 2
-      }
-    },
-    {
-      "tier": "early",
-      "squad": "full",
-      "n": 8,
-      "scale": 0.702,
-      "score": 1.0116,
-      "w": 8,
-      "q": 8,
-      "pool": 0.916,
-      "actions": 24.75,
+      "pool": 0.848,
+      "actions": 28.625,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
         "sava:special": 16,
         "nada:special": 16,
         "art:powerful": 14,
-        "liora:special": 8,
+        "liora:special": 9,
         "ren:special": 16,
-        "sava:basic": 24,
+        "sava:basic": 31,
         "nada:powerful": 8,
-        "art:basic": 24,
-        "liora:basic": 24,
-        "ren:basic": 16,
-        "nada:basic": 16
+        "art:basic": 20,
+        "liora:basic": 30,
+        "ren:basic": 23,
+        "nada:basic": 23,
+        "art:special": 7
       },
       "stats": {},
       "threat": {
         "prepared": 8,
         "resolved": 0,
-        "cancelled": 8,
+        "cancelled": 7,
+        "reacted": 0
+      },
+      "events": {
+        "death": 40,
+        "miss": 5,
+        "status-resisted": 1
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "full",
+      "size": 5,
+      "scale": 0.81,
+      "score": 0.996,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.89,
+      "actions": 23.5,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 16,
+        "sava:special": 16,
+        "nada:special": 16,
+        "art:powerful": 8,
+        "liora:special": 8,
+        "ren:special": 14,
+        "sava:basic": 24,
+        "nada:powerful": 8,
+        "art:basic": 24,
+        "liora:basic": 24,
+        "ren:basic": 16,
+        "nada:basic": 14
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 7,
         "reacted": 0
       },
       "events": {
@@ -1065,237 +1138,287 @@
     {
       "tier": "early",
       "squad": "full",
+      "size": 5,
+      "scale": 0.594,
+      "score": 1.0212,
       "n": 8,
-      "scale": 1.836,
-      "score": 2.0812,
-      "w": 1,
-      "q": 0,
-      "pool": 0.053,
-      "actions": 57.125,
+      "w": 8,
+      "q": 8,
+      "pool": 0.932,
+      "actions": 18.375,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 25,
-        "sava:special": 28,
-        "nada:special": 30,
-        "art:powerful": 34,
-        "liora:special": 8,
-        "ren:special": 23,
-        "sava:basic": 47,
-        "nada:powerful": 32,
-        "art:special": 34,
-        "liora:basic": 11,
-        "ren:basic": 41,
-        "nada:basic": 81,
-        "art:basic": 63
+        "ren:powerful": 13,
+        "sava:special": 15,
+        "nada:special": 15,
+        "art:powerful": 8,
+        "liora:special": 7,
+        "ren:special": 8,
+        "sava:basic": 16,
+        "nada:powerful": 8,
+        "art:basic": 16,
+        "liora:basic": 17,
+        "ren:basic": 16,
+        "nada:basic": 8
       },
       "stats": {},
       "threat": {
-        "prepared": 20,
-        "resolved": 8,
-        "cancelled": 8,
-        "reacted": 8
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
       },
       "events": {
-        "read-move-predicted": 11,
-        "miss": 18,
-        "death": 68,
-        "status-resisted": 4
+        "death": 40,
+        "miss": 4
       }
     },
     {
       "tier": "early",
       "squad": "full",
-      "n": 8,
-      "scale": 2.16,
+      "size": 5,
+      "scale": 1.836,
       "score": 2.3379999999999996,
+      "n": 8,
       "w": 0,
       "q": 0,
       "pool": 0,
-      "actions": 37,
+      "actions": 36.125,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 17,
-        "sava:special": 21,
-        "nada:special": 18,
-        "art:powerful": 17,
+        "ren:powerful": 14,
+        "sava:special": 22,
+        "nada:special": 21,
+        "art:powerful": 19,
         "liora:special": 8,
-        "ren:special": 16,
-        "sava:basic": 29,
-        "nada:powerful": 25,
-        "art:special": 18,
-        "liora:basic": 11,
-        "ren:basic": 25,
+        "ren:special": 14,
+        "sava:basic": 36,
+        "nada:powerful": 23,
+        "art:special": 15,
+        "liora:basic": 6,
+        "ren:basic": 20,
         "nada:basic": 53,
         "art:basic": 38
       },
       "stats": {},
       "threat": {
-        "prepared": 24,
+        "prepared": 16,
         "resolved": 8,
-        "cancelled": 12,
+        "cancelled": 8,
         "reacted": 8
       },
       "events": {
-        "read-move-predicted": 11,
-        "miss": 19,
-        "death": 58,
+        "death": 66,
+        "read-move-predicted": 10,
+        "miss": 13
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "full",
+      "size": 5,
+      "scale": 2.214,
+      "score": 2.3379999999999996,
+      "n": 8,
+      "w": 0,
+      "q": 0,
+      "pool": 0,
+      "actions": 20.625,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 9,
+        "sava:special": 16,
+        "nada:special": 16,
+        "art:powerful": 13,
+        "liora:special": 8,
+        "ren:special": 8,
+        "sava:basic": 21,
+        "nada:powerful": 16,
+        "art:basic": 16,
+        "ren:basic": 13,
+        "nada:basic": 20,
+        "art:special": 8,
+        "liora:basic": 1
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 23,
+        "resolved": 11,
+        "cancelled": 11,
+        "reacted": 8
+      },
+      "events": {
+        "death": 52,
+        "read-move-predicted": 14,
+        "miss": 10,
         "status-resisted": 3
       }
     },
     {
       "tier": "early",
       "squad": "full",
-      "n": 8,
-      "scale": 2.538,
+      "size": 5,
+      "scale": 2.7,
       "score": 2.3379999999999996,
+      "n": 8,
       "w": 0,
       "q": 0,
       "pool": 0,
-      "actions": 27.125,
+      "actions": 18.25,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 15,
-        "sava:special": 17,
-        "nada:special": 19,
-        "art:powerful": 15,
+        "ren:powerful": 10,
+        "sava:special": 10,
+        "nada:special": 16,
+        "art:powerful": 10,
         "liora:special": 8,
-        "ren:special": 13,
-        "sava:basic": 24,
-        "nada:powerful": 16,
-        "art:special": 14,
-        "liora:basic": 9,
-        "ren:basic": 18,
-        "nada:basic": 25,
-        "art:basic": 24
+        "ren:special": 8,
+        "sava:basic": 19,
+        "nada:powerful": 12,
+        "art:basic": 18,
+        "ren:basic": 12,
+        "nada:basic": 16,
+        "art:special": 5,
+        "liora:basic": 2
       },
       "stats": {},
       "threat": {
-        "prepared": 26,
-        "resolved": 14,
-        "cancelled": 12,
-        "reacted": 11
+        "prepared": 24,
+        "resolved": 9,
+        "cancelled": 15,
+        "reacted": 8
       },
       "events": {
-        "read-move-predicted": 15,
-        "miss": 13,
-        "death": 51,
+        "death": 48,
+        "read-move-predicted": 12,
+        "miss": 12,
         "status-resisted": 3
+      }
+    },
+    {
+      "tier": "early",
+      "squad": "full",
+      "size": 5,
+      "scale": 3.24,
+      "score": 2.3379999999999996,
+      "n": 8,
+      "w": 0,
+      "q": 0,
+      "pool": 0,
+      "actions": 14,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "sava:special": 8,
+        "nada:special": 9,
+        "art:powerful": 9,
+        "liora:special": 8,
+        "ren:special": 8,
+        "sava:basic": 11,
+        "nada:powerful": 8,
+        "art:special": 6,
+        "ren:basic": 10,
+        "nada:basic": 9,
+        "art:basic": 18
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 24,
+        "resolved": 9,
+        "cancelled": 8,
+        "reacted": 8
+      },
+      "events": {
+        "death": 42,
+        "read-move-predicted": 8,
+        "miss": 10,
+        "status-resisted": 2
       }
     },
     {
       "tier": "mid",
       "squad": "starter",
+      "size": 2,
+      "scale": 6.355,
+      "score": 0.4606,
       "n": 8,
-      "scale": 6.2,
-      "score": 0.9088,
-      "w": 4,
-      "q": 3,
-      "pool": 0.257,
-      "actions": 21.375,
+      "w": 7,
+      "q": 7,
+      "pool": 0.581,
+      "actions": 15.75,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 20,
-        "art:powerful": 28,
+        "ren:powerful": 21,
+        "art:powerful": 17,
         "ren:special": 30,
-        "art:basic": 63,
-        "ren:basic": 17,
+        "art:basic": 28,
+        "ren:basic": 15,
+        "art:special": 15
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 8,
+        "reacted": 0
+      },
+      "events": {
+        "miss": 6,
+        "death": 17
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "starter",
+      "size": 2,
+      "scale": 5.27,
+      "score": 0.927,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.775,
+      "actions": 14,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 16,
+        "art:powerful": 16,
+        "ren:special": 30,
+        "art:basic": 21,
+        "ren:basic": 16,
         "art:special": 13
       },
       "stats": {},
       "threat": {
         "prepared": 8,
         "resolved": 0,
-        "cancelled": 8,
+        "cancelled": 6,
         "reacted": 0
       },
       "events": {
-        "miss": 9,
-        "death": 21,
-        "status-resisted": 1
-      }
-    },
-    {
-      "tier": "mid",
-      "squad": "starter",
-      "n": 8,
-      "scale": 5.27,
-      "score": 0.9216,
-      "w": 8,
-      "q": 8,
-      "pool": 0.766,
-      "actions": 17.75,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 24,
-        "art:powerful": 16,
-        "ren:special": 39,
-        "art:basic": 29,
-        "ren:basic": 18,
-        "art:special": 16
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 8,
-        "resolved": 0,
-        "cancelled": 8,
-        "reacted": 0
-      },
-      "events": {
-        "miss": 7,
+        "miss": 6,
         "death": 16,
-        "status-resisted": 1
+        "status-resisted": 2
       }
     },
     {
       "tier": "mid",
       "squad": "starter",
+      "size": 2,
+      "scale": 4.34,
+      "score": 0.9468000000000001,
       "n": 8,
-      "scale": 4.495,
-      "score": 0.9581999999999999,
       "w": 8,
       "q": 8,
-      "pool": 0.827,
-      "actions": 15.625,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 22,
-        "art:powerful": 16,
-        "ren:special": 32,
-        "art:basic": 30,
-        "ren:basic": 16,
-        "art:special": 9
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 8,
-        "resolved": 0,
-        "cancelled": 8,
-        "reacted": 0
-      },
-      "events": {
-        "miss": 7,
-        "death": 16,
-        "status-resisted": 3
-      }
-    },
-    {
-      "tier": "mid",
-      "squad": "starter",
-      "n": 8,
-      "scale": 3.72,
-      "score": 0.9858,
-      "w": 8,
-      "q": 8,
-      "pool": 0.873,
-      "actions": 11.75,
+      "pool": 0.808,
+      "actions": 10.625,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
-        "art:powerful": 14,
-        "ren:special": 25,
-        "art:basic": 25,
-        "ren:basic": 12,
-        "art:special": 2
+        "art:powerful": 10,
+        "ren:special": 24,
+        "art:basic": 19,
+        "ren:basic": 10,
+        "art:special": 6
       },
       "stats": {},
       "threat": {
@@ -1307,49 +1430,19 @@
       "events": {
         "miss": 4,
         "death": 16,
-        "status-resisted": 2
+        "status-resisted": 1
       }
     },
     {
       "tier": "mid",
       "squad": "starter",
+      "size": 2,
+      "scale": 3.565,
+      "score": 1.0032,
       "n": 8,
-      "scale": 3.1,
-      "score": 1.0212,
       "w": 8,
       "q": 8,
-      "pool": 0.932,
-      "actions": 9.875,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 16,
-        "art:powerful": 8,
-        "ren:special": 23,
-        "art:basic": 24,
-        "ren:basic": 8
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 8,
-        "resolved": 0,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "miss": 4,
-        "death": 16,
-        "status-resisted": 2
-      }
-    },
-    {
-      "tier": "mid",
-      "squad": "starter",
-      "n": 8,
-      "scale": 2.635,
-      "score": 1.0326,
-      "w": 8,
-      "q": 8,
-      "pool": 0.951,
+      "pool": 0.902,
       "actions": 8.75,
       "wave2": 0,
       "usage": {
@@ -1375,19 +1468,52 @@
     {
       "tier": "mid",
       "squad": "starter",
+      "size": 2,
+      "scale": 2.945,
+      "score": 1.0134,
       "n": 8,
-      "scale": 2.015,
-      "score": 1.0428,
       "w": 8,
       "q": 8,
-      "pool": 0.968,
-      "actions": 6.625,
+      "pool": 0.919,
+      "actions": 7.75,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 13,
+        "art:powerful": 8,
+        "ren:special": 16,
+        "art:basic": 17,
+        "ren:basic": 8
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 6,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "miss": 4,
+        "death": 16,
+        "status-resisted": 2
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "starter",
+      "size": 2,
+      "scale": 2.325,
+      "score": 1.0326,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.951,
+      "actions": 6.5,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
         "art:powerful": 8,
-        "ren:special": 13,
-        "art:basic": 16,
+        "ren:special": 14,
+        "art:basic": 14,
         "ren:basic": 8
       },
       "stats": {},
@@ -1406,233 +1532,196 @@
     {
       "tier": "mid",
       "squad": "starter",
+      "size": 2,
+      "scale": 1.705,
+      "score": 1.0476,
       "n": 8,
-      "scale": 7.285,
-      "score": 1.5396,
-      "w": 2,
-      "q": 2,
-      "pool": 0.164,
-      "actions": 20.625,
+      "w": 8,
+      "q": 8,
+      "pool": 0.976,
+      "actions": 4.75,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 22,
-        "art:powerful": 27,
-        "ren:special": 29,
-        "art:basic": 58,
-        "ren:basic": 14,
-        "art:special": 15
+        "ren:powerful": 8,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "art:basic": 8,
+        "ren:basic": 6
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 0,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 16,
+        "miss": 2,
+        "status-resisted": 1
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "starter",
+      "size": 2,
+      "scale": 7.75,
+      "score": 1.1554,
+      "n": 8,
+      "w": 3,
+      "q": 3,
+      "pool": 0.221,
+      "actions": 13,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 14,
+        "art:powerful": 15,
+        "ren:special": 23,
+        "art:basic": 29,
+        "ren:basic": 12,
+        "art:special": 11
       },
       "stats": {},
       "threat": {
         "prepared": 9,
-        "resolved": 0,
-        "cancelled": 9,
+        "resolved": 1,
+        "cancelled": 8,
         "reacted": 0
       },
       "events": {
-        "miss": 15,
-        "death": 22,
-        "status-resisted": 1
-      }
-    },
-    {
-      "tier": "mid",
-      "squad": "three",
-      "n": 8,
-      "scale": 6.2,
-      "score": 0.813,
-      "w": 8,
-      "q": 8,
-      "pool": 0.585,
-      "actions": 23.75,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 24,
-        "nada:special": 24,
-        "art:powerful": 16,
-        "ren:special": 34,
-        "nada:powerful": 8,
-        "art:special": 16,
-        "ren:basic": 16,
-        "art:basic": 24,
-        "nada:basic": 28
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 17,
-        "resolved": 8,
-        "cancelled": 8,
-        "reacted": 7
-      },
-      "events": {
-        "read-move-predicted": 12,
-        "status-resisted": 3,
-        "death": 24,
-        "miss": 16
-      }
-    },
-    {
-      "tier": "mid",
-      "squad": "three",
-      "n": 8,
-      "scale": 5.27,
-      "score": 0.873,
-      "w": 8,
-      "q": 8,
-      "pool": 0.685,
-      "actions": 21.75,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 21,
-        "nada:special": 24,
-        "art:powerful": 16,
-        "ren:special": 31,
-        "nada:powerful": 8,
-        "art:special": 15,
-        "ren:basic": 16,
-        "art:basic": 22,
-        "nada:basic": 21
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 16,
-        "resolved": 8,
-        "cancelled": 8,
-        "reacted": 7
-      },
-      "events": {
-        "death": 24,
-        "read-move-predicted": 8,
-        "miss": 11,
-        "status-resisted": 2
-      }
-    },
-    {
-      "tier": "mid",
-      "squad": "three",
-      "n": 8,
-      "scale": 7.285,
-      "score": 0.9112,
-      "w": 4,
-      "q": 3,
-      "pool": 0.253,
-      "actions": 26,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 22,
-        "nada:special": 18,
-        "art:powerful": 24,
-        "ren:special": 39,
-        "nada:powerful": 8,
-        "art:special": 19,
-        "ren:basic": 18,
-        "art:basic": 48,
-        "nada:basic": 12
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 23,
-        "resolved": 13,
-        "cancelled": 8,
-        "reacted": 10
-      },
-      "events": {
-        "read-move-predicted": 15,
-        "status-resisted": 4,
-        "death": 32,
-        "miss": 24
-      }
-    },
-    {
-      "tier": "mid",
-      "squad": "three",
-      "n": 8,
-      "scale": 4.495,
-      "score": 0.9234,
-      "w": 8,
-      "q": 8,
-      "pool": 0.769,
-      "actions": 17.375,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 16,
-        "nada:special": 22,
-        "art:powerful": 15,
-        "ren:special": 25,
-        "nada:powerful": 8,
-        "art:special": 8,
-        "ren:basic": 14,
-        "art:basic": 18,
-        "nada:basic": 13
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 16,
-        "resolved": 8,
-        "cancelled": 8,
-        "reacted": 7
-      },
-      "events": {
-        "death": 24,
-        "read-move-predicted": 7,
         "miss": 12,
+        "death": 20,
         "status-resisted": 1
       }
     },
     {
       "tier": "mid",
-      "squad": "three",
+      "squad": "starter",
+      "size": 2,
+      "scale": 9.3,
+      "score": 2.3379999999999996,
       "n": 8,
-      "scale": 3.72,
-      "score": 0.9623999999999999,
-      "w": 8,
-      "q": 8,
-      "pool": 0.834,
-      "actions": 13,
+      "w": 0,
+      "q": 0,
+      "pool": 0,
+      "actions": 9.75,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 16,
-        "nada:special": 8,
-        "art:powerful": 8,
-        "ren:special": 18,
-        "nada:powerful": 8,
-        "art:basic": 22,
+        "ren:powerful": 9,
+        "art:powerful": 13,
+        "ren:special": 14,
+        "art:special": 7,
         "ren:basic": 8,
-        "nada:basic": 16
+        "art:basic": 27
       },
       "stats": {},
       "threat": {
-        "prepared": 16,
-        "resolved": 4,
+        "prepared": 12,
+        "resolved": 3,
         "cancelled": 8,
-        "reacted": 4
+        "reacted": 0
       },
       "events": {
-        "death": 24,
-        "miss": 5,
-        "status-resisted": 2
+        "miss": 12,
+        "death": 20
       }
     },
     {
       "tier": "mid",
       "squad": "three",
+      "size": 3,
+      "scale": 6.355,
+      "score": 0.5393999999999999,
       "n": 8,
-      "scale": 3.1,
-      "score": 0.99,
+      "w": 6,
+      "q": 2,
+      "pool": 0.331,
+      "actions": 19.5,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 17,
+        "nada:special": 17,
+        "art:powerful": 17,
+        "ren:special": 28,
+        "art:basic": 31,
+        "ren:basic": 14,
+        "art:special": 13,
+        "nada:powerful": 5,
+        "nada:basic": 14
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 18,
+        "resolved": 9,
+        "cancelled": 8,
+        "reacted": 7
+      },
+      "events": {
+        "death": 31,
+        "read-move-predicted": 8,
+        "miss": 14,
+        "status-resisted": 3
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "three",
+      "size": 3,
+      "scale": 5.27,
+      "score": 0.8328,
+      "n": 8,
       "w": 8,
       "q": 8,
-      "pool": 0.88,
+      "pool": 0.618,
+      "actions": 16,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 16,
+        "nada:special": 20,
+        "art:powerful": 11,
+        "ren:special": 23,
+        "nada:powerful": 8,
+        "art:special": 10,
+        "ren:basic": 14,
+        "art:basic": 16,
+        "nada:basic": 10
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 16,
+        "resolved": 6,
+        "cancelled": 8,
+        "reacted": 6
+      },
+      "events": {
+        "death": 24,
+        "read-move-predicted": 6,
+        "miss": 8,
+        "status-resisted": 3
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "three",
+      "size": 3,
+      "scale": 4.34,
+      "score": 0.9054,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.739,
       "actions": 13.125,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
         "nada:special": 8,
         "art:powerful": 8,
-        "ren:special": 18,
+        "ren:special": 19,
         "nada:powerful": 8,
-        "art:basic": 23,
+        "art:special": 4,
         "ren:basic": 8,
-        "nada:basic": 16
+        "nada:basic": 16,
+        "art:basic": 18
       },
       "stats": {},
       "threat": {
@@ -1650,23 +1739,25 @@
     {
       "tier": "mid",
       "squad": "three",
+      "size": 3,
+      "scale": 3.565,
+      "score": 0.984,
       "n": 8,
-      "scale": 2.635,
-      "score": 1.0206,
       "w": 8,
       "q": 8,
-      "pool": 0.931,
-      "actions": 10.5,
+      "pool": 0.87,
+      "actions": 11,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 10,
+        "ren:powerful": 12,
         "nada:special": 10,
         "art:powerful": 8,
         "ren:special": 16,
         "nada:powerful": 6,
-        "art:basic": 16,
+        "art:special": 2,
         "ren:basic": 8,
-        "nada:basic": 10
+        "nada:basic": 12,
+        "art:basic": 14
       },
       "stats": {},
       "threat": {
@@ -1678,29 +1769,30 @@
       "events": {
         "death": 24,
         "miss": 4,
-        "status-resisted": 2
+        "status-resisted": 1
       }
     },
     {
       "tier": "mid",
       "squad": "three",
+      "size": 3,
+      "scale": 2.945,
+      "score": 1.0230000000000001,
       "n": 8,
-      "scale": 2.015,
-      "score": 1.0434,
       "w": 8,
       "q": 8,
-      "pool": 0.969,
-      "actions": 9.5,
+      "pool": 0.935,
+      "actions": 10.375,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 8,
+        "ren:powerful": 9,
         "nada:special": 10,
         "art:powerful": 8,
-        "ren:special": 12,
+        "ren:special": 15,
         "nada:powerful": 6,
         "art:basic": 16,
         "ren:basic": 8,
-        "nada:basic": 8
+        "nada:basic": 11
       },
       "stats": {},
       "threat": {
@@ -1716,175 +1808,243 @@
     },
     {
       "tier": "mid",
-      "squad": "four",
+      "squad": "three",
+      "size": 3,
+      "scale": 2.325,
+      "score": 1.0428,
       "n": 8,
-      "scale": 6.2,
-      "score": 0.46520000000000017,
-      "w": 8,
-      "q": 4,
-      "pool": 0.672,
-      "actions": 31.375,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 24,
-        "sava:special": 24,
-        "nada:special": 27,
-        "liora:special": 8,
-        "ren:special": 36,
-        "sava:basic": 44,
-        "nada:powerful": 13,
-        "liora:basic": 30,
-        "ren:basic": 17,
-        "nada:basic": 27,
-        "liora:powerful": 1
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 16,
-        "resolved": 16,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "read-move-predicted": 16,
-        "miss": 20,
-        "death": 36,
-        "status-resisted": 7
-      }
-    },
-    {
-      "tier": "mid",
-      "squad": "four",
-      "n": 8,
-      "scale": 7.285,
-      "score": 0.6798000000000001,
-      "w": 8,
-      "q": 2,
-      "pool": 0.613,
-      "actions": 35.625,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 24,
-        "sava:special": 31,
-        "nada:special": 26,
-        "liora:special": 8,
-        "ren:special": 42,
-        "sava:basic": 48,
-        "nada:powerful": 16,
-        "liora:basic": 31,
-        "ren:basic": 23,
-        "nada:basic": 36
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 16,
-        "resolved": 16,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "read-move-predicted": 16,
-        "miss": 27,
-        "status-resisted": 7,
-        "death": 38
-      }
-    },
-    {
-      "tier": "mid",
-      "squad": "four",
-      "n": 8,
-      "scale": 5.27,
-      "score": 0.9324,
       "w": 8,
       "q": 8,
-      "pool": 0.784,
-      "actions": 29.375,
+      "pool": 0.968,
+      "actions": 8.625,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 20,
-        "sava:special": 24,
-        "nada:special": 30,
-        "liora:special": 8,
-        "ren:special": 31,
-        "sava:basic": 37,
-        "nada:powerful": 8,
-        "liora:basic": 39,
-        "ren:basic": 16,
-        "nada:basic": 22
+        "ren:powerful": 8,
+        "nada:special": 16,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "nada:basic": 8,
+        "art:basic": 13,
+        "ren:basic": 8
       },
       "stats": {},
       "threat": {
-        "prepared": 16,
-        "resolved": 14,
+        "prepared": 8,
+        "resolved": 0,
         "cancelled": 0,
         "reacted": 0
       },
       "events": {
-        "read-move-predicted": 16,
-        "miss": 13,
-        "death": 32,
-        "status-resisted": 2
+        "death": 24,
+        "miss": 8
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "three",
+      "size": 3,
+      "scale": 1.705,
+      "score": 1.0518,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.983,
+      "actions": 7.875,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "nada:special": 13,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "nada:basic": 8,
+        "art:basic": 11,
+        "ren:basic": 7
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 24,
+        "miss": 2
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "three",
+      "size": 3,
+      "scale": 7.75,
+      "score": 2.0793999999999997,
+      "n": 8,
+      "w": 1,
+      "q": 0,
+      "pool": 0.056,
+      "actions": 9.875,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 9,
+        "nada:special": 10,
+        "art:powerful": 11,
+        "ren:special": 11,
+        "art:basic": 21,
+        "ren:basic": 8,
+        "art:special": 3,
+        "nada:powerful": 1,
+        "nada:basic": 5
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 20,
+        "resolved": 12,
+        "cancelled": 8,
+        "reacted": 7
+      },
+      "events": {
+        "death": 30,
+        "read-move-predicted": 8,
+        "status-resisted": 1,
+        "miss": 5
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "three",
+      "size": 3,
+      "scale": 9.3,
+      "score": 2.3379999999999996,
+      "n": 8,
+      "w": 0,
+      "q": 0,
+      "pool": 0,
+      "actions": 9,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "nada:special": 10,
+        "art:powerful": 9,
+        "ren:special": 10,
+        "art:basic": 17,
+        "ren:basic": 8,
+        "nada:powerful": 2,
+        "art:special": 4,
+        "nada:basic": 4
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 18,
+        "resolved": 10,
+        "cancelled": 8,
+        "reacted": 7
+      },
+      "events": {
+        "death": 28,
+        "read-move-predicted": 10,
+        "miss": 7,
+        "status-resisted": 1
       }
     },
     {
       "tier": "mid",
       "squad": "four",
+      "size": 4,
+      "scale": 6.355,
+      "score": 0.6052000000000002,
       "n": 8,
-      "scale": 4.495,
-      "score": 0.9942,
       "w": 8,
-      "q": 8,
-      "pool": 0.887,
-      "actions": 24.75,
+      "q": 3,
+      "pool": 0.697,
+      "actions": 25.625,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
-        "sava:special": 21,
-        "nada:special": 21,
+        "sava:special": 22,
+        "nada:special": 24,
+        "liora:special": 8,
+        "ren:special": 29,
+        "sava:basic": 34,
+        "nada:powerful": 8,
+        "liora:basic": 24,
+        "ren:basic": 16,
+        "nada:basic": 24
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 16,
+        "resolved": 13,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "read-move-predicted": 15,
+        "miss": 14,
+        "death": 37,
+        "status-resisted": 4
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "four",
+      "size": 4,
+      "scale": 7.75,
+      "score": 0.9280000000000002,
+      "n": 8,
+      "w": 8,
+      "q": 0,
+      "pool": 0.43,
+      "actions": 30.25,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 21,
+        "sava:special": 27,
+        "nada:special": 29,
+        "liora:special": 8,
+        "ren:special": 33,
+        "sava:basic": 51,
+        "nada:powerful": 11,
+        "liora:basic": 13,
+        "ren:basic": 16,
+        "nada:basic": 33
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 16,
+        "resolved": 16,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "read-move-predicted": 16,
+        "miss": 15,
+        "death": 43,
+        "status-resisted": 3
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "four",
+      "size": 4,
+      "scale": 5.27,
+      "score": 0.9618,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.833,
+      "actions": 22.25,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 16,
+        "sava:special": 17,
+        "nada:special": 18,
         "liora:special": 8,
         "ren:special": 24,
-        "sava:basic": 32,
+        "sava:basic": 29,
         "nada:powerful": 8,
-        "liora:basic": 32,
-        "ren:basic": 15,
-        "nada:basic": 21
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 16,
-        "resolved": 11,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "read-move-predicted": 14,
-        "miss": 19,
-        "death": 32,
-        "status-resisted": 2
-      }
-    },
-    {
-      "tier": "mid",
-      "squad": "four",
-      "n": 8,
-      "scale": 3.72,
-      "score": 1.0176,
-      "w": 8,
-      "q": 8,
-      "pool": 0.926,
-      "actions": 20.125,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 16,
-        "sava:special": 16,
-        "nada:special": 16,
-        "liora:special": 8,
-        "ren:special": 23,
-        "sava:basic": 25,
-        "nada:powerful": 8,
-        "liora:basic": 25,
-        "ren:basic": 8,
-        "nada:basic": 16
+        "liora:basic": 29,
+        "ren:basic": 10,
+        "nada:basic": 19
       },
       "stats": {},
       "threat": {
@@ -1895,33 +2055,34 @@
       },
       "events": {
         "death": 32,
-        "read-move-predicted": 11,
-        "miss": 10,
+        "read-move-predicted": 12,
+        "miss": 12,
         "status-resisted": 1
       }
     },
     {
       "tier": "mid",
       "squad": "four",
+      "size": 4,
+      "scale": 4.34,
+      "score": 0.999,
       "n": 8,
-      "scale": 3.1,
-      "score": 1.0295999999999998,
       "w": 8,
       "q": 8,
-      "pool": 0.946,
-      "actions": 17.375,
+      "pool": 0.895,
+      "actions": 17.875,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 15,
+        "ren:powerful": 16,
         "sava:special": 16,
-        "nada:special": 14,
+        "nada:special": 16,
         "liora:special": 8,
         "ren:special": 16,
         "sava:basic": 20,
         "nada:powerful": 8,
-        "liora:basic": 20,
+        "liora:basic": 23,
         "ren:basic": 8,
-        "nada:basic": 14
+        "nada:basic": 12
       },
       "stats": {},
       "threat": {
@@ -1933,24 +2094,25 @@
       "events": {
         "death": 32,
         "read-move-predicted": 8,
-        "miss": 10,
+        "miss": 12,
         "status-resisted": 1
       }
     },
     {
       "tier": "mid",
       "squad": "four",
+      "size": 4,
+      "scale": 3.565,
+      "score": 1.029,
       "n": 8,
-      "scale": 2.635,
-      "score": 1.0458,
       "w": 8,
       "q": 8,
-      "pool": 0.973,
-      "actions": 14.75,
+      "pool": 0.945,
+      "actions": 14.875,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
-        "sava:special": 15,
+        "sava:special": 16,
         "nada:special": 8,
         "liora:special": 8,
         "ren:special": 16,
@@ -1970,24 +2132,25 @@
       "events": {
         "death": 32,
         "read-move-predicted": 4,
-        "miss": 7,
+        "miss": 6,
         "status-resisted": 1
       }
     },
     {
       "tier": "mid",
       "squad": "four",
+      "size": 4,
+      "scale": 2.945,
+      "score": 1.0338,
       "n": 8,
-      "scale": 2.015,
-      "score": 1.0524,
       "w": 8,
       "q": 8,
-      "pool": 0.984,
-      "actions": 13,
+      "pool": 0.953,
+      "actions": 13.625,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
-        "sava:special": 8,
+        "sava:special": 13,
         "nada:special": 8,
         "liora:special": 8,
         "ren:special": 16,
@@ -2000,123 +2163,151 @@
       "stats": {},
       "threat": {
         "prepared": 8,
+        "resolved": 5,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 32,
+        "miss": 7,
+        "read-move-predicted": 5,
+        "status-resisted": 1
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "four",
+      "size": 4,
+      "scale": 2.325,
+      "score": 1.0458,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.973,
+      "actions": 12.5,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "sava:special": 8,
+        "nada:special": 9,
+        "liora:special": 7,
+        "ren:special": 14,
+        "sava:basic": 16,
+        "nada:powerful": 7,
+        "liora:basic": 15,
+        "ren:basic": 8,
+        "nada:basic": 8
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
         "resolved": 0,
         "cancelled": 0,
         "reacted": 0
       },
       "events": {
         "death": 32,
-        "miss": 5
+        "miss": 2
       }
     },
     {
       "tier": "mid",
-      "squad": "full",
+      "squad": "four",
+      "size": 4,
+      "scale": 1.705,
+      "score": 1.0488,
       "n": 8,
-      "scale": 5.27,
-      "score": 0.4898000000000001,
       "w": 8,
-      "q": 4,
-      "pool": 0.713,
-      "actions": 45.125,
+      "q": 8,
+      "pool": 0.978,
+      "actions": 8.875,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 24,
-        "sava:special": 28,
-        "nada:special": 26,
-        "art:powerful": 19,
-        "liora:special": 12,
-        "ren:special": 41,
-        "sava:basic": 49,
+        "ren:powerful": 8,
+        "sava:special": 8,
+        "nada:special": 8,
+        "liora:basic": 16,
+        "ren:special": 8,
+        "sava:basic": 8,
+        "nada:basic": 8,
+        "ren:basic": 7
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 32,
+        "miss": 3
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "four",
+      "size": 4,
+      "scale": 9.3,
+      "score": 2.3379999999999996,
+      "n": 8,
+      "w": 0,
+      "q": 0,
+      "pool": 0,
+      "actions": 30.375,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 16,
+        "sava:special": 27,
+        "nada:special": 27,
+        "liora:special": 8,
+        "ren:special": 24,
+        "sava:basic": 70,
         "nada:powerful": 16,
-        "art:special": 11,
-        "liora:basic": 39,
-        "ren:basic": 24,
-        "art:basic": 38,
-        "nada:basic": 33,
-        "liora:powerful": 1
+        "liora:basic": 12,
+        "ren:basic": 12,
+        "nada:basic": 31
       },
       "stats": {},
       "threat": {
         "prepared": 16,
-        "resolved": 6,
-        "cancelled": 8,
-        "reacted": 6
+        "resolved": 16,
+        "cancelled": 0,
+        "reacted": 0
       },
       "events": {
-        "death": 44,
-        "read-move-predicted": 13,
-        "miss": 23,
+        "read-move-predicted": 16,
+        "miss": 22,
+        "death": 54,
         "status-resisted": 2
       }
     },
     {
       "tier": "mid",
       "squad": "full",
+      "size": 5,
+      "scale": 6.355,
+      "score": 0.6642000000000001,
       "n": 8,
-      "scale": 6.2,
-      "score": 0.5278000000000002,
       "w": 8,
-      "q": 3,
-      "pool": 0.568,
-      "actions": 55.125,
+      "q": 2,
+      "pool": 0.587,
+      "actions": 41.25,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 27,
-        "sava:special": 36,
-        "nada:special": 34,
-        "art:powerful": 27,
+        "ren:powerful": 24,
+        "sava:special": 25,
+        "nada:special": 27,
+        "art:powerful": 18,
         "liora:special": 11,
-        "ren:special": 42,
-        "sava:basic": 63,
-        "nada:powerful": 17,
-        "art:special": 22,
-        "liora:basic": 36,
-        "ren:basic": 22,
-        "art:basic": 49,
-        "nada:basic": 54,
-        "liora:powerful": 1
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 16,
-        "resolved": 8,
-        "cancelled": 8,
-        "reacted": 7
-      },
-      "events": {
-        "death": 50,
-        "read-move-predicted": 17,
-        "miss": 29,
-        "status-resisted": 5
-      }
-    },
-    {
-      "tier": "mid",
-      "squad": "full",
-      "n": 8,
-      "scale": 7.285,
-      "score": 0.6832000000000001,
-      "w": 7,
-      "q": 0,
-      "pool": 0.463,
-      "actions": 63.625,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 30,
-        "sava:special": 45,
-        "nada:special": 37,
-        "art:powerful": 31,
-        "liora:special": 8,
-        "ren:special": 48,
-        "sava:basic": 77,
-        "nada:powerful": 18,
-        "art:basic": 62,
-        "liora:basic": 27,
-        "ren:basic": 26,
-        "art:special": 27,
-        "nada:basic": 69,
-        "liora:powerful": 4
+        "ren:special": 40,
+        "sava:basic": 44,
+        "nada:powerful": 16,
+        "art:special": 15,
+        "liora:basic": 22,
+        "ren:basic": 20,
+        "nada:basic": 32,
+        "art:basic": 36
       },
       "stats": {},
       "threat": {
@@ -2126,116 +2317,79 @@
         "reacted": 8
       },
       "events": {
-        "miss": 41,
-        "read-move-predicted": 23,
-        "death": 56,
-        "status-resisted": 10
+        "death": 50,
+        "read-move-predicted": 22,
+        "status-resisted": 9,
+        "miss": 22
       }
     },
     {
       "tier": "mid",
       "squad": "full",
+      "size": 5,
+      "scale": 5.27,
+      "score": 0.93,
       "n": 8,
-      "scale": 4.495,
-      "score": 0.9636,
       "w": 8,
       "q": 8,
-      "pool": 0.836,
-      "actions": 39.625,
+      "pool": 0.78,
+      "actions": 34.25,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 23,
-        "sava:special": 24,
-        "nada:special": 25,
+        "ren:powerful": 19,
+        "sava:special": 23,
+        "nada:special": 23,
         "art:powerful": 16,
         "liora:special": 9,
-        "ren:special": 36,
-        "sava:basic": 45,
-        "nada:powerful": 14,
-        "art:basic": 36,
-        "liora:basic": 42,
+        "ren:special": 29,
+        "sava:basic": 36,
+        "nada:powerful": 9,
+        "art:basic": 20,
+        "liora:basic": 36,
         "ren:basic": 16,
         "nada:basic": 23,
-        "art:special": 6,
-        "liora:powerful": 2
+        "art:special": 15
       },
       "stats": {},
       "threat": {
-        "prepared": 16,
+        "prepared": 14,
         "resolved": 6,
         "cancelled": 8,
         "reacted": 6
       },
       "events": {
         "death": 40,
-        "read-move-predicted": 20,
-        "miss": 24,
-        "status-resisted": 11
+        "read-move-predicted": 10,
+        "miss": 18,
+        "status-resisted": 9
       }
     },
     {
       "tier": "mid",
       "squad": "full",
+      "size": 5,
+      "scale": 4.34,
+      "score": 0.9768,
       "n": 8,
-      "scale": 3.72,
-      "score": 0.987,
       "w": 8,
       "q": 8,
-      "pool": 0.875,
-      "actions": 32.625,
+      "pool": 0.858,
+      "actions": 30.125,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
-        "sava:special": 22,
-        "nada:special": 23,
-        "art:powerful": 16,
-        "liora:special": 10,
-        "ren:special": 29,
-        "sava:basic": 34,
+        "sava:special": 18,
+        "nada:special": 19,
+        "art:powerful": 15,
+        "liora:special": 12,
+        "ren:special": 25,
+        "sava:basic": 32,
         "nada:powerful": 8,
-        "art:basic": 31,
-        "liora:basic": 35,
-        "ren:basic": 15,
-        "nada:basic": 22
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 14,
-        "resolved": 4,
-        "cancelled": 8,
-        "reacted": 4
-      },
-      "events": {
-        "death": 40,
-        "read-move-predicted": 8,
-        "miss": 19,
-        "status-resisted": 6
-      }
-    },
-    {
-      "tier": "mid",
-      "squad": "full",
-      "n": 8,
-      "scale": 3.1,
-      "score": 1.014,
-      "w": 8,
-      "q": 8,
-      "pool": 0.92,
-      "actions": 27.5,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 16,
-        "sava:special": 16,
-        "nada:special": 18,
-        "art:powerful": 16,
-        "liora:special": 10,
-        "ren:special": 24,
-        "sava:basic": 30,
-        "nada:powerful": 8,
-        "art:basic": 25,
-        "liora:basic": 28,
-        "ren:basic": 11,
-        "nada:basic": 18
+        "art:basic": 21,
+        "liora:basic": 29,
+        "ren:basic": 16,
+        "nada:basic": 22,
+        "art:special": 8
       },
       "stats": {},
       "threat": {
@@ -2254,27 +2408,28 @@
     {
       "tier": "mid",
       "squad": "full",
+      "size": 5,
+      "scale": 3.565,
+      "score": 0.993,
       "n": 8,
-      "scale": 2.635,
-      "score": 1.0266,
       "w": 8,
       "q": 8,
-      "pool": 0.941,
-      "actions": 23,
+      "pool": 0.885,
+      "actions": 23.5,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
         "sava:special": 16,
         "nada:special": 16,
-        "art:powerful": 8,
-        "liora:special": 8,
-        "ren:special": 20,
+        "art:powerful": 9,
+        "liora:special": 10,
+        "ren:special": 21,
         "sava:basic": 23,
         "nada:powerful": 8,
         "art:basic": 24,
-        "liora:basic": 23,
+        "liora:basic": 22,
         "ren:basic": 8,
-        "nada:basic": 14
+        "nada:basic": 15
       },
       "stats": {},
       "threat": {
@@ -2293,13 +2448,54 @@
     {
       "tier": "mid",
       "squad": "full",
+      "size": 5,
+      "scale": 2.325,
+      "score": 1.0056,
       "n": 8,
-      "scale": 2.015,
-      "score": 1.0428,
       "w": 8,
       "q": 8,
-      "pool": 0.968,
-      "actions": 19.625,
+      "pool": 0.906,
+      "actions": 17.5,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 10,
+        "sava:special": 14,
+        "nada:special": 13,
+        "art:powerful": 8,
+        "liora:basic": 23,
+        "ren:special": 16,
+        "sava:basic": 16,
+        "nada:powerful": 8,
+        "art:basic": 16,
+        "ren:basic": 8,
+        "nada:basic": 7,
+        "liora:special": 1
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 40,
+        "miss": 7,
+        "read-move-predicted": 1,
+        "status-resisted": 4
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "full",
+      "size": 5,
+      "scale": 2.945,
+      "score": 1.0176,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.926,
+      "actions": 20.5,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
@@ -2310,10 +2506,47 @@
         "ren:special": 16,
         "sava:basic": 16,
         "nada:powerful": 8,
-        "art:basic": 21,
-        "liora:basic": 16,
+        "art:basic": 22,
+        "liora:basic": 22,
         "ren:basic": 8,
         "nada:basic": 8
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 3,
+        "reacted": 0
+      },
+      "events": {
+        "death": 40,
+        "read-move-predicted": 8,
+        "miss": 13
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "full",
+      "size": 5,
+      "scale": 1.705,
+      "score": 1.041,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.965,
+      "actions": 14.875,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "sava:special": 8,
+        "nada:special": 16,
+        "art:powerful": 8,
+        "liora:basic": 22,
+        "ren:special": 10,
+        "sava:basic": 16,
+        "nada:powerful": 8,
+        "art:basic": 15,
+        "ren:basic": 8
       },
       "stats": {},
       "threat": {
@@ -2325,28 +2558,111 @@
       "events": {
         "death": 40,
         "read-move-predicted": 8,
-        "status-resisted": 1,
-        "miss": 9
+        "status-resisted": 2,
+        "miss": 7
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "full",
+      "size": 5,
+      "scale": 7.75,
+      "score": 1.798,
+      "n": 8,
+      "w": 2,
+      "q": 0,
+      "pool": 0.15,
+      "actions": 37.375,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 18,
+        "sava:special": 21,
+        "nada:special": 25,
+        "art:powerful": 21,
+        "liora:special": 8,
+        "ren:special": 28,
+        "sava:basic": 37,
+        "nada:powerful": 22,
+        "art:special": 17,
+        "liora:basic": 11,
+        "ren:basic": 13,
+        "art:basic": 36,
+        "nada:basic": 42
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 16,
+        "resolved": 8,
+        "cancelled": 8,
+        "reacted": 7
+      },
+      "events": {
+        "death": 60,
+        "miss": 25,
+        "read-move-predicted": 17,
+        "status-resisted": 4
+      }
+    },
+    {
+      "tier": "mid",
+      "squad": "full",
+      "size": 5,
+      "scale": 9.3,
+      "score": 2.3379999999999996,
+      "n": 8,
+      "w": 0,
+      "q": 0,
+      "pool": 0,
+      "actions": 23.75,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 13,
+        "sava:special": 15,
+        "nada:special": 24,
+        "art:powerful": 15,
+        "liora:special": 8,
+        "ren:special": 14,
+        "sava:basic": 23,
+        "nada:powerful": 16,
+        "art:basic": 21,
+        "ren:basic": 8,
+        "art:special": 10,
+        "nada:basic": 19,
+        "liora:basic": 4
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 19,
+        "resolved": 10,
+        "cancelled": 9,
+        "reacted": 7
+      },
+      "events": {
+        "death": 54,
+        "read-move-predicted": 17,
+        "miss": 26,
+        "status-resisted": 2
       }
     },
     {
       "tier": "max",
       "squad": "starter",
+      "size": 2,
+      "scale": 19.8,
+      "score": 0.46799999999999986,
       "n": 8,
-      "scale": 15.51,
-      "score": 0.9786,
-      "w": 8,
-      "q": 8,
-      "pool": 0.861,
-      "actions": 14.25,
+      "w": 5,
+      "q": 5,
+      "pool": 0.45,
+      "actions": 12.875,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 19,
-        "art:powerful": 15,
-        "ren:special": 30,
-        "art:basic": 31,
-        "ren:basic": 15,
-        "art:special": 4
+        "ren:powerful": 15,
+        "art:powerful": 18,
+        "ren:special": 22,
+        "art:basic": 27,
+        "ren:basic": 12,
+        "art:special": 9
       },
       "stats": {},
       "threat": {
@@ -2356,89 +2672,62 @@
         "reacted": 0
       },
       "events": {
-        "miss": 10,
-        "death": 16,
-        "status-resisted": 1
+        "miss": 11,
+        "death": 19
       }
     },
     {
       "tier": "max",
       "squad": "starter",
+      "size": 2,
+      "scale": 16.5,
+      "score": 0.9156,
       "n": 8,
-      "scale": 13.2,
-      "score": 1.0014,
       "w": 8,
       "q": 8,
-      "pool": 0.899,
-      "actions": 12.5,
+      "pool": 0.756,
+      "actions": 13.125,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 16,
-        "art:powerful": 15,
-        "ren:special": 26,
-        "art:basic": 29,
-        "ren:basic": 14
+        "ren:powerful": 17,
+        "art:powerful": 14,
+        "ren:special": 29,
+        "art:basic": 21,
+        "ren:basic": 14,
+        "art:special": 10
       },
       "stats": {},
       "threat": {
         "prepared": 8,
         "resolved": 0,
-        "cancelled": 5,
+        "cancelled": 4,
         "reacted": 0
       },
       "events": {
         "miss": 10,
         "death": 16,
-        "status-resisted": 1
+        "status-resisted": 2
       }
     },
     {
       "tier": "max",
       "squad": "starter",
+      "size": 2,
+      "scale": 13.53,
+      "score": 0.9581999999999999,
       "n": 8,
-      "scale": 11.22,
-      "score": 1.0206,
       "w": 8,
       "q": 8,
-      "pool": 0.931,
+      "pool": 0.827,
       "actions": 10.875,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
-        "art:powerful": 12,
-        "ren:special": 23,
-        "art:basic": 25,
-        "ren:basic": 11
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 8,
-        "resolved": 0,
-        "cancelled": 3,
-        "reacted": 0
-      },
-      "events": {
-        "miss": 9,
-        "death": 16
-      }
-    },
-    {
-      "tier": "max",
-      "squad": "starter",
-      "n": 8,
-      "scale": 9.57,
-      "score": 1.0266,
-      "w": 8,
-      "q": 8,
-      "pool": 0.941,
-      "actions": 9.25,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 15,
-        "art:powerful": 9,
-        "ren:special": 21,
+        "art:powerful": 10,
+        "ren:special": 24,
         "art:basic": 21,
-        "ren:basic": 8
+        "ren:basic": 10,
+        "art:special": 6
       },
       "stats": {},
       "threat": {
@@ -2448,27 +2737,28 @@
         "reacted": 0
       },
       "events": {
+        "miss": 8,
         "death": 16,
-        "miss": 4,
-        "status-resisted": 4
+        "status-resisted": 3
       }
     },
     {
       "tier": "max",
       "squad": "starter",
+      "size": 2,
+      "scale": 11.22,
+      "score": 0.9774,
       "n": 8,
-      "scale": 7.92,
-      "score": 1.041,
       "w": 8,
       "q": 8,
-      "pool": 0.965,
-      "actions": 8.125,
+      "pool": 0.859,
+      "actions": 8.375,
       "wave2": 0,
       "usage": {
         "ren:powerful": 14,
         "art:powerful": 8,
-        "ren:special": 17,
-        "art:basic": 18,
+        "ren:special": 18,
+        "art:basic": 19,
         "ren:basic": 8
       },
       "stats": {},
@@ -2487,16 +2777,17 @@
     {
       "tier": "max",
       "squad": "starter",
+      "size": 2,
+      "scale": 9.24,
+      "score": 1.0038,
       "n": 8,
-      "scale": 6.6,
-      "score": 1.0464,
       "w": 8,
       "q": 8,
-      "pool": 0.974,
-      "actions": 7.5,
+      "pool": 0.903,
+      "actions": 7.625,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 12,
+        "ren:powerful": 13,
         "art:powerful": 8,
         "ren:special": 16,
         "art:basic": 16,
@@ -2518,19 +2809,20 @@
     {
       "tier": "max",
       "squad": "starter",
+      "size": 2,
+      "scale": 7.59,
+      "score": 1.0218,
       "n": 8,
-      "scale": 5.61,
-      "score": 1.0506,
       "w": 8,
       "q": 8,
-      "pool": 0.981,
-      "actions": 5.875,
+      "pool": 0.933,
+      "actions": 6,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
         "art:powerful": 8,
         "ren:special": 11,
-        "art:basic": 12,
+        "art:basic": 13,
         "ren:basic": 8
       },
       "stats": {},
@@ -2549,24 +2841,25 @@
     {
       "tier": "max",
       "squad": "starter",
+      "size": 2,
+      "scale": 6.27,
+      "score": 1.0362,
       "n": 8,
-      "scale": 4.29,
-      "score": 1.056,
       "w": 8,
       "q": 8,
-      "pool": 0.99,
-      "actions": 5.375,
+      "pool": 0.957,
+      "actions": 6,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
         "art:powerful": 8,
-        "ren:special": 9,
+        "ren:special": 12,
         "art:basic": 13,
-        "ren:basic": 5
+        "ren:basic": 7
       },
       "stats": {},
       "threat": {
-        "prepared": 0,
+        "prepared": 4,
         "resolved": 0,
         "cancelled": 0,
         "reacted": 0
@@ -2579,36 +2872,171 @@
     },
     {
       "tier": "max",
-      "squad": "three",
+      "squad": "starter",
+      "size": 2,
+      "scale": 4.95,
+      "score": 1.044,
       "n": 8,
-      "scale": 15.51,
-      "score": 0.966,
       "w": 8,
       "q": 8,
-      "pool": 0.84,
-      "actions": 18,
+      "pool": 0.97,
+      "actions": 4.25,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 17,
-        "nada:special": 22,
-        "art:powerful": 15,
-        "ren:special": 25,
-        "nada:powerful": 8,
-        "art:basic": 25,
-        "ren:basic": 15,
-        "nada:basic": 14,
-        "art:special": 3
+        "ren:powerful": 8,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "art:basic": 5,
+        "ren:basic": 5
       },
       "stats": {},
       "threat": {
-        "prepared": 16,
-        "resolved": 6,
+        "prepared": 0,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 16,
+        "miss": 2
+      }
+    },
+    {
+      "tier": "max",
+      "squad": "starter",
+      "size": 2,
+      "scale": 3.63,
+      "score": 1.0488,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.978,
+      "actions": 3.625,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "art:basic": 5
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 0,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 16,
+        "miss": 2
+      }
+    },
+    {
+      "tier": "max",
+      "squad": "three",
+      "size": 3,
+      "scale": 16.5,
+      "score": 0.16700000000000015,
+      "n": 8,
+      "w": 7,
+      "q": 4,
+      "pool": 0.49,
+      "actions": 14.875,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 16,
+        "nada:special": 13,
+        "art:powerful": 12,
+        "ren:special": 21,
+        "nada:powerful": 5,
+        "art:special": 8,
+        "ren:basic": 11,
+        "art:basic": 22,
+        "nada:basic": 11
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 17,
+        "resolved": 5,
         "cancelled": 8,
         "reacted": 4
       },
       "events": {
-        "miss": 20,
-        "death": 24,
+        "miss": 14,
+        "death": 28,
+        "read-move-predicted": 6,
+        "status-resisted": 2
+      }
+    },
+    {
+      "tier": "max",
+      "squad": "three",
+      "size": 3,
+      "scale": 13.53,
+      "score": 0.7678,
+      "n": 8,
+      "w": 8,
+      "q": 7,
+      "pool": 0.718,
+      "actions": 14,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 17,
+        "nada:special": 11,
+        "art:powerful": 9,
+        "ren:special": 22,
+        "nada:powerful": 7,
+        "art:special": 9,
+        "ren:basic": 10,
+        "nada:basic": 12,
+        "art:basic": 15
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 16,
+        "resolved": 3,
+        "cancelled": 8,
+        "reacted": 3
+      },
+      "events": {
+        "miss": 12,
+        "death": 25,
+        "read-move-predicted": 3
+      }
+    },
+    {
+      "tier": "max",
+      "squad": "three",
+      "size": 3,
+      "scale": 19.8,
+      "score": 0.9238,
+      "n": 8,
+      "w": 4,
+      "q": 3,
+      "pool": 0.232,
+      "actions": 16,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 12,
+        "nada:special": 16,
+        "art:powerful": 13,
+        "ren:special": 16,
+        "nada:powerful": 5,
+        "art:special": 10,
+        "ren:basic": 11,
+        "art:basic": 24,
+        "nada:basic": 21
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 18,
+        "resolved": 6,
+        "cancelled": 9,
+        "reacted": 4
+      },
+      "events": {
+        "miss": 12,
+        "death": 31,
         "read-move-predicted": 7,
         "status-resisted": 1
       }
@@ -2616,168 +3044,31 @@
     {
       "tier": "max",
       "squad": "three",
-      "n": 8,
-      "scale": 13.2,
-      "score": 0.9846,
-      "w": 8,
-      "q": 8,
-      "pool": 0.871,
-      "actions": 15.125,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 16,
-        "nada:special": 17,
-        "art:powerful": 12,
-        "ren:special": 22,
-        "nada:powerful": 8,
-        "art:basic": 21,
-        "ren:basic": 12,
-        "nada:basic": 11,
-        "art:special": 2
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 16,
-        "resolved": 4,
-        "cancelled": 8,
-        "reacted": 4
-      },
-      "events": {
-        "miss": 14,
-        "death": 24,
-        "read-move-predicted": 5,
-        "status-resisted": 2
-      }
-    },
-    {
-      "tier": "max",
-      "squad": "three",
-      "n": 8,
+      "size": 3,
       "scale": 11.22,
-      "score": 1.0056,
-      "w": 8,
-      "q": 8,
-      "pool": 0.906,
-      "actions": 13,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 16,
-        "nada:special": 11,
-        "art:powerful": 9,
-        "ren:special": 18,
-        "nada:powerful": 8,
-        "art:basic": 20,
-        "ren:basic": 8,
-        "nada:basic": 14
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 16,
-        "resolved": 3,
-        "cancelled": 8,
-        "reacted": 3
-      },
-      "events": {
-        "miss": 9,
-        "death": 24,
-        "read-move-predicted": 2,
-        "status-resisted": 1
-      }
-    },
-    {
-      "tier": "max",
-      "squad": "three",
+      "score": 0.9702,
       "n": 8,
-      "scale": 9.57,
-      "score": 1.0248,
       "w": 8,
       "q": 8,
-      "pool": 0.938,
-      "actions": 11.75,
+      "pool": 0.847,
+      "actions": 10.75,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 13,
-        "nada:special": 10,
-        "art:powerful": 8,
-        "ren:special": 18,
-        "nada:basic": 13,
-        "art:basic": 18,
-        "ren:basic": 8,
-        "nada:powerful": 6
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 12,
-        "resolved": 3,
-        "cancelled": 6,
-        "reacted": 3
-      },
-      "events": {
-        "death": 24,
-        "miss": 8,
-        "status-resisted": 1
-      }
-    },
-    {
-      "tier": "max",
-      "squad": "three",
-      "n": 8,
-      "scale": 7.92,
-      "score": 1.0356,
-      "w": 8,
-      "q": 8,
-      "pool": 0.956,
-      "actions": 10.5,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 11,
+        "ren:powerful": 10,
         "nada:special": 10,
         "art:powerful": 8,
         "ren:special": 15,
         "nada:basic": 11,
-        "art:basic": 15,
+        "art:basic": 17,
         "ren:basic": 8,
-        "nada:powerful": 6
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 12,
-        "resolved": 2,
-        "cancelled": 6,
-        "reacted": 2
-      },
-      "events": {
-        "death": 24,
-        "miss": 5,
-        "status-resisted": 1
-      }
-    },
-    {
-      "tier": "max",
-      "squad": "three",
-      "n": 8,
-      "scale": 6.6,
-      "score": 1.0476,
-      "w": 8,
-      "q": 8,
-      "pool": 0.976,
-      "actions": 10.625,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 12,
-        "nada:special": 12,
-        "art:powerful": 8,
-        "ren:special": 14,
-        "nada:basic": 12,
-        "art:basic": 15,
-        "ren:basic": 8,
-        "nada:powerful": 4
+        "nada:powerful": 6,
+        "art:special": 1
       },
       "stats": {},
       "threat": {
         "prepared": 12,
         "resolved": 0,
-        "cancelled": 4,
+        "cancelled": 6,
         "reacted": 0
       },
       "events": {
@@ -2789,12 +3080,49 @@
     {
       "tier": "max",
       "squad": "three",
+      "size": 3,
+      "scale": 9.24,
+      "score": 0.9936,
       "n": 8,
-      "scale": 5.61,
-      "score": 1.0512,
       "w": 8,
       "q": 8,
-      "pool": 0.982,
+      "pool": 0.886,
+      "actions": 10.375,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 11,
+        "nada:special": 12,
+        "art:powerful": 8,
+        "ren:special": 14,
+        "nada:basic": 11,
+        "art:basic": 14,
+        "ren:basic": 8,
+        "nada:powerful": 4,
+        "art:special": 1
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 12,
+        "resolved": 2,
+        "cancelled": 4,
+        "reacted": 2
+      },
+      "events": {
+        "death": 24,
+        "miss": 6,
+        "status-resisted": 1
+      }
+    },
+    {
+      "tier": "max",
+      "squad": "three",
+      "size": 3,
+      "scale": 7.59,
+      "score": 1.0242,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.937,
       "actions": 8.875,
       "wave2": 0,
       "usage": {
@@ -2822,17 +3150,18 @@
     {
       "tier": "max",
       "squad": "three",
+      "size": 3,
+      "scale": 6.27,
+      "score": 1.0434,
       "n": 8,
-      "scale": 4.29,
-      "score": 1.0578,
       "w": 8,
       "q": 8,
-      "pool": 0.993,
-      "actions": 8,
+      "pool": 0.969,
+      "actions": 7.875,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
-        "nada:special": 14,
+        "nada:special": 13,
         "art:powerful": 8,
         "ren:special": 8,
         "nada:basic": 8,
@@ -2848,30 +3177,96 @@
       },
       "events": {
         "death": 24,
-        "miss": 7
+        "miss": 8
+      }
+    },
+    {
+      "tier": "max",
+      "squad": "three",
+      "size": 3,
+      "scale": 4.95,
+      "score": 1.0518,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.983,
+      "actions": 6.25,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "nada:special": 8,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "nada:basic": 8,
+        "art:basic": 6,
+        "ren:basic": 4
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 24,
+        "miss": 5
+      }
+    },
+    {
+      "tier": "max",
+      "squad": "three",
+      "size": 3,
+      "scale": 3.63,
+      "score": 1.0542,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.987,
+      "actions": 5,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "nada:special": 8,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "nada:basic": 5,
+        "art:basic": 3
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 24,
+        "miss": 3
       }
     },
     {
       "tier": "max",
       "squad": "four",
+      "size": 4,
+      "scale": 19.8,
+      "score": 0.6668000000000001,
       "n": 8,
-      "scale": 15.51,
-      "score": 1.0230000000000001,
       "w": 8,
-      "q": 8,
-      "pool": 0.935,
-      "actions": 26,
+      "q": 6,
+      "pool": 0.758,
+      "actions": 24.5,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
         "sava:special": 20,
-        "nada:special": 23,
+        "nada:special": 22,
         "liora:special": 8,
-        "ren:special": 27,
-        "sava:basic": 33,
+        "ren:special": 26,
+        "sava:basic": 34,
         "nada:powerful": 8,
-        "liora:basic": 35,
-        "ren:basic": 16,
+        "liora:basic": 26,
+        "ren:basic": 14,
         "nada:basic": 22
       },
       "stats": {},
@@ -2882,71 +3277,35 @@
         "reacted": 0
       },
       "events": {
-        "death": 32,
-        "read-move-predicted": 16,
-        "miss": 30,
+        "death": 34,
+        "read-move-predicted": 15,
+        "miss": 24,
         "status-resisted": 4
       }
     },
     {
       "tier": "max",
       "squad": "four",
+      "size": 4,
+      "scale": 16.5,
+      "score": 0.9894000000000001,
       "n": 8,
-      "scale": 13.2,
-      "score": 1.038,
       "w": 8,
       "q": 8,
-      "pool": 0.96,
-      "actions": 22.75,
+      "pool": 0.879,
+      "actions": 20.375,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
         "sava:special": 16,
         "nada:special": 17,
         "liora:special": 8,
-        "ren:special": 24,
-        "sava:basic": 30,
+        "ren:special": 21,
+        "sava:basic": 26,
         "nada:powerful": 8,
-        "liora:basic": 31,
-        "ren:basic": 12,
-        "nada:basic": 20
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 13,
-        "resolved": 8,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "death": 32,
-        "read-move-predicted": 9,
-        "miss": 20,
-        "status-resisted": 2
-      }
-    },
-    {
-      "tier": "max",
-      "squad": "four",
-      "n": 8,
-      "scale": 11.22,
-      "score": 1.0434,
-      "w": 8,
-      "q": 8,
-      "pool": 0.969,
-      "actions": 18.625,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 16,
-        "sava:special": 16,
-        "nada:special": 17,
-        "liora:special": 8,
-        "ren:special": 18,
-        "sava:basic": 22,
-        "nada:powerful": 8,
-        "liora:basic": 23,
+        "liora:basic": 26,
         "ren:basic": 9,
-        "nada:basic": 12
+        "nada:basic": 16
       },
       "stats": {},
       "threat": {
@@ -2957,94 +3316,97 @@
       },
       "events": {
         "death": 32,
-        "miss": 23,
         "read-move-predicted": 10,
+        "miss": 23,
         "status-resisted": 1
       }
     },
     {
       "tier": "max",
       "squad": "four",
+      "size": 4,
+      "scale": 13.53,
+      "score": 1.0230000000000001,
       "n": 8,
-      "scale": 9.57,
-      "score": 1.0524,
       "w": 8,
       "q": 8,
-      "pool": 0.984,
-      "actions": 15.75,
+      "pool": 0.935,
+      "actions": 16.875,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 14,
+        "ren:powerful": 15,
         "sava:special": 16,
-        "nada:special": 13,
+        "nada:special": 15,
         "liora:special": 8,
-        "ren:special": 16,
-        "sava:basic": 16,
+        "ren:special": 17,
+        "sava:basic": 18,
         "nada:powerful": 8,
-        "liora:basic": 16,
+        "liora:basic": 19,
         "ren:basic": 8,
         "nada:basic": 11
       },
       "stats": {},
       "threat": {
-        "prepared": 11,
-        "resolved": 4,
+        "prepared": 12,
+        "resolved": 6,
         "cancelled": 0,
         "reacted": 0
       },
       "events": {
         "death": 32,
-        "miss": 16,
-        "read-move-predicted": 4
+        "miss": 21,
+        "read-move-predicted": 6
       }
     },
     {
       "tier": "max",
       "squad": "four",
+      "size": 4,
+      "scale": 11.22,
+      "score": 1.0302,
       "n": 8,
-      "scale": 7.92,
-      "score": 1.053,
       "w": 8,
       "q": 8,
-      "pool": 0.985,
-      "actions": 14.125,
+      "pool": 0.947,
+      "actions": 14.75,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 10,
-        "sava:special": 12,
-        "nada:special": 8,
+        "ren:powerful": 11,
+        "sava:special": 15,
+        "nada:special": 10,
         "liora:special": 8,
         "ren:special": 16,
         "sava:basic": 16,
         "nada:powerful": 8,
         "liora:basic": 16,
         "ren:basic": 8,
-        "nada:basic": 11
+        "nada:basic": 10
       },
       "stats": {},
       "threat": {
-        "prepared": 8,
-        "resolved": 1,
+        "prepared": 10,
+        "resolved": 3,
         "cancelled": 0,
         "reacted": 0
       },
       "events": {
         "death": 32,
-        "miss": 8,
+        "miss": 12,
         "status-resisted": 1,
-        "read-move-predicted": 1
+        "read-move-predicted": 3
       }
     },
     {
       "tier": "max",
       "squad": "four",
+      "size": 4,
+      "scale": 9.24,
+      "score": 1.0338,
       "n": 8,
-      "scale": 6.6,
-      "score": 1.0554000000000001,
       "w": 8,
       "q": 8,
-      "pool": 0.989,
-      "actions": 13.25,
+      "pool": 0.953,
+      "actions": 13.375,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
@@ -3056,38 +3418,40 @@
         "nada:powerful": 8,
         "liora:basic": 16,
         "ren:basic": 8,
-        "nada:basic": 8
+        "nada:basic": 9
       },
       "stats": {},
       "threat": {
         "prepared": 8,
-        "resolved": 0,
+        "resolved": 2,
         "cancelled": 0,
         "reacted": 0
       },
       "events": {
         "death": 32,
-        "miss": 7
+        "miss": 8,
+        "read-move-predicted": 2
       }
     },
     {
       "tier": "max",
       "squad": "four",
+      "size": 4,
+      "scale": 6.27,
+      "score": 1.0392,
       "n": 8,
-      "scale": 4.29,
-      "score": 1.0566,
       "w": 8,
       "q": 8,
-      "pool": 0.991,
-      "actions": 10.25,
+      "pool": 0.962,
+      "actions": 10.5,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
         "sava:special": 8,
-        "nada:special": 8,
+        "nada:special": 9,
         "liora:basic": 16,
         "ren:special": 10,
-        "sava:basic": 12,
+        "sava:basic": 13,
         "nada:basic": 8,
         "ren:basic": 8,
         "liora:special": 2,
@@ -3108,20 +3472,21 @@
     {
       "tier": "max",
       "squad": "four",
+      "size": 4,
+      "scale": 7.59,
+      "score": 1.0446,
       "n": 8,
-      "scale": 5.61,
-      "score": 1.0566,
       "w": 8,
       "q": 8,
-      "pool": 0.991,
-      "actions": 12.75,
+      "pool": 0.971,
+      "actions": 13,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
         "sava:special": 8,
         "nada:special": 8,
-        "liora:special": 7,
-        "ren:special": 15,
+        "liora:special": 8,
+        "ren:special": 16,
         "sava:basic": 16,
         "nada:powerful": 8,
         "liora:basic": 16,
@@ -3142,108 +3507,182 @@
     },
     {
       "tier": "max",
-      "squad": "full",
+      "squad": "four",
+      "size": 4,
+      "scale": 4.95,
+      "score": 1.047,
       "n": 8,
-      "scale": 15.51,
-      "score": 0.9954000000000001,
       "w": 8,
       "q": 8,
-      "pool": 0.889,
-      "actions": 41.375,
+      "pool": 0.975,
+      "actions": 9.25,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 24,
-        "sava:special": 25,
-        "nada:special": 27,
-        "art:powerful": 16,
-        "liora:special": 12,
-        "ren:special": 37,
-        "sava:basic": 45,
-        "nada:powerful": 14,
-        "art:basic": 43,
-        "liora:basic": 43,
-        "ren:basic": 18,
-        "nada:basic": 26,
-        "art:special": 1
+        "ren:powerful": 8,
+        "sava:special": 8,
+        "nada:special": 9,
+        "liora:basic": 16,
+        "ren:special": 8,
+        "sava:basic": 9,
+        "nada:basic": 8,
+        "ren:basic": 8
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 32,
+        "miss": 4,
+        "status-resisted": 1
+      }
+    },
+    {
+      "tier": "max",
+      "squad": "four",
+      "size": 4,
+      "scale": 3.63,
+      "score": 1.053,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.985,
+      "actions": 7.625,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "sava:special": 8,
+        "nada:special": 8,
+        "liora:basic": 14,
+        "ren:special": 8,
+        "sava:basic": 7,
+        "nada:basic": 7,
+        "ren:basic": 1
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 32,
+        "miss": 2
+      }
+    },
+    {
+      "tier": "max",
+      "squad": "full",
+      "size": 5,
+      "scale": 19.8,
+      "score": 0.6384000000000001,
+      "n": 8,
+      "w": 8,
+      "q": 2,
+      "pool": 0.544,
+      "actions": 41.75,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 22,
+        "sava:special": 27,
+        "nada:special": 29,
+        "art:powerful": 20,
+        "liora:special": 10,
+        "ren:special": 35,
+        "sava:basic": 47,
+        "nada:powerful": 15,
+        "art:basic": 44,
+        "liora:basic": 19,
+        "ren:basic": 17,
+        "nada:basic": 35,
+        "art:special": 12,
+        "liora:powerful": 2
       },
       "stats": {},
       "threat": {
         "prepared": 16,
-        "resolved": 5,
+        "resolved": 4,
         "cancelled": 8,
         "reacted": 4
       },
       "events": {
-        "death": 40,
-        "read-move-predicted": 18,
-        "miss": 39,
-        "status-resisted": 9
+        "death": 52,
+        "read-move-predicted": 20,
+        "miss": 34,
+        "status-resisted": 8
       }
     },
     {
       "tier": "max",
       "squad": "full",
+      "size": 5,
+      "scale": 16.5,
+      "score": 0.6818,
       "n": 8,
-      "scale": 13.2,
-      "score": 1.002,
       "w": 8,
-      "q": 8,
-      "pool": 0.9,
-      "actions": 34.875,
+      "q": 6,
+      "pool": 0.783,
+      "actions": 33.75,
       "wave2": 0,
       "usage": {
         "ren:powerful": 19,
-        "sava:special": 24,
-        "nada:special": 24,
+        "sava:special": 22,
+        "nada:special": 20,
         "art:powerful": 16,
-        "liora:special": 9,
-        "ren:special": 30,
-        "sava:basic": 36,
-        "nada:powerful": 9,
-        "art:basic": 36,
-        "liora:basic": 37,
+        "liora:special": 11,
+        "ren:special": 29,
+        "sava:basic": 37,
+        "nada:powerful": 11,
+        "art:basic": 25,
+        "liora:basic": 33,
         "ren:basic": 16,
-        "nada:basic": 23
+        "nada:basic": 22,
+        "art:special": 9
       },
       "stats": {},
       "threat": {
-        "prepared": 13,
-        "resolved": 3,
-        "cancelled": 8,
-        "reacted": 3
+        "prepared": 12,
+        "resolved": 2,
+        "cancelled": 6,
+        "reacted": 2
       },
       "events": {
-        "death": 40,
-        "miss": 26,
-        "status-resisted": 6,
-        "read-move-predicted": 9
+        "death": 42,
+        "miss": 30,
+        "read-move-predicted": 9,
+        "status-resisted": 7
       }
     },
     {
       "tier": "max",
       "squad": "full",
+      "size": 5,
+      "scale": 13.53,
+      "score": 0.8098000000000001,
       "n": 8,
-      "scale": 11.22,
-      "score": 1.0092,
       "w": 8,
-      "q": 8,
-      "pool": 0.912,
-      "actions": 31.75,
+      "q": 7,
+      "pool": 0.788,
+      "actions": 30,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 17,
-        "sava:special": 20,
-        "nada:special": 22,
-        "art:powerful": 16,
-        "liora:special": 8,
-        "ren:special": 27,
-        "sava:basic": 34,
+        "ren:powerful": 16,
+        "sava:special": 19,
+        "nada:special": 23,
+        "art:powerful": 15,
+        "liora:special": 11,
+        "ren:special": 26,
+        "sava:basic": 31,
         "nada:powerful": 8,
-        "art:basic": 29,
-        "liora:basic": 35,
-        "ren:basic": 16,
-        "nada:basic": 21,
-        "art:special": 1
+        "art:special": 7,
+        "liora:basic": 29,
+        "ren:basic": 15,
+        "nada:basic": 19,
+        "art:basic": 21
       },
       "stats": {},
       "threat": {
@@ -3253,79 +3692,42 @@
         "reacted": 0
       },
       "events": {
-        "death": 40,
-        "miss": 21,
+        "death": 41,
+        "miss": 24,
         "status-resisted": 7,
-        "read-move-predicted": 6
+        "read-move-predicted": 4
       }
     },
     {
       "tier": "max",
       "squad": "full",
+      "size": 5,
+      "scale": 11.22,
+      "score": 0.9972,
       "n": 8,
-      "scale": 9.57,
-      "score": 1.0398,
       "w": 8,
       "q": 8,
-      "pool": 0.963,
-      "actions": 28,
+      "pool": 0.892,
+      "actions": 23.75,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
         "sava:special": 16,
-        "nada:special": 20,
-        "art:powerful": 15,
-        "liora:special": 8,
-        "ren:special": 23,
-        "sava:basic": 31,
-        "nada:powerful": 8,
-        "art:basic": 26,
-        "liora:basic": 31,
-        "ren:basic": 13,
-        "nada:basic": 17
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 11,
-        "resolved": 0,
-        "cancelled": 7,
-        "reacted": 0
-      },
-      "events": {
-        "death": 40,
-        "miss": 26,
-        "read-move-predicted": 7,
-        "status-resisted": 7
-      }
-    },
-    {
-      "tier": "max",
-      "squad": "full",
-      "n": 8,
-      "scale": 7.92,
-      "score": 1.044,
-      "w": 8,
-      "q": 8,
-      "pool": 0.97,
-      "actions": 22.75,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 16,
-        "sava:special": 16,
-        "nada:special": 16,
+        "nada:special": 17,
         "art:powerful": 9,
         "liora:special": 8,
-        "ren:special": 20,
-        "sava:basic": 22,
+        "ren:special": 22,
+        "sava:basic": 23,
         "nada:powerful": 8,
         "art:basic": 22,
-        "liora:basic": 23,
-        "ren:basic": 8,
-        "nada:basic": 14
+        "liora:basic": 24,
+        "ren:basic": 9,
+        "nada:basic": 14,
+        "art:special": 2
       },
       "stats": {},
       "threat": {
-        "prepared": 8,
+        "prepared": 10,
         "resolved": 0,
         "cancelled": 4,
         "reacted": 0
@@ -3333,33 +3735,36 @@
       "events": {
         "death": 40,
         "read-move-predicted": 6,
-        "miss": 20,
-        "status-resisted": 1
+        "miss": 18,
+        "status-resisted": 2
       }
     },
     {
       "tier": "max",
       "squad": "full",
+      "size": 5,
+      "scale": 6.27,
+      "score": 1.0098,
       "n": 8,
-      "scale": 4.29,
-      "score": 1.0482,
       "w": 8,
       "q": 8,
-      "pool": 0.977,
-      "actions": 16.25,
+      "pool": 0.913,
+      "actions": 16,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
-        "sava:special": 10,
-        "nada:special": 12,
+        "sava:special": 8,
+        "nada:special": 11,
         "art:powerful": 8,
-        "liora:basic": 24,
+        "liora:basic": 23,
         "ren:special": 16,
         "sava:basic": 16,
         "nada:powerful": 8,
-        "art:basic": 16,
+        "art:basic": 15,
         "ren:basic": 8,
-        "nada:basic": 4
+        "nada:basic": 5,
+        "art:special": 1,
+        "liora:special": 1
       },
       "stats": {},
       "threat": {
@@ -3370,21 +3775,22 @@
       },
       "events": {
         "death": 40,
-        "read-move-predicted": 6,
-        "status-resisted": 4,
-        "miss": 9
+        "read-move-predicted": 3,
+        "status-resisted": 5,
+        "miss": 11
       }
     },
     {
       "tier": "max",
       "squad": "full",
+      "size": 5,
+      "scale": 9.24,
+      "score": 1.0176,
       "n": 8,
-      "scale": 6.6,
-      "score": 1.0488,
       "w": 8,
       "q": 8,
-      "pool": 0.978,
-      "actions": 19.875,
+      "pool": 0.926,
+      "actions": 20.125,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
@@ -3393,12 +3799,12 @@
         "art:powerful": 8,
         "liora:special": 7,
         "ren:special": 16,
-        "sava:basic": 17,
+        "sava:basic": 18,
         "nada:powerful": 8,
         "art:basic": 19,
         "liora:basic": 20,
         "ren:basic": 8,
-        "nada:basic": 8
+        "nada:basic": 9
       },
       "stats": {},
       "threat": {
@@ -3410,34 +3816,35 @@
       "events": {
         "death": 40,
         "read-move-predicted": 6,
-        "miss": 15,
+        "miss": 17,
         "status-resisted": 1
       }
     },
     {
       "tier": "max",
       "squad": "full",
+      "size": 5,
+      "scale": 7.59,
+      "score": 1.02,
       "n": 8,
-      "scale": 5.61,
-      "score": 1.0493999999999999,
       "w": 8,
       "q": 8,
-      "pool": 0.979,
+      "pool": 0.93,
       "actions": 18,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 12,
+        "ren:powerful": 11,
         "sava:special": 14,
-        "nada:special": 13,
+        "nada:special": 15,
         "art:powerful": 8,
-        "liora:basic": 19,
+        "liora:basic": 17,
         "ren:special": 16,
         "sava:basic": 16,
         "nada:powerful": 8,
         "art:basic": 18,
+        "liora:special": 7,
         "ren:basic": 8,
-        "nada:basic": 7,
-        "liora:special": 5
+        "nada:basic": 6
       },
       "stats": {},
       "threat": {
@@ -3448,57 +3855,136 @@
       },
       "events": {
         "death": 40,
-        "miss": 13,
+        "miss": 16,
         "status-resisted": 3,
         "read-move-predicted": 5
       }
     },
     {
-      "tier": "uneven",
-      "squad": "starter",
+      "tier": "max",
+      "squad": "full",
+      "size": 5,
+      "scale": 4.95,
+      "score": 1.0326,
       "n": 8,
-      "scale": 5.405,
-      "score": 1.0008,
       "w": 8,
       "q": 8,
-      "pool": 0.898,
-      "actions": 9.125,
+      "pool": 0.951,
+      "actions": 15.25,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "sava:special": 8,
+        "nada:special": 15,
+        "art:powerful": 8,
+        "liora:basic": 23,
+        "ren:special": 14,
+        "sava:basic": 15,
+        "nada:powerful": 8,
+        "art:basic": 15,
+        "ren:basic": 8
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 40,
+        "read-move-predicted": 7,
+        "status-resisted": 2,
+        "miss": 11
+      }
+    },
+    {
+      "tier": "max",
+      "squad": "full",
+      "size": 5,
+      "scale": 3.63,
+      "score": 1.0464,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.974,
+      "actions": 11.125,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "sava:special": 8,
+        "nada:special": 8,
+        "art:powerful": 8,
+        "liora:basic": 16,
+        "ren:special": 8,
+        "sava:basic": 9,
+        "nada:basic": 3,
+        "art:basic": 8,
+        "ren:basic": 8,
+        "nada:powerful": 5
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 40,
+        "miss": 10,
+        "status-resisted": 2,
+        "read-move-predicted": 2
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "starter",
+      "size": 2,
+      "scale": 6.9,
+      "score": 0.9666,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.841,
+      "actions": 8.5,
       "wave2": 0,
       "usage": {
         "ren:powerful": 15,
         "art:powerful": 8,
-        "ren:special": 21,
-        "art:basic": 21,
+        "ren:special": 18,
+        "art:basic": 19,
         "ren:basic": 8
       },
       "stats": {},
       "threat": {
         "prepared": 4,
         "resolved": 0,
-        "cancelled": 3,
+        "cancelled": 0,
         "reacted": 0
       },
       "events": {
         "death": 16,
-        "miss": 4,
-        "status-resisted": 4
+        "miss": 3,
+        "status-resisted": 2
       }
     },
     {
       "tier": "uneven",
       "squad": "starter",
+      "size": 2,
+      "scale": 5.75,
+      "score": 0.9924,
       "n": 8,
-      "scale": 4.6,
-      "score": 1.026,
       "w": 8,
       "q": 8,
-      "pool": 0.94,
+      "pool": 0.884,
       "actions": 8,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 13,
+        "ren:powerful": 14,
         "art:powerful": 8,
-        "ren:special": 17,
+        "ren:special": 16,
         "art:basic": 18,
         "ren:basic": 8
       },
@@ -3518,18 +4004,19 @@
     {
       "tier": "uneven",
       "squad": "starter",
+      "size": 2,
+      "scale": 4.715,
+      "score": 1.0110000000000001,
       "n": 8,
-      "scale": 3.91,
-      "score": 1.0362,
       "w": 8,
       "q": 8,
-      "pool": 0.957,
-      "actions": 7.625,
+      "pool": 0.915,
+      "actions": 7.375,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 13,
+        "ren:powerful": 12,
         "art:powerful": 8,
-        "ren:special": 16,
+        "ren:special": 15,
         "art:basic": 16,
         "ren:basic": 8
       },
@@ -3549,50 +4036,20 @@
     {
       "tier": "uneven",
       "squad": "starter",
+      "size": 2,
+      "scale": 3.91,
+      "score": 1.0230000000000001,
       "n": 8,
-      "scale": 3.335,
-      "score": 1.0415999999999999,
       "w": 8,
       "q": 8,
-      "pool": 0.966,
-      "actions": 6.375,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 8,
-        "art:powerful": 8,
-        "ren:special": 12,
-        "art:basic": 15,
-        "ren:basic": 8
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 4,
-        "resolved": 0,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "death": 16,
-        "miss": 2,
-        "status-resisted": 2
-      }
-    },
-    {
-      "tier": "uneven",
-      "squad": "starter",
-      "n": 8,
-      "scale": 2.76,
-      "score": 1.0452,
-      "w": 8,
-      "q": 8,
-      "pool": 0.972,
-      "actions": 5.5,
+      "pool": 0.935,
+      "actions": 5.75,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
         "art:powerful": 8,
         "ren:special": 10,
-        "art:basic": 10,
+        "art:basic": 12,
         "ren:basic": 8
       },
       "stats": {},
@@ -3611,20 +4068,21 @@
     {
       "tier": "uneven",
       "squad": "starter",
+      "size": 2,
+      "scale": 3.22,
+      "score": 1.0415999999999999,
       "n": 8,
-      "scale": 2.3,
-      "score": 1.053,
       "w": 8,
       "q": 8,
-      "pool": 0.985,
-      "actions": 5.875,
+      "pool": 0.966,
+      "actions": 6.25,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
         "art:powerful": 8,
         "ren:special": 13,
         "art:basic": 13,
-        "ren:basic": 5
+        "ren:basic": 8
       },
       "stats": {},
       "threat": {
@@ -3642,12 +4100,13 @@
     {
       "tier": "uneven",
       "squad": "starter",
+      "size": 2,
+      "scale": 2.645,
+      "score": 1.0452,
       "n": 8,
-      "scale": 1.955,
-      "score": 1.0548,
       "w": 8,
       "q": 8,
-      "pool": 0.988,
+      "pool": 0.972,
       "actions": 4.875,
       "wave2": 0,
       "usage": {
@@ -3672,12 +4131,13 @@
     {
       "tier": "uneven",
       "squad": "starter",
+      "size": 2,
+      "scale": 2.185,
+      "score": 1.0482,
       "n": 8,
-      "scale": 1.495,
-      "score": 1.056,
       "w": 8,
       "q": 8,
-      "pool": 0.99,
+      "pool": 0.977,
       "actions": 4.25,
       "wave2": 0,
       "usage": {
@@ -3701,23 +4161,120 @@
     },
     {
       "tier": "uneven",
-      "squad": "three",
+      "squad": "starter",
+      "size": 2,
+      "scale": 1.725,
+      "score": 1.0512,
       "n": 8,
-      "scale": 5.405,
-      "score": 0.9798,
       "w": 8,
       "q": 8,
-      "pool": 0.863,
-      "actions": 13.875,
+      "pool": 0.982,
+      "actions": 3.625,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "art:basic": 5
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 0,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 16,
+        "miss": 2
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "starter",
+      "size": 2,
+      "scale": 1.265,
+      "score": 1.0542,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.987,
+      "actions": 3,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "art:powerful": 8,
+        "ren:special": 8
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 0,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 16,
+        "miss": 2
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "three",
+      "size": 3,
+      "scale": 6.9,
+      "score": 0.4586000000000002,
+      "n": 8,
+      "w": 8,
+      "q": 4,
+      "pool": 0.661,
+      "actions": 13.25,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
-        "nada:special": 16,
+        "nada:special": 10,
+        "art:powerful": 12,
+        "ren:special": 23,
+        "nada:basic": 8,
+        "art:basic": 19,
+        "ren:basic": 12,
+        "nada:powerful": 2,
+        "art:special": 4
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 12,
+        "resolved": 0,
+        "cancelled": 6,
+        "reacted": 0
+      },
+      "events": {
+        "death": 28,
+        "miss": 8,
+        "status-resisted": 3,
+        "read-move-predicted": 3
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "three",
+      "size": 3,
+      "scale": 5.75,
+      "score": 0.6692,
+      "n": 8,
+      "w": 8,
+      "q": 6,
+      "pool": 0.762,
+      "actions": 11.5,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 14,
+        "nada:special": 11,
         "art:powerful": 9,
-        "ren:special": 19,
-        "nada:basic": 13,
-        "art:basic": 15,
-        "ren:basic": 11,
+        "ren:special": 17,
+        "nada:basic": 9,
+        "art:basic": 11,
+        "ren:basic": 9,
         "nada:powerful": 6,
         "art:special": 6
       },
@@ -3729,98 +4286,66 @@
         "reacted": 0
       },
       "events": {
-        "death": 24,
-        "miss": 8,
-        "read-move-predicted": 3
-      }
-    },
-    {
-      "tier": "uneven",
-      "squad": "three",
-      "n": 8,
-      "scale": 4.6,
-      "score": 0.9918,
-      "w": 8,
-      "q": 8,
-      "pool": 0.883,
-      "actions": 11.75,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 14,
-        "nada:special": 13,
-        "art:powerful": 8,
-        "ren:special": 17,
-        "nada:basic": 11,
-        "art:basic": 13,
-        "ren:basic": 8,
-        "nada:powerful": 6,
-        "art:special": 4
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 12,
-        "resolved": 0,
-        "cancelled": 6,
-        "reacted": 0
-      },
-      "events": {
-        "death": 24,
+        "death": 26,
         "miss": 7,
+        "status-resisted": 1,
         "read-move-predicted": 3
       }
     },
     {
       "tier": "uneven",
       "squad": "three",
+      "size": 3,
+      "scale": 4.715,
+      "score": 0.984,
       "n": 8,
-      "scale": 3.91,
-      "score": 1.008,
       "w": 8,
       "q": 8,
-      "pool": 0.91,
-      "actions": 11.75,
+      "pool": 0.87,
+      "actions": 11,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 13,
-        "nada:special": 10,
+        "ren:powerful": 12,
+        "nada:special": 12,
         "art:powerful": 8,
-        "ren:special": 18,
-        "nada:basic": 13,
-        "art:basic": 14,
+        "ren:special": 16,
+        "nada:basic": 12,
+        "art:basic": 12,
         "ren:basic": 8,
-        "nada:powerful": 6,
+        "nada:powerful": 4,
         "art:special": 4
       },
       "stats": {},
       "threat": {
         "prepared": 12,
         "resolved": 0,
-        "cancelled": 6,
+        "cancelled": 4,
         "reacted": 0
       },
       "events": {
         "death": 24,
-        "miss": 5
+        "miss": 7
       }
     },
     {
       "tier": "uneven",
       "squad": "three",
+      "size": 3,
+      "scale": 3.91,
+      "score": 1.0338,
       "n": 8,
-      "scale": 3.335,
-      "score": 1.0476,
       "w": 8,
       "q": 8,
-      "pool": 0.976,
-      "actions": 10,
+      "pool": 0.953,
+      "actions": 9.5,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
         "nada:special": 16,
         "art:powerful": 8,
-        "ren:special": 16,
+        "ren:special": 14,
         "nada:basic": 8,
-        "art:basic": 16,
+        "art:basic": 14,
         "ren:basic": 8
       },
       "stats": {},
@@ -3838,12 +4363,13 @@
     {
       "tier": "uneven",
       "squad": "three",
+      "size": 3,
+      "scale": 3.22,
+      "score": 1.0392,
       "n": 8,
-      "scale": 2.76,
-      "score": 1.05,
       "w": 8,
       "q": 8,
-      "pool": 0.98,
+      "pool": 0.962,
       "actions": 9.25,
       "wave2": 0,
       "usage": {
@@ -3870,44 +4396,13 @@
     {
       "tier": "uneven",
       "squad": "three",
+      "size": 3,
+      "scale": 2.645,
+      "score": 1.0428,
       "n": 8,
-      "scale": 2.3,
-      "score": 1.0518,
       "w": 8,
       "q": 8,
-      "pool": 0.983,
-      "actions": 9.25,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 8,
-        "nada:special": 14,
-        "art:powerful": 8,
-        "ren:special": 14,
-        "nada:basic": 8,
-        "art:basic": 14,
-        "ren:basic": 8
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 8,
-        "resolved": 0,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "death": 24,
-        "miss": 8
-      }
-    },
-    {
-      "tier": "uneven",
-      "squad": "three",
-      "n": 8,
-      "scale": 1.955,
-      "score": 1.0535999999999999,
-      "w": 8,
-      "q": 8,
-      "pool": 0.986,
+      "pool": 0.968,
       "actions": 8.875,
       "wave2": 0,
       "usage": {
@@ -3934,12 +4429,79 @@
     {
       "tier": "uneven",
       "squad": "three",
+      "size": 3,
+      "scale": 2.185,
+      "score": 1.0464,
       "n": 8,
-      "scale": 1.495,
-      "score": 1.0554000000000001,
       "w": 8,
       "q": 8,
-      "pool": 0.989,
+      "pool": 0.974,
+      "actions": 7.625,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "nada:special": 13,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "nada:basic": 8,
+        "art:basic": 8,
+        "ren:basic": 8
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 24,
+        "miss": 8
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "three",
+      "size": 3,
+      "scale": 1.725,
+      "score": 1.05,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.98,
+      "actions": 7,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "nada:special": 8,
+        "art:powerful": 8,
+        "ren:special": 8,
+        "nada:basic": 8,
+        "art:basic": 8,
+        "ren:basic": 8
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 24,
+        "miss": 8
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "three",
+      "size": 3,
+      "scale": 1.265,
+      "score": 1.053,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.985,
       "actions": 7,
       "wave2": 0,
       "usage": {
@@ -3966,61 +4528,26 @@
     {
       "tier": "uneven",
       "squad": "four",
+      "size": 4,
+      "scale": 5.75,
+      "score": 0.7968000000000002,
       "n": 8,
-      "scale": 5.405,
-      "score": 0.7081999999999999,
       "w": 8,
-      "q": 6,
-      "pool": 0.827,
-      "actions": 22.25,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 16,
-        "sava:special": 17,
-        "nada:special": 18,
-        "liora:special": 8,
-        "ren:special": 24,
-        "sava:basic": 29,
-        "nada:powerful": 8,
-        "liora:basic": 27,
-        "ren:basic": 11,
-        "nada:basic": 20
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 10,
-        "resolved": 6,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "death": 34,
-        "read-move-predicted": 7,
-        "miss": 7
-      }
-    },
-    {
-      "tier": "uneven",
-      "squad": "four",
-      "n": 8,
-      "scale": 4.6,
-      "score": 0.9966,
-      "w": 8,
-      "q": 8,
-      "pool": 0.891,
-      "actions": 19.75,
+      "q": 2,
+      "pool": 0.808,
+      "actions": 17.875,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
         "sava:special": 16,
-        "nada:special": 15,
+        "nada:special": 13,
         "liora:special": 8,
-        "ren:special": 22,
-        "sava:basic": 24,
+        "ren:special": 20,
+        "sava:basic": 21,
         "nada:powerful": 8,
-        "liora:basic": 24,
+        "liora:basic": 17,
         "ren:basic": 8,
-        "nada:basic": 17
+        "nada:basic": 16
       },
       "stats": {},
       "threat": {
@@ -4030,7 +4557,7 @@
         "reacted": 0
       },
       "events": {
-        "death": 32,
+        "death": 38,
         "miss": 4,
         "read-move-predicted": 2,
         "status-resisted": 1
@@ -4039,54 +4566,19 @@
     {
       "tier": "uneven",
       "squad": "four",
+      "size": 4,
+      "scale": 4.715,
+      "score": 0.8578,
       "n": 8,
-      "scale": 3.91,
-      "score": 1.02,
       "w": 8,
-      "q": 8,
-      "pool": 0.93,
+      "q": 7,
+      "pool": 0.868,
       "actions": 16,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
         "sava:special": 16,
-        "nada:special": 15,
-        "liora:special": 8,
-        "ren:special": 16,
-        "sava:basic": 16,
-        "nada:powerful": 8,
-        "liora:basic": 16,
-        "ren:basic": 8,
-        "nada:basic": 9
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 8,
-        "resolved": 0,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "death": 32,
-        "miss": 2,
-        "status-resisted": 1
-      }
-    },
-    {
-      "tier": "uneven",
-      "squad": "four",
-      "n": 8,
-      "scale": 3.335,
-      "score": 1.0332,
-      "w": 8,
-      "q": 8,
-      "pool": 0.952,
-      "actions": 15.625,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 15,
-        "sava:special": 15,
-        "nada:special": 8,
+        "nada:special": 9,
         "liora:special": 8,
         "ren:special": 16,
         "sava:basic": 16,
@@ -4098,6 +4590,81 @@
       "stats": {},
       "threat": {
         "prepared": 8,
+        "resolved": 2,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 33,
+        "miss": 3,
+        "status-resisted": 3,
+        "read-move-predicted": 2
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "four",
+      "size": 4,
+      "scale": 6.9,
+      "score": 0.9910000000000001,
+      "n": 8,
+      "w": 8,
+      "q": 0,
+      "pool": 0.715,
+      "actions": 19.375,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 16,
+        "sava:special": 17,
+        "nada:special": 18,
+        "liora:special": 8,
+        "ren:special": 23,
+        "sava:basic": 26,
+        "nada:powerful": 8,
+        "liora:basic": 10,
+        "ren:basic": 12,
+        "nada:basic": 17
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 10,
+        "resolved": 6,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 40,
+        "read-move-predicted": 7,
+        "miss": 10
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "four",
+      "size": 4,
+      "scale": 3.91,
+      "score": 1.0098,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.913,
+      "actions": 15.25,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 14,
+        "sava:special": 14,
+        "nada:special": 8,
+        "liora:special": 8,
+        "ren:special": 16,
+        "sava:basic": 16,
+        "nada:powerful": 8,
+        "liora:basic": 16,
+        "ren:basic": 8,
+        "nada:basic": 14
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
         "resolved": 0,
         "cancelled": 0,
         "reacted": 0
@@ -4111,19 +4678,20 @@
     {
       "tier": "uneven",
       "squad": "four",
+      "size": 4,
+      "scale": 2.645,
+      "score": 1.0152,
       "n": 8,
-      "scale": 1.955,
-      "score": 1.041,
       "w": 8,
       "q": 8,
-      "pool": 0.965,
-      "actions": 12,
+      "pool": 0.922,
+      "actions": 12.125,
       "wave2": 0,
       "usage": {
         "ren:powerful": 8,
         "sava:special": 8,
         "nada:special": 11,
-        "liora:basic": 18,
+        "liora:basic": 19,
         "ren:special": 12,
         "sava:basic": 15,
         "nada:basic": 8,
@@ -4146,48 +4714,13 @@
     {
       "tier": "uneven",
       "squad": "four",
+      "size": 4,
+      "scale": 3.22,
+      "score": 1.0253999999999999,
       "n": 8,
-      "scale": 2.76,
-      "score": 1.0434,
       "w": 8,
       "q": 8,
-      "pool": 0.969,
-      "actions": 14,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 8,
-        "sava:special": 12,
-        "nada:special": 8,
-        "liora:special": 8,
-        "ren:special": 16,
-        "sava:basic": 16,
-        "nada:powerful": 8,
-        "liora:basic": 16,
-        "ren:basic": 8,
-        "nada:basic": 12
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 8,
-        "resolved": 0,
-        "cancelled": 0,
-        "reacted": 0
-      },
-      "events": {
-        "death": 32,
-        "miss": 3,
-        "status-resisted": 1
-      }
-    },
-    {
-      "tier": "uneven",
-      "squad": "four",
-      "n": 8,
-      "scale": 2.3,
-      "score": 1.0458,
-      "w": 8,
-      "q": 8,
-      "pool": 0.973,
+      "pool": 0.939,
       "actions": 13.5,
       "wave2": 0,
       "usage": {
@@ -4218,12 +4751,13 @@
     {
       "tier": "uneven",
       "squad": "four",
+      "size": 4,
+      "scale": 2.185,
+      "score": 1.0266,
       "n": 8,
-      "scale": 1.495,
-      "score": 1.0476,
       "w": 8,
       "q": 8,
-      "pool": 0.976,
+      "pool": 0.941,
       "actions": 11,
       "wave2": 0,
       "usage": {
@@ -4252,189 +4786,27 @@
     },
     {
       "tier": "uneven",
-      "squad": "full",
+      "squad": "four",
+      "size": 4,
+      "scale": 1.725,
+      "score": 1.0302,
       "n": 8,
-      "scale": 3.91,
-      "score": 0.6742000000000001,
-      "w": 8,
-      "q": 3,
-      "pool": 0.812,
-      "actions": 29,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 16,
-        "sava:special": 18,
-        "nada:special": 20,
-        "art:powerful": 15,
-        "liora:special": 9,
-        "ren:special": 25,
-        "sava:basic": 32,
-        "nada:powerful": 8,
-        "art:basic": 17,
-        "liora:basic": 25,
-        "ren:basic": 16,
-        "nada:basic": 21,
-        "art:special": 10
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 8,
-        "resolved": 0,
-        "cancelled": 6,
-        "reacted": 0
-      },
-      "events": {
-        "death": 45,
-        "read-move-predicted": 5,
-        "status-resisted": 5,
-        "miss": 14
-      }
-    },
-    {
-      "tier": "uneven",
-      "squad": "full",
-      "n": 8,
-      "scale": 4.6,
-      "score": 0.6862000000000001,
-      "w": 8,
-      "q": 3,
-      "pool": 0.832,
-      "actions": 33.125,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 19,
-        "sava:special": 22,
-        "nada:special": 20,
-        "art:powerful": 16,
-        "liora:special": 8,
-        "ren:special": 30,
-        "sava:basic": 36,
-        "nada:powerful": 11,
-        "art:basic": 24,
-        "liora:basic": 31,
-        "ren:basic": 16,
-        "nada:basic": 23,
-        "art:special": 9
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 8,
-        "resolved": 0,
-        "cancelled": 5,
-        "reacted": 0
-      },
-      "events": {
-        "death": 45,
-        "miss": 21,
-        "read-move-predicted": 5,
-        "status-resisted": 5
-      }
-    },
-    {
-      "tier": "uneven",
-      "squad": "full",
-      "n": 8,
-      "scale": 5.405,
-      "score": 0.7518,
-      "w": 8,
-      "q": 2,
-      "pool": 0.733,
-      "actions": 32.25,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 19,
-        "sava:special": 21,
-        "nada:special": 25,
-        "art:powerful": 16,
-        "liora:special": 8,
-        "ren:special": 32,
-        "sava:basic": 32,
-        "nada:powerful": 10,
-        "art:basic": 25,
-        "liora:basic": 20,
-        "ren:basic": 17,
-        "nada:basic": 23,
-        "art:special": 10
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 10,
-        "resolved": 0,
-        "cancelled": 6,
-        "reacted": 0
-      },
-      "events": {
-        "death": 48,
-        "miss": 18,
-        "read-move-predicted": 6,
-        "status-resisted": 4
-      }
-    },
-    {
-      "tier": "uneven",
-      "squad": "full",
-      "n": 8,
-      "scale": 3.335,
-      "score": 1.002,
       "w": 8,
       "q": 8,
-      "pool": 0.9,
-      "actions": 22.75,
+      "pool": 0.947,
+      "actions": 10.5,
       "wave2": 0,
       "usage": {
-        "ren:powerful": 16,
-        "sava:special": 16,
-        "nada:special": 16,
-        "art:powerful": 10,
-        "liora:special": 11,
-        "ren:special": 20,
-        "sava:basic": 22,
-        "nada:powerful": 8,
-        "art:basic": 17,
-        "liora:basic": 19,
-        "ren:basic": 10,
-        "nada:basic": 14,
-        "art:special": 3
-      },
-      "stats": {},
-      "threat": {
-        "prepared": 8,
-        "resolved": 0,
-        "cancelled": 1,
-        "reacted": 0
-      },
-      "events": {
-        "death": 40,
-        "read-move-predicted": 5,
-        "miss": 10,
-        "status-resisted": 2
-      }
-    },
-    {
-      "tier": "uneven",
-      "squad": "full",
-      "n": 8,
-      "scale": 2.76,
-      "score": 1.0158,
-      "w": 8,
-      "q": 8,
-      "pool": 0.923,
-      "actions": 20.25,
-      "wave2": 0,
-      "usage": {
-        "ren:powerful": 16,
-        "sava:special": 16,
-        "nada:special": 16,
-        "art:powerful": 8,
-        "liora:special": 8,
-        "ren:special": 18,
-        "sava:basic": 18,
-        "nada:powerful": 8,
-        "art:basic": 17,
-        "liora:basic": 18,
+        "ren:powerful": 8,
+        "sava:special": 8,
+        "nada:special": 8,
+        "liora:basic": 16,
+        "ren:special": 11,
+        "sava:basic": 11,
+        "nada:basic": 8,
         "ren:basic": 8,
-        "nada:basic": 10,
-        "art:special": 1
+        "liora:special": 3,
+        "nada:powerful": 3
       },
       "stats": {},
       "threat": {
@@ -4444,20 +4816,218 @@
         "reacted": 0
       },
       "events": {
-        "death": 40,
-        "read-move-predicted": 5,
-        "miss": 8
+        "death": 32,
+        "miss": 3
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "four",
+      "size": 4,
+      "scale": 1.265,
+      "score": 1.0332,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.952,
+      "actions": 9,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "sava:special": 8,
+        "nada:special": 8,
+        "liora:basic": 16,
+        "ren:special": 8,
+        "sava:basic": 8,
+        "nada:basic": 8,
+        "ren:basic": 8
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 32,
+        "miss": 3
       }
     },
     {
       "tier": "uneven",
       "squad": "full",
+      "size": 5,
+      "scale": 3.91,
+      "score": 0.5916,
       "n": 8,
-      "scale": 1.955,
-      "score": 1.0218,
+      "w": 8,
+      "q": 5,
+      "pool": 0.841,
+      "actions": 22.125,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 16,
+        "sava:special": 15,
+        "nada:special": 16,
+        "art:powerful": 9,
+        "liora:special": 8,
+        "ren:special": 21,
+        "sava:basic": 21,
+        "nada:powerful": 8,
+        "art:basic": 17,
+        "liora:basic": 19,
+        "ren:basic": 9,
+        "nada:basic": 14,
+        "art:special": 4
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 43,
+        "read-move-predicted": 7,
+        "miss": 8,
+        "status-resisted": 1
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "full",
+      "size": 5,
+      "scale": 4.715,
+      "score": 0.7548000000000001,
+      "n": 8,
+      "w": 8,
+      "q": 2,
+      "pool": 0.738,
+      "actions": 23.375,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 16,
+        "sava:special": 16,
+        "nada:special": 16,
+        "art:powerful": 11,
+        "liora:special": 8,
+        "ren:special": 23,
+        "sava:basic": 24,
+        "nada:powerful": 8,
+        "art:basic": 19,
+        "liora:basic": 11,
+        "ren:basic": 12,
+        "nada:basic": 18,
+        "art:special": 5
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 47,
+        "read-move-predicted": 3,
+        "miss": 14,
+        "status-resisted": 3
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "full",
+      "size": 5,
+      "scale": 5.75,
+      "score": 0.8800000000000001,
+      "n": 8,
+      "w": 8,
+      "q": 0,
+      "pool": 0.53,
+      "actions": 25.5,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 18,
+        "sava:special": 11,
+        "nada:special": 18,
+        "art:powerful": 16,
+        "liora:special": 8,
+        "ren:special": 33,
+        "sava:basic": 16,
+        "nada:powerful": 9,
+        "art:basic": 28,
+        "liora:basic": 6,
+        "ren:basic": 16,
+        "nada:basic": 20,
+        "art:special": 5
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 4,
+        "reacted": 0
+      },
+      "events": {
+        "death": 59,
+        "miss": 16,
+        "read-move-predicted": 3,
+        "status-resisted": 2
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "full",
+      "size": 5,
+      "scale": 6.9,
+      "score": 0.9676000000000001,
+      "n": 8,
+      "w": 8,
+      "q": 0,
+      "pool": 0.364,
+      "actions": 26.25,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 24,
+        "sava:special": 9,
+        "nada:special": 16,
+        "art:powerful": 17,
+        "liora:special": 8,
+        "ren:special": 39,
+        "sava:basic": 14,
+        "nada:powerful": 10,
+        "art:basic": 31,
+        "ren:basic": 21,
+        "nada:basic": 15,
+        "liora:basic": 3,
+        "art:special": 3
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 10,
+        "resolved": 0,
+        "cancelled": 5,
+        "reacted": 0
+      },
+      "events": {
+        "death": 66,
+        "miss": 23,
+        "status-resisted": 3,
+        "read-move-predicted": 4
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "full",
+      "size": 5,
+      "scale": 2.645,
+      "score": 0.9774,
+      "n": 8,
       "w": 8,
       "q": 8,
-      "pool": 0.933,
+      "pool": 0.859,
       "actions": 17.5,
       "wave2": 0,
       "usage": {
@@ -4469,10 +5039,11 @@
         "ren:special": 16,
         "sava:basic": 16,
         "nada:powerful": 8,
-        "art:basic": 16,
+        "art:basic": 14,
         "liora:special": 8,
         "ren:basic": 8,
-        "nada:basic": 8
+        "nada:basic": 8,
+        "art:special": 2
       },
       "stats": {},
       "threat": {
@@ -4484,20 +5055,21 @@
       "events": {
         "death": 40,
         "read-move-predicted": 4,
-        "miss": 9,
+        "miss": 8,
         "status-resisted": 2
       }
     },
     {
       "tier": "uneven",
       "squad": "full",
+      "size": 5,
+      "scale": 3.22,
+      "score": 0.9924,
       "n": 8,
-      "scale": 2.3,
-      "score": 1.0242,
       "w": 8,
       "q": 8,
-      "pool": 0.937,
-      "actions": 19,
+      "pool": 0.884,
+      "actions": 20.125,
       "wave2": 0,
       "usage": {
         "ren:powerful": 16,
@@ -4505,13 +5077,14 @@
         "nada:special": 16,
         "art:powerful": 8,
         "liora:special": 8,
-        "ren:special": 16,
-        "sava:basic": 16,
+        "ren:special": 17,
+        "sava:basic": 18,
         "nada:powerful": 8,
-        "art:basic": 16,
-        "liora:basic": 16,
+        "art:basic": 13,
+        "liora:basic": 18,
         "ren:basic": 8,
-        "nada:basic": 8
+        "nada:basic": 10,
+        "art:special": 5
       },
       "stats": {},
       "threat": {
@@ -4529,26 +5102,28 @@
     {
       "tier": "uneven",
       "squad": "full",
+      "size": 5,
+      "scale": 2.185,
+      "score": 1.0068000000000001,
       "n": 8,
-      "scale": 1.495,
-      "score": 1.0356,
       "w": 8,
       "q": 8,
-      "pool": 0.956,
-      "actions": 17.5,
+      "pool": 0.908,
+      "actions": 17.875,
       "wave2": 0,
       "usage": {
         "ren:powerful": 12,
-        "sava:special": 12,
+        "sava:special": 15,
         "nada:special": 16,
         "art:powerful": 8,
-        "liora:basic": 20,
+        "liora:basic": 16,
         "ren:special": 16,
         "sava:basic": 16,
         "nada:powerful": 8,
-        "art:basic": 16,
+        "art:basic": 12,
         "ren:basic": 8,
-        "liora:special": 4,
+        "art:special": 4,
+        "liora:special": 8,
         "nada:basic": 4
       },
       "stats": {},
@@ -4561,12 +5136,91 @@
       "events": {
         "death": 40,
         "read-move-predicted": 8,
+        "miss": 10
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "full",
+      "size": 5,
+      "scale": 1.725,
+      "score": 1.0128,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.918,
+      "actions": 17.125,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 11,
+        "sava:special": 11,
+        "nada:special": 15,
+        "art:powerful": 8,
+        "liora:basic": 16,
+        "ren:special": 16,
+        "sava:basic": 16,
+        "nada:powerful": 8,
+        "art:basic": 15,
+        "ren:basic": 8,
+        "liora:special": 8,
+        "art:special": 1,
+        "nada:basic": 4
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 40,
+        "read-move-predicted": 7,
         "miss": 11
+      }
+    },
+    {
+      "tier": "uneven",
+      "squad": "full",
+      "size": 5,
+      "scale": 1.265,
+      "score": 1.026,
+      "n": 8,
+      "w": 8,
+      "q": 8,
+      "pool": 0.94,
+      "actions": 15.375,
+      "wave2": 0,
+      "usage": {
+        "ren:powerful": 8,
+        "sava:special": 8,
+        "nada:special": 15,
+        "art:powerful": 8,
+        "liora:basic": 21,
+        "ren:special": 15,
+        "sava:basic": 15,
+        "nada:powerful": 7,
+        "art:basic": 15,
+        "ren:basic": 8,
+        "nada:basic": 1,
+        "liora:special": 2
+      },
+      "stats": {},
+      "threat": {
+        "prepared": 8,
+        "resolved": 0,
+        "cancelled": 0,
+        "reacted": 0
+      },
+      "events": {
+        "death": 40,
+        "read-move-predicted": 7,
+        "miss": 10
       }
     }
   ],
-  "battles": 1024,
-  "engineBlob": "4fccd10ca01245b19232347e1ed24660e300995b",
+  "battles": 1152,
+  "engineBlob": "586fd730c27616e1eee7c7fca7e6f326fd7a7ed2",
   "baseCommit": "a97787611bb1172b28c1390d8860e802e023220c",
   "sourceBlobs": {
     "initiative-model.js": "2720ceb038986f6fba26ed365e66c939a2a37814",

@@ -100,7 +100,8 @@ const MainCampaignCore=(()=>{
    const previous=statusFor(m.previous,provider,wallet);
    if(previous!=="claimed")return proof.best>0||hasReceipt(m,wallet)||previous==="blocked"?"blocked":"locked";
   }
-  if(hasReceipt(m,wallet))return proof.best>0?"claimed":"blocked";
+  if(hasReceipt(m,wallet))return proof.best>0&&(!m.source.reward.heroGrants||
+   (typeof StarCore!=="undefined"&&m.source.reward.heroGrants.every(hero=>StarCore.rankOf(wallet,hero)>0)))?"claimed":"blocked";
   return proof.best>0?"claimable":"ready";
  }
  function readWallet(provider,heroes){

@@ -12,7 +12,7 @@ function setup(){
  const args={heroes,storageProvider:provider,exclusive,day:"2026-11-25"};
  const read=()=>S.load(heroes,provider).progress;
  const status=()=>C.statusFor(C.II_ID,provider,read());
- const record=b=>C.recordFor(C.II_ID,b,provider,heroes);
+ const record=b=>C.recordFor(C.II_ID,{...b,mainCampaignMissionId:C.II_ID},provider,heroes);
  const claim=()=>C.claimFor(C.II_ID,args);
  const open=async()=>{assert.equal(C.record(win,provider).ok,true);assert.equal((await C.claim(args)).ok,true);};
  return {rows,storage,provider,args,read,status,record,claim,open};
@@ -75,4 +75,16 @@ test("chapter II ambiguous wallet write recovers exactly once",async()=>{
  assert.equal((await x.claim()).code,"SAVE_OUTCOME_UNKNOWN");
  x.storage.setItem=real;assert.equal(x.status(),"claimed");assert.equal(Star.rankOf(x.read(),"nada"),1);
  assert.equal((await x.claim()).code,"ALREADY_CLAIMED");
+});
+
+test("chapter II rejects unbound, foreign, and inconsistent terminal battle states",async()=>{
+ const x=setup();await x.open();
+ for(const battle of [win,{...win,mainCampaignMissionId:C.ID},{...win,mainCampaignMissionId:"operation-001"},
+  {...win,mainCampaignMissionId:C.II_ID,fighters:[{side:"ally",hp:8},{side:"enemy",hp:1}]},
+  {...win,mainCampaignMissionId:C.II_ID,fighters:[{side:"ally",hp:8}]}]){
+  assert.equal(C.recordFor(C.II_ID,battle,x.provider,x.args.heroes).ok,false);
+  assert.equal(x.status(),"ready");
+ }
+ assert.equal((await x.claim()).code,"PROOF_NOT_PERSISTED");assert.equal(Star.rankOf(x.read(),"nada"),0);
+ assert.equal(x.record(win).ok,true);assert.equal((await x.claim()).ok,true);
 });

@@ -65,7 +65,9 @@ function combinedKit(actor,id,base,c,markKit,defKit,savaKit){
 function setup(input,variant){
  const v=VARIANTS[variant];if(!v)throw Error("variant");
  const {marks,def,sava}=input;let s=input.source,l=input.labSource,dc=null,sc=null;
- if(v.def){const p=def.setup(s,l,v.def,"early");s=p.s;l=p.l;dc=p.c;}
+ if(v.def){const p=def.setup(s,l,v.def,"early");
+  // Defense and signal slices both used b15grant locally. Namespace before composition.
+  s=p.s.replace(/\bb15(count|prune|grant|guard|react|finish|cross|disrupt)\b/g,(_,name)=>"b15Def"+name);l=p.l;dc=p.c;}
  const p=sava.setup(s,l,input.extra,v.sava??"ref");s=p.s;l=p.l;sc=p.c;
  if(v.cap){s=rep(s,'const B15SAVA='+JSON.stringify(sc)+';','const B15SAVA='+JSON.stringify({...sc,cap:v.cap})+';');sc={...sc,cap:v.cap};}
  if(v.legacy){
@@ -150,7 +152,7 @@ function step(ctx,b,abilityId,target,helper,enemy){
  if(!ctx.api.C.chooseEnemy(b,enemy))return false;
  const ok=ctx.api.C.performActorAbility(b,abilityId,target,helper);if(!ok)return false;
  ctx.lab.validate(b);
- if(b.fighters.some(f=>f.hp<=0&&f.b15Guards?.length)||b.events.some(e=>e.assist&&e.depth!==1))throw Error("invalid derived state");
+ if(b.fighters.some(f=>(f.b15Guards??[]).some(g=>!["art","liora"].includes(g.kind)||!Number.isInteger(g.hits)||g.hits<=0||!Number.isInteger(g.turns)||g.turns<=0||!Number.isFinite(g.capDamage)||g.capDamage<0||!Number.isFinite(g.fraction))||f.hp<=0&&f.b15Guards?.length)||b.events.some(e=>e.assist&&e.depth!==1)||Object.keys(b.b15Stats??{}).some(k=>k.includes("undefined")))throw Error("invalid derived state");
  return true;
 }
 function run(ctx,opts,mode="tactical",trace=false){

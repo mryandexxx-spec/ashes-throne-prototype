@@ -116,7 +116,11 @@ const MainCampaignCore=(()=>{
   const m=mission(id);if(!m)return {ok:false,earned:0,best:0};
   if(id===ID)return record(battle,provider);
   const proof=proofFor(id,provider),wallet=readWallet(provider,heroes);
+  // II only: require the identity captured at launch, not the currently selected map node.
+  if(battle?.mainCampaignMissionId!==id)return {ok:false,earned:0,best:proof?.best||0};
   const earned=score(battle);
+  if(earned&&(!battle.fighters.some(f=>f.side==="enemy")||battle.fighters.some(f=>f.side==="enemy"&&!(f.hp<=0))))
+   return {ok:false,earned:0,best:proof?.best||0};
   if(!proof||!wallet)return {ok:false,earned,best:proof?.best||0};
   const current=statusFor(id,provider,wallet);
   if(current==="blocked"||current==="locked")return {ok:false,earned:0,best:proof.best};

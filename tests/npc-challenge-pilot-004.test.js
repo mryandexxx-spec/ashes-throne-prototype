@@ -177,7 +177,7 @@ test("NPCCHALLENGE004: NPC scores now use the original challenge save path",()=>
  assert.match(js,/NpcChallengePilot\.trackerTargets\(activeChallengeId\)/);
  assert.match(js,/if\(battleIsChallenge&&!state.active&&!challengeResultRecorded\)/);
  assert.match(js,/ChallengeCore\.resultEarned\(challengeProgress,activeChallengeId/);
- assert.match(js,/ChallengeCore\.save\(outcome.candidate,\(\)=>window.localStorage,challengeSaveBlocked\)/);
+ assert.match(js,/ChallengeCore\.save\(outcome.candidate,\(\)=>gameStorage\(\),challengeSaveBlocked\)/);
  assert.doesNotMatch(js,/NPC-пробы T-01…T-04/);
  assert.ok(html.includes("npc-challenge-pilot.js?v="+pkg.version));
  assert.ok(html.includes("v"+pkg.version+" · "), "footer should match package version");

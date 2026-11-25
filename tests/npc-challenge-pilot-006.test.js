@@ -224,7 +224,7 @@ test("NPCCHALLENGE006: objective UI and v1 save work without URL flag",()=>{
  assert.match(js,/NpcChallengePilot\.score\(activeChallengeId,state,challengeTracker\)/);
  assert.doesNotMatch(js,/NPC-пробы T-01…T-04/);
  assert.match(js,/if\(battleIsChallenge&&!state.active&&!challengeResultRecorded\)/);
- assert.match(js,/ChallengeCore\.save\(outcome.candidate,\(\)=>window.localStorage,challengeSaveBlocked\)/);
+ assert.match(js,/ChallengeCore\.save\(outcome.candidate,\(\)=>gameStorage\(\),challengeSaveBlocked\)/);
  assert.equal(Q.KEY,"ashes-throne.challenges.v1");
  assert.equal(Q.get("N-03").thirdStarActionLimit,null);
 });

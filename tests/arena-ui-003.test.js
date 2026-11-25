@@ -121,8 +121,8 @@ test("ARENAUI003A: arena markup — queue, hero, round abilities; no target card
 
 test("ARENAUI003A: HUD logic is read-only presentation with a remembered queue toggle",()=>{
  assert.match(game,/ArenaUI003\.forecast\(state,ArenaUI003\.QUEUE_SIZE,\{\s*speedOf:f=>CombatCore\.effectiveStat\(state,f,"speed"\)\}\)/);
- assert.match(game,/localStorage\?\.getItem\?\.\("ashes-throne\.arena-queue-collapsed"\)==="1"/);
- assert.match(game,/try\{window\.localStorage\?\.setItem\?\.\("ashes-throne\.arena-queue-collapsed"/);
+ assert.match(game,/gameStorage\(\)\?\.getItem\?\.\("ashes-throne\.arena-queue-collapsed"\)==="1"/);
+ assert.match(game,/try\{gameStorage\(\)\?\.setItem\?\.\("ashes-throne\.arena-queue-collapsed"/);
  assert.match(game,/if\(signature!==turnQueueSignature\)/,"queue DOM rebuilt only on change");
  assert.match(game,/if\(data\.face!==signature\)\{data\.face=signature;button\.innerHTML=face\.html;\}/,"icons rebuilt only on change");
  assert.match(game,/const slotState=\(ready,cooldown\)=>!actor\?"locked":autoBattle\?"auto":visualBusy&&ready\?"wait":\s*\n?\s*ready\?"ready":cooldown>0\?"cooldown":"locked";/);
@@ -186,7 +186,7 @@ test("ARENAUI003B: a number never rises into its target's label, even when the l
  assert.equal(typeof f.relayout,"function");
 });
 test("ARENAUI003B: names stay limited to the actor, selected enemy and First Play support target; marks stay as icons",()=>{
- assert.match(game,/const targeted=!!actor&&h\.hp>0&&!support&&h\.side==="enemy"&&state\.fighters\[state\.selectedEnemy\]\?\.id===h\.id;/);
+ assert.match(game,/const targeted=!!actor&&h\.hp>0&&\(!support\|\|joint\)&&h\.side==="enemy"&&state\.fighters\[state\.selectedEnemy\]\?\.id===h\.id;/);
  // FIRSTSESSIONP0C: Ren is identified when he is a valid First Play support target.
  // Evaluate the actual production predicate, including the ordinary battle boundary.
  const predicate=/const named=([^;]+);/.exec(game)?.[1];
@@ -197,9 +197,9 @@ test("ARENAUI003B: names stay limited to the actor, selected enemy and First Pla
    for(const targeted of [false,true])
     for(const support of [false,true])
      for(const focused of [false,true])
-      for(const id of ["ren","art","ves"]){
-       const actual=vm.runInNewContext(predicate,{battleIsFirstPlay,active,targeted,support,focused,h:{id}});
-       const expected=active||targeted||(battleIsFirstPlay&&support&&focused&&id==="ren");
+      for(const id of ["ren","art","ves"])for(const combat2 of [false,true])for(const chosen of [false,true]){
+       const actual=vm.runInNewContext(predicate,{battleIsFirstPlay,active,targeted,support,focused,h:{id},state:{combat2,fighters:[{id:chosen?id:"other"}]},combat2Choice:0});
+       const expected=active||targeted||(battleIsFirstPlay&&support&&focused&&id==="ren")||(combat2&&support&&chosen);
        assert.equal(actual,expected,JSON.stringify({battleIsFirstPlay,active,targeted,support,focused,id}));
       }
  assert.match(game,/\$\{named\?`<div class="arena-indicator-name"\$\{h\.side==="enemy"\?` style="max-width:\$\{nameW\}px"`:""\}>\$\{h\.name\}<\/div>`:""\}/);

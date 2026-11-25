@@ -32,8 +32,8 @@ assert.ok(html.includes("v"+__BUILD_VERSION_FOR_TESTS+" ·"),"footer version fol
 assert.match(styles,/\.daily-nav-badge\[hidden\]\{display:none\}/);
 assert.ok(game.includes('DailyCore.unclaimedCount(progress,dailyDay())'));
 assert.ok(game.includes('const LOGIN_CALENDAR_SEEN_KEY="ashes-throne.login-calendar-seen.v1"'));
-assert.ok(game.includes('window.localStorage?.getItem(LOGIN_CALENDAR_SEEN_KEY)'));
-assert.ok(game.includes('window.localStorage?.setItem(LOGIN_CALENDAR_SEEN_KEY,day)'));
+assert.ok(game.includes('gameStorage()?.getItem(LOGIN_CALENDAR_SEEN_KEY)'));
+assert.ok(game.includes('gameStorage()?.setItem(LOGIN_CALENDAR_SEEN_KEY,day)'));
 assert.match(game,/if\(id==="loginCalendar"\)\{[\s\S]{0,300}markLoginCalendarSeen\(\);[\s\S]{0,100}renderLoginCalendar\(\);/);
 assert.ok(game.includes('if(id==="home"){\n  renderDailyClaimBadge();\n  maybeOpenLoginOnEntry();'));
 assert.ok(game.endsWith('maybeOpenLoginOnEntry();\n'));

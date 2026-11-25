@@ -28,7 +28,7 @@ test("OPS-001B has its own map, controls, results and versioned script",()=>{
 });
 test("operation routes only to shared battle and does not pay or alter campaign",()=>{
  const checks=[
-  'OperationCore.load(()=>window.localStorage)',
+  'OperationCore.load(()=>gameStorage())',
   'battleIsOperation=squadReturnScreen==="operations"',
   'operationBattleRunId=battleIsOperation?operationProgress.active.runId:null',
   'OperationCore.battlePlan(operationProgress.active)',
@@ -41,7 +41,7 @@ test("operation routes only to shared battle and does not pay or alter campaign"
   'if(id==="operationResult")renderOperationResult()',
   'openSquad("operations")',
   'OperationCore.stage(operationProgress,next)',
-  'OperationCore.save(candidate,()=>window.localStorage,operationSaveBlocked)'
+  'OperationCore.save(candidate,()=>gameStorage(),operationSaveBlocked)'
  ];
  for(const value of checks)assert.ok(game.includes(value),value);
  assert.match(game,/battleIsCampaign=squadReturnScreen==="campaign"/);
@@ -80,7 +80,8 @@ function fakeOperationUI(){
   openSquad:name=>squad.push(name),
   showScreen:name=>screen.push(name)
  };
- const ui=vm.runInNewContext(game.slice(start,end)+"\n({renderOperations,newOperation,changeOperation,renderOperationResult})",context);
+ const storageSource=game.match(/const COMBAT2_PILOT=[\s\S]*?function gameStorage\(\)\{[^}]+\}/)[0];
+ const ui=vm.runInNewContext(storageSource+"\n"+game.slice(start,end)+"\n({renderOperations,newOperation,changeOperation,renderOperationResult})",context);
  function click(data){
   const target={dataset:data,disabled:false,closest(){return this;}};
   nodes.get("operations").listeners.click({target});

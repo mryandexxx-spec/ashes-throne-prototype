@@ -272,7 +272,8 @@ function captureResolvedVisuals(beforeFighters){
   const first=event.assist&&!all.slice(0,index).some(e=>e.assist&&e.rootId===event.rootId);
   return first?[{type:"ability",actorId:event.actorId,targetId:event.targetId,abilityId:"basic"},event]:[event];
  }):state.events;
- BattleAnimation.enqueue(visualEvents,positions,beforeFighters||null);
+ if(state.combat2)BattleAnimation.enqueue(visualEvents,positions,beforeFighters||null);
+ else BattleAnimation.enqueue(state.events,positions,beforeFighters||null);
  const events=state.events||[];
  const waveChanged=events.some(event=>event.type==="wave-start");
  const ended=events.some(event=>event.type==="battle-end");
@@ -2061,7 +2062,8 @@ function showScreen(id){
   if(typeof closeHQMenu==="function")closeHQMenu();
   if(typeof cancelHQTooltip==="function")cancelHQTooltip();
  }
- if(id!=="battle"){clearCombat2Selection();closeFighterInspection();hideAbilityTooltip();closeBattleMenu();}
+ if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();closeBattleMenu();}
+ if(id!=="battle")clearCombat2Selection();
  if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();arenaFeedback?.clear(arenaCamera);closeBattleAssetGate();stopBattleRendering();disposeArenaEnv006();}
  if(id!=="heroDetail"&&typeof RenCard3D!=="undefined")RenCard3D.dispose();
  // Combat-008A: release the document scroll while the arena owns the viewport.
@@ -4740,7 +4742,9 @@ function applyManualAbility(abilityId){
  if(side!=="enemy"&&side!=="ally"&&side!=="self"&&side!=="all-enemies"&&side!=="all-allies")return false;
  const before=state.fighters.map(f=>({...f}));
  const tutorialActor=state.fighters[state.currentActor]?.id;
- if(!CombatCore.performPlayerAbility(state,abilityId,state.combat2&&combat2Selection()?.combat2Assist?combat2Choice:undefined))return false;
+ const committed=state.combat2&&combat2Selection()?.combat2Assist?
+  CombatCore.performPlayerAbility(state,abilityId,combat2Choice):CombatCore.performPlayerAbility(state,abilityId);
+ if(!committed)return false;
  clearCombat2Selection();
  if(battleIsFirstPlay&&tutorialActor)firstPlayTaughtActors.add(tutorialActor);
  captureResolvedVisuals(before);

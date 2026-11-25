@@ -20,9 +20,9 @@ function primitives(){
  function b15count(b,k,n=1){const s=b.b15Stats??={};s[k]=(s[k]??0)+n;}
  function b15cap(old,add){return Math.max(old,Math.min(950,old+add));}
  function b15time(b,f){return Math.max(0,(1000-f.meter)/effectiveStat(b,f,"speed"));}
- function b15preview(b,actor,amount,target){
+ function b15preview(b,actor,amount,target,spent=false){
   const alive=b.fighters.filter(f=>f.hp>0);
-  const before=alive.map(f=>({...f,meter:f.id===actor.id&&b.currentActor===f.index&&f.meter>=1000-1e-8?Math.max(0,f.meter-1000):f.meter}));
+  const before=alive.map(f=>({...f,meter:!spent&&f.id===actor.id&&b.currentActor===f.index&&f.meter>=1000-1e-8?Math.max(0,f.meter-1000):f.meter}));
   const after=before.map(f=>({...f,meter:f.id===target.id?b15cap(f.meter,amount):f.meter}));
   const speed=f=>effectiveStat(b,f,"speed");
   const nextBefore=InitiativeModel.nextActor(before.map(f=>({...f})),speed)?.id,nextAfter=InitiativeModel.nextActor(after.map(f=>({...f})),speed)?.id;
@@ -32,7 +32,7 @@ function primitives(){
   return {gain:t1.meter-t0.meter,changed:nextBefore!==nextAfter,cross:!!foe&&!precedes(t0,foe)&&precedes(t1,foe),nextBefore,nextAfter};
  }
  function b15grant(b,actor,target,amount,kind){
-  const p=b15preview(b,actor,amount,target);if(p.gain<=0)return false;
+  const p=b15preview(b,actor,amount,target,kind==="basicMeter");if(p.gain<=0)return false;
   target.meter=b15cap(target.meter,amount);b15count(b,kind+"Used");b15count(b,kind+"Gain",p.gain);
   if(p.changed)b15count(b,kind+"NextChanged");if(p.cross)b15count(b,kind+"EnemyCrossed");
   b.events.push({type:"b15-meter",actorId:actor.id,targetId:target.id,amount:p.gain,kind,...p});return true;
@@ -45,14 +45,17 @@ function primitives(){
   return true;
  }
  function b15assist(b,actor,target,helper,ability){
-  if(!helper||helper.hp<=0||actor.hp<=0||target.hp<=0){b15count(b,"assistSkippedDead");return;}
   const rootId="w"+b.wave+"-t"+b.turn+"-"+actor.id,props={rootId,parentId:rootId,sourceId:actor.id,actorId:helper.id,targetId:target.id,depth:1,assist:true};
+  const root=b.events.find(e=>e.type==="ability"&&e.actorId===actor.id);if(root)root.rootId=rootId;
+  if(!helper||helper.hp<=0||actor.hp<=0||target.hp<=0){b15count(b,"assistSkippedDead");return;}
   b15count(b,"assistAttempts");
   // Ordinary hit and critical rolls, no helper ability/personal mark bonus or trigger dispatch.
   const oldEvents=b.events.length;
   if(!rollToHit(b,helper,target,"physical")){for(const e of b.events.slice(oldEvents))Object.assign(e,props);return;}
   const cap=B15SAVA.cap?actor.physicalAttack*B15SAVA.cap:Infinity;
   const raw=Math.round(Math.min(effectiveStat(b,helper,"physicalAttack")*ability.b15Assist,cap));
+  b15count(b,"assistUncappedRaw",Math.round(effectiveStat(b,helper,"physicalAttack")*ability.b15Assist));
+  if(raw<Math.round(effectiveStat(b,helper,"physicalAttack")*ability.b15Assist))b15count(b,"assistCapped");
   const oldHp=target.hp,oldProt=target.protection;
   const rolled=rollCriticalDamage(b,helper,target,raw,"physical");
   for(const e of b.events.slice(oldEvents))Object.assign(e,props);
@@ -84,7 +87,7 @@ function setup(source,labSource,extraSource,variant){
  }
  l=rep(l,'T:CombatStatusCore};','T:CombatStatusCore,I:InitiativeModel,G:GearData,P:ProgressCore,V:ProgressV3Core,Star:StarCore};');
  const lab=new Function("module",l+"\nreturn B146;")({exports:{}});
- return {lab,api:lab.make(source===s?extraSource+"\n"+s:extraSource+"\n"+s,"visible"),c};
+ return {lab,api:lab.make(extraSource+"\n"+s,"visible"),c};
 }
 function gearProfiles(ctx,tier){
  const {api}=ctx,{G,P,V,Star,H,S,B}=api,t=TIERS[tier];if(!t)throw Error("tier");

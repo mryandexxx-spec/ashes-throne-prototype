@@ -11,7 +11,11 @@ const VARIANTS={
  recover:{label:"B15 — усиленное прикрытие",def:"both-recover",sava:"cap",preserve:true,share:10,recovery:.65},
  sava:{label:"B14.6 + новый Сава",sava:"cap"},
  "bridge-noshare":{label:"Осторожный без общего бонуса",def:"both-recover",sava:"cap",preserve:true,share:0},
- "recover-nopassive":{label:"Прикрытие без пассива Савы",def:"both-recover",sava:"nopassive",preserve:true,share:10,recovery:.65,cap:1}
+ "recover-nopassive":{label:"Прикрытие без пассива Савы",def:"both-recover",sava:"nopassive",preserve:true,share:10,recovery:.65,cap:1},
+ scaled:{label:"Защита от Protection",def:"both-recover",sava:"cap",preserve:true,share:10,recovery:.65,scaled:true},
+ "scaled-group":{label:"Protection + 2 заряда на L4",def:"both-recover",sava:"cap",preserve:true,share:10,recovery:.65,scaled:true,group2:true},
+ "art-only":{label:"Новая страховка Арта",def:"art",sava:"cap",preserve:true,share:10,recovery:.65,scaled:true},
+ "liora-only":{label:"Новая защита Лиоры",def:"liora",sava:"cap",preserve:true,share:10,scaled:true,group2:true}
 };
 const SQUADS={
  starter:["ren","art"],three:["ren","art","nada"],tempo:["ren","art","sava"],support:["art","nada","sava"],
@@ -60,6 +64,7 @@ function combinedKit(actor,id,base,c,markKit,defKit,savaKit){
  if(c.savaConfig)a=savaKit(actor,id,a,c.savaConfig);
  if(c.preserve&&["art","liora"].includes(actor.id)&&a?.kind==="damage"&&base?.kind==="damage")a={...a,multiplier:base.multiplier};
  if(c.recovery&&actor.id==="art"&&id==="special"&&a?.b15Guard)a={...a,b15Guard:{...a.b15Guard,recover:c.recovery}};
+ if(c.group2&&actor.id==="liora"&&id==="powerful"&&a?.b15Guard&&(actor.skillLevels?.powerful??1)>=4)a={...a,guardHits:2,b15Guard:{...a.b15Guard,hits:2}};
  return a;
 }
 function setup(input,variant){
@@ -67,7 +72,13 @@ function setup(input,variant){
  const {marks,def,sava}=input;let s=input.source,l=input.labSource,dc=null,sc=null;
  if(v.def){const p=def.setup(s,l,v.def,"early");
   // Defense and signal slices both used b15grant locally. Namespace before composition.
-  s=p.s.replace(/\bb15(count|prune|grant|guard|react|finish|cross|disrupt)\b/g,(_,name)=>"b15Def"+name);l=p.l;dc=p.c;}
+  s=p.s.replace(/\bb15(count|prune|grant|guard|react|finish|cross|disrupt)\b/g,(_,name)=>"b15Def"+name);l=p.l;dc=p.c;
+  if(v.scaled){
+   s=rep(s,"capDamage:Math.round(owner.physicalAttack*g.cap)","capDamage:Math.round(Math.max(owner.physicalAttack*g.cap,owner.maxProtection*.45))");
+   s=rep(s,"Math.round(owner.physicalAttack*g.recover)","Math.round(Math.max(owner.physicalAttack*g.recover,owner.maxProtection*.30))");
+   s=rep(s,"Math.round(art.physicalAttack*rules.cap)","Math.round(Math.max(art.physicalAttack*rules.cap,art.maxProtection*.35))");
+  }
+ }
  const p=sava.setup(s,l,input.extra,v.sava??"ref");s=p.s;l=p.l;sc=p.c;
  if(v.cap){s=rep(s,'const B15SAVA='+JSON.stringify(sc)+';','const B15SAVA='+JSON.stringify({...sc,cap:v.cap})+';');sc={...sc,cap:v.cap};}
  if(v.legacy){
@@ -88,7 +99,7 @@ function create(ctx,{tier="early",squad="full",scenario="duel",seed=7,scale=1,or
  const {api,profiles}=ctx;const config=ctx.input.sava.TIERS[tier],ids=SQUADS[squad],kind=SCENARIOS[scenario]?.kind;
  if(!config||!ids||!kind||!Number.isFinite(scale)||scale<=0||!Number.isInteger(seed)||seed<0||seed>0xffffffff)throw Error("invalid battle options");
  let slots=ids.slice();if(order==="allies"||order==="both")slots.reverse();
- if(leader&&slots.includes("liora"))slots=["liora",...slots.filter(id=>id!=="liora")];
+ if((leader||order==="liora-first")&&slots.includes("liora"))slots=["liora",...slots.filter(id=>id!=="liora")];
  const party=slots.map(id=>{const src=id==="b14-striker"?"ren":id==="b14-medic"?"nada":id==="b14-breaker"?"art":id;return {...profiles[tier][src].hero,id,name:ctx.lab.names[id],tags:id.startsWith("b14-")?[]:profiles[tier][src].hero.tags};});
  function foes(w,k,n){
   const family=FAMILIES[k],list=family.slice(0,n).map((id,i)=>{
@@ -163,7 +174,7 @@ function run(ctx,opts,mode="tactical",trace=false){
   if(!step(ctx,b,p.abilityId,p.targetIndex,p.helper,p.enemy))throw Error("illegal "+JSON.stringify({variant:ctx.variant,opts,actor:a.id,p}));
   actions++;usage[a.id+":"+p.abilityId]=(usage[a.id+":"+p.abilityId]??0)+1;
   for(const e of b.events){if(["read-move-predicted","wave-start","death","miss","status-resisted","b15-meter"].includes(e.type))events[e.type]=(events[e.type]??0)+1;}
-  if(trace)traces.push({actor:a.id,p,turn:b.turn,wave:b.wave,events:b.events.map(e=>({...e})),fighters:b.fighters.map(f=>({id:f.id,hp:f.hp,protection:f.protection,meter:f.meter,guards:f.b15Guards,prepared:f.b14Prepared}))});
+  if(trace)traces.push({actor:a.id,p,turn:b.turn,wave:b.wave,events:b.events.map(e=>({...e})),fighters:b.fighters.map(f=>({id:f.id,hp:f.hp,protection:f.protection,meter:f.meter,guards:f.b15Guards?.map(g=>({...g})),prepared:f.b14Prepared}))});
  }
  if(b.active)throw Error("turn cap "+JSON.stringify({variant:ctx.variant,opts}));
  return {w:+(b.winner==="ally"),q:+(b.winner==="ally"&&allies().every(f=>f.hp>0)),pool:sum(allies(),f=>f.hp+f.protection)/max,actions,wave:b.wave,usage,events,stats:b.b15Stats??{},threat:b.b14Counts??{},...(trace?{traces}:{})};
@@ -194,7 +205,7 @@ function pressure(cal,tier,squad,scenario,difficulty="hard"){
 }
 function experiment(input,cal,count=20,holdout=false){
  const seeds=Array.from({length:count},(_,i)=>Math.imul(i+(holdout?102133:101031),0x9e3779b1)>>>0),cells=[];
- const variants=holdout?["ref","bridge","recover","sava","recover-nopassive"]:["legacy","ref","full","bridge","recover","sava","bridge-noshare"];
+ const variants=holdout?["ref","bridge","recover","sava","recover-nopassive","scaled","scaled-group","art-only","liora-only"]:["legacy","ref","full","bridge","recover","sava","bridge-noshare"];
  const selected=holdout?CELLS.filter(([s,k])=>!["four","support"].includes(s)||k==="hold"):CELLS;
  for(const variant of variants){const ctx=setup(input,variant);
   for(const tier of Object.keys(input.sava.TIERS))for(const [squad,scenario] of selected){
@@ -207,6 +218,31 @@ function experiment(input,cal,count=20,holdout=false){
  }
  return {seeds,holdout,battles:sum(cells,c=>c.n),cells};
 }
-const exported={PARTS,EXTRA,VARIANTS,SQUADS,SCENARIOS,CELLS,TIER_LABEL,loadSources,setup,create,plan,legal,step,run,summarize,calibrate,pressure,experiment};
+function followup(input,cal,count=20){
+ const seeds=Array.from({length:count},(_,i)=>Math.imul(i+120211,0x9e3779b1)>>>0),cells=[];
+ const selected=[["starter","duel"],["three","rush"],["tempo","rush"],["support","hold"],["full","duel"],["full","rush"],["full","area"],["full","waves"],["alternative","duel"],["independent","duel"],["independent","waves"]];
+ for(const variant of ["ref","sava","scaled-group","art-only","liora-only"]){
+  const ctx=setup(input,variant);
+  for(const tier of ["early","mid","max","uneven"])for(const [squad,scenario] of selected){
+   const modes=variant==="sava"||variant==="scaled-group"?["tactical","basic"]:["tactical"];
+   for(const mode of modes){
+    const scale=pressure(cal,tier,squad,scenario,"normal")*(squad==="support"?.70:1);
+    cells.push({tier,variant,squad,scenario,mode,scale,difficulty:"normal",...summarize(seeds.map(seed=>run(ctx,{tier,squad,scenario,scale,seed},mode)))});
+   }
+  }
+  // Single-axis ally-slot and enemy-slot checks (same seed & pressure).
+  for(const tier of ["early","max"])for(const squad of ["full","independent"])for(const order of ["normal","allies","enemies","both"]){
+   const scenario="duel",scale=pressure(cal,tier,squad,scenario);
+   cells.push({tier,variant,squad,scenario,mode:"tactical",order,scale,difficulty:"hard-permutation",...summarize(seeds.map(seed=>run(ctx,{tier,squad,scenario,scale,seed,order})))});
+  }
+  // Leadership must compare identical Liora-first order, not slot change.
+  for(const tier of ["early","max"])for(const leader of [false,true]){
+   const scenario="area",squad="full",scale=pressure(cal,tier,squad,scenario);
+   cells.push({tier,variant,squad,scenario,mode:"tactical",leader,scale,difficulty:"leader",...summarize(seeds.map(seed=>run(ctx,{tier,squad,scenario,scale,seed,order:"liora-first",leader})))});
+  }
+ }
+ return {seeds,battles:sum(cells,c=>c.n),cells};
+}
+const exported={PARTS,EXTRA,VARIANTS,SQUADS,SCENARIOS,CELLS,TIER_LABEL,loadSources,setup,create,plan,legal,step,run,summarize,calibrate,pressure,experiment,followup};
 if(typeof module!=="undefined")module.exports=exported;else root.B15D=exported;
 })(typeof globalThis!=="undefined"?globalThis:this);

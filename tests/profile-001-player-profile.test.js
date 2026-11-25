@@ -66,7 +66,7 @@ const allMissionIds=["black-pass-ambush","demo-mission-2","demo-mission-3"];
 const stage=vm.runInNewContext(read("player-profile-core.js")+"\n"+read("progress-core.js")+
  "\nconst progress=profileProgress,campaignProgress=profileCampaign,ALLIES=profileHeroes;"+
  "\nconst MissionData={all:()=>missionIds.map(id=>({id}))};"+
- "\nconst $=selectNode;\n"+game.slice(from,to)+
+ "\nconst $=selectNode;\n"+game.match(/const COMBAT2_PILOT=[\s\S]*?function gameStorage\(\)\{[^}]+\}/)[0]+"\n"+game.slice(from,to)+
  "\n({renderPlayerProfile,getNick:()=>playerNickname})",
  {window:{localStorage:storage},document:{activeElement:null},
  profileProgress:fakeProgress,profileCampaign:campaignProgress,

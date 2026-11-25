@@ -104,13 +104,13 @@ async function run(){
   await tapFighter(page,"ren");assert.equal(await page.evaluate(()=>state.fighters[combat2Choice]?.id),"ren");
   assert.equal(await snapshot(),before,"target preview must not mutate core");
   const marks=await page.evaluate(()=>{
-   const rgb=id=>{const ring=meshes[id]?.base?.av001Ring;return ring?.isEnabled()?ring.material?.emissiveColor?.asArray():null;};
+   const mark=id=>{const ring=meshes[id]?.base?.av001Ring;return ring?.isEnabled()?ring.material?.name:null;};
    const enemy=state.fighters[state.selectedEnemy]?.id;
    const hint=document.querySelector("#actionHint"),rect=hint.getBoundingClientRect();
-   return {ally:rgb("ren"),enemy:rgb(enemy),hint:getComputedStyle(hint).fontSize,visible:!hint.hidden,overflow:rect.right>innerWidth+1||rect.left<0||rect.top<0};
+   return {ally:mark("ren"),enemy:mark(enemy),hint:getComputedStyle(hint).fontSize,visible:!hint.hidden,overflow:rect.right>innerWidth+1||rect.left<0||rect.top<0};
   });
-  assert.ok(marks.ally&&marks.ally[1]>marks.ally[0],"chosen helper is green, not hostile");
-  if(slot==="powerful")assert.ok(marks.enemy&&marks.enemy[0]>marks.enemy[1],"enemy remains red");
+  assert.equal(marks.ally,"av001_ring_ally","chosen helper uses green ally material, not hostile");
+  if(slot==="powerful")assert.equal(marks.enemy,"av001_ring_enemy","enemy keeps red enemy material");
   assert.ok(marks.visible&&parseFloat(marks.hint)>=13&&!marks.overflow,"readable confirmation hint");
   report("sava-"+slot+"-marks",marks);
   await take("sava-"+slot+"-preview");

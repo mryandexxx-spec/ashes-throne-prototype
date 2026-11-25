@@ -1524,6 +1524,6 @@ const CombatCore = (() => {
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
     chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects, abilityTargetIndices, actorTargetIndices, actorAbilityReady, performActorAbility,
-    previewSignal, activePassiveModifiers, activeLeaderModifiers, effectiveStat
+    activePassiveModifiers, activeLeaderModifiers, effectiveStat, previewSignal
   });
 })();

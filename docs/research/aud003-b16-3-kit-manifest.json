@@ -1,0 +1,1532 @@
+{
+  "status": "proposal; raw effective ability definitions, not full runtime semantics or final tooltips",
+  "variant": "sava",
+  "snapshotBase": "a97787611bb1172b28c1390d8860e802e023220c",
+  "engineBlob": "079176bb62e6c1fd521941945949b4d50e605b6a",
+  "sourceSnapshotBlob": "5b0b0fb7de3922035e5256df24db2436426cbf1b",
+  "partsSnapshotBlob": "86db44e9511d101f1a218b339b23cb897913c72f",
+  "comparedBase": "d47f7cc528664b6a8b546f86c72ce0982493a6e8",
+  "sourceFilesCompared": 17,
+  "drift": [],
+  "nonNullDefinitions": 126,
+  "warnings": [
+    "Art insurance declaration is replaced by runtime guard + Protection restore; fieldNote not authoritative",
+    "Sava basic fieldNote is obsolete; actual bonus is not tag-restricted",
+    "B14 shared damage bonus is a runtime patch, not a passive definition"
+  ],
+  "heroes": {
+    "ren": {
+      "1": {
+        "basic": {
+          "id": "basic",
+          "name": "Точный удар",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical"
+        },
+        "special": {
+          "id": "special",
+          "name": "Найти брешь",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.05,
+          "weakening": 2,
+          "cooldown": 2
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Сорвать построение",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.6,
+          "weakening": 0,
+          "cooldown": 3
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Чувство тропы",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "readMoveBonusPercentPerStack": 12,
+            "gardensTagId": "gardens-over-abyss",
+            "gardensEvasionBonus": 8
+          }
+        },
+        "leader": null
+      },
+      "2": {
+        "basic": {
+          "id": "basic",
+          "name": "Точный удар",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.1,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical"
+        },
+        "special": {
+          "id": "special",
+          "name": "Найти брешь",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.15,
+          "weakening": 2,
+          "cooldown": 2
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Сорвать построение",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.75,
+          "weakening": 0,
+          "cooldown": 3
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Чувство тропы",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "readMoveBonusPercentPerStack": 13,
+            "gardensTagId": "gardens-over-abyss",
+            "gardensEvasionBonus": 8
+          }
+        },
+        "leader": null
+      },
+      "3": {
+        "basic": {
+          "id": "basic",
+          "name": "Точный удар",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.2,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical"
+        },
+        "special": {
+          "id": "special",
+          "name": "Найти брешь",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.15,
+          "weakening": 3,
+          "cooldown": 2
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Сорвать построение",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.75,
+          "weakening": 0,
+          "cooldown": 3
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Чувство тропы",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "readMoveBonusPercentPerStack": 14,
+            "gardensTagId": "gardens-over-abyss",
+            "gardensEvasionBonus": 9
+          }
+        },
+        "leader": null
+      },
+      "4": {
+        "basic": {
+          "id": "basic",
+          "name": "Точный удар",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.2,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "onHitStatus": {
+            "type": "slowed",
+            "amount": 20,
+            "turns": 1
+          }
+        },
+        "special": {
+          "id": "special",
+          "name": "Найти брешь",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.25,
+          "weakening": 3,
+          "cooldown": 2
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Сорвать построение",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.9,
+          "weakening": 0,
+          "cooldown": 3
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Чувство тропы",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "readMoveBonusPercentPerStack": 15,
+            "gardensTagId": "gardens-over-abyss",
+            "gardensEvasionBonus": 10
+          }
+        },
+        "leader": null
+      },
+      "5": {
+        "basic": {
+          "id": "basic",
+          "name": "Точный удар",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.3,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "onHitStatus": {
+            "type": "slowed",
+            "amount": 20,
+            "turns": 1
+          }
+        },
+        "special": {
+          "id": "special",
+          "name": "Найти брешь",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.25,
+          "weakening": 3,
+          "cooldown": 1
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Сорвать построение",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.9,
+          "weakening": 0,
+          "cooldown": 3
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Чувство тропы",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "readMoveBonusPercentPerStack": 16,
+            "gardensTagId": "gardens-over-abyss",
+            "gardensEvasionBonus": 11
+          }
+        },
+        "leader": null
+      },
+      "6": {
+        "basic": {
+          "id": "basic",
+          "name": "Точный удар",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.4,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "onHitStatus": {
+            "type": "slowed",
+            "amount": 20,
+            "turns": 2
+          }
+        },
+        "special": {
+          "id": "special",
+          "name": "Найти брешь",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.35,
+          "weakening": 3,
+          "cooldown": 1
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Сорвать построение",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 2.05,
+          "weakening": 0,
+          "cooldown": 3
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Чувство тропы",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "readMoveBonusPercentPerStack": 17,
+            "gardensTagId": "gardens-over-abyss",
+            "gardensEvasionBonus": 12
+          }
+        },
+        "leader": null
+      }
+    },
+    "nada": {
+      "1": {
+        "basic": {
+          "id": "basic",
+          "name": "Прицельное действие",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 0.8,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 1,
+            "turns": 2
+          }
+        },
+        "special": {
+          "id": "special",
+          "name": "Найти закономерность",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 0.7,
+          "weakening": 0,
+          "cooldown": 2,
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 2,
+            "turns": 2
+          }
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Разгадать замысел",
+          "target": "all-enemies",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 0.6,
+          "weakening": 0,
+          "cooldown": 3,
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 2,
+            "turns": 2
+          }
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Внимание к деталям",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "gardensTagId": "gardens-over-abyss",
+            "gardensAccuracyBonus": 8
+          }
+        },
+        "leader": null
+      },
+      "2": {
+        "basic": {
+          "id": "basic",
+          "name": "Прицельное действие",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 0.9,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 1,
+            "turns": 2
+          }
+        },
+        "special": {
+          "id": "special",
+          "name": "Найти закономерность",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 0.8,
+          "weakening": 0,
+          "cooldown": 2,
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 2,
+            "turns": 2
+          }
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Разгадать замысел",
+          "target": "all-enemies",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 0.65,
+          "weakening": 0,
+          "cooldown": 3,
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 2,
+            "turns": 2
+          }
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Внимание к деталям",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "gardensTagId": "gardens-over-abyss",
+            "gardensAccuracyBonus": 9
+          }
+        },
+        "leader": null
+      },
+      "3": {
+        "basic": {
+          "id": "basic",
+          "name": "Прицельное действие",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 1,
+            "turns": 2
+          }
+        },
+        "special": {
+          "id": "special",
+          "name": "Найти закономерность",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 0.8,
+          "weakening": 0,
+          "cooldown": 2,
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 3,
+            "turns": 2
+          }
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Разгадать замысел",
+          "target": "all-enemies",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 0.65,
+          "weakening": 0,
+          "cooldown": 3,
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 2,
+            "turns": 2
+          }
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Внимание к деталям",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "gardensTagId": "gardens-over-abyss",
+            "gardensAccuracyBonus": 10
+          }
+        },
+        "leader": null
+      },
+      "4": {
+        "basic": {
+          "id": "basic",
+          "name": "Прицельное действие",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.1,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 1,
+            "turns": 2
+          }
+        },
+        "special": {
+          "id": "special",
+          "name": "Найти закономерность",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 0.9,
+          "weakening": 0,
+          "cooldown": 2,
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 3,
+            "turns": 2
+          }
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Разгадать замысел",
+          "target": "all-enemies",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 0.7,
+          "weakening": 0,
+          "cooldown": 3,
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 2,
+            "turns": 2
+          }
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Внимание к деталям",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "gardensTagId": "gardens-over-abyss",
+            "gardensAccuracyBonus": 11
+          }
+        },
+        "leader": null
+      },
+      "5": {
+        "basic": {
+          "id": "basic",
+          "name": "Прицельное действие",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.2,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 1,
+            "turns": 2
+          }
+        },
+        "special": {
+          "id": "special",
+          "name": "Найти закономерность",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 0.9,
+          "weakening": 0,
+          "cooldown": 1,
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 3,
+            "turns": 2
+          }
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Разгадать замысел",
+          "target": "all-enemies",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 0.7,
+          "weakening": 0,
+          "cooldown": 3,
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 3,
+            "turns": 2
+          }
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Внимание к деталям",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "gardensTagId": "gardens-over-abyss",
+            "gardensAccuracyBonus": 12
+          }
+        },
+        "leader": null
+      },
+      "6": {
+        "basic": {
+          "id": "basic",
+          "name": "Прицельное действие",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.3,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 1,
+            "turns": 2
+          }
+        },
+        "special": {
+          "id": "special",
+          "name": "Найти закономерность",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1,
+          "weakening": 0,
+          "cooldown": 1,
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 3,
+            "turns": 2
+          }
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Разгадать замысел",
+          "target": "all-enemies",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 0.75,
+          "weakening": 0,
+          "cooldown": 3,
+          "onHitStatus": {
+            "type": "read-move",
+            "stacks": 3,
+            "turns": 2
+          }
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Внимание к деталям",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "gardensTagId": "gardens-over-abyss",
+            "gardensAccuracyBonus": 13
+          }
+        },
+        "leader": null
+      }
+    },
+    "art": {
+      "1": {
+        "basic": {
+          "id": "basic",
+          "name": "Сбить шаг",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "fieldNote": "После реальной Страховки следующий удар по нападавшему получает усиление Собранности."
+        },
+        "special": {
+          "id": "special",
+          "name": "Страховочный узел",
+          "target": "ally",
+          "kind": "insurance",
+          "insurancePercent": 40,
+          "insuranceTurns": 2,
+          "cooldown": 2,
+          "afterInterceptMeter": 0
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Снять нагрузку",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.05,
+          "weakening": 0,
+          "disruptTurns": 2,
+          "cooldown": 3,
+          "disruptDelay": 0
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Знать предел",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "insuranceFocusPercent": 12,
+            "insuranceFocusDelay": 0
+          }
+        },
+        "leader": null
+      },
+      "2": {
+        "basic": {
+          "id": "basic",
+          "name": "Сбить шаг",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.08,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "fieldNote": "После реальной Страховки следующий удар по нападавшему получает усиление Собранности."
+        },
+        "special": {
+          "id": "special",
+          "name": "Страховочный узел",
+          "target": "ally",
+          "kind": "insurance",
+          "insurancePercent": 40,
+          "insuranceTurns": 3,
+          "cooldown": 2,
+          "afterInterceptMeter": 0
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Снять нагрузку",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.1,
+          "weakening": 0,
+          "disruptTurns": 2,
+          "cooldown": 3,
+          "disruptDelay": 0
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Знать предел",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "insuranceFocusPercent": 14,
+            "insuranceFocusDelay": 0
+          }
+        },
+        "leader": null
+      },
+      "3": {
+        "basic": {
+          "id": "basic",
+          "name": "Сбить шаг",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.14,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "fieldNote": "После реальной Страховки следующий удар по нападавшему получает усиление Собранности."
+        },
+        "special": {
+          "id": "special",
+          "name": "Страховочный узел",
+          "target": "ally",
+          "kind": "insurance",
+          "insurancePercent": 45,
+          "insuranceTurns": 3,
+          "cooldown": 2,
+          "afterInterceptMeter": 0
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Снять нагрузку",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.16,
+          "weakening": 0,
+          "disruptTurns": 2,
+          "cooldown": 3,
+          "disruptDelay": 1
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Знать предел",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "insuranceFocusPercent": 16,
+            "insuranceFocusDelay": 35
+          }
+        },
+        "leader": null
+      },
+      "4": {
+        "basic": {
+          "id": "basic",
+          "name": "Сбить шаг",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.22,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "fieldNote": "После реальной Страховки следующий удар по нападавшему получает усиление Собранности."
+        },
+        "special": {
+          "id": "special",
+          "name": "Страховочный узел",
+          "target": "ally",
+          "kind": "insurance",
+          "insurancePercent": 48,
+          "insuranceTurns": 3,
+          "cooldown": 2,
+          "afterInterceptMeter": 0
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Снять нагрузку",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.2,
+          "weakening": 0,
+          "disruptTurns": 3,
+          "cooldown": 3,
+          "disruptDelay": 1
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Знать предел",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "insuranceFocusPercent": 18,
+            "insuranceFocusDelay": 45
+          }
+        },
+        "leader": null
+      },
+      "5": {
+        "basic": {
+          "id": "basic",
+          "name": "Сбить шаг",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.3,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "fieldNote": "После реальной Страховки следующий удар по нападавшему получает усиление Собранности."
+        },
+        "special": {
+          "id": "special",
+          "name": "Страховочный узел",
+          "target": "ally",
+          "kind": "insurance",
+          "insurancePercent": 50,
+          "insuranceTurns": 4,
+          "cooldown": 2,
+          "afterInterceptMeter": 60
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Снять нагрузку",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.26,
+          "weakening": 0,
+          "disruptTurns": 3,
+          "cooldown": 3,
+          "disruptDelay": 2
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Знать предел",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "insuranceFocusPercent": 20,
+            "insuranceFocusDelay": 55
+          }
+        },
+        "leader": null
+      },
+      "6": {
+        "basic": {
+          "id": "basic",
+          "name": "Сбить шаг",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.38,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "fieldNote": "После реальной Страховки следующий удар по нападавшему получает усиление Собранности."
+        },
+        "special": {
+          "id": "special",
+          "name": "Страховочный узел",
+          "target": "ally",
+          "kind": "insurance",
+          "insurancePercent": 60,
+          "insuranceTurns": 4,
+          "cooldown": 2,
+          "afterInterceptMeter": 100
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Снять нагрузку",
+          "target": "enemy",
+          "kind": "damage",
+          "damageType": "physical",
+          "multiplier": 1.32,
+          "weakening": 0,
+          "disruptTurns": 3,
+          "cooldown": 3,
+          "disruptDelay": 2
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Знать предел",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "insuranceFocusPercent": 24,
+            "insuranceFocusDelay": 85
+          }
+        },
+        "leader": null
+      }
+    },
+    "liora": {
+      "1": {
+        "basic": {
+          "id": "basic",
+          "name": "Удар щитом",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical"
+        },
+        "special": {
+          "id": "special",
+          "name": "Под прикрытием",
+          "target": "self",
+          "kind": "guard",
+          "guardHits": 2,
+          "tauntTurns": 2,
+          "cooldown": 3
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Держать строй",
+          "target": "all-allies",
+          "kind": "guard",
+          "guardHits": 2,
+          "cooldown": 3
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Ответственность за своих",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "protectAllyBelowHpPercent": 35,
+            "protectAllyGuardHits": 1,
+            "protectAllyCooldownOwnTurns": 3
+          }
+        },
+        "leader": {
+          "id": "leader",
+          "name": "Опора отряда",
+          "modifiers": [
+            {
+              "stat": "protection",
+              "operation": "percent",
+              "value": 10,
+              "scope": "all-allies",
+              "when": {
+                "kind": "always"
+              }
+            }
+          ]
+        }
+      },
+      "2": {
+        "basic": {
+          "id": "basic",
+          "name": "Удар щитом",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.05,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical"
+        },
+        "special": {
+          "id": "special",
+          "name": "Под прикрытием",
+          "target": "self",
+          "kind": "guard",
+          "guardHits": 2,
+          "tauntTurns": 2,
+          "cooldown": 3
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Держать строй",
+          "target": "all-allies",
+          "kind": "guard",
+          "guardHits": 2,
+          "cooldown": 3
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Ответственность за своих",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "protectAllyBelowHpPercent": 35,
+            "protectAllyGuardHits": 1,
+            "protectAllyCooldownOwnTurns": 3
+          }
+        },
+        "leader": {
+          "id": "leader",
+          "name": "Опора отряда",
+          "modifiers": [
+            {
+              "stat": "protection",
+              "operation": "percent",
+              "value": 10,
+              "scope": "all-allies",
+              "when": {
+                "kind": "always"
+              }
+            }
+          ]
+        }
+      },
+      "3": {
+        "basic": {
+          "id": "basic",
+          "name": "Удар щитом",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.1,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical"
+        },
+        "special": {
+          "id": "special",
+          "name": "Под прикрытием",
+          "target": "self",
+          "kind": "guard",
+          "guardHits": 3,
+          "tauntTurns": 2,
+          "cooldown": 3
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Держать строй",
+          "target": "all-allies",
+          "kind": "guard",
+          "guardHits": 2,
+          "cooldown": 3
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Ответственность за своих",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "protectAllyBelowHpPercent": 40,
+            "protectAllyGuardHits": 1,
+            "protectAllyCooldownOwnTurns": 3
+          }
+        },
+        "leader": {
+          "id": "leader",
+          "name": "Опора отряда",
+          "modifiers": [
+            {
+              "stat": "protection",
+              "operation": "percent",
+              "value": 10,
+              "scope": "all-allies",
+              "when": {
+                "kind": "always"
+              }
+            }
+          ]
+        }
+      },
+      "4": {
+        "basic": {
+          "id": "basic",
+          "name": "Удар щитом",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.15,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical"
+        },
+        "special": {
+          "id": "special",
+          "name": "Под прикрытием",
+          "target": "self",
+          "kind": "guard",
+          "guardHits": 3,
+          "tauntTurns": 2,
+          "cooldown": 2
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Держать строй",
+          "target": "all-allies",
+          "kind": "guard",
+          "guardHits": 3,
+          "cooldown": 3
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Ответственность за своих",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "protectAllyBelowHpPercent": 40,
+            "protectAllyGuardHits": 2,
+            "protectAllyCooldownOwnTurns": 3
+          }
+        },
+        "leader": {
+          "id": "leader",
+          "name": "Опора отряда",
+          "modifiers": [
+            {
+              "stat": "protection",
+              "operation": "percent",
+              "value": 10,
+              "scope": "all-allies",
+              "when": {
+                "kind": "always"
+              }
+            }
+          ]
+        }
+      },
+      "5": {
+        "basic": {
+          "id": "basic",
+          "name": "Удар щитом",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.2,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical"
+        },
+        "special": {
+          "id": "special",
+          "name": "Под прикрытием",
+          "target": "self",
+          "kind": "guard",
+          "guardHits": 4,
+          "tauntTurns": 2,
+          "cooldown": 2
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Держать строй",
+          "target": "all-allies",
+          "kind": "guard",
+          "guardHits": 3,
+          "cooldown": 3
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Ответственность за своих",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "protectAllyBelowHpPercent": 45,
+            "protectAllyGuardHits": 2,
+            "protectAllyCooldownOwnTurns": 2
+          }
+        },
+        "leader": {
+          "id": "leader",
+          "name": "Опора отряда",
+          "modifiers": [
+            {
+              "stat": "protection",
+              "operation": "percent",
+              "value": 10,
+              "scope": "all-allies",
+              "when": {
+                "kind": "always"
+              }
+            }
+          ]
+        }
+      },
+      "6": {
+        "basic": {
+          "id": "basic",
+          "name": "Удар щитом",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 1.25,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical"
+        },
+        "special": {
+          "id": "special",
+          "name": "Под прикрытием",
+          "target": "self",
+          "kind": "guard",
+          "guardHits": 4,
+          "tauntTurns": 2,
+          "cooldown": 2
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Держать строй",
+          "target": "all-allies",
+          "kind": "guard",
+          "guardHits": 3,
+          "cooldown": 3
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Ответственность за своих",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "protectAllyBelowHpPercent": 45,
+            "protectAllyGuardHits": 2,
+            "protectAllyCooldownOwnTurns": 2
+          }
+        },
+        "leader": {
+          "id": "leader",
+          "name": "Опора отряда",
+          "modifiers": [
+            {
+              "stat": "protection",
+              "operation": "percent",
+              "value": 10,
+              "scope": "all-allies",
+              "when": {
+                "kind": "always"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "sava": {
+      "1": {
+        "basic": {
+          "id": "basic",
+          "name": "Отметить момент",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 0.75,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "nextAllyMeter": 50,
+          "fieldNote": "После действия следующий союзник Садов получает ускорение инициативы; бесплатных ходов нет."
+        },
+        "special": {
+          "id": "special",
+          "name": "Передать сигнал",
+          "target": "ally",
+          "kind": "signal",
+          "signalMeter": 250,
+          "signalTurns": 1,
+          "cooldown": 2,
+          "b15Signal": true
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Согласованный шаг",
+          "kind": "damage",
+          "target": "enemy",
+          "damageType": "physical",
+          "multiplier": 0.8,
+          "cooldown": 3,
+          "weakening": 0,
+          "b15Assist": 0.5
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Заметить вовремя",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "b15Boost": 50
+          }
+        },
+        "leader": null
+      },
+      "2": {
+        "basic": {
+          "id": "basic",
+          "name": "Отметить момент",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 0.78,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "nextAllyMeter": 55,
+          "fieldNote": "После действия следующий союзник Садов получает ускорение инициативы; бесплатных ходов нет."
+        },
+        "special": {
+          "id": "special",
+          "name": "Передать сигнал",
+          "target": "ally",
+          "kind": "signal",
+          "signalMeter": 260,
+          "signalTurns": 1,
+          "cooldown": 2,
+          "b15Signal": true
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Согласованный шаг",
+          "kind": "damage",
+          "target": "enemy",
+          "damageType": "physical",
+          "multiplier": 0.82,
+          "cooldown": 3,
+          "weakening": 0,
+          "b15Assist": 0.52
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Заметить вовремя",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "b15Boost": 55
+          }
+        },
+        "leader": null
+      },
+      "3": {
+        "basic": {
+          "id": "basic",
+          "name": "Отметить момент",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 0.82,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "nextAllyMeter": 60,
+          "fieldNote": "После действия следующий союзник Садов получает ускорение инициативы; бесплатных ходов нет."
+        },
+        "special": {
+          "id": "special",
+          "name": "Передать сигнал",
+          "target": "ally",
+          "kind": "signal",
+          "signalMeter": 270,
+          "signalTurns": 1,
+          "cooldown": 2,
+          "b15Signal": true
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Согласованный шаг",
+          "kind": "damage",
+          "target": "enemy",
+          "damageType": "physical",
+          "multiplier": 0.84,
+          "cooldown": 3,
+          "weakening": 0,
+          "b15Assist": 0.54
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Заметить вовремя",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "b15Boost": 60
+          }
+        },
+        "leader": null
+      },
+      "4": {
+        "basic": {
+          "id": "basic",
+          "name": "Отметить момент",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 0.85,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "nextAllyMeter": 65,
+          "fieldNote": "После действия следующий союзник Садов получает ускорение инициативы; бесплатных ходов нет."
+        },
+        "special": {
+          "id": "special",
+          "name": "Передать сигнал",
+          "target": "ally",
+          "kind": "signal",
+          "signalMeter": 280,
+          "signalTurns": 1,
+          "cooldown": 2,
+          "b15Signal": true
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Согласованный шаг",
+          "kind": "damage",
+          "target": "enemy",
+          "damageType": "physical",
+          "multiplier": 0.86,
+          "cooldown": 3,
+          "weakening": 0,
+          "b15Assist": 0.56
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Заметить вовремя",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "b15Boost": 65
+          }
+        },
+        "leader": null
+      },
+      "5": {
+        "basic": {
+          "id": "basic",
+          "name": "Отметить момент",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 0.88,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "nextAllyMeter": 70,
+          "fieldNote": "После действия следующий союзник Садов получает ускорение инициативы; бесплатных ходов нет."
+        },
+        "special": {
+          "id": "special",
+          "name": "Передать сигнал",
+          "target": "ally",
+          "kind": "signal",
+          "signalMeter": 290,
+          "signalTurns": 1,
+          "cooldown": 2,
+          "b15Signal": true
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Согласованный шаг",
+          "kind": "damage",
+          "target": "enemy",
+          "damageType": "physical",
+          "multiplier": 0.88,
+          "cooldown": 3,
+          "weakening": 0,
+          "b15Assist": 0.58
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Заметить вовремя",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "b15Boost": 70
+          }
+        },
+        "leader": null
+      },
+      "6": {
+        "basic": {
+          "id": "basic",
+          "name": "Отметить момент",
+          "target": "enemy",
+          "kind": "damage",
+          "multiplier": 0.92,
+          "cooldown": 0,
+          "weakening": 0,
+          "damageType": "physical",
+          "nextAllyMeter": 75,
+          "fieldNote": "После действия следующий союзник Садов получает ускорение инициативы; бесплатных ходов нет."
+        },
+        "special": {
+          "id": "special",
+          "name": "Передать сигнал",
+          "target": "ally",
+          "kind": "signal",
+          "signalMeter": 300,
+          "signalTurns": 1,
+          "cooldown": 2,
+          "b15Signal": true
+        },
+        "powerful": {
+          "id": "powerful",
+          "name": "Согласованный шаг",
+          "kind": "damage",
+          "target": "enemy",
+          "damageType": "physical",
+          "multiplier": 0.9,
+          "cooldown": 3,
+          "weakening": 0,
+          "b15Assist": 0.6
+        },
+        "passive": {
+          "id": "passive",
+          "name": "Заметить вовремя",
+          "triggers": [],
+          "modifiers": [],
+          "combatRules": {
+            "b15Boost": 80
+          }
+        },
+        "leader": null
+      }
+    }
+  }
+}

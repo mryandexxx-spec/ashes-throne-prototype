@@ -160,7 +160,7 @@ function summarize(rows){const n=rows.length,out={n,w:sum(rows,x=>x.w),q:sum(row
 function experiment(source,labSource,extraSource,count=20,holdout=false){
  if(!Number.isInteger(count)||count<1||count>60)throw Error("count");
  const seeds=Array.from({length:count},(_,i)=>Math.imul(i+(holdout?82121:73139),0x9e3779b1)>>>0),cells=[],gear={};
- for(const variant of holdout?["ref","full","cap","hybrid"]:Object.keys(CONFIGS)){
+ for(const variant of holdout?["ref","full","cap","hybrid","nosignal","nopassive"]:Object.keys(CONFIGS)){
   const ctx=setup(source,labSource,extraSource,variant);
   for(const tier of Object.keys(TIERS)){
    const profiles=gearProfiles(ctx,tier);if(!gear[tier])gear[tier]=Object.fromEntries(Object.entries(profiles).map(([id,p])=>[id,{gear:p.gear,items:p.items,bonus:p.bonus,hp:p.hero.hp,attack:p.hero.physicalAttack,protection:p.hero.protection,speed:p.hero.speed}]));
@@ -175,5 +175,58 @@ function experiment(source,labSource,extraSource,count=20,holdout=false){
  }
  return {seeds,tiers:TIERS,holdout,gear,battles:sum(cells,c=>c.n),cells};
 }
-module.exports={EXTRA,CONFIGS,TIERS,SQUADS,setup,gearProfiles,start,plan,run,experiment};
+function contracts(source,labSource,extraSource){
+ const checks=[],check=(name,ok)=>{if(!ok)throw Error("contract "+name);checks.push(name);};
+ function fixture(variant="full",tier="early",squad=["sava","ren","nada"]){
+  const ctx=setup(source,labSource,extraSource,variant),profiles=gearProfiles(ctx,tier),b=start(ctx,profiles,tier,squad,"rush",42);
+  b.hitChecks=b.critChecks=b.statusChecks=false;b.events=[];
+  const f=id=>b.fighters.find(x=>x.id===id),idx=id=>b.fighters.findIndex(x=>x.id===id),C=ctx.api.C;
+  function ready(id){b.fighters.forEach(x=>x.meter=0);f(id).meter=1000;b.currentActor=idx(id);const backup=b.fighters.find(x=>x.side==="ally"&&x.hp>0&&x.id!==id);if(backup)backup.meter=1000;b.events=[];}
+  const act=(id,ability,target,helper)=>{ready(id);return C.performActorAbility(b,ability,idx(target),helper===undefined?undefined:idx(helper));};
+  return {ctx,profiles,b,f,idx,ready,act,C};
+ }
+ let t=fixture(),{b,f,idx,ready,act,C}=t;
+ check("meter cap preserves 950, 999, 1000 and overflow",C.b15cap(700,300)===950&&C.b15cap(950,300)===950&&C.b15cap(999,300)===999&&C.b15cap(1000,300)===1000&&C.b15cap(1100,300)===1100);
+ ready("sava");f("ren").meter=600;f("nada").meter=0;f("b15c-0").meter=800;
+ const before=JSON.stringify(b),preview=C.b15preview(b,f("sava"),250,f("ren"));
+ check("prediction read-only and crosses enemy deadline",JSON.stringify(b)===before&&preview.gain===250&&preview.cross&&preview.changed);
+ f("ren").meter=999;const action=b.allyActions,turn=b.turn,events=JSON.stringify(b.events);
+ check("zero-gain signal rejected atomically",!C.performActorAbility(b,"special",idx("ren"))&&b.allyActions===action&&b.turn===turn&&f("sava").specialCooldown===0&&JSON.stringify(b.events)===events&&f("ren").meter===999);
+ f("ren").meter=600;f("nada").meter=1000;
+ check("signal grants only meter, not field aura",C.performActorAbility(b,"special",idx("ren"))&&f("ren").meter===850&&!f("ren").fieldSignal&&f("sava").specialCooldown===2&&b.allyActions===action+1);
+ t=fixture();({b,f,idx,ready,act,C}=t);
+ ready("sava");f("ren").meter=1000;f("nada").meter=500;f("nada").tags=[];
+ check("basic meter chooses next not-ready ally without faction restriction",C.performActorAbility(b,"basic",idx("b15c-0"))&&f("nada").meter===550&&f("ren").meter===1000);
+ t=fixture();({b,f,idx,ready,act,C}=t);ready("sava");f("ren").meter=1000;f("nada").meter=999;
+ check("basic meter never lowers almost-ready or ready meter",C.performActorAbility(b,"basic",idx("b15c-0"))&&f("ren").meter===1000&&f("nada").meter===999&&!b.b15Stats?.basicMeterUsed);
+ t=fixture();({b,f,idx,ready,act,C}=t);ready("sava");const initial=b.allyActions;const renMeter=f("ren").meter;f("ren").specialCooldown=2;f("ren").powerfulCooldown=3;f("ren").weakenAttacks=1;
+ check("assist requires explicit distinct living ally",!C.performActorAbility(b,"powerful",idx("b15c-0"))&&!C.performActorAbility(b,"powerful",idx("b15c-0"),idx("sava"))&&!C.performActorAbility(b,"powerful",idx("b15c-0"),idx("b15c-1"))&&b.allyActions===initial);
+ check("assist may use already-ready helper without spending meter/CD/weakening",C.performActorAbility(b,"powerful",idx("b15c-0"),idx("ren"))&&b.allyActions===initial+1&&f("ren").meter===renMeter&&f("ren").specialCooldown===2&&f("ren").powerfulCooldown===3&&f("ren").weakenAttacks===1&&f("sava").powerfulCooldown===3);
+ const ev=b.events.filter(e=>e.assist),root=b.events.find(e=>e.type==="ability"&&e.actorId==="sava");
+ check("one secondary hit with parent root and no helper ability",ev.filter(e=>e.type==="damage").length===1&&ev.every(e=>e.depth===1&&e.rootId===root.rootId&&e.parentId===root.rootId&&e.sourceId==="sava")&&b.events.filter(e=>e.type==="ability").length===1);
+ check("successful assist earns one passive boost",f("sava").b15SignalBoost===50);
+ ready("sava");f("ren").meter=500;f("nada").meter=1000;
+ check("boost spent once, total capped at 950",C.performActorAbility(b,"special",idx("ren"))&&f("ren").meter===800&&f("sava").b15SignalBoost===undefined&&b.b15Stats.boostSpent===1);
+ t=fixture();({b,f,idx,ready,act,C}=t);ready("sava");f("b15c-0").hp=1;f("b15c-0").protection=0;const untouched=f("b15c-1").hp;
+ check("primary kill skips assist, no retarget and no passive",C.performActorAbility(b,"powerful",idx("b15c-0"),idx("ren"))&&f("b15c-0").hp===0&&f("b15c-1").hp===untouched&&b.b15Stats.assistSkippedDead===1&&!f("sava").b15SignalBoost);
+ t=fixture();({b,f,idx,ready,act,C}=t);ready("sava");f("ren").hp=0;const actions=b.allyActions;
+ check("dead selected helper rejected before action",!C.performActorAbility(b,"powerful",idx("b15c-0"),idx("ren"))&&b.allyActions===actions&&f("sava").powerfulCooldown===0);
+ t=fixture();({b,f,idx,ready,act,C}=t);ready("sava");f("ren").accuracy=NaN;b.hitChecks=true;const rng=b.rng.draws;
+ check("invalid assist profile rejected before RNG/action",!C.performActorAbility(b,"powerful",idx("b15c-0"),idx("ren"))&&b.rng.draws===rng&&f("sava").powerfulCooldown===0);
+ t=fixture();({b,f,idx,ready,act,C}=t);ready("sava");b.hitChecks=b.critChecks=true;b.rng.draws=Number.MAX_SAFE_INTEGER-3;
+ check("four-roll worst case reserved before command",!C.performActorAbility(b,"powerful",idx("b15c-0"),idx("ren"))&&b.rng.draws===Number.MAX_SAFE_INTEGER-3&&f("sava").powerfulCooldown===0);
+ t=fixture("full","uneven");({b,f,idx,ready,act,C}=t);ready("sava");f("b15c-0").hp=1000;f("b15c-0").maxHp=1000;
+ check("uncapped uneven helper really uses actual gear-derived ATK",C.performActorAbility(b,"powerful",idx("b15c-0"),idx("ren"))&&b.b15Stats.assistRaw===Math.round(f("ren").physicalAttack*.6));
+ const uncapped=b.b15Stats.assistRaw;
+ t=fixture("cap","uneven");({b,f,idx,ready,act,C}=t);ready("sava");f("b15c-0").hp=1000;f("b15c-0").maxHp=1000;
+ check("optional cap reduces uneven raw assist",C.performActorAbility(b,"powerful",idx("b15c-0"),idx("ren"))&&b.b15Stats.assistRaw===f("sava").physicalAttack&&b.b15Stats.assistRaw<uncapped&&b.b15Stats.assistCapped===1);
+ check("actual item counts and fixed speed across tiers",t.profiles.ren.items===78&&t.profiles.sava.items===6&&t.profiles.ren.hero.speed===150&&t.profiles.sava.hero.speed===136);
+ t=fixture();({b,f,idx,ready,act,C}=t);f("sava").b15SignalBoost=50;b.pendingWaves=[[t.ctx.api.N.spawn("npc-pass-guard",{instanceId:"next-0"})]];b.totalWaves=2;b.fighters.filter(x=>x.side==="enemy").forEach(x=>x.hp=0);C.advanceToPlayerTurn(b);
+ check("wave clears stored boost",b.wave===2&&f("sava").b15SignalBoost===undefined);
+ t=fixture("full","early",["sava","ren"]);({b,f,idx,ready,act,C}=t);ready("sava");f("sava").hp=1;f("sava").protection=0;f("sava").b15SignalBoost=50;f("sava").meter=0;f("b15c-0").meter=1000;b.currentActor=idx("b15c-0");C.performActorAbility(b,"basic",idx("sava"));
+ check("death clears stored boost",f("sava").hp===0&&f("sava").b15SignalBoost===undefined);
+ check("owner leader rule",t.ctx.api.D.get(f("sava"),"leader")===null&&t.ctx.api.D.get({id:"art",side:"ally"},"leader")===null);
+ return checks;
+}
+module.exports={EXTRA,CONFIGS,TIERS,SQUADS,setup,gearProfiles,start,plan,run,experiment,contracts};
 if(typeof require!=="undefined"&&require.main===module){const fs=require("node:fs"),lab=require("../../combat-lab-real/engine.js");console.log(JSON.stringify(experiment(lab.files.map(f=>fs.readFileSync(f,"utf8")).join("\n"),fs.readFileSync("combat-lab-real/engine.js","utf8"),EXTRA.map(f=>fs.readFileSync(f,"utf8")).join("\n"),Number(process.argv[2]||20),process.argv[3]==="holdout"),null,2));}

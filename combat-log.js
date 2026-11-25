@@ -15,9 +15,15 @@ const CombatLog=(()=>{
     // Stats-001D1: miss is an explicit event, never fake zero HP damage.
     case "miss":return name(e.actorId)+": промах по "+name(e.targetId);
     case "critical":return name(e.actorId)+": критический удар по "+name(e.targetId)+" (×"+(e.multiplierPercent/100)+")";
+    case "combat2-threat-prepared":return name(e.actorId)+" готовит мощный удар по "+name(e.targetId);
+    case "combat2-threat-resolved":return name(e.actorId)+" атакует "+name(e.actualTargetId||e.targetId);
+    case "combat2-threat-cancelled":return name(e.actorId)+": подготовка сорвана";
+    case "combat2-cover":return name(e.actorId)+" прикрывает "+name(e.targetId)+": "+e.amount+" урона предотвращено";
+    case "combat2-protection":return name(e.actorId)+" восстанавливает защиту: +"+e.amount;
+    case "combat2-meter":return name(e.targetId)+": +"+Math.round(e.amount)+" инициативы"+(e.cross?" · раньше противника":"");
     case "damage":
      if(e.damageType&&Number.isFinite(e.hpDamage)&&Number.isFinite(e.protectionDamage))
-      return name(e.targetId)+": −"+e.hpDamage+" HP"+
+      return (e.assist?name(e.actorId)+" помогает · ":"")+name(e.targetId)+": −"+e.hpDamage+" HP"+
        (e.protectionDamage>0?", −"+e.protectionDamage+" Protection":"")+
        " (осталось "+e.remainingHp+" HP"+
        (e.remainingProtection!==null?", "+e.remainingProtection+" Protection":"")+")";

@@ -1,0 +1,18 @@
+/* AUD003-B12.3, reproducible research-only paired seeds. Run node docs/research/aud003-b12-experiments.js */
+function run(L){
+const rush=["raider","raider","raider","charger","guard"],telegraph=["charger","charger","charger","guard","healer"],rows=[];
+const med=(a,k)=>{const x=a.map(z=>z[k]).sort((x,y)=>x-y),i=Math.floor(x.length/2);return +(0.5*(x[i]+x[Math.floor((x.length-1)/2)])).toFixed(3);};
+function cell(label,team,mode,policy,opt,n,offset){const rs=[];for(let i=0;i<n;i++){const seed=Math.imul(i+1+offset,0x9e3779b1)>>>0;rs.push(L.sim(team,mode,policy,seed,{...opt,...(opt.lab?{lab:{...opt.lab,seed}}:{})}));}
+const quality=r=>r.win&&(mode==="hold"?r.escort>=90:mode==="intercept"?r.hp>=.7:r.hp>=.35);
+rows.push({label,team,mode,policy,opt,n,offset,wins:rs.filter(x=>x.win).length,quality:rs.filter(quality).length,limits:rs.filter(x=>x.limit).length,medianHP:med(rs,"hp"),medianActions:med(rs,"actions"),medianTime:med(rs,"time"),medianEscort:mode==="hold"?med(rs,"escort"):null,medianBlocks:med(rs,"blocked"),meanCover:+(rs.reduce((a,x)=>a+x.stats.cover,0)/n).toFixed(2),meanInterrupt:+(rs.reduce((a,x)=>a+x.stats.interrupt,0)/n).toFixed(2)});
+}
+const A=L.teams[0],B=L.teams[1],C=L.teams[2];
+for(const [label,opt] of [["B rush V11",{}],["B opening 10%",{lab:{openingGuard:.1}}],["B opening 20%",{lab:{openingGuard:.2}}],["B opening 30%",{lab:{openingGuard:.3}}],["B compressed .5",{speedScale:.5}],["B opening 20% + compressed",{lab:{openingGuard:.2},speedScale:.5}]])cell(label,B,"assault","rollout",{enemyTeam:rush,...opt},100,53000);
+for(const [label,p,opt] of [["C greedy","greedy",{}],["C rollout","rollout",{}],["C diverse horizon6","rollout",{diverse:true,horizon:6}],["C horizon9","rollout",{diverse:true,horizon:9}]])cell(label,C,"assault",p,{enemyTeam:rush,...opt},100,53000);
+for(const [name,team] of [["A",A],["B",B],["C",C]])for(const scale of [1,.5])cell(name+" fastMixed scale "+scale,team,"assault","rollout",{espeed:1.1,speedScale:scale},50,51000);
+for(const [label,team,mode,opt] of [["Art base",L.teams[3],"hold",{}],["Art shelter",L.teams[3],"hold",{lab:{trust:{art:"art_shelter"}}}],["Art response",L.teams[3],"hold",{lab:{trust:{art:"art_response"}}}],["Ren/Nada base",A,"assault",{enemyTeam:telegraph}],["Ren precision",A,"assault",{enemyTeam:telegraph,lab:{trust:{ren:"ren_precision"}}}],["Nada observe",A,"assault",{enemyTeam:telegraph,lab:{trust:{nada:"nada_observe"}}}],["Liora/Sava base",B,"hold",{}],["Liora formation",B,"hold",{lab:{trust:{liora:"liora_formation"}}}],["Sava tempo",B,"hold",{lab:{trust:{sava:"sava_tempo"}}}]])cell(label,team,mode,"rollout",opt,50,67000);
+for(const [name,team] of [["A",A],["B",B],["C",C]])cell(name+" three waves",team,"assault","rollout",{eatk:.65,enemyTeam:["guard","charger","raider"],lab:{waves:[["raider","raider","charger"],["guard","healer","captain"]],maxTurns:600,maxTime:500,tie:"seeded"}},50,71000);
+const slot={n:30,sameFirstSlot:0,sameFirstSeeded:0};for(let i=0;i<30;i++){const seed=Math.imul(i+1,0x9e3779b1)>>>0;for(const mode of ["slot","seeded"]){const opt={speedScale:0,lab:{tie:mode,seed}};const a=L.fresh(A,"assault",opt),b=L.fresh([...A].reverse(),"assault",opt);L.next(a);L.next(b);if(a.f[a.active].id===b.f[b.active].id)slot[mode==="slot"?"sameFirstSlot":"sameFirstSeeded"]++;}}
+return {schema:1,method:"paired seeds: imul(index+1+offset,0x9e3779b1)>>>0; toy model; quality proxy from V11; medians over all outcomes",totalBattles:rows.reduce((n,x)=>n+x.n,0),rows,slot};
+}
+if(typeof module!=="undefined"&&require.main===module)console.log(JSON.stringify(run(require("./aud003-combat-lab-v11.js")()),null,2));

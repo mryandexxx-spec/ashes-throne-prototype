@@ -1,0 +1,949 @@
+{
+  "schema": 1,
+  "method": "paired seeds: imul(index+1+offset,0x9e3779b1)>>>0; toy model; quality proxy from V11; medians over all outcomes",
+  "totalBattles": 1900,
+  "rows": [
+    {
+      "label": "B rush V11",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ]
+      },
+      "n": 100,
+      "offset": 53000,
+      "wins": 19,
+      "quality": 3,
+      "limits": 0,
+      "medianHP": 0,
+      "medianActions": 18.5,
+      "medianTime": 64.815,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 4,
+      "meanInterrupt": 0.16
+    },
+    {
+      "label": "B opening 10%",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "lab": {
+          "openingGuard": 0.1
+        }
+      },
+      "n": 100,
+      "offset": 53000,
+      "wins": 72,
+      "quality": 44,
+      "limits": 0,
+      "medianHP": 0.288,
+      "medianActions": 25.5,
+      "medianTime": 67.786,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 28.03,
+      "meanInterrupt": 0.69
+    },
+    {
+      "label": "B opening 20%",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "lab": {
+          "openingGuard": 0.2
+        }
+      },
+      "n": 100,
+      "offset": 53000,
+      "wins": 93,
+      "quality": 67,
+      "limits": 0,
+      "medianHP": 0.401,
+      "medianActions": 26,
+      "medianTime": 64.815,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 52.07,
+      "meanInterrupt": 0.32
+    },
+    {
+      "label": "B opening 30%",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "lab": {
+          "openingGuard": 0.3
+        }
+      },
+      "n": 100,
+      "offset": 53000,
+      "wins": 68,
+      "quality": 46,
+      "limits": 0,
+      "medianHP": 0.264,
+      "medianActions": 24,
+      "medianTime": 69.196,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 48.19,
+      "meanInterrupt": 0.05
+    },
+    {
+      "label": "B compressed .5",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "speedScale": 0.5
+      },
+      "n": 100,
+      "offset": 53000,
+      "wins": 20,
+      "quality": 2,
+      "limits": 0,
+      "medianHP": 0,
+      "medianActions": 17,
+      "medianTime": 65.574,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 2.03,
+      "meanInterrupt": 0.17
+    },
+    {
+      "label": "B opening 20% + compressed",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "lab": {
+          "openingGuard": 0.2
+        },
+        "speedScale": 0.5
+      },
+      "n": 100,
+      "offset": 53000,
+      "wins": 94,
+      "quality": 63,
+      "limits": 0,
+      "medianHP": 0.401,
+      "medianActions": 25,
+      "medianTime": 62.78,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 45.63,
+      "meanInterrupt": 0.3
+    },
+    {
+      "label": "C greedy",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "mode": "assault",
+      "policy": "greedy",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ]
+      },
+      "n": 100,
+      "offset": 53000,
+      "wins": 100,
+      "quality": 87,
+      "limits": 0,
+      "medianHP": 0.4,
+      "medianActions": 22,
+      "medianTime": 56,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 0,
+      "meanInterrupt": 0.61
+    },
+    {
+      "label": "C rollout",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ]
+      },
+      "n": 100,
+      "offset": 53000,
+      "wins": 97,
+      "quality": 11,
+      "limits": 0,
+      "medianHP": 0.274,
+      "medianActions": 21.5,
+      "medianTime": 56,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 13.88,
+      "meanInterrupt": 0.17
+    },
+    {
+      "label": "C diverse horizon6",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "diverse": true,
+        "horizon": 6
+      },
+      "n": 100,
+      "offset": 53000,
+      "wins": 89,
+      "quality": 0,
+      "limits": 0,
+      "medianHP": 0.179,
+      "medianActions": 21,
+      "medianTime": 61.024,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 13.42,
+      "meanInterrupt": 0
+    },
+    {
+      "label": "C horizon9",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "diverse": true,
+        "horizon": 9
+      },
+      "n": 100,
+      "offset": 53000,
+      "wins": 100,
+      "quality": 80,
+      "limits": 0,
+      "medianHP": 0.367,
+      "medianActions": 21,
+      "medianTime": 48,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 19.87,
+      "meanInterrupt": 0.58
+    },
+    {
+      "label": "A fastMixed scale 1",
+      "team": [
+        "ren",
+        "art",
+        "nada",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "espeed": 1.1,
+        "speedScale": 1
+      },
+      "n": 50,
+      "offset": 51000,
+      "wins": 42,
+      "quality": 1,
+      "limits": 0,
+      "medianHP": 0.155,
+      "medianActions": 25,
+      "medianTime": 74.074,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 2.1,
+      "meanInterrupt": 0.92
+    },
+    {
+      "label": "A fastMixed scale 0.5",
+      "team": [
+        "ren",
+        "art",
+        "nada",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "espeed": 1.1,
+        "speedScale": 0.5
+      },
+      "n": 50,
+      "offset": 51000,
+      "wins": 49,
+      "quality": 10,
+      "limits": 0,
+      "medianHP": 0.231,
+      "medianActions": 25,
+      "medianTime": 67.265,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 2.1,
+      "meanInterrupt": 0.92
+    },
+    {
+      "label": "B fastMixed scale 1",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "espeed": 1.1,
+        "speedScale": 1
+      },
+      "n": 50,
+      "offset": 51000,
+      "wins": 9,
+      "quality": 0,
+      "limits": 0,
+      "medianHP": 0,
+      "medianActions": 19,
+      "medianTime": 70.472,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 14.26,
+      "meanInterrupt": 0.44
+    },
+    {
+      "label": "B fastMixed scale 0.5",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "espeed": 1.1,
+        "speedScale": 0.5
+      },
+      "n": 50,
+      "offset": 51000,
+      "wins": 31,
+      "quality": 2,
+      "limits": 0,
+      "medianHP": 0.107,
+      "medianActions": 24,
+      "medianTime": 80.717,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 18.25,
+      "meanInterrupt": 0.68
+    },
+    {
+      "label": "C fastMixed scale 1",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "espeed": 1.1,
+        "speedScale": 1
+      },
+      "n": 50,
+      "offset": 51000,
+      "wins": 50,
+      "quality": 49,
+      "limits": 0,
+      "medianHP": 0.533,
+      "medianActions": 22,
+      "medianTime": 48,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 28.05,
+      "meanInterrupt": 0.16
+    },
+    {
+      "label": "C fastMixed scale 0.5",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "espeed": 1.1,
+        "speedScale": 0.5
+      },
+      "n": 50,
+      "offset": 51000,
+      "wins": 50,
+      "quality": 48,
+      "limits": 0,
+      "medianHP": 0.533,
+      "medianActions": 22,
+      "medianTime": 49.587,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 23.54,
+      "meanInterrupt": 0.2
+    },
+    {
+      "label": "Art base",
+      "team": [
+        "ren",
+        "art"
+      ],
+      "mode": "hold",
+      "policy": "rollout",
+      "opt": {},
+      "n": 50,
+      "offset": 67000,
+      "wins": 50,
+      "quality": 29,
+      "limits": 0,
+      "medianHP": 0.889,
+      "medianActions": 5,
+      "medianTime": 25,
+      "medianEscort": 94.647,
+      "medianBlocks": 0,
+      "meanCover": 21,
+      "meanInterrupt": 0.58
+    },
+    {
+      "label": "Art shelter",
+      "team": [
+        "ren",
+        "art"
+      ],
+      "mode": "hold",
+      "policy": "rollout",
+      "opt": {
+        "lab": {
+          "trust": {
+            "art": "art_shelter"
+          }
+        }
+      },
+      "n": 50,
+      "offset": 67000,
+      "wins": 50,
+      "quality": 29,
+      "limits": 0,
+      "medianHP": 0.889,
+      "medianActions": 5,
+      "medianTime": 25,
+      "medianEscort": 99.897,
+      "medianBlocks": 0,
+      "meanCover": 25.2,
+      "meanInterrupt": 0.58
+    },
+    {
+      "label": "Art response",
+      "team": [
+        "ren",
+        "art"
+      ],
+      "mode": "hold",
+      "policy": "rollout",
+      "opt": {
+        "lab": {
+          "trust": {
+            "art": "art_response"
+          }
+        }
+      },
+      "n": 50,
+      "offset": 67000,
+      "wins": 50,
+      "quality": 28,
+      "limits": 0,
+      "medianHP": 0.889,
+      "medianActions": 5,
+      "medianTime": 25,
+      "medianEscort": 90.71,
+      "medianBlocks": 0,
+      "meanCover": 17.85,
+      "meanInterrupt": 0.58
+    },
+    {
+      "label": "Ren/Nada base",
+      "team": [
+        "ren",
+        "art",
+        "nada",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "enemyTeam": [
+          "charger",
+          "charger",
+          "charger",
+          "guard",
+          "healer"
+        ]
+      },
+      "n": 50,
+      "offset": 67000,
+      "wins": 50,
+      "quality": 50,
+      "limits": 0,
+      "medianHP": 0.717,
+      "medianActions": 24,
+      "medianTime": 51.376,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 17.85,
+      "meanInterrupt": 2.16
+    },
+    {
+      "label": "Ren precision",
+      "team": [
+        "ren",
+        "art",
+        "nada",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "enemyTeam": [
+          "charger",
+          "charger",
+          "charger",
+          "guard",
+          "healer"
+        ],
+        "lab": {
+          "trust": {
+            "ren": "ren_precision"
+          }
+        }
+      },
+      "n": 50,
+      "offset": 67000,
+      "wins": 50,
+      "quality": 50,
+      "limits": 0,
+      "medianHP": 0.713,
+      "medianActions": 25,
+      "medianTime": 51.376,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 19.95,
+      "meanInterrupt": 1.9
+    },
+    {
+      "label": "Nada observe",
+      "team": [
+        "ren",
+        "art",
+        "nada",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "enemyTeam": [
+          "charger",
+          "charger",
+          "charger",
+          "guard",
+          "healer"
+        ],
+        "lab": {
+          "trust": {
+            "nada": "nada_observe"
+          }
+        }
+      },
+      "n": 50,
+      "offset": 67000,
+      "wins": 50,
+      "quality": 50,
+      "limits": 0,
+      "medianHP": 0.727,
+      "medianActions": 25,
+      "medianTime": 49.18,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 12.6,
+      "meanInterrupt": 2.06
+    },
+    {
+      "label": "Liora/Sava base",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "mode": "hold",
+      "policy": "rollout",
+      "opt": {},
+      "n": 50,
+      "offset": 67000,
+      "wins": 50,
+      "quality": 50,
+      "limits": 0,
+      "medianHP": 0.688,
+      "medianActions": 11,
+      "medianTime": 25,
+      "medianEscort": 114.88,
+      "medianBlocks": 0,
+      "meanCover": 35.35,
+      "meanInterrupt": 0.88
+    },
+    {
+      "label": "Liora formation",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "mode": "hold",
+      "policy": "rollout",
+      "opt": {
+        "lab": {
+          "trust": {
+            "liora": "liora_formation"
+          }
+        }
+      },
+      "n": 50,
+      "offset": 67000,
+      "wins": 50,
+      "quality": 48,
+      "limits": 0,
+      "medianHP": 0.693,
+      "medianActions": 11,
+      "medianTime": 25,
+      "medianEscort": 108.687,
+      "medianBlocks": 0,
+      "meanCover": 31.51,
+      "meanInterrupt": 0.82
+    },
+    {
+      "label": "Sava tempo",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "mode": "hold",
+      "policy": "rollout",
+      "opt": {
+        "lab": {
+          "trust": {
+            "sava": "sava_tempo"
+          }
+        }
+      },
+      "n": 50,
+      "offset": 67000,
+      "wins": 50,
+      "quality": 50,
+      "limits": 0,
+      "medianHP": 0.688,
+      "medianActions": 11,
+      "medianTime": 25,
+      "medianEscort": 114.88,
+      "medianBlocks": 0,
+      "meanCover": 35.35,
+      "meanInterrupt": 0.88
+    },
+    {
+      "label": "A three waves",
+      "team": [
+        "ren",
+        "art",
+        "nada",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "eatk": 0.65,
+        "enemyTeam": [
+          "guard",
+          "charger",
+          "raider"
+        ],
+        "lab": {
+          "waves": [
+            [
+              "raider",
+              "raider",
+              "charger"
+            ],
+            [
+              "guard",
+              "healer",
+              "captain"
+            ]
+          ],
+          "maxTurns": 600,
+          "maxTime": 500,
+          "tie": "seeded"
+        }
+      },
+      "n": 50,
+      "offset": 71000,
+      "wins": 50,
+      "quality": 50,
+      "limits": 0,
+      "medianHP": 0.606,
+      "medianActions": 48,
+      "medianTime": 100,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 16.27,
+      "meanInterrupt": 1.36
+    },
+    {
+      "label": "B three waves",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "eatk": 0.65,
+        "enemyTeam": [
+          "guard",
+          "charger",
+          "raider"
+        ],
+        "lab": {
+          "waves": [
+            [
+              "raider",
+              "raider",
+              "charger"
+            ],
+            [
+              "guard",
+              "healer",
+              "captain"
+            ]
+          ],
+          "maxTurns": 600,
+          "maxTime": 500,
+          "tie": "seeded"
+        }
+      },
+      "n": 50,
+      "offset": 71000,
+      "wins": 50,
+      "quality": 50,
+      "limits": 0,
+      "medianHP": 0.757,
+      "medianActions": 47,
+      "medianTime": 86.538,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 33.08,
+      "meanInterrupt": 0.86
+    },
+    {
+      "label": "C three waves",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "mode": "assault",
+      "policy": "rollout",
+      "opt": {
+        "eatk": 0.65,
+        "enemyTeam": [
+          "guard",
+          "charger",
+          "raider"
+        ],
+        "lab": {
+          "waves": [
+            [
+              "raider",
+              "raider",
+              "charger"
+            ],
+            [
+              "guard",
+              "healer",
+              "captain"
+            ]
+          ],
+          "maxTurns": 600,
+          "maxTime": 500,
+          "tie": "seeded"
+        }
+      },
+      "n": 50,
+      "offset": 71000,
+      "wins": 50,
+      "quality": 50,
+      "limits": 0,
+      "medianHP": 0.645,
+      "medianActions": 43,
+      "medianTime": 81,
+      "medianEscort": null,
+      "medianBlocks": 0,
+      "meanCover": 23.84,
+      "meanInterrupt": 1.32
+    }
+  ],
+  "slot": {
+    "n": 30,
+    "sameFirstSlot": 0,
+    "sameFirstSeeded": 30
+  }
+}

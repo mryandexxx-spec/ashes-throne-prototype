@@ -1,0 +1,1128 @@
+{
+  "schema": 1,
+  "sourceBlob": "68dfc45f8a409f8f7c9ac1362e32ad61414cc5bc",
+  "method": "40 paired unseen seeds per cell; W=win, Q=win with HP >=35%; all medians include losses; independent seeds, not independent engine or human playtest",
+  "total": 1360,
+  "rows": [
+    {
+      "name": "B baseline",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 8,
+      "q": 1,
+      "hp": 0,
+      "reply": 0,
+      "actions": 17,
+      "limits": 0
+    },
+    {
+      "name": "B baseline",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush permuted + faster",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1.1
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 0,
+      "q": 0,
+      "hp": 0,
+      "reply": 0,
+      "actions": 15,
+      "limits": 0
+    },
+    {
+      "name": "B baseline",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush permuted only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 8,
+      "q": 2,
+      "hp": 0,
+      "reply": 0,
+      "actions": 22,
+      "limits": 0
+    },
+    {
+      "name": "B baseline",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush faster only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1.1
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 0,
+      "q": 0,
+      "hp": 0,
+      "reply": 0,
+      "actions": 15,
+      "limits": 0
+    },
+    {
+      "name": "B guard .2",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1,
+        "lab": {
+          "openingGuard": 0.2
+        }
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 38,
+      "q": 24,
+      "hp": 0.401,
+      "reply": 1,
+      "actions": 26,
+      "limits": 0
+    },
+    {
+      "name": "B guard .2",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush permuted + faster",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1.1,
+        "lab": {
+          "openingGuard": 0.2
+        }
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 27,
+      "q": 2,
+      "hp": 0.102,
+      "reply": 0,
+      "actions": 25,
+      "limits": 0
+    },
+    {
+      "name": "B guard .2",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush permuted only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1,
+        "lab": {
+          "openingGuard": 0.2
+        }
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 39,
+      "q": 25,
+      "hp": 0.404,
+      "reply": 1,
+      "actions": 26,
+      "limits": 0
+    },
+    {
+      "name": "B guard .2",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush faster only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1.1,
+        "lab": {
+          "openingGuard": 0.2
+        }
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 11,
+      "q": 4,
+      "hp": 0,
+      "reply": 0,
+      "actions": 22,
+      "limits": 0
+    },
+    {
+      "name": "B own guard .2",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1,
+        "lab": {
+          "openingGuard": 0.2
+        }
+      },
+      "self": true,
+      "offset": 91000,
+      "n": 40,
+      "w": 38,
+      "q": 24,
+      "hp": 0.401,
+      "reply": 1,
+      "actions": 26,
+      "limits": 0
+    },
+    {
+      "name": "B own guard .2",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush permuted + faster",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1.1,
+        "lab": {
+          "openingGuard": 0.2
+        }
+      },
+      "self": true,
+      "offset": 91000,
+      "n": 40,
+      "w": 27,
+      "q": 2,
+      "hp": 0.102,
+      "reply": 0,
+      "actions": 25,
+      "limits": 0
+    },
+    {
+      "name": "B own guard .2",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush permuted only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1,
+        "lab": {
+          "openingGuard": 0.2
+        }
+      },
+      "self": true,
+      "offset": 91000,
+      "n": 40,
+      "w": 39,
+      "q": 25,
+      "hp": 0.404,
+      "reply": 1,
+      "actions": 26,
+      "limits": 0
+    },
+    {
+      "name": "B own guard .2",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush faster only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1.1,
+        "lab": {
+          "openingGuard": 0.2
+        }
+      },
+      "self": true,
+      "offset": 91000,
+      "n": 40,
+      "w": 11,
+      "q": 4,
+      "hp": 0,
+      "reply": 0,
+      "actions": 22,
+      "limits": 0
+    },
+    {
+      "name": "B protection .2",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1,
+        "lab": {
+          "units": {
+            "a0": {
+              "protection": 0.2
+            },
+            "a1": {
+              "protection": 0.2
+            },
+            "a2": {
+              "protection": 0.2
+            },
+            "a3": {
+              "protection": 0.2
+            },
+            "a4": {
+              "protection": 0.2
+            }
+          }
+        }
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 40,
+      "q": 31,
+      "hp": 0.549,
+      "reply": 1,
+      "actions": 27,
+      "limits": 0
+    },
+    {
+      "name": "B protection .2",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush permuted + faster",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1.1,
+        "lab": {
+          "units": {
+            "a0": {
+              "protection": 0.2
+            },
+            "a1": {
+              "protection": 0.2
+            },
+            "a2": {
+              "protection": 0.2
+            },
+            "a3": {
+              "protection": 0.2
+            },
+            "a4": {
+              "protection": 0.2
+            }
+          }
+        }
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 37,
+      "q": 32,
+      "hp": 0.424,
+      "reply": 1,
+      "actions": 27,
+      "limits": 0
+    },
+    {
+      "name": "B protection .2",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush permuted only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1,
+        "lab": {
+          "units": {
+            "a0": {
+              "protection": 0.2
+            },
+            "a1": {
+              "protection": 0.2
+            },
+            "a2": {
+              "protection": 0.2
+            },
+            "a3": {
+              "protection": 0.2
+            },
+            "a4": {
+              "protection": 0.2
+            }
+          }
+        }
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 40,
+      "q": 32,
+      "hp": 0.478,
+      "reply": 1,
+      "actions": 26,
+      "limits": 0
+    },
+    {
+      "name": "B protection .2",
+      "team": [
+        "ranger",
+        "liora",
+        "sava",
+        "medic",
+        "breaker"
+      ],
+      "policy": "rollout",
+      "scenario": "rush faster only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1.1,
+        "lab": {
+          "units": {
+            "a0": {
+              "protection": 0.2
+            },
+            "a1": {
+              "protection": 0.2
+            },
+            "a2": {
+              "protection": 0.2
+            },
+            "a3": {
+              "protection": 0.2
+            },
+            "a4": {
+              "protection": 0.2
+            }
+          }
+        }
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 28,
+      "q": 6,
+      "hp": 0.213,
+      "reply": 1,
+      "actions": 25,
+      "limits": 0
+    },
+    {
+      "name": "C greedy",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "policy": "greedy",
+      "scenario": "rush",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 40,
+      "q": 34,
+      "hp": 0.402,
+      "reply": 0,
+      "actions": 22,
+      "limits": 0
+    },
+    {
+      "name": "C greedy",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "policy": "greedy",
+      "scenario": "rush permuted + faster",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1.1
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 40,
+      "q": 0,
+      "hp": 0.306,
+      "reply": 0,
+      "actions": 22,
+      "limits": 0
+    },
+    {
+      "name": "C greedy",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "policy": "greedy",
+      "scenario": "rush permuted only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 40,
+      "q": 25,
+      "hp": 0.355,
+      "reply": 0,
+      "actions": 22,
+      "limits": 0
+    },
+    {
+      "name": "C greedy",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "policy": "greedy",
+      "scenario": "rush faster only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1.1
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 40,
+      "q": 27,
+      "hp": 0.356,
+      "reply": 0,
+      "actions": 21,
+      "limits": 0
+    },
+    {
+      "name": "C rollout",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "policy": "rollout",
+      "scenario": "rush",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 37,
+      "q": 2,
+      "hp": 0.264,
+      "reply": 0,
+      "actions": 21.5,
+      "limits": 0
+    },
+    {
+      "name": "C rollout",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "policy": "rollout",
+      "scenario": "rush permuted + faster",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1.1
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 28,
+      "q": 0,
+      "hp": 0.179,
+      "reply": 0,
+      "actions": 21,
+      "limits": 0
+    },
+    {
+      "name": "C rollout",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "policy": "rollout",
+      "scenario": "rush permuted only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 40,
+      "q": 39,
+      "hp": 0.43,
+      "reply": 0,
+      "actions": 23,
+      "limits": 0
+    },
+    {
+      "name": "C rollout",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "policy": "rollout",
+      "scenario": "rush faster only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1.1
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 27,
+      "q": 0,
+      "hp": 0.179,
+      "reply": 0,
+      "actions": 20.5,
+      "limits": 0
+    },
+    {
+      "name": "C horizon9",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "policy": "rollout",
+      "scenario": "rush",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1,
+        "diverse": true,
+        "horizon": 9
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 40,
+      "q": 32,
+      "hp": 0.409,
+      "reply": 0,
+      "actions": 22,
+      "limits": 0
+    },
+    {
+      "name": "C horizon9",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "policy": "rollout",
+      "scenario": "rush permuted + faster",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1.1,
+        "diverse": true,
+        "horizon": 9
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 34,
+      "q": 0,
+      "hp": 0.238,
+      "reply": 0,
+      "actions": 21,
+      "limits": 0
+    },
+    {
+      "name": "C horizon9",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "policy": "rollout",
+      "scenario": "rush permuted only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "charger",
+          "raider",
+          "guard"
+        ],
+        "espeed": 1,
+        "diverse": true,
+        "horizon": 9
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 40,
+      "q": 32,
+      "hp": 0.409,
+      "reply": 0,
+      "actions": 22,
+      "limits": 0
+    },
+    {
+      "name": "C horizon9",
+      "team": [
+        "ren",
+        "liora",
+        "nada",
+        "ranger",
+        "sava"
+      ],
+      "policy": "rollout",
+      "scenario": "rush faster only",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider",
+          "raider",
+          "charger",
+          "guard"
+        ],
+        "espeed": 1.1,
+        "diverse": true,
+        "horizon": 9
+      },
+      "self": false,
+      "offset": 91000,
+      "n": 40,
+      "w": 34,
+      "q": 0,
+      "hp": 0.238,
+      "reply": 0,
+      "actions": 21,
+      "limits": 0
+    },
+    {
+      "name": "Ren/Art",
+      "team": [
+        "ren",
+        "art"
+      ],
+      "policy": "basic",
+      "scenario": "starter guard/charger",
+      "opt": {
+        "enemyTeam": [
+          "guard",
+          "charger"
+        ]
+      },
+      "self": false,
+      "offset": 93000,
+      "n": 40,
+      "w": 40,
+      "q": 7,
+      "hp": 0.268,
+      "reply": 0,
+      "actions": 11,
+      "limits": 0
+    },
+    {
+      "name": "Ren/Art",
+      "team": [
+        "ren",
+        "art"
+      ],
+      "policy": "greedy",
+      "scenario": "starter guard/charger",
+      "opt": {
+        "enemyTeam": [
+          "guard",
+          "charger"
+        ]
+      },
+      "self": false,
+      "offset": 93000,
+      "n": 40,
+      "w": 40,
+      "q": 38,
+      "hp": 0.534,
+      "reply": 0,
+      "actions": 10,
+      "limits": 0
+    },
+    {
+      "name": "Ren/Art",
+      "team": [
+        "ren",
+        "art"
+      ],
+      "policy": "tactical",
+      "scenario": "starter guard/charger",
+      "opt": {
+        "enemyTeam": [
+          "guard",
+          "charger"
+        ]
+      },
+      "self": false,
+      "offset": 93000,
+      "n": 40,
+      "w": 40,
+      "q": 40,
+      "hp": 0.596,
+      "reply": 0,
+      "actions": 9.5,
+      "limits": 0
+    },
+    {
+      "name": "Ren/Art",
+      "team": [
+        "ren",
+        "art"
+      ],
+      "policy": "basic",
+      "scenario": "starter double raider",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider"
+        ]
+      },
+      "self": false,
+      "offset": 93000,
+      "n": 40,
+      "w": 0,
+      "q": 0,
+      "hp": 0,
+      "reply": 0,
+      "actions": 7,
+      "limits": 0
+    },
+    {
+      "name": "Ren/Art",
+      "team": [
+        "ren",
+        "art"
+      ],
+      "policy": "greedy",
+      "scenario": "starter double raider",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider"
+        ]
+      },
+      "self": false,
+      "offset": 93000,
+      "n": 40,
+      "w": 10,
+      "q": 0,
+      "hp": 0,
+      "reply": 0,
+      "actions": 7,
+      "limits": 0
+    },
+    {
+      "name": "Ren/Art",
+      "team": [
+        "ren",
+        "art"
+      ],
+      "policy": "tactical",
+      "scenario": "starter double raider",
+      "opt": {
+        "enemyTeam": [
+          "raider",
+          "raider"
+        ]
+      },
+      "self": false,
+      "offset": 93000,
+      "n": 40,
+      "w": 6,
+      "q": 2,
+      "hp": 0,
+      "reply": 0,
+      "actions": 7,
+      "limits": 0
+    }
+  ]
+}

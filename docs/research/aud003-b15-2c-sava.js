@@ -37,7 +37,7 @@ function primitives(){
   if(p.changed)b15count(b,kind+"NextChanged");if(p.cross)b15count(b,kind+"EnemyCrossed");
   b.events.push({type:"b15-meter",actorId:actor.id,targetId:target.id,amount:p.gain,kind,...p});return true;
  }
- function b15helper(b,actor,index){const f=b.fighters[index];return f&&f.side==="ally"&&f.hp>0&&f.id!==actor.id?f:null;}
+ function b15helper(b,actor,index){if(!Number.isInteger(index))return null;const f=b.fighters[index];return f&&f.side==="ally"&&f.hp>0&&f.id!==actor.id?f:null;}
  function b15validateAssist(b,actor,ability,target,helper){
   if(!helper||!Number.isFinite(helper.physicalAttack)||helper.physicalAttack<0||!validHitProfile(b,helper,[target],"physical")||!validCriticalProfile(b,helper,[target],"physical")||!validPenetrationProfile(b,helper,"physical"))return false;
   if(b.hitChecks||b.critChecks){let rng;try{rng=BattleRng.snapshot(b)}catch{return false;}
@@ -226,6 +226,18 @@ function contracts(source,labSource,extraSource){
  t=fixture("full","early",["sava","ren"]);({b,f,idx,ready,act,C}=t);ready("sava");f("sava").hp=1;f("sava").protection=0;f("sava").b15SignalBoost=50;f("sava").meter=0;f("b15c-0").meter=1000;b.currentActor=idx("b15c-0");C.performActorAbility(b,"basic",idx("sava"));
  check("death clears stored boost",f("sava").hp===0&&f("sava").b15SignalBoost===undefined);
  check("owner leader rule",t.ctx.api.D.get(f("sava"),"leader")===null&&t.ctx.api.D.get({id:"art",side:"ally"},"leader")===null);
+ function deadline(signal){
+  const t=fixture(),{b,f,idx,ready,C}=t;ready("sava");
+  f("ren").meter=600;f("nada").meter=0;f("nada").hp=12;f("nada").protection=0;
+  const foe=f("b15c-0");foe.hp=10;foe.protection=0;foe.meter=800;foe.b14Prepared="nada";
+  if(!C.performActorAbility(b,signal?"special":"basic",idx(signal?"ren":"b15c-1")))throw Error("deadline action");
+  if(signal){if(b.fighters[b.currentActor].id!=="ren")throw Error("signal did not advance actual next turn");if(!C.performActorAbility(b,"basic",idx("b15c-0")))throw Error("deadline counter");}
+  return {nada:f("nada").hp,foe:foe.hp,resolved:b.b14Counts?.resolved??0};
+ }
+ const withSignal=deadline(true),withoutSignal=deadline(false);
+ check("actual prepared-attack deadline: signal enables kill before enemy action",withSignal.nada>0&&withSignal.foe===0&&withSignal.resolved===0&&withoutSignal.nada===0&&withoutSignal.resolved===1);
+ t=fixture();({b,f,idx,ready,act,C}=t);ready("sava");
+ check("noninteger helper index is illegal",!C.performActorAbility(b,"powerful",idx("b15c-0"),String(idx("ren")))&&f("sava").powerfulCooldown===0);
  return checks;
 }
 module.exports={EXTRA,CONFIGS,TIERS,SQUADS,setup,gearProfiles,start,plan,run,experiment,contracts};

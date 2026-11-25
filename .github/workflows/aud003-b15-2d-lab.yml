@@ -1,0 +1,35 @@
+name: Combat 2.0 lab · mobile browser
+on:
+  pull_request:
+    branches: [main]
+    paths: ['lab-combat-2/**', 'tests/aud003-b15-2d-lab-browser.cjs', '.github/workflows/aud003-b15-2d-lab.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: combat2-lab-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --ignore-scripts playwright@1.56.1
+      - name: Mobile browser manual input, wave finish and restart
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/combat2-http.log 2>&1 &
+          sleep 2
+          node tests/aud003-b15-2d-lab-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: combat2-mobile-evidence
+          path: artifacts/combat2-lab/
+          if-no-files-found: ignore

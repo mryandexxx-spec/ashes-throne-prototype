@@ -196,7 +196,7 @@ test("NPCCHALLENGE005: NPC scores follow the regular persistence path",()=>{
  assert.doesNotMatch(game,/NPC-пробы T-01…T-04/);
  assert.match(game,/ChallengeCore\.resultEarned\(challengeProgress,activeChallengeId/);
  assert.match(game,/if\(battleIsChallenge&&!state.active&&!challengeResultRecorded\)/);
- assert.match(game,/ChallengeCore\.save\(outcome.candidate,\(\)=>window.localStorage,challengeSaveBlocked\)/);
+ assert.match(game,/ChallengeCore\.save\(outcome.candidate,\(\)=>gameStorage\(\),challengeSaveBlocked\)/);
  assert.match(game,/renderChallengeResult\(\)/);
  assert.match(game,/ChallengeCore\.available\(id,challengeProgress\)/);
 });

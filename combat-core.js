@@ -96,7 +96,9 @@ const CombatCore = (() => {
   }
   function bonusDamage(battle,actor,target,raw){
     const percent=passiveDamageBonusPercent(battle,actor,target);
-    return percent?Math.round(raw*(1+percent/100)):raw;
+    const shared=battle?.combat2&&actor.side==="ally"&&!["ren","nada"].includes(actor.id)&&CombatStatusCore.read(target,"read-move")?.stacks>0?12:0;
+    const total=percent+shared;
+    return total?Math.round(raw*(1+total/100)):raw;
   }
   function activePassiveModifiers(battle,ownerId) {
     if(!battle||!Array.isArray(battle.fighters))return [];
@@ -186,6 +188,89 @@ const CombatCore = (() => {
     const rules=AbilityData.get(leader,"leader")?.combatRules;
     return Number.isFinite(rules?.[abilityKey])&&rules[abilityKey]>0?{leader,rules}:null;
   }
+  // Native Combat 2.0 primitives. No additional engine or runtime source patch.
+  function combat2Cap(old,amount){return Math.max(old,Math.min(950,old+amount));}
+  function combat2Time(b,f){return Math.max(0,(1000-f.meter)/effectiveStat(b,f,"speed"));}
+  function previewSignal(b,actor,amount,target,spent=false){
+    if(!b?.combat2||!actor||!target||target.hp<=0||actor.hp<=0||target.side!=="ally"||target.id===actor.id||!Number.isFinite(amount)||amount<=0)return null;
+    const before=b.fighters.filter(f=>f.hp>0).map(f=>({...f,meter:!spent&&f.id===actor.id&&b.currentActor===f.index&&f.meter>=1000-1e-8?Math.max(0,f.meter-1000):f.meter}));
+    const after=before.map(f=>({...f,meter:f.id===target.id?combat2Cap(f.meter,amount):f.meter}));
+    const speed=f=>effectiveStat(b,f,"speed");
+    const nextBefore=InitiativeModel.nextActor(before.map(f=>({...f})),speed)?.id;
+    const nextAfter=InitiativeModel.nextActor(after.map(f=>({...f})),speed)?.id;
+    const foe=before.filter(f=>f.side==="enemy").sort((a,z)=>combat2Time(b,a)-combat2Time(b,z)||a.index-z.index)[0];
+    const t0=before.find(f=>f.id===target.id),t1=after.find(f=>f.id===target.id);
+    if(!t0||!t1)return null;
+    const precedes=(a,z)=>combat2Time(b,a)<combat2Time(b,z)-1e-8||(Math.abs(combat2Time(b,a)-combat2Time(b,z))<=1e-8&&a.index<z.index);
+    return {gain:t1.meter-t0.meter,changed:nextBefore!==nextAfter,cross:!!foe&&!precedes(t0,foe)&&precedes(t1,foe),nextBefore,nextAfter};
+  }
+  function combat2Grant(b,actor,target,amount,kind){
+    const forecast=previewSignal(b,actor,amount,target,kind==="basic");
+    if(!forecast||forecast.gain<=0)return false;
+    target.meter=combat2Cap(target.meter,amount);
+    emit(b,"combat2-meter",{actorId:actor.id,targetId:target.id,amount:forecast.gain,kind,...forecast});
+    return true;
+  }
+  function combat2Helper(b,actor,index){
+    const f=Number.isInteger(index)?b.fighters[index]:null;
+    return f&&f.side==="ally"&&f.hp>0&&f.id!==actor.id?f:null;
+  }
+  function combat2ValidAssist(b,actor,target,helper){
+    if(!helper||!Number.isFinite(helper.physicalAttack)||helper.physicalAttack<0||!validHitProfile(b,helper,[target],"physical")||!validCriticalProfile(b,helper,[target],"physical")||!validPenetrationProfile(b,helper,"physical"))return false;
+    if(b.hitChecks||b.critChecks){
+      let rng;try{rng=BattleRng.snapshot(b)}catch{return false;}
+      const draws=2*((hitCheckEnabled(b,"physical")?1:0)+(critCheckEnabled(b,"physical")?1:0));
+      if(rng.draws>Number.MAX_SAFE_INTEGER-draws)return false;
+    }
+    return true;
+  }
+  function combat2Assist(b,actor,target,helper,ability){
+    const rootId="w"+b.wave+"-t"+b.turn+"-"+actor.id;
+    const props={rootId,parentId:rootId,sourceId:actor.id,actorId:helper.id,targetId:target.id,depth:1,assist:true};
+    const root=b.events.find(e=>e.type==="ability"&&e.actorId===actor.id);if(root)root.rootId=rootId;
+    if(helper.hp<=0||actor.hp<=0||target.hp<=0)return;
+    const start=b.events.length;
+    if(!rollToHit(b,helper,target,"physical")){for(const e of b.events.slice(start))Object.assign(e,props);return;}
+    const raw=Math.round(Math.min(effectiveStat(b,helper,"physicalAttack")*ability.combat2Assist,actor.physicalAttack));
+    const oldHp=target.hp,oldProt=target.protection??null;
+    const rolled=rollCriticalDamage(b,helper,target,raw,"physical");
+    for(const e of b.events.slice(start))Object.assign(e,props);
+    const damage=dealDamage(helper,target,rolled,false,"physical",penetrationEnabled(b,"physical")?helper.defensePenetration:0,b,false);
+    const fields=typedDamageFields(target,"physical",oldHp,oldProt);
+    // No re-dispatch of passive damage triggers for secondary hits.
+    b.events.push({type:"damage",...props,raw,amount:damage,remainingHp:target.hp,...fields});
+    if(target.hp===0){delete target.combat2Prepared;b.events.push({type:"death",...props,targetId:target.id});}
+    if(fields.hpDamage+fields.protectionDamage>0){
+      const boost=passiveCombatRules(actor)?.combat2Boost??0;if(boost)actor.combat2Boost=boost;
+    }
+  }
+  function combat2EnemyPlan(b,actor,actorIndex,plan,targetIndex){
+    if(actor.combat2Prepared){
+      const targetId=actor.combat2Prepared;delete actor.combat2Prepared;
+      const target=b.fighters.findIndex(f=>f.id===targetId&&f.side==="ally"&&f.hp>0);
+      if(CombatStatusCore.read(actor,"disrupted-plan")||target<0||!actorAbilityReady(b,actorIndex,"powerful")){
+        if(CombatStatusCore.read(actor,"disrupted-plan")){CombatStatusCore.remove(actor,"disrupted-plan");delete actor.tacticalDisruptDelay;}
+        actor.powerfulCooldown=AbilityData.get(actor,"powerful").cooldown;
+        emit(b,"combat2-threat-cancelled",{actorId:actor.id,targetId});
+        return {abilityId:"basic",targetIndex:target>=0?target:targetIndex};
+      }
+      const actual=actorTargetIndices(b,actorIndex,"enemy",target)[0];
+      emit(b,"combat2-threat-resolved",{actorId:actor.id,targetId,actualTargetId:b.fighters[actual]?.id});
+      b.combat2Resolving=actor.id;
+      return {abilityId:"powerful",targetIndex:target};
+    }
+    if(["npc-ridge-slinger","npc-trail-interceptor"].includes(actor.archetypeId)&&plan?.abilityId==="powerful"&&AbilityData.get(actor,"powerful")?.kind==="damage"&&AbilityData.get(actor,"powerful")?.target==="enemy"){
+      const target=actorTargetIndices(b,actorIndex,"enemy",plan.targetIndex)[0];
+      if(target!==undefined){
+        actor.combat2Prepared=b.fighters[target].id;
+        emit(b,"combat2-threat-prepared",{actorId:actor.id,targetId:actor.combat2Prepared});
+        actor.specialCooldown=Math.max(0,actor.specialCooldown-1);
+        InitiativeModel.finishTurn(b.fighters,actor.id);tickActorStatuses(actor);b.turn++;b.currentActor=-1;
+        return {prepared:true};
+      }
+    }
+    return plan;
+  }
   function grantTacticalMeter(battle,owner,amount,excludedIds=[]){
     if(!Number.isFinite(amount)||amount<=0)return null;
     const options=battle.fighters.filter(f=>f.side==="ally"&&f.hp>0&&
@@ -255,7 +340,11 @@ const CombatCore = (() => {
     // Called AFTER the normal finishTurn: any meter gained here moves a *future*
     // turn, never generates an immediate free action.
     if(actor.side!=="ally")return;
-    if(actor.id==="sava"&&ability.id==="basic"&&ability.nextAllyMeter>0)
+    if(battle.combat2&&actor.id==="art")delete actor.combat2ReactUsed;
+    if(battle.combat2&&actor.id==="sava"&&ability.id==="basic"&&ability.nextAllyMeter>0){
+      const other=battle.fighters.filter(f=>f.side==="ally"&&f.hp>0&&f.id!==actor.id&&f.meter<950).sort((a,z)=>combat2Time(battle,a)-combat2Time(battle,z)||a.index-z.index)[0];
+      if(other)combat2Grant(battle,actor,other,ability.nextAllyMeter,"basic");
+    }else if(actor.id==="sava"&&ability.id==="basic"&&ability.nextAllyMeter>0)
       grantTacticalMeter(battle,actor,ability.nextAllyMeter);
     if(actor.fieldSignal){
       battle.events.push({type:"field-signal-used",actorId:actor.id,
@@ -330,6 +419,7 @@ const CombatCore = (() => {
   function makeFighter(hero,index,meter) {
     const fighter = {...hero,maxHp:hero.hp,specialCooldown:0,powerfulCooldown:0,
       meter,index,effects:Object.create(null)};
+    delete fighter.combat2; // The mode is set by createBattle, never roster input.
     for (const [field,type] of Object.entries(EFFECT_FIELDS)) {
       Object.defineProperty(fighter,field,{
         enumerable:true,configurable:false,
@@ -344,6 +434,7 @@ const CombatCore = (() => {
   // Existing single-wave calls keep their original behavior.
   function createBattle(heroes, futureWaves = [], options = {}) {
     if(!options||typeof options!=="object"||Array.isArray(options))throw Error("invalid battle options");
+    if(options.combat2!==undefined&&typeof options.combat2!=="boolean")throw Error("combat2 must be a boolean");
     if (!Array.isArray(futureWaves)) throw Error("futureWaves must be an array");
     if (futureWaves.some(wave => !Array.isArray(wave) || wave.length === 0 ||
         wave.some(enemy => !enemy || enemy.side !== "enemy")))
@@ -407,6 +498,7 @@ const CombatCore = (() => {
     const initiative = InitiativeModel.createInitiative(heroes);
     const fighters = heroes.map((hero,index) =>
       makeFighter(hero,index,initiative[index].meter));
+    if(options.combat2===true)for(const f of fighters)if(f.side==="ally")f.combat2=true;
     // Leadership is a formation slot, not an ability entitlement. Any living
     // ally can occupy the first position; only heroes with a leader skill grant
     // its effects (activeLeaderModifiers already checks for that definition).
@@ -419,6 +511,7 @@ const CombatCore = (() => {
     }
     const battle = {
       fighters,
+      ...(options.combat2===true?{combat2:true}:{}),
       ...(seededRng===null?{}:{rng:seededRng}),
       ...(options.hitChecks===true?{hitChecks:true}:{}),
       ...(options.critChecks===true?{critChecks:true}:{}),
@@ -479,6 +572,13 @@ const CombatCore = (() => {
     "wave-start","battle-end"]);
   function emit(battle, type, properties) {
     battle.events.push({type, ...properties});
+    if(battle.combat2){
+      if(type==="wave-start")for(const f of battle.fighters){delete f.combat2Boost;delete f.combat2Prepared;}
+      if(type==="death"){
+        const dead=battle.fighters.find(f=>f.id===properties.targetId);
+        if(dead){delete dead.combat2Boost;delete dead.combat2Prepared;}
+      }
+    }
     // NET-006A: network-only compact KO/death history. No normal combat change.
     if(type==="death"&&typeof NetworkScoreCore!=="undefined")
      NetworkScoreCore.observe(battle,type,properties.targetId);
@@ -724,6 +824,13 @@ const CombatCore = (() => {
         damage=Math.round(damage*DEFENSE_SCALE/(DEFENSE_SCALE+effectiveDefense));
       }
     }
+    if(battle?.combat2&&battle.combat2Resolving===attacker.id&&attacker.side==="enemy"&&target.side==="ally"&&damage>0){
+      const art=battle.fighters.find(f=>f.id==="art"&&f.side==="ally"&&f.hp>0&&f.id!==target.id&&!f.combat2ReactUsed&&f.protection>0&&Number.isFinite(f.physicalAttack));
+      if(art){
+        const blocked=Math.min(Math.round(damage*.40),Math.round(art.physicalAttack*.85),art.protection*2);
+        if(blocked>0){const spent=Math.ceil(blocked/2);art.protection-=spent;damage-=blocked;art.combat2ReactUsed=true;emit(battle,"combat2-cover",{actorId:art.id,targetId:target.id,amount:blocked,protectionSpent:spent});}
+      }
+    }
     if(target.guardHits>0){
       damage=Math.round(damage*0.5);
       target.guardHits--;
@@ -774,8 +881,12 @@ const CombatCore = (() => {
       battle.currentActor=actorIndex;
       const plan=typeof EnemyDecision!=="undefined"
         ?EnemyDecision.chooseAction(battle,actorIndex):null;
-      const executed=plan&&["basic","special","powerful"].includes(plan.abilityId)
-        ?performActorAbility(battle,plan.abilityId,plan.targetIndex):false;
+      const resolved=battle.combat2?combat2EnemyPlan(battle,actor,actorIndex,plan,targetIndex):plan;
+      if(resolved?.prepared)continue;
+      let executed;
+      try{executed=resolved&&["basic","special","powerful"].includes(resolved.abilityId)
+        ?performActorAbility(battle,resolved.abilityId,resolved.targetIndex):false;}
+      finally{if(battle.combat2)delete battle.combat2Resolving;}
       if(!executed){
         const opponents=actorTargetIndices(battle,actorIndex,"all-enemies",targetIndex);
         const fallback=opponents.reduce((best,i)=>best===null||
@@ -856,6 +967,8 @@ const CombatCore = (() => {
        actor.meter<1000-1e-8)return false;
     const ability=AbilityData.get(actor,abilityId);
     if(!ability)return false;
+    if(ability.combat2Signal&&!battle.fighters.some(f=>f.side==="ally"&&f.hp>0&&f.id!==actor.id&&f.meter<950))return false;
+    if(ability.combat2Assist&&!battle.fighters.some(f=>f.side==="ally"&&f.hp>0&&f.id!==actor.id))return false;
     if(["insurance","signal"].includes(ability.kind)&&
        !battle.fighters.some(f=>f.side===actor.side&&f.hp>0&&f.id!==actor.id))
       return false;
@@ -1205,6 +1318,7 @@ const CombatCore = (() => {
 
   // Shared action executor. Current actor must be ready and have a legal target.
   function performActorAbility(battle,abilityId,primaryIndex) {
+    const combat2HelperIndex=arguments[3];
     const actorIndex=battle?.currentActor;
     if(!actorAbilityReady(battle,actorIndex,abilityId))return false;
     const actor=battle.fighters[actorIndex];
@@ -1247,6 +1361,10 @@ const CombatCore = (() => {
     if(["insurance","signal"].includes(ability.kind)&&
        (actor.side!=="ally"||target.side!=="ally"||actor.id===target.id))
       return false;
+    const combat2SelectedHelper=ability.combat2Assist?combat2Helper(battle,actor,combat2HelperIndex):null;
+    if(ability.combat2Assist&&!combat2ValidAssist(battle,actor,target,combat2SelectedHelper))return false;
+    if(ability.combat2Signal&&combat2Cap(target.meter,ability.signalMeter+(actor.combat2Boost??0))<=target.meter)return false;
+    if(ability.combat2Cover&&(!Number.isFinite(actor.physicalAttack)||actor.physicalAttack<0||!Number.isSafeInteger(target.protection)||!Number.isSafeInteger(target.maxProtection)||target.protection<0||target.protection>target.maxProtection))return false;
     const type=ability.kind==="damage"?AbilityData.damageType(ability):null;
     if(type&&type!=="legacy"&&!validTypedTarget(target,type))return false;
     if(ability.kind==="damage"&&!validHitProfile(battle,actor,[target],type))return false;
@@ -1258,7 +1376,18 @@ const CombatCore = (() => {
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
     if(!consumeReadMoveMitigation(battle,actor,readMovePenalty))return false;
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
-    if(ability.kind==="insurance"){
+    if(ability.combat2Cover){
+      target.guardHits=Math.max(target.guardHits,1);
+      const restored=Math.min(target.maxProtection-target.protection,Math.round(actor.physicalAttack*.65));
+      target.protection+=restored;delete target.insurance;
+      emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"guard",stacks:target.guardHits});
+      emit(battle,"combat2-protection",{actorId:actor.id,targetId:target.id,amount:restored});
+      battle.message=actor.name+" прикрывает "+target.name+".";
+    }else if(ability.combat2Signal){
+      combat2Grant(battle,actor,target,ability.signalMeter+(actor.combat2Boost??0),"signal");
+      delete actor.combat2Boost;
+      battle.message=actor.name+" передаёт сигнал "+target.name+".";
+    }else if(ability.kind==="insurance"){
       target.insurance={ownerId:actor.id,percent:ability.insurancePercent,
        remaining:ability.insuranceTurns,afterMeter:ability.afterInterceptMeter??0};
       emit(battle,"effect",{actorId:actor.id,targetId:target.id,
@@ -1319,6 +1448,7 @@ const CombatCore = (() => {
               event.actorId===actor.id&&event.targetId===target.id))?
               ", ослабление ×"+ability.weakening+".":".");
     }
+    if(ability.combat2Assist)combat2Assist(battle,actor,target,combat2SelectedHelper,ability);
     if(ability.kind!=="damage"||!hitCheckEnabled(battle,type)||
       !battle.events.some(event=>event.type==="miss"&&event.actorId===actor.id&&event.targetId===target.id))
       applyFollowUpEffects(battle,actor,ability,[target],target,type,readMovePenalty);
@@ -1347,11 +1477,12 @@ const CombatCore = (() => {
 
   // Legacy manual and auto APIs use the same core executor.
   function performPlayerAbility(battle,abilityId){
+    const combat2HelperIndex=arguments[2];
     if(!abilityReady(battle,abilityId))return false;
     const mode=abilityTargetSide(battle,abilityId);
     const primary=mode==="self"?battle.currentActor:
       mode==="ally"||mode==="all-allies"?battle.selectedAlly:battle.selectedEnemy;
-    return performActorAbility(battle,abilityId,primary);
+    return performActorAbility(battle,abilityId,primary,combat2HelperIndex);
   }
 
   // Combat-015B: apply a read-only tactical proposal using the same command
@@ -1372,7 +1503,7 @@ const CombatCore = (() => {
       if (legal) {
         if (mode === "enemy" || mode === "all-enemies") chooseEnemy(battle, target);
         else if (mode === "ally") chooseAlly(battle, target);
-        if (performPlayerAbility(battle, plan.abilityId)) return true;
+        if (performPlayerAbility(battle, plan.abilityId,plan.helperIndex)) return true;
       }
     }
     // A stale/unsupported decision must never leave autoplay stuck. This also
@@ -1391,6 +1522,6 @@ const CombatCore = (() => {
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
     chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects, abilityTargetIndices, actorTargetIndices, actorAbilityReady, performActorAbility,
-    activePassiveModifiers, activeLeaderModifiers, effectiveStat
+    previewSignal, activePassiveModifiers, activeLeaderModifiers, effectiveStat
   });
 })();

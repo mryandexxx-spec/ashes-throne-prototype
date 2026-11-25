@@ -24,3 +24,50 @@ Node: node --test tests/aud003-b12-session.test.js; node docs/research/aud003-v1
 
 ### Browser contract B12.2
 CI workflow `AUD003-B12 combat lab` runs original V11 contracts and lab tests in Node plus Chromium and WebKit (844×320/390, 932×430, portrait return), manual action and restart, five heroes + escort, wave victory, loss, paired batches, config compare and downloaded JSON. Screenshots and export in CI artifacts. This is simulated mobile viewport, not a physical iPhone. Audit fixes: no dimming of living fighters on enemy turns; legacy trust selector hidden when individual trust enabled; leaving boss does not retain its enemy override; separate browser and Node evidence.
+
+## B12.3 — объяснимость и новые гипотезы
+Trace событий записывается только для живого сеанса, не в копиях rollout и не в пакетной симуляции. Damage = adjusted raw × roll × mark factor − armor − guard − Protection, затем cap по текущему HP; отдельно trace реакции, смерть, Mark, Guard, Signal, heal, CD/ready, phase/wave/terminal. Прогноз всех legal actions на одинаковых 4 будущих действиях при roll=1 (не гарантия). Показ получателя signal/assist условный: он может погибнуть после исходного действия. Дополнительные sidegrades Ren/Nada/Liora — [ПРЕДЛОЖЕНИЕ], не сюжетные способности, не общий stat bonus. Настраиваемые лимиты 60–600 ходов / 50–600 virtual time, фаза босса при пороге HP (одноразовый Protection и рост атаки, без воскрешения). Для прежних исследований использовать конфиг без ext; parity и контрактные проверки отдельно. 
+
+### B12.3 — мобильная отзывчивость и сценарии
+По скриншотам B12.2 арена читаема, но была слишком похожа на сетку технических карточек. Добавлены существующий лёгкий фон арены, более крупные условные знаки ролей, короткий визуальный отклик урона и готовые 6 сценариев. Не выдавать символы NPC за канонические визуальные модели; без 3D намеренно. Пакетная симуляция выполняется Web Worker с тем же ядром и cancel через terminate; если Worker недоступен, fallback отдаёт управление после каждого боя. Время симуляции не связано с временем UI. Полная трасса сохраняется в export даже если дедлайн наступил до первого действия. Таблицы показывают median escort и blocks. 
+
+## B12.3 — новые воспроизводимые математические эксперименты
+1900 условных боёв. Выполнено в V8 по тому же ядру; runner `node docs/research/aud003-b12-experiments.js`, сырые агрегаты `docs/research/aud003-b12-results.json`. Исторические условия B/C rush: 100 paired seed offset53000, V11 baseline, остальные n=50 как указано. W/Q = число побед / число побед с proxy качества, не оценка игрока. Медианы включают поражения. Никакого переноса этих параметров в production.
+
+| Конфигурация | W/Q из N | Медиана HP | Медиана ходов игрока | HP подопечного | Лимиты |
+|---|---:|---:|---:|---:|---:|
+| B rush V11 | 19/3 из 100 | 0.0% | 18.5 | — | 0 |
+| B opening 10% | 72/44 из 100 | 28.8% | 25.5 | — | 0 |
+| B opening 20% | 93/67 из 100 | 40.1% | 26 | — | 0 |
+| B opening 30% | 68/46 из 100 | 26.4% | 24 | — | 0 |
+| B compressed .5 | 20/2 из 100 | 0.0% | 17 | — | 0 |
+| B opening 20% + compressed | 94/63 из 100 | 40.1% | 25 | — | 0 |
+| C greedy | 100/87 из 100 | 40.0% | 22 | — | 0 |
+| C rollout | 97/11 из 100 | 27.4% | 21.5 | — | 0 |
+| C diverse horizon6 | 89/0 из 100 | 17.9% | 21 | — | 0 |
+| C horizon9 | 100/80 из 100 | 36.7% | 21 | — | 0 |
+| A fastMixed scale 1 | 42/1 из 50 | 15.5% | 25 | — | 0 |
+| A fastMixed scale 0.5 | 49/10 из 50 | 23.1% | 25 | — | 0 |
+| B fastMixed scale 1 | 9/0 из 50 | 0.0% | 19 | — | 0 |
+| B fastMixed scale 0.5 | 31/2 из 50 | 10.7% | 24 | — | 0 |
+| C fastMixed scale 1 | 50/49 из 50 | 53.3% | 22 | — | 0 |
+| C fastMixed scale 0.5 | 50/48 из 50 | 53.3% | 22 | — | 0 |
+| Art base | 50/29 из 50 | 88.9% | 5 | 94.647 | 0 |
+| Art shelter | 50/29 из 50 | 88.9% | 5 | 99.897 | 0 |
+| Art response | 50/28 из 50 | 88.9% | 5 | 90.71 | 0 |
+| Ren/Nada base | 50/50 из 50 | 71.7% | 24 | — | 0 |
+| Ren precision | 50/50 из 50 | 71.3% | 25 | — | 0 |
+| Nada observe | 50/50 из 50 | 72.7% | 25 | — | 0 |
+| Liora/Sava base | 50/50 из 50 | 68.8% | 11 | 114.88 | 0 |
+| Liora formation | 50/48 из 50 | 69.3% | 11 | 108.687 | 0 |
+| Sava tempo | 50/50 из 50 | 68.8% | 11 | 114.88 | 0 |
+| A three waves | 50/50 из 50 | 60.6% | 48 | — | 0 |
+| B three waves | 50/50 из 50 | 75.7% | 47 | — | 0 |
+| C three waves | 50/50 из 50 | 64.5% | 43 | — | 0 |
+
+Тест tie fairness только на первом готовом actor: равная скорость и перестановка A, порядок слотов 0/30 совпадений, seeded ID 30/30. Это не полная проверка меты, частоты ходов или AI tie-break.
+
+Самокритика: стартовое прикрытие, сжатие скорости, горизонт прогноза и персональные sidegrades меняют разные механизмы; их нельзя объявлять принятыми по одной парной выборке. Математические результаты не измеряют увлекательность, обучаемость или ощущение доверия. Волны используют упрощённый сценарий, не баланс полноценного PvE. Нужны ручные A/B сессии, сравнение разных составов и реальный iPhone. A живой маршрут FP→I→II→Nada и B gate остаются открыты.
+
+### Исправление browser CI #45607916372
+17/17 Node тестов прошли; браузерная проверка обнаружила устаревший статус «Готово» сразу после начала второй серии. Исправлено: синхронно сбрасывать status, результаты и lastBatch до Worker; подтверждать, что фактический Worker использовался, а не незаметный fallback. До повторной зелёной проверки PR #530 не считать завершённым.

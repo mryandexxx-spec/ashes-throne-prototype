@@ -53,6 +53,16 @@ const $=s=>document.querySelector(s);
 // Never fall back to the live wallet when sessionStorage is unavailable.
 const COMBAT2_PILOT=typeof location!=="undefined"&&/(?:^|[?&])combat2Pilot=1(?:&|$)/.test(location.search);
 function gameStorage(){return COMBAT2_PILOT?window.sessionStorage:window.localStorage;}
+const COMBAT2_ARENA=COMBAT2_PILOT&&typeof location!=="undefined"&&/(?:^|[?&])combat2Arena=1(?:&|$)/.test(location.search)&&typeof Combat2ArenaPilot!=="undefined";
+let battleIsCombat2Arena=false,combat2ArenaConfig=null,combat2EntryPending=false,combat2EntryFrames=0;
+function combat2InputBlocked(){return !!(state?.combat2&&combat2EntryPending);}
+function openCombat2Arena(){
+ if(!COMBAT2_ARENA)return false;
+ const scenario=$("#combat2ArenaScenario").value,tier=$("#combat2ArenaTier").value;
+ combat2ArenaConfig={scenario,tier,seed:Number($("#combat2ArenaSeed").value)};
+ try{Combat2ArenaPilot.setup(combat2ArenaConfig);}catch(error){$("#combat2ArenaNotice").textContent=error.message;return false;}
+ $("#combat2ArenaNotice").textContent="";squadReturnScreen="combat2Arena";showScreen("battle");return true;
+}
 if(COMBAT2_PILOT){
  document.title="ТЕСТ Combat 2.0 · Пепельный престол";
  const version=$("#buildVersion");if(version)version.textContent+=" · ТЕСТОВЫЙ СЕАНС";
@@ -327,11 +337,11 @@ function cancelAutoTimer(){
  if(autoTimer!==null){clearTimeout(autoTimer);autoTimer=null;}
 }
 function queueAutoAction(){
- if(autoTimer!==null||isVisualTransition()||visualActionPending()||!autoBattle||!state.active||document.hidden||
+ if(autoTimer!==null||isVisualTransition()||visualActionPending()||combat2InputBlocked()||!autoBattle||!state.active||document.hidden||
     !$("#battle").classList.contains("active"))return;
  autoTimer=setTimeout(()=>{
   autoTimer=null;
-  if(isVisualTransition()||visualActionPending()||!autoBattle||!state.active||document.hidden||
+  if(isVisualTransition()||visualActionPending()||combat2InputBlocked()||!autoBattle||!state.active||document.hidden||
      !$("#battle").classList.contains("active"))return;
   const before=state.fighters.map(f=>({...f}));
   // Combat-015B: plan only when the scheduled auto step actually executes.
@@ -2063,7 +2073,7 @@ function showScreen(id){
   if(typeof cancelHQTooltip==="function")cancelHQTooltip();
  }
  if(id!=="battle"){closeFighterInspection();hideAbilityTooltip();closeBattleMenu();}
- if(id!=="battle")clearCombat2Selection();
+ if(id!=="battle"){clearCombat2Selection();combat2EntryPending=false;combat2EntryFrames=0;}
  if(id!=="battle"){cancelAutoTimer();autoBattle=false;cancelVisualTransition();BattleAnimation.clear();combatVisual007?.clear();arenaFeedback?.clear(arenaCamera);closeBattleAssetGate();stopBattleRendering();disposeArenaEnv006();}
  if(id!=="heroDetail"&&typeof RenCard3D!=="undefined")RenCard3D.dispose();
  // Combat-008A: release the document scroll while the arena owns the viewport.
@@ -2131,6 +2141,8 @@ function showScreen(id){
   lastMissionEnergyRefunded=false;
   missionEntryPaid=false;
   missionResultSaveFailed=false;
+  battleIsCombat2Arena=COMBAT2_ARENA&&squadReturnScreen==="combat2Arena"&&!!combat2ArenaConfig;
+  combat2EntryPending=COMBAT2_PILOT&&(battleIsCombat2Arena||squadReturnScreen==="firstPlay"||squadReturnScreen==="mainCampaign");combat2EntryFrames=0;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
    battleIsMainCampaign=squadReturnScreen==="mainCampaign"&&typeof MainCampaignCore!=="undefined";
    battleMainCampaignId=battleIsMainCampaign?mainCampaignPendingId:null;
@@ -2152,7 +2164,7 @@ function showScreen(id){
   battleIsSignal=squadReturnScreen==="signalOperations"&&signalProgress.active?.phase==="battle";
   signalBattleRunId=battleIsSignal?signalProgress.active.runId:null;
   const label=$("#battleMissionLabel");
-  if(label)label.textContent=battleIsFirstPlay?"ПЕРВОЕ ДОНЕСЕНИЕ · УДЕРЖАТЬ ПРОХОД":
+  if(label)label.textContent=battleIsCombat2Arena?"ТЕСТ · "+Combat2ArenaPilot.scenarios[combat2ArenaConfig.scenario]:battleIsFirstPlay?"ПЕРВОЕ ДОНЕСЕНИЕ · УДЕРЖАТЬ ПРОХОД":
    battleIsWeekly?"ГЛАВНАЯ УГРОЗА · ИСПЫТАНИЕ НЕДЕЛИ":battleIsNetwork?(NETWORK_PILOT_ENABLED?"РАЗВЕДСЕТЬ · ПРОБНЫЙ БОЙ (ВНЕ КАНОНА)":
    "РАЗВЕДСЕТЬ · ДОБЫЧА РЕСУРСОВ"):
    battleIsSignal?"РАЗВЕДОПЕРАЦИЯ · ТРЕВОЖНЫЙ СИГНАЛ":
@@ -2273,6 +2285,7 @@ function showScreen(id){
     const storyNotice=$("#storyDemoNotice");
     if(storyNotice)storyNotice.textContent="Не удалось загрузить 3D-арену. Проверь соединение и повтори попытку.";
    }else{
+    if(battleIsCombat2Arena){showScreen("combat2ArenaSetup");$("#combat2ArenaNotice").textContent="Не удалось запустить арену: "+String(error?.message||error).slice(0,160);return;}
     showScreen("squad");
     const notice=$("#battleLoadError");
     if(notice){
@@ -2323,6 +2336,7 @@ function animateHQSelectionFx(button){
 document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click",()=>{
  if(b.matches?.("#home .hq-station")){animateHQSelectionFx(b);return;}
  resetHQSelectionFx();
+ if(b.dataset.screen==="home"&&battleIsCombat2Arena&&$("#battle")?.classList.contains("active")){showScreen("combat2ArenaSetup");return;}
  if(b.dataset.screen==="home"&&battleIsMainCampaign&&$("#battle")?.classList.contains("active")){showScreen("mainCampaign");return;}
  if(b.dataset.screen==="home"&&battleIsLoreRequired&&$("#battle")?.classList.contains("active")){
   LoreCampaignUI.cancelRequiredBattle();returnToLoreMap();return;
@@ -4195,6 +4209,7 @@ $("#battleMenuGoal")?.addEventListener("click",()=>{closeBattleMenu();setBattleG
 function replayBattle(){
  closeBattleMenu();
  if(!state.active)return false;
+ if(battleIsCombat2Arena){showScreen("battle");return true;}
  const mode=squadReturnScreen||"home";
  openSquad(mode);
  undersizedSquadConfirmed=true; // this squad was already confirmed for the fight
@@ -4466,7 +4481,7 @@ function syncBattleUI(){
  }
  const fighters=state.fighters;
  const actor=state.active?fighters[state.currentActor]:null;
- const visualBusy=visualActionPending();
+ const visualBusy=visualActionPending()||combat2InputBlocked();
  const specialReady=CombatCore.abilityReady(state,"special");
  const powerful=actor?AbilityData.get(actor,"powerful"):null;
  const powerfulReady=!!powerful&&CombatCore.abilityReady(state,"powerful");
@@ -4703,6 +4718,13 @@ function resetBattle(){
   syncBattleUI();
   return;
  }
+ if(battleIsCombat2Arena){
+  const setup=Combat2ArenaPilot.setup(combat2ArenaConfig);
+  const lineup=setup.lineup.map(f=>f.side==="ally"?{...f,name:ALLIES.find(h=>h.id===f.id)?.name??f.name}:f);
+  state=CombatCore.createBattle(lineup,setup.waves,setup.options);
+  ensureEncounterNpcVisuals([...lineup,...setup.waves.flat()]);
+  CombatCore.advanceToPlayerTurn(state);syncBattleUI();return;
+ }
  const lineup=battleLineup();
  const waves=battleFutureWaves();
  const allies=lineup.filter(f=>f.side==="ally");
@@ -4733,7 +4755,7 @@ function resetBattle(){
 }
 // Combat-009: instant offensive abilities; allied skills wait for an ally tap.
 function applyManualAbility(abilityId){
- if(autoBattle||isVisualTransition()||visualActionPending()||!CombatCore.abilityReady(state,abilityId))return false;
+ if(autoBattle||isVisualTransition()||visualActionPending()||combat2InputBlocked()||!CombatCore.abilityReady(state,abilityId))return false;
  const side=CombatCore.abilityTargetSide(state,abilityId);
  const targets=CombatCore.abilityTargetIndices(state,side);
  if(!targets.length)return false;
@@ -4756,7 +4778,7 @@ function applyManualAbility(abilityId){
 function pressAbility(abilityId){
  if(abilityHintSuppressClick===abilityId){abilityHintSuppressClick=null;return;}
  hideAbilityTooltip();
- if(!state.active||autoBattle||isVisualTransition()||visualActionPending()||!CombatCore.abilityReady(state,abilityId))return;
+ if(!state.active||autoBattle||isVisualTransition()||visualActionPending()||combat2InputBlocked()||!CombatCore.abilityReady(state,abilityId))return;
  const actor=state.fighters[state.currentActor],d=state.combat2?AbilityData.get(actor,abilityId):null;
  if(state.combat2&&combat2Selection()&&abilityId==="basic"){selectedAbility="basic";clearCombat2Selection();syncBattleUI();return;}
  if(d&&(d.combat2Assist||d.combat2Signal)){
@@ -4786,6 +4808,7 @@ $("#basicAbilityBtn").addEventListener("click",()=>pressAbility("basic"));
 $("#specialAbilityBtn").addEventListener("click",()=>pressAbility("special"));
 $("#powerfulAbilityBtn")?.addEventListener("click",()=>pressAbility("powerful"));
 $("#battleRetryBtn").addEventListener("click",()=>{
+ if(!state.active&&!isVisualTransition()&&battleIsCombat2Arena){showScreen("battle");return;}
  if(!state.active&&!isVisualTransition()&&battleIsMainCampaign){openMainCampaignMission(battleMainCampaignId);return;}
  if(!state.active&&!isVisualTransition())openSquad(battleIsLoreRequired?"loreRequired":battleIsLoreTraining?"loreTraining":battleIsSignal?"signalOperations":battleIsOperation?"operations":battleIsChallenge?"challenges":"home");
 });
@@ -5015,7 +5038,7 @@ document.addEventListener("keydown",event=>{
 // Manual target picking is independent of which 3D mesh part was touched.
 function selectArenaTarget(pickedMesh){
  if(!state.active||autoBattle||isVisualTransition()||!pickedMesh)return false;
- if(state.combat2&&visualActionPending())return false;
+ if(state.combat2&&(visualActionPending()||combat2InputBlocked()))return false;
  let mesh=pickedMesh;
  while(mesh&&!mesh.metadata?.fighterId)mesh=mesh.parent;
  const id=mesh?.metadata?.fighterId;
@@ -5169,6 +5192,14 @@ function renderBattleFrame(){
  // ARENA-UI-003B: numbers follow the labels placed in this very frame.
  arenaFeedback?.floaters?.relayout?.();
  scene.render();
+ // B17.3B2: no input before two rendered frames after asset gate release.
+ // The existing skip control still permits capsule fallback; do not demand GLBs on failed downloads.
+ if(combat2InputBlocked()){
+  const live=presentationFighters().filter(f=>f.hp>0);
+  const ready=!battleAssetGate&&live.every(f=>meshes[f.id]?.body?.isEnabled()&&indicatorNodes[f.id]&&indicatorNodes[f.id].style.display!=="none");
+  combat2EntryFrames=ready?combat2EntryFrames+1:0;
+  if(combat2EntryFrames>=2){combat2EntryPending=false;syncBattleUI();}
+ }
  // Draw the last animation frame before revealing the next wave/result.
  finishVisualTransition();
  if(hadPending&&!visualActionPending()&&state.active&&!isVisualTransition())syncBattleUI();
@@ -5640,4 +5671,11 @@ renderAccountHeader();renderHeroes();CombatCore.advanceToPlayerTurn(state);
 // RESICON001: source cards register before the startup entry prompt.
 if(typeof ResourceIconUI!=="undefined")
  ResourceArtUI.mount(()=>({progress,day:dailyDay()}),screen=>showScreen(screen));
-if(!openFirstPlayOnEntry())maybeOpenLoginOnEntry();
+if(COMBAT2_ARENA){
+ const scenario=$("#combat2ArenaScenario"),tier=$("#combat2ArenaTier");
+ for(const [id,label] of Object.entries(Combat2ArenaPilot.scenarios)){const o=document.createElement("option");o.value=id;o.textContent=label;scenario.append(o);}
+ for(const [id,label] of Object.entries(Combat2ArenaPilot.tiers)){const o=document.createElement("option");o.value=id;o.textContent=label;tier.append(o);}
+ const refresh=()=>{tier.disabled=["armored","threats"].includes(scenario.value);};scenario.addEventListener("change",refresh);refresh();
+ $("#combat2ArenaStart").addEventListener("click",openCombat2Arena);
+ showScreen("combat2ArenaSetup");
+}else if(!openFirstPlayOnEntry())maybeOpenLoginOnEntry();

@@ -477,82 +477,127 @@ let missionResultRecorded=false;
 let activeMissionId=null;
 // CAM-001B — separate main story mode; existing squad, arena and v3 writer.
 let battleIsMainCampaign=false,mainCampaignResult=null,mainCampaignClaiming=false,mainCampaignNotice="";
+let mainCampaignSelectedId=null,mainCampaignPendingId=null,battleMainCampaignId=null;
 const mainCampaignStorage=()=>window.localStorage;
 function mainCampaignWritable(){
  return typeof MainCampaignCore!=="undefined"&&!saveBlocked&&saveAvailable&&progress.saveVersion===3&&
   typeof ProgressWriterCore!=="undefined"&&ProgressWriterCore.canPersist();
 }
+function mainCampaignSelected(){return mainCampaignSelectedId||MainCampaignCore.ID;}
+function mainCampaignStatus(id){
+ return id===MainCampaignCore.ID?MainCampaignCore.status(MainCampaignCore.load(mainCampaignStorage),progress):
+  MainCampaignCore.statusFor(id,mainCampaignStorage,progress);
+}
+function mainCampaignCanLaunch(id){
+ if(!mainCampaignWritable()||mainCampaignClaiming||!MainCampaignCore.mission(id))return false;
+ const status=mainCampaignStatus(id);
+ return id===MainCampaignCore.ID?status!=="blocked":["ready","claimable","claimed"].includes(status);
+}
+function selectMainCampaignMission(id){
+ if(!mainCampaignCanLaunch(id))return false;
+ mainCampaignSelectedId=id;mainCampaignNotice="";renderMainCampaign();return true;
+}
 function renderMainCampaign(){
  if(typeof MainCampaignCore==="undefined"||!$("#mainCampaignMap"))return;
- const proof=MainCampaignCore.load(mainCampaignStorage);
- const status=MainCampaignCore.status(proof,progress);
- const best=proof?.best||0;
- $("#mainCampaignMap").dataset.status=status;
+ const id=mainCampaignSelected(),second=id===MainCampaignCore.II_ID;
+ const proof=MainCampaignCore.proofFor(id,mainCampaignStorage),status=mainCampaignStatus(id),best=proof?.best||0;
+ const firstProof=MainCampaignCore.load(mainCampaignStorage),firstStatus=mainCampaignStatus(MainCampaignCore.ID);
+ const secondStatus=mainCampaignStatus(MainCampaignCore.II_ID);
+ const map=$("#mainCampaignMap"),chart=map.querySelector(".main-campaign-chart");
+ const title=second?MainCampaignCore.II_TITLE:MainCampaignCore.TITLE;
+ map.dataset.status=status;map.dataset.mission=second?"II":"I";
+ chart.setAttribute("aria-label","Схема маршрута глав I и II");
+ chart.querySelector(".eyebrow").textContent="ГЛАВА "+(second?"II":"I")+" · САДЫ НАД ПРОПАСТЬЮ";
+ chart.querySelector("h3").textContent=second?title:"След распоряжения";
+ chart.style.backgroundImage=second?'url("assets/main-campaign-route.svg")':"";
+ const node=map.querySelector(".main-campaign-node");
+ node.querySelector(".eyebrow").textContent=(second?"02":"01")+" · БОЕВАЯ МИССИЯ";
+ node.querySelector("h3").textContent=title;
  const storyKnown=best>0&&status!=="blocked";
  const sceneArt=$("#mainCampaignSceneArt");
- const sceneSrc="assets/cutscenes/main-campaign/m1/"+(storyKnown?"warehouse-proof.webp":"warehouse-conflict.webp");
- if(sceneArt.getAttribute("src")!==sceneSrc)sceneArt.setAttribute("src",sceneSrc);
- sceneArt.alt=storyKnown?"Мастер осматривает сохранённую скобу и грузовую отметку":"На складе охранник оттесняет мастера от снятого крепежа";
- $("#mainCampaignSceneCaption").textContent=storyKnown?"Крепёж у мастера. Следующая отметка найдена.":"Мастер: «Эту пока не грузите. Она с того пролёта».";
+ sceneArt.hidden=second;sceneArt.style.display=second?"none":"";
+ if(!second){
+  const sceneSrc="assets/cutscenes/main-campaign/m1/"+(storyKnown?"warehouse-proof.webp":"warehouse-conflict.webp");
+  if(sceneArt.getAttribute("src")!==sceneSrc)sceneArt.setAttribute("src",sceneSrc);
+  sceneArt.alt=storyKnown?"Мастер осматривает сохранённую скобу и грузовую отметку":"На складе охранник оттесняет мастера от снятого крепежа";
+ }
+ $("#mainCampaignSceneCaption").textContent=second?(storyKnown?"Рабочий в безопасности. Нужно остановить вывоз.":"Дорожное убежище · осмотр места ремонта"):
+  storyKnown?"Крепёж у мастера. Следующая отметка найдена.":"Мастер: «Эту пока не грузите. Она с того пролёта».";
  $("#mainCampaignProgress").textContent="Миссии: "+(best>0?1:0)+"/1 · Звёзды: "+best+"/3";
- $("#mainCampaignBrief").textContent=best>0&&status!=="blocked"?
-  "Крепёж сохранён. На ярлыке указан следующий пункт доставки.":
-  "Мастер просит сохранить снятый крепёж для проверки. Охрана мешает.";
- $("#mainCampaignRewardAmount").textContent=MainCampaignCore.SOURCE.reward.currency+" кромов";
+ $("#mainCampaignBrief").textContent=second?(storyKnown?
+  "Рабочий свободен. Нада записала его показания. Герои обещали помочь остановить вывоз камня.":
+  "Нада нашла место ремонта. Два сторожа не дают рабочему уйти к управляющему. Защитите его."):
+  storyKnown?"Крепёж сохранён. На ярлыке указан следующий пункт доставки.":"Мастер просит сохранить снятый крепёж для проверки. Охрана мешает.";
+ node.querySelector(".main-campaign-reward .resource-art").style.display=second?"none":"";
+ $("#mainCampaignRewardAmount").textContent=second?"Нада · 1★":MainCampaignCore.SOURCE.reward.currency+" кромов";
  $("#mainCampaignRewardLabel").textContent=status==="claimed"?"Получено":status==="claimable"?"Доступно":"За первую победу";
  $("#mainCampaignNode").classList.toggle("primary",status!=="claimable");
  $("#mainCampaignNode").classList.toggle("ghost",status==="claimable");
  $("#mainCampaignStars").textContent="★".repeat(best)+"☆".repeat(3-best);
  $("#mainCampaignNode").textContent=best?"Повторить бой":"Выбрать отряд";
- $("#mainCampaignNode").disabled=!mainCampaignWritable()||status==="blocked"||mainCampaignClaiming;
- $("#mainCampaignMapPin").disabled=$("#mainCampaignNode").disabled;
- $("#mainCampaignMapPin").setAttribute("aria-label",MainCampaignCore.TITLE+" — "+$("#mainCampaignNode").textContent);
- $("#mainCampaignPinSymbol").textContent=best?"✓":"⚔";
+ $("#mainCampaignNode").disabled=!mainCampaignCanLaunch(id);
+ $("#mainCampaignMapPin").disabled=!mainCampaignCanLaunch(MainCampaignCore.ID);
+ $("#mainCampaignMapPin").setAttribute("aria-label",MainCampaignCore.TITLE+" — "+(second?"открыть главу I":$("#mainCampaignNode").textContent));
+ $("#mainCampaignMapPin").setAttribute("aria-pressed",String(!second));
+ $("#mainCampaignPinSymbol").textContent=firstProof?.best?"✓":"⚔";
  $("#mainCampaignClaim").hidden=status!=="claimable";
  $("#mainCampaignClaim").disabled=!mainCampaignWritable()||mainCampaignClaiming;
- $("#mainCampaignNext").dataset.unlocked=String(status==="claimed");
- $("#mainCampaignNextStatus").textContent=status==="claimed"?"Путь открыт · эпизод готовится":"После победы и награды";
+ $("#mainCampaignClaim").textContent=second?"Принять Наду":"Забрать награду";
+ const next=$("#mainCampaignNext");
+ next.dataset.unlocked=String(firstStatus==="claimed");
+ next.disabled=!mainCampaignCanLaunch(MainCampaignCore.II_ID);
+ next.setAttribute("aria-pressed",String(second));
+ $("#mainCampaignNextStatus").textContent=secondStatus==="claimed"?"Пройдено":secondStatus==="claimable"?"Награда доступна":
+  secondStatus==="ready"?"Глава открыта":secondStatus==="blocked"?"Сохранение недоступно":"После победы и награды";
  $("#mainCampaignNotice").textContent=mainCampaignNotice||(status==="blocked"||(!mainCampaignWritable()&&!mainCampaignClaiming)?
   "Сохранение недоступно. Проверьте данные браузера и перезагрузите игру.":status==="claimed"?
-  "Повторы бесплатны, только для улучшения звёзд.":status==="claimable"?
-  "Победа сохранена. Заберите награду.":"Первый бой бесплатный.");
+  second?"Сдержать обещание · глава III готовится.":"Повторы бесплатны, только для улучшения звёзд.":status==="claimable"?
+  second?"Победа сохранена. Нада предлагает вести полевые проверки.":"Победа сохранена. Заберите награду.":"Первый бой бесплатный.");
 }
-function openMainCampaignMission(){
- if(!mainCampaignWritable()||mainCampaignClaiming||MainCampaignCore.status(MainCampaignCore.load(mainCampaignStorage),progress)==="blocked")return false;
+function openMainCampaignMission(id=mainCampaignSelected()){
+ if(!mainCampaignCanLaunch(id))return false;
+ mainCampaignSelectedId=id;mainCampaignPendingId=id;
  mainCampaignNotice="";activeMissionId=null;openSquad("mainCampaign");return true;
 }
 function renderMainCampaignResult(){
  if(!mainCampaignResult||typeof MainCampaignCore==="undefined")return;
- const result=mainCampaignResult,proof=MainCampaignCore.load(mainCampaignStorage);
- const status=MainCampaignCore.status(proof,progress);
+ const result=mainCampaignResult,id=result.missionId,second=id===MainCampaignCore.II_ID;
+ const proof=MainCampaignCore.proofFor(id,mainCampaignStorage),status=mainCampaignStatus(id);
+ const root=$("#mainCampaignResult");
+ root.querySelector(".eyebrow").textContent=second?"ГЛАВА II · ЗА КАМЕННЫМ РЕБРОМ":"ГЛАВА I · ПРОЛЁТ БЕЗ ОТМЕТКИ";
  $("#mainCampaignResultTitle").textContent=result.earned?"Победа":"Поражение";
  $("#mainCampaignResultStars").textContent="★".repeat(result.earned)+"☆".repeat(3-result.earned)+" · Лучший результат: "+(proof?.best||0)+"/3";
  const resultMessage=mainCampaignNotice||(!result.ok?
   "Не удалось подтвердить сохранение. Перезагрузите игру и проверьте карту.":!result.earned?
   "Отряд потерпел поражение. Награды нет. Можно изменить состав и повторить.":
   status==="claimed"?"Результат сохранён. Разовая награда уже получена.":
+  second?"Нада предлагает вести ваши проверки, оставляя оригиналы записей у себя.":
   "Результат сохранён. Заберите "+MainCampaignCore.SOURCE.reward.currency+" кромов за первую победу.");
  const storyConfirmed=!!result.earned&&result.ok&&(proof?.best||0)>0&&status!=="blocked";
- $("#mainCampaignResultArt").hidden=!storyConfirmed;
- $("#mainCampaignResult").dataset.story=storyConfirmed?"confirmed":"none";
- $("#mainCampaignResultText").textContent=(storyConfirmed?"Крепёж сохранён для проверки. На ярлыке — следующий пункт доставки. ":"")+resultMessage;
+ $("#mainCampaignResultArt").hidden=!storyConfirmed||second;
+ root.dataset.story=storyConfirmed?"confirmed":"none";
+ $("#mainCampaignResultText").textContent=(storyConfirmed?(second?
+  "Рабочий свободен. Нужно сдержать обещание и помочь остановить вывоз камня. ":
+  "Крепёж сохранён для проверки. На ярлыке — следующий пункт доставки. "):"")+resultMessage;
  const rewardVisible=!!result.earned&&result.ok&&(status==="claimable"||status==="claimed");
- $("#mainCampaignResult").dataset.outcome=result.earned?"victory":"defeat";
+ root.dataset.outcome=result.earned?"victory":"defeat";
  $("#mainCampaignResultReward").hidden=!rewardVisible;
- $("#mainCampaignResultRewardAmount").textContent=MainCampaignCore.SOURCE.reward.currency+" кромов";
+ $("#mainCampaignResultReward").querySelector(".resource-art").style.display=second?"none":"";
+ $("#mainCampaignResultRewardAmount").textContent=second?"Нада · 1★":MainCampaignCore.SOURCE.reward.currency+" кромов";
  $("#mainCampaignResultRewardLabel").textContent=status==="claimed"?"Разовая награда получена":"Награда за первую победу";
+ $("#mainCampaignResultClaim").textContent=second?"Принять Наду":"Забрать награду";
  $("#mainCampaignResultClaim").hidden=status!=="claimable"||!result.earned||!result.ok;
  $("#mainCampaignResultBack").classList.toggle("primary",$("#mainCampaignResultClaim").hidden);
  $("#mainCampaignResultBack").classList.toggle("ghost",!$("#mainCampaignResultClaim").hidden);
  $("#mainCampaignResultClaim").disabled=!mainCampaignWritable()||mainCampaignClaiming;
- $("#mainCampaignResultRetry").disabled=mainCampaignClaiming||!result.ok||!mainCampaignWritable();
+ $("#mainCampaignResultRetry").disabled=mainCampaignClaiming||!result.ok||!mainCampaignCanLaunch(id);
  $("#mainCampaignResultBack").disabled=mainCampaignClaiming;
 }
-async function claimMainCampaignReward(){
- if(mainCampaignClaiming||!mainCampaignWritable()||MainCampaignCore.status(MainCampaignCore.load(mainCampaignStorage),progress)!=="claimable")return;
+async function claimMainCampaignReward(id){
+ if(mainCampaignClaiming||!mainCampaignWritable()||mainCampaignStatus(id)!=="claimable")return;
  mainCampaignClaiming=true;mainCampaignNotice="";renderMainCampaign();renderMainCampaignResult();
  try{
-  const result=await MainCampaignCore.claim({storageProvider:mainCampaignStorage,heroes:ALLIES,
+  const result=await MainCampaignCore.claimFor(id,{storageProvider:mainCampaignStorage,heroes:ALLIES,
    exclusive:ProgressWriterCore.exclusive,day:dailyDay()});
   if(!result.ok){
    if(["SAVE_OUTCOME_UNKNOWN","REWARD_SYNC_FAILED","EXCLUSIVE_LOCK_FAILED","STALE_WALLET","WALLET_READ_FAILED","INVALID_WALLET","ALREADY_CLAIMED"].includes(result.code))
@@ -561,18 +606,25 @@ async function claimMainCampaignReward(){
    return;
   }
   Object.keys(progress).forEach(key=>delete progress[key]);Object.assign(progress,result.runtime);
-  saveAvailable=true;mainCampaignNotice="Награда получена. Следующий путь открыт.";
+  saveAvailable=true;mainCampaignNotice=id===MainCampaignCore.II_ID?
+   "Нада в коллекции. Сдержать обещание · глава III готовится.":"Награда получена. Следующий путь открыт.";
   renderAccountHeader();renderPlayerProfile();renderDailyTasks();renderHeroes();
  }catch(_){window.walletWriterHalt?.();mainCampaignNotice="Проверьте баланс после перезагрузки.";}
  finally{mainCampaignClaiming=false;renderMainCampaign();renderMainCampaignResult();}
 }
-for(const id of ["#mainCampaignNode","#mainCampaignMapPin"]){
- $(id)?.addEventListener("click",()=>{if($("#campaign")?.classList.contains("active")&&selectedCampaignPath==="main")openMainCampaignMission();});
+const onMainCampaignMap=()=>$("#campaign")?.classList.contains("active")&&selectedCampaignPath==="main";
+$("#mainCampaignNode")?.addEventListener("click",()=>{if(onMainCampaignMap())openMainCampaignMission();});
+for(const [selector,second] of [["#mainCampaignMapPin",false],["#mainCampaignNext",true]]){
+ $(selector)?.addEventListener("click",()=>{
+  if(!onMainCampaignMap())return;
+  const id=second?MainCampaignCore.II_ID:MainCampaignCore.ID;
+  if(mainCampaignSelected()===id)openMainCampaignMission(id);else selectMainCampaignMission(id);
+ });
 }
-$("#mainCampaignClaim")?.addEventListener("click",()=>void claimMainCampaignReward());
-$("#mainCampaignResultClaim")?.addEventListener("click",()=>void claimMainCampaignReward());
-$("#mainCampaignResultRetry")?.addEventListener("click",()=>{if($("#mainCampaignResult")?.classList.contains("active"))openMainCampaignMission();});
-$("#mainCampaignResultBack")?.addEventListener("click",()=>{if(!mainCampaignClaiming)showScreen("mainCampaign");});
+$("#mainCampaignClaim")?.addEventListener("click",()=>{if(onMainCampaignMap())void claimMainCampaignReward(mainCampaignSelected());});
+$("#mainCampaignResultClaim")?.addEventListener("click",()=>{if($("#mainCampaignResult")?.classList.contains("active")&&mainCampaignResult?.earned&&mainCampaignResult.ok)void claimMainCampaignReward(mainCampaignResult.missionId);});
+$("#mainCampaignResultRetry")?.addEventListener("click",()=>{if($("#mainCampaignResult")?.classList.contains("active")&&mainCampaignResult)openMainCampaignMission(mainCampaignResult.missionId);});
+$("#mainCampaignResultBack")?.addEventListener("click",()=>{if(!mainCampaignClaiming&&mainCampaignResult){mainCampaignSelectedId=mainCampaignResult.missionId;showScreen("mainCampaign");}});
 
 let lastMissionStars=0;
 let lastMissionReward=null;
@@ -1402,6 +1454,7 @@ function heroOwned(id){
  return typeof HeroCollectionCore==="undefined"||HeroCollectionCore.owned(progress,id);
 }
 function heroUnlockLabel(id){
+ if(id==="nada"&&typeof MainCampaignCore!=="undefined")return "Основная кампания · глава II";
  const mission=typeof HeroCollectionCore!=="undefined"?HeroCollectionCore.unlockMission(id):null;
  return HeroCollectionCore.START.includes(id)?"Доступен с начала":mission?(MissionData.get(mission)?.title||"миссия"):"Основная кампания · будущая сюжетная глава";
 }
@@ -1566,7 +1619,7 @@ function selectedParty(){
   .map(id=>ALLIES.find(h=>h.id===id)).filter(Boolean).map(squadHeroStats);
 }
 function battleLineup(){
- if(battleIsMainCampaign)return [...selectedParty(),...MainCampaignCore.enemies(NpcEnemyData)];
+ if(battleIsMainCampaign)return [...selectedParty(),...MainCampaignCore.enemiesFor(battleMainCampaignId,NpcEnemyData)];
  if(battleIsFirstPlay){
   const art=progressedHero(ALLIES.find(h=>h.id==="art"));
   const ren=progressedHero(ALLIES.find(h=>h.id==="ren"));
@@ -1935,6 +1988,9 @@ function renderStoryDemo(){
  $("#storyDemoAgain").hidden=view.kind!=="defeat"&&view.kind!=="ending";
 }
 function showScreen(id){
+ if(id==="battle"&&squadReturnScreen==="mainCampaign"&&!mainCampaignCanLaunch(mainCampaignPendingId)){
+  mainCampaignNotice="Миссия недоступна. Проверьте сохранение и вернитесь на карту.";return showScreen("mainCampaign");
+ }
  const mainCampaignReturn=id==="mainCampaign";
  if(mainCampaignReturn)id="campaign";
  if(id!=="operations")firstReportOperationRequested=false;
@@ -2024,6 +2080,7 @@ function showScreen(id){
   missionResultSaveFailed=false;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
    battleIsMainCampaign=squadReturnScreen==="mainCampaign"&&typeof MainCampaignCore!=="undefined";
+   battleMainCampaignId=battleIsMainCampaign?mainCampaignPendingId:null;
    if(battleIsMainCampaign){mainCampaignResult=null;mainCampaignNotice="";}
   battleIsFirstPlay=squadReturnScreen==="firstPlay"&&firstPlayState?.phase==="battle";
   battleIsNpcMissionPilot=battleIsCampaign&&NPC_MISSION_PILOT_ENABLED&&
@@ -2055,7 +2112,7 @@ function showScreen(id){
      ((battleIsNpcChallengePilot?NpcChallengePilot.title(activeChallengeId):null)||
       ChallengeCore.get(activeChallengeId).title):
    battleIsStoryDemo?(storyTrialParty?"ПРОБА СЮЖЕТА · СОПРОТИВЛЕНИЕ (ТЕСТ)":"ПРОБА СЮЖЕТА · ДОРОГА, КОТОРОЙ НЕТ"):
-   battleIsMainCampaign?MainCampaignCore.TITLE:battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
+   battleIsMainCampaign?(battleMainCampaignId===MainCampaignCore.II_ID?MainCampaignCore.II_TITLE:MainCampaignCore.TITLE):battleIsCampaign?MissionData.get(activeMissionId).title:"ТЕСТОВАЯ АРЕНА";
   const trial=battleIsLoreRequired?ActiveLoreCampaign.encounter(loreRequiredContext?.nodeId):null;
   const objective=$("#battleChallengeGoal");
   if(objective){
@@ -2816,7 +2873,7 @@ if(squadLeaderButton&&squadLeaderTooltip){
 const retryLoad=$("#retryBattleLoad");
 if(retryLoad)retryLoad.addEventListener("click",()=>window.location.reload());
 $("#squadStart").addEventListener("click",()=>{
- if(squadReturnScreen==="mainCampaign"&&(!$("#squad")?.classList.contains("active")||!mainCampaignWritable()))return;
+ if(squadReturnScreen==="mainCampaign"&&(!$("#squad")?.classList.contains("active")||!mainCampaignCanLaunch(mainCampaignPendingId)))return;
  const count=selectedParty().length;
  if(isLoreRequiredSquad()&&!requiredLoreSquadReady()){
   const warning=$("#squadWarning");
@@ -2885,7 +2942,7 @@ function showLockedHero(id){
  const cost=StarCore.costOf(progress,id),amount=StarCore.shardsOf(progress,id);
  if(cost===null||amount===null)return false;
  $("#lockedHeroTitle").textContent=ALLIES.find(h=>h.id===id).name;
- $("#lockedHeroSource").textContent=heroUnlockLabel(id)+". Герой присоединится в ходе сюжета. Этот эпизод ещё недоступен.";
+ $("#lockedHeroSource").textContent=heroUnlockLabel(id)+(id==="nada"&&typeof MainCampaignCore!=="undefined"&&mainCampaignStatus(MainCampaignCore.II_ID)==="claimable"?". Победа сохранена: примите Наду на карте кампании.":id==="nada"&&typeof MainCampaignCore!=="undefined"&&mainCampaignStatus(MainCampaignCore.II_ID)==="ready"?". Пройдите главу II и получите героя.":". Герой присоединится в ходе сюжета. Этот эпизод ещё недоступен.");
  $("#lockedHeroStars").innerHTML=starGlyphs(0);
  $("#lockedHeroShards").textContent=String(amount);
  $("#lockedHeroProgress").max=cost;
@@ -4163,7 +4220,7 @@ function syncBattleUI(){
  // the arena before the final animation ends. Only visual navigation waits.
  if(battleIsMainCampaign&&!state.active&&!missionResultRecorded){
    missionResultRecorded=true;
-   mainCampaignResult=MainCampaignCore.record(state,mainCampaignStorage);
+   mainCampaignResult={...MainCampaignCore.recordFor(battleMainCampaignId,state,mainCampaignStorage,ALLIES),missionId:battleMainCampaignId};
    if(!mainCampaignResult.ok)mainCampaignNotice="Сохранение не подтверждено. Вернитесь на карту или перезагрузите игру.";
   }
   if(battleIsCampaign&&!state.active&&!missionResultRecorded){
@@ -4607,6 +4664,7 @@ function resetBattle(){
    penetrationChecks:true,statusChecks:true
   }:{})
  });
+ if(battleIsMainCampaign)Object.defineProperty(state,"mainCampaignMissionId",{value:battleMainCampaignId,enumerable:true});
  ensureEncounterNpcVisuals([...lineup,...waves.flat()]);
  CombatCore.advanceToPlayerTurn(state);
  syncBattleUI();
@@ -4646,7 +4704,8 @@ $("#basicAbilityBtn").addEventListener("click",()=>pressAbility("basic"));
 $("#specialAbilityBtn").addEventListener("click",()=>pressAbility("special"));
 $("#powerfulAbilityBtn")?.addEventListener("click",()=>pressAbility("powerful"));
 $("#battleRetryBtn").addEventListener("click",()=>{
- if(!state.active&&!isVisualTransition())openSquad(battleIsMainCampaign?"mainCampaign":battleIsLoreRequired?"loreRequired":battleIsLoreTraining?"loreTraining":battleIsSignal?"signalOperations":battleIsOperation?"operations":battleIsChallenge?"challenges":"home");
+ if(!state.active&&!isVisualTransition()&&battleIsMainCampaign){openMainCampaignMission(battleMainCampaignId);return;}
+ if(!state.active&&!isVisualTransition())openSquad(battleIsLoreRequired?"loreRequired":battleIsLoreTraining?"loreTraining":battleIsSignal?"signalOperations":battleIsOperation?"operations":battleIsChallenge?"challenges":"home");
 });
 const autoBattleControl=$("#autoBattleBtn");
 if(autoBattleControl)autoBattleControl.addEventListener("click",()=>{if(state.active)setAutoBattle(!autoBattle);});

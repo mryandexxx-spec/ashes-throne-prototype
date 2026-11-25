@@ -1,0 +1,1644 @@
+{
+  "sourceCommit": "ca6fb0a340e2f8c86d92918f7d85269fe5f27d51",
+  "seedCount": 8,
+  "seeds": [
+    430439815,
+    3084875576,
+    1444344041,
+    4098779802,
+    2458248267,
+    817716732,
+    3472152493,
+    1831620958
+  ],
+  "rows": [
+    {
+      "squad": "ren+art+nada",
+      "scenario": "mixed",
+      "policy": "basic",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.803,
+      "actions": 18.75,
+      "usage": {
+        "damage": 150
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "mixed",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.853,
+      "actions": 16.25,
+      "usage": {
+        "damage": 130
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "mixed",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.853,
+      "actions": 16.25,
+      "usage": {
+        "damage": 130
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "mixed",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.853,
+      "actions": 16.125,
+      "usage": {
+        "damage": 129
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "policy": "basic",
+      "n": 8,
+      "wins": 8,
+      "quality": 1,
+      "ended": 8,
+      "hp": 0.569,
+      "actions": 14.5,
+      "usage": {
+        "damage": 116
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 6,
+      "ended": 8,
+      "hp": 0.685,
+      "actions": 11.25,
+      "usage": {
+        "damage": 90
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 6,
+      "ended": 8,
+      "hp": 0.685,
+      "actions": 11.25,
+      "usage": {
+        "damage": 90
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 1,
+      "ended": 8,
+      "hp": 0.622,
+      "actions": 12.875,
+      "usage": {
+        "damage": 95,
+        "insurance": 8
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "policy": "basic",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.77,
+      "actions": 8,
+      "usage": {
+        "damage": 64
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.811,
+      "actions": 8,
+      "usage": {
+        "damage": 64
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.811,
+      "actions": 8,
+      "usage": {
+        "damage": 64
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "hold",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.774,
+      "actions": 8,
+      "usage": {
+        "damage": 56,
+        "insurance": 8
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "priority",
+      "policy": "basic",
+      "n": 8,
+      "wins": 0,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.88,
+      "actions": 5.75,
+      "usage": {
+        "damage": 46
+      },
+      "outcomes": {
+        "wrong-order": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "priority",
+      "policy": "auto",
+      "n": 8,
+      "wins": 0,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.9,
+      "actions": 5.125,
+      "usage": {
+        "damage": 41
+      },
+      "outcomes": {
+        "wrong-order": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "priority",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.812,
+      "actions": 16.75,
+      "usage": {
+        "damage": 134
+      },
+      "outcomes": {
+        "priority-victory": 8
+      }
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "priority",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.801,
+      "actions": 17.5,
+      "usage": {
+        "damage": 138,
+        "insurance": 2
+      },
+      "outcomes": {
+        "priority-victory": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "mixed",
+      "policy": "basic",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.806,
+      "actions": 19.125,
+      "usage": {
+        "damage": 153
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "mixed",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.845,
+      "actions": 16.875,
+      "usage": {
+        "damage": 135
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "mixed",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.845,
+      "actions": 16.875,
+      "usage": {
+        "damage": 135
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "mixed",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.837,
+      "actions": 16.625,
+      "usage": {
+        "damage": 133
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "policy": "basic",
+      "n": 8,
+      "wins": 8,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.635,
+      "actions": 14.5,
+      "usage": {
+        "damage": 116
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 7,
+      "ended": 8,
+      "hp": 0.691,
+      "actions": 11.625,
+      "usage": {
+        "damage": 93
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 7,
+      "ended": 8,
+      "hp": 0.691,
+      "actions": 11.625,
+      "usage": {
+        "damage": 93
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 2,
+      "ended": 8,
+      "hp": 0.654,
+      "actions": 12.75,
+      "usage": {
+        "damage": 102
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "policy": "basic",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.769,
+      "actions": 8,
+      "usage": {
+        "damage": 64
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.782,
+      "actions": 8,
+      "usage": {
+        "damage": 64
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.782,
+      "actions": 8,
+      "usage": {
+        "damage": 64
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "hold",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.808,
+      "actions": 8,
+      "usage": {
+        "damage": 56,
+        "guard": 8
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "priority",
+      "policy": "basic",
+      "n": 8,
+      "wins": 0,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.881,
+      "actions": 5.875,
+      "usage": {
+        "damage": 47
+      },
+      "outcomes": {
+        "wrong-order": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "priority",
+      "policy": "auto",
+      "n": 8,
+      "wins": 0,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.901,
+      "actions": 5.25,
+      "usage": {
+        "damage": 42
+      },
+      "outcomes": {
+        "wrong-order": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "priority",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.815,
+      "actions": 16.875,
+      "usage": {
+        "damage": 135
+      },
+      "outcomes": {
+        "priority-victory": 8
+      }
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "priority",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.815,
+      "actions": 16.875,
+      "usage": {
+        "damage": 135
+      },
+      "outcomes": {
+        "priority-victory": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "mixed",
+      "policy": "basic",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.641,
+      "actions": 30.875,
+      "usage": {
+        "damage": 247
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "mixed",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.658,
+      "actions": 29.25,
+      "usage": {
+        "damage": 234
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "mixed",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.658,
+      "actions": 29.25,
+      "usage": {
+        "damage": 234
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "mixed",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.528,
+      "actions": 39,
+      "usage": {
+        "coordinate": 32,
+        "damage": 224,
+        "signal": 28,
+        "insurance": 28
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "policy": "basic",
+      "n": 8,
+      "wins": 7,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.135,
+      "actions": 17.375,
+      "usage": {
+        "damage": 139
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.282,
+      "actions": 15.25,
+      "usage": {
+        "damage": 122
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.282,
+      "actions": 15.25,
+      "usage": {
+        "damage": 122
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "policy": "role",
+      "n": 8,
+      "wins": 2,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.015,
+      "actions": 18.875,
+      "usage": {
+        "coordinate": 8,
+        "damage": 119,
+        "insurance": 16,
+        "signal": 8
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "policy": "basic",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.699,
+      "actions": 8,
+      "usage": {
+        "damage": 64
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.693,
+      "actions": 8,
+      "usage": {
+        "damage": 64
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.693,
+      "actions": 8,
+      "usage": {
+        "damage": 64
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "hold",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.712,
+      "actions": 8,
+      "usage": {
+        "coordinate": 8,
+        "damage": 40,
+        "insurance": 8,
+        "signal": 8
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "priority",
+      "policy": "basic",
+      "n": 8,
+      "wins": 0,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.786,
+      "actions": 9,
+      "usage": {
+        "damage": 72
+      },
+      "outcomes": {
+        "wrong-order": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "priority",
+      "policy": "auto",
+      "n": 8,
+      "wins": 0,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.79,
+      "actions": 9,
+      "usage": {
+        "damage": 72
+      },
+      "outcomes": {
+        "wrong-order": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "priority",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 7,
+      "ended": 8,
+      "hp": 0.556,
+      "actions": 28,
+      "usage": {
+        "damage": 224
+      },
+      "outcomes": {
+        "priority-victory": 8
+      }
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "priority",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.426,
+      "actions": 30.25,
+      "usage": {
+        "coordinate": 16,
+        "damage": 201,
+        "signal": 16,
+        "insurance": 9
+      },
+      "outcomes": {
+        "priority-victory": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "mixed",
+      "policy": "basic",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.632,
+      "actions": 32.25,
+      "usage": {
+        "damage": 258
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "mixed",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.637,
+      "actions": 30.875,
+      "usage": {
+        "damage": 247
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "mixed",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.637,
+      "actions": 30.875,
+      "usage": {
+        "damage": 247
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "mixed",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.61,
+      "actions": 33.875,
+      "usage": {
+        "coordinate": 24,
+        "damage": 223,
+        "signal": 24
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "policy": "basic",
+      "n": 8,
+      "wins": 8,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.198,
+      "actions": 18.5,
+      "usage": {
+        "damage": 148
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.282,
+      "actions": 16.625,
+      "usage": {
+        "damage": 133
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.282,
+      "actions": 16.625,
+      "usage": {
+        "damage": 133
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "policy": "role",
+      "n": 8,
+      "wins": 2,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.009,
+      "actions": 19.625,
+      "usage": {
+        "coordinate": 8,
+        "damage": 128,
+        "signal": 8,
+        "guard": 13
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "policy": "basic",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.708,
+      "actions": 8,
+      "usage": {
+        "damage": 64
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.702,
+      "actions": 8,
+      "usage": {
+        "damage": 64
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.702,
+      "actions": 8,
+      "usage": {
+        "damage": 64
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "hold",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.754,
+      "actions": 8,
+      "usage": {
+        "coordinate": 8,
+        "damage": 40,
+        "guard": 8,
+        "signal": 8
+      },
+      "outcomes": {
+        "held": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "priority",
+      "policy": "basic",
+      "n": 8,
+      "wins": 0,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.749,
+      "actions": 9.75,
+      "usage": {
+        "damage": 78
+      },
+      "outcomes": {
+        "wrong-order": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "priority",
+      "policy": "auto",
+      "n": 8,
+      "wins": 0,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.753,
+      "actions": 9.75,
+      "usage": {
+        "damage": 78
+      },
+      "outcomes": {
+        "wrong-order": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "priority",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.585,
+      "actions": 29.5,
+      "usage": {
+        "damage": 236
+      },
+      "outcomes": {
+        "priority-victory": 8
+      }
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "priority",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 2,
+      "ended": 8,
+      "hp": 0.511,
+      "actions": 31.125,
+      "usage": {
+        "coordinate": 18,
+        "damage": 212,
+        "signal": 18,
+        "guard": 1
+      },
+      "outcomes": {
+        "priority-victory": 8
+      }
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "mixed",
+      "policy": "basic",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.753,
+      "actions": 23.875,
+      "usage": {
+        "damage": 191
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "mixed",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.805,
+      "actions": 20.5,
+      "usage": {
+        "damage": 164
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "mixed",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.805,
+      "actions": 20.5,
+      "usage": {
+        "damage": 164
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "mixed",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.803,
+      "actions": 20,
+      "usage": {
+        "damage": 127,
+        "coordinate": 16,
+        "signal": 17
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "rush",
+      "policy": "basic",
+      "n": 8,
+      "wins": 8,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.517,
+      "actions": 14.75,
+      "usage": {
+        "damage": 118
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "rush",
+      "policy": "auto",
+      "n": 8,
+      "wins": 8,
+      "quality": 4,
+      "ended": 8,
+      "hp": 0.663,
+      "actions": 13.125,
+      "usage": {
+        "damage": 105
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "rush",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 4,
+      "ended": 8,
+      "hp": 0.663,
+      "actions": 13.125,
+      "usage": {
+        "damage": 105
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "rush",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.467,
+      "actions": 15.625,
+      "usage": {
+        "damage": 93,
+        "coordinate": 8,
+        "insurance": 16,
+        "signal": 8
+      },
+      "outcomes": {
+        "none": 8
+      }
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "priority",
+      "policy": "basic",
+      "n": 8,
+      "wins": 0,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.841,
+      "actions": 7.625,
+      "usage": {
+        "damage": 61
+      },
+      "outcomes": {
+        "wrong-order": 8
+      }
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "priority",
+      "policy": "auto",
+      "n": 8,
+      "wins": 0,
+      "quality": 0,
+      "ended": 8,
+      "hp": 0.871,
+      "actions": 6.5,
+      "usage": {
+        "damage": 52
+      },
+      "outcomes": {
+        "wrong-order": 8
+      }
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "priority",
+      "policy": "objective",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.754,
+      "actions": 20,
+      "usage": {
+        "damage": 160
+      },
+      "outcomes": {
+        "priority-victory": 8
+      }
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "priority",
+      "policy": "role",
+      "n": 8,
+      "wins": 8,
+      "quality": 8,
+      "ended": 8,
+      "hp": 0.733,
+      "actions": 23.25,
+      "usage": {
+        "damage": 140,
+        "coordinate": 16,
+        "signal": 16,
+        "insurance": 14
+      },
+      "outcomes": {
+        "priority-victory": 8
+      }
+    }
+  ],
+  "fairness": [
+    {
+      "squad": "ren+art+nada",
+      "scenario": "mixed",
+      "winA": 8,
+      "winB": 8,
+      "changed": 0,
+      "hpA": 0.853,
+      "hpB": 0.853
+    },
+    {
+      "squad": "ren+art+nada",
+      "scenario": "rush",
+      "winA": 8,
+      "winB": 8,
+      "changed": 0,
+      "hpA": 0.622,
+      "hpB": 0.622
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "mixed",
+      "winA": 8,
+      "winB": 8,
+      "changed": 0,
+      "hpA": 0.837,
+      "hpB": 0.834
+    },
+    {
+      "squad": "ren+liora+nada",
+      "scenario": "rush",
+      "winA": 8,
+      "winB": 8,
+      "changed": 0,
+      "hpA": 0.654,
+      "hpB": 0.654
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "mixed",
+      "winA": 8,
+      "winB": 8,
+      "changed": 0,
+      "hpA": 0.528,
+      "hpB": 0.528
+    },
+    {
+      "squad": "art+nada+sava",
+      "scenario": "rush",
+      "winA": 2,
+      "winB": 2,
+      "changed": 0,
+      "hpA": 0.015,
+      "hpB": 0.012
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "mixed",
+      "winA": 8,
+      "winB": 8,
+      "changed": 0,
+      "hpA": 0.61,
+      "hpB": 0.607
+    },
+    {
+      "squad": "liora+nada+sava",
+      "scenario": "rush",
+      "winA": 2,
+      "winB": 2,
+      "changed": 0,
+      "hpA": 0.009,
+      "hpB": 0.012
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "mixed",
+      "winA": 8,
+      "winB": 8,
+      "changed": 0,
+      "hpA": 0.803,
+      "hpB": 0.803
+    },
+    {
+      "squad": "ren+art+sava",
+      "scenario": "rush",
+      "winA": 8,
+      "winB": 8,
+      "changed": 0,
+      "hpA": 0.467,
+      "hpB": 0.467
+    }
+  ],
+  "progression": [
+    {
+      "id": "ren",
+      "base": [
+        122,
+        29,
+        150,
+        36
+      ],
+      "stress": [
+        147,
+        35,
+        150,
+        47
+      ]
+    },
+    {
+      "id": "art",
+      "base": [
+        131,
+        22,
+        118,
+        49
+      ],
+      "stress": [
+        156,
+        28,
+        118,
+        63
+      ]
+    },
+    {
+      "id": "nada",
+      "base": [
+        112,
+        19,
+        125,
+        46
+      ],
+      "stress": [
+        135,
+        25,
+        125,
+        62
+      ]
+    },
+    {
+      "id": "liora",
+      "base": [
+        138,
+        20,
+        115,
+        51
+      ],
+      "stress": [
+        164,
+        26,
+        115,
+        69
+      ]
+    },
+    {
+      "id": "sava",
+      "base": [
+        106,
+        17,
+        136,
+        35
+      ],
+      "stress": [
+        128,
+        22,
+        136,
+        46
+      ]
+    }
+  ],
+  "stress": [
+    {
+      "scenario": "mixed",
+      "base": {
+        "n": 8,
+        "wins": 8,
+        "quality": 8,
+        "ended": 8,
+        "hp": 0.853,
+        "actions": 16.125,
+        "usage": {
+          "damage": 129
+        },
+        "outcomes": {
+          "none": 8
+        }
+      },
+      "progress": {
+        "n": 8,
+        "wins": 8,
+        "quality": 8,
+        "ended": 8,
+        "hp": 0.901,
+        "actions": 12.875,
+        "usage": {
+          "damage": 103
+        },
+        "outcomes": {
+          "none": 8
+        }
+      }
+    },
+    {
+      "scenario": "rush",
+      "base": {
+        "n": 8,
+        "wins": 8,
+        "quality": 1,
+        "ended": 8,
+        "hp": 0.622,
+        "actions": 12.875,
+        "usage": {
+          "damage": 95,
+          "insurance": 8
+        },
+        "outcomes": {
+          "none": 8
+        }
+      },
+      "progress": {
+        "n": 8,
+        "wins": 8,
+        "quality": 8,
+        "ended": 8,
+        "hp": 0.741,
+        "actions": 11.375,
+        "usage": {
+          "damage": 84,
+          "insurance": 7
+        },
+        "outcomes": {
+          "none": 8
+        }
+      }
+    },
+    {
+      "scenario": "hold",
+      "base": {
+        "n": 8,
+        "wins": 8,
+        "quality": 8,
+        "ended": 8,
+        "hp": 0.774,
+        "actions": 8,
+        "usage": {
+          "damage": 56,
+          "insurance": 8
+        },
+        "outcomes": {
+          "held": 8
+        }
+      },
+      "progress": {
+        "n": 8,
+        "wins": 8,
+        "quality": 8,
+        "ended": 8,
+        "hp": 0.831,
+        "actions": 8,
+        "usage": {
+          "damage": 56,
+          "insurance": 8
+        },
+        "outcomes": {
+          "held": 8
+        }
+      }
+    },
+    {
+      "scenario": "priority",
+      "base": {
+        "n": 8,
+        "wins": 8,
+        "quality": 8,
+        "ended": 8,
+        "hp": 0.801,
+        "actions": 17.5,
+        "usage": {
+          "damage": 138,
+          "insurance": 2
+        },
+        "outcomes": {
+          "priority-victory": 8
+        }
+      },
+      "progress": {
+        "n": 8,
+        "wins": 8,
+        "quality": 8,
+        "ended": 8,
+        "hp": 0.865,
+        "actions": 12.625,
+        "usage": {
+          "damage": 101
+        },
+        "outcomes": {
+          "priority-victory": 8
+        }
+      }
+    }
+  ],
+  "totalBattles": 832
+}

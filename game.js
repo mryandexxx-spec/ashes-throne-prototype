@@ -488,6 +488,12 @@ function renderMainCampaign(){
  const status=MainCampaignCore.status(proof,progress);
  const best=proof?.best||0;
  $("#mainCampaignMap").dataset.status=status;
+ const storyKnown=best>0&&status!=="blocked";
+ const sceneArt=$("#mainCampaignSceneArt");
+ const sceneSrc="assets/cutscenes/main-campaign/m1/"+(storyKnown?"warehouse-proof.webp":"warehouse-conflict.webp");
+ if(sceneArt.getAttribute("src")!==sceneSrc)sceneArt.setAttribute("src",sceneSrc);
+ sceneArt.alt=storyKnown?"Мастер осматривает сохранённую скобу и грузовую отметку":"На складе охранник оттесняет мастера от снятого крепежа";
+ $("#mainCampaignSceneCaption").textContent=storyKnown?"Крепёж у мастера. Следующая отметка найдена.":"Мастер: «Эту пока не грузите. Она с того пролёта».";
  $("#mainCampaignProgress").textContent="Миссии: "+(best>0?1:0)+"/1 · Звёзды: "+best+"/3";
  $("#mainCampaignBrief").textContent=best>0&&status!=="blocked"?
   "Крепёж сохранён. На ярлыке указан следующий пункт доставки.":
@@ -527,6 +533,8 @@ function renderMainCampaignResult(){
   status==="claimed"?"Результат сохранён. Разовая награда уже получена.":
   "Результат сохранён. Заберите "+MainCampaignCore.SOURCE.reward.currency+" кромов за первую победу.");
  const storyConfirmed=!!result.earned&&result.ok&&(proof?.best||0)>0&&status!=="blocked";
+ $("#mainCampaignResultArt").hidden=!storyConfirmed;
+ $("#mainCampaignResult").dataset.story=storyConfirmed?"confirmed":"none";
  $("#mainCampaignResultText").textContent=(storyConfirmed?"Крепёж сохранён для проверки. На ярлыке — следующий пункт доставки. ":"")+resultMessage;
  const rewardVisible=!!result.earned&&result.ok&&(status==="claimable"||status==="claimed");
  $("#mainCampaignResult").dataset.outcome=result.earned?"victory":"defeat";

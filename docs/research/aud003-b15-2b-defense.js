@@ -209,5 +209,61 @@ function experiment(source,labSource,count=20,holdout=false){
  }
  return {seeds,tiers:TIERS,holdout,battles:sum(cells,c=>c.n),cells};
 }
-module.exports={setup,kit,policy,run,experiment,CONFIGS,TIERS,SQUADS};
+function contracts(source,labSource){
+ const checks=[],check=(name,ok)=>{if(!ok)throw Error("contract: "+name);checks.push(name);};
+ function fixture(variant="both",scenario="rush"){
+  const ctx=setup(source,labSource,variant,"early"),b=ctx.lab.start(ctx.api,["liora","art","ren"],scenario,42);
+  b.hitChecks=b.critChecks=b.statusChecks=false;b.events=[];
+  const f=id=>b.fighters.find(x=>x.id===id),idx=id=>b.fighters.findIndex(x=>x.id===id);
+  function act(id,ability,target){const a=f(id);b.fighters.forEach(x=>x.meter=0);a.meter=1000;b.currentActor=idx(id);b.events=[];
+   const backup=b.fighters.find(x=>x.side==="ally"&&x.hp>0&&x.id!==id);if(backup)backup.meter=1000;
+   return ctx.api.C.performActorAbility(b,ability,idx(target));
+  }
+  return {ctx,b,f,idx,act};
+ }
+ let t=fixture(),{b,f,act}=t;
+ const original=f("ren").protection;
+ check("Art rejects self without consuming turn",!act("art","special","art")&&f("art").specialCooldown===0);
+ check("Art grants one other-ally guard without restoring protection",act("art","special","ren")&&f("ren").protection===original&&f("ren").b15Guards.length===1&&f("ren").b15Guards[0].turns===2);
+ check("Liora group guard covers every living ally",act("liora","powerful","liora")&&b.fighters.filter(x=>x.side==="ally").every(x=>x.b15Guards.some(g=>g.kind==="liora")));
+ check("one strongest guard on direct hit",act("b146-0","basic","ren")&&b.b15Stats.artGuardUsed===1&&!f("ren").b15Guards.some(g=>g.kind==="art")&&f("ren").b15Guards.some(g=>g.kind==="liora")&&!b.b15Stats.lioraGuardUsed);
+ t=fixture();({b,f,act}=t);
+ check("Art guard moves to a new ally",act("art","special","ren")&&((f("art").specialCooldown=0),act("art","special","liora"))&&!f("ren").b15Guards.length&&f("liora").b15Guards.some(g=>g.kind==="art"));
+ t=fixture();({b,f,act}=t);
+ check("Art guard survives one own turn and expires after two",act("art","special","ren")&&act("ren","basic","b146-0")&&f("ren").b15Guards[0].turns===1&&act("ren","basic","b146-0")&&!f("ren").b15Guards.length);
+ t=fixture();({b,f,act}=t);
+ check("Art CD2 means two subsequent unavailable own turns",act("art","special","ren")&&f("art").specialCooldown===2&&act("art","basic","b146-0")&&f("art").specialCooldown===1&&act("art","basic","b146-0")&&f("art").specialCooldown===0);
+ t=fixture();({b,f,act}=t);f("ren").protection=0;const start=f("art").protection;const hp=f("ren").hp;b.b14Resolving=true;
+ check("prepared actual single powerful spends equal Protection",act("b146-0","powerful","ren")&&b.b15Stats.artReactBlocked>0&&start-f("art").protection===b.b15Stats.artReactBlocked&&f("ren").hp<hp&&f("art").b15ReactUsed);
+ const paid=f("art").protection;f("b146-0").powerfulCooldown=0;
+ check("reaction bounded until Art acts",act("b146-0","powerful","ren")&&f("art").protection===paid&&b.b15Stats.artReactUsed===1);
+ check("Art own action resets reaction",act("art","basic","b146-1")&&!f("art").b15ReactUsed);
+ t=fixture();({b,f,act}=t);f("ren").protection=0;
+ check("ordinary unprepared powerful cannot trigger Art",act("b146-0","powerful","ren")&&!b.b15Stats?.artReactUsed);
+ t=fixture();({b,f,act}=t);f("ren").protection=0;b.b14Resolving=true;
+ check("Art cannot guard and react to same hit",act("art","special","ren")&&act("b146-0","powerful","ren")&&b.b15Stats.artGuardUsed===1&&!b.b15Stats.artReactUsed);
+ t=fixture("both","area");({b,f,act}=t);f("ren").protection=0;f("art").protection=20;b.b14Resolving=true;
+ check("AoE neither consumes Art single guard nor reacts",act("art","special","ren")&&act("b146-0","powerful","ren")&&f("ren").b15Guards.some(g=>g.kind==="art")&&!b.b15Stats.artReactUsed&&!b.b15Stats.artGuardUsed);
+ t=fixture();({b,f,act}=t);
+ check("taunt redirects singles, not area",act("liora","special","liora")&&t.ctx.api.C.actorTargetIndices(b,t.idx("b146-0"),"enemy",t.idx("ren"))[0]===t.idx("liora")&&t.ctx.api.C.actorTargetIndices(b,t.idx("b146-0"),"all-enemies",t.idx("ren")).length===3);
+ check("taunt expires after two own turns, CD3 remains",t.ctx.api.T.read(f("liora"),"taunt").remaining===2&&act("liora","basic","b146-0")&&t.ctx.api.T.read(f("liora"),"taunt").remaining===1&&act("liora","basic","b146-0")&&t.ctx.api.T.read(f("liora"),"taunt")===null&&f("liora").specialCooldown===1);
+ t=fixture();({b,f,act}=t);f("ren").protection=0;f("ren").hp=Math.floor(f("ren").maxHp*.35)+5;
+ check("emergency guard only after crossing threshold",act("b146-0","basic","ren")&&f("ren").hp>0&&b.b15Stats.lioraPassiveUsed===1&&f("ren").b15Guards.some(g=>g.kind==="liora")&&f("liora").emergencyGuardCooldown===3);
+ t=fixture("both","area");({b,f,act}=t);for(const id of ["ren","art"]){f(id).protection=0;f(id).hp=Math.floor(f(id).maxHp*.35)+4;}
+ check("area crossing grants at most one emergency guard after root",act("b146-0","powerful","ren")&&b.b15Stats.lioraPassiveUsed===1&&[f("ren"),f("art")].filter(x=>x.b15Guards?.some(g=>g.kind==="liora")).length===1);
+ t=fixture();({b,f,act}=t);f("b146-0").b14Prepared="ren";
+ check("Art powerful marks actually announced threat",act("art","powerful","b146-0")&&t.ctx.api.T.read(f("b146-0"),"disrupted-plan")&&b.b15Stats.artDisruptApplied===1);
+ t=fixture();({b,f,act}=t);
+ check("Art powerful without preparation weakens instead",act("art","powerful","b146-0")&&!t.ctx.api.T.read(f("b146-0"),"disrupted-plan")&&f("b146-0").weakenAttacks===1);
+ t=fixture("both-leader10");({b,f,act}=t);const max=f("ren").maxProtection;f("ren").protection=1;f("liora").hp=0;t.ctx.api.C.advanceToPlayerTurn(b);
+ check("leader death clamps cap without stealing already-spent bonus",f("ren").maxProtection<max&&f("ren").protection===1);
+ t=fixture();({b,f,act}=t);act("art","special","ren");f("art").hp=0;t.ctx.api.C.advanceToPlayerTurn(b);
+ check("dead Art cannot leave live personal guard",!f("ren").b15Guards.length);
+ t=fixture();({b,f,act}=t);act("liora","powerful","liora");b.pendingWaves=[[t.ctx.api.N.spawn("npc-pass-guard",{instanceId:"next-0"})]];b.totalWaves=2;b.fighters.filter(x=>x.side==="enemy").forEach(x=>x.hp=0);t.ctx.api.C.advanceToPlayerTurn(b);
+ check("wave transition removes experimental guard references",b.wave===2&&b.fighters.every(x=>!x.b15Guards));
+ t=fixture("both-recover");({b,f,act}=t);f("ren").protection=0;
+ check("refinement restores only capped Protection, no HP",act("art","special","ren")&&f("ren").protection===Math.round(f("art").physicalAttack*.35)&&f("ren").hp===f("ren").maxHp);
+ return checks;
+}
+module.exports={setup,kit,policy,run,experiment,contracts,CONFIGS,TIERS,SQUADS};
 if(typeof require!=="undefined"&&require.main===module){const fs=require("node:fs"),lab=require("../../combat-lab-real/engine.js");console.log(JSON.stringify(experiment(lab.files.map(f=>fs.readFileSync(f,"utf8")).join("\n"),fs.readFileSync("combat-lab-real/engine.js","utf8"),Number(process.argv[2]||20),process.argv[3]==="holdout"),null,2));}

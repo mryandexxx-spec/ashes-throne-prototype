@@ -48,9 +48,10 @@ function primitives(){
   b15count(b,g.kind+"Granted",g.hits);return true;
  }
  function b15guard(b,target,damage,direct){
-  if(damage<=0)return damage;
   b15prune(b);
   const gs=(target.b15Guards??[]).filter(g=>g.kind!=="art"||direct);
+  if(!gs.length){if(target.guardHits>0){target.guardHits--;const after=Math.round(damage*.5);b15count(b,"nativeGuardBlocked",damage-after);return after;}return damage;}
+  if(damage<=0)return damage;
   const options=gs.map(g=>({g,blocked:Math.min(damage,Math.round(damage*g.fraction),g.capDamage)}));
   if(target.guardHits>0)options.push({g:null,blocked:damage-Math.round(damage*.5)});
   options.sort((a,z)=>z.blocked-a.blocked||String(a.g?.owner??"native").localeCompare(String(z.g?.owner??"native")));
@@ -93,7 +94,7 @@ function primitives(){
   if(target.b14Prepared){
    if(b.statusChecks===true&&!BattleRng.roll(b,statusChance(actor,target)).hit){b15count(b,"artDisruptResisted");return;}
    CombatStatusCore.apply(target,"disrupted-plan",0,2);target.tacticalDisruptDelay=0;b15count(b,"artDisruptApplied");
-  }else{applyNegativeStatus(b,actor,target,1,"physical",false);b15count(b,"artFallback");}
+  }else{applyNegativeStatus(b,actor,target,Math.max(1,target.weakenAttacks),"physical",false);b15count(b,"artFallbackAttempt");}
  }
 }
 function setup(source,labSource,variant,tier,options={}){
@@ -128,6 +129,9 @@ function setup(source,labSource,variant,tier,options={}){
    l=rep(l,'art:"recover"','art:"candidate"');
    s=rep(s,'target.insurance={ownerId:actor.id,percent:ability.insurancePercent,\n       remaining:ability.insuranceTurns,afterMeter:ability.afterInterceptMeter??0};','if(ability.b15Guard)b15grant(battle,actor,target,ability.b15Guard);else target.insurance={ownerId:actor.id,percent:ability.insurancePercent,\n       remaining:ability.insuranceTurns,afterMeter:ability.afterInterceptMeter??0};');
    s=rep(s,'      if(ability.disruptTurns&&target.hp>0','      if(ability.b15Disrupt)b15disrupt(battle,actor,target);\n      if(ability.disruptTurns&&target.hp>0');
+   s=rep(s,'(ability.weakening>0||(ability.followUpEffects||[]).some(e=>e.status==="weaken"))','(ability.b15Disrupt||ability.weakening>0||(ability.followUpEffects||[]).some(e=>e.status==="weaken"))');
+   s=rep(s,'if(ability.weakening>0)draws+=recipients.length;','if(ability.b15Disrupt||ability.weakening>0)draws+=recipients.length;');
+   s=rep(s,'const direct=ability.weakening>0?recipients.length:0;','const direct=ability.b15Disrupt||ability.weakening>0?recipients.length:0;');
   }
   if(c.liora){
    s=rep(s,'target.guardHits=ability.guardHits;','if(ability.b15Guard)b15grant(battle,actor,target,ability.b15Guard);else target.guardHits=ability.guardHits;',2);

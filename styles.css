@@ -5425,6 +5425,10 @@ button.main-campaign-pin:disabled{opacity:.65}
 #mainCampaignResult .main-campaign-result-body{min-width:0;}
 @media(orientation:landscape) and (max-height:540px){
  #mainCampaignMap .main-campaign-waypoints{flex-basis:86px;}
+ /* Keep the complete chapter-II touch target above the map caption even on 320px landscape. */
+ #mainCampaignMap .main-campaign-next{top:auto;bottom:0;gap:2px;}
+ #mainCampaignMap .main-campaign-next .main-campaign-pin-symbol{width:32px;height:32px;}
+ #mainCampaignMap .main-campaign-next strong,#mainCampaignMap .main-campaign-next small{padding:1px 4px;}
  #mainCampaignMap .main-campaign-chart-caption{font-size:10px;}
  #mainCampaignResult[data-story="confirmed"] .mission-result-card{grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:9px;}
  #mainCampaignResult .mission-result-actions button{flex:1 1 80px;padding:5px;font-size:12px;}

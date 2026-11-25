@@ -4,7 +4,7 @@
 const PARTS=["docs/research/aud003-b15-2a-read-move.js","docs/research/aud003-b15-2b-defense.js","docs/research/aud003-b15-2c-sava.js"];
 const EXTRA=["gear-data.js","progress-core.js","progress-v3-core.js"];
 const VARIANTS={
- legacy:{label:"Текущие наборы",legacy:true},
+ legacy:{label:"Текущие навыки + подготовка",legacy:true},
  ref:{label:"B14.6 — контроль"},
  full:{label:"B15 — полный кандидат",def:"both",sava:"cap",marks:"b15"},
  bridge:{label:"B15 — осторожный",def:"both-recover",sava:"cap",preserve:true,share:10},
@@ -92,9 +92,9 @@ function create(ctx,{tier="early",squad="full",scenario="duel",seed=7,scale=1,or
  const party=slots.map(id=>{const src=id==="b14-striker"?"ren":id==="b14-medic"?"nada":id==="b14-breaker"?"art":id;return {...profiles[tier][src].hero,id,name:ctx.lab.names[id],tags:id.startsWith("b14-")?[]:profiles[tier][src].hero.tags};});
  function foes(w,k,n){
   const family=FAMILIES[k],list=family.slice(0,n).map((id,i)=>{
-   const enemy=api.N.spawn(id,{instanceId:"w"+w+"-e"+i}),f=scale;
+   const enemy=api.N.spawn(id,{instanceId:"w"+w+"-e"+i}),f=scale*.75,offense=scale*({early:1.35,mid:1.45,max:2.65,uneven:1.65}[tier]);
    const npcAbilities=k==="area"&&i===0?{...enemy.npcAbilities,powerful:{...enemy.npcAbilities.powerful,target:"all-enemies",multiplier:.72}}:enemy.npcAbilities;
-   return {...enemy,npcAbilities,name:enemy.name+" "+(i+1),hp:Math.max(1,Math.round(enemy.hp*f)),protection:Math.round(enemy.protection*f),maxProtection:Math.round(enemy.protection*f),physicalAttack:Math.max(1,Math.round(enemy.physicalAttack*f)),atk:Math.max(1,Math.round(enemy.physicalAttack*f)),assaultFocus:k==="hold"};
+   return {...enemy,npcAbilities,name:enemy.name+" "+(i+1),hp:Math.max(1,Math.round(enemy.hp*f)),protection:Math.round(enemy.protection*f),maxProtection:Math.round(enemy.protection*f),physicalAttack:Math.max(1,Math.round(enemy.physicalAttack*offense)),atk:Math.max(1,Math.round(enemy.physicalAttack*offense)),assaultFocus:k==="hold"};
   });if(order==="enemies"||order==="both")list.reverse();return list;
  }
  const count=party.length,first=kind==="waves"?foes(1,"rush",Math.min(count,3)):foes(1,kind,count),waves=kind==="waves"?[foes(2,"area",Math.min(count,4))]:[];
@@ -178,10 +178,10 @@ function calibrate(input,count=8){
   selected[tier]={};
   for(const squad of ["starter","three","four","full"]){
    const n=SQUADS[squad].length,options=[];
-   for(const factor of [.65,.85,1,1.2,1.45,1.7,2,2.35]){
+   for(const factor of [.55,.75,.95,1.15,1.4,1.7,2.05,2.5,3]){
     const scale=+(t.pressure*factor).toFixed(3),results=summarize(seeds.map(seed=>run(ctx,{tier,squad,scenario:"duel",scale,seed})));
-    const score=Math.abs(results.w/count-.82)*1.8+Math.abs(results.q/count-.55)+Math.abs(results.pool-.52)*.6;
-    options.push({tier,squad,n,scale,score,...results});
+    const score=Math.abs(results.w/count-.82)*1.8+Math.abs(results.q/count-.55)+Math.abs(results.pool-.52)*.6+Math.max(0,results.actions-(n*8+4))*.015;
+    options.push({tier,squad,size:n,scale,score,...results});
    }
    options.sort((a,z)=>a.score-z.score||a.scale-z.scale);selected[tier][n]=options[0].scale;rows.push(...options);
   }

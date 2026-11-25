@@ -115,8 +115,17 @@ function setup(source,labSource,variant,tier,options={}){
   s=rep(s,'    battle.events.push({type, ...properties});','    battle.events.push({type, ...properties});\n    if(type==="ability")battle.b15Root={actor:properties.actorId,id:properties.abilityId,cross:[]};\n    if(type==="wave-start")for(const f of battle.fighters)delete f.b15Guards;');
   s=rep(s,'    syncLeaderProtection(battle);\n    // Wrong first kill','    b15prune(battle);syncLeaderProtection(battle);\n    // Wrong first kill');
   s=rep(s,'    finishAbilityCooldowns(actor,ability);','    b15finish(battle,actor);\n    finishAbilityCooldowns(actor,ability);',2);
+  l=rep(l,'react:mode!=="direct"','react:false');
+  if(!c.art){
+   s=rep(s,'    if(battle)damage=b15guard(battle,target,damage,canInsurance);',`    if(battle?.b14Resolving&&attacker.side==="enemy"&&target.side==="ally"&&damage>0){
+      const art=battle.fighters.find(f=>f.id==="art"&&f.hp>0&&f.id!==target.id&&!f.b14ReactUsed&&f.protection>0);
+      if(art){const blocked=Math.min(Math.round(damage*.40),Math.round(art.physicalAttack*.85),art.protection*2);if(blocked>0){art.protection-=Math.ceil(blocked/2);damage-=blocked;art.b14ReactUsed=true;battle.b14Counts.reacted++;}}
+    }
+    if(battle)damage=b15guard(battle,target,damage,canInsurance);`);
+   s=rep(s,'if(actor.id==="art"&&B15DEF.art)actor.b15ReactUsed=false;','if(actor.id==="art")actor.b14ReactUsed=false;');
+  }
   if(c.art){
-   l=rep(l,'art:"recover"','art:"candidate"');l=rep(l,'react:mode!=="direct"','react:false');
+   l=rep(l,'art:"recover"','art:"candidate"');
    s=rep(s,'target.insurance={ownerId:actor.id,percent:ability.insurancePercent,\n       remaining:ability.insuranceTurns,afterMeter:ability.afterInterceptMeter??0};','if(ability.b15Guard)b15grant(battle,actor,target,ability.b15Guard);else target.insurance={ownerId:actor.id,percent:ability.insurancePercent,\n       remaining:ability.insuranceTurns,afterMeter:ability.afterInterceptMeter??0};');
    s=rep(s,'      if(ability.disruptTurns&&target.hp>0','      if(ability.b15Disrupt)b15disrupt(battle,actor,target);\n      if(ability.disruptTurns&&target.hp>0');
   }

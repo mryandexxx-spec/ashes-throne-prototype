@@ -3,8 +3,9 @@
 // Deterministic seed for campaign battle launches only; no save/HP/winner/phase injection.
 const {chromium,webkit}=require("playwright");
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
-const origin=process.env.GAME_ORIGIN||"http://127.0.0.1:8765/";
-const dest=path.join(process.cwd(),"artifacts","squad-recovery","first-play","aud003-a");fs.mkdirSync(dest,{recursive:true});
+const pilot=process.env.COMBAT2_PILOT==="1";
+const origin=new URL(process.env.GAME_ORIGIN||"http://127.0.0.1:8765/");if(pilot)origin.searchParams.set("combat2Pilot","1");
+const dest=path.join(process.cwd(),"artifacts","squad-recovery","first-play",pilot?"aud003-b17-3a":"aud003-a");fs.mkdirSync(dest,{recursive:true});
 async function tapFighter(page,id,probeOnly=false){
  const handle=await page.waitForFunction(id=>{
   const canvas=document.querySelector("#renderCanvas"),rect=canvas.getBoundingClientRect();
@@ -67,8 +68,8 @@ async function run(name,type,viewport,skip=false){
  const inspect=()=>page.evaluate(()=>({phase:firstPlayState.phase,choice:firstPlayState.choice,won:FirstPlayCore.wonProof(firstPlayState),ren:progress.levels.ren,
   owned:ALLIES.filter(h=>heroOwned(h.id)).map(h=>h.id).sort(),nada:StarCore.rankOf(progress,"nada"),currency:progress.currency,xp:progress.accountXp,energy:progress.energy.value,ops:JSON.stringify(operationProgress),
   receipts:[FirstPlayCore.REWARD_RECEIPT,MainCampaignCore.RECEIPT,MainCampaignCore.mission(MainCampaignCore.II_ID).receipt].map(id=>(progress.rewardReceipts||[]).filter(r=>r.id===id).length),
-  statuses:[MainCampaignCore.ID,MainCampaignCore.II_ID].map(id=>MainCampaignCore.statusFor(id,()=>localStorage,progress)),
-  best:[MainCampaignCore.ID,MainCampaignCore.II_ID].map(id=>MainCampaignCore.proofFor(id,()=>localStorage)?.best)}));
+  statuses:[MainCampaignCore.ID,MainCampaignCore.II_ID].map(id=>MainCampaignCore.statusFor(id,()=>gameStorage(),progress)),
+  best:[MainCampaignCore.ID,MainCampaignCore.II_ID].map(id=>MainCampaignCore.proofFor(id,()=>gameStorage())?.best)}));
  const ready=async()=>page.waitForFunction(()=>typeof FirstPlayCore!=="undefined"&&typeof MainCampaignCore!=="undefined"&&document.querySelector("#walletWriterNotice")?.style.display==="none",null,{timeout:60000});
  const home=async()=>{await ready();await wait("#home.active, #loginCalendar.active");if(await page.locator("#loginCalendar.active").isVisible())await tap('#loginCalendar [data-screen="home"]');await wait("#home.active");};
  const map=async()=>{await tap('#home .hq-station[data-screen="campaign"]');await tap('[data-campaign-path="main"]');await wait("#mainCampaignMap");};
@@ -77,8 +78,8 @@ async function run(name,type,viewport,skip=false){
  const battle=async(label,first=false,automatic=false)=>{
   await wait("#battle.active");await actorReady();assert.equal(await page.evaluate(()=>state.active),true);
   assert.match(await page.locator("#autoSpeedBtn").innerText(),/1×/);assert.equal(await page.locator("#autoBattleBtn").getAttribute("aria-pressed"),"false");
-  const launched=await page.evaluate(()=>({seed:state.rng?.seed,mission:state.mainCampaignMissionId,allies:state.fighters.filter(f=>f.side==="ally").map(f=>({id:f.id,level:f.level})),enemies:state.fighters.filter(f=>f.side==="enemy").map(f=>f.id)}));
-  assert.deepEqual(launched.allies.map(f=>f.id).sort(),["art","ren"]);if(!first){assert.equal(launched.seed,7);assert.equal(launched.mission,label==="I"?"main-cam-001-m1":"main-cam-002-m1");assert.equal(launched.allies.find(f=>f.id==="ren").level,2);}
+  const launched=await page.evaluate(()=>({combat2:state.combat2===true,seed:state.rng?.seed,mission:state.mainCampaignMissionId,allies:state.fighters.filter(f=>f.side==="ally").map(f=>({id:f.id,level:f.level})),enemies:state.fighters.filter(f=>f.side==="enemy").map(f=>f.id)}));
+  assert.equal(launched.combat2,pilot);assert.deepEqual(launched.allies.map(f=>f.id).sort(),["art","ren"]);if(!first){assert.equal(launched.seed,7);assert.equal(launched.mission,label==="I"?"main-cam-001-m1":"main-cam-002-m1");assert.equal(launched.allies.find(f=>f.id==="ren").level,2);}
   report(label+"-interactive",launched);await screenshot(label+"-battle");
   const before=Date.now(),t0=taps;let firstActionMs=null,seen=new Set();
   if(automatic){await tap("#autoBattleBtn");}
@@ -105,7 +106,9 @@ async function run(name,type,viewport,skip=false){
   await tap("#squadStart");if(await page.locator("#squad.active").isVisible())await tap("#squadStart");
  };
  try{
-  await page.goto(origin,{waitUntil:"load",timeout:60000});await ready();await wait("#firstPlay.active");
+  if(pilot)await page.addInitScript(()=>{localStorage.setItem("ashes-throne.first-play.v1","pilot-live-sentinel");localStorage.setItem("ashes-throne.progress.v3","pilot-live-sentinel");});
+  await page.goto(origin.toString(),{waitUntil:"load",timeout:60000});await ready();await wait("#firstPlay.active");
+  if(pilot)assert.equal(await page.evaluate(()=>gameStorage()===sessionStorage),true);
   const initial=await inspect();assert.deepEqual(initial.owned,["art","ren"]);assert.equal(initial.phase,"briefing");assert.deepEqual(initial.receipts,[0,0,0]);assert.deepEqual(initial.best,[0,0]);report("cold-first-play",initial);await screenshot("opening");
   if(skip){await tap("#firstPlayStorySkip");await wait("#battle.active");await page.reload({waitUntil:"load",timeout:60000});await ready();await wait("#firstPlay.active");assert.equal((await inspect()).phase,"ready");assert.deepEqual((await inspect()).receipts,[0,0,0]);report("skip-reload-ready");await tap("#firstPlayStoryFight");}
   else{for(let i=0;i<4&&!(await page.locator("#firstPlayStoryFight").isVisible());i++)await storyNext();assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);await screenshot("handoff");await tap("#firstPlayStoryFight");}
@@ -115,7 +118,7 @@ async function run(name,type,viewport,skip=false){
   await tap("#hqFirstSessionAction");await page.waitForFunction(()=>FirstPlayCore.rewardClaimed(progress)&&!firstSessionClaiming,null,{timeout:20000});
   let p=await inspect();assert.deepEqual(p.receipts,[1,0,0]);assert.equal(p.currency,initial.currency+40);assert.match(await page.locator("#hqFirstSessionAction").innerText(),/Усилить Рена/);report("FP-claimed",p);
   await tap("#hqFirstSessionAction");await wait("#heroDetail.active");assert.equal(await page.evaluate(()=>selectedHeroId),"ren");await tap("#detailUpgrade");await page.waitForFunction(()=>progress.levels.ren===2,null,{timeout:20000});if(await page.locator("#gearPromotionDialog").evaluate(n=>n.open))await tap("#gearPromotionClose");await tap("#detailHome");await home();p=await inspect();assert.equal(p.currency,initial.currency+1);report("Ren-L2",p);await screenshot("HQ-campaign");
-  if(skip){assert.deepEqual(errors,[]);report("PASS-skip-auto-reload",p);return;}
+  if(skip){if(pilot)assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.progress.v3")),"pilot-live-sentinel");assert.deepEqual(errors,[]);report("PASS-skip-auto-reload",p);return;}
   await tap("#hqFirstSessionAction");await wait("#mainCampaignMap");assert.equal(await page.locator("#mainCampaignNext").isDisabled(),true);await screenshot("I-map");
   await squad();await battle("I");let won=await inspect();assert.deepEqual(won.statuses,["claimable","locked"]);assert.deepEqual(won.receipts,[1,0,0]);assert.equal(won.currency,p.currency);
   await tap("#mainCampaignResultBack");await wait("#mainCampaignMap");await backHome();assert.match(await page.locator("#hqFirstSessionAction").innerText(),/К награде/);await tap("#hqFirstSessionAction");await tap("#mainCampaignClaim");await page.waitForFunction(()=>MainCampaignCore.claimed(progress)&&!mainCampaignClaiming,null,{timeout:20000});let paid=await inspect();assert.deepEqual(paid.receipts,[1,1,0]);assert.equal(paid.currency,p.currency+40);assert.deepEqual(paid.statuses,["claimed","ready"]);report("I-claimed",paid);
@@ -126,7 +129,7 @@ async function run(name,type,viewport,skip=false){
   paid=await inspect();assert.equal(paid.nada,1);assert.deepEqual(paid.owned,["art","nada","ren"]);assert.deepEqual(paid.receipts,[1,1,1]);assert.deepEqual(paid.statuses,["claimed","claimed"]);assert.equal(paid.currency,p.currency+40);assert.equal(paid.energy,initial.energy);assert.equal(paid.ops,initial.ops);assert.match(await page.locator("#mainCampaignNotice").innerText(),/глава III готовится/);report("Nada-claimed",paid);await screenshot("II-claimed");
   await tap("#mainCampaignNode");assert.ok(await page.locator('#squadRoster .squad-choice[data-hero-id="nada"]').isEnabled());await tap("#squadBack");await backHome();
   await tap('#home .hq-station[data-screen="collection"]');await wait("#collection.active");await tap('#collection [data-open-hero="nada"]');await wait("#heroDetail.active");assert.equal(await page.evaluate(()=>selectedHeroId),"nada");await screenshot("Nada-card");await tap("#detailHome");await home();
-  await page.reload({waitUntil:"load",timeout:60000});await home();const final=await inspect();assert.deepEqual(final.receipts,[1,1,1]);assert.deepEqual(final.statuses,["claimed","claimed"]);assert.equal(final.nada,1);assert.equal(final.ren,2);assert.equal(final.currency,paid.currency);await map();await tap("#mainCampaignNext");assert.equal(await page.locator("#mainCampaignClaim").isVisible(),false);assert.deepEqual(errors,[]);report("PASS",final);await screenshot("persisted-II");
+  await page.reload({waitUntil:"load",timeout:60000});await home();const final=await inspect();assert.deepEqual(final.receipts,[1,1,1]);assert.deepEqual(final.statuses,["claimed","claimed"]);assert.equal(final.nada,1);assert.equal(final.ren,2);assert.equal(final.currency,paid.currency);await map();await tap("#mainCampaignNext");assert.equal(await page.locator("#mainCampaignClaim").isVisible(),false);if(pilot){assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.progress.v3")),"pilot-live-sentinel");assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.first-play.v1")),"pilot-live-sentinel");}assert.deepEqual(errors,[]);report("PASS",final);await screenshot("persisted-II");
  }catch(e){report("FAIL",{error:String(e)});await page.screenshot({path:path.join(dest,key+"-fail.png")}).catch(()=>{});throw e;}
  finally{await browser.close();}
 }

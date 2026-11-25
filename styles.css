@@ -5450,3 +5450,6 @@ button.main-campaign-pin:disabled{opacity:.65}
 #combat2ArenaSetup a{color:#e9cb91;font-size:13px}
 #combat2ArenaNotice:empty{display:none}
 @media(max-width:560px) and (orientation:portrait){#combat2ArenaSetup .combat2-setup-fields{grid-template-columns:minmax(0,1fr)}}
+
+/* B17.3B2-FIX: native tactical hints only; compact two-line confirmation. */
+#battle.battle-screen .action-hint.combat2-tactical-hint{font-size:13px;line-height:1.35;white-space:pre-line;max-width:min(360px,46vw);padding:6px 10px;background:#11141bec;color:#fff2d6;text-shadow:0 1px 2px #000}

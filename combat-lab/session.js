@@ -23,7 +23,7 @@ if(!["base","art_shelter","art_response","sava_tempo"].includes(c.opt.trust))fai
 if(Object.keys(c.opt).some(k=>!(k in d.opt)))fail("Неизвестный параметр");
 let ext=null;
 if(c.ext!=null){const x=c.ext;if(typeof x!=="object"||Array.isArray(x))fail("Некорректные расширения");
-ext={units:{},waves:[],openingGuard:x.openingGuard??0,tie:x.tie??"slot",trust:{art:x.trust?.art??c.opt.trust,sava:x.trust?.sava??c.opt.trust},strictBasic:true};
+ext={units:{},waves:[],openingGuard:x.openingGuard??0,tie:x.tie??"slot",trust:{art:x.trust?.art??(["art_shelter","art_response"].includes(c.opt.trust)?c.opt.trust:"base"),sava:x.trust?.sava??(c.opt.trust==="sava_tempo"?"sava_tempo":"base")},strictBasic:true};
 if(!Number.isFinite(ext.openingGuard)||ext.openingGuard<0||ext.openingGuard>.5||!["slot","seeded"].includes(ext.tie))fail("Некорректная стартовая защита или tie");
 for(const [id,values] of Object.entries({art:["base","art_shelter","art_response"],sava:["base","sava_tempo"]})){if(!values.includes(ext.trust[id]))fail("Некорректное доверие "+id);}
 for(const [slot,u] of Object.entries(x.units||{})){if(!/^[ae][0-4]$/.test(slot)||!u||typeof u!=="object")fail("Некорректный слот");let z={};for(const [k,lo,hi] of [["hp",.25,8],["atk",.25,4],["speed",.5,1.5],["armor",0,.75],["protection",0,2],["passivePower",0,.15]])if(u[k]!==undefined){if(!Number.isFinite(u[k])||u[k]<lo||u[k]>hi)fail("Некорректный "+slot+" "+k);z[k]=u[k];}

@@ -497,6 +497,18 @@ function selectMainCampaignMission(id){
  if(!mainCampaignCanLaunch(id))return false;
  mainCampaignSelectedId=id;mainCampaignNotice="";renderMainCampaign();return true;
 }
+// CAM002BART: view-only image state; never produces proof, grants or progression.
+function setMainCampaignArt(img,frame,src,alt,visible=true,root=null){
+ const show=ready=>{frame.hidden=!ready;if(root)root.dataset.art=ready?"ready":"none";};
+ if(!visible){img.onload=null;img.onerror=null;show(false);return;}
+ const expected=new URL(src,document.baseURI).href;
+ const sync=()=>{if(img.onload===sync)show(img.complete&&img.naturalWidth>0&&img.currentSrc===expected);};
+ img.alt=alt;
+ img.onload=sync;
+ img.onerror=sync;
+ if(img.getAttribute("src")!==src){show(false);img.setAttribute("src",src);}
+ sync();
+}
 function renderMainCampaign(){
  if(typeof MainCampaignCore==="undefined"||!$("#mainCampaignMap"))return;
  const id=mainCampaignSelected(),second=id===MainCampaignCore.II_ID;
@@ -509,18 +521,18 @@ function renderMainCampaign(){
  chart.setAttribute("aria-label","Схема маршрута глав I и II");
  chart.querySelector(".eyebrow").textContent="ГЛАВА "+(second?"II":"I")+" · САДЫ НАД ПРОПАСТЬЮ";
  chart.querySelector("h3").textContent=second?title:"След распоряжения";
- chart.style.backgroundImage=second?'url("assets/main-campaign-route.svg")':"";
+
  const node=map.querySelector(".main-campaign-node");
  node.querySelector(".eyebrow").textContent=(second?"02":"01")+" · БОЕВАЯ МИССИЯ";
  node.querySelector("h3").textContent=title;
  const storyKnown=best>0&&status!=="blocked";
  const sceneArt=$("#mainCampaignSceneArt");
- sceneArt.hidden=second;sceneArt.style.display=second?"none":"";
- if(!second){
-  const sceneSrc="assets/cutscenes/main-campaign/m1/"+(storyKnown?"warehouse-proof.webp":"warehouse-conflict.webp");
-  if(sceneArt.getAttribute("src")!==sceneSrc)sceneArt.setAttribute("src",sceneSrc);
-  sceneArt.alt=storyKnown?"Мастер осматривает сохранённую скобу и грузовую отметку":"На складе охранник оттесняет мастера от снятого крепежа";
- }
+ const sceneSrc="assets/cutscenes/main-campaign/"+(second?
+  "m2/"+(storyKnown?"shelter-witness.webp":"shelter-conflict.webp"):
+  "m1/"+(storyKnown?"warehouse-proof.webp":"warehouse-conflict.webp"));
+ const sceneAlt=second?(storyKnown?"Рабочий свободен и показывает дорогу, Нада записывает его свидетельство":"Сторожа удерживают рабочего у дорожного убежища, Рен, Арт и Нада вмешиваются"):
+  (storyKnown?"Мастер осматривает сохранённую скобу и грузовую отметку":"На складе охранник оттесняет мастера от снятого крепежа");
+ setMainCampaignArt(sceneArt,sceneArt,sceneSrc,sceneAlt);
  $("#mainCampaignSceneCaption").textContent=second?(storyKnown?"Рабочий в безопасности. Нужно остановить вывоз.":"Дорожное убежище · осмотр места ремонта"):
   storyKnown?"Крепёж у мастера. Следующая отметка найдена.":"Мастер: «Эту пока не грузите. Она с того пролёта».";
  $("#mainCampaignProgress").textContent="Миссии: "+(best>0?1:0)+"/1 · Звёзды: "+best+"/3";
@@ -574,8 +586,12 @@ function renderMainCampaignResult(){
   second?"Нада предлагает вести ваши проверки, оставляя оригиналы записей у себя.":
   "Результат сохранён. Заберите "+MainCampaignCore.SOURCE.reward.currency+" кромов за первую победу.");
  const storyConfirmed=!!result.earned&&result.ok&&(proof?.best||0)>0&&status!=="blocked";
- $("#mainCampaignResultArt").hidden=!storyConfirmed||second;
+ const resultArt=$("#mainCampaignResultArt");
  root.dataset.story=storyConfirmed?"confirmed":"none";
+ setMainCampaignArt(resultArt.querySelector("img"),resultArt,
+  "assets/cutscenes/main-campaign/"+(second?"m2/shelter-witness.webp":"m1/warehouse-proof.webp"),
+  second?"Рабочий свободен и показывает дорогу, Нада записывает его свидетельство":"Мастер осматривает сохранённую скобу и грузовую отметку",
+  storyConfirmed,root);
  $("#mainCampaignResultText").textContent=(storyConfirmed?(second?
   "Рабочий свободен. Нужно сдержать обещание и помочь остановить вывоз камня. ":
   "Крепёж сохранён для проверки. На ярлыке — следующий пункт доставки. "):"")+resultMessage;

@@ -1,4 +1,4 @@
-/* R2/D1: actual native encounter + atomic v3 first outcome. Not wired to UI yet. */
+/* R2/D1–D2: actual native encounter, atomic first outcome, chosen personal skill. */
 const ArtAdventureCore=(()=>{
 "use strict";
 const SOURCE="art-cover-promise",OCCURRENCE="once",HOLD=8,LEVEL=7;
@@ -15,6 +15,24 @@ function view(p){
 function loadout(p,party){
  const selected=view(p).selected;
  return selected&&Array.isArray(party)&&party.some(f=>f.id==="art"&&f.side==="ally"&&f.hp>0)?{treeR1:true,trustPersonal:[ABILITIES[selected]]}:{};
+}
+// Read-only, opt-in autoplay preference. Core preview remains the sole legality check.
+// Keep a prepared-strike disruption, and do not spend a personal technique on a healthy
+// ally without a threat or a meaningful protection deficit.
+function autoPlan(battle,fallback){
+ const actor=battle?.fighters?.[battle.currentActor],id=battle?.trustPersonal?.find(x=>x==="art-intercept"||x==="art-reserve");
+ if(!battle?.active||actor?.id!=="art"||!id||!CombatCore.abilityReady(battle,id))return fallback;
+ const poolRatio=f=>(f.hp+f.protection)/Math.max(1,f.maxHp+f.maxProtection);
+ if(poolRatio(actor)<.45)return fallback;
+ const threats=battle.fighters.filter(f=>f.side==="enemy"&&f.hp>0&&f.combat2Prepared&&!CombatStatusCore.read(f,"disrupted-plan"));
+ // A normal powerful disruption is preferable to redirecting an imminent strike.
+ if(fallback?.abilityId==="powerful"&&threats.some(f=>f===battle.fighters[fallback.targetIndex]))return fallback;
+ const taunter=battle.fighters.find(f=>f.side==="ally"&&f.hp>0&&CombatStatusCore.read(f,"taunt"));
+ const rows=battle.fighters.map((f,index)=>({f,index,preview:CombatCore.personalPreview(battle,id,index),warned:threats.some(e=>(taunter?.id??e.combat2Prepared)===f.id)})).filter(x=>x.preview);
+ const eligible=rows.filter(x=>id==="art-intercept"?x.warned||poolRatio(x.f)<.5:
+   x.preview.amount>=Math.max(1,Math.ceil(x.f.maxProtection*.25))&&(x.warned||poolRatio(x.f)<.7||x.f.protection<=x.f.maxProtection*.35));
+ eligible.sort((a,b)=>Number(b.warned)-Number(a.warned)||poolRatio(a.f)-poolRatio(b.f)||a.index-b.index);
+ return eligible.length?{abilityId:id,targetIndex:eligible[0].index}:fallback;
 }
 function terminal(b,route){
  const goal=objective(route);
@@ -95,5 +113,5 @@ function create({heroes,storageProvider,onUnknown=()=>{}}){
  }
  return Object.freeze({start,complete,abandon,equip,read,ready,active:()=>!!active,blocked:()=>blocked});
 }
-return Object.freeze({SOURCE,OCCURRENCE,HOLD,LEVEL,EARNED,objective,view,loadout,terminal,create});
+return Object.freeze({SOURCE,OCCURRENCE,HOLD,LEVEL,EARNED,objective,view,loadout,autoPlan,terminal,create});
 })();

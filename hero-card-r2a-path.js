@@ -25,13 +25,13 @@ const R2APath=(()=>{
    put("baseStatus",chosen==="base"?"Выбрано":"Снять специализацию");put("guardianStatus",state("guardian-2"));put("commandStatus",state("command-2"));
    put("nodeTag",d.tag);put("nodeTitle",d.title);put("nodeText",d.text);put("nodeUse",d.use);put("nodeCost",d.cost);
    const locked=node!=="base"&&!earned.includes(node);
-   put("nodeHint",v.blocked|| (v.pilot&&!locked&&node!=="base"&&!adapter.equip?"Навык освоен. Боевой слот ещё не подключён.":locked?"Откроется после личного приключения.":node===chosen?(node==="base"?"Дополнительный навык не назначен.":"Сейчас выбрана эта техника."):"Выбор действует в следующем бою."));
+   put("nodeHint",v.blocked||v.notice|| (locked?"Откроется после личного приключения.":node===chosen?(node==="base"?"Дополнительный навык не назначен.":"Сейчас выбрана эта техника."):(v.pilot?"Выбор действует в следующем бою основной кампании (Combat 2.0).":"Выбор действует в следующем бою.")));
    const equip=field("equip");equip.textContent=locked?"Как открыть":node===chosen?"Уже выбрано":node==="base"?"Снять специализацию":"Выбрать способность";
    equip.disabled=node===chosen||(!locked&&(!adapter.equip||!!v.blocked||v.pending||v.active));
    if(adapter.production&&v.pilot){
     put("storyTitle","Чужая доля");
     put("storyText",ready?(v.outcome==="recovered"?"Люди вышли в безопасное место. Заработок удалось вернуть.":"Люди вышли в безопасное место. Заработок остался на площадке."):v.available?"Двое работников и раненый нуждаются в помощи. Арт и Рен должны защитить их отход.":"Личное приключение Арта пока недоступно.");
-    put("storyUnlock",v.blocked||v.notice||(ready?"Обе техники освоены. Применение в бою подключается на следующем этапе.":v.available?"Выберите путь. В обоих случаях Рен и Арт должны выжить.":"Завершите главу II основной кампании и получите её разовую награду."));
+    put("storyUnlock",v.blocked||v.notice||(ready?"Обе техники освоены. Выберите одну для следующего боя основной кампании.":v.available?"Выберите путь. В обоих случаях Рен и Арт должны выжить.":"Завершите главу II основной кампании и получите её разовую награду."));
    }else{
    put("storyTitle",ready?"Личное обязательство":"Приключение Арта");
    put("storyText",ready?"Арт завершил личное приключение. Теперь доступны две дополнительные техники.":adapter.production?"Личное приключение Арта пока недоступно.":"Продолжайте кампанию и подготовьте Арта к личному приключению.");
@@ -84,7 +84,7 @@ const R2APath=(()=>{
    modal.querySelector(".hero-card-dialog-body").append(moved);modal.showModal();
   }
   get("r2aLevel").onclick=()=>openProgress("level");get("r2aStars").onclick=()=>openProgress("stars");
-  prodPath=create({production:true,view:()=>prodView,start:id=>typeof startArtAdventure==="function"&&startArtAdventure(id),
+  prodPath=create({production:true,view:()=>prodView,start:id=>typeof startArtAdventure==="function"&&startArtAdventure(id),equip:id=>typeof equipArtAdventure==="function"&&equipArtAdventure(id),
    opened:()=>{if(typeof RenCard3D!=="undefined")RenCard3D.dispose()},
    closed:()=>{if(get("heroDetail")?.classList.contains("active")&&typeof selectedHeroId!=="undefined"&&selectedHeroId==="art"&&typeof RenCard3D!=="undefined")void RenCard3D.activate("art")}});
   get("r2aTree").onclick=()=>prodPath.open("tree");get("r2aStory").onclick=()=>prodPath.open("story");

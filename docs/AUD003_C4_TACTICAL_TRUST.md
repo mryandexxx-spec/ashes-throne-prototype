@@ -1,3 +1,5 @@
+> **C4/R supersession (proposal):** Owner rejected treating trust as existing skill variants. This pilot remains a technical experiment; see [C4/R](AUD003_C4R_TRUST_AGENCY.md) before C5. No final trust rules adopted.
+
 # AUD003-C4 — Tactical Trust pilot
 26.11.2026 · [В РАЗРАБОТКЕ / ПРЕДЛОЖЕНИЕ]. Native CombatCore opt-in only; no production caller enables trust. B17 kit and default remain. C3 long progression in main #564; private #82 open. C2 lab accelerated I–III, IV/V intentionally locked in dossier; actual progression will be integrated C5/D/E.
 ## Mechanics

@@ -3575,6 +3575,7 @@ function renderHeroDetail(){
  if(typeof GearUX004!=="undefined")GearUX004.render({
   progress,heroId:base.id,slotIndex:selectedGearSlot,campaign:campaignProgress,saveBlocked
  });
+ if(typeof R2ACard!=="undefined")R2ACard.sync(base.id,progress);
 }
 $("#gearSlots")?.addEventListener("click",event=>{
  const button=event.target.closest?.("[data-gear-slot]");

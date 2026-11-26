@@ -84,7 +84,23 @@ const {chromium,webkit}=require('playwright');
     console.log('ROSTERDOSSIER001',heroId,width,height,measured);
    }
   }
+  // R2/A production card: real catalog, existing live actions and reversible gear layout.
+  await page.evaluate(()=>{selectedHeroId='art';showScreen('heroDetail');});
+  await page.waitForFunction(()=>document.querySelector('#detailHeroStage').classList.contains('has-ren-3d'),null,{timeout:45000});
+  assert.equal(await page.locator('#r2aGearRail #gearSlots .r2a-item-art').count(),6);
+  await page.waitForFunction(()=>Array.from(document.querySelectorAll('#gearSlots .r2a-item-art')).every(i=>i.complete&&i.naturalWidth>0));
+  assert.equal(await page.evaluate(()=>BABYLON.EngineStore.Instances.find(e=>e.getRenderingCanvas()?.id==='renCard3DCanvas')?.scenes[0].getMeshByName('r5-floor-contact')!=null),true);
+  await page.locator('#gearSlots button').first().click();
+  assert.equal(await page.locator('#heroDetail').evaluate(n=>n.classList.contains('gear-ux-active')),true);
+  assert.match(await page.locator('#gearUxRight').textContent(),/Материалы для изготовления/);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#r2aGearRail #gearSlots').count(),1);
+  await page.locator('[data-hero-ability=basic]').click();
+  assert.equal(await page.locator('#skillUpgradeDialog').evaluate(n=>n.open),true);
+  await page.locator('#skillUpgradeClose').click();
   await page.evaluate(()=>{selectedHeroId='ren';showScreen('heroDetail');});
+  assert.equal(await page.locator('#heroDetail[data-r2a-card]').count(),0);
+  assert.equal(await page.locator('#r2aGearRail #gearSlots').count(),0);
   await page.setViewportSize({width:844,height:390});
   await page.setViewportSize({width:844,height:390});
   // GEARSLOTUX001: initial save has no resources; each of the six slots

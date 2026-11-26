@@ -1,0 +1,39 @@
+/* R2/A-1: approved Art-only B-floor presentation. Existing live controls remain. */
+body.hero-card-mode:has(#heroDetail.active[data-r2a-card="art"])::before{
+ background:linear-gradient(0deg,#10171bcc 0%,transparent 24%),linear-gradient(90deg,#14191dfc 0%,#171d20ed 22%,#252a2870 36%,#252a2829 51%,#2429237a 68%,#13191de8 77%,#10171bfc 100%),url("assets/hero-card-r57/gardens-art.webp") center top/cover no-repeat;
+}
+#heroDetail[data-r2a-card="art"].active,#heroDetail[data-r2a-card="art"] .hero-detail-stage{background:none}
+#heroDetail[data-r2a-card="art"] .hero-detail-stage-platform{display:none}
+#heroDetail[data-r2a-card="art"] #renCard3DCanvas{transform:translateZ(0);opacity:1}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-detail-reference{grid-template-columns:minmax(190px,24%) minmax(0,1fr) minmax(196px,26%);gap:10px}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-abilities-panel{grid-template-rows:13px minmax(134px,1fr) auto;gap:3px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) #heroAbilitiesTitle{display:block;font-size:10px;letter-spacing:.08em}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) #heroAbilityList{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(44px,1fr));gap:2px;padding:0}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-ability-card{border:0;border-bottom:1px solid #aa93634d;border-radius:0;background:linear-gradient(105deg,#33302a9e,#18202655);padding:2px 3px}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-ability-card[data-hero-ability="basic"]{grid-column:1;grid-row:1}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-ability-card[data-hero-ability="powerful"]{grid-column:2;grid-row:1}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-ability-card[data-hero-ability="special"]{grid-column:1/-1;grid-row:2}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-ability-card[data-hero-ability="passive"]{grid-column:1;grid-row:3}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-ability-card[data-hero-ability="leader"]{grid-column:2;grid-row:3}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-ability-card .hero-ability-thumb{width:24px;height:24px;flex-basis:24px;border-radius:3px}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-ability-card .hero-ability-heading{gap:3px}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-ability-title-text strong{font-size:10px;line-height:1.13}
+#heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-ability-kind{font-size:8px}
+#r2aGearRail[hidden]{display:none!important}
+#heroDetail[data-r2a-card="art"] #r2aGearRail{border-top:1px solid #aa8c5c6e;padding-top:2px}
+#heroDetail[data-r2a-card="art"] .r2a-gear-title{display:block;font-size:10px;color:#d4b582;letter-spacing:.085em}
+#heroDetail[data-r2a-card="art"] #r2aGearRail #gearSlots{position:static;display:grid;grid-template-columns:repeat(3,minmax(44px,1fr));grid-template-rows:repeat(2,44px);gap:3px;pointer-events:auto}
+#heroDetail[data-r2a-card="art"] #r2aGearRail #gearSlots .gear-slot:nth-child(n){grid-row:auto;grid-column:auto;width:100%;height:44px;min-height:44px;padding:1px 2px;gap:1px;border-radius:4px}
+#heroDetail[data-r2a-card="art"] #gearSlots .r2a-item-art{width:28px;height:28px;object-fit:contain;pointer-events:none}
+#heroDetail[data-r2a-card="art"] #r2aGearRail #gearSlots .gear-slot-state-label{display:none}
+#heroDetail[data-r2a-card="art"] #r2aGearRail #gearSlots .gear-slot-indicator{width:17px;height:17px;top:0;right:0;font-size:12px}
+#heroDetail[data-r2a-card="art"] #r2aGearRail #gearSlots .gear-slot small{font-size:9px;white-space:nowrap;line-height:1}
+@media(min-height:351px) and (orientation:landscape){
+ #heroDetail[data-r2a-card="art"] #r2aGearRail #gearSlots{grid-template-rows:repeat(2,55px)}
+ #heroDetail[data-r2a-card="art"] #r2aGearRail #gearSlots .gear-slot:nth-child(n){height:55px}
+ #heroDetail[data-r2a-card="art"] #gearSlots .r2a-item-art{width:36px;height:36px}
+ #heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-ability-title-text strong{font-size:11px}
+}
+@media(orientation:landscape) and (max-height:350px){
+ #heroDetail[data-r2a-card="art"]:not(.gear-ux-active) .hero-detail-reference{grid-template-columns:minmax(188px,25%) minmax(0,1fr) minmax(188px,25%);gap:7px}
+}

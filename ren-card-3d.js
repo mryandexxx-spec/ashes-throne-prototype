@@ -185,6 +185,7 @@ const RenCard3D=(()=>{
     }
     canvas.dataset.animationSource="legacy-fallback";
    }
+   if(isArt&&typeof R2ACard!=="undefined")R2ACard.mount(scene,camera);
    setMode("model");
    engine.resize();
    endLoading();
@@ -203,6 +204,7 @@ const RenCard3D=(()=>{
    if(camera){
     camera.alpha=Math.PI/2;camera.beta=Math.PI/2.15;camera.radius=3.15;
     camera.setTarget(new BABYLON.Vector3(0,1.08,0));
+    if(activeHeroId==="art"&&typeof R2ACard!=="undefined")R2ACard.frame(scene,camera);
    }
   });
  }

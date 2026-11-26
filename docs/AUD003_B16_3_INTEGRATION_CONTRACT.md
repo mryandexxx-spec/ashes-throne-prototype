@@ -1,4 +1,7 @@
 # AUD003-B16.3 — Combat 2.0: контракт текущей пятёрки и план внедрения
+
+**[УТВЕРЖДЕНО — 26.11.2026, порядок работ]** [AUD003 Product Reset](AUD003_PRODUCT_RESET.md) supersedes historical C/D/E holds: B17 frozen at v0.3.268, #558/#559 merged and CI green; no further isolated hero research. C active (compact Trust & Recruitment contract pending separate mechanic approval), then D/E/F unified first 20 minutes; only integration-critical fixes before full slice. Default combat unchanged; unresolved balance, reward parity, physical iPhone/Pages and owner acceptance remain gates for release, not C/D development. III paused. No new mechanic or canon approved by this process decision.
+
 25.11.2026 · **[В РАЗРАБОТКЕ / ПРЕДЛОЖЕНИЕ]**. Base d47f7cc528664b6a8b546f86c72ce0982493a6e8; B16.1–2 #547 merged, selective CI 45669811178 success. Владелец отметил, что зависимость от Рена/Нады — особенность отряда, и запустил B16.3 после предложения снять её как блокер текущего этапа. Это рабочее направление, не утверждение всех чисел, художественного результата или отмена ранее утверждённых навыков. GDD/Combat Specification/production/канон не меняем.
 
 ## 1. Изменение критерия готовности

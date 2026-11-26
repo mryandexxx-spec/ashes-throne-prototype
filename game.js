@@ -3270,7 +3270,11 @@ function renderHeroAbilities(hero){
  const list=$("#heroAbilityList");
  if(!list||typeof AbilityInfo==="undefined")return;
  list.replaceChildren();
- if(COMBAT2_PILOT){const notice=document.createElement("p");notice.className="hero-ability-meta";notice.textContent="Тест Combat 2.0 · первый сеанс, главы I–II и тестовая арена. Остальные режимы используют прежние правила.";list.append(notice);}
+ if(COMBAT2_PILOT){
+  const scope="Тест Combat 2.0 · первый сеанс, главы I–II и тестовая арена. Остальные режимы используют прежние правила.";
+  const title=$("#heroAbilitiesTitle");if(title){title.textContent="Умения · тест 2.0";title.title=scope;}
+  list.setAttribute("aria-label",scope);
+ }
  for(const info of AbilityInfo.forHero(combat2PresentationHero(hero))){
   const card=document.createElement("article");
   card.className="hero-ability-card"+(info.status!=="available"?" unavailable":"");

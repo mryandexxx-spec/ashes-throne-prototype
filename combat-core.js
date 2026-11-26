@@ -596,8 +596,10 @@ const CombatCore = (() => {
         throw Error("leader must be the first living ally in the roster");
     }
     const trust=trustSnapshot(heroes,options),personal=personalSnapshot(heroes,options);
+    if(options.treeR1!==undefined&&(options.treeR1!==true||options.combat2!==true))throw Error("invalid TREE-R1 opt-in");
     const battle = {
       fighters,
+      ...(options.treeR1===true?{treeR1:true}:{}),
       ...(personal?{trustPersonal:personal,trustPersonalCooldown:Object.fromEntries(personal.map(id=>[id,0]))}:{}),
       ...(trust?{tacticalTrust:trust,trustPlanUsed:false}:{}),
       ...(options.combat2===true?{combat2:true}:{}),
@@ -923,11 +925,17 @@ const CombatCore = (() => {
         if(blocked>0){const spent=Math.ceil(blocked/2);art.protection-=spent;damage-=blocked;art.combat2ReactUsed=true;emit(battle,"combat2-cover",{actorId:art.id,targetId:target.id,amount:blocked,protectionSpent:spent});}
       }
     }
+    // Observe the existing guard calculation without changing its research patch anchors.
+    const treeGuardBefore=battle?.treeR1&&!bypassGuard&&target.guardHits>0?damage:null;
     if(!bypassGuard){
     if(target.guardHits>0){
       damage=Math.round(damage*0.5);
       target.guardHits--;
     }
+    }
+    if(treeGuardBefore!==null){
+      if(treeGuardBefore>damage)emit(battle,"tree-r1-guard",{actorId:attacker.id,targetId:target.id,sourceId:target.treeR1GuardSource??null,amount:treeGuardBefore-damage});
+      if(!target.guardHits)delete target.treeR1GuardSource;
     }
     if(type!=="legacy"&&target.protection!==undefined){
       const absorbed=Math.min(damage,target.protection);
@@ -1497,15 +1505,18 @@ const CombatCore = (() => {
     if(ability.kind==="trust-reserve"){
       const amount=personalChoice.amount;
       actor.protection-=amount;target.protection+=amount;
+      if(battle.treeR1)target.guardHits=Math.max(target.guardHits,1);
       emit(battle,"trust-reserve-transferred",{actorId:actor.id,targetId:target.id,amount});
       battle.message=actor.name+" передаёт резерв защиты: "+amount+".";
     }else if(ability.kind==="trust-intercept"){
       battle.trustIntercept={ownerId:actor.id,targetId:target.id};
+      if(battle.treeR1)actor.guardHits=Math.max(actor.guardHits,1);
       emit(battle,"trust-intercept-armed",{actorId:actor.id,targetId:target.id});
       battle.message=actor.name+" готов перехватить удар по "+target.name+".";
     }else if(ability.combat2Cover){
       for(const row of trustCover.rows){
         const recipient=battle.fighters.find(f=>f.id===row.id);
+        if(battle.treeR1&&!recipient.guardHits&&row.guardHits>0)recipient.treeR1GuardSource=actor.id;
         recipient.guardHits=row.guardHits;if(trustCover.mode==="standard")recipient.protection+=row.restored;delete recipient.insurance;
         emit(battle,"effect",{actorId:actor.id,targetId:recipient.id,effect:"guard",stacks:recipient.guardHits});
         if(trustCover.mode==="standard")emit(battle,"combat2-protection",{actorId:actor.id,targetId:recipient.id,amount:row.restored});
@@ -1549,6 +1560,7 @@ const CombatCore = (() => {
         reducedReadMoveDamage(rollCriticalDamage(battle,actor,target,baseDamage,type),readMovePenalty),true,type,
         penetrationEnabled(battle,type)?actor.defensePenetration:0,battle,
         ability.target==="enemy"&&!redirect,ability.id==="ren-bypass");
+      if(battle.treeR1&&redirect)emit(battle,"tree-r1-redirect-damage",{actorId:actor.id,targetId:target.id,protectedId:intended.id,hpDamage:Math.max(0,oldHp-target.hp),protectionDamage:oldProtection===null?0:Math.max(0,oldProtection-target.protection)});
       if(ability.id==="ren-bypass")emit(battle,"trust-bypass",{actorId:actor.id,targetId:target.id,guardRemaining:target.guardHits});
       emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
         ...typedDamageFields(target,type,oldHp,oldProtection)});

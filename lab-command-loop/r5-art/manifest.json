@@ -1,0 +1,261 @@
+{
+  "status": "owner accepted art lab baseline for functional transfer; not production",
+  "baseline": "6264d3b97b027c82fbe04818f6675065fd529ccf",
+  "gear": [
+    {
+      "file": "gear-weapon.svg",
+      "source": "original vector interpretation of existing GearData slot; not individual item art",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true
+    },
+    {
+      "file": "gear-torso.svg",
+      "source": "original vector interpretation of existing GearData slot; not individual item art",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true
+    },
+    {
+      "file": "gear-head.svg",
+      "source": "original vector interpretation of existing GearData slot; not individual item art",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true
+    },
+    {
+      "file": "gear-hands.svg",
+      "source": "original vector interpretation of existing GearData slot; not individual item art",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true
+    },
+    {
+      "file": "gear-feet.svg",
+      "source": "original vector interpretation of existing GearData slot; not individual item art",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true
+    },
+    {
+      "file": "gear-utility.svg",
+      "source": "original vector interpretation of existing GearData slot; not individual item art",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true
+    }
+  ],
+  "medals": [
+    {
+      "file": "medal-base.svg",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true,
+      "source": "original vector; existing specialization effects"
+    },
+    {
+      "file": "medal-guardian.svg",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true,
+      "source": "original vector; existing specialization effects"
+    },
+    {
+      "file": "medal-commander.svg",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true,
+      "source": "original vector; existing specialization effects"
+    }
+  ],
+  "skins": [
+    {
+      "file": "skin-bronze.svg",
+      "dimensions": [
+        160,
+        64
+      ],
+      "sliceInsets": 12,
+      "alpha": true
+    },
+    {
+      "file": "skin-cta.svg",
+      "dimensions": [
+        160,
+        64
+      ],
+      "sliceInsets": 12,
+      "alpha": true
+    }
+  ],
+  "stage": {
+    "source": "Babylon MeshBuilder and scene-local procedural stone/bronze textures; no Blender execution; same scene; contact shadow approximation",
+    "variants": {
+      "a": "octagonal pedestal, six surrounding slots",
+      "b": "round pedestal, six slots in arsenal rail"
+    }
+  },
+  "rules": "no purchases, progression, saves, new lore, new runtime dependencies; production unchanged",
+  "rejectedBackground": {
+    "libraryFileId": "libfile_bdb797c8ca8c819186ae805be4e1b124",
+    "name": "Ashes-Throne-R5-quiet-hall-source.png",
+    "source": "ImageGen",
+    "status": "REJECTED by owner-approved direction: generic castle; never select as character background",
+    "fallback": "assets/hq-hall-painting.webp"
+  },
+  "regionalBackground": {
+    "status": "accepted visual baseline for Art card; not canonical geography or production",
+    "registry": "regional-backgrounds.js",
+    "art": {
+      "region": "gardens-over-abyss",
+      "candidate": {
+        "libraryFileId": "libfile_51182d7f9cb48191b3de208b471de997",
+        "name": "Ashes-Throne-R5-Gardens-Art-background-candidate.png",
+        "source": "ImageGen",
+        "status": "accepted art baseline in isolated lab; future production integration separate",
+        "provenance": "FIVE_SHADOWS_COMPLETE_1.5.md, CURRENT.md, CURRENT_RESEARCH_1.1.md",
+        "file": "r56/gardens-art.webp"
+      },
+      "fallback": "assets/arena-env005-terrace.webp",
+      "fallbackBlobSha": "02e9240077244bb2a612656ec2c4e6db21c3d363"
+    }
+  },
+  "r52": {
+    "status": "candidate B default; A retained as control",
+    "lighting": "512px PCF shadow generator on existing scene, contact texture retained; no measured iPhone performance",
+    "composition": "B: five skill labels, six existing gear slots, regional vista, smaller real layered support",
+    "newRaster": "Library candidate not transferred; CI uses existing terrace"
+  },
+  "floorComparison": {
+    "status": "owner accepted B-floor; idle pose/grounding deferred to animation work",
+    "default": "b-floor",
+    "control": "b",
+    "geometry": "broad transparent contact layer plus two localized ankle/toe-tracked shadows; no opaque platform or shadow map",
+    "camera": "same B layout, modest framing adjustment; visual review needed",
+    "assets": "regional image supplies natural stone ground; candidate raster remains in Library",
+    "limits": "soft contact approximation, not physical cast shadow or real 3D environment; physical iPhone not tested",
+    "ownerDecision": "2026-11-26"
+  },
+  "r56": {
+    "status": "accepted art baseline; browser checks green; physical device unverified",
+    "sourceLibraryId": "libfile_3aa2e87de39c8191929f949d6f2e3c1a",
+    "gear": [
+      {
+        "slot": "weapon",
+        "itemId": "g1-blade",
+        "file": "r56/g1-blade.webp",
+        "dimensions": [
+          192,
+          192
+        ],
+        "alpha": true,
+        "bytes": 6976,
+        "gitBlob": "7c4b29397f9c3a37f1ddb5eb6779831409090175"
+      },
+      {
+        "slot": "torso",
+        "itemId": "g1-vest",
+        "file": "r56/g1-vest.webp",
+        "dimensions": [
+          192,
+          192
+        ],
+        "alpha": true,
+        "bytes": 12822,
+        "gitBlob": "f2800581b0008692fe04821b2502a7cee114d7ea"
+      },
+      {
+        "slot": "head",
+        "itemId": "g1-helm",
+        "file": "r56/g1-helm.webp",
+        "dimensions": [
+          192,
+          192
+        ],
+        "alpha": true,
+        "bytes": 12036,
+        "gitBlob": "fc4a1041da7385fc5e882beccd1b9881a55888f6"
+      },
+      {
+        "slot": "hands",
+        "itemId": "g1-gaunt",
+        "file": "r56/g1-gaunt.webp",
+        "dimensions": [
+          192,
+          192
+        ],
+        "alpha": true,
+        "bytes": 12222,
+        "gitBlob": "f9aa7f51e2b755dc64095dfaf95312c9199a59c4"
+      },
+      {
+        "slot": "feet",
+        "itemId": "g1-bootheavy",
+        "file": "r56/g1-bootheavy.webp",
+        "dimensions": [
+          192,
+          192
+        ],
+        "alpha": true,
+        "bytes": 10804,
+        "gitBlob": "4dac6f48473682a1bac50a82ca90da87481432c0"
+      },
+      {
+        "slot": "utility",
+        "itemId": "g1-belt",
+        "file": "r56/g1-belt.webp",
+        "dimensions": [
+          192,
+          192
+        ],
+        "alpha": true,
+        "bytes": 11374,
+        "gitBlob": "bfc25f8e198e9c902d1ceb407fc1762937348e56"
+      }
+    ],
+    "background": {
+      "file": "r56/gardens-art.webp",
+      "sourceLibraryId": "libfile_51182d7f9cb48191b3de208b471de997",
+      "dimensions": [
+        1279,
+        720
+      ],
+      "bytes": 173318,
+      "gitBlob": "66b0c218a22d453c00ec57d3c9dfbf4df941ead9"
+    },
+    "constraints": "catalog recipes are test-only, not owned equipment or canon; no production changes; B-floor layout immutable"
+  },
+  "acceptance": {
+    "date": "2026-11-26",
+    "evidenceHead": "a3bd5bb8d7e024412bc9f23359c53ddeffa0f71b",
+    "ci": [
+      45877101043,
+      45877101098
+    ],
+    "artifact": 15145436473,
+    "cardScore": 8,
+    "treeScore": 7,
+    "target": 8.5,
+    "animation": "deferred by owner",
+    "physicalIphone": "not tested",
+    "production": "not integrated"
+  }
+}

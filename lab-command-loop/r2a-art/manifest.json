@@ -1,0 +1,84 @@
+{
+  "status": "R2 art candidate / not production",
+  "base": "8f0c01b6f26d44ef97ec034e04ff9e90e67f69d3",
+  "sourceAssets": {
+    "portrait": {
+      "path": "assets/art-portrait-ui.webp",
+      "gitBlobSha": "34dbca6abd04de4574568d58496807ad98c303d7",
+      "license": "existing project asset; no new license claim"
+    },
+    "hall": {
+      "path": "assets/hq-hall-painting-mobile.webp",
+      "gitBlobSha": "b80dd914e42f76d079582a49d20ec85938345595",
+      "license": "existing project asset; no new license claim"
+    },
+    "atlas": {
+      "path": "assets/abilities/atlas.webp",
+      "gitBlobSha": "301b98e55b958f8430de88ed89206e10fbc272f5",
+      "license": "existing project asset; no new license claim"
+    }
+  },
+  "originalVectorAssets": [
+    "icon-base.svg",
+    "icon-guardian.svg",
+    "icon-commander.svg",
+    "icon-adventure.svg"
+  ],
+  "masters": [
+    "lab-command-loop/r2a-art/card-844x390.svg",
+    "lab-command-loop/r2a-art/tree-guardian-844x390.svg",
+    "lab-command-loop/r2a-art/tree-commander-844x390.svg",
+    "lab-command-loop/r2a-art/tree-locked-844x390.svg",
+    "lab-command-loop/r2a-art/tree-equipped-844x390.svg",
+    "lab-command-loop/r2a-art/card-932x430.svg",
+    "lab-command-loop/r2a-art/tree-guardian-932x430.svg",
+    "lab-command-loop/r2a-art/tree-commander-932x430.svg",
+    "lab-command-loop/r2a-art/tree-locked-932x430.svg",
+    "lab-command-loop/r2a-art/tree-equipped-932x430.svg",
+    "lab-command-loop/r2a-art/card-844x320.svg",
+    "lab-command-loop/r2a-art/tree-guardian-844x320.svg",
+    "lab-command-loop/r2a-art/tree-commander-844x320.svg",
+    "lab-command-loop/r2a-art/tree-locked-844x320.svg",
+    "lab-command-loop/r2a-art/tree-equipped-844x320.svg"
+  ],
+  "dimensions": [
+    [
+      844,
+      390
+    ],
+    [
+      932,
+      430
+    ],
+    [
+      844,
+      320
+    ]
+  ],
+  "states": [
+    "card",
+    "guardian",
+    "commander",
+    "locked",
+    "equipped"
+  ],
+  "sourcePolicy": "Named SVG layers and live text. Independently replaceable vector symbols (not approved production assets), no external fonts or runtime. generate.cjs rebuilds sources. Git blob SHA records provenance; SHA-256 pending.",
+  "notes": "2D portrait only for mockup. Production retains 3D hero and real progression/gear. Gallery is noninteractive art; original functional UX remains #571.",
+  "live3d": {
+    "status": "owner requirement, candidate implementation awaiting browser and art review",
+    "page": "lab-command-loop/tree-r2a-live.html",
+    "asset": "dev/assets/models/art-mobile-animated.glb",
+    "sha256": "c7a25c48dbd9117baec08e3ff1612f4b52ece8516a521571b9b1f1b3852b2860",
+    "bytes": 2032788,
+    "renderer": "ren-card-3d.js",
+    "idle": "Idle_5",
+    "portrait": "fallback only; not accepted as primary",
+    "svg": "historical composition references only"
+  },
+  "r4": {
+    "status": "candidate awaiting CI and artistic review",
+    "gear": "six real GearData slots; Art class tank; G1 catalog recipes and existing materials; no purchases, no real save, no invented ownership",
+    "stage": "real GLB, existing renderer, separate quiet background and contact platform",
+    "tree": "one additional skill, base option removes specialization only, effects visible before tap"
+  }
+}

@@ -49,7 +49,7 @@ const RenCard3D=(()=>{
   const portrait=byId("detailRenPortrait");
   if(portrait)portrait.hidden=false;
  }
- async function activate(heroId){
+ async function activate(heroId,options={}){
   const isRen=heroId==="ren";
   const isNada=heroId==="nada";
   const isLiora=heroId==="liora";
@@ -77,7 +77,7 @@ const RenCard3D=(()=>{
   view="model";
   loading(isLiora?"Загружаем Лиору…":isNada?"Загружаем Наду…":isSava?"Загружаем Саву…":isArt?"Загружаем Арта…":"Загружаем Рена…");
   try{
-   engine=new BABYLON.Engine(canvas,true,{alpha:true,stencil:true,preserveDrawingBuffer:false});
+   engine=new BABYLON.Engine(canvas,true,{alpha:true,stencil:true,preserveDrawingBuffer:options.preserveDrawingBuffer===true});
    scene=new BABYLON.Scene(engine);
    scene.clearColor=new BABYLON.Color4(0,0,0,0);
    camera=new BABYLON.ArcRotateCamera("renCardCamera",Math.PI/2,Math.PI/2.15,3.15,new BABYLON.Vector3(0,1,0),scene);

@@ -1,0 +1,70 @@
+/* Isolated hero-first 3D candidate; never loaded by production. */
+.card-screen{grid-template-columns:minmax(155px,.82fr) minmax(0,1.58fr) minmax(205px,1fr);gap:10px}
+.hero{background:radial-gradient(ellipse at 50% 70%,#a7855250,transparent 58%);border-radius:0;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:auto 10% 12% 10%;height:13%;border-radius:50%;background:radial-gradient(ellipse,#08090bbf,transparent 70%);pointer-events:none}
+.hero>#detailRenPortrait{object-fit:contain;opacity:.76;mask-image:radial-gradient(ellipse at 50% 40%,black 42%,transparent 78%)}
+#renCard3DCanvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;outline:0;display:block}
+#renCardLoadIndicator{position:absolute;top:10px;left:8px;right:8px;text-align:center;background:#19191ee8;border:1px solid #aa8954;padding:8px;font-size:12px;pointer-events:none;z-index:3}
+#renCard3DControls{position:absolute;right:4px;top:4px;z-index:4}
+#renCardReset{width:44px;background:#1a1b20c9;font-size:22px;border-color:#a5895c}
+#renCard3DStatus{position:absolute;bottom:2px;right:5px;font-size:10px;color:#e3cda9;z-index:2;max-width:90%;pointer-events:none}
+.has-ren-3d #renCard3DStatus{visibility:hidden}
+.hero .identity{padding:10px 10px 12px;background:linear-gradient(transparent,#101016af 78%);pointer-events:none;max-width:100%;z-index:2}
+.hero .identity h1{font-size:clamp(29px,8vh,44px)}
+.hero .identity p{font-size:12px}
+.training,.paths{padding:4px 2px;gap:8px}
+.feature{background:linear-gradient(150deg,#302b26d9,#14161bdf);box-shadow:inset 0 1px #e0b97828,0 3px 6px #0005}
+.primary{background:linear-gradient(#e0bc82,#a77b43);text-shadow:0 1px #f7ddb04d}
+@media(max-height:350px) and (orientation:landscape){.training,.paths{gap:4px}.hero .identity{padding:6px 6px 9px}.hero .identity h1{font-size:29px}}
+@media(orientation:portrait){.card-screen{grid-template-columns:1fr 1fr;grid-template-areas:'hero hero' 'training paths';grid-template-rows:minmax(0,1.15fr) minmax(0,1fr)}}
+/* R3: live layout, not a flattened SVG. Full-height controls and consistent hierarchy. */
+:root{font-family:Inter,system-ui,-apple-system,sans-serif}
+h1,h2{font-family:inherit;font-weight:650;letter-spacing:-.025em}
+body{background:linear-gradient(90deg,#0b0e13ec 0%,#11151bb8 28%,#17171985 48%,#11151bb8 72%,#0b0e13ee),url('../../assets/hq-hall-painting.webp') center/cover}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.card-screen{grid-template-columns:minmax(172px,.91fr) minmax(0,1.65fr) minmax(220px,1.1fr);padding:8px 12px;gap:12px}
+.training,.paths{overflow:hidden;padding:0;gap:5px}
+.skills{margin:0;display:grid;grid-template-rows:14px minmax(0,1fr);gap:5px;height:100%;min-height:0}
+.skill-icons{display:grid;grid-template-rows:repeat(5,minmax(44px,1fr));gap:4px;min-height:0}
+.skill-icons button{width:100%;height:auto;min-height:44px;grid-template-columns:38px minmax(0,1fr);justify-items:start;gap:8px;padding:3px 7px 3px 4px;text-align:left;background:linear-gradient(105deg,#302c28e0,#14181c82);border-color:#9c815044;border-radius:4px}
+.skill-icons button::after{content:attr(aria-label);font-size:12px;line-height:1.15;font-weight:600;white-space:normal}
+.skill-art{width:36px;height:36px;border:1px solid #9a8155;border-radius:4px}
+.progress-block{display:grid;gap:3px}
+#growth{padding:4px 10px;background:linear-gradient(100deg,#302a23e6,#181b1e);border-color:#a88b5b66;min-height:44px}
+.rank-line{font-size:20px;display:flex;align-items:center;gap:14px;white-space:nowrap}
+.rank-line .stars{font-size:13px;font-weight:600}
+.paths .feature{min-height:54px;padding:5px 7px;grid-template-columns:38px minmax(0,1fr) 12px;gap:6px;flex-shrink:0}
+.paths .feature img{width:38px;height:38px}
+.paths .feature strong{font-size:13px}.paths .feature small{font-size:11px;line-height:1.2}
+.paths .tip{font-size:12px;line-height:1.25}
+.paths .primary{flex-shrink:0;font-size:13px;min-height:44px}
+.hero .identity{top:0;bottom:auto;left:2px;right:auto;max-width:62%;background:none;padding:0 6px;z-index:2;text-shadow:0 2px 6px #000}
+.hero .identity h1{font-size:clamp(28px,8vh,38px);line-height:1.04}
+.hero .identity small{font-size:9px;letter-spacing:.08em}.hero .identity p{font-size:11px}
+.hero::before{inset:auto 13% 3% 13%;height:13%;background:radial-gradient(ellipse,#08090bde,transparent 70%)}
+#renCard3DCanvas{top:0;bottom:0}
+#renCard3DControls{right:1px;top:0}
+.tree-screen{grid-template-columns:minmax(310px,1.1fr) minmax(270px,1fr);padding:9px 13px;gap:12px}
+.tree-left{gap:4px}.mini-hero{gap:7px}.mini-hero img{width:44px;height:44px}
+.mini-hero h2{font-size:19px}.mini-hero p{font-size:12px}
+.graph{max-height:none;grid-template-rows:72px minmax(12px,1fr) 105px;padding:3px 10px 0}
+.node{background:none;border:0;box-shadow:none;padding:1px;gap:3px;outline:none!important;align-content:start}
+.node img{width:66px;height:66px;border-radius:50%;border:2px solid #9b7c4c;background:radial-gradient(circle at 43% 33%,#41413b,#151a1e 69%);padding:9px;box-shadow:0 3px 9px #000b,inset 0 0 0 2px #30281b}
+.node[data-locked="true"] img{opacity:.55;border-style:dashed}
+.node[data-equipped="true"] img{border-color:#a4c6a9;box-shadow:0 0 0 2px #2b493a,0 3px 9px #000b}
+.node[aria-pressed="true"] img{outline:2px solid #efd29b;outline-offset:3px}
+.node:focus-visible img{outline:2px dashed #fff;outline-offset:4px}
+.node[data-locked="true"]::after{content:"Закрыто";position:absolute;top:42px;padding:2px 5px;background:#171b20;color:#f1ddba;font-size:9px;border-radius:3px}
+.node span{font-size:13px}.node small{font-size:11px}
+.root{display:grid;grid-template-columns:54px minmax(0,1fr);grid-template-rows:1fr 1fr;width:min(78%,240px);align-items:end;justify-items:start;text-align:left;gap:2px 8px;align-content:center;min-height:66px}
+.root img{width:54px;height:54px;grid-row:1/3;align-self:center;padding:7px}
+.root small{align-self:start}
+.fork{margin:0 25%;border-color:#9e8050}.fork:before,.branches .node:before{border-color:#9e8050}
+.branches{padding-top:8px;gap:8px}.branches .node:before{height:8px}
+.detail{border:1px solid #ad8b5355;padding:8px 10px;background:linear-gradient(120deg,#171b1eea,#111519e8);border-radius:4px;gap:6px;overflow:auto}
+.detail h2{font-size:25px}.detail p{font-size:12px;line-height:1.3}
+.impact{gap:5px;padding:5px 0}.impact b{color:#e0bb81;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.detail-footer{gap:4px}.detail-footer .primary:disabled{opacity:1;background:#273e35;border-color:#789f88;color:#d9ecde}
+@media(min-height:351px) and (orientation:landscape){.card-screen{padding:10px 14px}.paths{gap:8px}.paths .feature{min-height:62px}.skill-icons button::after{font-size:13px}.graph{grid-template-rows:82px minmax(18px,1fr) 119px}.node img{width:76px;height:76px}.root img{width:62px;height:62px}.root{grid-template-columns:62px 1fr}}
+@media(max-height:350px) and (orientation:landscape){.card-screen{gap:9px}.skills{gap:3px}.skill-icons{gap:2px}.paths .tip{display:none}.hero .identity h1{font-size:29px}.graph{grid-template-rows:60px minmax(8px,1fr) 94px}.node img{width:53px;height:53px;padding:7px}.root img{width:48px;height:48px}.root{grid-template-columns:48px 1fr;min-height:55px}.mini-hero h2{font-size:17px}.detail{gap:4px;padding:5px 8px}.detail h2{font-size:22px}.impact{gap:3px;padding:3px 0}.detail p{font-size:11px;line-height:1.23}}
+@media(orientation:portrait){.card-screen{grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1.15fr) minmax(0,1fr);grid-template-areas:'hero hero' 'training paths'}.tree-screen{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) minmax(0,1fr)}.skill-icons button::after{font-size:11px}}

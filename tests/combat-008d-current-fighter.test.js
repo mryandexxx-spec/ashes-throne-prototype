@@ -14,7 +14,7 @@ for(const id of ["targetFighterHud","targetFighterSide","targetFighterLevel",
 assert.doesNotMatch(game,/function renderTargetFighterHud\(\)/);
 // The selected target is still derived from the real selection and side of the pending ability.
 assert.match(game,/h\.side==="enemy"&&state\.fighters\[state\.selectedEnemy\]\?\.id===h\.id/);
-assert.match(game,/arena-focus-cursor \$\{support\?"available":"locked"\}/);
+assert.match(game,/arena-focus-cursor \$\{support&&h\.side==="ally"\?"available":"locked"\}/);
 assert.match(game,/state\.selectedAlly/);
 // Acting hero: one block bottom-left, from state.currentActor.
 for(const id of ["activeHero","activeHeroPortrait","activeHeroName"]){
@@ -35,5 +35,5 @@ assert.doesNotMatch(battle,/id="combatants"/);
 assert.doesNotMatch(game,/function renderCombatants\(\)/,"unused roster renderer removed");
 assert.match(styles,/#battle\.battle-screen \.battle-hero\{[^}]*bottom:max\(/);
 assert.match(styles,/#battle\.battle-screen \.battle-queue\{[^}]*top:calc\(max\(/);
-assert.match(html,/v\d+[.]\d+[.]\d+ · UIHUD001/);
+assert.ok(html.includes(`v${__BUILD_VERSION_FOR_TESTS} · `),"current build footer");
 console.log("Combat-008D → ARENA-UI-003 target on scene, acting hero and control rows passed");

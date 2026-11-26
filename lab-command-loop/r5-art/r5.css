@@ -34,3 +34,10 @@ html[data-r5="b"] .hero .identity{max-width:70%}
 @media(min-height:351px) and (orientation:landscape){html[data-r5="b"] #r4Gear{grid-template-rows:repeat(2,55px)}html[data-r5="b"] #r4Gear button{height:55px}html[data-r5] .r4-gear-slot img{width:36px;height:36px}}
 @media(max-height:350px) and (orientation:landscape){html[data-r5] .demo .r5-variant{display:none}html[data-r5] .r4-gear-slot img{width:31px;height:31px}html[data-r5] .paths #openTree img{width:32px;height:32px}html[data-r5="b"] .skills{gap:3px}}
 @media(orientation:portrait){html[data-r5] .card-screen{grid-template-columns:1fr 1fr;grid-template-areas:'hero hero' 'training paths';grid-template-rows:minmax(0,1.15fr) minmax(0,1fr)}html[data-r5] .demo{flex-wrap:wrap}#r5Background{display:none}}
+
+/* R5.1: only the portrait is absolute; slot art must participate in its own grid. */
+html[data-r5] .hero .r4-gear-slot img,html[data-r5] .r4-gear-slot img{position:static;mask-image:none;-webkit-mask-image:none;object-position:center;max-width:100%;max-height:100%;display:block}
+html[data-r5] .r4-gear-slot small{display:block;position:static;text-align:center}
+html[data-r5] .r4-gear-slot{grid-template-rows:minmax(0,1fr) 10px;overflow:hidden}
+html[data-r5] .r4-gear-slot img{width:30px;height:30px}
+@media(min-height:351px) and (orientation:landscape){html[data-r5] .r4-gear-slot img{width:34px;height:34px}}

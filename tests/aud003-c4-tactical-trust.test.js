@@ -36,4 +36,26 @@ assert.throws(()=>C.createBattle(squad(),[],{tacticalTrust:{artTechnique:"shared
 const l=L.create(C,A);assert.equal(l.configure("focused",false),false);assert.equal(l.configure("standard",true),false);
 function play(id){assert.equal(l.start(id),true);for(let n=0;n<60&&l.view().active;n++){const v=l.view(),enemy=v.fighters.find(f=>f.id==="shade"&&f.hp>0)||v.fighters.find(f=>f.side==="enemy"&&f.hp>0),s=v.actions.find(a=>a.id==="special"),special=v.actor==="art"?s?.targets.includes("ren"):s?.targets.includes(enemy.id);assert.equal(l.action(special?"special":"basic",special&&v.actor==="art"?"ren":enemy.id),true);}assert.equal(l.view().active,null);}
 play("agreement");assert.equal(l.view().rank,2);assert.equal(l.configure("shared",true),false);assert.equal(l.configure("focused",false),true);play("joint");play("field");assert.equal(l.view().rank,3);assert.equal(l.configure("shared",true),true);assert.equal(l.start("standard"),true);assert.equal(l.configure("standard",false),false);assert.equal(l.view().technique,"shared");assert.equal(l.action("basic","shade"),true);assert.equal(l.view().actor,"art");assert.ok(l.view().actions.find(a=>a.id==="trust-plan").targets.includes("shade"));assert.equal(l.action("trust-plan","shade"),true);assert.equal(l.view().planUsed,true);
+
+function pressure(mode,targets,initial){
+ const units=squad().map(f=>({...f,combatProfile:"stats002c",maxProtection:30}));
+ units[1].protection=initial;units[2].atk=units[2].physicalAttack=40;units[3].atk=units[3].physicalAttack=40;
+ const b=C.createBattle(units,[],{combat2:true,tacticalTrust:{artTechnique:mode}});C.advanceToPlayerTurn(b);
+ assert.equal(use(b,"special","ren"),true);
+ // Select identical scripted legal enemy actions to isolate incoming threat patterns.
+ for(let i=0;i<targets.length;i++){b.currentActor=2+i;b.fighters[2+i].meter=1000;assert.equal(C.performActorAbility(b,"basic",targets[i]),true)}
+ return 400-get(b,"ren").hp-get(b,"art").hp;
+}
+const variants=["standard","focused","shared"];
+assert.equal(variants.map(m=>pressure(m,[1,1],0)).join(","),"34,40,60");
+assert.equal(variants.map(m=>pressure(m,[1,1],30)).join(","),"30,10,30");
+assert.equal(variants.map(m=>pressure(m,[1,0],30)).join(","),"10,10,0");
+function attackDamage(partnerAttack,action){
+ const units=squad();units[1].atk=units[1].physicalAttack=partnerAttack;
+ const b=C.createBattle(units,[],{combat2:true,tacticalTrust:{planPartnerId:"ren"}});C.advanceToPlayerTurn(b);
+ assert.equal(use(b,action,"ves"),true);return 300-get(b,"ves").hp;
+}
+assert.ok(attackDamage(10,"trust-plan")<attackDamage(10,"basic"));
+assert.ok(attackDamage(50,"trust-plan")>attackDamage(50,"basic"));
+
 console.log("C4 native alternate covers, plan snapshot, one action and rank locks passed");

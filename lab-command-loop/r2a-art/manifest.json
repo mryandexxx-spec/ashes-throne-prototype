@@ -63,5 +63,16 @@
     "equipped"
   ],
   "sourcePolicy": "Named SVG layers and live text. Independently replaceable vector symbols (not approved production assets), no external fonts or runtime. generate.cjs rebuilds sources. Git blob SHA records provenance; SHA-256 pending.",
-  "notes": "2D portrait only for mockup. Production retains 3D hero and real progression/gear. Gallery is noninteractive art; original functional UX remains #571."
+  "notes": "2D portrait only for mockup. Production retains 3D hero and real progression/gear. Gallery is noninteractive art; original functional UX remains #571.",
+  "live3d": {
+    "status": "owner requirement, candidate implementation awaiting browser and art review",
+    "page": "lab-command-loop/tree-r2a-live.html",
+    "asset": "dev/assets/models/art-mobile-animated.glb",
+    "sha256": "c7a25c48dbd9117baec08e3ff1612f4b52ece8516a521571b9b1f1b3852b2860",
+    "bytes": 2032788,
+    "renderer": "ren-card-3d.js",
+    "idle": "Idle_5",
+    "portrait": "fallback only; not accepted as primary",
+    "svg": "historical composition references only"
+  }
 }

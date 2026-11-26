@@ -1,13 +1,6 @@
 {
   "status": "R5 candidate; not canon or production",
   "baseline": "6264d3b97b027c82fbe04818f6675065fd529ccf",
-  "originalBackground": {
-    "libraryFileId": "libfile_bdb797c8ca8c819186ae805be4e1b124",
-    "name": "Ashes-Throne-R5-quiet-hall-source.png",
-    "source": "ImageGen",
-    "status": "original saved in Library; not copied to git; selectable locally; banner decoration is not canon",
-    "fallback": "assets/hq-hall-painting.webp"
-  },
   "gear": [
     {
       "file": "gear-weapon.svg",
@@ -120,5 +113,28 @@
       "b": "round pedestal, six slots in arsenal rail"
     }
   },
-  "rules": "no purchases, progression, saves, new lore, new runtime dependencies; production unchanged"
+  "rules": "no purchases, progression, saves, new lore, new runtime dependencies; production unchanged",
+  "rejectedBackground": {
+    "libraryFileId": "libfile_bdb797c8ca8c819186ae805be4e1b124",
+    "name": "Ashes-Throne-R5-quiet-hall-source.png",
+    "source": "ImageGen",
+    "status": "REJECTED by owner-approved direction: generic castle; never select as character background",
+    "fallback": "assets/hq-hall-painting.webp"
+  },
+  "regionalBackground": {
+    "status": "approved direction; candidate image not approved",
+    "registry": "regional-backgrounds.js",
+    "art": {
+      "region": "gardens-over-abyss",
+      "candidate": {
+        "libraryFileId": "libfile_51182d7f9cb48191b3de208b471de997",
+        "name": "Ashes-Throne-R5-Gardens-Art-background-candidate.png",
+        "source": "ImageGen",
+        "status": "proposal; not in git; local file picker",
+        "provenance": "FIVE_SHADOWS_COMPLETE_1.5.md, CURRENT.md, CURRENT_RESEARCH_1.1.md"
+      },
+      "fallback": "assets/arena-env005-terrace.webp",
+      "fallbackBlobSha": "02e9240077244bb2a612656ec2c4e6db21c3d363"
+    }
+  }
 }

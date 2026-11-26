@@ -1,5 +1,5 @@
 /* R5 component laboratory only; R4 and production remain immutable. */
-html[data-r5] body{background:linear-gradient(90deg,#12171bf5,#151a1bc9 26%,#1b2021a6 50%,#15191cca 74%,#101417f4),var(--r5-hall,url('../../assets/hq-hall-painting.webp')) center/cover}
+html[data-r5] body{background:linear-gradient(90deg,#12171bf5,#151a1bc9 26%,#1b2021a6 50%,#15191cca 74%,#101417f4),var(--r5-hall,none) center/cover}
 html[data-r5] .hero{background:radial-gradient(ellipse at 50% 30%,#af87583b,transparent 58%),linear-gradient(0deg,#15191bd9,#15191b00 40%);overflow:hidden}
 html[data-r5] .hero::before{display:none}
 html[data-r5] #renCard3DCanvas{inset:12px 44px 12px;width:calc(100% - 88px);height:calc(100% - 24px)}

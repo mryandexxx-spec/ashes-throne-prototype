@@ -1,3 +1,5 @@
+**[РЕАЛИЗОВАНО — R2/D1]** #579 merged `20213151`, CI 45892435227 green. **[В РАЗРАБОТКЕ — R2/D2A]** actual card→arena→verified outcome→card route, explicit `combat2Pilot=1&artAdventurePilot=1` using the existing session wallet only; default game remains unchanged until D2B extra ability and D3 art acceptance. D2A CI pending; no physical iPhone test.
+
 **[РЕАЛИЗОВАНО — R2/C research]** #578 merged `8f65394b`, CI 45889803258 green. **[В РАЗРАБОТКЕ — R2/D1]** isolated native adventure adapter + same-wallet first outcome and selection, no live route yet; see AUD003_TREE_R2D1.md. CI and D2/D3 open; physical iPhone not tested.
 
 **[РЕАЛИЗОВАНО — R2/C1 research]** #577 merged `dadcd4c0`, CI 45889446312 success (native matrix executed). **[ПРЕДЛОЖЕНИЕ — R2/C2]** 3330 additional native runs, 5814 total; preserve signature abilities unchanged; candidate adventure NPC L7, hold 8 ally actions, meaningful direct vs safer hold and honest early-clear outcome. [Validation](AUD003_TREE_R2C_VALIDATION.md). No runtime changes, CI for C2 and actual play/visual/physical device acceptance pending. R2/D next.

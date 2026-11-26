@@ -136,5 +136,11 @@
       "fallback": "assets/arena-env005-terrace.webp",
       "fallbackBlobSha": "02e9240077244bb2a612656ec2c4e6db21c3d363"
     }
+  },
+  "r52": {
+    "status": "candidate B default; A retained as control",
+    "lighting": "512px PCF shadow generator on existing scene, contact texture retained; no measured iPhone performance",
+    "composition": "B: five skill labels, six existing gear slots, regional vista, smaller real layered support",
+    "newRaster": "Library candidate not transferred; CI uses existing terrace"
   }
 }

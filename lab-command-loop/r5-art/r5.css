@@ -41,3 +41,44 @@ html[data-r5] .r4-gear-slot small{display:block;position:static;text-align:cente
 html[data-r5] .r4-gear-slot{grid-template-rows:minmax(0,1fr) 10px;overflow:hidden}
 html[data-r5] .r4-gear-slot img{width:30px;height:30px}
 @media(min-height:351px) and (orientation:landscape){html[data-r5] .r4-gear-slot img{width:34px;height:34px}}
+
+/* R5.2 B — readable arsenal, regional vista, calm visual hierarchy. */
+html[data-r5="b"] body{background:linear-gradient(90deg,#14191dfc 0%,#171d20ed 22%,#252a2870 36%,#252a2829 51%,#2429237a 68%,#13191de8 77%,#10171bfc 100%),var(--r5-hall,none) center 44%/cover}
+html[data-r5="b"] .card-screen{grid-template-columns:minmax(190px,24%) minmax(0,1fr) minmax(196px,26%);gap:10px;padding:8px 12px}
+html[data-r5="b"] .training{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:7px;overflow:hidden;padding:0 4px 0 0}
+html[data-r5="b"] .skills{grid-template-rows:13px minmax(0,1fr);gap:4px;min-height:0}
+html[data-r5="b"] .skill-icons{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(44px,1fr));gap:3px;align-content:stretch}
+html[data-r5="b"] .skill-icons button{width:100%;height:100%;min-height:44px;display:grid;grid-template-columns:27px minmax(0,1fr);grid-template-rows:1fr;gap:4px;align-items:center;justify-items:start;text-align:left;background:linear-gradient(105deg,#33302a9e,#18202655);border:0;border-bottom:1px solid #aa93634d;border-radius:0;padding:2px 3px}
+html[data-r5="b"] .skill-icons button:last-child{grid-column:1/-1}
+html[data-r5="b"] .skill-icons button::after{display:block;content:attr(aria-label);font-size:10px;font-weight:600;line-height:1.13;white-space:normal;overflow-wrap:anywhere;word-break:normal}
+html[data-r5="b"] .skill-art{width:26px;height:26px;border-color:#a88b5766;border-radius:3px;box-shadow:none}
+html[data-r5="b"] #r5GearRail{display:block;border-top:1px solid #aa8c5c6e;padding-top:5px}
+html[data-r5="b"] #r5GearRail::before{font-size:10px;letter-spacing:.085em;margin-bottom:4px}
+html[data-r5="b"] #r4Gear{gap:4px;grid-template-rows:repeat(2,44px)}
+html[data-r5="b"] #r4Gear button{height:44px;background:linear-gradient(145deg,#424239,#252d30 49%,#141b20);border-color:#9b825d8a;box-shadow:inset 0 1px #cfb17d30,0 2px 4px #0006;grid-template-rows:minmax(0,1fr) 10px}
+html[data-r5="b"] #r4Gear button img{width:29px;height:29px}
+html[data-r5="b"] #r4Gear button small{font-size:9px;color:#e5d6b8}
+html[data-r5="b"] .hero{background:radial-gradient(ellipse at 50% 40%,#2a252220,transparent 58%),linear-gradient(0deg,#151b1ed0,transparent 35%);border-radius:0}
+html[data-r5="b"] .hero .identity{top:0;left:4px;max-width:85%;text-shadow:0 1px 5px #101417,0 2px 12px #080a0c}
+html[data-r5="b"] .hero .identity h1{font-size:clamp(28px,8vh,40px);font-weight:600;letter-spacing:-.03em}
+html[data-r5="b"] .hero .identity p{font-size:11px;color:#efe5d2}
+html[data-r5="b"] #renCard3DCanvas{inset:5px 0 0;width:100%;height:calc(100% - 5px)}
+html[data-r5="b"] .paths{gap:6px;padding:0 0 0 3px}
+html[data-r5="b"] .progress-block{border-bottom:1px solid #b398624a;padding-bottom:5px}
+html[data-r5="b"] .progress-block .secondary{background:linear-gradient(100deg,#35332b99,#1a222500);border-bottom-color:#b3986238}
+html[data-r5="b"] #openTree{min-height:58px;background:linear-gradient(105deg,#59472d80,#252c2c50);border:1px solid #b49964;border-image:none;border-radius:5px;padding:5px;box-shadow:inset 0 1px #e6ca952d,0 3px 8px #0006}
+html[data-r5="b"] #openStory{min-height:48px;border:1px solid #74684c8a;background:linear-gradient(105deg,#32332d8a,#20282c70)}
+html[data-r5="b"] #openTree strong,html[data-r5="b"] #openStory strong{font-size:13px;font-weight:600;line-height:1.15}
+html[data-r5="b"] .tree-screen{background:linear-gradient(90deg,#171e20dc,#151c20f5)}
+html[data-r5="b"] .graph{grid-template-rows:60px minmax(12px,.55fr) 126px;max-height:250px;flex:0 1 250px;margin:auto 0}
+html[data-r5="b"] .fork{border-color:#a38b5b}
+html[data-r5="b"] .fork:before,html[data-r5="b"] .branches .node:before{border-left:2px solid #a38b5b}
+html[data-r5="b"] .branches .node{border-radius:4px;background:linear-gradient(0deg,#30322b6b,transparent 70%);padding:3px}
+html[data-r5="b"] .node .branch-effect{font-size:12px;color:#e6d1a5}
+html[data-r5="b"] .detail{background:linear-gradient(135deg,#2c302ce8,#192125e9);border-left:1px solid #9a81557d;padding:12px 14px;gap:8px}
+html[data-r5="b"] .detail .impact{display:grid;gap:8px;padding:8px 0}
+html[data-r5="b"] .detail .impact p{padding:5px 7px;background:#11171948;border-left:2px solid #ae8d56aa}
+html[data-r5="b"] .detail-footer .primary:not(:disabled){background:linear-gradient(180deg,#e1bc81,#b28c51);border:1px solid #eed39b;border-radius:4px;border-image:none;box-shadow:inset 0 1px #fff4;padding:8px 11px}
+@media(min-height:351px) and (orientation:landscape){html[data-r5="b"] #r4Gear{grid-template-rows:repeat(2,55px)}html[data-r5="b"] #r4Gear button{height:55px}html[data-r5="b"] #r4Gear button img{width:36px;height:36px}html[data-r5="b"] .skill-art{width:32px;height:32px}html[data-r5="b"] .skill-icons button{grid-template-columns:32px minmax(0,1fr);gap:5px}html[data-r5="b"] .skill-icons button::after{font-size:11px}html[data-r5="b"] .graph{grid-template-rows:66px minmax(15px,.55fr) 140px}}
+@media(max-height:350px) and (orientation:landscape){html[data-r5="b"] .card-screen{gap:7px;padding:6px 9px;grid-template-columns:minmax(188px,25%) minmax(0,1fr) minmax(188px,25%)}html[data-r5="b"] .training{gap:3px}html[data-r5="b"] .skills{gap:2px}html[data-r5="b"] #r5GearRail{padding-top:2px}html[data-r5="b"] #r5GearRail::before{margin-bottom:2px}html[data-r5="b"] #r4Gear{gap:2px}html[data-r5="b"] .paths{gap:3px}html[data-r5="b"] #openTree{min-height:48px}html[data-r5="b"] .graph{grid-template-rows:48px minmax(8px,.55fr) 110px;max-height:180px}html[data-r5="b"] .detail{padding:6px 9px;gap:4px}html[data-r5="b"] .detail .impact{gap:3px;padding:3px 0}html[data-r5="b"] .detail .impact p{padding:2px 5px}html[data-r5="b"] .node .branch-effect{font-size:10px}}
+@media(orientation:portrait){html[data-r5="b"] .card-screen{grid-template-columns:1fr 1fr}}

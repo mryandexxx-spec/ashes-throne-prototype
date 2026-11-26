@@ -6,13 +6,21 @@ const ready=()=>p.waitForFunction(()=>{const e=BABYLON.EngineStore.Instances.fin
 async function shotWithHero(path){
  const canvas=p.locator("#renCard3DCanvas"),box=await canvas.boundingBox();
  assert.ok(box&&box.width>120&&box.height>140,"hero canvas must have a meaningful size");
- await canvas.evaluate(el=>el.style.visibility="hidden");
- const background=await p.screenshot();
- await canvas.evaluate(el=>el.style.removeProperty("visibility"));
+ // Capture the real visible frame first. Hiding a WebGL canvas before capture
+ // can invalidate its compositor surface on WebKit.
+ const waitPaint=()=>p.evaluate(()=>new Promise(resolve=>{const e=BABYLON.EngineStore.Instances.find(x=>x.getRenderingCanvas()?.id==="renCard3DCanvas"),s=e.scenes[0];s.onAfterRenderObservable.addOnce(()=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));}));
+ const buffer=await p.evaluate(()=>{const e=BABYLON.EngineStore.Instances.find(x=>x.getRenderingCanvas()?.id==="renCard3DCanvas");return e.getRenderingCanvas().getContext("webgl2")?.getContextAttributes()?.preserveDrawingBuffer??e.getRenderingCanvas().getContext("webgl")?.getContextAttributes()?.preserveDrawingBuffer;});
+ assert.equal(buffer,true,"R5 must opt in to persistent canvas buffer");
  let difference=0;
  for(let i=0;i<4;i++){
-  await p.evaluate(()=>new Promise(resolve=>{const e=BABYLON.EngineStore.Instances.find(x=>x.getRenderingCanvas()?.id==="renCard3DCanvas"),s=e.scenes[0];s.onAfterRenderObservable.addOnce(()=>requestAnimationFrame(()=>resolve()));}));
+  await waitPaint();
   const frame=await p.screenshot();
+  let background;
+  try{
+   await canvas.evaluate(el=>el.style.opacity="0");
+   await p.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   background=await p.screenshot();
+  }finally{await canvas.evaluate(el=>el.style.removeProperty("opacity"));}
   difference=await p.evaluate(async({before,after,box})=>{
    const decode=async b=>{const im=new Image();im.src="data:image/png;base64,"+b;await im.decode();const c=document.createElement("canvas");c.width=im.width;c.height=im.height;const x=c.getContext("2d");x.drawImage(im,0,0);return {data:x.getImageData(0,0,c.width,c.height).data,w:c.width,h:c.height}};
    const a=await decode(before),b=await decode(after),sx=a.w/innerWidth,sy=a.h/innerHeight;
@@ -21,7 +29,9 @@ async function shotWithHero(path){
    return changed;
   },{before:background.toString("base64"),after:frame.toString("base64"),box});
   if(difference>350){fs.writeFileSync(path,frame);console.log("Composited hero pixels:",difference,"attempt",i+1);return;}
+  fs.writeFileSync(path.replace(".png","-failed.png"),frame);fs.writeFileSync(path.replace(".png","-background.png"),background);
  }
+ const diagnostic=await p.evaluate(async()=>{const e=BABYLON.EngineStore.Instances.find(x=>x.getRenderingCanvas()?.id==="renCard3DCanvas"),s=e.scenes[0];const rgba=await e.readPixels(0,0,e.getRenderWidth(),e.getRenderHeight());let opaque=0;for(let i=3;i<rgba.length;i+=4)if(rgba[i]>30)opaque++;return {opaque,width:e.getRenderWidth(),height:e.getRenderHeight(),meshes:s.meshes.filter(m=>m.isEnabled()&&m.isVisible&&m.getTotalVertices?.()>0).map(m=>m.name),canvasStyle:getComputedStyle(e.getRenderingCanvas()).visibility};});console.log("Missing hero diagnostic",JSON.stringify(diagnostic));
  throw Error("Missing hero in actual screenshot: "+path+" changed pixels="+difference);
 }
 await ready();assert.equal(await p.locator("html").getAttribute("data-region-background"),"gardens-terrace-preview");assert.equal(await p.evaluate(()=>RegionalCardBackgrounds.resolve("unknown").id),"neutral");assert.equal(await p.evaluate(()=>RegionalCardBackgrounds.resolve("unknown","gardens-over-abyss").id),"gardens-terrace-preview");

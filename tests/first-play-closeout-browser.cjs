@@ -130,6 +130,25 @@ async function run(name,type,viewport,skip=false){
   paid=await inspect();assert.equal(paid.nada,1);assert.deepEqual(paid.owned,["art","nada","ren"]);assert.deepEqual(paid.receipts,[1,1,1]);assert.deepEqual(paid.statuses,["claimed","claimed"]);assert.equal(paid.currency,p.currency+40);assert.equal(paid.energy,initial.energy);assert.equal(paid.ops,initial.ops);assert.match(await page.locator("#mainCampaignNotice").innerText(),/глава III готовится/);report("Nada-claimed",paid);await screenshot("II-claimed");
   await tap("#mainCampaignNode");assert.ok(await page.locator('#squadRoster .squad-choice[data-hero-id="nada"]').isEnabled());await tap("#squadBack");await backHome();
   await tap('#home .hq-station[data-screen="collection"]');await wait("#collection.active");await tap('#collection [data-open-hero="nada"]');await wait("#heroDetail.active");assert.equal(await page.evaluate(()=>selectedHeroId),"nada");await screenshot("Nada-card");await tap("#detailHome");await home();
+  if(pilot){
+   await tap('#home .hq-station[data-screen="collection"]');await wait("#collection.active");
+   await tap('#collection [data-open-hero="art"]');await wait("#heroDetail.active");
+   const abilityText=slot=>page.locator('#heroAbilityList [data-hero-ability="'+slot+'"]').textContent();
+   assert.match(await abilityText("special"),/65%.*физической атаки/);
+   assert.match(await abilityText("passive"),/40%.*85%/);
+   assert.match(await abilityText("leader"),/Не назначена/);
+   assert.match(await page.locator("#heroAbilityList").getAttribute("aria-label"),/Тест Combat 2.0/);
+   const abilityLayout=await page.evaluate(()=>{
+    const list=document.querySelector("#heroAbilityList"),cards=[...list.children];
+    const footer=document.querySelector("#app>footer");
+    return {count:cards.length,allCards:cards.every(n=>n.matches(".hero-ability-card")),
+     bottom:Math.max(...cards.map(n=>n.getBoundingClientRect().bottom)),
+     limit:Math.min(innerHeight,footer?.getBoundingClientRect().top??innerHeight)};
+   });
+   assert.equal(abilityLayout.count,5);assert.equal(abilityLayout.allCards,true);
+   assert.ok(abilityLayout.bottom<=abilityLayout.limit+1,"all five skill rows fit above footer: "+JSON.stringify(abilityLayout));
+   await screenshot("Art-candidate-card");await tap("#detailHome");await home();
+  }
   await liveUntouched();await page.reload({waitUntil:"load",timeout:60000});await home();const final=await inspect();assert.deepEqual(final.receipts,[1,1,1]);assert.deepEqual(final.statuses,["claimed","claimed"]);assert.equal(final.nada,1);assert.equal(final.ren,2);assert.equal(final.currency,paid.currency);await map();await tap("#mainCampaignNext");assert.equal(await page.locator("#mainCampaignClaim").isVisible(),false);if(pilot){assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.progress.v3")),"pilot-live-sentinel");assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.first-play.v1")),"pilot-live-sentinel");}assert.deepEqual(errors,[]);report("PASS",final);await screenshot("persisted-II");
  }catch(e){report("FAIL",{error:String(e)});await page.screenshot({path:path.join(dest,key+"-fail.png")}).catch(()=>{});throw e;}
  finally{await browser.close();}

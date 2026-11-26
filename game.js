@@ -1664,6 +1664,10 @@ function progressedEnemy(enemy){
  return {...h,accuracy:0,evasion:0,critChance:0,critDamage:150,
   defensePenetration:0,debuffPotency:0,debuffResistance:0};
 }
+// Read-only view model: pilot cards describe the candidate, legacy routes keep their own rules.
+function combat2PresentationHero(hero,enabled=COMBAT2_PILOT){
+ return enabled&&hero&&["ren","art","nada","liora","sava"].includes(hero.id)?{...hero,side:"ally",combat2:true}:hero;
+}
 function hasLeaderSkill(id){
  const hero=ALLIES.find(h=>h.id===id);
  return !!hero&&!!AbilityData.get(hero,"leader");
@@ -1889,7 +1893,7 @@ function renderSquad(){
  const leaderArt=$(".squad-leader-skill-icon");
  if(leaderArt&&typeof AbilityIconCore!=="undefined")
   leaderArt.innerHTML=leaderHero?AbilityIconCore.markup(leaderHero,"leader")||"✦":"✦";
- const leaderAbility=leaderHero&&typeof AbilityInfo!=="undefined"?AbilityInfo.format(leaderHero,"leader"):null;
+ const leaderAbility=leaderHero&&typeof AbilityInfo!=="undefined"?AbilityInfo.format(combat2PresentationHero(leaderHero,COMBAT2_PILOT&&squadReturnScreen==="mainCampaign"),"leader"):null;
  const hasSkill=leaderAbility?.status==="available";
  const leaderButton=$("#squadLeaderSkillButton");
  const leaderName=$("#squadLeaderSkillName");
@@ -3266,7 +3270,12 @@ function renderHeroAbilities(hero){
  const list=$("#heroAbilityList");
  if(!list||typeof AbilityInfo==="undefined")return;
  list.replaceChildren();
- for(const info of AbilityInfo.forHero(hero)){
+ if(COMBAT2_PILOT){
+  const scope="Тест Combat 2.0 · первый сеанс, главы I–II и тестовая арена. Остальные режимы используют прежние правила.";
+  const title=$("#heroAbilitiesTitle");if(title){title.textContent="Умения · тест 2.0";title.title=scope;}
+  list.setAttribute("aria-label",scope);
+ }
+ for(const info of AbilityInfo.forHero(combat2PresentationHero(hero))){
   const card=document.createElement("article");
   card.className="hero-ability-card"+(info.status!=="available"?" unavailable":"");
   card.dataset.heroAbility=info.id;card.tabIndex=0;card.setAttribute("role","button");
@@ -3314,7 +3323,7 @@ function openSkillUpgrade(id){
 function renderSkillUpgrade(){
  const dialog=$("#skillUpgradeDialog");
  if(!dialog||!openedSkillId)return;
- const hero=progressedHero(ALLIES.find(h=>h.id===selectedHeroId));
+ const hero=combat2PresentationHero(progressedHero(ALLIES.find(h=>h.id===selectedHeroId)));
  const current=SkillCore.level(progress,selectedHeroId,openedSkillId);
  const ability=AbilityData.get(hero,openedSkillId);
  const formatAt=level=>{
@@ -3324,7 +3333,7 @@ function renderSkillUpgrade(){
  const selected=Math.max(1,Math.min(SkillCore.MAX,skillPreviewLevel));
  const info=formatAt(selected);
  $("#skillUpgradeTitle").textContent=ability?.name||"Умение";
- $("#skillUpgradeSubhead").textContent="Уровень "+current+" / "+SkillCore.MAX+
+ $("#skillUpgradeSubhead").textContent=(COMBAT2_PILOT?"Тест Combat 2.0 · ":"")+"Уровень "+current+" / "+SkillCore.MAX+
   " · "+(AbilityInfo.SLOTS.find(s=>s.id===openedSkillId)?.label||"");
  $("#skillPreviewLabel").textContent="ОПИСАНИЕ НА УРОВНЕ "+selected;
  $("#skillPreviewText").textContent=info.description;
@@ -4837,6 +4846,14 @@ function showAbilityTooltip(abilityId){
  const definition=AbilityData.get(actor,abilityId);
  const tooltip=$("#abilityTooltip");
  if(!definition||!tooltip)return;
+ if(state.combat2&&["art","sava"].includes(actor.id)&&typeof AbilityInfo!=="undefined"){
+  const info=AbilityInfo.format(actor,abilityId);
+  if(info?.status==="available"){
+   $("#abilityTooltipTitle").textContent=info.name;
+   $("#abilityTooltipText").textContent=[info.description,...info.meta].join(" · ");
+   tooltip.classList.toggle("on-special",abilityId!=="basic");tooltip.hidden=false;return;
+  }
+ }
  const effects=[];
  if(definition.kind==="damage"){
   effects.push("Урон: "+(definition.multiplier===1?"100%":Math.round(definition.multiplier*100)+"%")+" атаки.");

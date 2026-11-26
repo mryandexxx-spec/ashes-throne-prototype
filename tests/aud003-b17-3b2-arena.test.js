@@ -40,3 +40,29 @@ test("arena route remains explicit and outside all existing reward-bearing flags
  assert.match(h,/id="combat2ArenaSetup" class="screen"/);
  assert.match(g,/if\(\(ready&&combat2EntryFrames>=2\)\|\|combat2EntryFrames>=12\)/);
 });
+
+test("B17.4A: candidate descriptions match all six skill levels, never leak legacy effects",()=>{
+ const {D,I}=new Function(["ability-data.js","skill-core.js","ability-info.js"].map(read).join("\n")+"\nreturn {D:AbilityData,I:AbilityInfo};")();
+ for(let level=1;level<=6;level++){
+  const hero=id=>({id,side:"ally",combat2:true,skillLevels:{basic:level,special:level,powerful:level,passive:level}});
+  const art=hero("art"),sava=hero("sava");
+  assert.equal(I.format(art,"leader").status,"not-assigned");
+  assert.equal(I.format(sava,"leader").status,"not-assigned");
+  assert.equal(I.format(hero("liora"),"leader").status,"available");
+  assert.match(I.format(art,"special").description,/65%.*Protection|Protection.*65%/);
+  assert.match(I.format(art,"passive").description,/40%.*85%.*Protection/);
+  assert.match(I.format(art,"powerful").description,/обычную атаку/);
+  const d=D.get(sava,"special"),p=D.get(sava,"powerful"),b=D.get(sava,"basic"),passive=D.get(sava,"passive");
+  assert.ok(I.format(sava,"special").description.includes(String(d.signalMeter)));
+  assert.ok(I.format({...sava,combat2Boost:50},"special").description.includes(String(d.signalMeter+50)));
+  assert.ok(I.format(sava,"basic").description.includes(String(b.nextAllyMeter)));
+  assert.ok(I.format(sava,"powerful").description.includes(Math.round(p.combat2Assist*100)+"%"));
+  assert.match(I.format(sava,"powerful").description,/до крита/);
+  assert.ok(I.format(sava,"passive").description.includes("+"+passive.combatRules.combat2Boost));
+  for(const h of [art,sava]){
+   const legacy={...h,combat2:false};assert.equal(I.format(legacy,"leader").status,"available");
+   assert.notEqual(I.format(legacy,"passive").description,I.format(h,"passive").description);
+   assert.notEqual(I.format(legacy,"special").description,I.format(h,"special").description);
+  }
+ }
+});

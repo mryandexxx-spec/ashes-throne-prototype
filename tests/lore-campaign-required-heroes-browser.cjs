@@ -66,7 +66,12 @@ async function run(name,type,w,h,fullRoster=false){
    await page.locator('[data-open-hero="'+id+'"]').tap();
    assert.equal(await page.locator("#lockedHeroDialog").isVisible(),true);
    assert.equal(await page.locator("#lockedHeroUnlock").isVisible(),false);
-   assert.match(await page.locator("#lockedHeroSource").innerText(),/будущая сюжетная глава/);
+   // CAM-002: Nada has an actual chapter-II source, while the other two remain future unlocks.
+   const source=await page.locator("#lockedHeroSource").innerText();
+   if(id==="nada"){
+    assert.match(source,/Основная кампания · глава II(?:\.|$)/);
+    assert.doesNotMatch(source,/будущая сюжетная глава/);
+   }else assert.match(source,/Основная кампания · будущая сюжетная глава/);
    await page.locator("#lockedHeroClose").tap();
    assert.equal(await page.evaluate(heroId=>heroOwned(heroId),id),false);
   }

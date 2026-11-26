@@ -11,11 +11,11 @@ const TreeR1=(()=>{
  const MISSIONS=Object.freeze({
  campaign:{name:"Кампания · Внешний дозор",description:"Открыть маршрут группы. Первая победа даёт действующую награду кампании.",enemies:["npc-trail-interceptor"],rewardId:"black-pass-ambush"},
  campaign2:{name:"Кампания · Дорога к переправе",description:"Пройти второй участок и получить ресурсы на развитие других героев.",enemies:["npc-pass-guard","npc-route-signaller"],rewardId:"demo-mission-2"},
- escort:{name:"Личная арка · Прямой путь",description:"Рен и Арт должны выжить. Прикройте Рена и реально сократите входящий урон его прикрытием.",enemies:["npc-ridge-slinger","npc-trail-interceptor"],objective:{kind:"protect-and-defeat",protectAllyId:"ren"},arc:true},
- detour:{name:"Личная арка · Безопасный обход",description:"Обеспечить отход Рена: удержаться шесть действий или победить. Прикрытие Арта должно реально уменьшить урон.",enemies:["npc-trail-interceptor","npc-ridge-slinger"],objective:{kind:"hold-or-defeat",protectAllyId:"ren",allyActionsToHold:6},arc:true},
- operation1:{name:"Операция · Сопровождение",description:"Сохранить Рена против угрозы одиночного удара.",enemies:["npc-ridge-slinger","npc-trail-interceptor"],objective:{kind:"protect-and-defeat",protectAllyId:"ren"},operation:true,level:4},
- operation2:{name:"Операция · Две волны",description:"Сохранить силы отряда до второй волны.",enemies:["npc-trail-interceptor","npc-route-signaller"],waves:[["npc-ridge-slinger","npc-pass-guard"]],operation:true,level:4},
- operation3:{name:"Операция · Вражеское прикрытие",description:"Сломать связку защитника, лекаря и связного; темп атаки важнее лишнего прикрытия.",enemies:["npc-pass-guard","npc-field-medic","npc-route-signaller"],operation:true,level:4}
+ escort:{name:"Личная арка · Прямой путь",description:"Идти напрямую: устранить дозор, сохранить Рена и Арта. Договорённость — Арт прикрывает отход Рена, а не сражается за двоих.",enemies:["npc-ridge-slinger","npc-trail-interceptor"],objective:{kind:"protect-and-defeat",protectAllyId:"ren"},arc:true},
+ detour:{name:"Личная арка · Безопасный обход",description:"Выбрать обход: выиграть шесть действий для отхода либо победить, не теряя ни одного героя. Прикрытие Арта должно уменьшить урон.",enemies:["npc-trail-interceptor","npc-ridge-slinger"],objective:{kind:"hold-or-defeat",protectAllyId:"ren",allyActionsToHold:6},arc:true},
+ operation1:{name:"Операция · Сопровождение",description:"Сохранить Рена против угрозы одиночного удара.",enemies:["npc-watch-captain","npc-ridge-slinger","npc-trail-interceptor"],objective:{kind:"protect-and-defeat",protectAllyId:"ren"},operation:true,level:4,seed:11},
+ operation2:{name:"Операция · Две волны",description:"Сохранить силы отряда до второй волны.",enemies:["npc-trail-interceptor","npc-route-signaller"],waves:[["npc-ridge-slinger","npc-pass-guard"]],operation:true,level:4,seed:29},
+ operation3:{name:"Операция · Вражеское прикрытие",description:"Сломать связку защитника, лекаря и связного; темп атаки важнее лишнего прикрытия.",enemies:["npc-pass-guard","npc-field-medic","npc-route-signaller"],operation:true,level:4,seed:53}
  });
  const clone=x=>JSON.parse(JSON.stringify(x)),node=id=>TREE.find(n=>n.id===id);
  const runtime=s=>ProgressV3Core.toRuntime(s.profile,HEROES);
@@ -27,14 +27,15 @@ const TreeR1=(()=>{
  function valid(s){
   if(!s||s.version!==1||!Number.isSafeInteger(s.revision)||s.revision<0||!Array.isArray(s.earned)||new Set(s.earned).size!==s.earned.length||
      s.earned.some(id=>!node(id))||typeof s.trained!=="boolean"||s.selected!==null&&!s.earned.includes(s.selected)||
-     ![null,"escort","detour"].includes(s.arc)||!Array.isArray(s.results)||s.results.length>9||s.results.some(x=>!x||!MISSIONS[x.mission]?.operation||x.build!==null&&!node(x.build)||!["ally","enemy"].includes(x.winner)||!["actions","renHp","artHp","prevented","redirected","transferred"].every(k=>Number.isSafeInteger(x[k])&&x[k]>=0))||
+     ![null,"escort","detour"].includes(s.arc)||!Array.isArray(s.results)||s.results.length>9||s.results.some(x=>!x||!MISSIONS[x.mission]?.operation||x.build!==null&&!node(x.build)||!["ally","enemy"].includes(x.winner)||typeof x.stamp!=="string"||x.seed!==MISSIONS[x.mission].seed||!["actions","renHp","artHp","artProtection","allyHp","prevented","redirected","redirectedHp","redirectedProtection","transferred"].every(k=>Number.isSafeInteger(x[k])&&x[k]>=0))||
      !ProgressV3Core.validateActive(s.profile,HEROES))return false;
   if(s.earned.length&&(!s.trained||s.earned.some(id=>!requirements(s,node(id)).every(r=>r.ok))))return false;
-  return s.arc===null?s.earned.length===0&&s.selected===null:s.earned.length===2&&s.trained;
+  const p=runtime(s);if(s.trained!==p.claimedMissions.includes("black-pass-ambush")||s.trained!==HeroCollectionCore.owned(p,"nada"))return false;
+  return s.arc===null?s.earned.length===0&&s.selected===null&&s.arcProof===null&&!s.results.length:s.earned.length===2&&s.trained&&s.arcProof?.mission===s.arc&&["guardReduction","actions","renHp","artHp"].every(k=>Number.isSafeInteger(s.arcProof[k])&&s.arcProof[k]>0);
  }
- function fresh(){return {version:1,revision:0,profile:ProgressV3Core.fresh(HEROES,0),trained:false,earned:[],selected:null,arc:null,results:[]}}
+ function fresh(){return {version:1,revision:0,profile:ProgressV3Core.fresh(HEROES,0),trained:false,earned:[],selected:null,arc:null,arcProof:null,results:[]}}
  function create(storage,combat,abilities,npcs){
-  let raw=null,state=null,blocked="",battle=null,mission=null,last=null,events=[],proof={cover:false,hit:false,prevented:0,redirected:0,transferred:0},pending=null;
+  let raw=null,state=null,blocked="",battle=null,mission=null,last=null,events=[],proof={cover:false,hit:false,guardProof:0,prevented:0,redirected:0,redirectedHp:0,redirectedProtection:0,transferred:0},pending=null;
   try{raw=storage.getItem(KEY);state=raw===null?fresh():JSON.parse(raw);if(!valid(state))throw Error("invalid profile");}catch(e){blocked="Сохранение недоступно или повреждено. Данные не перезаписаны.";state=fresh()}
   function commit(candidate){
    candidate.revision=state.revision+1;
@@ -71,27 +72,28 @@ const TreeR1=(()=>{
    // Qualification uses the original kit only. No ability before its proof.
    const spawn=(list,w)=>list.map((x,i)=>npcs.spawn(x,{instanceId:"w"+w+"-"+i,level:m.level??1,skillLevel:1}));
    const squad=(m.arc?["ren","art"]:["ren","art","nada"]).filter(id=>HeroCollectionCore.owned(p,id));
-   battle=combat.createBattle([...squad.map(x=>fighter(p,x)),...spawn(m.enemies,1)],(m.waves??[]).map((w,i)=>spawn(w,i+2)),{combat2:true,treeR1:true,...(ids.length?{trustPersonal:ids}:{}),...(m.objective?{tacticalObjective:m.objective}:{})});
-   mission=id;last=null;proof={cover:false,hit:false,prevented:0,redirected:0,transferred:0};events=[];combat.advanceToPlayerTurn(battle);collect();return true;
+   battle=combat.createBattle([...squad.map(x=>fighter(p,x)),...spawn(m.enemies,1)],(m.waves??[]).map((w,i)=>spawn(w,i+2)),{combat2:true,treeR1:true,...(m.operation?{hitChecks:true,critChecks:true,rngSeed:m.seed}:{}),...(ids.length?{trustPersonal:ids}:{}),...(m.objective?{tacticalObjective:m.objective}:{})});
+   mission=id;last=null;proof={cover:false,hit:false,guardProof:0,prevented:0,redirected:0,redirectedHp:0,redirectedProtection:0,transferred:0};events=[];combat.advanceToPlayerTurn(battle);collect();return true;
   }
   function collect(){
    events=battle.events.slice(-50).map(e=>({...e}));
    for(const e of battle.events){
     if(e.type==="effect"&&e.actorId==="art"&&e.targetId==="ren"&&e.effect==="guard")proof.cover=true;
-    if(e.type==="tree-r1-guard"&&e.targetId==="ren"&&e.amount>0){if(proof.cover){proof.hit=true;proof.cover=false;}proof.prevented+=e.amount;}
+    if(e.type==="tree-r1-guard"){proof.prevented+=e.amount;if(e.targetId==="ren"&&e.sourceId==="art"&&e.amount>0){proof.hit=true;proof.cover=false;proof.guardProof+=e.amount;}}
     if(e.type==="combat2-cover"&&e.actorId==="art")proof.prevented+=e.amount;
     if(e.type==="trust-intercept-resolved")proof.redirected++;
+    if(e.type==="tree-r1-redirect-damage"){proof.redirectedHp+=e.hpDamage;proof.redirectedProtection+=e.protectionDamage;}
     if(e.type==="trust-reserve-transferred")proof.transferred+=e.amount;
    }
    if(battle.active)return;
    const m=MISSIONS[mission],win=battle.winner==="ally",all=battle.fighters.filter(f=>f.side==="ally"),both=all.every(f=>f.hp>0);
-   const eligible=win&&(!m.arc||both&&proof.hit);
-   last={winner:battle.winner,actions:battle.allyActions,eligible,earned:null,reward:0,saved:true,...proof,renHp:all.find(f=>f.id==="ren")?.hp??0,artHp:all.find(f=>f.id==="art")?.hp??0};
+   const eligible=win&&(!m.arc||both&&proof.guardProof>0);
+   last={winner:battle.winner,actions:battle.allyActions,eligible,earned:null,reward:0,saved:true,...proof,renHp:all.find(f=>f.id==="ren")?.hp??0,artHp:all.find(f=>f.id==="art")?.hp??0,artProtection:all.find(f=>f.id==="art")?.protection??0,allyHp:all.reduce((a,f)=>a+f.hp,0)};
    const next=clone(state),p=runtime(next);
-   if(m.operation){next.results=next.results.filter(r=>r.mission!==mission||r.build!==state.selected);next.results.push({mission,build:state.selected,winner:last.winner,actions:last.actions,renHp:last.renHp,artHp:last.artHp,prevented:last.prevented,redirected:last.redirected,transferred:last.transferred});}
+   if(m.operation){next.results=next.results.filter(r=>r.mission!==mission||r.build!==state.selected);next.results.push({mission,build:state.selected,winner:last.winner,actions:last.actions,renHp:last.renHp,artHp:last.artHp,artProtection:last.artProtection,allyHp:last.allyHp,prevented:last.prevented,redirected:last.redirected,redirectedHp:last.redirectedHp,redirectedProtection:last.redirectedProtection,transferred:last.transferred,seed:m.seed,stamp:["ren","art","nada"].filter(id=>HeroCollectionCore.owned(p,id)).map(id=>id+":"+ProgressCore.levelOf(p,id)+"/"+StarCore.rankOf(p,id)+"/"+ProgressCore.gearState(p,id).tier+"/"+SkillCore.level(p,id,"special")).join(" · ")});}
    else if(!eligible)return;
    else if(m.rewardId){const award=ProgressCore.claimFirstClear(p,m.rewardId,battle);if(!award)return;last.reward=award.currency;if(mission==="campaign"){next.trained=true;StarCore.directGrant(p,"nada");}}
-   else if(m.arc&&!state.arc&&entry(mission).ok){next.arc=mission;next.earned=TREE.map(n=>n.id);next.selected=null;last.earned="both";}
+   else if(m.arc&&!state.arc&&entry(mission).ok){next.arc=mission;next.arcProof={mission,guardReduction:proof.guardProof,actions:battle.allyActions,renHp:last.renHp,artHp:last.artHp};next.earned=TREE.map(n=>n.id);next.selected=null;last.earned="both";}
    else return;
    next.profile=ProgressV3Core.fromRuntime(p);
    if(!commit(next)){pending=next;last.saved=false;}

@@ -930,7 +930,7 @@ const CombatCore = (() => {
       const before=damage;
       damage=Math.round(damage*0.5);
       target.guardHits--;
-      if(battle?.treeR1&&before>damage)emit(battle,"tree-r1-guard",{actorId:attacker.id,targetId:target.id,amount:before-damage});
+      if(battle?.treeR1){if(before>damage)emit(battle,"tree-r1-guard",{actorId:attacker.id,targetId:target.id,sourceId:target.treeR1GuardSource??null,amount:before-damage});if(!target.guardHits)delete target.treeR1GuardSource;}
     }
     }
     if(type!=="legacy"&&target.protection!==undefined){
@@ -1512,6 +1512,7 @@ const CombatCore = (() => {
     }else if(ability.combat2Cover){
       for(const row of trustCover.rows){
         const recipient=battle.fighters.find(f=>f.id===row.id);
+        if(battle.treeR1&&!recipient.guardHits&&row.guardHits>0)recipient.treeR1GuardSource=actor.id;
         recipient.guardHits=row.guardHits;if(trustCover.mode==="standard")recipient.protection+=row.restored;delete recipient.insurance;
         emit(battle,"effect",{actorId:actor.id,targetId:recipient.id,effect:"guard",stacks:recipient.guardHits});
         if(trustCover.mode==="standard")emit(battle,"combat2-protection",{actorId:actor.id,targetId:recipient.id,amount:row.restored});
@@ -1555,6 +1556,7 @@ const CombatCore = (() => {
         reducedReadMoveDamage(rollCriticalDamage(battle,actor,target,baseDamage,type),readMovePenalty),true,type,
         penetrationEnabled(battle,type)?actor.defensePenetration:0,battle,
         ability.target==="enemy"&&!redirect,ability.id==="ren-bypass");
+      if(battle.treeR1&&redirect)emit(battle,"tree-r1-redirect-damage",{actorId:actor.id,targetId:target.id,protectedId:intended.id,hpDamage:Math.max(0,oldHp-target.hp),protectionDamage:oldProtection===null?0:Math.max(0,oldProtection-target.protection)});
       if(ability.id==="ren-bypass")emit(battle,"trust-bypass",{actorId:actor.id,targetId:target.id,guardRemaining:target.guardHits});
       emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
         ...typedDamageFields(target,type,oldHp,oldProtection)});

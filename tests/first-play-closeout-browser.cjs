@@ -137,7 +137,16 @@ async function run(name,type,viewport,skip=false){
    assert.match(await abilityText("special"),/65%.*физической атаки/);
    assert.match(await abilityText("passive"),/40%.*85%/);
    assert.match(await abilityText("leader"),/Не назначена/);
-   assert.match(await page.locator("#heroAbilityList").textContent(),/Тест Combat 2.0/);
+   assert.match(await page.locator("#heroAbilityList").getAttribute("aria-label"),/Тест Combat 2.0/);
+   const abilityLayout=await page.evaluate(()=>{
+    const list=document.querySelector("#heroAbilityList"),cards=[...list.children];
+    const footer=document.querySelector("#app>footer");
+    return {count:cards.length,allCards:cards.every(n=>n.matches(".hero-ability-card")),
+     bottom:Math.max(...cards.map(n=>n.getBoundingClientRect().bottom)),
+     limit:Math.min(innerHeight,footer?.getBoundingClientRect().top??innerHeight)};
+   });
+   assert.equal(abilityLayout.count,5);assert.equal(abilityLayout.allCards,true);
+   assert.ok(abilityLayout.bottom<=abilityLayout.limit+1,"all five skill rows fit above footer: "+JSON.stringify(abilityLayout));
    await screenshot("Art-candidate-card");await tap("#detailHome");await home();
   }
   await liveUntouched();await page.reload({waitUntil:"load",timeout:60000});await home();const final=await inspect();assert.deepEqual(final.receipts,[1,1,1]);assert.deepEqual(final.statuses,["claimed","claimed"]);assert.equal(final.nada,1);assert.equal(final.ren,2);assert.equal(final.currency,paid.currency);await map();await tap("#mainCampaignNext");assert.equal(await page.locator("#mainCampaignClaim").isVisible(),false);if(pilot){assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.progress.v3")),"pilot-live-sentinel");assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.first-play.v1")),"pilot-live-sentinel");}assert.deepEqual(errors,[]);report("PASS",final);await screenshot("persisted-II");

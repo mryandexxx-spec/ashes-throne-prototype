@@ -32,6 +32,25 @@ const ProgressV3Core=(()=>{
   }
   return true;
  }
+ // R2/D1: one optional, versioned personal-adventure record in the same wallet.
+ // Pending is never an unlock; a completed first outcome is immutable except selection.
+ function validArtPath(row,data){
+  if(!object(row)||row.version!==1||row.sourceId!=="art-cover-promise"||row.occurrenceId!=="once"||
+     !["direct","hold"].includes(row.route)||!nonneg(row.acceptedRevision)||
+     row.acceptedRevision>(data.revision??0)||!["pending","complete"].includes(row.phase)||
+     !Array.isArray(data.rewardReceipts)||!data.rewardReceipts.some(r=>r.id==="first-clear:main-cam-002-m1:once"&&r.sourceId==="main-cam-002-m1")||
+     !object(data.heroStars)||!["ren","art"].every(id=>Number.isSafeInteger(data.heroStars[id]?.rank)&&data.heroStars[id].rank>0))return false;
+  const keys=["version","sourceId","occurrenceId","route","acceptedRevision","phase"];
+  if(row.phase==="pending")return Object.keys(row).length===keys.length&&keys.every(k=>own(row,k));
+  keys.push("outcome","actions","selected");
+  return Object.keys(row).length===keys.length&&keys.every(k=>own(row,k))&&
+   ["recovered","left"].includes(row.outcome)&&
+   (row.route!=="direct"||row.outcome==="recovered")&&
+   Number.isSafeInteger(row.actions)&&row.actions>=1&&
+   (row.route!=="hold"||row.actions<=8)&&
+   (row.outcome!=="left"||row.actions===8)&&
+   [null,"guardian-2","command-2"].includes(row.selected);
+ }
  const own=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
  const object=x=>!!x&&typeof x==="object"&&!Array.isArray(x);
  const nonneg=x=>Number.isSafeInteger(x)&&x>=0;
@@ -92,6 +111,7 @@ const ProgressV3Core=(()=>{
    return null;
   if(data.rewardReceipts!==undefined&&!validReceipts(data.rewardReceipts))return null;
   if(data.networkLedger!==undefined&&!validNetworkLedger(data.networkLedger))return null;
+  if(data.artPath!==undefined&&!validArtPath(data.artPath,data))return null;
   if(data.migration.strategy!=="clean-heroes-v1"||
      (data.migration.sourceVersion!==2&&data.migration.sourceVersion!==null))return null;
   const known=Object.keys(ProgressCore.FIRST_CLEAR_REWARDS);
@@ -192,6 +212,7 @@ const ProgressV3Core=(()=>{
      !nonneg(data.revision??0))return null;
   if(data.rewardReceipts!==undefined&&!validReceipts(data.rewardReceipts))return null;
   if(data.networkLedger!==undefined&&!validNetworkLedger(data.networkLedger))return null;
+  if(data.artPath!==undefined&&!validArtPath(data.artPath,data))return null;
   if(data.migration.strategy!=="clean-heroes-v1"||
      (data.migration.sourceVersion!==2&&data.migration.sourceVersion!==null))return null;
   const known=Object.keys(ProgressCore.FIRST_CLEAR_REWARDS);
@@ -261,6 +282,7 @@ const ProgressV3Core=(()=>{
    materials:source.materials,
    ...(source.rewardReceipts!==undefined?{rewardReceipts:source.rewardReceipts}:{}),
     ...(source.networkLedger!==undefined?{networkLedger:source.networkLedger}:{}),
+   ...(source.artPath!==undefined?{artPath:source.artPath}:{}),
    daily:source.daily,
    login:source.login,
    unlockedHeroes:source.unlockedHeroes,
@@ -305,6 +327,7 @@ const ProgressV3Core=(()=>{
    materials:p.materials,
    ...(p.rewardReceipts!==undefined?{rewardReceipts:p.rewardReceipts}:{}),
     ...(p.networkLedger!==undefined?{networkLedger:p.networkLedger}:{}),
+   ...(p.artPath!==undefined?{artPath:p.artPath}:{}),
    ...(p.daily!==undefined?{daily:p.daily}:{}),
    ...(p.login!==undefined?{login:p.login}:{}),
    ...(p.unlockedHeroes!==undefined?{unlockedHeroes:p.unlockedHeroes}:{}),
@@ -346,6 +369,6 @@ const ProgressV3Core=(()=>{
    p.saveRevision=candidate.revision;return true;
   }catch(_){return false;}
  }
- return Object.freeze({KEY,SOURCE_KEY,VERSION,SLOTS,MATERIALS,TEST_CLASSES,MAX_REWARD_RECEIPTS,validReceipts,validNetworkLedger,fromV2,fresh,validate,validateActive,toRuntime,fromRuntime,persist,stage});
+ return Object.freeze({KEY,SOURCE_KEY,VERSION,SLOTS,MATERIALS,TEST_CLASSES,MAX_REWARD_RECEIPTS,validReceipts,validNetworkLedger,validArtPath,fromV2,fresh,validate,validateActive,toRuntime,fromRuntime,persist,stage});
 })();
 if(typeof module!=="undefined"&&module.exports)module.exports=ProgressV3Core;

@@ -59,9 +59,9 @@ const CommandLoopLab = (() => {
     function abandon(){if(!active)return false;last={task:active,winner:null,outcome:"abandoned",proof:false,gained:false,actions:battle.allyActions,remainingEnemies:battle.fighters.filter(f=>f.side==="enemy"&&f.hp>0).length};active=null;battle=null;return true;}
     function view(){
       const actor=active?battle.fighters[battle.currentActor]:null;
-      const fighters=battle?battle.fighters.map(f=>({id:f.id,name:f.name,side:f.side,hp:f.hp,maxHp:f.maxHp,protection:f.protection,guard:f.guardHits})):[],
+      const fighters=battle?battle.fighters.map(f=>({id:f.id,name:f.name,side:f.side,hp:f.hp,maxHp:f.maxHp,protection:f.protection,guard:f.guardHits,maxProtection:f.maxProtection,meter:f.meter})):[],
         actions=actor?["basic","special","powerful"].flatMap(id=>{const a=abilities.get(actor,id);return a?[{id,name:a.name,targets:fighters.filter(f=>legal(id,f.id)).map(f=>f.id)}]:[]}):[];
-      return {rank:rank(),earned:[...earned],active,runNumber,last:last?{...last}:null,cover,strike,actor:actor?.id??null,fighters,actions,turns:battle?.allyActions??0,
+      return {rank:rank(),earned:[...earned],active,runNumber,last:last?{...last}:null,cover,strike,actor:actor?.id??null,fighters,actions,turns:battle?.allyActions??0,events:(battle?.events??[]).slice(-30).map(e=>({...e})),
         tasks:Object.entries(tasks).map(([id,t])=>({id,name:t.name,detail:t.detail,allowed:allowed(id),done:!!t.milestone&&earned.has(t.milestone)}))};
     }
     return Object.freeze({start,action,abandon,view});

@@ -8,15 +8,16 @@ async function run(type,name){
  const story=page.locator(".r2a-path [data-field=story]");
  const hold=story.locator('[data-path-mission="hold"]');
  const open=async()=>{await page.evaluate(()=>{selectedHeroId="art";showScreen("heroDetail");});await page.locator("#r2aStory").tap();};
- const snapshot=()=>page.evaluate(()=>({wallet:JSON.stringify(progress),live:localStorage.getItem(ProgressV3Core.KEY),stored:JSON.parse(gameStorage().getItem(ProgressV3Core.KEY)),squad:[selectedLeaderId,...selectedPartyIds],mode:squadReturnScreen}));
+ const snapshot=()=>page.evaluate(()=>({wallet:JSON.stringify(progress),live:localStorage.getItem(ProgressV3Core.KEY),stored:JSON.parse(gameStorage().getItem(ProgressV3Core.KEY)),squad:[selectedLeaderId,...selectedPartyIds],savedSquad:gameStorage().getItem(SQUAD_SAVE_KEY),mode:squadReturnScreen}));
  try{
   await page.goto(url,{waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function"&&typeof artAdventureView==="function");
   assert.equal(await page.evaluate(()=>ART_ADVENTURE_PILOT),true);
   await open();assert.equal(await hold.count(),0);assert.match(await story.innerText(),/глава II|главу II/);
   await page.locator(".r2a-path-back").tap();
   // Fixture only for already-earned campaign prerequisite; no personal adventure proof forged.
-  await page.evaluate(()=>{if(!StarCore.directGrant(progress,"nada"))throw Error("TEST_GRANT");progress.rewardReceipts=MainCampaignCore.MISSIONS.map(m=>({id:m.receipt,sourceId:m.id,day:"2026-11-26",count:1}));for(const m of MainCampaignCore.MISSIONS)gameStorage().setItem(m.key,JSON.stringify(m.id===MainCampaignCore.ID?{version:1,best:3}:{version:1,missionId:m.id,best:3}));if(!persistProgress())throw Error("TEST_SAVE");});
-  const baseline=await snapshot();
+  await page.evaluate(()=>{if(!StarCore.directGrant(progress,"nada"))throw Error("TEST_GRANT");progress.rewardReceipts=MainCampaignCore.MISSIONS.map(m=>({id:m.receipt,sourceId:m.id,day:"2026-11-26",count:1}));for(const m of MainCampaignCore.MISSIONS)gameStorage().setItem(m.key,JSON.stringify(m.id===MainCampaignCore.ID?{version:1,best:3}:{version:1,missionId:m.id,best:3}));if(!persistProgress())throw Error("TEST_SAVE");if(!saveSquad())throw Error("TEST_SQUAD_SAVE");});
+  // Persist the chosen two-hero formation, rather than compare two different default rosters after Nada joins.
+  const baseline=await snapshot();assert.ok(baseline.savedSquad);assert.deepEqual(baseline.squad,["ren","art",null,null,null]);
   await open();await hold.waitFor({state:"visible"});assert.equal(await hold.isEnabled(),true);
   for(const [width,height] of [[844,390],[932,430],[844,320]]){
    await page.setViewportSize({width,height});const bounds=await hold.boundingBox();assert.ok(bounds&&bounds.height>=44);
@@ -31,9 +32,10 @@ async function run(type,name){
   assert.equal(await page.evaluate(()=>BABYLON.EngineStore.Instances.some(e=>e.getRenderingCanvas()?.id==="renCard3DCanvas")),false);
   await page.locator("#battleMenuBtn").tap();await page.locator("#battleMenuRetreat").tap();await story.waitFor({state:"visible"});
   assert.equal(await page.evaluate(()=>artAdventureSession.active()),false);assert.equal((await snapshot()).stored.artPath.phase,"pending");
-  assert.deepEqual((await snapshot()).squad,baseline.squad);assert.equal((await snapshot()).mode,baseline.mode);
+  assert.deepEqual((await snapshot()).squad,baseline.squad);assert.equal((await snapshot()).savedSquad,baseline.savedSquad);assert.equal((await snapshot()).mode,baseline.mode);
   // Actual reload leaves pending inert and the mission available.
   await page.reload({waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function");
+  assert.deepEqual((await snapshot()).squad,baseline.squad,"Reload restores the explicitly saved formation");assert.equal((await snapshot()).savedSquad,baseline.savedSquad);
   await open();await hold.waitFor({state:"visible"});assert.equal(await page.evaluate(()=>ArtAdventureCore.view(progress).earned.length),0);
   await hold.tap();await page.locator("#battle").waitFor({state:"visible"});await page.waitForFunction(()=>battleIsArtAdventure&&state.active&&!!scene);
   // Actual native actions, with deterministic valid targeting, through the real
@@ -48,7 +50,7 @@ async function run(type,name){
   }
   await story.waitFor({state:"visible",timeout:90000});const done=await snapshot();
   assert.equal(done.stored.artPath.phase,"complete");assert.equal(done.stored.artPath.selected,null);
-  assert.equal(done.stored.currency,baseline.stored.currency);assert.equal(done.stored.energy.value,baseline.stored.energy.value);assert.deepEqual(done.stored.rewardReceipts,baseline.stored.rewardReceipts);assert.deepEqual(done.squad,baseline.squad);assert.equal(done.live,baseline.live);
+  assert.equal(done.stored.currency,baseline.stored.currency);assert.equal(done.stored.energy.value,baseline.stored.energy.value);assert.deepEqual(done.stored.rewardReceipts,baseline.stored.rewardReceipts);assert.deepEqual(done.squad,baseline.squad);assert.equal(done.savedSquad,baseline.savedSquad);assert.equal(done.live,baseline.live);
   assert.match(await story.innerText(),/Люди вышли в безопасное место/);
   await story.locator('[data-field="storyAction"]').tap();
   assert.equal(await page.locator('.r2a-path [data-node="guardian-2"]').getAttribute("data-locked"),"false");
@@ -56,7 +58,7 @@ async function run(type,name){
   await page.locator('.r2a-path [data-node="guardian-2"]').tap();
   assert.equal(await page.locator('.r2a-path [data-field="equip"]').isDisabled(),true,"D2B slot not released");
   await page.reload({waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function");await open();assert.equal(await hold.count(),0);assert.match(await story.innerText(),/Люди вышли в безопасное место/);
-  assert.equal((await snapshot()).stored.artPath.phase,"complete");assert.deepEqual(errors,[]);
+  assert.equal((await snapshot()).stored.artPath.phase,"complete");assert.deepEqual((await snapshot()).squad,baseline.squad);assert.equal((await snapshot()).savedSquad,baseline.savedSquad);assert.deepEqual(errors,[]);
   fs.mkdirSync("artifacts",{recursive:true});await page.screenshot({path:"artifacts/r2d2a-"+name+".png"});console.log("R2/D2A REAL ROUTE",name,"PASS");
  }finally{await browser.close();}
 }

@@ -6,7 +6,7 @@ const R2APath=(()=>{
  "guardian-2":{tag:"ХРАНИТЕЛЬ",title:"Перехват",name:"Хранитель · Перехват",text:"Арт принимает следующую одиночную атаку вместо выбранного союзника и получает прикрытие на один удар.",use:"Один союзник под угрозой сильного удара.",cost:"Тратится ход Арта. Он сам принимает урон; массовые атаки не перехватываются."},
  "command-2":{tag:"КОМАНДИР",title:"Переброска резерва",name:"Командир · Переброска резерва",text:"Арт отдаёт союзнику часть собственного запаса защиты до заполнения его шкалы и даёт прикрытие на один удар.",use:"У союзника иссякла защита, а у Арта ещё есть запас.",cost:"Тратится ход и собственная защита Арта. Новая защита не создаётся."}
 };
- const markup="<section data-field=\"tree\" class=\"tree-screen\" hidden>\n<section class=\"tree-left\"><div class=\"mini-hero\"><img src=\"assets/art-portrait-roster.webp\" alt=\"\"><div><small class=\"eyebrow\">АРТ</small><h2>Специализация</h2><p>Одна дополнительная способность. Обычные навыки остаются.</p></div></div><div class=\"graph\" aria-label=\"Дерево специализации\"><button class=\"root node\" data-node=\"base\"><img src=\"assets/hero-card-r57/medal-base.svg\" alt=\"\"><span>Без специализации</span><small data-field=\"baseStatus\">Выбрано</small></button><div class=\"fork\" aria-hidden=\"true\"></div><div class=\"branches\"><button class=\"node\" data-node=\"guardian-2\"><img src=\"assets/hero-card-r57/medal-guardian.svg\" alt=\"\"><span>Хранитель</span><span class=\"branch-effect\">Перехват удара</span><small data-field=\"guardianStatus\">Освоен</small></button><button class=\"node\" data-node=\"command-2\"><img src=\"assets/hero-card-r57/medal-commander.svg\" alt=\"\"><span>Командир</span><span class=\"branch-effect\">Передача защиты</span><small data-field=\"commandStatus\">Освоен</small></button></div></div></section>\n<section class=\"detail\"><small class=\"eyebrow\" data-field=\"nodeTag\">БАЗОВЫЙ НАБОР</small><h2 data-field=\"nodeTitle\">Обычные навыки</h2><p data-field=\"nodeText\"></p><div class=\"impact\"><p><b>Когда полезно</b><span data-field=\"nodeUse\"></span></p><p><b>Цена решения</b><span data-field=\"nodeCost\"></span></p></div><div class=\"detail-footer\"><p data-field=\"nodeHint\"></p><button data-field=\"equip\" class=\"primary\"></button></div></section>\n</section>\n<section data-field=\"story\" class=\"story-screen\" hidden><div class=\"story-art\"><img src=\"assets/art-portrait-roster.webp\" alt=\"Арт\"></div><section class=\"story-content\"><small class=\"eyebrow\">ЛИЧНОЕ ПРИКЛЮЧЕНИЕ · АРТ</small><h1 data-field=\"storyTitle\">Личное обязательство</h1><p data-field=\"storyText\"></p><div class=\"rule\"></div><p data-field=\"storyUnlock\"></p><div data-field=\"storyRequirements\"></div><div data-field=\"storyMissions\"></div><button data-field=\"storyAction\" class=\"primary\">К специализации</button></section></section>";
+ const markup="<section data-field=\"tree\" class=\"tree-screen\" hidden>\n<section class=\"tree-left\"><div class=\"mini-hero\"><img src=\"assets/art-portrait-roster.webp\" alt=\"\"><div><small class=\"eyebrow\">АРТ</small><h2>Специализация</h2><p>Одна дополнительная способность. Обычные навыки остаются.</p></div></div><div class=\"graph\" aria-label=\"Дерево специализации\"><button class=\"root node\" data-node=\"base\"><img src=\"assets/hero-card-r57/medal-base.svg\" alt=\"\"><span>Без специализации</span><small data-field=\"baseStatus\">Выбрано</small></button><div class=\"fork\" aria-hidden=\"true\"></div><div class=\"branches\"><button class=\"node\" data-node=\"guardian-2\"><img src=\"assets/hero-card-r57/medal-guardian.svg\" alt=\"\"><span>Хранитель</span><span class=\"branch-effect\">Перехват удара</span><small data-field=\"guardianStatus\">Освоен</small></button><button class=\"node\" data-node=\"command-2\"><img src=\"assets/hero-card-r57/medal-commander.svg\" alt=\"\"><span>Командир</span><span class=\"branch-effect\">Передача защиты</span><small data-field=\"commandStatus\">Освоен</small></button></div></div></section>\n<section class=\"detail\"><small class=\"eyebrow\" data-field=\"nodeTag\">БАЗОВЫЙ НАБОР</small><h2 data-field=\"nodeTitle\">Обычные навыки</h2><p data-field=\"nodeText\"></p><div class=\"impact\"><p><b>Когда полезно</b><span data-field=\"nodeUse\"></span></p><p><b>Цена решения</b><span data-field=\"nodeCost\"></span></p></div><div class=\"detail-footer\"><p data-field=\"nodeHint\"></p><button data-field=\"equip\" class=\"primary\"></button></div></section>\n</section>\n<section data-field=\"story\" class=\"story-screen\" hidden><div class=\"story-art\"><img data-field=\"storyImage\" src=\"assets/art-portrait-roster.webp\" alt=\"Арт\"><small data-field=\"storyCaption\" hidden></small></div><section class=\"story-content\"><small class=\"eyebrow\">ЛИЧНОЕ ПРИКЛЮЧЕНИЕ · АРТ</small><h1 data-field=\"storyTitle\">Личное обязательство</h1><p data-field=\"storyText\"></p><div class=\"rule\"></div><p data-field=\"storyUnlock\"></p><div data-field=\"storyRequirements\"></div><div data-field=\"storyMissions\"></div><button data-field=\"storyAction\" class=\"primary\">К специализации</button></section></section>";
  const get=id=>document.getElementById(id);
  function create(adapter){
   const dlg=document.createElement("dialog");dlg.className="hero-card-dialog r2a-path";dlg.setAttribute("aria-label","Путь Арта");
@@ -14,8 +14,24 @@ const R2APath=(()=>{
   document.body.append(dlg);
   const field=id=>dlg.querySelector('[data-field="'+id+'"]');
   const put=(id,t)=>{field(id).textContent=t};
-  let node="base",screen="tree",previous=null;
-  function show(next){screen=next;field("tree").hidden=screen!=="tree";field("story").hidden=screen!=="story";put("title",screen==="tree"?"Специализация":"Личное приключение");render();}
+  let node="base",screen="tree",previous=null,storyStep=0,skipped=false;
+  const preloaded=new Set();
+  function storyFrame(v){return typeof ArtAdventureStory!=="undefined"?ArtAdventureStory.frame(v,storyStep):null;}
+  function setStoryFrame(shot){
+   const img=field("storyImage"),caption=field("storyCaption"),host=img.parentNode;
+   img.onload=img.onerror=null;
+   if(!shot){delete host.dataset.blocking;caption.hidden=true;img.hidden=false;img.alt="Арт";if(img.getAttribute("src")!=="assets/art-portrait-roster.webp")img.src="assets/art-portrait-roster.webp";return;}
+   const src=shot.art||shot.blocking;
+   host.dataset.blocking=String(!shot.art);host.dataset.shot=shot.id;
+   caption.hidden=false;caption.textContent=(shot.art?"":"Эскиз постановки · ")+shot.title;
+   img.alt=shot.alt;img.hidden=false;
+   img.onerror=()=>{if(img.getAttribute("src")!==src)return;img.hidden=true;caption.textContent="Кадр недоступен · "+shot.title;};
+   if(img.getAttribute("src")!==src)img.src=src;
+   else if(img.complete&&!img.naturalWidth)img.onerror();
+   const next=ArtAdventureStory.intro[ArtAdventureStory.intro.indexOf(shot)+1];
+   if(next&&ArtAdventureStory.intro.includes(shot)){const url=next.art||next.blocking;if(!preloaded.has(url)&&typeof Image!=="undefined"){preloaded.add(url);const preload=new Image();preload.src=url;}}
+  }
+  function show(next){screen=next;if(next==="story"){storyStep=0;skipped=false;}field("tree").hidden=screen!=="tree";field("story").hidden=screen!=="story";put("title",screen==="tree"?"Специализация":"Личное приключение");render();}
   function render(){
    const v=adapter.view(),chosen=v.selected||"base",earned=v.earned||[],ready=!!v.arc,d=defs[node];
    for(const b of dlg.querySelectorAll("[data-node]")){
@@ -28,18 +44,23 @@ const R2APath=(()=>{
    put("nodeHint",v.blocked||v.notice|| (locked?"Откроется после личного приключения.":node===chosen?(node==="base"?"Дополнительный навык не назначен.":"Сейчас выбрана эта техника."):(v.pilot?"Выбор действует в следующем бою основной кампании (Combat 2.0).":"Выбор действует в следующем бою.")));
    const equip=field("equip");equip.textContent=locked?"Как открыть":node===chosen?"Уже выбрано":node==="base"?"Снять специализацию":"Выбрать способность";
    equip.disabled=node===chosen||(!locked&&(!adapter.equip||!!v.blocked||v.pending||v.active));
+   const shot=adapter.production?storyFrame(v):null,choice=shot?.id==="p3",intro=!!shot&&!ready&&!choice;
+   if(screen==="story")setStoryFrame(shot);
+   field("story").classList.toggle("r2d-story-staged",!!shot);
    if(adapter.production&&v.pilot){
     put("storyTitle","Чужая доля");
-    put("storyText",ready?(v.outcome==="recovered"?"Люди вышли в безопасное место. Заработок удалось вернуть.":"Люди вышли в безопасное место. Заработок остался на площадке."):v.available?"Двое работников и раненый нуждаются в помощи. Арт и Рен должны защитить их отход.":"Личное приключение Арта пока недоступно.");
-    put("storyUnlock",v.blocked||v.notice||(ready?"Обе техники освоены. Выберите одну для следующего боя основной кампании.":v.available?"Выберите путь. В обоих случаях Рен и Арт должны выжить.":"Завершите главу II основной кампании и получите её разовую награду."));
+    put("storyText",shot?(choice&&(skipped||v.attempted)?ArtAdventureStory.summary:shot.text):"Личное приключение Арта пока недоступно.");
+    put("storyUnlock",v.blocked||v.notice||(ready?"Обе техники освоены. Выберите одну для следующего боя основной кампании.":choice?"В обоих случаях Рен и Арт должны выжить.":intro?(storyStep+1)+" / 4 · "+shot.title:"Завершите главу II основной кампании и получите её разовую награду."));
+
    }else{
    put("storyTitle",ready?"Личное обязательство":"Приключение Арта");
    put("storyText",ready?"Арт завершил личное приключение. Теперь доступны две дополнительные техники.":adapter.production?"Личное приключение Арта пока недоступно.":"Продолжайте кампанию и подготовьте Арта к личному приключению.");
    put("storyUnlock",ready?"Выберите одну из двух освоенных техник.":adapter.production?"Когда приключение станет доступно, его завершение откроет специализации.":"Требования к открытию приключения");
    }
    const req=field("storyRequirements"),missions=field("storyMissions");req.replaceChildren();missions.replaceChildren();
-   if(adapter.production&&v.pilot&&!ready&&v.available){
-    for(const [id,title,sub] of [["direct","Вернуть заработок","Победить всех противников"],["hold","Прикрыть отход","8 действий отряда или победа"]]){
+   if(intro){const skip=document.createElement("button");skip.type="button";skip.className="secondary";skip.dataset.storySkip="";skip.textContent="Пропустить к выбору";skip.onclick=()=>{storyStep=3;skipped=true;render()};req.append(skip);}
+   if(adapter.production&&v.pilot&&!ready&&v.available&&choice){
+    for(const [id,title,sub] of [["direct","Вернуть заработок","Победить всех противников и забрать кошель"],["hold","Прикрыть отход","8 действий отряда или победа · кошель может остаться"]]){
      const b=document.createElement("button");b.type="button";b.className="secondary r2d-route";b.dataset.pathMission=id;
      const heading=document.createElement("strong"),detail=document.createElement("small");heading.textContent=title;detail.textContent=sub;b.append(heading,detail);
      b.disabled=!!v.blocked||v.active;b.onclick=()=>{adapter.start?.(id);};missions.append(b);
@@ -49,11 +70,11 @@ const R2APath=(()=>{
     for(const r of v.nodes?.[0]?.requirements||[]){const p=document.createElement("p");p.textContent=(r.ok?"✓ ":"○ ")+r.label+" "+r.value+"/"+r.need;req.append(p)}
     for(const m of v.missions?.filter(m=>m.arc)||[]){const b=document.createElement("button");b.type="button";b.className="secondary";b.dataset.pathMission=m.id;b.textContent=m.name+(m.ok?"":" · "+m.reason);b.disabled=!m.ok||!!v.blocked||v.pending||v.active;b.onclick=()=>{if(adapter.start){dlg.close();adapter.start(m.id)}};missions.append(b);}
    }
-   const action=field("storyAction");action.textContent=ready?"К специализации":"К карточке героя";
+   const action=field("storyAction");action.textContent=ready?"К специализации":intro?"Продолжить":"К карточке героя";
   }
   for(const b of dlg.querySelectorAll("[data-node]"))b.onclick=()=>{node=b.dataset.node;render()};
   field("equip").onclick=()=>{const v=adapter.view();if(node!=="base"&&!v.earned.includes(node)){show("story");return;}if(adapter.equip?.(node==="base"?null:node)){adapter.changed?.();render();}};
-  field("storyAction").onclick=()=>{if(adapter.view().arc)show("tree");else dlg.close()};
+  field("storyAction").onclick=()=>{const v=adapter.view(),shot=storyFrame(v);if(v.arc)show("tree");else if(shot&&shot.id!=="p3"){storyStep=Math.min(3,storyStep+1);render();}else dlg.close()};
   dlg.querySelector(".r2a-path-back").onclick=()=>dlg.close();
   dlg.addEventListener("close",()=>{adapter.closed?.();if(previous?.isConnected)previous.focus();previous=null});
   function open(next="tree"){if(dlg.open){show(next);return}previous=document.activeElement;node=adapter.view().selected||"base";show(next);dlg.showModal();adapter.opened?.();}

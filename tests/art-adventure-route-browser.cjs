@@ -86,7 +86,14 @@ async function run(type,name){
   await page.evaluate(()=>{if(!StarCore.directGrant(progress,"nada"))throw Error("TEST_GRANT");progress.rewardReceipts=MainCampaignCore.MISSIONS.map(m=>({id:m.receipt,sourceId:m.id,day:"2026-11-26",count:1}));for(const m of MainCampaignCore.MISSIONS)gameStorage().setItem(m.key,JSON.stringify(m.id===MainCampaignCore.ID?{version:1,best:3}:{version:1,missionId:m.id,best:3}));if(!persistProgress())throw Error("TEST_SAVE");if(!saveSquad())throw Error("TEST_SQUAD_SAVE");});
   // Persist the chosen two-hero formation, rather than compare two different default rosters after Nada joins.
   const baseline=await snapshot();assert.ok(baseline.savedSquad);assert.deepEqual(baseline.squad,["ren","art",null,null,null]);
-  await open();await hold.waitFor({state:"visible"});assert.equal(await hold.isEnabled(),true);
+  await open();
+  const shot=()=>story.locator(".story-art").getAttribute("data-shot");
+  const next=story.locator('[data-field="storyAction"]');
+  const verifyShot=async id=>{assert.equal(await shot(),id);await page.waitForFunction(()=>{const im=document.querySelector(".r2a-path [data-field=storyImage]");return im?.complete&&im.naturalWidth===960&&!im.hidden;},null,{timeout:15000});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);};
+  for(const id of ["p0","p1","p2"]){await verifyShot(id);assert.equal(await hold.count(),0);await next.tap();}
+  await verifyShot("p3");assert.equal(await hold.isEnabled(),true);assert.equal((await snapshot()).wallet,baseline.wallet,"Watching does not write progress");
+  await page.locator(".r2a-path-back").tap();await open();await verifyShot("p0");await story.locator("[data-story-skip]").tap();await verifyShot("p3");assert.match(await story.innerText(),/заработок за себя и товарищей/);assert.equal((await snapshot()).wallet,baseline.wallet,"Skipping does not write progress");
+  await hold.waitFor({state:"visible"});assert.equal(await hold.isEnabled(),true);
   for(const [width,height] of [[844,390],[932,430],[844,320]]){
    await page.setViewportSize({width,height});const bounds=await hold.boundingBox();assert.ok(bounds&&bounds.height>=44);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
@@ -104,7 +111,7 @@ async function run(type,name){
   // Actual reload leaves pending inert and the mission available.
   await page.reload({waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function");
   assert.deepEqual((await snapshot()).squad,baseline.squad,"Reload restores the explicitly saved formation");assert.equal((await snapshot()).savedSquad,baseline.savedSquad);
-  await open();await hold.waitFor({state:"visible"});assert.equal(await page.evaluate(()=>ArtAdventureCore.view(progress).earned.length),0);
+  await open();await hold.waitFor({state:"visible"});await verifyShot("p3");assert.equal(await page.evaluate(()=>ArtAdventureCore.view(progress).earned.length),0);
   // Preflight native core simulation with real starter hero definitions:
   // 3037 loses at 7 actions, 3061 wins at 8 with both allies alive.
   await tapWithSeed(3037);const loss=await playBasic();
@@ -123,7 +130,7 @@ async function run(type,name){
   const done=await snapshot();
   assert.equal(done.stored.artPath.phase,"complete",JSON.stringify(victory));assert.equal(done.stored.artPath.selected,null);assert.equal(done.stored.artPath.outcome,"left");
   assert.equal(done.stored.currency,baseline.stored.currency);assert.equal(done.stored.energy.value,baseline.stored.energy.value);assert.deepEqual(done.stored.rewardReceipts,baseline.stored.rewardReceipts);assert.deepEqual(done.squad,baseline.squad);assert.equal(done.savedSquad,baseline.savedSquad);assert.equal(done.live,baseline.live);
-  assert.match(await story.innerText(),/Люди вышли в безопасное место/);
+  assert.match(await story.innerText(),/Люди вышли в безопасное место/);await verifyShot("p4b");
   await story.locator('[data-field="storyAction"]').tap();
   assert.equal(await page.locator('.r2a-path [data-node="guardian-2"]').getAttribute("data-locked"),"false");
   assert.equal(await page.locator('.r2a-path [data-node="command-2"]').getAttribute("data-locked"),"false");
@@ -131,7 +138,7 @@ async function run(type,name){
   const select=async id=>{await page.locator('.r2a-path [data-node="'+id+'"]').tap();assert.equal(await equip.isEnabled(),true);await equip.tap();assert.equal(await page.locator('.r2a-path [data-node="'+id+'"]').getAttribute("data-equipped"),"true");assert.equal((await snapshot()).stored.artPath.selected,id==="base"?null:id);};
   await select("guardian-2");
   await page.reload({waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function");await open();assert.equal(await hold.count(),0);assert.match(await story.innerText(),/Люди вышли в безопасное место/);
-  assert.equal((await snapshot()).stored.artPath.phase,"complete");assert.equal((await snapshot()).stored.artPath.selected,"guardian-2");assert.deepEqual((await snapshot()).squad,baseline.squad);assert.equal((await snapshot()).savedSquad,baseline.savedSquad);
+  await verifyShot("p4b");assert.equal((await snapshot()).stored.artPath.phase,"complete");assert.equal((await snapshot()).stored.artPath.selected,"guardian-2");assert.deepEqual((await snapshot()).squad,baseline.squad);assert.equal((await snapshot()).savedSquad,baseline.savedSquad);
   await page.locator(".r2a-path-back").tap();
   const personal=page.locator("#personalAbilityBtn"),slot=page.locator("#personalAbilitySlot");
   const readyTurn=()=>page.waitForFunction(()=>state.active&&!visualActionPending()&&!combat2InputBlocked()&&!isVisualTransition()&&!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:60000,polling:100});

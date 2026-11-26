@@ -557,7 +557,7 @@ function artAdventureView(){
  if(!a)return null;
  const v=ArtAdventureCore.view(progress);
  const unlocked=a.ready(progress);
- return {...v,available:unlocked&&!v.arc,active:a.active(),blocked:!mainCampaignWritable()||a.blocked()?"Сохранение недоступно. Перезагрузите игру.":"",notice:artAdventureNotice};
+ return {...v,available:unlocked&&!v.arc,attempted:progress.artPath?.phase==="pending",active:a.active(),blocked:!mainCampaignWritable()||a.blocked()?"Сохранение недоступно. Перезагрузите игру.":"",notice:artAdventureNotice};
 }
 function applyArtAdventureProgress(p){
  // Keep the same runtime object used by other modules; adopt only verified wallet.

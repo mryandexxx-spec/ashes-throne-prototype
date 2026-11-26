@@ -3,7 +3,7 @@ const TrustR1Lab=(()=>{
  "use strict";
  const SCENARIOS=Object.freeze({
   guard:{name:"Защищённый дозор",label:"Прикрытие и лечение",image:"ren-route",description:"Страж прохода и полевой перевязчик. Пробейте оборону, не позволяя противникам восстановиться.",enemies:["npc-pass-guard","npc-field-medic"]},
-  escort:{name:"Опасный переход",label:"Защита проводника",image:"art-support",description:"Пращник и перехватчик угрожают проводнику. Рен должен остаться в строю.",enemies:["npc-ridge-slinger","npc-trail-interceptor"],objective:{kind:"protect-and-defeat",protectAllyId:"ren"}},
+  escort:{name:"Опасный переход",label:"Защита проводника",image:"art-support",description:"Пращник, перехватчик и старший дозора угрожают проводнику. Рен должен остаться в строю.",enemies:["npc-ridge-slinger","npc-trail-interceptor","npc-watch-captain"],objective:{kind:"protect-and-defeat",protectAllyId:"ren"}},
   ordinary:{name:"Открытое столкновение",label:"Контрольный бой",image:"conflict",description:"Два бойца без навыков прикрытия. Оцените, когда исходные способности полезнее новых.",enemies:["npc-trail-interceptor","npc-sarkh-land-courier"]},
   waves:{name:"Два рубежа",label:"Последовательные волны",image:"ren-route",description:"Сначала дозор, затем подвижная группа. Здоровье и перезарядка сохраняются между волнами.",enemies:["npc-pass-guard","npc-route-signaller"],waves:[["npc-ridge-slinger","npc-field-medic"]]}
  });

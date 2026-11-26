@@ -25,6 +25,10 @@ function forcedEnemy({area=false,miss=false,lethal=false}={}){
  return x;
 }
 forcedEnemy({area:true});forcedEnemy({lethal:true});forcedEnemy({miss:true});
+const ex=C.createBattle([unit("ren","ally",150,40,40,20),unit("art","ally",200,30,200,30,100),unit("ves","enemy",300,30,25)],[],{combat2:true,trustPersonal:["art-intercept"]});C.advanceToPlayerTurn(ex);assert.equal(use(ex,"art-intercept","ren"),true);assert.equal(ex.fighters[ex.currentActor].id,"art");assert.equal(ex.trustIntercept,undefined);assert.equal(ex.trustPersonalCooldown["art-intercept"],2);
+assert.equal(use(ex,"basic","ves"),true);assert.equal(ex.trustPersonalCooldown["art-intercept"],1);
+const wave=C.createBattle([unit("art","ally",200,30,200,30),unit("ren","ally",150,40,150,20),unit("ves","enemy",1,10,25)],[[unit("shade","enemy",300,20,25)]],{combat2:true,trustPersonal:["art-intercept"]});C.advanceToPlayerTurn(wave);assert.equal(use(wave,"art-intercept","ren"),true);assert.equal(wave.fighters[wave.currentActor].id,"ren");assert.equal(use(wave,"basic","ves"),true);assert.equal(wave.wave,2);assert.equal(wave.trustIntercept,undefined);
+
 const stats=[];
 for(const scenario of Object.keys(L.SCENARIOS))for(const enabled of [false,true]){
  const lab=L.create(C,A,N);assert.equal(lab.start(scenario,enabled),true);
@@ -32,7 +36,7 @@ for(const scenario of Object.keys(L.SCENARIOS))for(const enabled of [false,true]
   const v=lab.view(),foe=v.fighters.filter(f=>f.side==="enemy"&&f.hp>0).sort((a,b)=>a.hp-b.hp)[0],ren=v.fighters.find(f=>f.id==="ren"),personal=v.actions.find(a=>a.id==="ren-bypass"||a.id==="art-intercept"),power=v.actions.find(a=>a.id==="powerful"),special=v.actions.find(a=>a.id==="special");
   let id="basic",target=foe.id;
   if(v.actor==="ren"&&personal?.targets.includes(foe.id)){id=personal.id;}
-  else if(v.actor==="art"&&personal?.targets.includes("ren")&&ren.hp<ren.maxHp*.8&&v.fighters.find(f=>f.id==="art").hp>ren.hp){id=personal.id;target="ren";}
+  else if(v.actor==="art"&&personal?.targets.includes("ren")&&(v.fighters.some(f=>f.prepared==="ren"&&f.hp>0)||ren.hp<ren.maxHp*.8)&&v.fighters.find(f=>f.id==="art").hp>ren.hp){id=personal.id;target="ren";}
   else if(v.actor==="art"&&special?.targets.includes("ren")&&ren.protection<10){id="special";target="ren";}
   else if(power?.targets.includes(foe.id)){id="powerful";}
   else if(special?.targets.includes(foe.id)){id="special";}

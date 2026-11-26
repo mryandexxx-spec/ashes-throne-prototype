@@ -437,6 +437,43 @@ const CombatCore = (() => {
     return fighter;
   }
 
+  // C4: opt-in immutable tactical choices. Caller authorizes unlocks; the
+  // executor only accepts this narrow config and never reads profile/storage.
+  function trustSnapshot(heroes,options){
+    const cfg=options.tacticalTrust;if(cfg===undefined)return null;
+    if(options.combat2!==true||!cfg||typeof cfg!=="object"||Array.isArray(cfg)||
+      !Object.keys(cfg).every(k=>["artTechnique","planPartnerId"].includes(k)))throw Error("invalid tactical trust");
+    const living=id=>heroes.some(f=>f.id===id&&f.side==="ally"&&f.hp>0);
+    const technique=cfg.artTechnique??"standard",partner=cfg.planPartnerId??null;
+    if(!["standard","focused","shared"].includes(technique)||!living("art")||
+      (partner!==null&&(!["ren","nada"].includes(partner)||!living(partner))))throw Error("invalid tactical trust composition");
+    return Object.freeze({artTechnique:technique,planPartnerId:partner});
+  }
+  function trustCoverPreview(battle,actor,target){
+    if(!battle?.active||!battle.combat2||actor?.id!=="art"||actor.side!=="ally"||actor.hp<=0||
+      !target||target.side!=="ally"||target.hp<=0||target.id===actor.id||
+      !Number.isFinite(actor.physicalAttack)||actor.physicalAttack<0||
+      !Number.isSafeInteger(target.protection)||!Number.isSafeInteger(target.maxProtection)||
+      target.protection<0||target.protection>target.maxProtection)return null;
+    const mode=battle.tacticalTrust?.artTechnique??"standard";
+    const row=(f,hits,restore)=>({id:f.id,guardHits:Math.max(f.guardHits,hits),restored:restore});
+    if(mode==="focused")return {mode,rows:[row(target,2,0)]};
+    if(mode==="shared")return {mode,rows:[row(target,1,0),row(actor,1,0)]};
+    return {mode,rows:[row(target,1,Math.min(target.maxProtection-target.protection,Math.round(actor.physicalAttack*.65)))]};
+  }
+  function trustPlanPreview(battle,targetIndex){
+    const actor=battle?.fighters?.[battle.currentActor],target=battle?.fighters?.[targetIndex];
+    const partnerId=battle?.tacticalTrust?.planPartnerId;
+    if(!partnerId||battle.trustPlanUsed||actor?.id!=="art"||actor.side!=="ally"||
+      !actorAbilityReady(battle,battle.currentActor,"basic")||target?.side!=="enemy"||target.hp<=0)return null;
+    const helper=battle.fighters.find(f=>f.id===partnerId&&f.side==="ally"&&f.hp>0);
+    const base=AbilityData.get(actor,"basic");
+    if(!helper||base?.kind!=="damage"||base.target!=="enemy"||AbilityData.damageType(base)!=="physical"||
+      !validTypedTarget(target,"physical")||!combat2ValidAssist(battle,actor,target,helper))return null;
+    // Substitute the usual hit. Helper gets no turn, meter or passive redispatch.
+    return {partnerId,helperIndex:battle.fighters.indexOf(helper),ability:{id:"basic",name:"Совместный выпад",kind:"damage",target:"enemy",damageType:"physical",multiplier:base.multiplier*.55,cooldown:0,combat2Assist:.65}};
+  }
+
   // Optional future waves are separate encounters inside the same battle.
   // Existing single-wave calls keep their original behavior.
   function createBattle(heroes, futureWaves = [], options = {}) {
@@ -516,8 +553,10 @@ const CombatCore = (() => {
          leader.hp<=0||fighters.findIndex(f=>f.id===leaderId)!==0)
         throw Error("leader must be the first living ally in the roster");
     }
+    const trust=trustSnapshot(heroes,options);
     const battle = {
       fighters,
+      ...(trust?{tacticalTrust:trust,trustPlanUsed:false}:{}),
       ...(options.combat2===true?{combat2:true}:{}),
       ...(seededRng===null?{}:{rng:seededRng}),
       ...(options.hitChecks===true?{hitChecks:true}:{}),
@@ -1325,11 +1364,15 @@ const CombatCore = (() => {
 
   // Shared action executor. Current actor must be ready and have a legal target.
   function performActorAbility(battle,abilityId,primaryIndex) {
-    const combat2HelperIndex=arguments[3];
+    const trustRequested=abilityId==="trust-plan";
+    const plan=trustRequested?trustPlanPreview(battle,primaryIndex):null;
+    if(trustRequested&&!plan)return false;
+    if(trustRequested)abilityId="basic";
+    const combat2HelperIndex=plan?plan.helperIndex:arguments[3];
     const actorIndex=battle?.currentActor;
     if(!actorAbilityReady(battle,actorIndex,abilityId))return false;
     const actor=battle.fighters[actorIndex];
-    const planned=AbilityData.get(actor,abilityId);
+    const planned=plan?plan.ability:AbilityData.get(actor,abilityId);
     const disruption=disruptDefinition(battle,actor,planned);
     const ability=disruption.ability;
     const readMovePenalty=readMoveMitigation(actor,ability);
@@ -1371,7 +1414,8 @@ const CombatCore = (() => {
     const combat2SelectedHelper=ability.combat2Assist?combat2Helper(battle,actor,combat2HelperIndex):null;
     if(ability.combat2Assist&&!combat2ValidAssist(battle,actor,target,combat2SelectedHelper))return false;
     if(ability.combat2Signal&&combat2Cap(target.meter,ability.signalMeter+(actor.combat2Boost??0))<=target.meter)return false;
-    if(ability.combat2Cover&&(!Number.isFinite(actor.physicalAttack)||actor.physicalAttack<0||!Number.isSafeInteger(target.protection)||!Number.isSafeInteger(target.maxProtection)||target.protection<0||target.protection>target.maxProtection))return false;
+    const trustCover=ability.combat2Cover?trustCoverPreview(battle,actor,target):null;
+    if(ability.combat2Cover&&!trustCover)return false;
     const type=ability.kind==="damage"?AbilityData.damageType(ability):null;
     if(type&&type!=="legacy"&&!validTypedTarget(target,type))return false;
     if(ability.kind==="damage"&&!validHitProfile(battle,actor,[target],type))return false;
@@ -1383,12 +1427,18 @@ const CombatCore = (() => {
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
     if(!consumeReadMoveMitigation(battle,actor,readMovePenalty))return false;
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
+    if(plan){
+      battle.trustPlanUsed=true;
+      emit(battle,"trust-plan",{actorId:actor.id,partnerId:plan.partnerId,targetId:target.id});
+    }
     if(ability.combat2Cover){
-      target.guardHits=Math.max(target.guardHits,1);
-      const restored=Math.min(target.maxProtection-target.protection,Math.round(actor.physicalAttack*.65));
-      target.protection+=restored;delete target.insurance;
-      emit(battle,"effect",{actorId:actor.id,targetId:target.id,effect:"guard",stacks:target.guardHits});
-      emit(battle,"combat2-protection",{actorId:actor.id,targetId:target.id,amount:restored});
+      for(const row of trustCover.rows){
+        const recipient=battle.fighters.find(f=>f.id===row.id);
+        recipient.guardHits=row.guardHits;if(trustCover.mode==="standard")recipient.protection+=row.restored;delete recipient.insurance;
+        emit(battle,"effect",{actorId:actor.id,targetId:recipient.id,effect:"guard",stacks:recipient.guardHits});
+        if(trustCover.mode==="standard")emit(battle,"combat2-protection",{actorId:actor.id,targetId:recipient.id,amount:row.restored});
+      }
+      if(trustCover.mode!=="standard")emit(battle,"trust-technique",{actorId:actor.id,targetId:target.id,mode:trustCover.mode,recipients:trustCover.rows.map(row=>row.id)});
       battle.message=actor.name+" прикрывает "+target.name+".";
     }else if(ability.combat2Signal){
       combat2Grant(battle,actor,target,ability.signalMeter+(actor.combat2Boost??0),"signal");
@@ -1529,6 +1579,6 @@ const CombatCore = (() => {
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
     chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects, abilityTargetIndices, actorTargetIndices, actorAbilityReady, performActorAbility,
-    activePassiveModifiers, activeLeaderModifiers, effectiveStat, previewSignal
+    activePassiveModifiers, activeLeaderModifiers, effectiveStat, previewSignal, trustCoverPreview, trustPlanPreview
   });
 })();

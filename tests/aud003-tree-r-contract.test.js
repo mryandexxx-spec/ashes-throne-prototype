@@ -1,0 +1,14 @@
+"use strict";
+const assert=require("node:assert/strict"),T=require("../design/aud003-tree-r-contract.js");
+const p={level:3,stars:1,gear:1,skill:2,rank:1},all=Object.keys(T.NODE),live=["intercept","reserve","cover-focus","cover-shared"];
+assert.equal(T.entry(p,2),true);assert.equal(T.entry({...p,level:2},2),false);assert.equal(T.entry({...p,skill:1},2),false);assert.equal(T.eligible(p,"intercept",[],live),false);
+const early={...p,rank:2};assert.equal(T.eligible(early,"intercept",[],live),true);assert.equal(T.eligible(early,"bastion",[],all),false);assert.equal(T.eligible(early,"intercept",[],[]),false);
+assert.equal(T.loadout(early,["intercept"],["intercept"],live),true);assert.equal(T.loadout(early,["intercept","reserve"],live,live),false);assert.equal(T.loadout(early,["intercept","cover-focus"],live,live),false);
+assert.equal(T.loadout({...early,level:8},["intercept","cover-shared"],live,live),true);assert.equal(T.loadout({...early,level:8},["cover-focus","cover-shared"],live,live),false);
+const mid={level:25,stars:3,gear:4,skill:3,rank:3};assert.equal(T.eligible(mid,"field-reserve",["intercept"],all),true);assert.equal(T.eligible(mid,"field-reserve",["reserve"],all),true);assert.equal(T.eligible(mid,"field-reserve",[],all),false);assert.equal(T.eligible(mid,"field-reserve",["intercept"],live),false);
+assert.equal(T.loadout(mid,["intercept","field-reserve"],["intercept","field-reserve"],all),true);assert.equal(T.loadout(mid,["intercept","field-reserve"],["intercept","field-reserve"],all,true),false);
+assert.equal(T.entry({...mid,gear:3},3),false);assert.equal(T.entry({...mid,stars:2},3),false);
+const final={level:75,stars:6,gear:11,skill:6,rank:5};assert.equal(T.loadout(final,["intercept","last-line","finale-rescue"],all,all),false);
+assert.equal(T.loadout(final,["intercept","last-line","cover-shared","rescue-doctrine"],all,all),true);
+assert.equal(T.loadout(final,["intercept","intercept"],all,all),false);assert.equal(T.loadout(final,["bad"],all,all),false);assert.equal(T.loadout(final,["intercept"],[],all),false);
+console.log("TREE-R proposed eligibility, OR branch, loadout budget, slots and shared reserve contracts passed");

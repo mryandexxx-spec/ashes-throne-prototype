@@ -32,6 +32,7 @@ jobs:
           node tests/command-loop-tree-r2a-browser.cjs
           node tests/command-loop-r2a-art-browser.cjs
           node tests/command-loop-r2a-live-browser.cjs
+          node tests/command-loop-r5-art-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

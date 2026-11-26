@@ -1,0 +1,36 @@
+/* R5 component laboratory only; R4 and production remain immutable. */
+html[data-r5] body{background:linear-gradient(90deg,#12171bf5,#151a1bc9 26%,#1b2021a6 50%,#15191cca 74%,#101417f4),var(--r5-hall,url('../../assets/hq-hall-painting.webp')) center/cover}
+html[data-r5] .hero{background:radial-gradient(ellipse at 50% 30%,#af87583b,transparent 58%),linear-gradient(0deg,#15191bd9,#15191b00 40%);overflow:hidden}
+html[data-r5] .hero::before{display:none}
+html[data-r5] #renCard3DCanvas{inset:12px 44px 12px;width:calc(100% - 88px);height:calc(100% - 24px)}
+html[data-r5] .r4-gear-slot{background:radial-gradient(ellipse at 25% 15%,#4a4435,#272d2d 52%,#14191c);box-shadow:inset 0 1px #e6c58e36,inset 0 -3px #10161899,0 2px 6px #0008;border:1px solid #8e7752;grid-template-rows:minmax(0,1fr) 10px;padding:1px 2px}
+html[data-r5] .r4-gear-slot img{width:32px;height:32px;object-fit:contain;filter:drop-shadow(0 2px 1px #0009)}
+html[data-r5] .r4-gear-slot small{font-size:8px;white-space:nowrap;overflow-wrap:normal;line-height:1}
+html[data-r5] .paths #openTree{border:6px solid transparent;border-image:url('skin-bronze.svg') 12 fill stretch;background:none;box-shadow:none;padding:0 3px}
+html[data-r5] .paths #openTree img{width:42px;height:42px}
+html[data-r5] .detail-footer .primary:not(:disabled),html[data-r5] .story-content .primary{border:6px solid transparent;border-image:url('skin-cta.svg') 12 fill stretch;background:none;box-shadow:none;color:#181715}
+html[data-r5] .node img{background:none;border:0;padding:0;box-shadow:0 2px 7px #0008;border-radius:50%}
+html[data-r5] .node[data-equipped="true"] img{outline:2px solid #86b797;outline-offset:1px;box-shadow:0 0 0 4px #355447}
+html[data-r5] .node[aria-pressed="true"] img{outline:2px solid #edd29e;outline-offset:2px}
+html[data-r5] .node[data-equipped="true"][aria-pressed="true"] img{box-shadow:0 0 0 5px #48715b}
+html[data-r5] .node[data-locked="true"] img{opacity:.46}
+html[data-r5] .demo{gap:4px;padding-left:6px}
+html[data-r5] .demo select{max-width:145px;font-size:10px;padding:0 4px}
+#r5Background{width:90px;font-size:10px;color:#c9bdab}
+#r5GearRail{display:none}
+html[data-r5="b"] .card-screen{grid-template-columns:minmax(180px,.93fr) minmax(0,1.9fr) minmax(190px,1fr)}
+html[data-r5="b"] .training{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:6px}
+html[data-r5="b"] .skills{grid-template-rows:14px minmax(0,1fr);height:100%}
+html[data-r5="b"] .skill-icons{grid-template-columns:repeat(3,minmax(44px,1fr));grid-template-rows:repeat(2,minmax(44px,1fr));gap:4px}
+html[data-r5="b"] .skill-icons button{display:grid;grid-template-columns:1fr;justify-items:center;align-content:center;min-height:44px;background:linear-gradient(140deg,#33322a,#181e20);border:1px solid #89754f66;border-radius:4px;padding:3px}
+html[data-r5="b"] .skill-icons button::after{display:none}
+html[data-r5="b"] #r5GearRail{display:block}
+html[data-r5="b"] #r5GearRail::before{content:"ЭКИПИРОВКА · G1";display:block;font-size:10px;letter-spacing:.08em;color:#d4b582;margin-bottom:4px}
+html[data-r5="b"] #r4Gear{position:static;display:grid;grid-template-columns:repeat(3,minmax(44px,1fr));grid-template-rows:repeat(2,44px);gap:4px;pointer-events:auto}
+html[data-r5="b"] #r4Gear button{grid-row:auto;grid-column:auto;width:100%;height:44px}
+html[data-r5="b"] #renCard3DCanvas{inset:0 4px 11px;width:calc(100% - 8px);height:calc(100% - 11px)}
+html[data-r5="b"] .gear-caption{display:none}
+html[data-r5="b"] .hero .identity{max-width:70%}
+@media(min-height:351px) and (orientation:landscape){html[data-r5="b"] #r4Gear{grid-template-rows:repeat(2,55px)}html[data-r5="b"] #r4Gear button{height:55px}html[data-r5] .r4-gear-slot img{width:36px;height:36px}}
+@media(max-height:350px) and (orientation:landscape){html[data-r5] .demo .r5-variant{display:none}html[data-r5] .r4-gear-slot img{width:31px;height:31px}html[data-r5] .paths #openTree img{width:32px;height:32px}html[data-r5="b"] .skills{gap:3px}}
+@media(orientation:portrait){html[data-r5] .card-screen{grid-template-columns:1fr 1fr;grid-template-areas:'hero hero' 'training paths';grid-template-rows:minmax(0,1.15fr) minmax(0,1fr)}html[data-r5] .demo{flex-wrap:wrap}#r5Background{display:none}}

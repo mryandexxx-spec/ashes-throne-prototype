@@ -1,0 +1,124 @@
+{
+  "status": "R5 candidate; not canon or production",
+  "baseline": "6264d3b97b027c82fbe04818f6675065fd529ccf",
+  "originalBackground": {
+    "libraryFileId": "libfile_bdb797c8ca8c819186ae805be4e1b124",
+    "name": "Ashes-Throne-R5-quiet-hall-source.png",
+    "source": "ImageGen",
+    "status": "original saved in Library; not copied to git; selectable locally; banner decoration is not canon",
+    "fallback": "assets/hq-hall-painting.webp"
+  },
+  "gear": [
+    {
+      "file": "gear-weapon.svg",
+      "source": "original vector interpretation of existing GearData slot; not individual item art",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true
+    },
+    {
+      "file": "gear-torso.svg",
+      "source": "original vector interpretation of existing GearData slot; not individual item art",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true
+    },
+    {
+      "file": "gear-head.svg",
+      "source": "original vector interpretation of existing GearData slot; not individual item art",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true
+    },
+    {
+      "file": "gear-hands.svg",
+      "source": "original vector interpretation of existing GearData slot; not individual item art",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true
+    },
+    {
+      "file": "gear-feet.svg",
+      "source": "original vector interpretation of existing GearData slot; not individual item art",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true
+    },
+    {
+      "file": "gear-utility.svg",
+      "source": "original vector interpretation of existing GearData slot; not individual item art",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true
+    }
+  ],
+  "medals": [
+    {
+      "file": "medal-base.svg",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true,
+      "source": "original vector; existing specialization effects"
+    },
+    {
+      "file": "medal-guardian.svg",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true,
+      "source": "original vector; existing specialization effects"
+    },
+    {
+      "file": "medal-commander.svg",
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true,
+      "source": "original vector; existing specialization effects"
+    }
+  ],
+  "skins": [
+    {
+      "file": "skin-bronze.svg",
+      "dimensions": [
+        160,
+        64
+      ],
+      "sliceInsets": 12,
+      "alpha": true
+    },
+    {
+      "file": "skin-cta.svg",
+      "dimensions": [
+        160,
+        64
+      ],
+      "sliceInsets": 12,
+      "alpha": true
+    }
+  ],
+  "stage": {
+    "source": "Babylon MeshBuilder and scene-local procedural stone/bronze textures; no Blender execution; same scene; contact shadow approximation",
+    "variants": {
+      "a": "octagonal pedestal, six surrounding slots",
+      "b": "round pedestal, six slots in arsenal rail"
+    }
+  },
+  "rules": "no purchases, progression, saves, new lore, new runtime dependencies; production unchanged"
+}

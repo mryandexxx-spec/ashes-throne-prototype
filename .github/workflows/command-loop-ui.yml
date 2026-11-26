@@ -2,7 +2,7 @@ name: Command loop · mobile art and interaction
 on:
   pull_request:
     branches: [main]
-    paths: ['lab-command-loop/**', 'tests/command-loop-ui-browser.cjs', '.github/workflows/command-loop-ui.yml']
+    paths: ['lab-command-loop/**', 'tests/command-loop-ui-browser.cjs', 'tests/command-loop-r1-browser.cjs', '.github/workflows/command-loop-ui.yml']
 permissions:
   contents: read
 concurrency:
@@ -26,6 +26,7 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/command-loop-http.log 2>&1 &
           sleep 2
           node tests/command-loop-ui-browser.cjs
+          node tests/command-loop-r1-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

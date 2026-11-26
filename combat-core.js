@@ -344,6 +344,7 @@ const CombatCore = (() => {
   function finishTacticalAction(battle,actor,ability,primaryTarget){
     // Called AFTER the normal finishTurn: any meter gained here moves a *future*
     // turn, never generates an immediate free action.
+    if(actor.side==="ally"&&battle.trustPersonal){for(const id of battle.trustPersonal)if(PERSONAL[id].owner===actor.id)battle.trustPersonalCooldown[id]=id===ability.id?ability.cooldown:Math.max(0,battle.trustPersonalCooldown[id]-1);}
     if(actor.side!=="ally")return;
     if(actor.id==="sava"&&ability.id==="basic"&&ability.nextAllyMeter>0){
       if(battle.combat2){
@@ -449,6 +450,40 @@ const CombatCore = (() => {
       (partner!==null&&(!["ren","nada"].includes(partner)||!living(partner))))throw Error("invalid tactical trust composition");
     return Object.freeze({artTechnique:technique,planPartnerId:partner});
   }
+  // C4/R1: separate personal skill IDs; mutually exclusive with historical C4.
+  const PERSONAL=Object.freeze({
+    "ren-bypass":Object.freeze({owner:"ren",id:"ren-bypass",name:"Обход прикрытия",kind:"damage",target:"enemy",damageType:"physical",multiplier:1,cooldown:2}),
+    "art-intercept":Object.freeze({owner:"art",id:"art-intercept",name:"Перехват",kind:"trust-intercept",target:"ally",cooldown:2})
+  });
+  function personalSnapshot(heroes,options){
+    if(options.trustPersonal===undefined)return null;
+    const ids=options.trustPersonal;
+    if(options.combat2!==true||options.tacticalTrust!==undefined||!Array.isArray(ids)||!ids.length||
+      new Set(ids).size!==ids.length||!ids.every(id=>Object.hasOwn(PERSONAL,id)&&heroes.some(f=>f.id===PERSONAL[id].owner&&f.side==="ally"&&f.hp>0)))throw Error("invalid personal trust");
+    return Object.freeze(ids.slice());
+  }
+  function personalDefinition(battle,actor,id){
+    return battle?.trustPersonal?.includes(id)&&PERSONAL[id]?.owner===actor?.id&&actor.side==="ally"?PERSONAL[id]:null;
+  }
+  function personalPreview(battle,id,index){
+    const actor=battle?.fighters?.[battle.currentActor],target=battle?.fighters?.[index];
+    const ability=personalDefinition(battle,actor,id);
+    if(!ability||!actorAbilityReady(battle,battle.currentActor,id)||!target||target.hp<=0)return null;
+    if(id==="ren-bypass"){
+      if(target.side!=="enemy"||target.guardHits<=0||!Number.isFinite(actor.physicalAttack)||actor.physicalAttack<0||
+        !validTypedTarget(target,"physical")||!validHitProfile(battle,actor,[target],"physical")||
+        !validCriticalProfile(battle,actor,[target],"physical")||!validPenetrationProfile(battle,actor,"physical")||
+        !validCombinedRngBudget(battle,ability,[target],"physical"))return null;
+      return {ability,targetId:target.id,guardPreserved:target.guardHits};
+    }
+    return target.side==="ally"&&target.id!==actor.id?{ability,targetId:target.id,recipientId:actor.id}:null;
+  }
+  function personalRedirect(battle,actor,ability,target){
+    const link=battle.trustIntercept;
+    if(!link||actor.side!=="enemy"||ability.kind!=="damage"||ability.target!=="enemy"||
+      target.id!==link.targetId||ability.nonRedirectable===true)return null;
+    return battle.fighters.find(f=>f.id===link.ownerId&&f.side==="ally"&&f.hp>0&&f.id!==target.id)??null;
+  }
   function trustCoverPreview(battle,actor,target){
     if(!battle?.active||!battle.combat2||actor?.id!=="art"||actor.side!=="ally"||actor.hp<=0||
       !target||target.side!=="ally"||target.hp<=0||target.id===actor.id||
@@ -553,9 +588,10 @@ const CombatCore = (() => {
          leader.hp<=0||fighters.findIndex(f=>f.id===leaderId)!==0)
         throw Error("leader must be the first living ally in the roster");
     }
-    const trust=trustSnapshot(heroes,options);
+    const trust=trustSnapshot(heroes,options),personal=personalSnapshot(heroes,options);
     const battle = {
       fighters,
+      ...(personal?{trustPersonal:personal,trustPersonalCooldown:Object.fromEntries(personal.map(id=>[id,0]))}:{}),
       ...(trust?{tacticalTrust:trust,trustPlanUsed:false}:{}),
       ...(options.combat2===true?{combat2:true}:{}),
       ...(seededRng===null?{}:{rng:seededRng}),
@@ -618,6 +654,7 @@ const CombatCore = (() => {
     "wave-start","battle-end"]);
   function emit(battle, type, properties) {
     battle.events.push({type, ...properties});
+    if(battle.trustIntercept&&(type==="wave-start"||type==="battle-end"||type==="death"&&[battle.trustIntercept.ownerId,battle.trustIntercept.targetId].includes(properties.targetId)))delete battle.trustIntercept;
     if(battle.combat2){
       if(type==="wave-start")for(const f of battle.fighters){delete f.combat2Boost;delete f.combat2Prepared;}
       if(type==="death"){
@@ -859,6 +896,8 @@ const CombatCore = (() => {
   // Legacy: weakening -> guard -> HP (unchanged).
   // Typed: weakening -> matching defense -> guard -> Protection -> HP.
   function dealDamage(attacker,target,rawDamage,consumeWeakening=true,type="legacy",penetration=0,battle=null,canInsurance=false){
+    // Optional root-only ninth argument; preserve legacy research instrumentation.
+    const bypassGuard=arguments[8]===true;
     let damage=Math.max(0,rawDamage);
     if(attacker.weakenAttacks>0)damage=Math.round(damage*0.7);
     if(type!=="legacy"){
@@ -877,9 +916,11 @@ const CombatCore = (() => {
         if(blocked>0){const spent=Math.ceil(blocked/2);art.protection-=spent;damage-=blocked;art.combat2ReactUsed=true;emit(battle,"combat2-cover",{actorId:art.id,targetId:target.id,amount:blocked,protectionSpent:spent});}
       }
     }
+    if(!bypassGuard){
     if(target.guardHits>0){
       damage=Math.round(damage*0.5);
       target.guardHits--;
+    }
     }
     if(type!=="legacy"&&target.protection!==undefined){
       const absorbed=Math.min(damage,target.protection);
@@ -910,6 +951,7 @@ const CombatCore = (() => {
       const actorIndex = battle.fighters.findIndex(h => h.id === ready.id);
       const actor = battle.fighters[actorIndex];
       if (actor.side === "ally") {
+        if(battle.trustIntercept?.ownerId===actor.id)delete battle.trustIntercept;
         battle.currentActor = actorIndex;
         if (selectEnemy(battle.fighters, battle.selectedEnemy) < 0) {
           battle.selectedEnemy = firstLivingEnemy(battle.fighters);
@@ -959,7 +1001,7 @@ const CombatCore = (() => {
 
   function abilityDefinition(battle, abilityId) {
     const actor=battle&&battle.fighters[battle.currentActor];
-    return AbilityData.get(actor,abilityId);
+    return personalDefinition(battle,actor,abilityId)??AbilityData.get(actor,abilityId);
   }
 
   function abilityTargetSide(battle,abilityId){
@@ -1011,6 +1053,8 @@ const CombatCore = (() => {
     const actor=battle.fighters[actorIndex];
     if(!actor||!["ally","enemy"].includes(actor.side)||actor.hp<=0||
        actor.meter<1000-1e-8)return false;
+    const personal=personalDefinition(battle,actor,abilityId);
+    if(personal)return battle.trustPersonalCooldown[abilityId]===0;
     const ability=AbilityData.get(actor,abilityId);
     if(!ability)return false;
     if(ability.combat2Signal&&!battle.fighters.some(f=>f.side==="ally"&&f.hp>0&&f.id!==actor.id&&f.meter<950))return false;
@@ -1372,7 +1416,9 @@ const CombatCore = (() => {
     const actorIndex=battle?.currentActor;
     if(!actorAbilityReady(battle,actorIndex,abilityId))return false;
     const actor=battle.fighters[actorIndex];
-    const planned=plan?plan.ability:AbilityData.get(actor,abilityId);
+    const personal=personalDefinition(battle,actor,abilityId);
+    if(personal&&!personalPreview(battle,abilityId,primaryIndex))return false;
+    const planned=plan?plan.ability:personal??AbilityData.get(actor,abilityId);
     const disruption=disruptDefinition(battle,actor,planned);
     const ability=disruption.ability;
     const readMovePenalty=readMoveMitigation(actor,ability);
@@ -1384,7 +1430,7 @@ const CombatCore = (() => {
     if(!Number.isSafeInteger(ability.cooldown)||ability.cooldown<0||
        !validFollowUpEffects(ability)||!validOnHitStatus(battle,ability)||
        !validAreaStatus(ability)||!validAreaStatusProfile(battle,actor,ability))return false;
-    if(!["damage","heal","guard","insurance","signal","coordinate"].includes(ability.kind))return false;
+    if(!["damage","heal","guard","insurance","signal","coordinate"].includes(ability.kind)&&!(personal&&ability.kind==="trust-intercept"))return false;
     if(ability.tauntTurns!==undefined&&
       (ability.kind!=="guard"||ability.target!=="self"||
        !Number.isSafeInteger(ability.tauntTurns)||ability.tauntTurns<1))return false;
@@ -1407,7 +1453,9 @@ const CombatCore = (() => {
     if(ability.target!=="ally" && ability.target!=="enemy")return false;
     if(targets.length!==1)return false;
     const targetIndex=targets[0];
-    const target=battle.fighters[targetIndex];
+    const intended=battle.fighters[targetIndex];
+    const redirect=personalRedirect(battle,actor,ability,intended);
+    const target=redirect??intended;
     if(["insurance","signal"].includes(ability.kind)&&
        (actor.side!=="ally"||target.side!=="ally"||actor.id===target.id))
       return false;
@@ -1426,12 +1474,23 @@ const CombatCore = (() => {
     // Invalid commands leave the previous event batch untouched.
     if(actor.side==="ally"){battle.allyActions++;battle.events=[];}
     if(!consumeReadMoveMitigation(battle,actor,readMovePenalty))return false;
+    if(battle.trustIntercept?.ownerId===actor.id)delete battle.trustIntercept;
+    if(redirect){
+      delete battle.trustIntercept;
+      const prepared=battle.events.findLast(e=>e.type==="combat2-threat-resolved"&&e.actorId===actor.id);
+      if(prepared)prepared.actualTargetId=target.id;
+      emit(battle,"trust-intercept-resolved",{actorId:target.id,sourceId:actor.id,targetId:target.id,protectedId:intended.id});
+    }
     emit(battle,"ability",{actorId:actor.id,targetId:target.id,abilityId:ability.id});
     if(plan){
       battle.trustPlanUsed=true;
       emit(battle,"trust-plan",{actorId:actor.id,partnerId:plan.partnerId,targetId:target.id});
     }
-    if(ability.combat2Cover){
+    if(ability.kind==="trust-intercept"){
+      battle.trustIntercept={ownerId:actor.id,targetId:target.id};
+      emit(battle,"trust-intercept-armed",{actorId:actor.id,targetId:target.id});
+      battle.message=actor.name+" готов перехватить удар по "+target.name+".";
+    }else if(ability.combat2Cover){
       for(const row of trustCover.rows){
         const recipient=battle.fighters.find(f=>f.id===row.id);
         recipient.guardHits=row.guardHits;if(trustCover.mode==="standard")recipient.protection+=row.restored;delete recipient.insurance;
@@ -1476,7 +1535,8 @@ const CombatCore = (() => {
       const damage=dealDamage(actor,target,
         reducedReadMoveDamage(rollCriticalDamage(battle,actor,target,baseDamage,type),readMovePenalty),true,type,
         penetrationEnabled(battle,type)?actor.defensePenetration:0,battle,
-        ability.target==="enemy");
+        ability.target==="enemy"&&!redirect,ability.id==="ren-bypass");
+      if(ability.id==="ren-bypass")emit(battle,"trust-bypass",{actorId:actor.id,targetId:target.id,guardRemaining:target.guardHits});
       emit(battle,"damage",{actorId:actor.id,targetId:target.id,amount:damage,remainingHp:target.hp,
         ...typedDamageFields(target,type,oldHp,oldProtection)});
       if(target.hp===0)emit(battle,"death",{targetId:target.id});
@@ -1547,7 +1607,7 @@ const CombatCore = (() => {
   // compatible (basic attack against the first living enemy).
   function performAutoAction(battle, plan) {
     if (!battle || !battle.active || !abilityReady(battle, "basic")) return false;
-    if (plan && ["basic", "special", "powerful"].includes(plan.abilityId) &&
+    if (plan && (["basic", "special", "powerful"].includes(plan.abilityId)||personalDefinition(battle,battle.fighters[battle.currentActor],plan.abilityId)) &&
         abilityReady(battle, plan.abilityId)) {
       const mode = abilityTargetSide(battle, plan.abilityId);
       const target = plan.targetIndex;
@@ -1579,6 +1639,6 @@ const CombatCore = (() => {
   return Object.freeze({
     createBattle, livingEnemies, selectEnemy, firstLivingEnemy,
     chooseEnemy, chooseAlly, specialName, abilityTargetSide, advanceToPlayerTurn, performPlayerAttack, performPlayerAbility, abilityReady, performAutoAction, activeEffects, abilityTargetIndices, actorTargetIndices, actorAbilityReady, performActorAbility,
-    activePassiveModifiers, activeLeaderModifiers, effectiveStat, previewSignal, trustCoverPreview, trustPlanPreview
+    activePassiveModifiers, activeLeaderModifiers, effectiveStat, previewSignal, trustCoverPreview, trustPlanPreview, personalPreview
   });
 })();

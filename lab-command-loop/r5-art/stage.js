@@ -11,9 +11,25 @@ const R5Stage=(()=>{
   t.update();return t;
  }
  function mat(B,s,id,color,tex){const m=new B.StandardMaterial(id,s);m.diffuseColor=B.Color3.FromHexString(color);m.specularColor=new B.Color3(.12,.11,.09);m.specularPower=24;if(tex)m.diffuseTexture=tex;return m}
+ function mountFloor(B,scene){
+  // Shadow catcher with no opaque floor, rim or platform. The regional artwork
+  // supplies the surface; the plane only contributes a soft contact approximation.
+  const sh=new B.DynamicTexture("r5FloorContact",{width:128,height:128},scene,false);sh.hasAlpha=true;
+  const c=sh.getContext();
+  c.clearRect(0,0,128,128);
+  const g=c.createRadialGradient(64,64,3,64,64,61);
+  g.addColorStop(0,"rgba(9,8,7,.58)");g.addColorStop(.38,"rgba(9,8,7,.40)");g.addColorStop(.72,"rgba(9,8,7,.17)");g.addColorStop(1,"rgba(9,8,7,0)");
+  c.fillStyle=g;c.fillRect(0,0,128,128);sh.update();
+  const mat=new B.StandardMaterial("r5FloorContactMat",scene);
+  mat.diffuseTexture=sh;mat.useAlphaFromDiffuseTexture=true;mat.disableLighting=true;mat.emissiveColor=new B.Color3(0,0,0);mat.specularColor=new B.Color3(0,0,0);
+  const contact=B.MeshBuilder.CreateGround("r5-floor-contact",{width:1.55,height:1.05},scene);
+  contact.position.y=.019;contact.material=mat;contact.isPickable=false;
+  return {variant:"b-floor",meshes:[contact],materials:[mat],textures:[sh],shadow:null};
+ }
  function mount(scene,variant){
   const B=BABYLON,old=stages.get(scene);if(old&&old.variant===variant)return old;
   if(old){old.shadow?.dispose();for(const m of old.meshes)m.dispose();for(const m of old.materials)m.dispose();for(const t of old.textures)t.dispose()}
+  if(variant==="b-floor"){const result=mountFloor(B,scene);stages.set(scene,result);return result;}
   const stone=texture(B,scene,"r5Stone"),metal=texture(B,scene,"r5Bronze",true);
   const base=mat(B,scene,"r5Basalt","#9b8c76",stone),rim=mat(B,scene,"r5BronzeMat","#c6a575",metal),top=mat(B,scene,"r5Top","#a69a87",stone);
   const meshes=[],segments=variant==="a"?8:48;

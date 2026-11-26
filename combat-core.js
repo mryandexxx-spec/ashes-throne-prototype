@@ -925,13 +925,17 @@ const CombatCore = (() => {
         if(blocked>0){const spent=Math.ceil(blocked/2);art.protection-=spent;damage-=blocked;art.combat2ReactUsed=true;emit(battle,"combat2-cover",{actorId:art.id,targetId:target.id,amount:blocked,protectionSpent:spent});}
       }
     }
+    // Observe the existing guard calculation without changing its research patch anchors.
+    const treeGuardBefore=battle?.treeR1&&!bypassGuard&&target.guardHits>0?damage:null;
     if(!bypassGuard){
     if(target.guardHits>0){
-      const before=damage;
       damage=Math.round(damage*0.5);
       target.guardHits--;
-      if(battle?.treeR1){if(before>damage)emit(battle,"tree-r1-guard",{actorId:attacker.id,targetId:target.id,sourceId:target.treeR1GuardSource??null,amount:before-damage});if(!target.guardHits)delete target.treeR1GuardSource;}
     }
+    }
+    if(treeGuardBefore!==null){
+      if(treeGuardBefore>damage)emit(battle,"tree-r1-guard",{actorId:attacker.id,targetId:target.id,sourceId:target.treeR1GuardSource??null,amount:treeGuardBefore-damage});
+      if(!target.guardHits)delete target.treeR1GuardSource;
     }
     if(type!=="legacy"&&target.protection!==undefined){
       const absorbed=Math.min(damage,target.protection);

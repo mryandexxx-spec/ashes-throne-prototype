@@ -12,3 +12,6 @@
 | волны |105.5 / 31.8|102 / 32.7|107.8 / 31.1|
 | против защитника/лекаря |69.9 / 28.9|79.2 / 30.6|94.5 / 30.2|
 Каждая ячейка среднее 15 боёв. Перехват в сопровождении 2 срабатывания в среднем и в поддержке 0.9; в волнах уступает базе. База быстрее в двух контекстах, командир даёт больше сохранённого HP, возможна доминация. Равный итог Art HP не отражает остаток Protection — добавили точный остаток и фактический HP/Protection у перенаправленной атаки, без контрфактуального утверждения. Проверка не доказывает баланс; обе механики остаются кандидатами, особенно слабое место — ниша Хранителя против Командира. В UI выбран пакет с капитаном, фиксированные seed 11/29/53 по порядку операций (не подбирались по выигрышному результату). Результат сохраняет характеристики и seed. При разной прокачке сравнение невалидно.
+
+## TREE-R1/FIX — regression
+CI 45832722347: selective Node smoke and Battle re-entry success, full Node 1067/1078 (11 failures); command-loop Chromium/WebKit 45832722321 success. All 11 errors share the exact legacy guard-source patch anchor used by B14.6/B15.2A/B/C research. Restore the original native guard block byte-for-byte, observe guard reduction immediately before/after it, with opt-in treeR1 only. No test disabled, no change to guard formulas or old combat. New full CI required before merge.

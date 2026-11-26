@@ -20,7 +20,8 @@ function qualify(hero,p,r){
 }
 function rankAfter(hero,earnedRank,p,storyRank,contextRank){
  if(!Number.isInteger(earnedRank)||earnedRank<0||earnedRank>5||!Number.isInteger(storyRank)||!Number.isInteger(contextRank))throw Error("invalid rank");
- let r=earnedRank;while(r<5&&r<storyRank&&r<contextRank&&qualify(hero,p,r+1))r++;return r;
+ // Only the next rank's authenticated proof is evaluated per transition.
+ const next=earnedRank+1;return next<=5&&storyRank===next&&contextRank>=next&&qualify(hero,p,next)?next:earnedRank;
 }
 // A separate action ID, with an ordinary turn consumed. Context-specific checks
 // precede mutation. Profile authentication and full engine validation are NOT modeled.

@@ -8,12 +8,14 @@ for(const hero of Object.keys(M.ACTIONS)){
   for(const k of ["level","stars","gear"])assert.equal(M.qualify(hero,{...p,[k]:p[k]-1},r),false);
   assert.equal(M.qualify(hero,{...p,skills:{[key]:g.skill-1}},r),false);
   assert.equal(M.qualify(hero,{...p,owned:false},r),false);
-  assert.equal(M.rankAfter(hero,0,p,5,5),r);
+  assert.equal(M.rankAfter(hero,r-1,p,r,5),r);
   assert.equal(M.rankAfter(hero,r,p,1,1),r); // earned rank never revoked
  }
  assert.equal(M.rankAfter(hero,1,all,1,5),1); // purchases alone
- assert.equal(M.rankAfter(hero,1,all,5,2),2); // no early context jump
- assert.equal(M.rankAfter(hero,1,all,5,5),5); // independent story/context already earned
+ assert.equal(M.rankAfter(hero,1,all,2,1),1); // context not ready
+ assert.equal(M.rankAfter(hero,1,all,5,5),1); // no pre-bank later proofs
+ assert.equal(M.rankAfter(hero,1,all,2,5),2); // one earned step only
+ assert.equal(M.rankAfter(hero,2,all,2,5),2); // same proof is not enough for III
 }
 const enemies=[{id:"guard",hp:30},{id:"signal",hp:20}],links=[{target:"signal",protector:"guard"}];
 assert.deepEqual(M.screenedTargets(enemies,links),["guard"]);

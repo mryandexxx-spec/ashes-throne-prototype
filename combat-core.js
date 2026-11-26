@@ -450,7 +450,7 @@ const CombatCore = (() => {
     return Object.freeze({artTechnique:technique,planPartnerId:partner});
   }
   function trustCoverPreview(battle,actor,target){
-    if(!battle?.active||actor?.id!=="art"||actor.side!=="ally"||actor.hp<=0||
+    if(!battle?.active||!battle.combat2||actor?.id!=="art"||actor.side!=="ally"||actor.hp<=0||
       !target||target.side!=="ally"||target.hp<=0||target.id===actor.id||
       !Number.isFinite(actor.physicalAttack)||actor.physicalAttack<0||
       !Number.isSafeInteger(target.protection)||!Number.isSafeInteger(target.maxProtection)||
@@ -1434,7 +1434,7 @@ const CombatCore = (() => {
     if(ability.combat2Cover){
       for(const row of trustCover.rows){
         const recipient=battle.fighters.find(f=>f.id===row.id);
-        recipient.guardHits=row.guardHits;recipient.protection+=row.restored;delete recipient.insurance;
+        recipient.guardHits=row.guardHits;if(trustCover.mode==="standard")recipient.protection+=row.restored;delete recipient.insurance;
         emit(battle,"effect",{actorId:actor.id,targetId:recipient.id,effect:"guard",stacks:recipient.guardHits});
         if(trustCover.mode==="standard")emit(battle,"combat2-protection",{actorId:actor.id,targetId:recipient.id,amount:row.restored});
       }

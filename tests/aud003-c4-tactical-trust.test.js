@@ -20,7 +20,17 @@ assert.equal(C.trustPlanPreview(b,0),null);assert.equal(use(b,"trust-plan","ren"
 const before=get(b,"ren").meter,preview=C.trustPlanPreview(b,2);assert.equal(preview.partnerId,"ren");assert.equal(preview.ability.multiplier,.55);
 assert.equal(use(b,"trust-plan","ves"),true);assert.equal(b.allyActions,1);assert.equal(b.trustPlanUsed,true);
 assert.equal(b.events.filter(e=>e.type==="trust-plan").length,1);assert.equal(b.events.filter(e=>e.type==="damage"&&e.actorId==="art"&&e.targetId==="ves").length,1);assert.equal(b.events.filter(e=>e.type==="damage"&&e.actorId==="ren"&&e.assist&&e.depth===1).length,1);
-assert.equal(b.events.filter(e=>e.type==="ability"&&e.actorId==="ren").length,0);assert.ok(get(b,"ren").meter>=before);assert.equal(use(b,"trust-plan","ves"),false);
+assert.equal(b.events.filter(e=>e.type==="ability"&&e.actorId==="ren").length,0);
+const ordinary=battle({planPartnerId:"ren"});assert.equal(use(ordinary,"basic","ves"),true);assert.equal(get(b,"ren").meter,get(ordinary,"ren").meter);assert.equal(b.turn,ordinary.turn);assert.equal(b.currentActor,ordinary.currentActor);assert.ok(get(b,"ren").meter>=before);
+assert.equal(use(b,"trust-plan","ves"),false);
+// After a real next Art turn, the plan remains spent.
+for(let i=0;i<10&&b.fighters[b.currentActor].id!=="art";i++)assert.equal(use(b,"basic","ves"),true);
+assert.equal(b.fighters[b.currentActor].id,"art");assert.equal(use(b,"trust-plan","ves"),false);
+const wave=C.createBattle([fighter("art","ally",200,40,150),fighter("ren","ally",200,50,120),fighter("ves","enemy",1,20,90,0)],[[fighter("shade","enemy",300,20,85,0)]],{combat2:true,tacticalTrust:{planPartnerId:"ren"}});C.advanceToPlayerTurn(wave);
+assert.equal(use(wave,"trust-plan","ves"),true);assert.equal(wave.wave,2);assert.equal(wave.trustPlanUsed,true);
+assert.equal(wave.events.filter(e=>e.type==="damage"&&e.assist).length,0);
+for(let i=0;i<10&&wave.fighters[wave.currentActor].id!=="art";i++)assert.equal(use(wave,"basic","shade"),true);
+assert.equal(wave.fighters[wave.currentActor].id,"art");assert.equal(use(wave,"trust-plan","shade"),false);
 const dead=battle({planPartnerId:"ren"});get(dead,"ren").hp=0;assert.equal(C.trustPlanPreview(dead,2),null);assert.equal(use(dead,"trust-plan","ves"),false);assert.equal(dead.allyActions,0);assert.equal(dead.trustPlanUsed,false);
 assert.throws(()=>C.createBattle(squad(),[],{tacticalTrust:{artTechnique:"shared"}}));assert.throws(()=>battle({planPartnerId:"ves"}));
 const l=L.create(C,A);assert.equal(l.configure("focused",false),false);assert.equal(l.configure("standard",true),false);

@@ -410,6 +410,47 @@ const {chromium,webkit}=require('playwright');
   await page.locator('#gearPromotionClose').click();
   const nadaAfterShards=await page.evaluate(()=>StarCore.shardsOf(progress,'nada'));
   assert.ok(nadaAfterShards<nadaBefore.shards,'Star promotion spends shards once');
+  // A2: live progression uses the original transactions; path is not a fake unlock.
+  await page.setViewportSize({width:844,height:390});
+  await page.evaluate(()=>{document.getElementById('devResourcesGrant').click();selectedHeroId='art';showScreen('heroDetail');});
+  const artBefore=await page.evaluate(()=>({level:ProgressCore.levelOf(progress,'art'),rank:StarCore.rankOf(progress,'art'),currency:progress.currency,shards:StarCore.shardsOf(progress,'art')}));
+  await page.locator('#r2aLevel').click();
+  assert.equal(await page.locator('#r2aProgressDialog').evaluate(n=>n.open),true);
+  assert.equal(await page.locator('#r2aProgressDialog #heroLevelSlider').count(),1);
+  const costArt=await page.evaluate(()=>ProgressCore.upgradePlan(progress,'art',1).cost);
+  await page.locator('#detailUpgrade').click();
+  await page.locator('#gearPromotionClose').click();
+  await page.locator('#r2aProgressClose').click();
+  assert.equal(await page.evaluate(()=>ProgressCore.levelOf(progress,'art')),artBefore.level+1);
+  assert.equal(await page.evaluate(()=>progress.currency),artBefore.currency-costArt);
+  await page.locator('#r2aStars').click();
+  assert.equal(await page.locator('#r2aProgressDialog #starPromoteButton').count(),1);
+  await page.locator('#starPromoteButton').click();
+  await page.locator('#gearPromotionClose').click();
+  await page.locator('#r2aProgressClose').click();
+  assert.equal(await page.evaluate(()=>StarCore.rankOf(progress,'art')),artBefore.rank+1);
+  assert.ok(await page.evaluate(()=>StarCore.shardsOf(progress,'art'))<artBefore.shards);
+  const snapshot=await page.evaluate(()=>JSON.stringify(progress));
+  for(const [width,height] of [[844,390],[932,430],[844,320]]){
+   await page.setViewportSize({width,height});
+   await page.locator('#r2aTree').click();
+   await page.locator('.r2a-path [data-node="guardian-2"]').click();
+   assert.equal(await page.locator('.r2a-path [data-node="guardian-2"]').getAttribute('data-locked'),'true');
+   assert.equal(await page.locator('.r2a-path [data-node="command-2"]').getAttribute('data-locked'),'true');
+   assert.equal(await page.evaluate(()=>BABYLON.EngineStore.Instances.some(e=>e.getRenderingCanvas()?.id==='renCard3DCanvas')),false);
+   const geo=await page.locator('.r2a-path').evaluate(d=>({w:d.scrollWidth,h:d.scrollHeight,cw:d.clientWidth,ch:d.clientHeight}));
+   assert.ok(geo.w<=geo.cw+1&&geo.h<=geo.ch+1);
+   await page.screenshot({path:'artifacts/r2a-live-tree-'+width+'x'+height+'.png'});
+   await page.locator('.r2a-path [data-field="equip"]').click();
+   assert.match(await page.locator('.r2a-path [data-field="storyText"]').textContent(),/пока недоступно/);
+   await page.locator('.r2a-path-back').click();
+   await page.waitForFunction(()=>document.getElementById('detailHeroStage').classList.contains('has-ren-3d'),null,{timeout:45000});
+  }
+  assert.equal(await page.evaluate(()=>JSON.stringify(progress)),snapshot);
+  await page.evaluate(()=>{selectedHeroId='ren';showScreen('heroDetail');});
+  assert.equal(await page.locator('#r2aCompact').isVisible(),false);
+  assert.equal(await page.locator('#heroDetail .hero-detail-progression #heroLevelSlider').count(),1);
+  assert.equal(await page.locator('#heroDetail .hero-detail-progression #starPromoteButton').count(),1);
   assert.deepEqual(errors,[]);
   console.log('HEROCARD001 browser passed',useWebkit?'WebKit':'Chromium');
  }finally{await browser.close()}

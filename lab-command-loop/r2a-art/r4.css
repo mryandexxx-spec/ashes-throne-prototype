@@ -1,0 +1,47 @@
+/* R4: isolated hero-first composition. Production card & runtime are untouched. */
+:root{font-family:Arial,system-ui,sans-serif;--gold:#e4c28a;--ink:#f3ecdf;--muted:#c9c2b5}
+body{background:linear-gradient(90deg,#111417f5,#14191be8 27%,#191e20d6 51%,#13171be8 76%,#101418f5),url('../../assets/hq-hall-painting.webp') center/cover}
+body>header{background:#121619;border-color:#85704d88}
+.demo{border-left:1px solid #6e6555;padding-left:9px;color:#b5aea2}
+.demo select{background:#252729;border-color:#686458;font-size:11px}
+.card-screen{grid-template-columns:minmax(155px,.82fr) minmax(0,1.88fr) minmax(200px,1fr);gap:10px;padding:8px 12px}
+.training{padding:0 2px 0 0}.skill-icons button{background:linear-gradient(90deg,#252724,#171b1e44);border:0;border-bottom:1px solid #8e78533d;border-radius:0;box-shadow:none;padding-left:2px}
+.skill-icons button::after{font-weight:500;line-height:1.2}
+.skill-art{border:1px solid #987a4e;box-shadow:0 2px 5px #0008}
+.hero{background:radial-gradient(ellipse at 50% 35%,#9f805343,transparent 58%),linear-gradient(0deg,#111619db,#1e252740 44%,#171c1eaa);border:0;overflow:hidden}
+.hero::before{inset:auto 17% 5% 17%;height:13%;background:radial-gradient(ellipse at 50% 40%,#07090be8 0%,#090b0e98 43%,#aa865b40 48%,#15191de0 55%,transparent 73%);box-shadow:none}
+.hero .identity{top:0;left:2px;max-width:85%;padding:0 5px}
+.hero .identity h1{font-size:clamp(23px,6.8vh,34px);font-weight:600;letter-spacing:-.03em}.hero .identity p{font-size:10px}
+#renCard3DCanvas{inset:23px 49px 20px;width:calc(100% - 98px);height:calc(100% - 43px)}
+#renCard3DControls{right:1px;top:0}#renCardReset{background:#161c20ba;border:0;color:#cfc0a4}
+#r4Gear{position:absolute;inset:48px 0 35px;display:grid;grid-template-columns:48px 1fr 48px;grid-template-rows:repeat(3,44px);align-content:space-between;pointer-events:none;z-index:3}
+.r4-gear-slot{width:48px;min-width:44px;height:44px;min-height:44px;padding:2px 1px;display:grid;grid-template-rows:24px auto;justify-items:center;align-items:center;background:linear-gradient(150deg,#474137,#22272a 48%,#15191c);border:1px solid #9a8058;box-shadow:inset 0 0 0 2px #12161988,0 3px 7px #0009;border-radius:4px;color:#e0c79e;pointer-events:auto}
+.r4-gear-slot svg{width:24px;height:24px}.r4-gear-slot small{font-size:8px;line-height:1.05;max-width:100%;overflow-wrap:anywhere}
+.r4-gear-slot:nth-child(odd){grid-column:1}.r4-gear-slot:nth-child(even){grid-column:3}.r4-gear-slot:nth-child(-n+2){grid-row:1}.r4-gear-slot:nth-child(n+3):nth-child(-n+4){grid-row:2}.r4-gear-slot:nth-child(n+5){grid-row:3}
+.gear-caption{position:absolute;bottom:0;left:48px;right:48px;text-align:center;pointer-events:none;z-index:3;display:grid;gap:1px;line-height:1.05;color:#e3cda9;text-shadow:0 1px 5px #000}
+.gear-caption strong{font-size:11px}.gear-caption small{font-size:9px;color:#c2b8a6}
+.paths{gap:6px;overflow:hidden}
+.progress-block{gap:3px}.progress-block .secondary{min-height:44px;background:linear-gradient(90deg,#282823,#181d20);border:0;border-bottom:1px solid #8d765052;border-radius:2px;font-size:13px;font-weight:400;padding:4px 8px}
+.progress-block .secondary b{font-size:15px;margin-left:5px}
+.paths #openTree{min-height:54px;background:linear-gradient(115deg,#51422d,#292b27 66%,#1d2224);border:1px solid #b39460;box-shadow:inset 0 1px #e4c28a33,0 3px 8px #0008}
+.paths #openStory{min-height:48px;background:linear-gradient(105deg,#272823,#191e20);border-color:#77694a66;box-shadow:none}
+.paths .feature strong{font-weight:600}.paths .tip{margin-top:auto;color:#c7c0b2;font-size:11px}
+#primary[hidden]{display:none!important}
+.tree-screen{background:radial-gradient(ellipse at 26% 47%,#61503935,transparent 55%),#11171966}
+.tree-left{background:linear-gradient(120deg,#1d2324a0,#171c1e55);padding:5px 8px}
+.graph{grid-template-rows:56px minmax(12px,1fr) 128px;padding:0 8px}
+.root{width:fit-content;max-width:100%;grid-template-columns:44px minmax(0,1fr);min-height:48px;padding:0 6px}
+.root img{width:44px;height:44px;padding:5px}.root small{font-size:10px}
+.branches{gap:4px;padding-top:8px}.branches .node{gap:2px}.node img{width:66px;height:66px;padding:9px}
+.node .branch-effect{font-size:11px;font-weight:400;color:#e8d2a7;line-height:1.12}
+.node small{font-size:11px;line-height:1.12;color:#c8c0b1}.node[data-equipped="true"] small{color:#c3e1c4;font-weight:700}
+.node[aria-pressed="true"] img{outline:2px solid #efd29b;outline-offset:3px}
+.node[data-locked="true"]::after{content:none}
+.detail{background:linear-gradient(120deg,#252b2ce8,#171d20ed);border:0;border-left:1px solid #907a5666;border-radius:0;padding:9px 12px}
+.detail h2{color:#f2e7d4;font-weight:600}.detail p{color:#d8d1c5}
+.detail-footer .primary{background:linear-gradient(#e0bc82,#b08b51);font-weight:700}
+#r4Recipe{display:grid;gap:5px;margin-top:8px}#r4Recipe>div{display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:8px;border-top:1px solid #7d6a4b55;padding:3px}#r4Recipe img{width:32px;height:32px;object-fit:contain}
+dialog{background:#202629;border-color:#a88b5b}
+@media(min-height:351px) and (orientation:landscape){#r4Gear{inset:53px 0 40px;grid-template-rows:repeat(3,48px)}.r4-gear-slot{height:48px;grid-template-rows:27px auto}.r4-gear-slot svg{width:27px;height:27px}.graph{grid-template-rows:66px minmax(14px,1fr) 140px}.node img{width:78px;height:78px}.root img{width:52px;height:52px}.root{grid-template-columns:52px 1fr}}
+@media(max-height:350px) and (orientation:landscape){.card-screen{gap:7px}.paths{gap:3px}.paths .tip{display:none}.paths .feature{min-height:48px}.paths .feature img{width:32px;height:32px}.paths .feature strong{font-size:12px}.paths .feature small{font-size:10px}.paths #openTree{min-height:48px}.paths #openStory{min-height:44px}.graph{grid-template-rows:49px minmax(8px,1fr) 112px}.node img{width:53px;height:53px;padding:6px}.root img{width:40px;height:40px}.root{grid-template-columns:40px 1fr;min-height:44px}.tree-left{padding:3px}.mini-hero p{font-size:11px}.detail{padding:5px 9px}.hero .identity h1{font-size:25px}#r4Gear{inset:45px 0 30px}}
+@media(orientation:portrait){.card-screen{grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1.15fr) minmax(0,1fr);grid-template-areas:'hero hero' 'training paths'}}

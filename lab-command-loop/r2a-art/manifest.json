@@ -74,5 +74,11 @@
     "idle": "Idle_5",
     "portrait": "fallback only; not accepted as primary",
     "svg": "historical composition references only"
+  },
+  "r4": {
+    "status": "candidate awaiting CI and artistic review",
+    "gear": "six real GearData slots; Art class tank; G1 catalog recipes and existing materials; no purchases, no real save, no invented ownership",
+    "stage": "real GLB, existing renderer, separate quiet background and contact platform",
+    "tree": "one additional skill, base option removes specialization only, effects visible before tap"
   }
 }

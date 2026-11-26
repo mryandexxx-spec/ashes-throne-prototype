@@ -596,8 +596,10 @@ const CombatCore = (() => {
         throw Error("leader must be the first living ally in the roster");
     }
     const trust=trustSnapshot(heroes,options),personal=personalSnapshot(heroes,options);
+    if(options.treeR1!==undefined&&(options.treeR1!==true||options.combat2!==true))throw Error("invalid TREE-R1 opt-in");
     const battle = {
       fighters,
+      ...(options.treeR1===true?{treeR1:true}:{}),
       ...(personal?{trustPersonal:personal,trustPersonalCooldown:Object.fromEntries(personal.map(id=>[id,0]))}:{}),
       ...(trust?{tacticalTrust:trust,trustPlanUsed:false}:{}),
       ...(options.combat2===true?{combat2:true}:{}),
@@ -925,8 +927,10 @@ const CombatCore = (() => {
     }
     if(!bypassGuard){
     if(target.guardHits>0){
+      const before=damage;
       damage=Math.round(damage*0.5);
       target.guardHits--;
+      if(battle?.treeR1&&before>damage)emit(battle,"tree-r1-guard",{actorId:attacker.id,targetId:target.id,amount:before-damage});
     }
     }
     if(type!=="legacy"&&target.protection!==undefined){
@@ -1497,10 +1501,12 @@ const CombatCore = (() => {
     if(ability.kind==="trust-reserve"){
       const amount=personalChoice.amount;
       actor.protection-=amount;target.protection+=amount;
+      if(battle.treeR1)target.guardHits=Math.max(target.guardHits,1);
       emit(battle,"trust-reserve-transferred",{actorId:actor.id,targetId:target.id,amount});
       battle.message=actor.name+" передаёт резерв защиты: "+amount+".";
     }else if(ability.kind==="trust-intercept"){
       battle.trustIntercept={ownerId:actor.id,targetId:target.id};
+      if(battle.treeR1)actor.guardHits=Math.max(actor.guardHits,1);
       emit(battle,"trust-intercept-armed",{actorId:actor.id,targetId:target.id});
       battle.message=actor.name+" готов перехватить удар по "+target.name+".";
     }else if(ability.combat2Cover){

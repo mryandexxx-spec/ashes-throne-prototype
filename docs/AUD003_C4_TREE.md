@@ -1,3 +1,5 @@
+> Исторический технический эксперимент #568. Владелец запросил фундаментальный пересмотр; актуальный рабочий проект: [TREE-R 0.2](AUD003_C4_TREE_R.md). Не тиражировать старое дерево.
+
 # C4/TREE — ветвление развития, вертикальный срез 0.1
 26.11.2026 · [В РАЗРАБОТКЕ / ПРЕДЛОЖЕНИЕ]. Владелец поручил сделать дерево вместо выдачи способности переключателем и обязательные пороги входа. #567 merged 660d49f6, все три CI success (45822343571/77/40). R1 остаётся техническим сравнением, не игровым прогрессом. C4/R1-B приостановлен. Настоящий пилот lab-command-loop/tree.html, отдельный ключ ashes-throne.lab.trust-tree.v1, начальное I/L1/1★/G1/особая L1/0 кромов. Нет выбора уровня доверия. Воспроизводится из актуального ProgressV3Core.fresh/toRuntime/fromRuntime, ProgressCore.upgradeMany, SkillCore.upgrade, StarCore.rankOf, GearData/hero stat profiles + HeroStatsCombatBridge. Герои действительно получают характеристики по прокачке. No production profile writes, no global activation. 
 ## Tree architecture

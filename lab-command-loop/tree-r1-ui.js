@@ -9,6 +9,7 @@ const bar=(v,max,cls)=>{const b=el("div",undefined,"bar "+cls),i=el("i");i.style
 const names={"art-intercept":"Следующая одиночная атака по выбранному союзнику направляется в Арта; Арт получает прикрытие ×1. Массовые атаки не перехватываются.","art-reserve":"Передать собственный запас защиты союзнику до заполнения его Protection и дать прикрытие ×1."};
 function start(id){if(lab.start(id)){target=pending=null;render()}}
 let hero="art",tab="route";
+const pathView=R2APath.create({view:()=>lab.view(),equip:id=>lab.equip(id),changed:()=>render(),start:id=>start(id)});
 function brief(v){
  const routes=el("section",undefined,"r-route"),center=el("section",undefined,"r-center"),panel=el("section",undefined,"r-panel");
  routes.append(el("small","МАРШРУТ · "+(v.rank===2?"ПОЛЕВЫЕ ОПЕРАЦИИ":"ГЛАВА I"),"kicker"));
@@ -25,9 +26,9 @@ function brief(v){
  for(const req of v.nodes[0].requirements)body.append(el("p",(req.ok?"✓ ":"○ ")+req.label+" "+req.value+"/"+req.need));
  body.append(el("p","Доверие "+(v.rank===1?"I · совместная работа":"II · личное обязательство")));
  }else if(tab==="build"){
- body.append(el("h2","Путь Арта"),el("p","Базовый набор доступен всегда. Один активный личный навык, выбор до боя."),el("div","I · БАЗОВЫЕ НАВЫКИ → II · ЛИЧНОЕ ОБЯЗАТЕЛЬСТВО","r-graph-root"));
- const choices=[{id:null,name:"Базовый набор",desc:"Без дополнительного навыка",earned:true},...v.nodes];
- for(const n of choices){const b=btn(undefined,()=>{lab.equip(n.id);render()},"r-build"+(v.selected===n.id?" chosen":""),!n.earned||!!v.blocked);b.dataset.build=n.id??"base";b.append(el("strong",n.name+" · "+(v.selected===n.id?"Выбрано":n.earned?"Доступно":"Закрыто")),el("small",n.earned?n.desc:"После личной арки II"));body.append(b)}
+ const path=btn("Специализация Арта ›",()=>pathView.open("tree"),"primary");path.id="openR2APath";
+ const story=btn("Личное приключение ›",()=>pathView.open("story"),"quiet");story.id="openR2AStory";
+ body.append(el("h2","Путь Арта"),el("p","Обычные способности сохраняются. Дополнительная: "+(v.nodes.find(n=>n.id===v.selected)?.name||"не выбрана")),path,story);
  }else{
  body.append(el("h2","Сравнение операций"),el("p","Последняя попытка каждой сборки. Одинаковая последовательность случайных чисел на старте боя; сравнивайте только одинаковые характеристики. Повторы без наград."));
  for(const r of v.results){const name=r.build===null?"База":v.nodes.find(n=>n.id===r.build)?.name;body.append(el("small",TreeR1.MISSIONS[r.mission].name+" · "+name,"kicker"),el("p",(r.winner==="ally"?"Победа":"Поражение")+" · "+r.actions+" ходов · Рен "+r.renHp+" HP · Арт "+r.artHp+" HP · снижено "+r.prevented+" · перехватов "+r.redirected+" · передано "+r.transferred+" · на Арта перенесено "+r.redirectedHp+" HP / "+r.redirectedProtection+" защиты · запас Арта "+r.artProtection+" · отряд "+r.allyHp+" HP"),el("small",r.stamp+" · seed "+r.seed))}

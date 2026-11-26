@@ -44,6 +44,7 @@ const R2ACard=(()=>{
    }
   }else delete root.dataset.r2aCard;
   layout();
+  if(typeof R2APath!=="undefined")R2APath.syncProduction(heroId,progress);
  }
  function mountFloor(B,scene){
   // Shadow catcher with no opaque floor, rim or platform. The regional artwork

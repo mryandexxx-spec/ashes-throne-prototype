@@ -8,6 +8,26 @@ async function run(type,name){
  const story=page.locator(".r2a-path [data-field=story]");
  const hold=story.locator('[data-path-mission="hold"]');
  const open=async()=>{await page.evaluate(()=>{selectedHeroId="art";showScreen("heroDetail");});await page.locator("#r2aStory").tap();};
+ // Freeze only the test browser's wall clock at a known seed for each real route tap.
+ // No production RNG override, forced victory or modified fighter stats.
+ const tapWithSeed=async seed=>{
+  const now=Date.now(),fixed=new Date(Math.floor(now/4294967296)*4294967296+seed);
+  await page.clock.setFixedTime(fixed);
+  assert.equal(await page.evaluate(()=>Date.now()>>>0),seed);
+  try{await hold.tap();await page.locator("#battle").waitFor({state:"visible"});await page.waitForFunction(()=>battleIsArtAdventure&&state.active&&!!scene);}
+  finally{await page.clock.setFixedTime(new Date());}
+ };
+ const playBasic=async()=>{
+  await page.evaluate(()=>setAutoSpeed(4));
+  await page.waitForFunction(()=>!combat2InputBlocked(),null,{timeout:45000});
+  for(let n=0;n<12;n++){
+   if(!await page.evaluate(()=>battleIsArtAdventure&&state.active))break;
+   await page.waitForFunction(()=>!visualActionPending()&&!combat2InputBlocked()||!state.active,null,{timeout:45000});
+   await page.evaluate(()=>{if(!state.active)return;const enemy=state.fighters.map((f,i)=>({f,i})).filter(x=>x.f.side==="enemy"&&x.f.hp>0).sort((a,b)=>a.f.hp+a.f.protection-b.f.hp-b.f.protection)[0];if(!CombatCore.chooseEnemy(state,enemy.i))throw Error("TEST_TARGET");if(!applyManualAbility("basic"))throw Error("TEST_ACTION");});
+  }
+  await story.waitFor({state:"visible",timeout:90000});
+  return page.evaluate(()=>({winner:state.winner,outcome:state.tacticalOutcome,actions:state.allyActions,hp:state.fighters.filter(f=>f.side==="ally").map(f=>[f.id,f.hp]),notice:artAdventureNotice}));
+ };
  const snapshot=()=>page.evaluate(()=>({wallet:JSON.stringify(progress),live:localStorage.getItem(ProgressV3Core.KEY),stored:JSON.parse(gameStorage().getItem(ProgressV3Core.KEY)),squad:[selectedLeaderId,...selectedPartyIds],savedSquad:gameStorage().getItem(SQUAD_SAVE_KEY),mode:squadReturnScreen}));
  try{
   await page.goto(url,{waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function"&&typeof artAdventureView==="function");
@@ -37,19 +57,23 @@ async function run(type,name){
   await page.reload({waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function");
   assert.deepEqual((await snapshot()).squad,baseline.squad,"Reload restores the explicitly saved formation");assert.equal((await snapshot()).savedSquad,baseline.savedSquad);
   await open();await hold.waitFor({state:"visible"});assert.equal(await page.evaluate(()=>ArtAdventureCore.view(progress).earned.length),0);
-  await hold.tap();await page.locator("#battle").waitFor({state:"visible"});await page.waitForFunction(()=>battleIsArtAdventure&&state.active&&!!scene);
-  // Actual native actions, with deterministic valid targeting, through the real
-  // game terminal callback. No synthetic winner or modified fighter stats.
-  await page.evaluate(()=>{setAutoSpeed(4);});
-  await page.waitForFunction(()=>!combat2InputBlocked(),null,{timeout:45000});
-  for(let n=0;n<12;n++){
-   const active=await page.evaluate(()=>battleIsArtAdventure&&state.active);
-   if(!active)break;
-   await page.waitForFunction(()=>!visualActionPending()&&!combat2InputBlocked()||!state.active,null,{timeout:45000});
-   await page.evaluate(()=>{if(!state.active)return;const enemy=state.fighters.map((f,i)=>({f,i})).filter(x=>x.f.side==="enemy"&&x.f.hp>0).sort((a,b)=>a.f.hp+a.f.protection-b.f.hp-b.f.protection)[0];if(!CombatCore.chooseEnemy(state,enemy.i))throw Error("TEST_TARGET");if(!applyManualAbility("basic"))throw Error("TEST_ACTION");});
-  }
-  await story.waitFor({state:"visible",timeout:90000});const done=await snapshot();
-  assert.equal(done.stored.artPath.phase,"complete");assert.equal(done.stored.artPath.selected,null);
+  // Preflight native core simulation with real starter hero definitions:
+  // 3037 loses at 7 actions, 3061 wins at 8 with both allies alive.
+  await tapWithSeed(3037);const loss=await playBasic();
+  console.log("R2/D2A LOSS",name,JSON.stringify(loss));
+  assert.equal(loss.winner,"enemy",JSON.stringify(loss));assert.equal(loss.outcome,"protected-fallen");
+  const failed=await snapshot();assert.equal(failed.stored.artPath.phase,"pending");
+  assert.equal(await page.evaluate(()=>ArtAdventureCore.view(progress).earned.length),0);
+  assert.equal(await page.evaluate(()=>artAdventureSession.active()),false);
+  assert.equal(failed.stored.currency,baseline.stored.currency);assert.deepEqual(failed.stored.rewardReceipts,baseline.stored.rewardReceipts);
+  assert.deepEqual(failed.squad,baseline.squad);assert.equal(failed.savedSquad,baseline.savedSquad);
+  await hold.waitFor({state:"visible"});assert.equal(await hold.isEnabled(),true);
+  await tapWithSeed(3061);const victory=await playBasic();
+  console.log("R2/D2A WIN",name,JSON.stringify(victory));
+  assert.equal(victory.winner,"ally",JSON.stringify(victory));assert.equal(victory.outcome,"held");assert.equal(victory.actions,8);
+  assert.ok(victory.hp.every(([,hp])=>hp>0),JSON.stringify(victory));
+  const done=await snapshot();
+  assert.equal(done.stored.artPath.phase,"complete",JSON.stringify(victory));assert.equal(done.stored.artPath.selected,null);assert.equal(done.stored.artPath.outcome,"left");
   assert.equal(done.stored.currency,baseline.stored.currency);assert.equal(done.stored.energy.value,baseline.stored.energy.value);assert.deepEqual(done.stored.rewardReceipts,baseline.stored.rewardReceipts);assert.deepEqual(done.squad,baseline.squad);assert.equal(done.savedSquad,baseline.savedSquad);assert.equal(done.live,baseline.live);
   assert.match(await story.innerText(),/Люди вышли в безопасное место/);
   await story.locator('[data-field="storyAction"]').tap();
@@ -60,6 +84,6 @@ async function run(type,name){
   await page.reload({waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function");await open();assert.equal(await hold.count(),0);assert.match(await story.innerText(),/Люди вышли в безопасное место/);
   assert.equal((await snapshot()).stored.artPath.phase,"complete");assert.deepEqual((await snapshot()).squad,baseline.squad);assert.equal((await snapshot()).savedSquad,baseline.savedSquad);assert.deepEqual(errors,[]);
   fs.mkdirSync("artifacts",{recursive:true});await page.screenshot({path:"artifacts/r2d2a-"+name+".png"});console.log("R2/D2A REAL ROUTE",name,"PASS");
- }finally{await browser.close();}
+ }catch(e){console.error("R2/D2A DIAGNOSTIC",name,await page.evaluate(()=>({screen:document.querySelector(".screen.active")?.id,winner:typeof state!=="undefined"?state?.winner:null,outcome:typeof state!=="undefined"?state?.tacticalOutcome:null,notice:typeof artAdventureNotice!=="undefined"?artAdventureNotice:null})).catch(()=>null),errors);throw e;}finally{await browser.close();}
 }
 (async()=>{for(const [type,name] of [[chromium,"chromium"],[webkit,"webkit"]])await run(type,name)})().catch(e=>{console.error(e);process.exitCode=1});

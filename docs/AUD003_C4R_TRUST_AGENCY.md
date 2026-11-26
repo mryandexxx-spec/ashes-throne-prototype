@@ -1,3 +1,5 @@
+> **Review 0.2 supersedes conflicting proposals:** [C4/R critical review 0.2](AUD003_C4R_CRITICAL_REVIEW_0.2.md). 0.1 remains research history, not implementation contract.
+
 # AUD003-C4/R — Trust as new agency, not skill upgrades
 26.11.2026 · **[ПРЕДЛОЖЕНИЕ]**, разрешено фундаментальное перепроектирование владельцем после критики C4. Не утверждение чисел/сцен/новых правил. C5 production integration приостановлен до выбора и проверки C4/R. Сохранить #565 (main eba80d47, v0.3.269) как технический эксперимент: native snapshot, rank gating, one-use budget, UI. Не наращивать focused/shared и joint damage как окончательный дизайн. C3 личные арки и контекстные gates сохраняются, требования развития добавляются к ним.
 ## 1. Диагноз и проверка источников

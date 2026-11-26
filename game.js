@@ -53,6 +53,9 @@ const $=s=>document.querySelector(s);
 // Never fall back to the live wallet when sessionStorage is unavailable.
 const COMBAT2_PILOT=typeof location!=="undefined"&&/(?:^|[?&])combat2Pilot=1(?:&|$)/.test(location.search);
 function gameStorage(){return COMBAT2_PILOT?window.sessionStorage:window.localStorage;}
+// D2A: actual game route, isolated in the existing Combat2 test wallet until D2B/D3 acceptance.
+const ART_ADVENTURE_PILOT=COMBAT2_PILOT&&/(?:^|[?&])artAdventurePilot=1(?:&|$)/.test(location.search)&&typeof ArtAdventureCore!=="undefined";
+let battleIsArtAdventure=false,artAdventureBattle=null,artAdventureRoute=null,artAdventurePreviousMode=null,artAdventureNotice="";
 const COMBAT2_ARENA=COMBAT2_PILOT&&typeof location!=="undefined"&&/(?:^|[?&])combat2Arena=1(?:&|$)/.test(location.search)&&typeof Combat2ArenaPilot!=="undefined";
 let battleIsCombat2Arena=false,combat2ArenaConfig=null,combat2EntryPending=false,combat2EntryFrames=0;
 function combat2InputBlocked(){return !!(state?.combat2&&combat2EntryPending);}
@@ -528,6 +531,46 @@ const mainCampaignStorage=()=>gameStorage();
 function mainCampaignWritable(){
  return typeof MainCampaignCore!=="undefined"&&!saveBlocked&&saveAvailable&&progress.saveVersion===3&&
   typeof ProgressWriterCore!=="undefined"&&ProgressWriterCore.canPersist();
+}
+// D2A owns only the attempt and presentation. The shared v3 writer owns progress.
+let artAdventureSession=null;
+function artAdventureAdapter(){
+ if(!ART_ADVENTURE_PILOT)return null;
+ if(!artAdventureSession)artAdventureSession=ArtAdventureCore.create({heroes:ALLIES,storageProvider:()=>gameStorage(),onUnknown:()=>{saveAvailable=false;window.walletWriterHalt?.();}});
+ return artAdventureSession;
+}
+function artAdventureView(){
+ const a=artAdventureAdapter();
+ if(!a)return null;
+ const v=ArtAdventureCore.view(progress);
+ const unlocked=a.ready(progress);
+ return {...v,available:unlocked&&!v.arc,active:a.active(),blocked:!mainCampaignWritable()||a.blocked()?"Сохранение недоступно. Перезагрузите игру.":"",notice:artAdventureNotice};
+}
+function applyArtAdventureProgress(p){
+ // Keep the same runtime object used by other modules; adopt only verified wallet.
+ Object.keys(progress).forEach(k=>delete progress[k]);Object.assign(progress,p);
+ saveAvailable=true;renderAccountHeader();
+}
+function startArtAdventure(route){
+ const a=artAdventureAdapter();
+ if(!a||!mainCampaignWritable()||!$("#heroDetail")?.classList.contains("active")||selectedHeroId!=="art"||artAdventureBattle)return false;
+ const result=a.start(route,Date.now()>>>0);
+ if(!result.ok){artAdventureNotice="Не удалось начать приключение. Проверьте сохранение.";R2APath.syncProduction("art",progress);return false;}
+ applyArtAdventureProgress(result.progress);
+ artAdventureNotice="";artAdventureRoute=route;artAdventureBattle=result.battle;
+ artAdventurePreviousMode=squadReturnScreen;squadReturnScreen="artAdventure";
+ R2APath.closeProduction();showScreen("battle");return true;
+}
+function leaveArtAdventure(){
+ if(artAdventureBattle)artAdventureAdapter()?.abandon(artAdventureBattle);
+ artAdventureBattle=null;artAdventureRoute=null;battleIsArtAdventure=false;
+ if(squadReturnScreen==="artAdventure")squadReturnScreen=artAdventurePreviousMode||"home";
+ artAdventurePreviousMode=null;
+}
+function returnFromArtAdventure(){
+ if(!battleIsArtAdventure)return false;
+ if(state?.active)artAdventureNotice="Бой прерван. Можно выбрать маршрут заново.";
+ selectedHeroId="art";showScreen("heroDetail");R2APath.openProduction("story");return true;
 }
 function mainCampaignSelected(){return mainCampaignSelectedId||MainCampaignCore.ID;}
 function mainCampaignStatus(id){
@@ -2054,6 +2097,8 @@ function renderStoryDemo(){
  $("#storyDemoAgain").hidden=view.kind!=="defeat"&&view.kind!=="ending";
 }
 function showScreen(id){
+ if(id==="battle"&&squadReturnScreen==="artAdventure"&&!artAdventureBattle)return;
+ if(id!=="battle"&&battleIsArtAdventure)leaveArtAdventure();
  if(id==="battle"&&squadReturnScreen==="mainCampaign"&&!mainCampaignCanLaunch(mainCampaignPendingId)){
   mainCampaignNotice="Миссия недоступна. Проверьте сохранение и вернитесь на карту.";return showScreen("mainCampaign");
  }
@@ -2145,8 +2190,9 @@ function showScreen(id){
   lastMissionEnergyRefunded=false;
   missionEntryPaid=false;
   missionResultSaveFailed=false;
+  battleIsArtAdventure=ART_ADVENTURE_PILOT&&squadReturnScreen==="artAdventure"&&!!artAdventureBattle;
   battleIsCombat2Arena=COMBAT2_ARENA&&squadReturnScreen==="combat2Arena"&&!!combat2ArenaConfig;
-  combat2EntryPending=COMBAT2_PILOT&&(battleIsCombat2Arena||squadReturnScreen==="firstPlay"||squadReturnScreen==="mainCampaign");combat2EntryFrames=0;
+  combat2EntryPending=COMBAT2_PILOT&&(battleIsArtAdventure||battleIsCombat2Arena||squadReturnScreen==="firstPlay"||squadReturnScreen==="mainCampaign");combat2EntryFrames=0;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
    battleIsMainCampaign=squadReturnScreen==="mainCampaign"&&typeof MainCampaignCore!=="undefined";
    battleMainCampaignId=battleIsMainCampaign?mainCampaignPendingId:null;
@@ -2168,7 +2214,7 @@ function showScreen(id){
   battleIsSignal=squadReturnScreen==="signalOperations"&&signalProgress.active?.phase==="battle";
   signalBattleRunId=battleIsSignal?signalProgress.active.runId:null;
   const label=$("#battleMissionLabel");
-  if(label)label.textContent=battleIsCombat2Arena?"ТЕСТ · "+Combat2ArenaPilot.scenarios[combat2ArenaConfig.scenario]:battleIsFirstPlay?"ПЕРВОЕ ДОНЕСЕНИЕ · УДЕРЖАТЬ ПРОХОД":
+  if(label)label.textContent=battleIsArtAdventure?"ЧУЖАЯ ДОЛЯ":battleIsCombat2Arena?"ТЕСТ · "+Combat2ArenaPilot.scenarios[combat2ArenaConfig.scenario]:battleIsFirstPlay?"ПЕРВОЕ ДОНЕСЕНИЕ · УДЕРЖАТЬ ПРОХОД":
    battleIsWeekly?"ГЛАВНАЯ УГРОЗА · ИСПЫТАНИЕ НЕДЕЛИ":battleIsNetwork?(NETWORK_PILOT_ENABLED?"РАЗВЕДСЕТЬ · ПРОБНЫЙ БОЙ (ВНЕ КАНОНА)":
    "РАЗВЕДСЕТЬ · ДОБЫЧА РЕСУРСОВ"):
    battleIsSignal?"РАЗВЕДОПЕРАЦИЯ · ТРЕВОЖНЫЙ СИГНАЛ":
@@ -2214,13 +2260,16 @@ function showScreen(id){
   const tacticalGoalCard=$("#tacticalGoalCard");
   const npcHold=battleIsNpcChallengePilot&&activeChallengeId==="T-04";
   if(tacticalGoalCard){
-   tacticalGoalCard.hidden=!trial&&!npcHold&&!battleIsFirstPlay;
+   tacticalGoalCard.hidden=!trial&&!npcHold&&!battleIsFirstPlay&&!battleIsArtAdventure;
    tacticalGoalCard.classList?.toggle("first-session-goal",battleIsFirstPlay);
    // First-time players must see the objective before choosing an action.
    // Other battles keep their established collapsed default.
-   tacticalGoalCard.classList?.toggle("collapsed",!battleIsFirstPlay);
-   $("#tacticalGoalToggle")?.setAttribute?.("aria-expanded",String(battleIsFirstPlay));
-   if(trial){
+   tacticalGoalCard.classList?.toggle("collapsed",!battleIsFirstPlay&&!battleIsArtAdventure);
+   $("#tacticalGoalToggle")?.setAttribute?.("aria-expanded",String(battleIsFirstPlay||battleIsArtAdventure));
+   if(battleIsArtAdventure){
+    tacticalGoalCard.querySelector("strong").textContent=artAdventureRoute==="hold"?"ПРИКРЫТЬ ОТХОД":"ВЕРНУТЬ ЗАРАБОТОК";
+    tacticalGoalCard.querySelector("p").textContent=artAdventureRoute==="hold"?"Сохраните обоих героев: 8 действий отряда или победа над противниками.":"Победите противников. Рен и Арт должны выжить.";
+   }else if(trial){
     tacticalGoalCard.querySelector("strong").textContent=trial.goalTitle;
     tacticalGoalCard.querySelector("p").textContent=trial.goalText;
    }else if(battleIsFirstPlay){
@@ -2289,6 +2338,7 @@ function showScreen(id){
     const storyNotice=$("#storyDemoNotice");
     if(storyNotice)storyNotice.textContent="Не удалось загрузить 3D-арену. Проверь соединение и повтори попытку.";
    }else{
+    if(battleIsArtAdventure){artAdventureNotice="Не удалось загрузить арену. Повторите попытку.";returnFromArtAdventure();return;}
     if(battleIsCombat2Arena){showScreen("combat2ArenaSetup");$("#combat2ArenaNotice").textContent="Не удалось запустить арену: "+String(error?.message||error).slice(0,160);return;}
     showScreen("squad");
     const notice=$("#battleLoadError");
@@ -2340,6 +2390,7 @@ function animateHQSelectionFx(button){
 document.querySelectorAll("[data-screen]").forEach(b=>b.addEventListener("click",()=>{
  if(b.matches?.("#home .hq-station")){animateHQSelectionFx(b);return;}
  resetHQSelectionFx();
+ if(b.dataset.screen==="home"&&battleIsArtAdventure&&$("#battle")?.classList.contains("active")){returnFromArtAdventure();return;}
  if(b.dataset.screen==="home"&&battleIsCombat2Arena&&$("#battle")?.classList.contains("active")){showScreen("combat2ArenaSetup");return;}
  if(b.dataset.screen==="home"&&battleIsMainCampaign&&$("#battle")?.classList.contains("active")){showScreen("mainCampaign");return;}
  if(b.dataset.screen==="home"&&battleIsLoreRequired&&$("#battle")?.classList.contains("active")){
@@ -4219,6 +4270,7 @@ $("#battleMenuGoal")?.addEventListener("click",()=>{closeBattleMenu();setBattleG
 function replayBattle(){
  closeBattleMenu();
  if(!state.active)return false;
+ if(battleIsArtAdventure){returnFromArtAdventure();return true;}
  const mode=squadReturnScreen||"home";
  openSquad(mode);
  undersizedSquadConfirmed=true; // this squad was already confirmed for the fight
@@ -4276,7 +4328,7 @@ function npcBattleMessage(){
 }
 function syncBattleUI(){
  if(inspectionId)renderFighterInspection();
- if(battleIsFirstPlay||battleIsLoreRequired||(battleIsNpcChallengePilot&&activeChallengeId==="T-04")){
+ if(battleIsArtAdventure||battleIsFirstPlay||battleIsLoreRequired||(battleIsNpcChallengePilot&&activeChallengeId==="T-04")){
   const o=state.tacticalObjective;
   const timed=o?.kind==="hold-or-defeat",counter=$("#tacticalGoalCounter");
   const track=$("#tacticalGoalCard .tactical-goal-track"),fill=$("#tacticalGoalFill");
@@ -4296,6 +4348,12 @@ function syncBattleUI(){
  if(!state.active){cancelAutoTimer();autoBattle=false;}
  // Commit battle outcome immediately as before, even if the player leaves
  // the arena before the final animation ends. Only visual navigation waits.
+ if(battleIsArtAdventure&&!state.active&&!missionResultRecorded){
+  missionResultRecorded=true;
+  const result=artAdventureAdapter().complete(state);
+  if(result.ok){applyArtAdventureProgress(result.progress);artAdventureNotice="";}
+  else{artAdventureAdapter().abandon(state);artAdventureNotice=result.code==="OBJECTIVE_NOT_MET"?"Оба героя должны выжить. Приключение не завершено.":"Не удалось подтвердить сохранение. Проверьте результат после перезагрузки.";}
+ }
  if(battleIsMainCampaign&&!state.active&&!missionResultRecorded){
    missionResultRecorded=true;
    mainCampaignResult={...MainCampaignCore.recordFor(battleMainCampaignId,state,mainCampaignStorage,ALLIES),missionId:battleMainCampaignId};
@@ -4470,6 +4528,9 @@ function syncBattleUI(){
  }
  if(battleIsFirstPlay&&!state.active&&!missionResultShown){
   missionResultShown=true;showScreen("firstPlay");return;
+ }
+ if(battleIsArtAdventure&&!state.active&&!missionResultShown){
+  missionResultShown=true;returnFromArtAdventure();return;
  }
  if(battleIsMainCampaign&&!state.active&&!missionResultShown){
    missionResultShown=true;showScreen("mainCampaignResult");return;
@@ -4727,6 +4788,11 @@ function resetBattle(){
   syncBattleUI();
   return;
  }
+ if(battleIsArtAdventure){
+  if(!artAdventureBattle)throw Error("ART_ADVENTURE_ATTEMPT_MISSING");
+  state=artAdventureBattle;ensureEncounterNpcVisuals(state.fighters);
+  CombatCore.advanceToPlayerTurn(state);syncBattleUI();return;
+ }
  if(battleIsCombat2Arena){
   const setup=Combat2ArenaPilot.setup(combat2ArenaConfig);
   const lineup=setup.lineup.map(f=>f.side==="ally"?{...f,name:ALLIES.find(h=>h.id===f.id)?.name??f.name}:f);
@@ -4817,6 +4883,7 @@ $("#basicAbilityBtn").addEventListener("click",()=>pressAbility("basic"));
 $("#specialAbilityBtn").addEventListener("click",()=>pressAbility("special"));
 $("#powerfulAbilityBtn")?.addEventListener("click",()=>pressAbility("powerful"));
 $("#battleRetryBtn").addEventListener("click",()=>{
+ if(!state.active&&!isVisualTransition()&&battleIsArtAdventure){returnFromArtAdventure();return;}
  if(!state.active&&!isVisualTransition()&&battleIsCombat2Arena){showScreen("battle");return;}
  if(!state.active&&!isVisualTransition()&&battleIsMainCampaign){openMainCampaignMission(battleMainCampaignId);return;}
  if(!state.active&&!isVisualTransition())openSquad(battleIsLoreRequired?"loreRequired":battleIsLoreTraining?"loreTraining":battleIsSignal?"signalOperations":battleIsOperation?"operations":battleIsChallenge?"challenges":"home");

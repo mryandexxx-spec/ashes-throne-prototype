@@ -1,5 +1,5 @@
 "use strict";
-// Accepted R5.7 tree/adventure view, shared by live locked route and the isolated real TreeR1 pilot.
+// Accepted R5.7 tree/adventure view. D2A uses actual native route only in Combat2 test session.
 const R2APath=(()=>{
  const defs={
  base:{tag:"БЕЗ СПЕЦИАЛИЗАЦИИ",title:"Без дополнительного навыка",name:"Не выбрана",text:"Все обычные способности Арта остаются доступными при любом выборе.",use:"Если хотите использовать только обычные способности.",cost:"Дополнительная способность не назначается."},
@@ -25,13 +25,26 @@ const R2APath=(()=>{
    put("baseStatus",chosen==="base"?"Выбрано":"Снять специализацию");put("guardianStatus",state("guardian-2"));put("commandStatus",state("command-2"));
    put("nodeTag",d.tag);put("nodeTitle",d.title);put("nodeText",d.text);put("nodeUse",d.use);put("nodeCost",d.cost);
    const locked=node!=="base"&&!earned.includes(node);
-   put("nodeHint",v.blocked|| (locked?"Откроется после личного приключения.":node===chosen?(node==="base"?"Дополнительный навык не назначен.":"Сейчас выбрана эта техника."):"Выбор действует в следующем бою."));
+   put("nodeHint",v.blocked|| (v.pilot&&!locked&&node!=="base"&&!adapter.equip?"Навык освоен. Боевой слот ещё не подключён.":locked?"Откроется после личного приключения.":node===chosen?(node==="base"?"Дополнительный навык не назначен.":"Сейчас выбрана эта техника."):"Выбор действует в следующем бою."));
    const equip=field("equip");equip.textContent=locked?"Как открыть":node===chosen?"Уже выбрано":node==="base"?"Снять специализацию":"Выбрать способность";
    equip.disabled=node===chosen||(!locked&&(!adapter.equip||!!v.blocked||v.pending||v.active));
+   if(adapter.production&&v.pilot){
+    put("storyTitle","Чужая доля");
+    put("storyText",ready?(v.outcome==="recovered"?"Люди вышли в безопасное место. Заработок удалось вернуть.":"Люди вышли в безопасное место. Заработок остался на площадке."):v.available?"Двое работников и раненый нуждаются в помощи. Арт и Рен должны защитить их отход.":"Личное приключение Арта пока недоступно.");
+    put("storyUnlock",v.blocked||v.notice||(ready?"Обе техники освоены. Применение в бою подключается на следующем этапе.":v.available?"Выберите путь. В обоих случаях Рен и Арт должны выжить.":"Завершите главу II основной кампании и получите её разовую награду."));
+   }else{
    put("storyTitle",ready?"Личное обязательство":"Приключение Арта");
    put("storyText",ready?"Арт завершил личное приключение. Теперь доступны две дополнительные техники.":adapter.production?"Личное приключение Арта пока недоступно.":"Продолжайте кампанию и подготовьте Арта к личному приключению.");
    put("storyUnlock",ready?"Выберите одну из двух освоенных техник.":adapter.production?"Когда приключение станет доступно, его завершение откроет специализации.":"Требования к открытию приключения");
+   }
    const req=field("storyRequirements"),missions=field("storyMissions");req.replaceChildren();missions.replaceChildren();
+   if(adapter.production&&v.pilot&&!ready&&v.available){
+    for(const [id,title,sub] of [["direct","Вернуть заработок","Победить всех противников"],["hold","Прикрыть отход","8 действий отряда или победа"]]){
+     const b=document.createElement("button");b.type="button";b.className="secondary r2d-route";b.dataset.pathMission=id;
+     const heading=document.createElement("strong"),detail=document.createElement("small");heading.textContent=title;detail.textContent=sub;b.append(heading,detail);
+     b.disabled=!!v.blocked||v.active;b.onclick=()=>{adapter.start?.(id);};missions.append(b);
+    }
+   }
    if(!ready&&!adapter.production){
     for(const r of v.nodes?.[0]?.requirements||[]){const p=document.createElement("p");p.textContent=(r.ok?"✓ ":"○ ")+r.label+" "+r.value+"/"+r.need;req.append(p)}
     for(const m of v.missions?.filter(m=>m.arc)||[]){const b=document.createElement("button");b.type="button";b.className="secondary";b.dataset.pathMission=m.id;b.textContent=m.name+(m.ok?"":" · "+m.reason);b.disabled=!m.ok||!!v.blocked||v.pending||v.active;b.onclick=()=>{if(adapter.start){dlg.close();adapter.start(m.id)}};missions.append(b);}
@@ -71,7 +84,7 @@ const R2APath=(()=>{
    modal.querySelector(".hero-card-dialog-body").append(moved);modal.showModal();
   }
   get("r2aLevel").onclick=()=>openProgress("level");get("r2aStars").onclick=()=>openProgress("stars");
-  prodPath=create({production:true,view:()=>prodView,
+  prodPath=create({production:true,view:()=>prodView,start:id=>typeof startArtAdventure==="function"&&startArtAdventure(id),
    opened:()=>{if(typeof RenCard3D!=="undefined")RenCard3D.dispose()},
    closed:()=>{if(get("heroDetail")?.classList.contains("active")&&typeof selectedHeroId!=="undefined"&&selectedHeroId==="art"&&typeof RenCard3D!=="undefined")void RenCard3D.activate("art")}});
   get("r2aTree").onclick=()=>prodPath.open("tree");get("r2aStory").onclick=()=>prodPath.open("story");
@@ -82,8 +95,11 @@ const R2APath=(()=>{
   compact.hidden=false;
   get("r2aLevel").querySelector("b").textContent=String(ProgressCore.levelOf(progress,"art"));
   get("r2aStars").querySelector("b").textContent="★ "+StarCore.rankOf(progress,"art");
-  // Story/balance are not released. Do not copy isolated pilot state into the live wallet.
-  prodView={selected:null,earned:[],arc:null};prodPath.refresh();
+  // No pilot data in the default game. A completed outcome comes from the same verified wallet.
+  const v=typeof artAdventureView==="function"?artAdventureView():null;
+  prodView=v?{...v,pilot:true}:{selected:null,earned:[],arc:null};
+  get("r2aStory").querySelector("small").textContent=v?.arc?"Завершено":v?.available?"Доступно":"Пока недоступно";
+  get("r2aTree").querySelector("small").textContent=prodView.selected?defs[prodView.selected].tag:v?.arc?"Освоено две техники":"Не выбрана";prodPath.refresh();
  }
- return Object.freeze({create,syncProduction});
+ return Object.freeze({create,syncProduction,openProduction:next=>prodPath?.open(next),closeProduction:()=>prodPath?.close()});
 })();

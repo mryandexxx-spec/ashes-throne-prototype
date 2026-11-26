@@ -144,12 +144,13 @@
     "newRaster": "Library candidate not transferred; CI uses existing terrace"
   },
   "floorComparison": {
-    "status": "proposal; owner expressed concern about podium; floor-first lab candidate, not approved",
+    "status": "owner approved B-floor composition; final assets and grounding remain in development",
     "default": "b-floor",
     "control": "b",
-    "geometry": "one transparent contact plane; no opaque platform; no dynamic shadow generator in floor mode",
+    "geometry": "broad transparent contact layer plus two localized ankle/toe-tracked shadows; no opaque platform or shadow map",
     "camera": "same B layout, modest framing adjustment; visual review needed",
     "assets": "regional image supplies natural stone ground; candidate raster remains in Library",
-    "limits": "soft contact approximation, not physical cast shadow or real 3D environment; physical iPhone not tested"
+    "limits": "soft contact approximation, not physical cast shadow or real 3D environment; physical iPhone not tested",
+    "ownerDecision": "2026-11-26"
   }
 }

@@ -24,11 +24,35 @@ const R5Stage=(()=>{
   mat.diffuseTexture=sh;mat.useAlphaFromDiffuseTexture=true;mat.disableLighting=true;mat.emissiveColor=new B.Color3(0,0,0);mat.specularColor=new B.Color3(0,0,0);
   const contact=B.MeshBuilder.CreateGround("r5-floor-contact",{width:1.55,height:1.05},scene);
   contact.position.y=.019;contact.material=mat;contact.isPickable=false;
-  return {variant:"b-floor",meshes:[contact],materials:[mat],textures:[sh],shadow:null};
+  // Small localized shadows follow the animated feet, rather than a fixed disc.
+  // Keep the broad contact layer, and use the same texture for both feet.
+  const norm=n=>(n.name||"").toLowerCase().replace(/[^a-z]/g,"");
+  const anchors=["left","right"].map(side=>scene.transformNodes.find(n=>norm(n).endsWith(side+"foot"))||scene.transformNodes.find(n=>norm(n).endsWith(side+"toebase"))||null);
+  const local=new B.StandardMaterial("r5FootContactMat",scene);
+  local.diffuseTexture=sh;local.useAlphaFromDiffuseTexture=true;local.disableLighting=true;local.emissiveColor=new B.Color3(0,0,0);local.specularColor=new B.Color3(0,0,0);local.zOffset=-1;local.alpha=.8;
+  const spots=anchors.map((anchor,i)=>{
+   const spot=B.MeshBuilder.CreateGround("r5-foot-contact-"+i,{width:.42,height:.32},scene);
+   spot.position.y=.022;spot.material=local;spot.isPickable=false;spot.setEnabled(!!anchor);return spot;
+  });
+  const update=()=>{
+   const positions=anchors.map(n=>n?n.getAbsolutePosition():null);
+   const valid=positions.filter(p=>p&&Number.isFinite(p.y));
+   if(!valid.length)return;
+   const low=Math.min(...valid.map(p=>p.y));
+   for(let i=0;i<spots.length;i++){
+    const p=positions[i];if(!p)continue;
+    spots[i].position.x=p.x;spots[i].position.z=p.z;
+    // Fade the lifted foot; a planted foot retains a smaller darker contact.
+    spots[i].visibility=Math.max(0,1-Math.max(0,p.y-low)/.20);
+   }
+  };
+  update();
+  const observer=scene.onBeforeRenderObservable.add(update);
+  return {variant:"b-floor",meshes:[contact,...spots],materials:[mat,local],textures:[sh],shadow:null,observer,anchors:anchors.filter(Boolean).length};
  }
  function mount(scene,variant){
   const B=BABYLON,old=stages.get(scene);if(old&&old.variant===variant)return old;
-  if(old){old.shadow?.dispose();for(const m of old.meshes)m.dispose();for(const m of old.materials)m.dispose();for(const t of old.textures)t.dispose()}
+  if(old){if(old.observer)scene.onBeforeRenderObservable.remove(old.observer);old.shadow?.dispose();for(const m of old.meshes)m.dispose();for(const m of old.materials)m.dispose();for(const t of old.textures)t.dispose()}
   if(variant==="b-floor"){const result=mountFloor(B,scene);stages.set(scene,result);return result;}
   const stone=texture(B,scene,"r5Stone"),metal=texture(B,scene,"r5Bronze",true);
   const base=mat(B,scene,"r5Basalt","#9b8c76",stone),rim=mat(B,scene,"r5BronzeMat","#c6a575",metal),top=mat(B,scene,"r5Top","#a69a87",stone);

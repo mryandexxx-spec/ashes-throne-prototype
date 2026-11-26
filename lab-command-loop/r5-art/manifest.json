@@ -1,5 +1,5 @@
 {
-  "status": "R5 candidate; not canon or production",
+  "status": "owner accepted art lab baseline for functional transfer; not production",
   "baseline": "6264d3b97b027c82fbe04818f6675065fd529ccf",
   "gear": [
     {
@@ -122,7 +122,7 @@
     "fallback": "assets/hq-hall-painting.webp"
   },
   "regionalBackground": {
-    "status": "approved direction; candidate image not approved",
+    "status": "accepted visual baseline for Art card; not canonical geography or production",
     "registry": "regional-backgrounds.js",
     "art": {
       "region": "gardens-over-abyss",
@@ -130,7 +130,7 @@
         "libraryFileId": "libfile_51182d7f9cb48191b3de208b471de997",
         "name": "Ashes-Throne-R5-Gardens-Art-background-candidate.png",
         "source": "ImageGen",
-        "status": "raster copied into isolated lab as preview, not approved final art",
+        "status": "accepted art baseline in isolated lab; future production integration separate",
         "provenance": "FIVE_SHADOWS_COMPLETE_1.5.md, CURRENT.md, CURRENT_RESEARCH_1.1.md",
         "file": "r56/gardens-art.webp"
       },
@@ -145,7 +145,7 @@
     "newRaster": "Library candidate not transferred; CI uses existing terrace"
   },
   "floorComparison": {
-    "status": "owner approved B-floor composition; final assets and grounding remain in development",
+    "status": "owner accepted B-floor; idle pose/grounding deferred to animation work",
     "default": "b-floor",
     "control": "b",
     "geometry": "broad transparent contact layer plus two localized ankle/toe-tracked shadows; no opaque platform or shadow map",
@@ -155,7 +155,7 @@
     "ownerDecision": "2026-11-26"
   },
   "r56": {
-    "status": "candidate; source art and processed assets verified by git blob hash; browser/art acceptance pending",
+    "status": "accepted art baseline; browser checks green; physical device unverified",
     "sourceLibraryId": "libfile_3aa2e87de39c8191929f949d6f2e3c1a",
     "gear": [
       {
@@ -242,5 +242,20 @@
       "gitBlob": "66b0c218a22d453c00ec57d3c9dfbf4df941ead9"
     },
     "constraints": "catalog recipes are test-only, not owned equipment or canon; no production changes; B-floor layout immutable"
+  },
+  "acceptance": {
+    "date": "2026-11-26",
+    "evidenceHead": "a3bd5bb8d7e024412bc9f23359c53ddeffa0f71b",
+    "ci": [
+      45877101043,
+      45877101098
+    ],
+    "artifact": 15145436473,
+    "cardScore": 8,
+    "treeScore": 7,
+    "target": 8.5,
+    "animation": "deferred by owner",
+    "physicalIphone": "not tested",
+    "production": "not integrated"
   }
 }

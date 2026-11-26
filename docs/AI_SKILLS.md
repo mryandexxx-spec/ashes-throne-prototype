@@ -15,6 +15,12 @@ Six original skill documents and their references were copied from [awesome-game
 - `game-feel` — responsiveness, hit feedback, animations; preserve actual turn rules and `prefers-reduced-motion`.
 - `save-systems` — audit save/load/rollback/migrations of existing browser storage. Do NOT use Godot file-rename recipes in `localStorage`.
 
+## Художественное производство UI — UI-ART-PIPELINE
+- [game-ui-art-pipeline](../.agents/skills/game-ui-art-pipeline/SKILL.md) — независимые слои, арт, nine-slice, provenance, проверка ассетов; вместе с game-ui-ux/create-game-assets.
+- [figma-ui-transfer](../.agents/skills/figma-ui-transfer/SKILL.md) — editable Figma или SVG/Inkscape при лимитах, затем HTML/CSS.
+- [game-ui-visual-review](../.agents/skills/game-ui-visual-review/SKILL.md) — обязательная отдельная художественная приёмка и UX глазами новичка; Playwright, диагностика Pillow без runtime-зависимостей.
+Собственные проектные адаптации Dune GoH [#320](https://github.com/mryandexxx-spec/Dgoh-game/pull/320), [#323–328](https://github.com/mryandexxx-spec/Dgoh-game/pull/328). Не переносить чужую художественную стилистику или сторонние IP-ассеты; fal и Figma не обязательны и без нового разрешения не оплачиваются. Сравнение изображений: `python tools/ui-art/compare.py reference.png candidate.png diff.png` после установки изолированной зависимости `tools/ui-art/requirements.txt`. Для нового значимого UI автоматически выбрать эти навыки; чисто функциональные локальные исправления не требуют создания нового художественного мастера.
+
 ## Narrative skills — NARRATIVE-SKILLS-001
 
 Навыки для сценаристики, диалогов, первого опыта и катсцен; игровых правил не добавляют. Сначала приватные AGENTS.md, WORLD_STATUS.md, региональный CURRENT.md, актуальные утверждённые материалы и релевантные открытые PR. Приватный каталог — AI_SKILLS.md; для диалогов сверять речевые паспорта и регламент письма. Не копировать приватные материалы в публичный репозиторий.

@@ -3,11 +3,12 @@
 let scene=null,localUrl=null,initial=false;
 RegionalCardBackgrounds.apply(root,"art");
 for(const b of gear.querySelectorAll("button")){const id=b.dataset.slot,svg=b.querySelector("svg"),img=document.createElement("img");img.src="lab-command-loop/r5-art/gear-"+id+".svg";img.alt="";svg.replaceWith(img);if(id==="utility")b.querySelector("small").textContent="Пояс";}
+for(const b of document.querySelectorAll("#skills button")){const label=document.createElement("span");label.className="r53-skill-label";label.textContent=b.getAttribute("aria-label");label.setAttribute("aria-hidden","true");b.append(label);}
 function current(){return typeof BABYLON!=="undefined"?BABYLON.EngineStore.Instances.find(e=>e.getRenderingCanvas()?.id==="renCard3DCanvas"):null}
 function decorate(){if(!stageEl.classList.contains("has-ren-3d"))return;const engine=current(),s=engine?.scenes[0],camera=s?.activeCamera;if(!s||!camera)return;
  if(scene!==s){scene=s;initial=true;}
  R5Stage.mount(s,root.dataset.r5);
- if(initial){camera.radius=root.dataset.r5==="a"?3.06:3.02;camera.setTarget(new BABYLON.Vector3(0,1.00,0));const key=s.getLightByName("renKey");if(key){key.direction.set(-.65,-1,-.5);key.diffuse=new BABYLON.Color3(1,.88,.72);key.intensity=1.25;}const fill=s.getLightByName("renFill");if(fill)fill.intensity=.95;initial=false;}
+ if(initial){camera.radius=root.dataset.r5==="a"?3.06:3.20;camera.setTarget(new BABYLON.Vector3(0,root.dataset.r5==="a"?1.00:.91,0));const key=s.getLightByName("renKey");if(key){key.direction.set(-.65,-1,-.5);key.diffuse=new BABYLON.Color3(1,.88,.72);key.intensity=1.25;}const fill=s.getLightByName("renFill");if(fill)fill.intensity=.95;initial=false;}
  // The renderer owns the render loop and its ResizeObserver. Do not clear the
  // WebGL drawing buffer by resizing/rendering again during a variant transition.
 }

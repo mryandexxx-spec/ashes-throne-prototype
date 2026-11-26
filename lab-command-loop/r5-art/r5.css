@@ -85,3 +85,18 @@ html[data-r5="b"] .detail-footer .primary:not(:disabled){background:linear-gradi
 
 /* Keep the canvas in a stable compositing layer, including WebKit. */
 html[data-r5] #renCard3DCanvas{z-index:1;transform:translateZ(0);opacity:1}
+
+/* R5.3: precise fixes after actual R5.2 frames. No new layout family. */
+html[data-r5="b"] body{background:linear-gradient(0deg,#10171bcc 0%,transparent 24%),linear-gradient(90deg,#14191dfc 0%,#171d20ed 22%,#252a2870 36%,#252a2829 51%,#2429237a 68%,#13191de8 77%,#10171bfc 100%),var(--r5-hall,none) center top/cover}
+html[data-r5="b"] .hero{background:none}
+html[data-r5="b"] .skill-icons button::after{display:none}
+html[data-r5="a"] .r53-skill-label{display:none}
+html[data-r5="b"] .r53-skill-label{display:block;min-width:0;font-size:10px;font-weight:600;line-height:1.13;white-space:normal;overflow-wrap:normal;word-break:normal;hyphens:none}
+html[data-r5="b"] .skill-icons button:nth-child(1){grid-column:1;grid-row:1}
+html[data-r5="b"] .skill-icons button:nth-child(2){grid-column:1/-1;grid-row:2}
+html[data-r5="b"] .skill-icons button:nth-child(3){grid-column:2;grid-row:1}
+html[data-r5="b"] .skill-icons button:nth-child(4){grid-column:1;grid-row:3}
+html[data-r5="b"] .skill-icons button:nth-child(5){grid-column:2;grid-row:3}
+html[data-r5="b"] .skill-icons button{grid-template-columns:24px minmax(0,1fr);gap:3px;padding:2px}
+html[data-r5="b"] .skill-art{width:24px;height:24px}
+@media(min-height:351px) and (orientation:landscape){html[data-r5="b"] .r53-skill-label{font-size:11px}html[data-r5="b"] .skill-icons button{grid-template-columns:28px minmax(0,1fr);gap:4px}html[data-r5="b"] .skill-art{width:28px;height:28px}}

@@ -239,7 +239,12 @@ const CombatCore = (() => {
     const fields=typedDamageFields(target,"physical",oldHp,oldProt);
     // No re-dispatch of passive damage triggers for secondary hits.
     b.events.push({type:"damage",...props,raw,amount:damage,remainingHp:target.hp,...fields});
-    if(target.hp===0){delete target.combat2Prepared;b.events.push({type:"death",...props,targetId:target.id});}
+    if(target.hp===0){
+      delete target.combat2Prepared;
+      b.events.push({type:"death",...props,targetId:target.id});
+      // Durable KO observation is not a passive trigger. Preserve depth-1 assist.
+      if(typeof NetworkScoreCore!=="undefined")NetworkScoreCore.observe(b,"death",target.id);
+    }
     if(fields.hpDamage+fields.protectionDamage>0){
       const boost=passiveCombatRules(actor)?.combat2Boost??0;if(boost)actor.combat2Boost=boost;
     }

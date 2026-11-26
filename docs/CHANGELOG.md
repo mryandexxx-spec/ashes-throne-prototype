@@ -1,3 +1,5 @@
+**[РЕАЛИЗОВАНО технически — R2/A-INTEGRATION A2]** #574 merged ecb83401; all three workflows green, real level/star controls and shared tree view verified by browser CI; no production unlock. Physical iPhone/Pages and visual acceptance pending.
+
 **[РЕАЛИЗОВАНО в main — R2/A-INTEGRATION A1]** #573 `0473bc3b`, CI 45880553320/45880553367/45880553374 green, accepted B-floor and six Art G1 assets, original progression and gear finder retained; physical iPhone/Pages not confirmed.
 
 **[РЕАЛИЗОВАНО — B17.4A, 26.11.2026; подготовка, не включение]** [Evidence](AUD003_B17_4A_RELEASE_PREPARATION.md): #556 merged dd12abee, CI 45770911842/45770911914/45770911921 success. Actual Chromium 844×390 and WebKit 844×320 Art dossier screenshots inspected; five ability rows fit, no overlap from notice. Main 0.3.267 verified. Next B17.4B: Ren P, boss immunity, meaningful skill upgrades, route/score parity and tactical acceptance; physical iPhone/Pages unverified. Default unchanged; A/B open, C/D/E/III paused.

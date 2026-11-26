@@ -5,3 +5,7 @@
 **[В РАЗРАБОТКЕ — R2/A-INTEGRATION A2]** A1 #573 merged `0473bc3b`, three workflow runs green (45880553320/45880553367/45880553374). A2: real level/star controls in compact panels, accepted tree/adventure as shared separate view. Production stays locked pending story/balance; TREE-R1 isolated profile uses actual earned/equip/mission state, no fake unlock or main wallet writes. CI, visual/physical acceptance pending; R2/B next after A2.
 
 Existing live level/star nodes move into a temporary native dialog, never duplicate handlers; the original controls return for other heroes. The accepted path screen is shared with TREE-R1: selection, removal, locked and real story mission entries are backed by the isolated real profile. No story/technique is released to production before R2/B/C. No new artwork/animations. Test real transactions, path lock, GLB disposal/reentry, pilot choice/reload. CI pending.
+
+## A2 verified merge
+**[РЕАЛИЗОВАНО технически — R2/A-INTEGRATION]** A2 #574 merged `ecb83401`, CI 45885817867/45885817876/45885817883 green. Art dossier and compact real progress dialogs, shared path screen; isolated TREE-R1 equip/remove/reload. Production specialization remains locked. Physical iPhone, visual acceptance and Pages publication not verified. **[ПРЕДЛОЖЕНИЕ — R2/B]** private worldbuilding PR #83 (candidate 0.1) opened; R2/C tactical validation then R2/D actual integration, no story/technique release yet.
+

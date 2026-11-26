@@ -1,3 +1,5 @@
+**[РЕАЛИЗОВАНО — R2/D2A]** #580 merged `b301e702`, CI 45904559961 / 45904559993 / 45904559906 green, real loss+retry+win and reload proven Chromium/WebKit. **[В РАЗРАБОТКЕ — R2/D2B]** exclusive earned selection and real fourth slot in Combat2 main campaign pilot only; native target preview, cooldown, opt-in auto preference. D3 visual staging and release gate remain. Physical iPhone untested; CI for D2B pending.
+
 **[РЕАЛИЗОВАНО — R2/D1]** #579 merged `20213151`, CI 45892435227 green. **[В РАЗРАБОТКЕ — R2/D2A]** actual card→arena→verified outcome→card route, explicit `combat2Pilot=1&artAdventurePilot=1` using the existing session wallet only; default game remains unchanged until D2B extra ability and D3 art acceptance. D2A CI pending; no physical iPhone test.
 
 **[РЕАЛИЗОВАНО — R2/C research]** #578 merged `8f65394b`, CI 45889803258 green. **[В РАЗРАБОТКЕ — R2/D1]** isolated native adventure adapter + same-wallet first outcome and selection, no live route yet; see AUD003_TREE_R2D1.md. CI and D2/D3 open; physical iPhone not tested.

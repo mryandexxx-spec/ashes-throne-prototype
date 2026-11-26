@@ -232,6 +232,18 @@ function combat2Selection(){
  return d&&(d.combat2Assist||d.combat2Signal)?d:null;
 }
 function clearCombat2Selection(){combat2Choice=-1;}
+function artPersonalId(){
+ const actor=state?.fighters?.[state.currentActor];
+ return ART_ADVENTURE_PILOT&&actor?.id==="art"&&state.active?state.trustPersonal?.find(id=>["art-intercept","art-reserve"].includes(id)&&CombatCore.personalDefinition(state,actor,id))||null:null;
+}
+function personalChoosing(){const id=artPersonalId();return !!id&&selectedAbility===id;}
+function personalTargetReady(id){return !!id&&state.fighters.some((_,i)=>!!CombatCore.personalPreview(state,id,i));}
+function pressPersonal(){
+ if(abilityHintSuppressClick==="personal"){abilityHintSuppressClick=null;return;}
+ const id=artPersonalId();hideAbilityTooltip();
+ if(!id||autoBattle||visualActionPending()||isVisualTransition()||combat2InputBlocked()||!personalTargetReady(id))return;
+ selectedAbility=selectedAbility===id?"basic":id;clearCombat2Selection();syncBattleUI();
+}
 function combat2ThreatText(){
  if(!state?.combat2||!state.active)return "";
  const taunt=state.fighters.find(f=>f.side==="ally"&&f.hp>0&&CombatStatusCore.read(f,"taunt"));
@@ -348,7 +360,8 @@ function queueAutoAction(){
      !$("#battle").classList.contains("active"))return;
   const before=state.fighters.map(f=>({...f}));
   // Combat-015B: plan only when the scheduled auto step actually executes.
-  const plan=AutoDecision.chooseAction(state);
+  const basePlan=AutoDecision.chooseAction(state);
+  const plan=ART_ADVENTURE_PILOT&&battleIsMainCampaign&&state.trustPersonal?.length?ArtAdventureCore.autoPlan(state,basePlan):basePlan;
   const tutorialActor=state.fighters[state.currentActor]?.id;
   if(!CombatCore.performAutoAction(state,plan)){setAutoBattle(false);return;}
   if(battleIsFirstPlay&&tutorialActor)firstPlayTaughtActors.add(tutorialActor);
@@ -550,6 +563,13 @@ function applyArtAdventureProgress(p){
  // Keep the same runtime object used by other modules; adopt only verified wallet.
  Object.keys(progress).forEach(k=>delete progress[k]);Object.assign(progress,p);
  saveAvailable=true;renderAccountHeader();
+}
+function equipArtAdventure(id){
+ const a=artAdventureAdapter();
+ if(!a||!mainCampaignWritable()||!$("#heroDetail")?.classList.contains("active")||selectedHeroId!=="art"||artAdventureBattle)return false;
+ const result=a.equip(id);
+ if(!result.ok){artAdventureNotice="Не удалось сохранить выбор. Проверьте сохранение.";R2APath.syncProduction("art",progress);return false;}
+ applyArtAdventureProgress(result.progress);artAdventureNotice="";R2APath.syncProduction("art",progress);return true;
 }
 function startArtAdventure(route){
  const a=artAdventureAdapter();
@@ -4473,6 +4493,7 @@ function syncBattleUI(){
   $("#specialAbilityBtn").disabled=true;
   const powerfulTransitionBtn=$("#powerfulAbilityBtn");
   if(powerfulTransitionBtn)powerfulTransitionBtn.disabled=true;
+  const personalTransitionBtn=$("#personalAbilityBtn");if(personalTransitionBtn)personalTransitionBtn.disabled=true;
   const autoControl=$("#autoBattleBtn");
   if(autoControl)autoControl.disabled=!state.active;
   const speedControl=$("#autoSpeedBtn");
@@ -4555,9 +4576,13 @@ function syncBattleUI(){
  const specialReady=CombatCore.abilityReady(state,"special");
  const powerful=actor?AbilityData.get(actor,"powerful"):null;
  const powerfulReady=!!powerful&&CombatCore.abilityReady(state,"powerful");
- if(selectedAbility==="special"&&!specialReady||selectedAbility==="powerful"&&!powerfulReady){selectedAbility="basic";clearCombat2Selection();}
- const supportTarget=!!actor&&selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally";
- const needsOtherAlly=supportTarget&&["insurance","signal"].includes(AbilityData.get(actor,"special")?.kind);
+ const personalId=artPersonalId(),personal=personalId?CombatCore.personalDefinition(state,actor,personalId):null;
+ const personalCd=personalId?state.trustPersonalCooldown[personalId]:0,personalReady=personalTargetReady(personalId);
+ if(selectedAbility==="special"&&!specialReady||selectedAbility==="powerful"&&!powerfulReady||
+   ["art-intercept","art-reserve"].includes(selectedAbility)&&(!personalReady||selectedAbility!==personalId)){selectedAbility="basic";clearCombat2Selection();}
+ const personalSelected=personalChoosing();
+ const supportTarget=!!actor&&(personalSelected||selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally");
+ const needsOtherAlly=supportTarget&&(personalSelected||["insurance","signal"].includes(AbilityData.get(actor,"special")?.kind));
  const targetIndex=supportTarget?state.selectedAlly:state.selectedEnemy;
  const target=state.active?fighters[targetIndex]:null;
  const validTarget=!!target&&target.hp>0&&target.side===(supportTarget?"ally":"enemy")&&
@@ -4573,6 +4598,10 @@ function syncBattleUI(){
  $("#abilityOptions")?.classList.toggle("has-powerful",!!powerful);
  const powerfulButton=$("#powerfulAbilityBtn");
  if(powerfulButton)powerfulButton.disabled=!powerfulReady||autoBattle||visualBusy;
+ const personalSlot=$("#personalAbilitySlot"),personalButton=$("#personalAbilityBtn");
+ if(personalSlot)personalSlot.hidden=!personal;
+ if(personalButton)personalButton.disabled=!personalReady||autoBattle||visualBusy;
+ $("#abilityOptions")?.classList.toggle("has-personal",!!personal);
  const autoButton=$("#autoBattleBtn");
  if(autoButton){
   autoButton.hidden=false;
@@ -4592,7 +4621,9 @@ function syncBattleUI(){
  if(powerfulButton)renderAbilityButton(powerfulButton,actor,"powerful",powerful,
   actor?.powerfulCooldown||0,slotState(powerfulReady,actor?.powerfulCooldown||0));
  basicButton.classList.toggle("selected",false);
- specialButton.classList.toggle("selected",supportTarget);
+ if(personalButton&&personal)renderAbilityButton(personalButton,actor,personalId,personal,personalCd,slotState(personalReady,personalCd));
+ personalButton?.classList.toggle("selected",personalSelected);
+ specialButton.classList.toggle("selected",supportTarget&&!personalSelected);
  powerfulButton?.classList.toggle("selected",!!combat2Selection()?.combat2Assist);
  // A hint appears only when the next tap is not the obvious "tap an enemy".
  let hintText=autoBattle?"Автобой. Нажми «Ручной бой», чтобы управлять.":
@@ -4609,10 +4640,11 @@ function syncBattleUI(){
   else hintText=validTarget?"Выберите способность.":"Коснитесь противника, чтобы выбрать цель.";
  }
  const selection=actor&&combat2Selection();
- if(selection&&!autoBattle&&!visualBusy)hintText=combat2SelectionText(selection,actor);
+ if(personalSelected&&!autoBattle&&!visualBusy)hintText=personalId==="art-reserve"?"Выберите союзника с неполной защитой · повторный тап — отмена":"Выберите другого союзника · повторный тап — отмена";
+ else if(selection&&!autoBattle&&!visualBusy)hintText=combat2SelectionText(selection,actor);
  else if(state.combat2&&!autoBattle&&!visualBusy&&combat2ThreatText())hintText="⚠ "+combat2ThreatText()+(hintText?" · "+hintText:"");
  const hint=$("#actionHint");
- if(hint){if(hint.textContent!==hintText)hint.textContent=hintText;hint.hidden=!hintText;hint.classList.toggle("combat2-tactical-hint",!!state.combat2&&!autoBattle&&!visualBusy&&!!(selection||combat2ThreatText()));}
+ if(hint){if(hint.textContent!==hintText)hint.textContent=hintText;hint.hidden=!hintText;hint.classList.toggle("combat2-tactical-hint",!!state.combat2&&!autoBattle&&!visualBusy&&!!(personalSelected||selection||combat2ThreatText()));}
  renderActiveHero(actor);
  renderTurnQueue();
  const retry=$("#battleRetryBtn");if(retry)retry.hidden=!!state.active;
@@ -4658,13 +4690,14 @@ function renderArenaIndicators(){
   const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
   const active=actor?.id===h.id;
   const joint=!!actor&&!autoBattle&&!!combat2Selection()?.combat2Assist;
-  const support=!!actor&&!autoBattle&&(joint||selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally");
+  const selectingPersonal=!!actor&&!autoBattle&&personalChoosing();
+  const support=!!actor&&!autoBattle&&(selectingPersonal||joint||selectedAbility==="special"&&CombatCore.abilityTargetSide(state,"special")==="ally");
   // A group ability does not change focus on turn start: exactly one
   // primary enemy remains selected until the player taps a different one.
   const onlyOther=support&&(joint||["insurance","signal"].includes(AbilityData.get(actor,"special")?.kind));
   const npcMark=npcCombatMarker(h);
   const focused=!!actor&&!autoBattle&&h.hp>0&&(support?
-   (h.side==="ally"&&(!onlyOther||h.id!==actor.id))||(joint&&state.fighters[state.selectedEnemy]?.id===h.id):
+   (selectingPersonal?!!CombatCore.personalPreview(state,selectedAbility,state.fighters.findIndex(f=>f.id===h.id)):(h.side==="ally"&&(!onlyOther||h.id!==actor.id))||(joint&&state.fighters[state.selectedEnemy]?.id===h.id)):
    h.side==="enemy"&&state.fighters[state.selectedEnemy]?.id===h.id);
   // ARENA-UI-003B: the name only over the acting hero and the selected target;
   // everyone else shows bars and effect icons. A battle-intel mark stays as an icon.
@@ -4807,6 +4840,7 @@ function resetBattle(){
   allies.every(f=>["ren","nada","liora","art","sava"].includes(f.id));
  state=CombatCore.createBattle(lineup,waves,{
   ...(COMBAT2_PILOT&&realHeroFight&&(battleIsFirstPlay||battleIsMainCampaign)?{combat2:true}:{}),
+  ...(ART_ADVENTURE_PILOT&&realHeroFight&&battleIsMainCampaign?ArtAdventureCore.loadout(progress,allies):{}),
   leaderId:storyTrialParty&&battleIsStoryDemo?null:battleIsLoreRequired?squadSlots()[0]:selectedLeaderId,
   ...(battleIsFirstPlay?{leaderId:null,tacticalObjective:{
    kind:"hold-or-defeat",protectAllyId:"ren",allyActionsToHold:6
@@ -4855,7 +4889,7 @@ function pressAbility(abilityId){
  hideAbilityTooltip();
  if(!state.active||autoBattle||isVisualTransition()||visualActionPending()||!CombatCore.abilityReady(state,abilityId)||combat2InputBlocked())return;
  const actor=state.fighters[state.currentActor],d=state.combat2?AbilityData.get(actor,abilityId):null;
- if(state.combat2&&combat2Selection()&&abilityId==="basic"){selectedAbility="basic";clearCombat2Selection();syncBattleUI();return;}
+ if(state.combat2&&(combat2Selection()||personalChoosing())&&abilityId==="basic"){selectedAbility="basic";clearCombat2Selection();syncBattleUI();return;}
  if(d&&(d.combat2Assist||d.combat2Signal)){
   if(selectedAbility===abilityId){
    if(combat2Choice>=0){
@@ -4882,6 +4916,7 @@ function pressAbility(abilityId){
 $("#basicAbilityBtn").addEventListener("click",()=>pressAbility("basic"));
 $("#specialAbilityBtn").addEventListener("click",()=>pressAbility("special"));
 $("#powerfulAbilityBtn")?.addEventListener("click",()=>pressAbility("powerful"));
+$("#personalAbilityBtn")?.addEventListener("click",pressPersonal);
 $("#battleRetryBtn").addEventListener("click",()=>{
  if(!state.active&&!isVisualTransition()&&battleIsArtAdventure){returnFromArtAdventure();return;}
  if(!state.active&&!isVisualTransition()&&battleIsCombat2Arena){showScreen("battle");return;}
@@ -4911,9 +4946,15 @@ function hideAbilityTooltip(){
 }
 function showAbilityTooltip(abilityId){
  const actor=state.fighters[state.currentActor];
- const definition=AbilityData.get(actor,abilityId);
+ const personalId=abilityId==="personal"?artPersonalId():null;
+ const definition=personalId?CombatCore.personalDefinition(state,actor,personalId):AbilityData.get(actor,abilityId);
  const tooltip=$("#abilityTooltip");
  if(!definition||!tooltip)return;
+ if(personalId){
+  $("#abilityTooltipTitle").textContent=definition.name;
+  $("#abilityTooltipText").textContent=(personalId==="art-intercept"?"Арт принимает следующую одиночную атаку за выбранного союзника до своего следующего хода; получает прикрытие на один удар.":"Арт передаёт собственную защиту союзнику до заполнения его шкалы и даёт прикрытие на один удар. Новая защита не создаётся.")+" Перезарядка: "+definition.cooldown+" собственных хода.";
+  tooltip.classList.toggle("on-special",true);tooltip.hidden=false;return;
+ }
  if(state.combat2&&["art","sava"].includes(actor.id)&&typeof AbilityInfo!=="undefined"){
   const info=AbilityInfo.format(actor,abilityId);
   if(info?.status==="available"){
@@ -4979,6 +5020,7 @@ function wireAbilityHint(slotId,abilityId){
 wireAbilityHint("basicAbilitySlot","basic");
 wireAbilityHint("specialAbilitySlot","special");
 wireAbilityHint("powerfulAbilitySlot","powerful");
+wireAbilityHint("personalAbilitySlot","personal");
 window.addEventListener("pointerup",cancelAbilityHintGesture);
 window.addEventListener("pointercancel",cancelAbilityHintGesture);
 // Dismiss on all external taps, including an empty part of the arena.
@@ -5128,6 +5170,11 @@ function selectArenaTarget(pickedMesh){
  const id=mesh?.metadata?.fighterId;
  const index=state.fighters.findIndex(f=>f.id===id&&f.hp>0);
  if(index<0)return false;
+ if(personalChoosing()){
+  const id=selectedAbility;
+  if(!CombatCore.personalPreview(state,id,index)||!CombatCore.chooseAlly(state,index))return false;
+  return applyManualAbility(id);
+ }
  const choice= combat2Selection();
  if(choice){
   const f=state.fighters[index];
@@ -5674,7 +5721,7 @@ function updateMeshes(){
    const actor=state.active&&!isVisualTransition()?state.fighters[state.currentActor]:null;
     const choosing=!!combat2Selection();
     const targetSide=actor?CombatCore.abilityTargetSide(state,selectedAbility):null;
-    const selected=choosing&&member.side==="ally"?h.id===state.fighters[combat2Choice]?.id:member.side===targetSide&&h.id===state.fighters[targetSide==="ally"?state.selectedAlly:state.selectedEnemy]?.id;
+    const selected=personalChoosing()?false:choosing&&member.side==="ally"?h.id===state.fighters[combat2Choice]?.id:member.side===targetSide&&h.id===state.fighters[targetSide==="ally"?state.selectedAlly:state.selectedEnemy]?.id;
     if(mesh.base.av001Ring&&typeof ArenaVis001!=="undefined")
      ArenaVis001.setMark(mesh.base,selected?member.side:actor?.id===h.id?"active":null,BABYLON,scene);
     else if(mesh.base.material&&BABYLON.Color3)mesh.base.material.emissiveColor=selected

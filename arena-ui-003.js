@@ -58,7 +58,8 @@ const ArenaUI003=(()=>{
   const kind=definition.kind,target=definition.target;
   if(kind==="heal")return "heal";
   if(kind==="guard")return "shield";
-  if(kind==="insurance")return "link";
+  if(kind==="insurance"||kind==="trust-intercept")return "link";
+  if(kind==="trust-reserve")return "shield";
   if(kind==="signal")return "signal";
   if(kind==="coordinate")return "coordinate";
   if(target==="all-enemies")return "sweep";
@@ -79,7 +80,8 @@ const ArenaUI003=(()=>{
   const glyph=glyphFor(definition,slot);
   const url=iconUrl(heroId,slot);
   const approved=typeof AbilityIconCore!=="undefined"?AbilityIconCore.markup(heroId,slot,"ability-art"):"";
-  const art=approved||(url&&available.has(url)&&!missing.has(url)?
+  const personalArt=heroId==="art"&&(slot==="art-intercept"?"medal-guardian.svg":slot==="art-reserve"?"medal-commander.svg":null);
+  const art=personalArt?`<img class="ability-art" src="assets/hero-card-r57/${personalArt}" alt="" draggable="false" onerror="ArenaUI003.iconMissing(this)">`:approved||(url&&available.has(url)&&!missing.has(url)?
    `<img class="ability-art" src="${url}" alt="" draggable="false" onerror="ArenaUI003.iconMissing(this)">`:"");
   const cd=Number.isInteger(cooldown)&&cooldown>0?`<span class="ability-cooldown" aria-hidden="true">${cooldown}</span>`:"";
   const name=definition?.name||"";

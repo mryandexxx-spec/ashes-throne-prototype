@@ -453,7 +453,8 @@ const CombatCore = (() => {
   // C4/R1: separate personal skill IDs; mutually exclusive with historical C4.
   const PERSONAL=Object.freeze({
     "ren-bypass":Object.freeze({owner:"ren",id:"ren-bypass",name:"Обход прикрытия",kind:"damage",target:"enemy",damageType:"physical",multiplier:1,cooldown:2}),
-    "art-intercept":Object.freeze({owner:"art",id:"art-intercept",name:"Перехват",kind:"trust-intercept",target:"ally",cooldown:2})
+    "art-intercept":Object.freeze({owner:"art",id:"art-intercept",name:"Перехват",kind:"trust-intercept",target:"ally",cooldown:2}),
+    "art-reserve":Object.freeze({owner:"art",id:"art-reserve",name:"Переброска резерва",kind:"trust-reserve",target:"ally",cooldown:2})
   });
   function personalSnapshot(heroes,options){
     if(options.trustPersonal===undefined)return null;
@@ -476,7 +477,13 @@ const CombatCore = (() => {
         !validCombinedRngBudget(battle,ability,[target],"physical"))return null;
       return {ability,targetId:target.id,guardPreserved:target.guardHits};
     }
-    return target.side==="ally"&&target.id!==actor.id?{ability,targetId:target.id,recipientId:actor.id}:null;
+    if(target.side!=="ally"||target.id===actor.id)return null;
+    if(id==="art-reserve"){
+      if(![actor.protection,target.protection,target.maxProtection].every(Number.isSafeInteger)||actor.protection<0||target.protection<0)return null;
+      const amount=Math.min(actor.protection,target.maxProtection-target.protection);
+      return amount>0?{ability,targetId:target.id,amount}:null;
+    }
+    return {ability,targetId:target.id,recipientId:actor.id};
   }
   function personalRedirect(battle,actor,ability,target){
     const link=battle.trustIntercept;
@@ -1417,7 +1424,8 @@ const CombatCore = (() => {
     if(!actorAbilityReady(battle,actorIndex,abilityId))return false;
     const actor=battle.fighters[actorIndex];
     const personal=personalDefinition(battle,actor,abilityId);
-    if(personal&&!personalPreview(battle,abilityId,primaryIndex))return false;
+    const personalChoice=personal?personalPreview(battle,abilityId,primaryIndex):null;
+    if(personal&&!personalChoice)return false;
     const planned=plan?plan.ability:personal??AbilityData.get(actor,abilityId);
     const disruption=disruptDefinition(battle,actor,planned);
     const ability=disruption.ability;
@@ -1430,7 +1438,7 @@ const CombatCore = (() => {
     if(!Number.isSafeInteger(ability.cooldown)||ability.cooldown<0||
        !validFollowUpEffects(ability)||!validOnHitStatus(battle,ability)||
        !validAreaStatus(ability)||!validAreaStatusProfile(battle,actor,ability))return false;
-    if(!["damage","heal","guard","insurance","signal","coordinate"].includes(ability.kind)&&!(personal&&ability.kind==="trust-intercept"))return false;
+    if(!["damage","heal","guard","insurance","signal","coordinate"].includes(ability.kind)&&!(personal&&["trust-intercept","trust-reserve"].includes(ability.kind)))return false;
     if(ability.tauntTurns!==undefined&&
       (ability.kind!=="guard"||ability.target!=="self"||
        !Number.isSafeInteger(ability.tauntTurns)||ability.tauntTurns<1))return false;
@@ -1486,7 +1494,12 @@ const CombatCore = (() => {
       battle.trustPlanUsed=true;
       emit(battle,"trust-plan",{actorId:actor.id,partnerId:plan.partnerId,targetId:target.id});
     }
-    if(ability.kind==="trust-intercept"){
+    if(ability.kind==="trust-reserve"){
+      const amount=personalChoice.amount;
+      actor.protection-=amount;target.protection+=amount;
+      emit(battle,"trust-reserve-transferred",{actorId:actor.id,targetId:target.id,amount});
+      battle.message=actor.name+" передаёт резерв защиты: "+amount+".";
+    }else if(ability.kind==="trust-intercept"){
       battle.trustIntercept={ownerId:actor.id,targetId:target.id};
       emit(battle,"trust-intercept-armed",{actorId:actor.id,targetId:target.id});
       battle.message=actor.name+" готов перехватить удар по "+target.name+".";

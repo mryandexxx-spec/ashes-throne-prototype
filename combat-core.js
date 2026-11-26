@@ -344,8 +344,8 @@ const CombatCore = (() => {
   function finishTacticalAction(battle,actor,ability,primaryTarget){
     // Called AFTER the normal finishTurn: any meter gained here moves a *future*
     // turn, never generates an immediate free action.
+    if(actor.side==="ally"&&battle.trustPersonal){for(const id of battle.trustPersonal)if(PERSONAL[id].owner===actor.id)battle.trustPersonalCooldown[id]=id===ability.id?ability.cooldown:Math.max(0,battle.trustPersonalCooldown[id]-1);}
     if(actor.side!=="ally")return;
-    if(battle.trustPersonal){for(const id of battle.trustPersonal)if(PERSONAL[id].owner===actor.id)battle.trustPersonalCooldown[id]=id===ability.id?ability.cooldown:Math.max(0,battle.trustPersonalCooldown[id]-1);}
     if(actor.id==="sava"&&ability.id==="basic"&&ability.nextAllyMeter>0){
       if(battle.combat2){
         const other=battle.fighters.filter(f=>f.side==="ally"&&f.hp>0&&f.id!==actor.id&&f.meter<950).sort((a,z)=>combat2Time(battle,a)-combat2Time(battle,z)||a.index-z.index)[0];
@@ -895,7 +895,9 @@ const CombatCore = (() => {
   }
   // Legacy: weakening -> guard -> HP (unchanged).
   // Typed: weakening -> matching defense -> guard -> Protection -> HP.
-  function dealDamage(attacker,target,rawDamage,consumeWeakening=true,type="legacy",penetration=0,battle=null,canInsurance=false,bypassGuard=false){
+  function dealDamage(attacker,target,rawDamage,consumeWeakening=true,type="legacy",penetration=0,battle=null,canInsurance=false){
+    // Optional root-only ninth argument; preserve legacy research instrumentation.
+    const bypassGuard=arguments[8]===true;
     let damage=Math.max(0,rawDamage);
     if(attacker.weakenAttacks>0)damage=Math.round(damage*0.7);
     if(type!=="legacy"){
@@ -914,9 +916,11 @@ const CombatCore = (() => {
         if(blocked>0){const spent=Math.ceil(blocked/2);art.protection-=spent;damage-=blocked;art.combat2ReactUsed=true;emit(battle,"combat2-cover",{actorId:art.id,targetId:target.id,amount:blocked,protectionSpent:spent});}
       }
     }
-    if(target.guardHits>0&&!bypassGuard){
+    if(!bypassGuard){
+    if(target.guardHits>0){
       damage=Math.round(damage*0.5);
       target.guardHits--;
+    }
     }
     if(type!=="legacy"&&target.protection!==undefined){
       const absorbed=Math.min(damage,target.protection);

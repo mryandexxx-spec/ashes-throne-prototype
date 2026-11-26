@@ -50,7 +50,7 @@ const TrustTree=(()=>{
    const next=clone(state),p=runtime(next);if(!fn(p,next))return false;
    next.profile=ProgressV3Core.fromRuntime(p);return commit(next)
   }
-  function upgrade(id){return change(p=>id==="level"?!!ProgressCore.upgradeMany(p,"art",1):id==="special"?!!SkillCore.upgrade(p,"art","special"):false)}
+  function upgrade(id){return change(p=>id==="level"&&ProgressCore.levelOf(p,"art")<3?!!ProgressCore.upgradeMany(p,"art",1):id==="special"&&SkillCore.level(p,"art","special")<2?!!SkillCore.upgrade(p,"art","special"):false)}
   function equip(id){return change((p,s)=>s.earned.includes(id)&&(s.selected=id,true))}
   function entry(id){
    const m=MISSIONS[id];if(!m)return {ok:false,reason:"Неизвестное испытание"};

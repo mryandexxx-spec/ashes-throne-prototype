@@ -2,7 +2,7 @@ name: Command loop · mobile art and interaction
 on:
   pull_request:
     branches: [main]
-    paths: ['lab-command-loop/**', 'tests/command-loop-ui-browser.cjs', 'tests/command-loop-r1-browser.cjs', 'tests/command-loop-tree-browser.cjs', '.github/workflows/command-loop-ui.yml']
+    paths: ['lab-command-loop/**', 'tests/command-loop-ui-browser.cjs', 'tests/command-loop-r1-browser.cjs', 'tests/command-loop-tree-browser.cjs', 'tests/command-loop-tree-r1-browser.cjs', '.github/workflows/command-loop-ui.yml']
 permissions:
   contents: read
 concurrency:
@@ -11,7 +11,7 @@ concurrency:
 jobs:
   browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     container:
       image: mcr.microsoft.com/playwright:v1.56.1-noble
       options: --ipc=host
@@ -28,6 +28,7 @@ jobs:
           node tests/command-loop-ui-browser.cjs
           node tests/command-loop-r1-browser.cjs
           node tests/command-loop-tree-browser.cjs
+          node tests/command-loop-tree-r1-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -8,21 +8,29 @@ async function run(type,name){
  const story=page.locator(".r2a-path [data-field=story]");
  const hold=story.locator('[data-path-mission="hold"]');
  const open=async()=>{await page.evaluate(()=>{selectedHeroId="art";showScreen("heroDetail");});await page.locator("#r2aStory").tap();};
- // Freeze only the test browser's wall clock at a known seed for each real route tap.
- // No production RNG override, forced victory or modified fighter stats.
+ // Match the established main-campaign launch-seed pattern, but restore
+ // Date.now BEFORE the first mocked read returns. Babylon and all later reads
+ // see the real wall clock, and no Playwright clock shim is installed.
  const tapWithSeed=async seed=>{
-  const now=Date.now(),fixed=new Date(Math.floor(now/4294967296)*4294967296+seed);
-  await page.clock.setFixedTime(fixed);
-  assert.equal(await page.evaluate(()=>Date.now()>>>0),seed);
-  try{await hold.tap();await page.locator("#battle").waitFor({state:"visible"});await page.waitForFunction(()=>battleIsArtAdventure&&state.active&&!!scene);}
-  finally{await page.clock.setFixedTime(new Date());}
+  await page.evaluate(seed=>{
+   const original=startArtAdventure;
+   startArtAdventure=function(...args){
+    const now=Date.now;
+    try{Date.now=()=>{Date.now=now;return seed;};return original.apply(this,args);}
+    finally{Date.now=now;startArtAdventure=original;}
+   };
+  },seed);
+  await hold.tap();await page.locator("#battle.active").waitFor({state:"visible"});
+  await page.waitForFunction(()=>battleIsArtAdventure&&state.active&&!!scene,null,{timeout:60000});
+  assert.equal(await page.evaluate(()=>state.rng?.seed),seed,"Actual core received the fixture seed");
  };
  const playBasic=async()=>{
   await page.evaluate(()=>setAutoSpeed(4));
-  await page.waitForFunction(()=>!combat2InputBlocked(),null,{timeout:45000});
+  await page.waitForFunction(()=>!combat2InputBlocked()&&!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:60000,polling:100});
   for(let n=0;n<12;n++){
    if(!await page.evaluate(()=>battleIsArtAdventure&&state.active))break;
-   await page.waitForFunction(()=>!visualActionPending()&&!combat2InputBlocked()||!state.active,null,{timeout:45000});
+   await page.waitForFunction(()=>!state.active||(!visualActionPending()&&!combat2InputBlocked()&&!isVisualTransition()&&!document.querySelector("#basicAbilityBtn").disabled),null,{timeout:60000,polling:100});
+   console.log("R2/D2A TURN",name,await page.evaluate(()=>({action:state.allyActions,actor:state.fighters[state.currentActor]?.id,seed:state.rng?.seed,pending:BattleAnimation.pending()})));
    await page.evaluate(()=>{if(!state.active)return;const enemy=state.fighters.map((f,i)=>({f,i})).filter(x=>x.f.side==="enemy"&&x.f.hp>0).sort((a,b)=>a.f.hp+a.f.protection-b.f.hp-b.f.protection)[0];if(!CombatCore.chooseEnemy(state,enemy.i))throw Error("TEST_TARGET");if(!applyManualAbility("basic"))throw Error("TEST_ACTION");});
   }
   await story.waitFor({state:"visible",timeout:90000});
@@ -84,6 +92,6 @@ async function run(type,name){
   await page.reload({waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function");await open();assert.equal(await hold.count(),0);assert.match(await story.innerText(),/Люди вышли в безопасное место/);
   assert.equal((await snapshot()).stored.artPath.phase,"complete");assert.deepEqual((await snapshot()).squad,baseline.squad);assert.equal((await snapshot()).savedSquad,baseline.savedSquad);assert.deepEqual(errors,[]);
   fs.mkdirSync("artifacts",{recursive:true});await page.screenshot({path:"artifacts/r2d2a-"+name+".png"});console.log("R2/D2A REAL ROUTE",name,"PASS");
- }catch(e){console.error("R2/D2A DIAGNOSTIC",name,await page.evaluate(()=>({screen:document.querySelector(".screen.active")?.id,winner:typeof state!=="undefined"?state?.winner:null,outcome:typeof state!=="undefined"?state?.tacticalOutcome:null,notice:typeof artAdventureNotice!=="undefined"?artAdventureNotice:null})).catch(()=>null),errors);throw e;}finally{await browser.close();}
+ }catch(e){console.error("R2/D2A DIAGNOSTIC",name,await page.evaluate(()=>({screen:document.querySelector(".screen.active")?.id,winner:typeof state!=="undefined"?state?.winner:null,outcome:typeof state!=="undefined"?state?.tacticalOutcome:null,notice:typeof artAdventureNotice!=="undefined"?artAdventureNotice:null,actions:state?.allyActions,seed:state?.rng?.seed,actor:state?.fighters[state.currentActor]?.id,pending:BattleAnimation.pending(),dt:engine?.getDeltaTime(),renderLoopRunning,documentHidden:document.hidden,entry:combat2EntryPending,gate:!!battleAssetGate,transition:visualTransition,activity:state?.fighters.map(f=>({id:f.id,hp:f.hp,activity:BattleAnimation.activity(f.id)})),speed:BattleSpeed.get()})).catch(()=>null),errors);throw e;}finally{await browser.close();}
 }
 (async()=>{for(const [type,name] of [[chromium,"chromium"],[webkit,"webkit"]])await run(type,name)})().catch(e=>{console.error(e);process.exitCode=1});

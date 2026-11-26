@@ -130,8 +130,9 @@
         "libraryFileId": "libfile_51182d7f9cb48191b3de208b471de997",
         "name": "Ashes-Throne-R5-Gardens-Art-background-candidate.png",
         "source": "ImageGen",
-        "status": "proposal; not in git; local file picker",
-        "provenance": "FIVE_SHADOWS_COMPLETE_1.5.md, CURRENT.md, CURRENT_RESEARCH_1.1.md"
+        "status": "raster copied into isolated lab as preview, not approved final art",
+        "provenance": "FIVE_SHADOWS_COMPLETE_1.5.md, CURRENT.md, CURRENT_RESEARCH_1.1.md",
+        "file": "r56/gardens-art.webp"
       },
       "fallback": "assets/arena-env005-terrace.webp",
       "fallbackBlobSha": "02e9240077244bb2a612656ec2c4e6db21c3d363"
@@ -152,5 +153,94 @@
     "assets": "regional image supplies natural stone ground; candidate raster remains in Library",
     "limits": "soft contact approximation, not physical cast shadow or real 3D environment; physical iPhone not tested",
     "ownerDecision": "2026-11-26"
+  },
+  "r56": {
+    "status": "candidate; source art and processed assets verified by git blob hash; browser/art acceptance pending",
+    "sourceLibraryId": "libfile_3aa2e87de39c8191929f949d6f2e3c1a",
+    "gear": [
+      {
+        "slot": "weapon",
+        "itemId": "g1-blade",
+        "file": "r56/g1-blade.webp",
+        "dimensions": [
+          192,
+          192
+        ],
+        "alpha": true,
+        "bytes": 6976,
+        "gitBlob": "7c4b29397f9c3a37f1ddb5eb6779831409090175"
+      },
+      {
+        "slot": "torso",
+        "itemId": "g1-vest",
+        "file": "r56/g1-vest.webp",
+        "dimensions": [
+          192,
+          192
+        ],
+        "alpha": true,
+        "bytes": 12822,
+        "gitBlob": "f2800581b0008692fe04821b2502a7cee114d7ea"
+      },
+      {
+        "slot": "head",
+        "itemId": "g1-helm",
+        "file": "r56/g1-helm.webp",
+        "dimensions": [
+          192,
+          192
+        ],
+        "alpha": true,
+        "bytes": 12036,
+        "gitBlob": "fc4a1041da7385fc5e882beccd1b9881a55888f6"
+      },
+      {
+        "slot": "hands",
+        "itemId": "g1-gaunt",
+        "file": "r56/g1-gaunt.webp",
+        "dimensions": [
+          192,
+          192
+        ],
+        "alpha": true,
+        "bytes": 12222,
+        "gitBlob": "f9aa7f51e2b755dc64095dfaf95312c9199a59c4"
+      },
+      {
+        "slot": "feet",
+        "itemId": "g1-bootheavy",
+        "file": "r56/g1-bootheavy.webp",
+        "dimensions": [
+          192,
+          192
+        ],
+        "alpha": true,
+        "bytes": 10804,
+        "gitBlob": "4dac6f48473682a1bac50a82ca90da87481432c0"
+      },
+      {
+        "slot": "utility",
+        "itemId": "g1-belt",
+        "file": "r56/g1-belt.webp",
+        "dimensions": [
+          192,
+          192
+        ],
+        "alpha": true,
+        "bytes": 11374,
+        "gitBlob": "bfc25f8e198e9c902d1ceb407fc1762937348e56"
+      }
+    ],
+    "background": {
+      "file": "r56/gardens-art.webp",
+      "sourceLibraryId": "libfile_51182d7f9cb48191b3de208b471de997",
+      "dimensions": [
+        1279,
+        720
+      ],
+      "bytes": 173318,
+      "gitBlob": "66b0c218a22d453c00ec57d3c9dfbf4df941ead9"
+    },
+    "constraints": "catalog recipes are test-only, not owned equipment or canon; no production changes; B-floor layout immutable"
   }
 }

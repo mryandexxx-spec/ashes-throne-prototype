@@ -2,7 +2,16 @@
 (()=>{const root=document.documentElement,stageEl=document.getElementById("detailHeroStage"),gear=document.getElementById("r4Gear"),rail=document.getElementById("r5GearRail"),variant=document.getElementById("r5Variant"),picker=document.getElementById("r5Background");
 let scene=null,localUrl=null,initial=false;
 RegionalCardBackgrounds.apply(root,"art");
-for(const b of gear.querySelectorAll("button")){const id=b.dataset.slot,svg=b.querySelector("svg"),img=document.createElement("img");img.src="lab-command-loop/r5-art/gear-"+id+".svg";img.alt="";svg.replaceWith(img);if(id==="utility")b.querySelector("small").textContent="Пояс";}
+// Art G1 recipe previews. Lookup is by catalog item ID, not assumed ownership or slot.
+const R56GearArt=Object.freeze({"g1-blade":"lab-command-loop/r5-art/r56/g1-blade.webp","g1-vest":"lab-command-loop/r5-art/r56/g1-vest.webp","g1-helm":"lab-command-loop/r5-art/r56/g1-helm.webp","g1-gaunt":"lab-command-loop/r5-art/r56/g1-gaunt.webp","g1-bootheavy":"lab-command-loop/r5-art/r56/g1-bootheavy.webp","g1-belt":"lab-command-loop/r5-art/r56/g1-belt.webp"});
+for(const b of gear.querySelectorAll("button")){
+ const id=b.dataset.slot,svg=b.querySelector("svg"),img=document.createElement("img");
+ const item=GearData.offered("tank",id,1)[0],fallback="lab-command-loop/r5-art/gear-"+id+".svg";
+ b.dataset.itemId=item?.id||"";
+ img.src=R56GearArt[item?.id]||fallback;img.alt="";
+ img.addEventListener("error",()=>{if(!img.src.endsWith(fallback))img.src=fallback},{once:true});
+ svg.replaceWith(img);if(id==="utility")b.querySelector("small").textContent="Пояс";
+}
 for(const b of document.querySelectorAll("#skills button")){const label=document.createElement("span");label.className="r53-skill-label";label.textContent=b.getAttribute("aria-label");label.setAttribute("aria-hidden","true");b.append(label);}
 function current(){return typeof BABYLON!=="undefined"?BABYLON.EngineStore.Instances.find(e=>e.getRenderingCanvas()?.id==="renCard3DCanvas"):null}
 function decorate(){if(!stageEl.classList.contains("has-ren-3d"))return;const engine=current(),s=engine?.scenes[0],camera=s?.activeCamera;if(!s||!camera)return;

@@ -1,9 +1,5 @@
 name: MAP-3D-03B coherent context C2
 on:
-  pull_request:
-    paths:
-      - 'docs/research/map-3d-03b-coherent-c2/**'
-      - '.github/workflows/map-3d-03b-coherent-c2.yml'
   workflow_dispatch:
 permissions:
   contents: read

@@ -1,0 +1,431 @@
+{
+  "schema": 1,
+  "scope": "static art composition, not playable or canon",
+  "kitRun": 46029298169,
+  "kitArtifact": 15212979187,
+  "hero": {
+    "x": -4.7,
+    "y": -1.6,
+    "height": 1.7
+  },
+  "camera": {
+    "alpha": 1.4107963267948966,
+    "beta": 1.0471975511965976,
+    "halfHeight": 6.2,
+    "target": [
+      0,
+      -0.8,
+      0
+    ]
+  },
+  "placements": [
+    {
+      "asset": "modular_fort_01",
+      "prefix": "modular_fort_01_wall_walkway_straight_02",
+      "name": "front_terrace",
+      "xy": [
+        0,
+        -1.85
+      ],
+      "scale": [
+        1.18,
+        1.18,
+        1
+      ],
+      "yaw": 90,
+      "anchor": "top",
+      "z": 0.35
+    },
+    {
+      "asset": "modular_fort_01",
+      "prefix": "modular_fort_01_wall_walkway_straight_01",
+      "name": "rear_terrace",
+      "xy": [
+        0,
+        1.85
+      ],
+      "scale": [
+        1.18,
+        1.18,
+        1
+      ],
+      "yaw": -90,
+      "anchor": "top",
+      "z": 0.35
+    },
+    {
+      "asset": "mountainside",
+      "prefix": "mountainside",
+      "name": "front_bedrock_west",
+      "xy": [
+        -4.9,
+        -4.5
+      ],
+      "scale": [
+        1.12,
+        1,
+        1.14
+      ],
+      "yaw": -9,
+      "anchor": "top",
+      "z": -0.5
+    },
+    {
+      "asset": "mountainside",
+      "prefix": "mountainside",
+      "name": "front_bedrock_east",
+      "xy": [
+        5.1,
+        -4.3
+      ],
+      "scale": [
+        1.07,
+        1.12,
+        1.13
+      ],
+      "yaw": 12,
+      "anchor": "top",
+      "z": -0.65
+    },
+    {
+      "asset": "mountainside",
+      "prefix": "mountainside",
+      "name": "rear_bedrock_west",
+      "xy": [
+        -6,
+        5.3
+      ],
+      "scale": [
+        0.85,
+        0.85,
+        0.85
+      ],
+      "yaw": 12,
+      "anchor": "bottom",
+      "z": -1.4
+    },
+    {
+      "asset": "mountainside",
+      "prefix": "mountainside",
+      "name": "rear_bedrock_east",
+      "xy": [
+        5.4,
+        6.1
+      ],
+      "scale": [
+        0.89,
+        0.9,
+        0.91
+      ],
+      "yaw": -13,
+      "anchor": "bottom",
+      "z": -1.7
+    },
+    {
+      "asset": "rock_face_02",
+      "prefix": "rock_face_02",
+      "name": "western_joint",
+      "xy": [
+        -9,
+        1.4
+      ],
+      "scale": [
+        1.6,
+        1.6,
+        1.6
+      ],
+      "yaw": -60,
+      "anchor": "bottom",
+      "z": -1.7
+    },
+    {
+      "asset": "rock_face_02",
+      "prefix": "rock_face_02",
+      "name": "eastern_joint",
+      "xy": [
+        9.2,
+        1
+      ],
+      "scale": [
+        1.7,
+        1.7,
+        1.7
+      ],
+      "yaw": 55,
+      "anchor": "bottom",
+      "z": -2
+    },
+    {
+      "asset": "rock_face_02",
+      "prefix": "rock_face_02",
+      "name": "front_seam",
+      "xy": [
+        0.5,
+        -5.7
+      ],
+      "scale": [
+        1.45,
+        1.45,
+        1.45
+      ],
+      "yaw": 8,
+      "anchor": "top",
+      "z": -0.7
+    },
+    {
+      "asset": "modular_fort_01",
+      "prefix": "modular_fort_01_wall_thin_gate_01",
+      "name": "recessed_stone_entrance",
+      "xy": [
+        -3.1,
+        3.8
+      ],
+      "scale": [
+        0.55,
+        0.55,
+        0.55
+      ],
+      "yaw": 90,
+      "anchor": "bottom",
+      "z": -0.12
+    },
+    {
+      "asset": "large_castle_door",
+      "prefix": "large_castle_door",
+      "name": "door_in_recess",
+      "xy": [
+        -3.1,
+        2.95
+      ],
+      "scale": [
+        0.83,
+        0.83,
+        0.83
+      ],
+      "yaw": 0,
+      "anchor": "bottom",
+      "z": 0.02
+    },
+    {
+      "asset": "modular_fort_01",
+      "prefix": "modular_fort_01_wall_thin_straight_03",
+      "name": "masonry_repair",
+      "xy": [
+        3.9,
+        4
+      ],
+      "scale": [
+        0.52,
+        0.62,
+        0.47
+      ],
+      "yaw": 90,
+      "anchor": "bottom",
+      "z": -0.2
+    },
+    {
+      "asset": "boulder_01",
+      "prefix": "boulder_01",
+      "name": "garden_stone_1",
+      "xy": [
+        -0.85,
+        0.1
+      ],
+      "scale": [
+        0.7,
+        0.7,
+        0.62
+      ],
+      "yaw": 28,
+      "anchor": "bottom",
+      "z": 0.02
+    },
+    {
+      "asset": "boulder_01",
+      "prefix": "boulder_01",
+      "name": "garden_stone_2",
+      "xy": [
+        0.63,
+        0.18
+      ],
+      "scale": [
+        0.58,
+        0.65,
+        0.53
+      ],
+      "yaw": -33,
+      "anchor": "bottom",
+      "z": 0.02
+    },
+    {
+      "asset": "fern_02",
+      "prefix": "fern_02_b",
+      "name": "fern_in_garden_1",
+      "xy": [
+        -1.42,
+        0.38
+      ],
+      "scale": [
+        1.15,
+        1.15,
+        1.15
+      ],
+      "yaw": 12,
+      "anchor": "bottom",
+      "z": 0.12
+    },
+    {
+      "asset": "fern_02",
+      "prefix": "fern_02_c",
+      "name": "fern_in_garden_2",
+      "xy": [
+        0.15,
+        -0.15
+      ],
+      "scale": [
+        1.35,
+        1.35,
+        1.35
+      ],
+      "yaw": 37,
+      "anchor": "bottom",
+      "z": 0.18
+    },
+    {
+      "asset": "fern_02",
+      "prefix": "fern_02_a",
+      "name": "fern_in_garden_3",
+      "xy": [
+        1.16,
+        0.22
+      ],
+      "scale": [
+        1.2,
+        1.2,
+        1.2
+      ],
+      "yaw": -50,
+      "anchor": "bottom",
+      "z": 0.09
+    },
+    {
+      "asset": "fern_02",
+      "prefix": "fern_02_d",
+      "name": "fern_wall_edge",
+      "xy": [
+        4.8,
+        2.7
+      ],
+      "scale": [
+        1.2,
+        1.2,
+        1.2
+      ],
+      "yaw": 10,
+      "anchor": "bottom",
+      "z": 0.07
+    },
+    {
+      "asset": "wooden_barrels_01",
+      "prefix": "wooden_barrels_01_barrel01",
+      "name": "storage_1",
+      "xy": [
+        -5,
+        2.4
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ],
+      "yaw": 13,
+      "anchor": "bottom",
+      "z": 0.02
+    },
+    {
+      "asset": "wooden_barrels_01",
+      "prefix": "wooden_barrels_01_barrel02",
+      "name": "storage_2",
+      "xy": [
+        -5.8,
+        2.7
+      ],
+      "scale": [
+        0.82,
+        0.82,
+        0.82
+      ],
+      "yaw": 79,
+      "anchor": "bottom",
+      "z": 0.02
+    },
+    {
+      "asset": "boulder_01",
+      "prefix": "boulder_01",
+      "name": "western_ledge",
+      "xy": [
+        -7.9,
+        -2.4
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.75
+      ],
+      "yaw": -32,
+      "anchor": "bottom",
+      "z": -0.08
+    },
+    {
+      "asset": "boulder_01",
+      "prefix": "boulder_01",
+      "name": "eastern_ledge",
+      "xy": [
+        7.8,
+        2.5
+      ],
+      "scale": [
+        0.83,
+        0.83,
+        0.76
+      ],
+      "yaw": 70,
+      "anchor": "bottom",
+      "z": -0.08
+    },
+    {
+      "asset": "mountainside",
+      "prefix": "mountainside",
+      "name": "distant_gorge_west",
+      "xy": [
+        -16,
+        15
+      ],
+      "scale": [
+        1.5,
+        1.5,
+        1.6
+      ],
+      "yaw": 31,
+      "anchor": "top",
+      "z": 5.5
+    },
+    {
+      "asset": "mountainside",
+      "prefix": "mountainside",
+      "name": "distant_gorge_east",
+      "xy": [
+        15,
+        19
+      ],
+      "scale": [
+        1.7,
+        1.7,
+        1.7
+      ],
+      "yaw": -19,
+      "anchor": "top",
+      "z": 6.3
+    }
+  ]
+}

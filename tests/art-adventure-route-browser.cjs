@@ -1,5 +1,5 @@
 "use strict";
-const assert=require("node:assert/strict"),fs=require("node:fs"),{chromium,webkit}=require("playwright");
+const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),{chromium,webkit}=require("playwright");
 async function tapFighter(page,id,probeOnly=false){
  const handle=await page.waitForFunction(id=>{
   const canvas=document.querySelector("#renderCanvas"),rect=canvas.getBoundingClientRect();
@@ -45,6 +45,13 @@ async function run(type,name){
  const page=await browser.newPage({viewport:{width:844,height:390},hasTouch:true}),errors=[];
  page.on("pageerror",e=>errors.push(e.message));
  const url="http://127.0.0.1:8765/?skipFirstPlay=1&combat2Pilot=1&artAdventurePilot=1";
+ // Local CI serves the actual checkout. Temporarily withhold exactly one file,
+ // not a Playwright network mock: WebKit can bypass request interception.
+ const unavailableArt="assets/cutscenes/art-adventure/candidates/p0-v2.webp";
+ const artPath=path.resolve(__dirname,"..",unavailableArt);
+ const backupPath=artPath+".ci-unavailable-"+process.pid;
+ let withheld=false;
+ const restoreArt=()=>{if(withheld){fs.renameSync(backupPath,artPath);withheld=false;}};
  const story=page.locator(".r2a-path [data-field=story]");
  const hold=story.locator('[data-path-mission="hold"]');
  const open=async()=>{await page.evaluate(()=>{selectedHeroId="art";showScreen("heroDetail");});await page.locator("#r2aStory").tap();};
@@ -78,6 +85,11 @@ async function run(type,name){
  };
  const snapshot=()=>page.evaluate(()=>({wallet:JSON.stringify(progress),live:localStorage.getItem(ProgressV3Core.KEY),stored:JSON.parse(gameStorage().getItem(ProgressV3Core.KEY)),squad:[selectedLeaderId,...selectedPartyIds],savedSquad:gameStorage().getItem(SQUAD_SAVE_KEY),mode:squadReturnScreen}));
  try{
+  assert.ok(fs.existsSync(artPath)&&!fs.existsSync(backupPath),"Expected original P0 and no temporary backup");
+  fs.renameSync(artPath,backupPath);withheld=true;
+  const missing=await fetch(new URL(unavailableArt,url));
+  assert.equal(missing.status,404,"Actual static server must return HTTP 404 before opening the story");
+  await missing.arrayBuffer();
   await page.goto(url,{waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function"&&typeof artAdventureView==="function");
   assert.equal(await page.evaluate(()=>ART_ADVENTURE_PILOT),true);
   await open();assert.equal(await hold.count(),0);assert.match(await story.innerText(),/глава II|главу II/);
@@ -111,17 +123,15 @@ async function run(type,name){
    await page.screenshot({path:"artifacts/r2d3c-"+name+"-"+id+(fallback?"-fallback":"")+(tag?"-"+tag:"")+".png"});
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   };
-  // Inject the failure before this document has ever decoded P0. WebKit
-  // can reuse a decoded image without making another interceptable request.
-  const failedArt="**/"+files.p0;
-  let aborted=0;
-  await page.route(failedArt,route=>{aborted++;return route.abort();});
   await open();await verifyShot("p0",true);
-  assert.ok(aborted>0,"The WebP request was actually intercepted");
   await assertUnchangedProgress("Fallback does not write progress");
   await page.locator(".r2a-path-back").tap();
-  await page.unroute(failedArt);
-  // A new document also discards WebKit's cached failed image resource.
+  restoreArt();
+  const restored=await fetch(new URL(unavailableArt,url));
+  assert.equal(restored.status,200,"Original WebP restored on static server");
+  const restoredBytes=Buffer.from(await restored.arrayBuffer());
+  assert.deepEqual(restoredBytes,fs.readFileSync(artPath),"Server returns the exact restored file");
+  // A new document discards cached failed image resources.
   await page.reload({waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function"&&typeof artAdventureView==="function");
   await assertUnchangedProgress("Reload preserves progress");
   await open();
@@ -227,6 +237,6 @@ async function run(type,name){
   assert.deepEqual((await snapshot()).squad,baseline.squad);assert.equal((await snapshot()).savedSquad,baseline.savedSquad);assert.deepEqual(errors,[]);
   console.log("R2/D2B PERSONAL SLOT",name,"PASS");
   fs.mkdirSync("artifacts",{recursive:true});await page.screenshot({path:"artifacts/r2d2a-"+name+".png"});console.log("R2/D2A REAL ROUTE",name,"PASS");
- }catch(e){console.error("R2/D2A DIAGNOSTIC",name,await page.evaluate(()=>({screen:document.querySelector(".screen.active")?.id,winner:typeof state!=="undefined"?state?.winner:null,outcome:typeof state!=="undefined"?state?.tacticalOutcome:null,notice:typeof artAdventureNotice!=="undefined"?artAdventureNotice:null,actions:state?.allyActions,seed:state?.rng?.seed,actor:state?.fighters[state.currentActor]?.id,pending:BattleAnimation.pending(),dt:engine?.getDeltaTime(),renderLoopRunning,documentHidden:document.hidden,entry:combat2EntryPending,gate:!!battleAssetGate,transition:visualTransition,activity:state?.fighters.map(f=>({id:f.id,hp:f.hp,activity:BattleAnimation.activity(f.id)})),speed:BattleSpeed.get()})).catch(()=>null),errors);throw e;}finally{await browser.close();}
+ }catch(e){console.error("R2/D2A DIAGNOSTIC",name,await page.evaluate(()=>({screen:document.querySelector(".screen.active")?.id,winner:typeof state!=="undefined"?state?.winner:null,outcome:typeof state!=="undefined"?state?.tacticalOutcome:null,notice:typeof artAdventureNotice!=="undefined"?artAdventureNotice:null,actions:state?.allyActions,seed:state?.rng?.seed,actor:state?.fighters[state.currentActor]?.id,pending:BattleAnimation.pending(),dt:engine?.getDeltaTime(),renderLoopRunning,documentHidden:document.hidden,entry:combat2EntryPending,gate:!!battleAssetGate,transition:visualTransition,activity:state?.fighters.map(f=>({id:f.id,hp:f.hp,activity:BattleAnimation.activity(f.id)})),speed:BattleSpeed.get()})).catch(()=>null),errors);throw e;}finally{try{restoreArt();}finally{await browser.close();}}
 }
 (async()=>{for(const [type,name] of [[chromium,"chromium"],[webkit,"webkit"]])await run(type,name)})().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,0 +1,7 @@
+{
+  "cellSize": 0.15,
+  "cells": 6645,
+  "samples": 15461,
+  "triangles": 13290,
+  "scope": "Conservative invisible picking proxy based on actual art vertical clearance, limited walk zone; not exact physical collision."
+}

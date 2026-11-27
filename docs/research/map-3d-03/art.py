@@ -72,7 +72,7 @@ def scanned(name,asset,normal=True):
         file=pathlib.Path('materials')/(asset+'_'+kind+'.jpg')
         im=bpy.data.images.load(str(file.resolve()),check_existing=True)
         if kind!='diff':im.colorspace_settings.name='Non-Color'
-        im.pack();t=nodes.new('ShaderNodeTexImage');t.image=im
+        im.scale(1024,1024);im.pack();t=nodes.new('ShaderNodeTexImage');t.image=im
         if kind=='diff':links.new(t.outputs['Color'],p.inputs['Base Color'])
         else:
             n=nodes.new('ShaderNodeNormalMap');n.inputs['Strength'].default_value=.65;links.new(t.outputs['Color'],n.inputs['Color']);links.new(n.outputs['Normal'],p.inputs['Normal'])
@@ -87,7 +87,7 @@ def ribbon(name,points,width,m):
         for side in (-1,1):
             xx=x-side*dz/l*width*.5;zz=z+side*dx/l*width*.5
             v.append((xx,ground(xx)+.032,zz))
-    return mesh(name,v,[(i,i+2,i+3,i+1) for i in range(0,len(v)-2,2)],m,1.8)
+    return mesh(name,v,[(i,i+1,i+3,i+2) for i in range(0,len(v)-2,2)],m,1.8)
 ribbon('north route worn paving',[(-6.9,0),(-5.4,2.7),(-3.3,4),(0,4.35),(3.1,4.1),(5.5,2.6),(6.7,0)],2.3,path_surface)
 ribbon('south route worn paving',[(-6.9,0),(-5.6,-2.5),(-3.5,-4),(0,-4.4),(3.5,-4.1),(5.6,-2.6),(6.7,0)],2.1,path_surface)
 ribbon('upper route worn paving',[(6.7,0),(8,0),(10,0),(12,0),(15,0),(17.2,0)],2.8,path_surface)

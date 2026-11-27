@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "recast": "0.43.1",
+  "files": {
+    "level.glb": "5b3dba836642df6c7bde7761cb17c4798e76527bf3a44e3e565fafaa472ba899",
+    "level.json": "d3028aa09307563475bf98b3ecec1c8defc828c4ab3119c6ec8a735c5cbfcaad",
+    "nav.json": "3489fe167c401a646eaabcf06af6ff87b0d88b650257066fe5cf6dd92b8efd7e",
+    "navmesh.bin": "fa6ee87ed4351faf1427b79e2a8824970fd5bfdc18fd20c9c8522e61c36ec61b"
+  }
+}

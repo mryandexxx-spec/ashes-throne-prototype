@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "name": "structural__iber_struct_player_49244",
+      "oldSHA256": "eb5d6270cedd7e8329c05c6a46331d4e0401a276eecf21a0cd1ed6534f2d32f9",
+      "newSHA256": "0b9c1ed166d87413b4cc65b42ba43a2a98d762d0605b848e406c1741efd906a2"
+    },
+    {
+      "name": "market-cloth-adapted",
+      "oldSHA256": "eb5d6270cedd7e8329c05c6a46331d4e0401a276eecf21a0cd1ed6534f2d32f9",
+      "newSHA256": "0b9c1ed166d87413b4cc65b42ba43a2a98d762d0605b848e406c1741efd906a2"
+    }
+  ],
+  "glbSHA256": "5b3dba836642df6c7bde7761cb17c4798e76527bf3a44e3e565fafaa472ba899",
+  "sourceGLB": "5d46bfd5be7ef80244bf0969b7f0c2ce2a88fed45c99778646bda821a94f0e94"
+}

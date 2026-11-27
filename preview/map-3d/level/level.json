@@ -1,0 +1,46 @@
+{
+  "markers": [
+    {
+      "id": "spawn",
+      "role": "spawn",
+      "position": [
+        -3.8,
+        0,
+        1.55
+      ]
+    },
+    {
+      "id": "direct",
+      "role": "point",
+      "position": [
+        0.2,
+        0,
+        1.7
+      ]
+    },
+    {
+      "id": "court",
+      "role": "point",
+      "position": [
+        -2,
+        0,
+        -6.6
+      ]
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": [
+        5.3,
+        0,
+        0.9
+      ]
+    }
+  ],
+  "scope": "C3 limited walk lab, not production",
+  "camera": {
+    "alpha": 1.2,
+    "beta": 0.94,
+    "zoom": 5.5
+  }
+}

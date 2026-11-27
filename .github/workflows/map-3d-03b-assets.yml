@@ -1,9 +1,6 @@
 name: MAP-3D-03B real asset intake
 on:
-  pull_request:
-    paths:
-      - 'docs/research/map-3d-03b-assets/**'
-      - '.github/workflows/map-3d-03b-assets.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

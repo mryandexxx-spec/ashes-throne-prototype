@@ -32,14 +32,14 @@ test("ARENA-ART-004G: battle menu — goal, replay, retreat (old ✕ path)",()=>
  assert.deepEqual(items,[["battleMenuGoal","Описание цели"],["battleMenuRetry","Переиграть"],["battleMenuRetreat","Отступить"]]);
  assert.match(menu,/id="battleMenuRetreat"[^>]*data-screen="home"/,"retreat reuses the shared [data-screen] handler");
  assert.match(game,/if\(goal\)goal\.disabled=!battleHasGoal\(\);\n if\(retry\)retry\.disabled=!state\.active;/);
- assert.match(game,/function replayBattle\(\)\{\n closeBattleMenu\(\);\n if\(!state\.active\)return false;\n const mode=squadReturnScreen\|\|"home";\n openSquad\(mode\);/);
+ assert.match(game,/function replayBattle\(\)\{\n closeBattleMenu\(\);\n if\(!state\.active\)return false;\n if\(battleIsArtAdventure\)\{returnFromArtAdventure\(\);return true;\}\n const mode=squadReturnScreen\|\|"home";\n openSquad\(mode\);/);
  assert.match(game,/\$\("#squadStart"\)\?\.click\?\.\(\);/,"replay goes through the normal start checks");
  assert.match(game,/if\(id!=="battle"\)\{closeFighterInspection\(\);hideAbilityTooltip\(\);closeBattleMenu\(\);\}/);
  assert.match(game,/"#battleMenuBtn, #battleMenu, #battle \.arena-utility,/,"menu is a HUD obstacle for labels");
  assert.match(block,/\.battle-menu-item\{\n min-height:44px/);
 });
 
-test("ARENA-ART-004G: vertical turn queue at the left; objective in the top-right corner, expanded only in First Play",()=>{
+test("ARENA-ART-004G: vertical turn queue at the left; objective in the top-right corner, expanded in First Play and personal adventure",()=>{
  assert.match(block,/#battle\.battle-screen \.battle-queue\{\n top:calc\(max\(6px,env\(safe-area-inset-top,0px\)\) \+ 52px\);left:max\(10px,env\(safe-area-inset-left,0px\)\);\n transform:none/);
  assert.match(block,/\.turn-queue-bar\{flex-direction:column/);
  assert.match(block,/\.turn-queue\{flex-direction:column\}/);
@@ -51,8 +51,8 @@ test("ARENA-ART-004G: vertical turn queue at the left; objective in the top-righ
  assert.match(block,/#battleChallengeGoal:not\(\[hidden\]\)\{\n position:relative;display:block;width:44px;height:44px/);
  assert.match(block,/\.tactical-goal-card\.collapsed p\{display:none\}/);
  assert.match(game,/objective\.classList\?\.remove\?\.\("expanded"\);/,"each battle starts folded");
- assert.match(game,/tacticalGoalCard\.classList\?\.toggle\("collapsed",!battleIsFirstPlay\);/);
- assert.match(game,/\$\("#tacticalGoalToggle"\)\?\.setAttribute\?\.\("aria-expanded",String\(battleIsFirstPlay\)\);/);
+ assert.match(game,/tacticalGoalCard\.classList\?\.toggle\("collapsed",!battleIsFirstPlay&&!battleIsArtAdventure\);/);
+ assert.match(game,/\$\("#tacticalGoalToggle"\)\?\.setAttribute\?\.\("aria-expanded",String\(battleIsFirstPlay\|\|battleIsArtAdventure\)\);/);
 });
 
 test("ARENA-ART-004G: fighter card shows the portrait",()=>{

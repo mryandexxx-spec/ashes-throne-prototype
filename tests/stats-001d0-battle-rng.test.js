@@ -79,6 +79,8 @@ assert.equal(run({rngSeed:0}).rng.draws,0);
 
 // The browser loads RNG BEFORE combat core and does not change existing build labels.
 const html=read("index.html");
-assert.ok(html.indexOf('src="battle-rng.js"')<html.indexOf('src="combat-core.js"'));
+const dependencyIndex=html.indexOf('src="battle-rng.js"');
+const combatIndex=html.indexOf('src="combat-core.js?v='+require("../package.json").version+'"');
+assert.ok(dependencyIndex>=0&&combatIndex>dependencyIndex);
 assert.ok(html.includes('src="battle-rng.js"'));
 console.log("Stats-001D0: deterministic replay, JSON snapshots, invalid input atomicity, optional battle state and unchanged gameplay passed");

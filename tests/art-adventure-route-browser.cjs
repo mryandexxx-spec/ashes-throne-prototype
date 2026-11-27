@@ -40,7 +40,7 @@ async function tapFighter(page,id,probeOnly=false){
  if(!probeOnly)await page.touchscreen.tap(point.x,point.y);
  return point;
 }
-async function run(type,name){
+async function run(type,name,route="hold"){
  const browser=await type.launch(name==="chromium"?{headless:true,args:["--no-sandbox","--use-angle=swiftshader","--enable-webgl"]}:{headless:true});
  const page=await browser.newPage({viewport:{width:844,height:390},hasTouch:true}),errors=[];
  page.on("pageerror",e=>errors.push(e.message));
@@ -58,7 +58,7 @@ async function run(type,name){
  // Match the established main-campaign launch-seed pattern, but restore
  // Date.now BEFORE the first mocked read returns. Babylon and all later reads
  // see the real wall clock, and no Playwright clock shim is installed.
- const tapWithSeed=async seed=>{
+ const tapWithSeed=async (seed,choice=hold)=>{
   await page.evaluate(seed=>{
    const original=startArtAdventure;
    startArtAdventure=function(...args){
@@ -67,29 +67,31 @@ async function run(type,name){
     finally{Date.now=now;startArtAdventure=original;}
    };
   },seed);
-  await hold.tap();await page.locator("#battle.active").waitFor({state:"visible"});
+  await choice.tap();await page.locator("#battle.active").waitFor({state:"visible"});
   await page.waitForFunction(()=>battleIsArtAdventure&&state.active&&!!scene,null,{timeout:60000});
   assert.equal(await page.evaluate(()=>state.rng?.seed),seed,"Actual core received the fixture seed");
  };
- const playBasic=async()=>{
+ const playBasic=async(advanced=false)=>{
   await page.evaluate(()=>setAutoSpeed(4));
   await page.waitForFunction(()=>!combat2InputBlocked()&&!document.querySelector("#basicAbilityBtn").disabled,null,{timeout:60000,polling:100});
-  for(let n=0;n<12;n++){
+  for(let n=0;n<(advanced?40:12);n++){
    if(!await page.evaluate(()=>battleIsArtAdventure&&state.active))break;
    await page.waitForFunction(()=>!state.active||(!visualActionPending()&&!combat2InputBlocked()&&!isVisualTransition()&&!document.querySelector("#basicAbilityBtn").disabled),null,{timeout:60000,polling:100});
    console.log("R2/D2A TURN",name,await page.evaluate(()=>({action:state.allyActions,actor:state.fighters[state.currentActor]?.id,seed:state.rng?.seed,pending:BattleAnimation.pending()})));
-   await page.evaluate(()=>{if(!state.active)return;const enemy=state.fighters.map((f,i)=>({f,i})).filter(x=>x.f.side==="enemy"&&x.f.hp>0).sort((a,b)=>a.f.hp+a.f.protection-b.f.hp-b.f.protection)[0];if(!CombatCore.chooseEnemy(state,enemy.i))throw Error("TEST_TARGET");if(!applyManualAbility("basic"))throw Error("TEST_ACTION");});
+   await page.evaluate(advanced=>{if(!state.active)return;const enemy=state.fighters.map((f,i)=>({f,i})).filter(x=>x.f.side==="enemy"&&x.f.hp>0).sort((a,b)=>a.f.hp+a.f.protection-b.f.hp-b.f.protection)[0];if(!CombatCore.chooseEnemy(state,enemy.i))throw Error("TEST_TARGET");const f=state.fighters[state.currentActor];const ability=advanced?["powerful","special"].find(k=>CombatCore.abilityReady(state,k)&&AbilityData.get(f,k)?.kind==="damage"&&AbilityData.get(f,k)?.target==="enemy")||"basic":"basic";if(!applyManualAbility(ability))throw Error("TEST_ACTION "+ability);},advanced);
   }
   await story.waitFor({state:"visible",timeout:90000});
   return page.evaluate(()=>({winner:state.winner,outcome:state.tacticalOutcome,actions:state.allyActions,hp:state.fighters.filter(f=>f.side==="ally").map(f=>[f.id,f.hp]),notice:artAdventureNotice}));
  };
  const snapshot=()=>page.evaluate(()=>({wallet:JSON.stringify(progress),live:localStorage.getItem(ProgressV3Core.KEY),stored:JSON.parse(gameStorage().getItem(ProgressV3Core.KEY)),squad:[selectedLeaderId,...selectedPartyIds],savedSquad:gameStorage().getItem(SQUAD_SAVE_KEY),mode:squadReturnScreen}));
  try{
-  assert.ok(fs.existsSync(artPath)&&!fs.existsSync(backupPath),"Expected original P0 and no temporary backup");
-  fs.renameSync(artPath,backupPath);withheld=true;
-  const missing=await fetch(new URL(unavailableArt,url));
-  assert.equal(missing.status,404,"Actual static server must return HTTP 404 before opening the story");
-  await missing.arrayBuffer();
+  if(route==="hold"){
+   assert.ok(fs.existsSync(artPath)&&!fs.existsSync(backupPath),"Expected original P0 and no temporary backup");
+   fs.renameSync(artPath,backupPath);withheld=true;
+   const missing=await fetch(new URL(unavailableArt,url));
+   assert.equal(missing.status,404,"Actual static server must return HTTP 404 before opening the story");
+   await missing.arrayBuffer();
+  }
   await page.goto(url,{waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function"&&typeof artAdventureView==="function");
   assert.equal(await page.evaluate(()=>ART_ADVENTURE_PILOT),true);
   await open();assert.equal(await hold.count(),0);assert.match(await story.innerText(),/глава II|главу II/);
@@ -120,9 +122,82 @@ async function run(type,name){
    console.log("R2/D3C FRAME",name,id,JSON.stringify(info));
    if(!fallback)assert.deepEqual(info.natural,[1280,720]);
    if(fallback)assert.match(info.caption,/Эскиз постановки/);
-   await page.screenshot({path:"artifacts/r2d3c-"+name+"-"+id+(fallback?"-fallback":"")+(tag?"-"+tag:"")+".png"});
+   // WebKit can report a decoded image before the first compositor paint.
+   // Assert actual captured pixels, not merely naturalWidth/onload. A blank
+   // first capture is logged; allow a bounded paint interval, never skip.
+   const screenshotPath="artifacts/r2d3c-"+name+"-"+id+(fallback?"-fallback":"")+(tag?"-"+tag:"")+".png";
+   const artRect=await story.locator(".story-art img").evaluate(async im=>{
+    if(im.decode)await im.decode();
+    const r=im.getBoundingClientRect(),scale=Math.min(r.width/im.naturalWidth,r.height/im.naturalHeight);
+    const w=im.naturalWidth*scale,h=im.naturalHeight*scale;
+    return {x:r.x+(r.width-w)/2,y:r.y+(r.height-h)/2,w,h};
+   });
+   assert.ok(artRect.w>100&&artRect.h>60,"Visible artwork must have a meaningful size");
+   let painted=false;
+   for(let attempt=0;attempt<5;attempt++){
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    const png=await page.screenshot();
+    const palette=await page.evaluate(async ({data,rect})=>{
+     const image=new Image();await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=reject;image.src="data:image/png;base64,"+data;});
+     const canvas=document.createElement("canvas");canvas.width=12;canvas.height=8;
+     const ctx=canvas.getContext("2d");
+     const sx=image.naturalWidth/innerWidth,sy=image.naturalHeight/innerHeight;
+     ctx.drawImage(image,(rect.x+rect.w*.12)*sx,(rect.y+rect.h*.12)*sy,rect.w*.76*sx,rect.h*.76*sy,0,0,12,8);
+     const bytes=ctx.getImageData(0,0,12,8).data,bins=new Set();
+     for(let i=0;i<bytes.length;i+=4)bins.add([bytes[i]>>4,bytes[i+1]>>4,bytes[i+2]>>4].join(","));
+     return bins.size;
+    },{data:png.toString("base64"),rect:artRect});
+    fs.writeFileSync(screenshotPath,png);
+    if(palette>=8){painted=true;break;}
+    console.warn("R2/D3C CAPTURE NOT PAINTED",name,id,attempt,palette);
+    await page.waitForTimeout(100);
+   }
+   assert.ok(painted,"Captured artwork stayed blank: "+name+" "+id);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   };
+  if(route==="direct"){
+   // Select a deterministic winning seed using the actual core and the real
+   // starter hero definitions, but only in a detached in-memory storage.
+   // No completion receipt or battle state is injected into the live game.
+   const seed=await page.evaluate(()=>{
+    const keys=[ProgressV3Core.KEY,...MainCampaignCore.MISSIONS.map(m=>m.key)];
+    const original=keys.map(k=>[k,gameStorage().getItem(k)]);
+    for(let seed=3001;seed<3401;seed++){
+     const copy=new Map(original),storage={getItem:k=>copy.get(k)??null,setItem:(k,v)=>copy.set(k,v)};
+     const isolated=ArtAdventureCore.create({heroes:ALLIES,storageProvider:()=>storage});
+     const launched=isolated.start("direct",seed);
+     if(!launched.ok)throw Error("DIRECT_PREFLIGHT "+launched.code);
+     const b=launched.battle;CombatCore.advanceToPlayerTurn(b);
+     for(let i=0;i<40&&b.active;i++){
+      const actor=b.fighters[b.currentActor],target=b.fighters.map((f,i)=>({f,i})).filter(x=>x.f.side==="enemy"&&x.f.hp>0).sort((a,b)=>a.f.hp+a.f.protection-b.f.hp-b.f.protection)[0];
+      const id=["powerful","special"].find(k=>CombatCore.abilityReady(b,k)&&AbilityData.get(actor,k)?.kind==="damage"&&AbilityData.get(actor,k)?.target==="enemy")||"basic";
+      if(!CombatCore.chooseEnemy(b,target.i)||!CombatCore.performPlayerAbility(b,id))throw Error("DIRECT_PREFLIGHT_ACTION");
+     }
+     if(ArtAdventureCore.terminal(b,"direct")?.outcome==="recovered")return seed;
+    }
+    return null;
+   });
+   assert.ok(Number.isInteger(seed),"Actual native direct route must have a winning seed");
+   console.log("R2/D3C DIRECT PREFLIGHT",name,seed);
+   await assertUnchangedProgress("Detached preflight leaves actual progress unchanged");
+   await open();await verifyShot("p0");await story.locator("[data-story-skip]").tap();await verifyShot("p3");
+   const direct=story.locator('[data-path-mission="direct"]');
+   assert.equal(await direct.isEnabled(),true);
+   await tapWithSeed(seed,direct);
+   const victory=await playBasic(true);
+   assert.equal(victory.winner,"ally",JSON.stringify(victory));assert.equal(victory.outcome,"protected-victory");
+   assert.ok(victory.hp.every(([,hp])=>hp>0));
+   const done=await snapshot();
+   assert.equal(done.stored.artPath.phase,"complete");assert.equal(done.stored.artPath.route,"direct");assert.equal(done.stored.artPath.outcome,"recovered");
+   assert.equal(done.stored.currency,baseline.stored.currency);assert.equal(done.stored.energy.value,baseline.stored.energy.value);assert.deepEqual(done.stored.rewardReceipts,baseline.stored.rewardReceipts);assert.equal(done.live,baseline.live);assert.deepEqual(done.squad,baseline.squad);assert.equal(done.savedSquad,baseline.savedSquad);
+   assert.match(await story.innerText(),/возвращённого кошеля/);
+   for(const [width,height] of [[844,390],[932,430],[844,320]]){await page.setViewportSize({width,height});await verifyShot("p4a",false,width+"x"+height);}
+   await page.setViewportSize({width:844,height:390});
+   await page.reload({waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function"&&typeof artAdventureView==="function");await open();await verifyShot("p4a");
+   assert.equal((await snapshot()).stored.artPath.outcome,"recovered");assert.deepEqual(errors,[]);
+   console.log("R2/D3C REAL RECOVERED ENDING",name,"PASS");
+   return;
+  }
   await open();await verifyShot("p0",true);
   await assertUnchangedProgress("Fallback does not write progress");
   await page.locator(".r2a-path-back").tap();
@@ -239,4 +314,4 @@ async function run(type,name){
   fs.mkdirSync("artifacts",{recursive:true});await page.screenshot({path:"artifacts/r2d2a-"+name+".png"});console.log("R2/D2A REAL ROUTE",name,"PASS");
  }catch(e){console.error("R2/D2A DIAGNOSTIC",name,await page.evaluate(()=>({screen:document.querySelector(".screen.active")?.id,winner:typeof state!=="undefined"?state?.winner:null,outcome:typeof state!=="undefined"?state?.tacticalOutcome:null,notice:typeof artAdventureNotice!=="undefined"?artAdventureNotice:null,actions:state?.allyActions,seed:state?.rng?.seed,actor:state?.fighters[state.currentActor]?.id,pending:BattleAnimation.pending(),dt:engine?.getDeltaTime(),renderLoopRunning,documentHidden:document.hidden,entry:combat2EntryPending,gate:!!battleAssetGate,transition:visualTransition,activity:state?.fighters.map(f=>({id:f.id,hp:f.hp,activity:BattleAnimation.activity(f.id)})),speed:BattleSpeed.get()})).catch(()=>null),errors);throw e;}finally{try{restoreArt();}finally{await browser.close();}}
 }
-(async()=>{for(const [type,name] of [[chromium,"chromium"],[webkit,"webkit"]])await run(type,name)})().catch(e=>{console.error(e);process.exitCode=1});
+(async()=>{for(const [type,name] of [[chromium,"chromium"],[webkit,"webkit"]]){await run(type,name);await run(type,name,"direct");}})().catch(e=>{console.error(e);process.exitCode=1});

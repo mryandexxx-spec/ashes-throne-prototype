@@ -454,4 +454,4 @@ const {chromium,webkit}=require('playwright');
   assert.deepEqual(errors,[]);
   console.log('HEROCARD001 browser passed',useWebkit?'WebKit':'Chromium');
  }finally{await browser.close()}
-})().then(()=>{if(!process.env.HERO_BROWSER)require("node:child_process").execFileSync(process.execPath,["tests/art-adventure-route-browser.cjs"],{stdio:"inherit",timeout:300000});}).catch(e=>{console.error(e);process.exitCode=1});
+})().then(()=>{if(!process.env.HERO_BROWSER)require("node:child_process").execFileSync(process.execPath,["tests/art-adventure-route-browser.cjs"],{stdio:"inherit",timeout:480000});}).catch(e=>{console.error(e);process.exitCode=1});

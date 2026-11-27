@@ -1,9 +1,5 @@
 name: MAP-3D-03B authored composition P2
 on:
-  pull_request:
-    paths:
-      - 'docs/research/map-3d-03b-p2/**'
-      - '.github/workflows/map-3d-03b-p2.yml'
   workflow_dispatch:
 permissions:
   contents: read

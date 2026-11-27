@@ -732,7 +732,7 @@ async function claimMainCampaignReward(id){
   }
   Object.keys(progress).forEach(key=>delete progress[key]);Object.assign(progress,result.runtime);
   saveAvailable=true;mainCampaignNotice=id===MainCampaignCore.II_ID?
-   "Нада в коллекции. Сдержать обещание · глава III готовится.":"Награда получена. Следующий путь открыт.";
+   "Нада в коллекции. Сдержать обещание · глава III готовится."+(ART_ADVENTURE_PILOT?" В штабе доступно личное приключение Арта.":""):"Награда получена. Следующий путь открыт.";
   renderAccountHeader();renderPlayerProfile();renderDailyTasks();renderHeroes();
  }catch(_){window.walletWriterHalt?.();mainCampaignNotice="Проверьте баланс после перезагрузки.";}
  finally{mainCampaignClaiming=false;renderMainCampaign();renderMainCampaignResult();}
@@ -775,8 +775,30 @@ function firstSessionAction(){
   MainCampaignCore.status(MainCampaignCore.load(mainCampaignStorage),progress);
  const canUpgrade=writable&&heroOwned("ren")&&ProgressCore.levelOf(progress,"ren")===1&&
   ProgressCore.upgradePlan(progress,"ren",1)?.levels===1;
- return FirstPlayCore.campaignAction(firstPlayState,progress,{writable,canUpgrade,campaignStatus});
+ const initial=FirstPlayCore.campaignAction(firstPlayState,progress,{writable,canUpgrade,campaignStatus});
+ if(initial)return initial;
+ // AUD003-E: connect the already implemented episodes on one clean profile.
+ // This is a voluntary recommendation, derived from actual existing state.
+ // Keep legacy/default routes and rewards unchanged until integrated acceptance.
+ if(!ART_ADVENTURE_PILOT||!writable||campaignStatus!=="claimed"||!FirstPlayCore.wonProof(firstPlayState)||!FirstPlayCore.rewardClaimed(progress))return null;
+ const second=mainCampaignStatus(MainCampaignCore.II_ID);
+ if(second==="ready"||second==="claimable")return second==="ready"?"chapter-II":"chapter-II-reward";
+ if(second!=="claimed")return null;
+ const adventure=artAdventureView();
+ if(adventure?.available&&!adventure.blocked)return "art-adventure";
+ if(adventure?.arc&&!adventure.selected&&!adventure.blocked)return "art-specialization";
+ if(adventure?.arc&&adventure.selected&&![selectedLeaderId,...selectedPartyIds].includes("nada"))return "new-squad";
+ if(adventure?.arc&&adventure.selected)return "network-next";
+ return null;
 }
+const FIRST_SESSION_CONTINUATIONS=Object.freeze({
+ "chapter-II":Object.freeze(["Продолжить расследование","Следующая глава: за каменным ребром.","Глава II ›"]),
+ "chapter-II-reward":Object.freeze(["Новый соратник","Нада предлагает вести ваши проверки.","Принять Наду ›"]),
+ "art-adventure":Object.freeze(["Личное приключение Арта","Чужая доля · отдельная задача и две дополнительные техники.","К приключению ›"]),
+ "art-specialization":Object.freeze(["Выбрать технику Арта","Обе освоены. Одну можно взять в бой основной кампании.","К специализации ›"]),
+ "new-squad":Object.freeze(["Новая команда","Добавьте Наду и испытайте технику Арта. Повтор главы II без разовой награды.","Собрать отряд ›"]),
+ "network-next":Object.freeze(["Следующая задача организации","Глава III готовится. Разведсеть предлагает самостоятельные задачи и ресурсы.","В разведсеть ›"])
+});
 function renderFirstSessionFollowUp(){
  const panel=$("#hqFirstSession"),action=$("#hqFirstSessionAction"),detail=$("#hqFirstSessionDetail"),
   title=$("#hqFirstSessionTitle");
@@ -784,6 +806,11 @@ function renderFirstSessionFollowUp(){
  const status=firstSessionAction();
  panel.hidden=!status;
  if(!status)return;
+ const continuation=FIRST_SESSION_CONTINUATIONS[status];
+ if(continuation){
+  if(title)title.textContent=continuation[0];
+  detail.textContent=continuation[1];action.textContent=continuation[2];action.disabled=firstSessionClaiming;return;
+ }
  if(title)title.textContent=status==="reward"||status==="reward-blocked"?"Первое донесение":
   status==="upgrade"?"Подготовить Рена":status==="campaign-reward"?"Пролёт без отметки":"Установить источник распоряжения";
  detail.textContent=firstSessionRewardNotice||(status==="reward"?
@@ -828,7 +855,11 @@ $("#hqFirstSessionAction")?.addEventListener("click",()=>{
  const status=firstSessionAction();
  if(status==="reward"){void claimFirstSessionReward();return;}
  if(status==="upgrade"){openHeroDetail("ren");return;}
- if(status==="campaign"||status==="campaign-reward"){showScreen("mainCampaign");return;}
+ if(status==="campaign"||status==="campaign-reward"){mainCampaignSelectedId=MainCampaignCore.ID;showScreen("mainCampaign");return;}
+ if(status==="chapter-II"||status==="chapter-II-reward"){mainCampaignSelectedId=MainCampaignCore.II_ID;showScreen("mainCampaign");return;}
+ if(status==="art-adventure"||status==="art-specialization"){if(openHeroDetail("art"))R2APath.openProduction(status==="art-adventure"?"story":"tree");return;}
+ if(status==="new-squad"){openMainCampaignMission(MainCampaignCore.II_ID);return;}
+ if(status==="network-next"){showScreen("network");return;}
  if(status==="reward-blocked")showScreen("collection");
 });
 // HQ-UI-001: use existing progress/state; this view does not own game rules.

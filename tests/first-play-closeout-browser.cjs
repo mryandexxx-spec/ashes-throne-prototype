@@ -4,7 +4,7 @@
 const {chromium,webkit}=require("playwright");
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
 const pilot=process.env.COMBAT2_PILOT==="1";
-const origin=new URL(process.env.GAME_ORIGIN||"http://127.0.0.1:8765/");if(pilot)origin.searchParams.set("combat2Pilot","1");
+const origin=new URL(process.env.GAME_ORIGIN||"http://127.0.0.1:8765/");if(pilot){origin.searchParams.set("combat2Pilot","1");origin.searchParams.set("artAdventurePilot","1");}
 const dest=path.join(process.cwd(),"artifacts","squad-recovery","first-play",pilot?"aud003-b17-3a":"aud003-a");fs.mkdirSync(dest,{recursive:true});
 async function tapFighter(page,id,probeOnly=false){
  const handle=await page.waitForFunction(id=>{
@@ -149,7 +149,87 @@ async function run(name,type,viewport,skip=false){
    assert.ok(abilityLayout.bottom<=abilityLayout.limit+1,"all five skill rows fit above footer: "+JSON.stringify(abilityLayout));
    await screenshot("Art-candidate-card");await tap("#detailHome");await home();
   }
-  await liveUntouched();await page.reload({waitUntil:"load",timeout:60000});await home();const final=await inspect();assert.deepEqual(final.receipts,[1,1,1]);assert.deepEqual(final.statuses,["claimed","claimed"]);assert.equal(final.nada,1);assert.equal(final.ren,2);assert.equal(final.currency,paid.currency);await map();await tap("#mainCampaignNext");assert.equal(await page.locator("#mainCampaignClaim").isVisible(),false);if(pilot){assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.progress.v3")),"pilot-live-sentinel");assert.equal(await page.evaluate(()=>localStorage.getItem("ashes-throne.first-play.v1")),"pilot-live-sentinel");}assert.deepEqual(errors,[]);report("PASS",final);await screenshot("persisted-II");
+  await liveUntouched();await page.reload({waitUntil:"load",timeout:60000});await home();const final=await inspect();assert.deepEqual(final.receipts,[1,1,1]);assert.deepEqual(final.statuses,["claimed","claimed"]);assert.equal(final.nada,1);assert.equal(final.ren,2);assert.equal(final.currency,paid.currency);await map();await tap("#mainCampaignNext");assert.equal(await page.locator("#mainCampaignClaim").isVisible(),false);await screenshot("persisted-II");
+  if(pilot){
+   await backHome();
+   assert.match(await page.locator("#hqFirstSessionAction").innerText(),/К приключению/);
+   await screenshot("HQ-art-next");await tap("#hqFirstSessionAction");
+   const story=page.locator(".r2a-path [data-field=story]");
+   await story.waitFor({state:"visible"});
+   const shot=async id=>{await page.waitForFunction(id=>{const h=document.querySelector(".r2a-path .story-art"),im=h?.querySelector("img");return h?.dataset.shot===id&&h.dataset.loadState==="ready"&&im.complete&&im.naturalWidth===1280&&im.naturalHeight===720;},id,{timeout:15000});await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));await screenshot("Art-"+id);};
+   for(const id of ["p0","p1","p2"]){await shot(id);await tap('.r2a-path [data-field="storyAction"]');}await shot("p3");
+   const beforeAdventure=await inspect();
+   assert.deepEqual(beforeAdventure,final,"Viewing actual unlocked adventure cannot change progress");
+   // Choose a deterministic route using the same actual profile and core in
+   // detached memory; never grant a prerequisite or inject an outcome.
+   const seed=await page.evaluate(()=>{
+    const keys=[ProgressV3Core.KEY,...MainCampaignCore.MISSIONS.map(m=>m.key)],original=keys.map(k=>[k,gameStorage().getItem(k)]);
+    for(let n=3001;n<3401;n++){
+     const copy=new Map(original),storage={getItem:k=>copy.get(k)??null,setItem:(k,v)=>copy.set(k,v)};
+     const isolated=ArtAdventureCore.create({heroes:ALLIES,storageProvider:()=>storage});
+     const launched=isolated.start("direct",n);if(!launched.ok)throw Error("UNIFIED_DIRECT_PREFLIGHT "+launched.code);
+     const b=launched.battle;CombatCore.advanceToPlayerTurn(b);
+     for(let i=0;i<40&&b.active;i++){
+      const actor=b.fighters[b.currentActor],target=b.fighters.map((f,i)=>({f,i})).filter(x=>x.f.side==="enemy"&&x.f.hp>0).sort((a,b)=>a.f.hp+a.f.protection-b.f.hp-b.f.protection)[0];
+      const id=["powerful","special"].find(k=>CombatCore.abilityReady(b,k)&&AbilityData.get(actor,k)?.kind==="damage"&&AbilityData.get(actor,k)?.target==="enemy")||"basic";
+      if(!CombatCore.chooseEnemy(b,target.i)||!CombatCore.performPlayerAbility(b,id))throw Error("UNIFIED_DIRECT_ACTION");
+     }
+     if(ArtAdventureCore.terminal(b,"direct")?.outcome==="recovered")return n;
+    }
+    return null;
+   });
+   assert.ok(Number.isInteger(seed));assert.deepEqual(await inspect(),beforeAdventure);
+   await page.evaluate(seed=>{const original=startArtAdventure;startArtAdventure=function(...args){const now=Date.now;try{Date.now=()=>{Date.now=now;return seed};return original.apply(this,args);}finally{Date.now=now;startArtAdventure=original;}};},seed);
+   await tap('.r2a-path [data-path-mission="direct"]');await wait("#battle.active");
+   await page.waitForFunction(()=>battleIsArtAdventure&&state.active&&!!scene,null,{timeout:60000});await actorReady();
+   assert.equal(await page.evaluate(()=>state.rng.seed),seed);
+   report("Art-adventure-interactive",{seed});
+   // The same native commands as the proven D3C test; deterministic technical
+   // traversal, not a human playtest or injected damage/outcome.
+   for(let i=0;i<40;i++){
+    await actorReady();
+    if(!await page.evaluate(()=>state.active))break;
+    await page.waitForFunction(()=>!state.active||!combat2InputBlocked(),null,{timeout:60000});
+    const action=await page.evaluate(()=>{if(!state.active)return null;const f=state.fighters[state.currentActor],target=state.fighters.map((f,i)=>({f,i})).filter(x=>x.f.side==="enemy"&&x.f.hp>0).sort((a,b)=>a.f.hp+a.f.protection-b.f.hp-b.f.protection)[0];const id=["powerful","special"].find(k=>CombatCore.abilityReady(state,k)&&AbilityData.get(f,k)?.kind==="damage"&&AbilityData.get(f,k)?.target==="enemy")||"basic";const before=state.allyActions;if(!CombatCore.chooseEnemy(state,target.i)||!applyManualAbility(id))throw Error("UNIFIED_DIRECT_LIVE_ACTION "+id);return {id,before};});
+    if(action){await page.waitForFunction(n=>!state.active||state.allyActions>n,action.before,{timeout:30000});report("Art-adventure-command",{ability:action.id});}
+   }
+   await story.waitFor({state:"visible",timeout:90000});await shot("p4a");
+   const outcome=await page.evaluate(()=>({path:ArtAdventureCore.view(progress),winner:state.winner,goal:state.tacticalOutcome}));
+   assert.equal(outcome.winner,"ally");assert.equal(outcome.goal,"protected-victory");assert.equal(outcome.path.outcome,"recovered");assert.deepEqual(outcome.path.earned,["guardian-2","command-2"]);
+   assert.deepEqual(await inspect(),beforeAdventure);report("Art-adventure-earned",outcome);
+   await tap('.r2a-path [data-field="storyAction"]');await tap('.r2a-path [data-node="guardian-2"]');await tap('.r2a-path [data-field="equip"]');assert.equal(await page.evaluate(()=>ArtAdventureCore.view(progress).selected),"guardian-2");
+   await screenshot("Art-specialization");await tap(".r2a-path-back");await tap("#detailHome");await home();
+   await page.reload({waitUntil:"load",timeout:60000});await home();
+   assert.equal(await page.evaluate(()=>ArtAdventureCore.view(progress).selected),"guardian-2");
+   assert.match(await page.locator("#hqFirstSessionAction").innerText(),/Собрать отряд/);
+   await screenshot("HQ-new-squad");await tap("#hqFirstSessionAction");await wait("#squad.active");
+   await tap('#squadRoster .squad-choice[data-hero-id="nada"]');
+   assert.deepEqual(await page.evaluate(()=>selectedParty().map(x=>x.id).sort()),["art","nada","ren"]);
+   await screenshot("Three-hero-squad");
+   await page.evaluate(()=>{const original=resetBattle;resetBattle=function(...args){const now=Date.now;try{Date.now=()=>7;return original.apply(this,args);}finally{Date.now=now;resetBattle=original;}};});
+   await tap("#squadStart");if(await page.locator("#squad.active").isVisible())await tap("#squadStart");
+   await wait("#battle.active");await actorReady();
+   assert.deepEqual(await page.evaluate(()=>({heroes:state.fighters.filter(f=>f.side==="ally").map(f=>f.id).sort(),personal:state.trustPersonal})),{heroes:["art","nada","ren"],personal:["art-intercept"]});
+   let used=false,nadaActed=false;
+   for(let i=0;i<40;i++){
+    await actorReady();const turn=await page.evaluate(()=>({active:state.active,actor:state.fighters[state.currentActor]?.id,actions:state.allyActions,target:state.fighters.filter(f=>f.side==="enemy"&&f.hp>0).sort((a,b)=>a.hp+a.protection-b.hp-b.protection)[0]?.id,selected:state.fighters[state.selectedEnemy]?.id}));
+    if(!turn.active)break;
+    if(turn.actor==="art"&&!used&&await page.locator("#personalAbilityBtn").isVisible()&&await page.locator("#personalAbilityBtn").isEnabled()){
+     await screenshot("Personal-slot");await tap("#personalAbilityBtn");await tapFighter(page,"ren");taps++;
+     await page.waitForFunction(n=>state.allyActions>n,turn.actions,{timeout:30000});assert.ok(await page.evaluate(()=>state.events.some(e=>e.type==="trust-intercept-armed"&&e.targetId==="ren")));used=true;
+    }else{
+     if(turn.target&&turn.target!==turn.selected){await tapFighter(page,turn.target);taps++;}
+     await tap("#basicAbilityBtn");await page.waitForFunction(n=>!state.active||state.allyActions>n,turn.actions,{timeout:30000});
+     if(turn.actor==="nada")nadaActed=true;
+    }
+   }
+   await wait("#mainCampaignResult.active");assert.equal(await page.evaluate(()=>state.winner),"ally");assert.ok(used&&nadaActed,"The new hero and learned personal technique must actually act in the same battle");
+   assert.deepEqual((await inspect()).receipts,[1,1,1]);assert.equal((await inspect()).currency,final.currency);report("New-squad-real-battle",{used,nadaActed});await screenshot("New-squad-result");
+   await tap("#mainCampaignResultBack");await backHome();assert.match(await page.locator("#hqFirstSessionAction").innerText(),/В разведсеть/);await screenshot("HQ-network-next");
+   await tap("#hqFirstSessionAction");await wait("#network.active");await screenshot("Network-entry");
+   assert.deepEqual((await inspect()).receipts,[1,1,1]);assert.equal(await page.evaluate(()=>ArtAdventureCore.view(progress).selected),"guardian-2");await liveUntouched();report("UNIFIED-PASS",{...await inspect(),art:await page.evaluate(()=>ArtAdventureCore.view(progress))});
+  }
+  assert.deepEqual(errors,[]);report("PASS",await inspect());
  }catch(e){report("FAIL",{error:String(e)});await page.screenshot({path:path.join(dest,key+"-fail.png")}).catch(()=>{});throw e;}
  finally{await browser.close();}
 }

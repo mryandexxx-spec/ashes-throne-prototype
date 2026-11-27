@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560">
+<title>MAP-3D-03A — рабочая схема, не каноническая карта</title>
+<rect width="1000" height="560" fill="#172b35"/>
+<path d="M0 0H1000V105L875 158 739 112 657 144 542 91 400 123 280 75 145 121 0 85Z" fill="#556570"/>
+<path d="M0 55L140 107 255 70 380 110 530 89 655 135 739 105 850 165 1000 115V0H0Z" fill="#71828a" opacity=".6"/>
+<path d="M0 151L140 134 286 166 410 129 574 145 681 120 803 184 863 257 812 335 725 367 665 442 505 471 345 444 213 497 72 480 0 519Z" fill="#78695b" stroke="#a49b88" stroke-width="5"/>
+<path d="M0 151L140 134 286 166 410 129 574 145 681 120 803 184 863 257 812 335 725 367 665 442 505 471 345 444 213 497 72 480 0 519" fill="none" stroke="#c3b39b" stroke-width="4"/>
+<path d="M0 160L115 172 170 192 155 258 72 277 0 250Z M295 167L371 140 455 150 451 206 349 221Z M627 139L697 145 750 190 702 208 628 194Z" fill="#514d46" stroke="#9e917a" stroke-width="3"/>
+<path d="M270 302L338 237 445 232 533 276 518 341 410 375 330 350Z" fill="#4d504d" stroke="#aea58c" stroke-width="4"/>
+<path d="M95 407 Q155 340 226 307 Q278 230 351 220 Q499 183 593 225 Q654 251 735 252" fill="none" stroke="#4b4135" stroke-width="46" stroke-linecap="round"/>
+<path d="M95 407 Q155 340 226 307 Q278 230 351 220 Q499 183 593 225 Q654 251 735 252" fill="none" stroke="#d3ba8e" stroke-width="34" stroke-linecap="round"/>
+<path d="M226 307 Q251 380 326 404 Q420 433 536 367 Q637 312 735 252" fill="none" stroke="#4b4135" stroke-width="46" stroke-linecap="round"/>
+<path d="M226 307 Q251 380 326 404 Q420 433 536 367 Q637 312 735 252" fill="none" stroke="#bca784" stroke-width="34" stroke-linecap="round"/>
+<path d="M340 385L390 378 416 397 380 420 340 416Z" fill="#637047" stroke="#9ba86a" stroke-width="3"/>
+<path d="M348 391L372 413 M361 386L389 408 M377 383L401 401" stroke="#b8bd81" stroke-width="3"/>
+<path d="M735 252L797 225" stroke="#d3ba8e" stroke-width="32" stroke-linecap="round"/>
+<g fill="#f3e7d0" font-family="sans-serif" font-size="17" font-weight="600"><text x="24" y="34" font-size="24">MAP-3D-03A · схема пространства</text><text x="25" y="57" font-size="13" fill="#e0cda9">[ПРЕДЛОЖЕНИЕ] · не карта канона · не игровой рендер</text>
+<text x="45" y="455">Вход</text><text x="169" y="283">Развилка</text><text x="337" y="195">Прямой путь</text><text x="280" y="461">Садовый обход</text><text x="390" y="300">Скальный</text><text x="390" y="321">выступ</text><text x="685" y="298">Выход / цель</text><text x="829" y="456" fill="#c1d9e3">Пропасть</text><text x="805" y="80" fill="#e0e5e6">Дальний берег</text></g>
+<g stroke="#172b35" stroke-width="3"><circle cx="95" cy="407" r="13" fill="#f1d195"/><circle cx="226" cy="307" r="12" fill="#f1d195"/><circle cx="735" cy="252" r="13" fill="#f1d195"/><circle cx="380" cy="401" r="10" fill="#a2c39a"/></g>
+<text x="24" y="540" fill="#c2d1d6" font-family="sans-serif" font-size="14">Условные точки: вход, выбор, необязательный интерес, соединение. События и размеры не утверждены.</text></svg>

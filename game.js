@@ -5847,19 +5847,6 @@ if(typeof NetworkNavigation!=="undefined")NetworkNavigation.mount({
  threatAvailable:!NETWORK_PILOT_ENABLED&&!!weeklySession
 });
 
-renderAccountHeader();renderHeroes();CombatCore.advanceToPlayerTurn(state);
-// RESICON001: source cards register before the startup entry prompt.
-if(typeof ResourceIconUI!=="undefined")
- ResourceArtUI.mount(()=>({progress,day:dailyDay()}),screen=>showScreen(screen));
-if(COMBAT2_ARENA){
- const scenario=$("#combat2ArenaScenario"),tier=$("#combat2ArenaTier");
- for(const [id,label] of Object.entries(Combat2ArenaPilot.scenarios)){const o=document.createElement("option");o.value=id;o.textContent=label;scenario.append(o);}
- for(const [id,label] of Object.entries(Combat2ArenaPilot.tiers)){const o=document.createElement("option");o.value=id;o.textContent=label;tier.append(o);}
- const refresh=()=>{tier.disabled=["armored","threats"].includes(scenario.value);};scenario.addEventListener("change",refresh);refresh();
- $("#combat2ArenaStart").addEventListener("click",openCombat2Arena);
- showScreen("combat2ArenaSetup");
-}else if(!openFirstPlayOnEntry())maybeOpenLoginOnEntry();
-
 // MAP-3D-06: opt-in isolated navigation only; no default campaign or wallet change.
 if(COMBAT2_PILOT&&/(?:^|[?&])map3d06=1(?:&|$)/.test(location.search)){
  import("./map-3d-checkpoint.mjs").then(C=>{
@@ -5884,3 +5871,17 @@ if(COMBAT2_PILOT&&/(?:^|[?&])map3d06=1(?:&|$)/.test(location.search)){
   if($("#mainCampaignResultBack"))$("#mainCampaignResultBack").textContent="На 3D-карту";
  }).catch(e=>console.error("MAP3D06_BOOT",e));
 }
+
+
+renderAccountHeader();renderHeroes();CombatCore.advanceToPlayerTurn(state);
+// RESICON001: source cards register before the startup entry prompt.
+if(typeof ResourceIconUI!=="undefined")
+ ResourceArtUI.mount(()=>({progress,day:dailyDay()}),screen=>showScreen(screen));
+if(COMBAT2_ARENA){
+ const scenario=$("#combat2ArenaScenario"),tier=$("#combat2ArenaTier");
+ for(const [id,label] of Object.entries(Combat2ArenaPilot.scenarios)){const o=document.createElement("option");o.value=id;o.textContent=label;scenario.append(o);}
+ for(const [id,label] of Object.entries(Combat2ArenaPilot.tiers)){const o=document.createElement("option");o.value=id;o.textContent=label;tier.append(o);}
+ const refresh=()=>{tier.disabled=["armored","threats"].includes(scenario.value);};scenario.addEventListener("change",refresh);refresh();
+ $("#combat2ArenaStart").addEventListener("click",openCombat2Arena);
+ showScreen("combat2ArenaSetup");
+}else if(!openFirstPlayOnEntry())maybeOpenLoginOnEntry();

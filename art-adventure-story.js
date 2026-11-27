@@ -1,9 +1,11 @@
 /* R2/D3A: presentation only, working story basis 0.3. Never produces a receipt,
- * launches combat or writes the wallet. Final art is a separate acceptance gate. */
+ * launches combat or writes the wallet. Illustrated pilot; production release is a separate acceptance gate. */
 const ArtAdventureStory=(()=>{
  "use strict";
  const dir="assets/cutscenes/art-adventure/blocking/";
- const make=(id,title,text,alt)=>Object.freeze({id,title,text,alt,blocking:dir+id+".svg",art:null});
+ const artDir="assets/cutscenes/art-adventure/candidates/";
+ const artFiles=Object.freeze({"p0":"p0-v2.webp","p1":"p1-v1.webp","p2":"p2-v1.webp","p3":"p3-v1.webp","p4a":"p4a-v1.webp","p4b":"p4b-hybrid-v1.webp"});
+ const make=(id,title,text,alt)=>Object.freeze({id,title,text,alt,blocking:dir+id+".svg",art:artDir+artFiles[id]});
  const intro=Object.freeze([
   make("p0","На обратной дороге","Двое рабочих возвращаются с заработком за себя и товарищей. Арт забирает у одного доску, которую хотел понести Рен. Знакомый рабочим человек преграждает дорогу.\n— Мне хозяин так и не заплатил. Давай кошель.\n— Там наши деньги, не его.\n— Я знаю.","Обитаемая полка Садов; рабочие с доской и кошелем, Рен и Арт, три фигуры у выхода."),
   make("p1","У края","Один из нападающих бросается к кошелю, сталкивается с Артом и теряет опору. Арт успевает схватить его за руку. Человек падает на нижнюю полку; нож выскальзывает.\n— Погоди… ногу не трогай.\nАрт показывает рабочим, куда спустить доску.","Арт удерживает предплечье напавшего над близкой нижней каменной полкой; нож выпал в стороне."),

@@ -1,5 +1,5 @@
 "use strict";
-const assert=require("node:assert/strict"),fs=require("node:fs"),{chromium,webkit}=require("playwright");
+const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),{chromium,webkit}=require("playwright");
 async function tapFighter(page,id,probeOnly=false){
  const handle=await page.waitForFunction(id=>{
   const canvas=document.querySelector("#renderCanvas"),rect=canvas.getBoundingClientRect();
@@ -45,6 +45,13 @@ async function run(type,name){
  const page=await browser.newPage({viewport:{width:844,height:390},hasTouch:true}),errors=[];
  page.on("pageerror",e=>errors.push(e.message));
  const url="http://127.0.0.1:8765/?skipFirstPlay=1&combat2Pilot=1&artAdventurePilot=1";
+ // Local CI serves the actual checkout. Temporarily withhold exactly one file,
+ // not a Playwright network mock: WebKit can bypass request interception.
+ const unavailableArt="assets/cutscenes/art-adventure/candidates/p0-v2.webp";
+ const artPath=path.resolve(__dirname,"..",unavailableArt);
+ const backupPath=artPath+".ci-unavailable-"+process.pid;
+ let withheld=false;
+ const restoreArt=()=>{if(withheld){fs.renameSync(backupPath,artPath);withheld=false;}};
  const story=page.locator(".r2a-path [data-field=story]");
  const hold=story.locator('[data-path-mission="hold"]');
  const open=async()=>{await page.evaluate(()=>{selectedHeroId="art";showScreen("heroDetail");});await page.locator("#r2aStory").tap();};
@@ -78,6 +85,11 @@ async function run(type,name){
  };
  const snapshot=()=>page.evaluate(()=>({wallet:JSON.stringify(progress),live:localStorage.getItem(ProgressV3Core.KEY),stored:JSON.parse(gameStorage().getItem(ProgressV3Core.KEY)),squad:[selectedLeaderId,...selectedPartyIds],savedSquad:gameStorage().getItem(SQUAD_SAVE_KEY),mode:squadReturnScreen}));
  try{
+  assert.ok(fs.existsSync(artPath)&&!fs.existsSync(backupPath),"Expected original P0 and no temporary backup");
+  fs.renameSync(artPath,backupPath);withheld=true;
+  const missing=await fetch(new URL(unavailableArt,url));
+  assert.equal(missing.status,404,"Actual static server must return HTTP 404 before opening the story");
+  await missing.arrayBuffer();
   await page.goto(url,{waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function"&&typeof artAdventureView==="function");
   assert.equal(await page.evaluate(()=>ART_ADVENTURE_PILOT),true);
   await open();assert.equal(await hold.count(),0);assert.match(await story.innerText(),/глава II|главу II/);
@@ -86,26 +98,51 @@ async function run(type,name){
   await page.evaluate(()=>{if(!StarCore.directGrant(progress,"nada"))throw Error("TEST_GRANT");progress.rewardReceipts=MainCampaignCore.MISSIONS.map(m=>({id:m.receipt,sourceId:m.id,day:"2026-11-26",count:1}));for(const m of MainCampaignCore.MISSIONS)gameStorage().setItem(m.key,JSON.stringify(m.id===MainCampaignCore.ID?{version:1,best:3}:{version:1,missionId:m.id,best:3}));if(!persistProgress())throw Error("TEST_SAVE");if(!saveSquad())throw Error("TEST_SQUAD_SAVE");});
   // Persist the chosen two-hero formation, rather than compare two different default rosters after Nada joins.
   const baseline=await snapshot();assert.ok(baseline.savedSquad);assert.deepEqual(baseline.squad,["ren","art",null,null,null]);
-  await open();
+  // Rehydration may reorder JSON object keys without changing any progress data.
+  const assertUnchangedProgress=async label=>{
+   const actual=await snapshot();
+   assert.deepEqual(JSON.parse(actual.wallet),JSON.parse(baseline.wallet),label+" (in-memory progress)");
+   assert.deepEqual(actual.stored,baseline.stored,label+" (persisted pilot progress)");
+   assert.equal(actual.live,baseline.live,label+" (production save)");
+  };
   const shot=()=>story.locator(".story-art").getAttribute("data-shot");
   const next=story.locator('[data-field="storyAction"]');
   const frameInfo=()=>story.locator(".story-art").evaluate(host=>{const im=host.querySelector("img"),r=im.getBoundingClientRect();return {shot:host.dataset.shot,load:host.dataset.loadState,src:im.getAttribute("src"),currentSrc:im.currentSrc,complete:im.complete,natural:[im.naturalWidth,im.naturalHeight],hidden:im.hidden,rendered:[r.width,r.height],caption:host.querySelector("small")?.textContent};});
-  const verifyShot=async id=>{
+  const files={"p0":"p0-v2.webp","p1":"p1-v1.webp","p2":"p2-v1.webp","p3":"p3-v1.webp","p4a":"p4a-v1.webp","p4b":"p4b-hybrid-v1.webp"};
+  fs.mkdirSync("artifacts",{recursive:true});
+  const verifyShot=async (id,fallback=false,tag="")=>{
    assert.equal(await shot(),id);
    try{
-    await page.waitForFunction(id=>{const host=document.querySelector(".r2a-path .story-art"),im=host?.querySelector("img"),r=im?.getBoundingClientRect();return host?.dataset.shot===id&&host.dataset.loadState==="ready"&&im.complete&&im.naturalWidth>0&&im.naturalHeight>0&&!im.hidden&&r.width>0&&r.height>0&&im.currentSrc.endsWith("/"+id+".svg");},id,{timeout:15000,polling:100});
-   }catch(e){console.error("R2/D3A FRAME FAILURE",name,id,await frameInfo());throw e;}
+    await page.waitForFunction(({id,file,fallback})=>{const host=document.querySelector(".r2a-path .story-art"),im=host?.querySelector("img"),r=im?.getBoundingClientRect();return host?.dataset.shot===id&&host.dataset.blocking===String(fallback)&&host.dataset.loadState==="ready"&&im.complete&&im.naturalWidth>0&&im.naturalHeight>0&&!im.hidden&&r.width>0&&r.height>0&&im.currentSrc.endsWith("/"+file);},{id,file:fallback?id+".svg":files[id],fallback},{timeout:15000,polling:100});
+   }catch(e){console.error("R2/D3C FRAME FAILURE",name,id,await frameInfo());throw e;}
    const info=await frameInfo();
    assert.ok(Math.abs(info.natural[0]/info.natural[1]-16/9)<.02,JSON.stringify(info));
-   console.log("R2/D3A FRAME",name,id,JSON.stringify(info));
+   console.log("R2/D3C FRAME",name,id,JSON.stringify(info));
+   if(!fallback)assert.deepEqual(info.natural,[1280,720]);
+   if(fallback)assert.match(info.caption,/Эскиз постановки/);
+   await page.screenshot({path:"artifacts/r2d3c-"+name+"-"+id+(fallback?"-fallback":"")+(tag?"-"+tag:"")+".png"});
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   };
+  await open();await verifyShot("p0",true);
+  await assertUnchangedProgress("Fallback does not write progress");
+  await page.locator(".r2a-path-back").tap();
+  restoreArt();
+  const restored=await fetch(new URL(unavailableArt,url));
+  assert.equal(restored.status,200,"Original WebP restored on static server");
+  const restoredBytes=Buffer.from(await restored.arrayBuffer());
+  assert.deepEqual(restoredBytes,fs.readFileSync(artPath),"Server returns the exact restored file");
+  // A new document discards cached failed image resources.
+  await page.reload({waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function"&&typeof artAdventureView==="function");
+  await assertUnchangedProgress("Reload preserves progress");
+  await open();
   for(const id of ["p0","p1","p2"]){await verifyShot(id);assert.equal(await hold.count(),0);await next.tap();}
-  await verifyShot("p3");assert.equal(await hold.isEnabled(),true);assert.equal((await snapshot()).wallet,baseline.wallet,"Watching does not write progress");
-  await page.locator(".r2a-path-back").tap();await open();await verifyShot("p0");await story.locator("[data-story-skip]").tap();await verifyShot("p3");assert.match(await story.innerText(),/заработок за себя и товарищей/);assert.equal((await snapshot()).wallet,baseline.wallet,"Skipping does not write progress");
+  await verifyShot("p3");assert.equal(await hold.isEnabled(),true);await assertUnchangedProgress("Watching does not write progress");
+  await page.locator(".r2a-path-back").tap();
+  await open();await verifyShot("p0");
+  await story.locator("[data-story-skip]").tap();await verifyShot("p3");assert.match(await story.innerText(),/заработок за себя и товарищей/);await assertUnchangedProgress("Skipping does not write progress");
   await hold.waitFor({state:"visible"});assert.equal(await hold.isEnabled(),true);
   for(const [width,height] of [[844,390],[932,430],[844,320]]){
-   await page.setViewportSize({width,height});const bounds=await hold.boundingBox();assert.ok(bounds&&bounds.height>=44);
+   await page.setViewportSize({width,height});await verifyShot("p3",false,width+"x"+height);const bounds=await hold.boundingBox();assert.ok(bounds&&bounds.height>=44);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   }
   await page.setViewportSize({width:844,height:390});
@@ -141,6 +178,8 @@ async function run(type,name){
   assert.equal(done.stored.artPath.phase,"complete",JSON.stringify(victory));assert.equal(done.stored.artPath.selected,null);assert.equal(done.stored.artPath.outcome,"left");
   assert.equal(done.stored.currency,baseline.stored.currency);assert.equal(done.stored.energy.value,baseline.stored.energy.value);assert.deepEqual(done.stored.rewardReceipts,baseline.stored.rewardReceipts);assert.deepEqual(done.squad,baseline.squad);assert.equal(done.savedSquad,baseline.savedSquad);assert.equal(done.live,baseline.live);
   assert.match(await story.innerText(),/Люди вышли в безопасное место/);await verifyShot("p4b");
+  for(const [width,height] of [[844,390],[932,430],[844,320]]){await page.setViewportSize({width,height});await verifyShot("p4b",false,width+"x"+height);}
+  await page.setViewportSize({width:844,height:390});
   await story.locator('[data-field="storyAction"]').tap();
   assert.equal(await page.locator('.r2a-path [data-node="guardian-2"]').getAttribute("data-locked"),"false");
   assert.equal(await page.locator('.r2a-path [data-node="command-2"]').getAttribute("data-locked"),"false");
@@ -198,6 +237,6 @@ async function run(type,name){
   assert.deepEqual((await snapshot()).squad,baseline.squad);assert.equal((await snapshot()).savedSquad,baseline.savedSquad);assert.deepEqual(errors,[]);
   console.log("R2/D2B PERSONAL SLOT",name,"PASS");
   fs.mkdirSync("artifacts",{recursive:true});await page.screenshot({path:"artifacts/r2d2a-"+name+".png"});console.log("R2/D2A REAL ROUTE",name,"PASS");
- }catch(e){console.error("R2/D2A DIAGNOSTIC",name,await page.evaluate(()=>({screen:document.querySelector(".screen.active")?.id,winner:typeof state!=="undefined"?state?.winner:null,outcome:typeof state!=="undefined"?state?.tacticalOutcome:null,notice:typeof artAdventureNotice!=="undefined"?artAdventureNotice:null,actions:state?.allyActions,seed:state?.rng?.seed,actor:state?.fighters[state.currentActor]?.id,pending:BattleAnimation.pending(),dt:engine?.getDeltaTime(),renderLoopRunning,documentHidden:document.hidden,entry:combat2EntryPending,gate:!!battleAssetGate,transition:visualTransition,activity:state?.fighters.map(f=>({id:f.id,hp:f.hp,activity:BattleAnimation.activity(f.id)})),speed:BattleSpeed.get()})).catch(()=>null),errors);throw e;}finally{await browser.close();}
+ }catch(e){console.error("R2/D2A DIAGNOSTIC",name,await page.evaluate(()=>({screen:document.querySelector(".screen.active")?.id,winner:typeof state!=="undefined"?state?.winner:null,outcome:typeof state!=="undefined"?state?.tacticalOutcome:null,notice:typeof artAdventureNotice!=="undefined"?artAdventureNotice:null,actions:state?.allyActions,seed:state?.rng?.seed,actor:state?.fighters[state.currentActor]?.id,pending:BattleAnimation.pending(),dt:engine?.getDeltaTime(),renderLoopRunning,documentHidden:document.hidden,entry:combat2EntryPending,gate:!!battleAssetGate,transition:visualTransition,activity:state?.fighters.map(f=>({id:f.id,hp:f.hp,activity:BattleAnimation.activity(f.id)})),speed:BattleSpeed.get()})).catch(()=>null),errors);throw e;}finally{try{restoreArt();}finally{await browser.close();}}
 }
 (async()=>{for(const [type,name] of [[chromium,"chromium"],[webkit,"webkit"]])await run(type,name)})().catch(e=>{console.error(e);process.exitCode=1});

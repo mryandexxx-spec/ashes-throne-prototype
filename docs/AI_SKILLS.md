@@ -45,3 +45,6 @@ Prefer `ashes-babylonjs` for engine-specific 3D tasks; pair it with `performance
 Use task-specific Node regression tests, Chromium/WebKit at 844×390, 932×430 and 844×320 when UI changes, plus actual iPhone Safari acceptance separately. Check touch, safe-area, no horizontal overflow, victory/defeat/restart and return flows where relevant. For performance provide baseline/after measurements, not visual guesses. For save changes test failed writes, rollback, reload and version handling with the real SaveCore. Follow branch → tests → PR workflow. State separately code changes, automatic tests, browser checks, physical-device checks and owner approval.
 
 This integration adds instructions and licensed text only; no `package.json`, `index.html`, gameplay JavaScript, 3D models or styles are changed.
+
+## MAP-3D — research skill
+- [ashes-level-design](../.agents/skills/ashes-level-design/SKILL.md) — project-owned research draft, use for MAP-3D blockouts, Blender source/GLB/nav/markers, gameplay routes and independent visual/browser acceptance. No new mechanics adopted. Use with ashes-babylonjs and performance-optimization. No external skill files or new dependencies vendored in this step.

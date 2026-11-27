@@ -50,7 +50,8 @@ async function tapFighter(page,id,probeOnly=false){
 
 async function run(name,type,viewport,skip=false){
  const browser=await type.launch(type===chromium?{headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage"]}:{headless:true});
- const page=await browser.newPage({viewport,hasTouch:true,reducedMotion:"reduce"});
+ const context=await browser.newContext({viewport,hasTouch:true,reducedMotion:"reduce"});
+ const page=await context.newPage();
  const key=name+"-"+viewport.width+"x"+viewport.height+(skip?"-skip-auto":"-manual");
  const start=Date.now(),events=[],errors=[];let taps=0;
  page.on("pageerror",e=>errors.push(e.message));
@@ -233,8 +234,9 @@ async function run(name,type,viewport,skip=false){
    if(!pilot){
     // Close the playing tab, then start a new one in the same browser profile.
     // sessionStorage cannot survive this; the ordinary wallet must.
-    const context=page.context(),next=await context.newPage();
     await page.close();
+    const next=await context.newPage();
+    next.on("pageerror",e=>errors.push(e.message));
     try{
      await next.goto(origin.toString(),{waitUntil:"load",timeout:60000});
      await next.waitForFunction(()=>typeof FirstPlayCore!=="undefined"&&typeof ArtAdventureCore!=="undefined"&&document.querySelector("#walletWriterNotice")?.style.display==="none",null,{timeout:60000});

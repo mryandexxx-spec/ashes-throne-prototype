@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "provider": "Poly Haven",
+  "items": [
+    {
+      "id": "modular_wooden_pier",
+      "author": "Rico Cilliers",
+      "category": "wooden structural modules",
+      "listedScale": "19m kit",
+      "listedTriangles": 85000,
+      "resolution": "1k",
+      "source": "https://polyhaven.com/a/modular_wooden_pier",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://polyhaven.com/license",
+      "checked": "2026-11-27",
+      "status": "candidate"
+    },
+    {
+      "id": "stone_fire_pit",
+      "author": "Sebastian Platen",
+      "category": "practical courtyard prop",
+      "listedScale": "1.4m",
+      "listedTriangles": 4000,
+      "resolution": "1k",
+      "source": "https://polyhaven.com/a/stone_fire_pit",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://polyhaven.com/license",
+      "checked": "2026-11-27",
+      "status": "candidate"
+    },
+    {
+      "id": "wicker_basket_02",
+      "author": "Kuutti Siitonen",
+      "category": "storage prop",
+      "listedScale": "0.4m",
+      "listedTriangles": 18000,
+      "resolution": "1k",
+      "source": "https://polyhaven.com/a/wicker_basket_02",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://polyhaven.com/license",
+      "checked": "2026-11-27",
+      "status": "candidate"
+    },
+    {
+      "id": "shrub_02",
+      "author": "Rico Cilliers",
+      "category": "garden foliage",
+      "listedScale": "5.3m kit",
+      "listedTriangles": 52000,
+      "resolution": "1k",
+      "source": "https://polyhaven.com/a/shrub_02",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://polyhaven.com/license",
+      "checked": "2026-11-27",
+      "status": "candidate"
+    }
+  ]
+}

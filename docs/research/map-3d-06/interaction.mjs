@@ -1,6 +1,7 @@
 import {fresh,points,nearby,actions,act,objective} from './exploration-core.mjs';
 import {read,write} from './checkpoint.mjs';
-const provider=()=>window.sessionStorage;
+const durable=new URLSearchParams(location.search).get("durable")==="1";
+const provider=()=>{if(!ProgressWriterCore.canPersist())throw Error("MAP3D_WRITER_REQUIRED");return durable?Map3DProfile.storage():window.sessionStorage;};
 const names={spawn:'Начало',direct:'Пост',court:'Двор',exit:'Выход'};
 const labels={inspect:'Осмотреть пост',scout:'Найти обход',challenge:'Запросить бой',bypass:'Пройти в обход',fight:'Открыть настоящий бой',cancel:'Отмена',finish:'Завершить маршрут'};
 export function createInteractions(adapter){
@@ -8,10 +9,10 @@ export function createInteractions(adapter){
  let loaded=read(provider),state=loaded.state,blocked=!loaded.ok,signature='',nodes={};
  for(const [id,name] of Object.entries(names)){
   const b=document.createElement('button');b.type='button';b.dataset.poi=id;b.textContent=name;b.setAttribute('aria-label','Идти: '+name);
-  b.onclick=()=>{const v=adapter.view();if(!v.ready||state.phase==='encounter'||state.phase==='complete')return;if(nearby(v.pos,v.walking)!==id)adapter.move(points[id]);};
+  b.onclick=()=>{const v=adapter.view();if(blocked||!v.ready||state.phase==='encounter'||state.phase==='complete')return;if(nearby(v.pos,v.walking)!==id)adapter.move(points[id]);};
   root.append(b);nodes[id]=b;
  }
- function reset(){loaded=read(provider);state=loaded.state;blocked=!loaded.ok;signature='';panel.hidden=true;root.hidden=true;goal.textContent=blocked?'Сохранение недоступно. Сбросить маршрут.':objective(state);}
+ function reset(){loaded=read(provider);state=loaded.state;blocked=!loaded.ok;signature='';panel.hidden=true;root.hidden=true;goal.textContent=blocked?'Сохранение недоступно. Проверь вкладки и перезагрузи.':objective(state);}
  function restart(){const next=fresh();if(!write(provider,next)){blocked=true;goal.textContent='Не удалось сохранить маршрут';return false;}reset();return true;}
  function checkpoint(){return points[state.at]||points.spawn;}
  function update(){
@@ -34,5 +35,5 @@ export function createInteractions(adapter){
    if(!b.hidden){b.style.left=p.x+'px';b.style.top=y+'px';}
   }
  }
- return {reset,restart,checkpoint,update,snapshot:()=>({...state}),canMove:()=>state.phase!=='encounter'&&state.phase!=='complete'};
+ return {reset,restart,checkpoint,update,snapshot:()=>({...state}),canMove:()=>!blocked&&state.phase!=='encounter'&&state.phase!=='complete'};
 }

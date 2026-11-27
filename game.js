@@ -52,7 +52,8 @@ const $=s=>document.querySelector(s);
 // B17.3A: same campaign/save/receipt code, but isolated to this tab.
 // Never fall back to the live wallet when sessionStorage is unavailable.
 const COMBAT2_PILOT=typeof location!=="undefined"&&/(?:^|[?&])combat2Pilot=1(?:&|$)/.test(location.search);
-function gameStorage(){return COMBAT2_PILOT?window.sessionStorage:window.localStorage;}
+const MAP3D_DURABLE=COMBAT2_PILOT&&/(?:^|[?&])map3d06=2(?:&|$)/.test(location.search);
+function gameStorage(){return MAP3D_DURABLE?Map3DProfile.storage():COMBAT2_PILOT?window.sessionStorage:window.localStorage;}
 // AUD003-E: normal first-session routes use the verified native engine and
 // persistent profile. The historical explicit pilot still uses sessionStorage.
 // Keep legacy mode outside this scope; an explicit diagnostic rollback is available.
@@ -5848,22 +5849,22 @@ if(typeof NetworkNavigation!=="undefined")NetworkNavigation.mount({
 });
 
 // MAP-3D-06: opt-in isolated navigation only; no default campaign or wallet change.
-if(COMBAT2_PILOT&&/(?:^|[?&])map3d06=1(?:&|$)/.test(location.search)){
+if(COMBAT2_PILOT&&/(?:^|[?&])map3d06=[12](?:&|$)/.test(location.search)){
  import("./map-3d-checkpoint.mjs").then(C=>{
   const provider=()=>gameStorage();
   const initial=C.read(provider);
-  if(!initial.ok||initial.state.phase!=="encounter")return;
+  if(!initial.ok||initial.state.phase!=="encounter"||!mainCampaignWritable()){window.walletWriterHalt?.();return;}
   const mission=MainCampaignCore.ID;
   if(mission!==C.MISSION)return;
-  window.map3d06Record=result=>{const current=C.read(provider);if(!current.ok)return;const next=C.record(current.state,result);if(next!==current.state&&!C.write(provider,next))mainCampaignNotice="Не удалось сохранить точку возврата. Повторите маршрут после перезагрузки.";};
+  window.map3d06Record=result=>{const current=C.read(provider);if(!current.ok||!mainCampaignWritable()){window.walletWriterHalt?.();return;}const next=C.record(current.state,result);if(next!==current.state&&!C.write(provider,next)){mainCampaignNotice="Не удалось сохранить точку возврата. Повторите маршрут после перезагрузки.";window.walletWriterHalt?.();}};
   function back(event){
-   event.preventDefault();event.stopImmediatePropagation();if(mainCampaignClaiming)return;
+   event.preventDefault();event.stopImmediatePropagation();if(mainCampaignClaiming||!mainCampaignWritable())return;
    const current=C.read(provider);if(!current.ok){alert("Не удалось прочитать маршрут.");return;}
    const next=C.leave(current.state,mainCampaignStatus(mission));
    if(!C.write(provider,next)){alert("Не удалось сохранить маршрут.");return;}
-   showScreen("mainCampaign");location.assign("./preview/map-3d-06/");
+   showScreen("mainCampaign");location.assign("./preview/map-3d-06/"+(MAP3D_DURABLE?"?durable=1":""));
   }
-  for(const id of ["#campaignBackButton","#mainCampaignResultBack"]){const b=$(id);if(b)b.addEventListener("click",back,true);}
+  for(const id of ["#campaignBackButton","#mainCampaignResultBack","#battleMenuRetreat","#squadBack"]){const b=$(id);if(b)b.addEventListener("click",back,true);}
   showScreen("mainCampaign");mainCampaignSelectedId=mission;renderMainCampaign();
   if(!initial.state.won)openMainCampaignMission(mission);
   // Re-entering after a confirmed win shows the real outstanding reward, never creates one.

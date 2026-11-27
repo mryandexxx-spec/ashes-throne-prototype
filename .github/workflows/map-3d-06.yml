@@ -7,6 +7,8 @@ on:
       - 'docs/MAP_3D_06.md'
       - 'map-3d-checkpoint.mjs'
       - 'game.js'
+      - 'map-3d-profile.js'
+      - 'index.html'
       - '.github/workflows/map-3d-06.yml'
 permissions:
   contents: read
@@ -15,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   combat-handoff:
-    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feature/map-3d-06-combat-save'
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feature/map-3d-06b-durable'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     permissions:
@@ -36,6 +38,7 @@ jobs:
           node --check docs/research/map-3d-06/browser-test.mjs
           cp map-3d-checkpoint.mjs docs/research/map-3d-06/checkpoint.mjs
           node docs/research/map-3d-06/core-test.mjs
+          node --test tests/map-3d-profile.test.js
           cp map-3d-checkpoint.mjs "$RUNNER_TEMP/preview-tools/checkpoint.mjs"
           cp docs/research/map-3d-06/{explorer,interaction,exploration-core}.mjs "$RUNNER_TEMP/preview-tools/"
           "$RUNNER_TEMP/preview-tools/node_modules/.bin/esbuild" "$RUNNER_TEMP/preview-tools/explorer.mjs" --bundle --platform=browser --format=esm --external:fs --external:path --external:module --external:node:* --loader:.wasm=file --legal-comments=eof --outfile="$RUNNER_TEMP/candidate/lab.js"
@@ -46,13 +49,15 @@ jobs:
           assert.equal(m.files['level.glb'],'5b3dba836642df6c7bde7761cb17c4798e76527bf3a44e3e565fafaa472ba899');
           for(const [name,sha] of Object.entries(m.files))assert.equal(createHash('sha256').update(fs.readFileSync(p+name)).digest('hex'),sha);
           assert(fs.existsSync('assets/ren-meshy-mixamo-animated.glb'));
-          assert(fs.readFileSync('preview/map-3d-06/index.html','utf8').includes('COMBAT-06A'));
+          assert(fs.readFileSync('preview/map-3d-06/index.html','utf8').includes('COMBAT-06B'));
           JS
       - name: Real taps and camera/gesture/lifecycle regression
         run: |
           cp docs/research/map-3d-06/browser-test.mjs "$RUNNER_TEMP/preview-tools/"
           "$RUNNER_TEMP/preview-tools/node_modules/.bin/playwright" install --with-deps chromium webkit
           node "$RUNNER_TEMP/preview-tools/browser-test.mjs" "$PWD" "$RUNNER_TEMP/evidence"
+          cp docs/research/map-3d-06/durable-test.mjs "$RUNNER_TEMP/preview-tools/"
+          node "$RUNNER_TEMP/preview-tools/durable-test.mjs" "$PWD" "$RUNNER_TEMP/evidence/durable"
       - name: Materialize only tested new preview bundle on the work branch
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -60,13 +65,13 @@ jobs:
           set -euo pipefail
           if git ls-files --error-unmatch preview/map-3d-06/lab.js >/dev/null 2>&1; then exit 0; fi
           test "$(git rev-parse HEAD)" = "$HEAD_SHA"
-          test "$(git ls-remote origin refs/heads/feature/map-3d-06-combat-save | cut -f1)" = "$HEAD_SHA"
+          test "$(git ls-remote origin refs/heads/feature/map-3d-06b-durable | cut -f1)" = "$HEAD_SHA"
           git add -- preview/map-3d-06/lab.js
           test "$(git diff --cached --name-only)" = "preview/map-3d-06/lab.js"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "MAP-3D-06: materialize tested preview bundle"
-          git push origin HEAD:refs/heads/feature/map-3d-06-combat-save
+          git push origin HEAD:refs/heads/feature/map-3d-06b-durable
       - uses: actions/upload-artifact@v4
         if: always()
         with:

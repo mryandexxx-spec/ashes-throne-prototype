@@ -41,8 +41,9 @@ jobs:
           git clone --no-checkout https://github.com/VAST-AI-Research/TripoSR.git "$RUNNER_TEMP/TripoSR"
           git -C "$RUNNER_TEMP/TripoSR" checkout 107cefdc244c39106fa830359024f6a2f1c78871
           git -C "$RUNNER_TEMP/TripoSR" rev-parse HEAD > "$RUNNER_TEMP/custom-kit/model-code.txt"
-          python -m pip install 'numpy<2' omegaconf==2.3.0 Pillow==10.1.0 einops==0.7.0 transformers==4.35.0 trimesh==4.0.5 'rembg[cpu]==2.0.61' huggingface-hub==0.25.2 'imageio[ffmpeg]' xatlas==0.0.9 moderngl==5.10.0
-          python -m pip install 'git+https://github.com/tatsy/torchmcubes.git'
+          python -m pip install 'numpy<2' omegaconf==2.3.0 Pillow==10.1.0 einops==0.7.0 transformers==4.35.0 trimesh==4.0.5 'rembg[cpu]==2.0.61' huggingface-hub==0.17.3 tokenizers==0.14.1 'imageio[ffmpeg]' xatlas==0.0.9 moderngl==5.10.0
+          python -m pip install --no-build-isolation 'git+https://github.com/tatsy/torchmcubes.git'
+          python -m pip check
           python -m pip freeze > "$RUNNER_TEMP/custom-kit/packages.txt"
       - name: One CPU reconstruction, vertex colors only, no source mesh supplied
         run: |

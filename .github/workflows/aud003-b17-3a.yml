@@ -2,7 +2,31 @@ name: Combat 2.0 actual first session · mobile browser
 on:
   pull_request:
     branches: [main]
-    paths: ['game.js', 'tests/first-play-closeout-browser.cjs', '.github/workflows/aud003-b17-3a.yml']
+    paths:
+      - 'game.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'first-play*.js'
+      - 'main-campaign-*.js'
+      - 'art-adventure-*.js'
+      - 'hero-card-r2a*'
+      - 'combat-*.js'
+      - 'ability-*.js'
+      - 'skill-core.js'
+      - 'hero-stats-*.js'
+      - 'hero-collection-core.js'
+      - 'star-core.js'
+      - 'progress-*.js'
+      - 'reward-policy-core.js'
+      - 'auto-decision.js'
+      - 'enemy-decision.js'
+      - 'npc-enemy-data.js'
+      - 'initiative-model.js'
+      - 'battle-rng.js'
+      - 'squad-stage-3d.js'
+      - 'assets/cutscenes/**'
+      - 'tests/first-play-closeout-browser.cjs'
+      - '.github/workflows/aud003-b17-3a.yml'
   workflow_dispatch:
 permissions:
   contents: read

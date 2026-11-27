@@ -171,13 +171,5 @@ async function check(browserName,engine,viewport){
  for(const [name,engine] of [["chromium",chromium],["webkit",webkit]])
   for(const viewport of [{width:844,height:390},{width:932,height:430}])
    await check(name,engine,viewport);
- // FIRSTPLAY001: independent real first-boot/hold/reset coverage, using the
- // existing squad browser job to preserve the selective CI workflow.
- require("node:child_process").execFileSync(process.execPath,
-  [require.resolve("./first-play-browser.cjs")],
-  // The nested First Play suite now includes two full manual campaign routes,
-  // auto/reload and additional onboarding cases. Two runs hit the old 8 min
-  // aggregate cap after passing both manual routes. Keep every individual
-  // assertion/timeout unchanged; budget the full sequential suite separately.
-  {stdio:"inherit",timeout:720000});
+ // First Play has its own CI owner; do not spawn another browser suite here.
 })().catch(error=>{console.error(error);process.exitCode=1;});

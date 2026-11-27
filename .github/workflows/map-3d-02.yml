@@ -1,0 +1,55 @@
+name: MAP-3D-02 playable explorer lab
+on:
+  pull_request:
+    paths:
+      - 'docs/research/map-3d-02/**'
+      - '.github/workflows/map-3d-02.yml'
+permissions:
+  contents: read
+jobs:
+  playable:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build offline level with proven authoring scripts
+        run: |
+          python -m pip install --disable-pip-version-check bpy==4.5.17
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgl1 libxkbcommon0 libxrender1 libxi6 libxxf86vm1
+          npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/map02" recast-navigation@0.43.1 navcat@0.4.1 babylonjs@9.33.2 babylonjs-loaders@9.33.2 esbuild@0.25.12 playwright@1.56.1
+          cp docs/research/map-3d-01-{nav-core.mjs,blender.py,level-validate.mjs} docs/research/map-3d-02/* "$RUNNER_TEMP/map02/"
+          cd "$RUNNER_TEMP/map02"
+          node --input-type=module -e 'import {positions,indices} from "./map-3d-01-nav-core.mjs";import {writeFileSync} from "node:fs";writeFileSync("fixture.json",JSON.stringify({positions,indices}));'
+          python map-3d-01-blender.py level-output fixture.json
+          node map-3d-01-level-validate.mjs level-output
+      - name: Package lab and test touch paths in two browsers
+        run: |
+          repo="$PWD"
+          cd "$RUNNER_TEMP/map02"
+          mkdir -p site/hero site/level evidence
+          cp level-output/base/{level.glb,level.json,nav.json,navmesh.bin} site/level/
+          cp "$repo/assets/ren-meshy-mixamo-animated.glb" site/hero/ren.glb
+          cp node_modules/babylonjs/babylon.js node_modules/babylonjs-loaders/babylonjs.loaders.min.js site/
+          cp index.html site/
+          ./node_modules/.bin/esbuild explorer.mjs --bundle --platform=browser --format=esm --external:fs --external:path --external:module --external:node:* --loader:.wasm=file --outfile=site/lab.js
+          node --input-type=module -e 'import {readFileSync,writeFileSync} from "node:fs";import {createHash} from "node:crypto";const files={};for(const n of ["level.glb","level.json","nav.json","navmesh.bin"])files[n]=createHash("sha256").update(readFileSync("site/level/"+n)).digest("hex");writeFileSync("site/level/manifest.json",JSON.stringify({schema:1,recast:"0.43.1",files},null,2));'
+          du -ab site > evidence/payload-bytes.txt
+          npm ls --all --json > evidence/dependency-tree.json
+          ./node_modules/.bin/playwright install --with-deps chromium webkit
+          node browser-test.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-02-evidence
+          path: |
+            ${{ runner.temp }}/map02/evidence/
+            ${{ runner.temp }}/map02/level-output/receipt.json
+            ${{ runner.temp }}/map02/level-output/validation.json
+          if-no-files-found: warn

@@ -1,0 +1,113 @@
+name: MAP-3D DEVICE-01 preview
+on:
+  pull_request:
+    paths:
+      - 'preview/map-3d/**'
+      - 'docs/research/map-3d-device-preview/**'
+      - 'docs/MAP_3D_DEVICE_PREVIEW.md'
+      - '.github/workflows/map-3d-device-preview.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: map-3d-device-preview-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+jobs:
+  preview:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feature/map-3d-device-preview'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Determine whether the checked package exists
+        id: package
+        shell: bash
+        run: |
+          if test -f preview/map-3d/level/manifest.json; then echo 'seed=false' >> "$GITHUB_OUTPUT"; else echo 'seed=true' >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/download-artifact@v4
+        if: steps.package.outputs.seed == 'true'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: 46043645224
+          name: map-3d-03b-coherent-walk-evidence
+          path: ${{ runner.temp }}/walk
+      - name: Install pinned isolated browser test toolchain
+        run: |
+          npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/preview-tools" recast-navigation@0.43.1 babylonjs@9.33.2 babylonjs-loaders@9.33.2 esbuild@0.25.12 playwright@1.56.1
+      - name: Seed only the separately scoped preview directory
+        if: steps.package.outputs.seed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p preview/map-3d/{level,third-party-licenses}
+          for n in ATTRIBUTION.txt LICENSE-upstream.txt README-source.md atlas-fix.json bake-receipt.json grid-receipt.json ground-receipt.json dataset-revision.json level.glb level.json manifest.json nav.json navmesh.bin source-receipt.json supplemental-receipt.json; do
+            cp "$RUNNER_TEMP/walk/site/level/$n" "preview/map-3d/level/$n"
+          done
+          cp "$RUNNER_TEMP/preview-tools/node_modules/babylonjs/babylon.js" "$RUNNER_TEMP/preview-tools/node_modules/babylonjs-loaders/babylonjs.loaders.min.js" preview/map-3d/
+          cp docs/research/map-3d-device-preview/explorer.mjs "$RUNNER_TEMP/preview-tools/"
+          "$RUNNER_TEMP/preview-tools/node_modules/.bin/esbuild" "$RUNNER_TEMP/preview-tools/explorer.mjs" --bundle --platform=browser --format=esm --external:fs --external:path --external:module --external:node:* --loader:.wasm=file --legal-comments=eof --outfile=preview/map-3d/lab.js
+          node --input-type=module - "$RUNNER_TEMP/preview-tools/node_modules" <<'JS'
+          import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';
+          const root=process.argv[2],out='preview/map-3d/third-party-licenses',packages=['babylonjs','babylonjs-loaders','recast-navigation','@recast-navigation/core','@recast-navigation/wasm'];
+          for(const name of packages){
+            const dir=path.join(root,name),info=JSON.parse(fs.readFileSync(path.join(dir,'package.json'),'utf8'));
+            const files=fs.readdirSync(dir).filter(n=>/^(license|licence|notice|copying)(\.|$)/i.test(n));
+            assert(files.length>0,'Missing license for '+name);
+            for(const file of files)fs.copyFileSync(path.join(dir,file),path.join(out,name.replace(/[@/]/g,'-')+'-'+file));
+            console.log(name,info.version,info.license);
+          }
+          JS
+          printf '\nDEVICE-01: distributed research environment (CC BY-SA 3.0). Changes and editable production history: https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/600 . The separate Ren character is not part of this license grant.\n' >> preview/map-3d/level/ATTRIBUTION.txt
+      - name: Verify exact scene payload and no production entry imports
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+          const root='preview/map-3d/',manifest=JSON.parse(fs.readFileSync(root+'level/manifest.json'));
+          assert.equal(manifest.files['level.glb'],'5b3dba836642df6c7bde7761cb17c4798e76527bf3a44e3e565fafaa472ba899');
+          for(const [name,sha] of Object.entries(manifest.files)){assert(['level.glb','level.json','nav.json','navmesh.bin'].includes(name));assert.equal(createHash('sha256').update(fs.readFileSync(root+'level/'+name)).digest('hex'),sha);}
+          assert(fs.existsSync('assets/ren-meshy-mixamo-animated.glb'));
+          assert(fs.readFileSync(root+'level/ATTRIBUTION.txt','utf8').includes('Wildfire Games'));
+          assert(fs.readFileSync(root+'index.html','utf8').includes('DEVICE-01'));
+          assert(!fs.readFileSync(root+'index.html','utf8').includes('game.js'));
+          for(const f of ['lab.js','babylon.js','babylonjs.loaders.min.js'])assert(fs.statSync(root+f).size>1000);
+          JS
+          node --check docs/research/map-3d-device-preview/explorer.mjs
+          node --check docs/research/map-3d-device-preview/browser-test.mjs
+          git diff --exit-code -- index.html game.js package.json styles.css
+      - name: Test real mobile taps and live quality switches at three viewport sizes
+        run: |
+          cp docs/research/map-3d-device-preview/browser-test.mjs "$RUNNER_TEMP/preview-tools/"
+          "$RUNNER_TEMP/preview-tools/node_modules/.bin/playwright" install --with-deps chromium webkit
+          node "$RUNNER_TEMP/preview-tools/browser-test.mjs" "$PWD" "$RUNNER_TEMP/evidence"
+      - name: Commit only successfully tested generated package to the PR branch
+        if: steps.package.outputs.seed == 'true'
+        shell: bash
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          test "$(git ls-remote origin refs/heads/feature/map-3d-device-preview | cut -f1)" = "$HEAD_SHA"
+          git add -- preview/map-3d/
+          test -n "$(git diff --cached --name-only)"
+          git diff --cached --name-only | awk '!/^preview\/map-3d\//{bad=1} END{exit bad}'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "DEVICE-01: checked static preview package"
+          git push origin HEAD:refs/heads/feature/map-3d-device-preview
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-device-preview-evidence
+          path: ${{ runner.temp }}/evidence/
+          if-no-files-found: warn
+          retention-days: 30

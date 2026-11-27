@@ -86,6 +86,13 @@ async function run(type,name){
   await page.evaluate(()=>{if(!StarCore.directGrant(progress,"nada"))throw Error("TEST_GRANT");progress.rewardReceipts=MainCampaignCore.MISSIONS.map(m=>({id:m.receipt,sourceId:m.id,day:"2026-11-26",count:1}));for(const m of MainCampaignCore.MISSIONS)gameStorage().setItem(m.key,JSON.stringify(m.id===MainCampaignCore.ID?{version:1,best:3}:{version:1,missionId:m.id,best:3}));if(!persistProgress())throw Error("TEST_SAVE");if(!saveSquad())throw Error("TEST_SQUAD_SAVE");});
   // Persist the chosen two-hero formation, rather than compare two different default rosters after Nada joins.
   const baseline=await snapshot();assert.ok(baseline.savedSquad);assert.deepEqual(baseline.squad,["ren","art",null,null,null]);
+  // Rehydration may reorder JSON object keys without changing any progress data.
+  const assertUnchangedProgress=async label=>{
+   const actual=await snapshot();
+   assert.deepEqual(JSON.parse(actual.wallet),JSON.parse(baseline.wallet),label+" (in-memory progress)");
+   assert.deepEqual(actual.stored,baseline.stored,label+" (persisted pilot progress)");
+   assert.equal(actual.live,baseline.live,label+" (production save)");
+  };
   const shot=()=>story.locator(".story-art").getAttribute("data-shot");
   const next=story.locator('[data-field="storyAction"]');
   const frameInfo=()=>story.locator(".story-art").evaluate(host=>{const im=host.querySelector("img"),r=im.getBoundingClientRect();return {shot:host.dataset.shot,load:host.dataset.loadState,src:im.getAttribute("src"),currentSrc:im.currentSrc,complete:im.complete,natural:[im.naturalWidth,im.naturalHeight],hidden:im.hidden,rendered:[r.width,r.height],caption:host.querySelector("small")?.textContent};});
@@ -111,17 +118,18 @@ async function run(type,name){
   await page.route(failedArt,route=>{aborted++;return route.abort();});
   await open();await verifyShot("p0",true);
   assert.ok(aborted>0,"The WebP request was actually intercepted");
-  assert.equal((await snapshot()).wallet,baseline.wallet,"Fallback does not write progress");
+  await assertUnchangedProgress("Fallback does not write progress");
   await page.locator(".r2a-path-back").tap();
   await page.unroute(failedArt);
   // A new document also discards WebKit's cached failed image resource.
   await page.reload({waitUntil:"load"});await page.waitForFunction(()=>typeof showScreen==="function"&&typeof artAdventureView==="function");
+  await assertUnchangedProgress("Reload preserves progress");
   await open();
   for(const id of ["p0","p1","p2"]){await verifyShot(id);assert.equal(await hold.count(),0);await next.tap();}
-  await verifyShot("p3");assert.equal(await hold.isEnabled(),true);assert.equal((await snapshot()).wallet,baseline.wallet,"Watching does not write progress");
+  await verifyShot("p3");assert.equal(await hold.isEnabled(),true);await assertUnchangedProgress("Watching does not write progress");
   await page.locator(".r2a-path-back").tap();
   await open();await verifyShot("p0");
-  await story.locator("[data-story-skip]").tap();await verifyShot("p3");assert.match(await story.innerText(),/заработок за себя и товарищей/);assert.equal((await snapshot()).wallet,baseline.wallet,"Skipping does not write progress");
+  await story.locator("[data-story-skip]").tap();await verifyShot("p3");assert.match(await story.innerText(),/заработок за себя и товарищей/);await assertUnchangedProgress("Skipping does not write progress");
   await hold.waitFor({state:"visible"});assert.equal(await hold.isEnabled(),true);
   for(const [width,height] of [[844,390],[932,430],[844,320]]){
    await page.setViewportSize({width,height});await verifyShot("p3",false,width+"x"+height);const bounds=await hold.boundingBox();assert.ok(bounds&&bounds.height>=44);

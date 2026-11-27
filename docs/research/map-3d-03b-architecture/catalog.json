@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "items": [
+    {
+      "id": "andersson_house_1",
+      "author": "Daniel Andersson",
+      "license": "CC0-1.0",
+      "source": "https://lpc.opengameart.org/content/medieval-house-pack",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-11-27",
+      "url": "https://lpc.opengameart.org/sites/default/files/75519_House1Upload_blend.zip",
+      "filename": "75519_House1Upload_blend.zip",
+      "category": "residential architecture",
+      "status": "candidate"
+    },
+    {
+      "id": "andersson_house_2",
+      "author": "Daniel Andersson",
+      "license": "CC0-1.0",
+      "source": "https://lpc.opengameart.org/content/medieval-house-pack",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-11-27",
+      "url": "https://lpc.opengameart.org/sites/default/files/75861_House2_1Upload_blend.zip",
+      "filename": "75861_House2_1Upload_blend.zip",
+      "category": "residential architecture",
+      "status": "candidate"
+    },
+    {
+      "id": "andersson_house_3",
+      "author": "Daniel Andersson",
+      "license": "CC0-1.0",
+      "source": "https://lpc.opengameart.org/content/medieval-house-pack",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-11-27",
+      "url": "https://lpc.opengameart.org/sites/default/files/75862_House3Upload_blend.zip",
+      "filename": "75862_House3Upload_blend.zip",
+      "category": "residential architecture",
+      "status": "candidate"
+    },
+    {
+      "id": "andersson_house_4",
+      "author": "Daniel Andersson",
+      "license": "CC0-1.0",
+      "source": "https://lpc.opengameart.org/content/medieval-house-pack",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-11-27",
+      "url": "https://lpc.opengameart.org/sites/default/files/75864_House4Upload_blend.zip",
+      "filename": "75864_House4Upload_blend.zip",
+      "category": "residential architecture",
+      "status": "candidate"
+    }
+  ]
+}

@@ -105,7 +105,8 @@ assert.ok(scripts.indexOf("auto-decision.js")<scripts.indexOf(("game.js?v="+__BU
 assert.match(index,/id="buildVersion"[^>]*>[^<]*v\d+[.]\d+[.]\d+ · [A-Z][A-Z0-9-]*/);
 assert.equal(JSON.parse(read("package.json")).version,__BUILD_VERSION_FOR_TESTS);
 const game=read("game.js");
-assert.match(game,/const plan=AutoDecision\.chooseAction\(state\)/);
+assert.match(game,/const basePlan=AutoDecision\.chooseAction\(state\);/);
+assert.match(game,/const plan=ART_ADVENTURE_PILOT&&battleIsMainCampaign&&state\.trustPersonal\?\.length\?ArtAdventureCore\.autoPlan\(state,basePlan\):basePlan;/);
 assert.match(game,/CombatCore\.performAutoAction\(state,plan\)/);
 assert.match(game,/if\(isVisualTransition\(\)\|\|visualActionPending\(\)\|\|!autoBattle\|\|!state\.active\|\|document\.hidden/);
 console.log("Combat-015B tactical execution, cooldowns, targets, AOE, waves, legacy auto and version passed");

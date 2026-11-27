@@ -122,7 +122,37 @@ async function run(type,name,route="hold"){
    console.log("R2/D3C FRAME",name,id,JSON.stringify(info));
    if(!fallback)assert.deepEqual(info.natural,[1280,720]);
    if(fallback)assert.match(info.caption,/Эскиз постановки/);
-   await page.screenshot({path:"artifacts/r2d3c-"+name+"-"+id+(fallback?"-fallback":"")+(tag?"-"+tag:"")+".png"});
+   // WebKit can report a decoded image before the first compositor paint.
+   // Assert actual captured pixels, not merely naturalWidth/onload. A blank
+   // first capture is logged; allow a bounded paint interval, never skip.
+   const screenshotPath="artifacts/r2d3c-"+name+"-"+id+(fallback?"-fallback":"")+(tag?"-"+tag:"")+".png";
+   const artRect=await story.locator(".story-art img").evaluate(async im=>{
+    if(im.decode)await im.decode();
+    const r=im.getBoundingClientRect(),scale=Math.min(r.width/im.naturalWidth,r.height/im.naturalHeight);
+    const w=im.naturalWidth*scale,h=im.naturalHeight*scale;
+    return {x:r.x+(r.width-w)/2,y:r.y+(r.height-h)/2,w,h};
+   });
+   assert.ok(artRect.w>100&&artRect.h>60,"Visible artwork must have a meaningful size");
+   let painted=false;
+   for(let attempt=0;attempt<5;attempt++){
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    const png=await page.screenshot();
+    const palette=await page.evaluate(async ({data,rect})=>{
+     const image=new Image();await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=reject;image.src="data:image/png;base64,"+data;});
+     const canvas=document.createElement("canvas");canvas.width=12;canvas.height=8;
+     const ctx=canvas.getContext("2d");
+     const sx=image.naturalWidth/innerWidth,sy=image.naturalHeight/innerHeight;
+     ctx.drawImage(image,(rect.x+rect.w*.12)*sx,(rect.y+rect.h*.12)*sy,rect.w*.76*sx,rect.h*.76*sy,0,0,12,8);
+     const bytes=ctx.getImageData(0,0,12,8).data,bins=new Set();
+     for(let i=0;i<bytes.length;i+=4)bins.add([bytes[i]>>4,bytes[i+1]>>4,bytes[i+2]>>4].join(","));
+     return bins.size;
+    },{data:png.toString("base64"),rect:artRect});
+    fs.writeFileSync(screenshotPath,png);
+    if(palette>=8){painted=true;break;}
+    console.warn("R2/D3C CAPTURE NOT PAINTED",name,id,attempt,palette);
+    await page.waitForTimeout(100);
+   }
+   assert.ok(painted,"Captured artwork stayed blank: "+name+" "+id);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   };
   if(route==="direct"){

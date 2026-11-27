@@ -2,13 +2,13 @@ name: MAP-3D-01 isolated navigation comparison
 on:
   pull_request:
     paths:
-      - 'docs/research/map-3d-01-nav-compare.mjs'
+      - 'docs/research/map-3d-01-*.mjs'
       - '.github/workflows/map-3d-01-nav.yml'
 permissions:
   contents: read
 jobs:
   compare:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
         working-directory: docs/research
         run: |
           npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/map-3d" recast-navigation@0.43.1 navcat@0.4.1
-          cp map-3d-01-nav-compare.mjs "$RUNNER_TEMP/map-3d/"
+          cp map-3d-01-nav-{core,compare}.mjs "$RUNNER_TEMP/map-3d/"
           cd "$RUNNER_TEMP/map-3d"
           npm ls --all --json > dependency-tree.json
           du -sb node_modules/* > package-sizes.txt
@@ -32,4 +32,32 @@ jobs:
             ${{ runner.temp }}/map-3d/map-3d-nav-results.json
             ${{ runner.temp }}/map-3d/dependency-tree.json
             ${{ runner.temp }}/map-3d/package-sizes.txt
+          if-no-files-found: warn
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare isolated browser lab
+        working-directory: docs/research
+        run: |
+          npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/map-3d-browser" recast-navigation@0.43.1 navcat@0.4.1 babylonjs@9.33.2 esbuild@0.25.12 playwright@1.56.1
+          cp map-3d-01-{nav-core,browser,browser-test}.mjs "$RUNNER_TEMP/map-3d-browser/"
+          cd "$RUNNER_TEMP/map-3d-browser"
+          mkdir site
+          cp node_modules/babylonjs/babylon.js site/
+          ./node_modules/.bin/esbuild map-3d-01-browser.mjs --bundle --platform=browser --format=esm --external:fs --external:path --external:module --external:node:* --loader:.wasm=file --outfile=site/lab.js
+          cat > site/index.html <<'EOF'
+          <!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1,user-scalable=no"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#162126}canvas{width:100%;height:100%;display:block;touch-action:none}#status{position:absolute;top:8px;left:8px;color:white;font:14px sans-serif;pointer-events:none}</style></head><body><canvas></canvas><div id="status"></div><script src="babylon.js"></script><script type="module" src="lab.js"></script></body></html>
+          EOF
+          ./node_modules/.bin/playwright install --with-deps chromium webkit
+          node map-3d-01-browser-test.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-01-browser-evidence
+          path: ${{ runner.temp }}/map-3d-browser/browser-evidence/
           if-no-files-found: warn

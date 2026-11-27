@@ -102,7 +102,7 @@ def remove_top(o):
     face=max(tops,key=lambda f:sum(v.co.z for v in f.verts)/len(f.verts))
     bmesh.ops.delete(bm,geom=[face],context='FACES_ONLY');bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(o.data);bm.free()
 remove_top(o)
-ring_rock('central natural outcrop',subdiv([(-1.85,-1.85),(1.85,-1.85),(1.85,1.85),(-1.85,1.85)],.8),lambda x:.85+.25*math.sin(x),3)
+ring_rock('central natural outcrop',subdiv([(-1.35,-1.35),(1.35,-1.35),(1.35,1.35),(-1.35,1.35)],.8),lambda x:.85+.25*math.sin(x),3)
 ring_rock('separated natural spur',subdiv([(20,-3),(24,-3),(24,3),(20,3)]),lambda x:1.93,19)
 # Distant mass, not walkable: layered horizon along far side of the abyss.
 for i,(x,z,w,h) in enumerate([(-27,26,13,7),(-12,30,17,11),(4,33,19,6),(23,29,18,9),(42,35,20,13)]):
@@ -146,6 +146,7 @@ for x,z in [(4.25,7.3),(6.15,7.8),(-7,7.0)]:box('storage crate',x,0,z,.55,.5,.5,
 # Garden alcove outside the southern walkable strip, physically supported.
 ring_rock('garden natural pocket',subdiv([(-5.8,-8.7),(1.5,-8.7),(2.1,-6),(-5.8,-6)]),lambda x:-.04,13)
 wall(-5.7,1.5,-8.5,0,.34)
+wall(-5.7,1.5,-6.27,0,.34)
 for x in [-4.7,-2.5,-.3]:
     box('garden soil',x,0,-7.2,1.7,.1,1.65,soil,.03)
     for z in [-7.95,-6.45]:box('garden stone edging',x,.04,z,1.8,.22,.16,blocks[1],.025)
@@ -165,7 +166,7 @@ for z in [-4.25,4.25]:
         x=-7.1+k*1.25+rng.uniform(-.16,.16)
         if x>7.5:continue
         box('worn inset slab',x,.005,z+rng.uniform(-.33,.33),rng.uniform(.68,1.03),.025,rng.uniform(.55,.82),rng.choice(paving),.012)
-# Keep central rock within the excluded region; clamp widened base to prevent above-ground intrusion.
+# The central rock's narrower upper outline keeps the above-ground layers inside the excluded region.
 # Recalculate normals for meshes except original exported ground; apply bevels and merge by material.
 for o in list(art.objects):
     if o.type!='MESH' or o==floor:continue

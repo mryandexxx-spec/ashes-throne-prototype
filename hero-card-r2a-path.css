@@ -97,3 +97,12 @@ dialog.r2a-path[open]{display:grid;grid-template-rows:48px minmax(0,1fr)}
 
 /* D2A route buttons reuse the accepted path layout, no new artwork. */
 .r2a-path .r2d-route{display:grid;gap:2px;min-height:44px;flex-shrink:0}.r2a-path .r2d-route small{font-weight:400;font-size:12px;color:#d4c7b1}.r2a-path .story-content{overscroll-behavior:contain}.r2a-path [data-field="storyMissions"]{flex-shrink:0}
+
+/* D3A blocking only: no change to accepted R5.7 tree or default locked story. */
+.r2a-path .story-art[data-blocking]{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:4px;background:#10171a;min-width:0}
+.r2a-path .story-art[data-blocking] img{width:100%;height:100%;object-fit:contain;object-position:center;min-height:0}
+.r2a-path [data-field="storyCaption"]{font-size:11px;color:#bfae92;text-align:center;padding:3px 4px;overflow-wrap:anywhere}
+.r2a-path .r2d-story-staged [data-field="storyText"]{white-space:pre-line;font-size:13px;line-height:1.35}
+.r2a-path .r2d-story-staged .story-content h1{font-size:25px}
+.r2a-path .r2d-story-staged [data-field="storyRequirements"] button{min-height:44px}
+@media (orientation:landscape) and (max-height:350px){.r2a-path .r2d-story-staged .story-content{gap:5px}.r2a-path .r2d-story-staged [data-field="storyText"]{font-size:12px}.r2a-path .r2d-story-staged .story-content h1{font-size:21px}}

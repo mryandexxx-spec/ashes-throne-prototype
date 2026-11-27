@@ -19,24 +19,29 @@ const R2APath=(()=>{
   function setStoryFrame(shot){
    const old=field("storyImage"),caption=field("storyCaption"),host=old.parentNode;
    const src=shot?(shot.art||shot.blocking):"assets/art-portrait-roster.webp";
-   const title=shot?((shot.art?"":"Эскиз постановки · ")+shot.title):"";
+   // Keep the requested source stable even when the displayed source is the fallback.
+   // Repeated renders must not reissue failed artwork or restart in-flight requests.
+   if(host.dataset.requestedSrc===src&&host.dataset.loadState!=="error"&&host.dataset.loadState)return;
+   host.dataset.requestedSrc=src;
+   let fallback=!!shot&&!shot.art;
+   const title=()=>shot?((fallback?"Эскиз постановки · ":"")+shot.title):"";
    if(!shot){delete host.dataset.blocking;delete host.dataset.shot;caption.hidden=true;}
-   else{host.dataset.blocking=String(!shot.art);host.dataset.shot=shot.id;caption.hidden=false;}
-   // Repeated UI renders must not reset a pending image or mistake WebKit's
-   // transient complete/naturalWidth state for a network/decode error.
-   if(old.getAttribute("src")===src&&host.dataset.loadState!=="error"&&host.dataset.loadState){return;}
+   else{host.dataset.blocking=String(fallback);host.dataset.shot=shot.id;caption.hidden=false;}
    old.onload=old.onerror=null;
    const img=document.createElement("img");
    img.dataset.field="storyImage";img.alt=shot?shot.alt:"Арт";
-   img.width=shot?960:128;img.height=shot?540:160;
+   img.width=shot?1280:128;img.height=shot?720:160;
    img.loading="eager";
-   host.dataset.loadState="loading";caption.textContent=title;
+   host.dataset.loadState="loading";caption.textContent=title();
    const current=()=>img.parentNode===host&&field("storyImage")===img;
-   img.onload=()=>{if(!current())return;host.dataset.loadState="ready";img.hidden=false;caption.textContent=title;};
-   img.onerror=()=>{if(!current())return;host.dataset.loadState="error";img.hidden=true;if(shot)caption.textContent="Кадр недоступен · "+shot.title;};
-   // Install handlers before starting the request, and attach before src.
-   // Stale image events cannot affect a new shot. No speculative detached
-   // SVG preloads: these small blocking frames do not need them.
+   img.onload=()=>{if(!current())return;host.dataset.loadState="ready";img.hidden=false;caption.textContent=title();};
+   img.onerror=()=>{
+    if(!current())return;
+    if(shot?.art&&!fallback&&shot.blocking){
+     fallback=true;host.dataset.blocking="true";caption.textContent=title();img.src=shot.blocking;return;
+    }
+    host.dataset.loadState="error";img.hidden=true;if(shot)caption.textContent="Кадр недоступен · "+shot.title;
+   };
    old.replaceWith(img);img.src=src;
   }
   function show(next){screen=next;if(next==="story"){storyStep=0;skipped=false;}field("tree").hidden=screen!=="tree";field("story").hidden=screen!=="story";put("title",screen==="tree"?"Специализация":"Личное приключение");render();}

@@ -90,22 +90,32 @@ async function run(type,name){
   const shot=()=>story.locator(".story-art").getAttribute("data-shot");
   const next=story.locator('[data-field="storyAction"]');
   const frameInfo=()=>story.locator(".story-art").evaluate(host=>{const im=host.querySelector("img"),r=im.getBoundingClientRect();return {shot:host.dataset.shot,load:host.dataset.loadState,src:im.getAttribute("src"),currentSrc:im.currentSrc,complete:im.complete,natural:[im.naturalWidth,im.naturalHeight],hidden:im.hidden,rendered:[r.width,r.height],caption:host.querySelector("small")?.textContent};});
-  const verifyShot=async id=>{
+  const files={"p0":"p0-v2.webp","p1":"p1-v1.webp","p2":"p2-v1.webp","p3":"p3-v1.webp","p4a":"p4a-v1.webp","p4b":"p4b-hybrid-v1.webp"};
+  fs.mkdirSync("artifacts",{recursive:true});
+  const verifyShot=async (id,fallback=false,tag="")=>{
    assert.equal(await shot(),id);
    try{
-    await page.waitForFunction(id=>{const host=document.querySelector(".r2a-path .story-art"),im=host?.querySelector("img"),r=im?.getBoundingClientRect();return host?.dataset.shot===id&&host.dataset.loadState==="ready"&&im.complete&&im.naturalWidth>0&&im.naturalHeight>0&&!im.hidden&&r.width>0&&r.height>0&&im.currentSrc.endsWith("/"+id+".svg");},id,{timeout:15000,polling:100});
+    await page.waitForFunction(({id,file,fallback})=>{const host=document.querySelector(".r2a-path .story-art"),im=host?.querySelector("img"),r=im?.getBoundingClientRect();return host?.dataset.shot===id&&host.dataset.blocking===String(fallback)&&host.dataset.loadState==="ready"&&im.complete&&im.naturalWidth>0&&im.naturalHeight>0&&!im.hidden&&r.width>0&&r.height>0&&im.currentSrc.endsWith("/"+file);},{id,file:fallback?id+".svg":files[id],fallback},{timeout:15000,polling:100});
    }catch(e){console.error("R2/D3A FRAME FAILURE",name,id,await frameInfo());throw e;}
    const info=await frameInfo();
    assert.ok(Math.abs(info.natural[0]/info.natural[1]-16/9)<.02,JSON.stringify(info));
-   console.log("R2/D3A FRAME",name,id,JSON.stringify(info));
+   console.log("R2/D3C FRAME",name,id,JSON.stringify(info));
+   if(!fallback)assert.deepEqual(info.natural,[1280,720]);
+   if(fallback)assert.match(info.caption,/Эскиз постановки/);
+   await page.screenshot({path:"artifacts/r2d3c-"+name+"-"+id+(fallback?"-fallback":"")+(tag?"-"+tag:"")+".png"});
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   };
   for(const id of ["p0","p1","p2"]){await verifyShot(id);assert.equal(await hold.count(),0);await next.tap();}
   await verifyShot("p3");assert.equal(await hold.isEnabled(),true);assert.equal((await snapshot()).wallet,baseline.wallet,"Watching does not write progress");
-  await page.locator(".r2a-path-back").tap();await open();await verifyShot("p0");await story.locator("[data-story-skip]").tap();await verifyShot("p3");assert.match(await story.innerText(),/заработок за себя и товарищей/);assert.equal((await snapshot()).wallet,baseline.wallet,"Skipping does not write progress");
+  await page.locator(".r2a-path-back").tap();
+  const failedArt="**/"+files.p0;
+  await page.route(failedArt,route=>route.abort());
+  await open();await verifyShot("p0",true);
+  await page.unroute(failedArt);
+  await story.locator("[data-story-skip]").tap();await verifyShot("p3");assert.match(await story.innerText(),/заработок за себя и товарищей/);assert.equal((await snapshot()).wallet,baseline.wallet,"Skipping does not write progress");
   await hold.waitFor({state:"visible"});assert.equal(await hold.isEnabled(),true);
   for(const [width,height] of [[844,390],[932,430],[844,320]]){
-   await page.setViewportSize({width,height});const bounds=await hold.boundingBox();assert.ok(bounds&&bounds.height>=44);
+   await page.setViewportSize({width,height});await verifyShot("p3",false,width+"x"+height);const bounds=await hold.boundingBox();assert.ok(bounds&&bounds.height>=44);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   }
   await page.setViewportSize({width:844,height:390});
@@ -141,6 +151,8 @@ async function run(type,name){
   assert.equal(done.stored.artPath.phase,"complete",JSON.stringify(victory));assert.equal(done.stored.artPath.selected,null);assert.equal(done.stored.artPath.outcome,"left");
   assert.equal(done.stored.currency,baseline.stored.currency);assert.equal(done.stored.energy.value,baseline.stored.energy.value);assert.deepEqual(done.stored.rewardReceipts,baseline.stored.rewardReceipts);assert.deepEqual(done.squad,baseline.squad);assert.equal(done.savedSquad,baseline.savedSquad);assert.equal(done.live,baseline.live);
   assert.match(await story.innerText(),/Люди вышли в безопасное место/);await verifyShot("p4b");
+  for(const [width,height] of [[844,390],[932,430],[844,320]]){await page.setViewportSize({width,height});await verifyShot("p4b",false,width+"x"+height);}
+  await page.setViewportSize({width:844,height:390});
   await story.locator('[data-field="storyAction"]').tap();
   assert.equal(await page.locator('.r2a-path [data-node="guardian-2"]').getAttribute("data-locked"),"false");
   assert.equal(await page.locator('.r2a-path [data-node="command-2"]').getAttribute("data-locked"),"false");

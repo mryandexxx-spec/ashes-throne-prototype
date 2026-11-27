@@ -1,0 +1,74 @@
+name: MAP-3D-07B blockout preview
+on:
+  pull_request:
+    paths:
+      - 'preview/map-3d-07b/**'
+      - 'docs/research/map-3d-07b/**'
+      - '.github/workflows/map-3d-07b.yml'
+permissions:
+  contents: read
+concurrency:
+  group: map-3d-07b-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+jobs:
+  level:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feature/map-3d-07b-blockout'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Pinned validated tools
+        run: |
+          python -m pip install --disable-pip-version-check bpy==4.5.17
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgl1 libxkbcommon0 libxrender1 libxi6 libxxf86vm1
+          npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/07b" recast-navigation@0.43.1 esbuild@0.25.12 playwright@1.56.1
+      - name: Assemble editable Blender level and separate navigation proxy
+        run: |
+          mkdir -p "$RUNNER_TEMP/evidence"
+          python docs/research/map-3d-07b/assemble.py "$PWD" "$RUNNER_TEMP/07b/level"
+          cp docs/research/map-3d-07b/{bake,explorer,browser-test}.mjs "$RUNNER_TEMP/07b/"
+          node "$RUNNER_TEMP/07b/bake.mjs" "$RUNNER_TEMP/07b/level"
+          mkdir -p preview/map-3d-07b/level
+          for n in level.glb level.json nav.json navmesh.bin manifest.json ATTRIBUTION.txt LICENSE-upstream.txt README-source.md source-receipt.json supplemental-receipt.json ground-receipt.json dataset-revision.json; do
+            cp "$RUNNER_TEMP/07b/level/$n" "preview/map-3d-07b/level/$n"
+          done
+          "$RUNNER_TEMP/07b/node_modules/.bin/esbuild" "$RUNNER_TEMP/07b/explorer.mjs" --bundle --platform=browser --format=esm --external:fs --external:path --external:module --external:node:* --loader:.wasm=file --legal-comments=eof --outfile=preview/map-3d-07b/lab.js
+          du -ab preview/map-3d-07b > "$RUNNER_TEMP/evidence/payload-bytes.txt"
+      - name: Real browser journeys and screenshots
+        run: |
+          "$RUNNER_TEMP/07b/node_modules/.bin/playwright" install --with-deps chromium webkit
+          node "$RUNNER_TEMP/07b/browser-test.mjs" "$PWD" "$RUNNER_TEMP/evidence"
+      - name: Commit only the tested isolated preview to the work branch
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          test "$(git ls-remote origin refs/heads/feature/map-3d-07b-blockout | cut -f1)" = "$HEAD_SHA"
+          git add -- preview/map-3d-07b/lab.js preview/map-3d-07b/level
+          test -z "$(git diff --cached --name-only | grep -v '^preview/map-3d-07b/' || true)"
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "MAP-3D-07B: materialize tested full-size preview"
+          git push origin HEAD:refs/heads/feature/map-3d-07b-blockout
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-07b-evidence
+          path: |
+            ${{ runner.temp }}/evidence/
+            ${{ runner.temp }}/07b/level/
+          if-no-files-found: warn
+          retention-days: 30

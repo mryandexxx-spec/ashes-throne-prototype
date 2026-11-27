@@ -4424,6 +4424,7 @@ function syncBattleUI(){
  if(battleIsMainCampaign&&!state.active&&!missionResultRecorded){
    missionResultRecorded=true;
    mainCampaignResult={...MainCampaignCore.recordFor(battleMainCampaignId,state,mainCampaignStorage,ALLIES),missionId:battleMainCampaignId};
+   if(COMBAT2_PILOT&&typeof window.map3d06Record==="function")window.map3d06Record(mainCampaignResult);
    if(!mainCampaignResult.ok)mainCampaignNotice="Сохранение не подтверждено. Вернитесь на карту или перезагрузите игру.";
   }
   if(battleIsCampaign&&!state.active&&!missionResultRecorded){
@@ -5858,3 +5859,28 @@ if(COMBAT2_ARENA){
  $("#combat2ArenaStart").addEventListener("click",openCombat2Arena);
  showScreen("combat2ArenaSetup");
 }else if(!openFirstPlayOnEntry())maybeOpenLoginOnEntry();
+
+// MAP-3D-06: opt-in isolated navigation only; no default campaign or wallet change.
+if(COMBAT2_PILOT&&/(?:^|[?&])map3d06=1(?:&|$)/.test(location.search)){
+ import("./map-3d-checkpoint.mjs").then(C=>{
+  const provider=()=>gameStorage();
+  const initial=C.read(provider);
+  if(!initial.ok||initial.state.phase!=="encounter")return;
+  const mission=MainCampaignCore.ID;
+  if(mission!==C.MISSION)return;
+  window.map3d06Record=result=>{const current=C.read(provider);if(!current.ok)return;const next=C.record(current.state,result);if(next!==current.state&&!C.write(provider,next))mainCampaignNotice="Не удалось сохранить точку возврата. Повторите маршрут после перезагрузки.";};
+  function back(event){
+   event.preventDefault();event.stopImmediatePropagation();if(mainCampaignClaiming)return;
+   const current=C.read(provider);if(!current.ok){alert("Не удалось прочитать маршрут.");return;}
+   const next=C.leave(current.state,mainCampaignStatus(mission));
+   if(!C.write(provider,next)){alert("Не удалось сохранить маршрут.");return;}
+   showScreen("mainCampaign");location.assign("./preview/map-3d-06/");
+  }
+  for(const id of ["#campaignBackButton","#mainCampaignResultBack"]){const b=$(id);if(b)b.addEventListener("click",back,true);}
+  showScreen("mainCampaign");mainCampaignSelectedId=mission;renderMainCampaign();
+  if(!initial.state.won)openMainCampaignMission(mission);
+  // Re-entering after a confirmed win shows the real outstanding reward, never creates one.
+  const button=$("#campaignBackButton");if(button)button.textContent="← На 3D-карту";
+  if($("#mainCampaignResultBack"))$("#mainCampaignResultBack").textContent="На 3D-карту";
+ }).catch(e=>console.error("MAP3D06_BOOT",e));
+}

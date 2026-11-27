@@ -1,0 +1,6 @@
+import assert from 'node:assert/strict';import {fresh,read,write,record,leave,KEY,MISSION} from './checkpoint.mjs';import {act,points} from './exploration-core.mjs';
+let map=new Map(),storage={getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v)},provider=()=>storage;
+let s=fresh();assert.deepEqual(read(provider).state,s);s=act(s,'inspect',points.direct,false);s=act(s,'challenge',points.exit,false);assert(write(provider,s));assert.deepEqual(read(provider).state,s);
+assert.equal(record(s,{missionId:'other',ok:true,earned:3}),s);assert.equal(record(s,{missionId:MISSION,ok:true,earned:0}),s);assert.equal(record(s,{missionId:MISSION,ok:false,earned:3}),s);assert.equal(leave(s,'claimed').phase,'explore');
+s=record(s,{missionId:MISSION,ok:true,earned:2});assert(s.won);assert.equal(leave(s,'claimable'),s);s=leave(s,'claimed');assert.equal(s.phase,'return');assert.equal(s.at,'exit');s=act(s,'finish',points.spawn,false);assert(write(provider,s));assert.deepEqual(read(provider).state,s);
+s=act(fresh(),'scout',points.court,false);s=act(s,'bypass',points.exit,false);assert(write(provider,s));assert.equal(s.route,'bypass');assert(!write(()=>({setItem(){throw Error('quota')}}),s));map.set(KEY,'bad');assert(!read(provider).ok);assert(!write(provider,{...fresh(),phase:'return'}));console.log('MAP3D06 checkpoint contract passed');

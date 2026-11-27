@@ -1,0 +1,58 @@
+name: MAP-3D-01 level production proof
+on:
+  pull_request:
+    paths:
+      - 'docs/research/map-3d-01-blender.py'
+      - 'docs/research/map-3d-01-level-*.mjs'
+      - '.github/workflows/map-3d-01-level.yml'
+permissions:
+  contents: read
+jobs:
+  level:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install research-only tools
+        run: |
+          python -m pip install --disable-pip-version-check bpy==4.5.17
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgl1 libxkbcommon0 libxrender1 libxi6 libxxf86vm1
+          npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/map-level" recast-navigation@0.43.1 navcat@0.4.1 babylonjs@9.33.2 babylonjs-loaders@9.33.2 playwright@1.56.1
+      - name: Export and reopen editable Blender source, validate Recast round trip
+        run: |
+          cp docs/research/map-3d-01-nav-core.mjs docs/research/map-3d-01-blender.py docs/research/map-3d-01-level-*.mjs "$RUNNER_TEMP/map-level/"
+          cd "$RUNNER_TEMP/map-level"
+          node --input-type=module -e 'import {positions,indices} from "./map-3d-01-nav-core.mjs";import {writeFileSync} from "node:fs";writeFileSync("fixture.json",JSON.stringify({positions,indices}));'
+          mkdir -p level-output
+          python map-3d-01-blender.py level-output fixture.json
+          node map-3d-01-level-validate.mjs level-output
+          npm ls --all --json > level-output/dependency-tree.json
+          python -m pip freeze > level-output/python-dependencies.txt
+      - name: Import in Chromium and WebKit with existing Ren
+        run: |
+          repo="$PWD"
+          cd "$RUNNER_TEMP/map-level"
+          mkdir -p site/hero site/base site/revision
+          cp level-output/base/{level.glb,level.json} site/base/
+          cp level-output/revision/{level.glb,level.json} site/revision/
+          cp "$repo/assets/ren-meshy-mixamo-animated.glb" site/hero/ren.glb
+          cp node_modules/babylonjs/babylon.js site/
+          cp node_modules/babylonjs-loaders/babylonjs.loaders.min.js site/
+          cat > site/index.html <<'EOF'
+          <!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden}canvas{width:100%;height:100%;display:block;touch-action:none}</style></head><body><canvas></canvas><script src="babylon.js"></script><script src="babylonjs.loaders.min.js"></script></body></html>
+          EOF
+          ./node_modules/.bin/playwright install --with-deps chromium webkit
+          node map-3d-01-level-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-01-level-production
+          path: ${{ runner.temp }}/map-level/level-output/
+          if-no-files-found: warn

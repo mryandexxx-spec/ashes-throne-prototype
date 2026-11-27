@@ -7,9 +7,11 @@ def edit(path, replacements):
         s=s.replace(a,b)
     p.write_text(s)
 edit('explorer.mjs',[
-("scene.clearColor=new B.Color4(.10,.14,.17,1);","scene.clearColor=new B.Color4(.44,.55,.62,1);scene.fogMode=B.Scene.FOGMODE_LINEAR;scene.fogColor=new B.Color3(.44,.55,.62);scene.fogStart=43;scene.fogEnd=100;"),
-("new B.HemisphericLight('ambient',new B.Vector3(0,1,0),scene).intensity=1.6;","const ambient=new B.HemisphericLight('ambient',new B.Vector3(0,1,0),scene);ambient.intensity=.56;ambient.diffuse=new B.Color3(.86,.91,1);ambient.groundColor=new B.Color3(.40,.39,.37);const sun=new B.DirectionalLight('sun',new B.Vector3(.7,-.85,-.55),scene);sun.intensity=2.0;sun.diffuse=new B.Color3(1,.88,.72);"),
-("const root=hero.meshes[0];","const root=hero.meshes[0];")
+("scene.clearColor=new B.Color4(.10,.14,.17,1);","scene.clearColor=new B.Color4(.56,.66,.72,1);scene.fogMode=B.Scene.FOGMODE_LINEAR;scene.fogColor=new B.Color3(.56,.66,.72);scene.fogStart=28;scene.fogEnd=83;"),
+("new B.HemisphericLight('ambient',new B.Vector3(0,1,0),scene).intensity=1.6;","const ambient=new B.HemisphericLight('ambient',new B.Vector3(0,1,0),scene);ambient.intensity=.72;ambient.diffuse=new B.Color3(.86,.91,1);ambient.groundColor=new B.Color3(.40,.39,.37);const sun=new B.DirectionalLight('sun',new B.Vector3(.7,-.85,-.55),scene);sun.intensity=1.5;sun.diffuse=new B.Color3(1,.88,.72);"),
+("Math.PI/3,35","Math.PI/3.6,35"),
+("zoom=zoomGoal=6;","zoom=zoomGoal=5.5;"),
+("o.material=mat;return o;","o.material=mat;o.visibility=0;return o;")
 ])
 edit('browser-test.mjs',[
 ("await page.locator('#overview').tap();await shot('overview');","await shot('spawn-art');await page.locator('#overview').tap();await shot('overview');"),

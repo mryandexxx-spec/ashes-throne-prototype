@@ -24,20 +24,21 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends libgl1 libxkbcommon0 libxrender1 libxi6 libxxf86vm1
           npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/map03" recast-navigation@0.43.1 navcat@0.4.1 babylonjs@9.33.2 babylonjs-loaders@9.33.2 esbuild@0.25.12 playwright@1.56.1
-          cp docs/research/map-3d-01-{nav-core.mjs,blender.py,level-validate.mjs} docs/research/map-3d-02/* docs/research/map-3d-03/*.py "$RUNNER_TEMP/map03/"
+          cp docs/research/map-3d-01-{nav-core.mjs,blender.py,level-validate.mjs} docs/research/map-3d-02/* docs/research/map-3d-03/*.py docs/research/map-3d-03/topology.mjs "$RUNNER_TEMP/map03/"
           cd "$RUNNER_TEMP/map03"
-          node --input-type=module -e 'import {positions,indices} from "./map-3d-01-nav-core.mjs";import {writeFileSync} from "node:fs";writeFileSync("fixture.json",JSON.stringify({positions,indices}));'
+          python prepare_v3.py
+          node --input-type=module -e 'import {positions,indices,sections,outer,exclusion} from "./topology.mjs";import {writeFileSync} from "node:fs";writeFileSync("fixture.json",JSON.stringify({positions,indices,sections,outer,exclusion}));'
           python map-3d-01-blender.py level-output fixture.json
           node map-3d-01-level-validate.mjs level-output
           sha256sum level-output/base/{nav.json,level.json,navmesh.bin} > frozen-nav.sha256
           mkdir -p materials
           for asset in rock_06 stone_floor; do
-            for kind in diff nor_gl; do
+            for kind in diff; do
               curl --fail --location --retry 2 --connect-timeout 20 --max-time 120 -A 'AshesThrone-art-lab/1.0' "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/$asset/${asset}_${kind}_4k.jpg" -o "materials/${asset}_${kind}.jpg"
             done
           done
           sha256sum materials/*.jpg > material-receipt.sha256
-          python art.py level-output/base
+          python art_v3.py level-output/base
           sha256sum -c frozen-nav.sha256
           python presentation.py
       - name: Package lab and test touch paths in two browsers

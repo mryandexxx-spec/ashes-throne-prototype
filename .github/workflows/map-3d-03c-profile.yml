@@ -1,0 +1,54 @@
+name: MAP-3D-03C bounded renderer profile
+on:
+  pull_request:
+    paths:
+      - 'docs/research/map-3d-03c-profile/**'
+      - '.github/workflows/map-3d-03c-profile.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: map-3d-03c-profile-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  profile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: 46043645224
+          name: map-3d-03b-coherent-walk-evidence
+          path: ${{ runner.temp }}/walk-evidence
+      - name: Reuse exact verified level and package diagnostic explorer
+        run: |
+          repo="$PWD"
+          npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/profile" recast-navigation@0.43.1 babylonjs@9.33.2 babylonjs-loaders@9.33.2 esbuild@0.25.12 playwright@1.56.1
+          cd "$RUNNER_TEMP/profile"
+          mkdir -p site/hero evidence
+          cp -a "$RUNNER_TEMP/walk-evidence/site/level" site/level
+          cp "$repo/assets/ren-meshy-mixamo-animated.glb" site/hero/ren.glb
+          cp node_modules/babylonjs/babylon.js node_modules/babylonjs-loaders/babylonjs.loaders.min.js site/
+          cp "$repo/docs/research/map-3d-03b-coherent-walk/index.html" site/
+          cp "$repo/docs/research/map-3d-03c-profile/"{explorer.mjs,profile.mjs} .
+          node --check explorer.mjs
+          node --check profile.mjs
+          ./node_modules/.bin/esbuild explorer.mjs --bundle --platform=browser --format=esm --external:fs --external:path --external:module --external:node:* --loader:.wasm=file --outfile=site/lab.js
+      - name: Compare baseline and diagnostic flags on same runner
+        run: |
+          cd "$RUNNER_TEMP/profile"
+          ./node_modules/.bin/playwright install --with-deps chromium webkit
+          node profile.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-03c-profile-evidence
+          path: ${{ runner.temp }}/profile/evidence/
+          if-no-files-found: warn
+          retention-days: 30

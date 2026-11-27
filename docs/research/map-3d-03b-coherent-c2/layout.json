@@ -1,0 +1,351 @@
+{
+  "schema": 1,
+  "scope": "C2 contextual art, geometry contact gate, static not playable or canon",
+  "camera": {
+    "alpha": 1.3407963267948966,
+    "beta": 1.04,
+    "halfHeight": 5.7,
+    "target": [
+      0,
+      0.55,
+      0
+    ]
+  },
+  "hero": {
+    "x": -2.6,
+    "y": -1.45,
+    "height": 1.7
+  },
+  "terrain": [
+    [
+      -19,
+      -2.8
+    ],
+    [
+      -12,
+      -3.5
+    ],
+    [
+      -7,
+      -3.1
+    ],
+    [
+      -2,
+      -4.2
+    ],
+    [
+      3,
+      -3.6
+    ],
+    [
+      8,
+      -4
+    ],
+    [
+      15,
+      -2.9
+    ],
+    [
+      19,
+      -2
+    ],
+    [
+      19,
+      12
+    ],
+    [
+      -19,
+      12
+    ]
+  ],
+  "placements": [
+    {
+      "asset": "house",
+      "name": "home_west",
+      "xy": [
+        -6,
+        4.2
+      ],
+      "width": 4.25,
+      "yaw": -15,
+      "anchor": "bottom",
+      "z": -0.1
+    },
+    {
+      "asset": "house",
+      "name": "home_upper",
+      "xy": [
+        -10.7,
+        7.4
+      ],
+      "width": 4.5,
+      "yaw": 25,
+      "anchor": "bottom",
+      "z": -0.1
+    },
+    {
+      "asset": "market",
+      "name": "market",
+      "xy": [
+        -0.5,
+        2.1
+      ],
+      "width": 6.25,
+      "yaw": 8,
+      "anchor": "bottom",
+      "z": 0
+    },
+    {
+      "asset": "farmstead",
+      "name": "store_shed",
+      "xy": [
+        6,
+        5.1
+      ],
+      "width": 5.15,
+      "yaw": -30,
+      "anchor": "bottom",
+      "z": -0.08
+    },
+    {
+      "asset": "storehouse",
+      "name": "east_storage",
+      "xy": [
+        10.7,
+        3.8
+      ],
+      "width": 4.1,
+      "yaw": 35,
+      "anchor": "bottom",
+      "z": -0.08
+    },
+    {
+      "asset": "cliff2",
+      "name": "rear_rock_west",
+      "xy": [
+        -10.4,
+        11
+      ],
+      "fit": [
+        5.5,
+        15,
+        10
+      ],
+      "yaw": 90,
+      "anchor": "bottom",
+      "z": -2
+    },
+    {
+      "asset": "cliff",
+      "name": "rear_rock_east",
+      "xy": [
+        3,
+        11
+      ],
+      "fit": [
+        5.5,
+        16,
+        9
+      ],
+      "yaw": 90,
+      "anchor": "bottom",
+      "z": -1.8
+    },
+    {
+      "asset": "cliff2",
+      "name": "rear_rock_far_east",
+      "xy": [
+        16,
+        11.8
+      ],
+      "fit": [
+        5.5,
+        14,
+        11
+      ],
+      "yaw": 90,
+      "anchor": "bottom",
+      "z": -1.5
+    },
+    {
+      "asset": "olive",
+      "name": "garden_tree",
+      "xy": [
+        3.7,
+        5.6
+      ],
+      "width": 2.9,
+      "yaw": 15,
+      "anchor": "bottom",
+      "z": 0
+    },
+    {
+      "asset": "olive",
+      "name": "tree_west",
+      "xy": [
+        -8.5,
+        5.7
+      ],
+      "width": 2.5,
+      "yaw": 75,
+      "anchor": "bottom",
+      "z": 0
+    },
+    {
+      "asset": "scrub",
+      "name": "garden_scrub_1",
+      "xy": [
+        4.2,
+        1.1
+      ],
+      "width": 1.2,
+      "yaw": 15,
+      "anchor": "bottom",
+      "z": 0
+    },
+    {
+      "asset": "scrub",
+      "name": "garden_scrub_2",
+      "xy": [
+        5.1,
+        1.3
+      ],
+      "width": 1.1,
+      "yaw": 95,
+      "anchor": "bottom",
+      "z": 0
+    },
+    {
+      "asset": "scrub",
+      "name": "garden_scrub_3",
+      "xy": [
+        5.9,
+        1.65
+      ],
+      "width": 1.2,
+      "yaw": 31,
+      "anchor": "bottom",
+      "z": 0
+    },
+    {
+      "asset": "scrub",
+      "name": "western_edge_scrub",
+      "xy": [
+        -8.2,
+        -2.2
+      ],
+      "width": 0.95,
+      "yaw": 42,
+      "anchor": "bottom",
+      "z": 0
+    },
+    {
+      "asset": "boulder",
+      "name": "garden_rock",
+      "xy": [
+        4.9,
+        1.9
+      ],
+      "width": 1.4,
+      "yaw": 25,
+      "anchor": "bottom",
+      "z": -0.1
+    },
+    {
+      "asset": "boulder",
+      "name": "front_rock",
+      "xy": [
+        7,
+        -2.8
+      ],
+      "width": 1.6,
+      "yaw": 10,
+      "anchor": "bottom",
+      "z": -0.3
+    },
+    {
+      "asset": "boulder",
+      "name": "west_rock",
+      "xy": [
+        -10,
+        -2.4
+      ],
+      "width": 1.2,
+      "yaw": 60,
+      "anchor": "bottom",
+      "z": -0.25
+    },
+    {
+      "asset": "cliff",
+      "name": "front_cliff_0",
+      "xy": [
+        -13,
+        -3.4
+      ],
+      "fit": [
+        5.3,
+        12.5,
+        10
+      ],
+      "yaw": 90,
+      "anchor": "top",
+      "z": 0.7
+    },
+    {
+      "asset": "cliff2",
+      "name": "front_cliff_1",
+      "xy": [
+        -3,
+        -4
+      ],
+      "fit": [
+        5.5,
+        12,
+        10
+      ],
+      "yaw": 90,
+      "anchor": "top",
+      "z": 0.7
+    },
+    {
+      "asset": "cliff",
+      "name": "front_cliff_2",
+      "xy": [
+        7,
+        -3.8
+      ],
+      "fit": [
+        5.5,
+        12,
+        10
+      ],
+      "yaw": 90,
+      "anchor": "top",
+      "z": 0.7
+    },
+    {
+      "asset": "cliff2",
+      "name": "front_cliff_3",
+      "xy": [
+        17,
+        -2.9
+      ],
+      "fit": [
+        5.5,
+        12,
+        10
+      ],
+      "yaw": 90,
+      "anchor": "top",
+      "z": 0.7
+    }
+  ],
+  "edgeContact": {
+    "startX": -15,
+    "endX": 15,
+    "step": 0.25,
+    "minZ": -0.35,
+    "maxZ": 0.8,
+    "requiredFraction": 1
+  }
+}

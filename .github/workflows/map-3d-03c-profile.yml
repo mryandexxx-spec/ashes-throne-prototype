@@ -1,9 +1,5 @@
 name: MAP-3D-03C bounded renderer profile
 on:
-  pull_request:
-    paths:
-      - 'docs/research/map-3d-03c-profile/**'
-      - '.github/workflows/map-3d-03c-profile.yml'
   workflow_dispatch:
 permissions:
   contents: read

@@ -1,9 +1,5 @@
 name: MAP-3D-03B CUSTOM-KIT one CPU capability test
 on:
-  pull_request:
-    paths:
-      - 'docs/research/map-3d-03b-custom-kit/**'
-      - '.github/workflows/map-3d-03b-custom-kit.yml'
   workflow_dispatch:
 permissions:
   contents: read

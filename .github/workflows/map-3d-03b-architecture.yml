@@ -1,9 +1,6 @@
 name: MAP-3D-03B residential architecture intake
 on:
-  pull_request:
-    paths:
-      - 'docs/research/map-3d-03b-architecture/**'
-      - '.github/workflows/map-3d-03b-architecture.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

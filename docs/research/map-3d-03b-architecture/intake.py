@@ -1,4 +1,4 @@
-"""Bounded isolated download of four CC0 authored house archives. No game files."""
+"""Bounded isolated download of two CC0 authored house archives. No game files."""
 import hashlib, json, pathlib, sys, urllib.request, urllib.parse, zipfile, stat
 root=pathlib.Path(sys.argv[1]).resolve(); root.mkdir(parents=True,exist_ok=True)
 items=json.loads(pathlib.Path(__file__).with_name("catalog.json").read_text())["items"]
@@ -7,16 +7,16 @@ for a in items:
     row={**a,"state":"FAILED"}; receipts.append(row)
     try:
         assert a["license"]=="CC0-1.0"
-        assert a["url"]=="https://lpc.opengameart.org/sites/default/files/"+a["filename"]
+        assert a["url"]=="https://opengameart.org/sites/default/files/"+a["filename"]
         folder=root/"sources"/a["id"]; folder.mkdir(parents=True,exist_ok=True)
         allowed={"lpc.opengameart.org","opengameart.org","www.opengameart.org"}
         errors=[]
-        for url in [a["url"],a["url"].replace("lpc.opengameart.org","opengameart.org")]:
+        for url in [a["url"],a["url"].replace("opengameart.org","www.opengameart.org")]:
             try:
                 with urllib.request.urlopen(urllib.request.Request(url,headers={"User-Agent":"AshesThrone-AssetResearch/1.0"}),timeout=45) as response:
                     assert urllib.parse.urlparse(response.geturl()).hostname in allowed
-                    data=response.read(40_000_001)
-                assert len(data)<=40_000_000 and data[:2]==b"PK"
+                    data=response.read(80_000_001)
+                assert len(data)<=80_000_000 and data[:2]==b"PK"
                 break
             except Exception as exc:
                 errors.append(repr(exc))
@@ -25,7 +25,7 @@ for a in items:
         path=folder/a["filename"];path.write_bytes(data)
         members=[]
         with zipfile.ZipFile(path) as z:
-            assert len(z.infolist())<300 and sum(i.file_size for i in z.infolist())<200_000_000
+            assert len(z.infolist())<300 and sum(i.file_size for i in z.infolist())<350_000_000
             for i in z.infolist():
                 dest=(folder/"unpacked"/i.filename).resolve()
                 assert dest.is_relative_to(folder/"unpacked") and not stat.S_ISLNK(i.external_attr>>16)

@@ -1,0 +1,467 @@
+{
+  "schema": 1,
+  "scope": "P2 static inhabited service ledge hypothesis, not playable or canon",
+  "kitRun": 46029298169,
+  "kitArtifact": 15212979187,
+  "hero": {
+    "x": -4.7,
+    "y": -1.6,
+    "height": 1.7
+  },
+  "camera": {
+    "alpha": 1.1407963267948966,
+    "beta": 1.04,
+    "halfHeight": 5.5,
+    "target": [
+      -1,
+      -0.6,
+      0.6
+    ]
+  },
+  "placements": [
+    {
+      "asset": "modular_fort_01",
+      "prefix": "modular_fort_01_wall_walkway_straight_02",
+      "name": "front_terrace",
+      "xy": [
+        -4.7,
+        -1.85
+      ],
+      "scale": [
+        1.18,
+        1.18,
+        1
+      ],
+      "yaw": 90,
+      "anchor": "top",
+      "z": 0.35
+    },
+    {
+      "asset": "modular_fort_01",
+      "prefix": "modular_fort_01_wall_walkway_straight_02",
+      "name": "front_terrace_east",
+      "xy": [
+        12.35,
+        -1.85
+      ],
+      "scale": [
+        1.18,
+        1.18,
+        1
+      ],
+      "yaw": 90,
+      "anchor": "top",
+      "z": 0.35
+    },
+    {
+      "asset": "modular_fort_01",
+      "prefix": "modular_fort_01_wall_walkway_straight_01",
+      "name": "rear_terrace",
+      "xy": [
+        -4.7,
+        1.85
+      ],
+      "scale": [
+        1.18,
+        1.18,
+        1
+      ],
+      "yaw": -90,
+      "anchor": "top",
+      "z": 0.35
+    },
+    {
+      "asset": "modular_fort_01",
+      "prefix": "modular_fort_01_wall_walkway_straight_01",
+      "name": "rear_terrace_east",
+      "xy": [
+        12.35,
+        1.85
+      ],
+      "scale": [
+        1.18,
+        1.18,
+        1
+      ],
+      "yaw": -90,
+      "anchor": "top",
+      "z": 0.35
+    },
+    {
+      "asset": "mountainside",
+      "prefix": "mountainside",
+      "name": "front_cliff_west",
+      "xy": [
+        -9.2,
+        -4.7
+      ],
+      "scale": [
+        1.55,
+        1.3,
+        1.4
+      ],
+      "yaw": -5,
+      "anchor": "top",
+      "z": -0.45
+    },
+    {
+      "asset": "mountainside",
+      "prefix": "mountainside",
+      "name": "front_cliff_east",
+      "xy": [
+        5,
+        -4.8
+      ],
+      "scale": [
+        1.6,
+        1.4,
+        1.5
+      ],
+      "yaw": 8,
+      "anchor": "top",
+      "z": -0.5
+    },
+    {
+      "asset": "mountainside",
+      "prefix": "mountainside",
+      "name": "rear_cliff_west",
+      "xy": [
+        -9.1,
+        6.1
+      ],
+      "scale": [
+        1.25,
+        1.05,
+        1.15
+      ],
+      "yaw": 0,
+      "anchor": "bottom",
+      "z": -1
+    },
+    {
+      "asset": "mountainside",
+      "prefix": "mountainside",
+      "name": "rear_cliff_east",
+      "xy": [
+        2.7,
+        6
+      ],
+      "scale": [
+        1.35,
+        1.15,
+        1.25
+      ],
+      "yaw": -6,
+      "anchor": "bottom",
+      "z": -1.4
+    },
+    {
+      "asset": "mountainside",
+      "prefix": "mountainside",
+      "name": "rear_cliff_far_east",
+      "xy": [
+        14.9,
+        6.4
+      ],
+      "scale": [
+        1.25,
+        1.1,
+        1.3
+      ],
+      "yaw": 7,
+      "anchor": "bottom",
+      "z": -1.5
+    },
+    {
+      "asset": "rock_face_02",
+      "prefix": "rock_face_02",
+      "name": "rear_joint",
+      "xy": [
+        -3.4,
+        5.1
+      ],
+      "scale": [
+        1.6,
+        1.5,
+        2.1
+      ],
+      "yaw": 0,
+      "anchor": "bottom",
+      "z": -0.7
+    },
+    {
+      "asset": "rock_face_02",
+      "prefix": "rock_face_02",
+      "name": "front_joint",
+      "xy": [
+        -1.8,
+        -4.5
+      ],
+      "scale": [
+        1.45,
+        1.4,
+        1.6
+      ],
+      "yaw": 6,
+      "anchor": "top",
+      "z": -0.65
+    },
+    {
+      "asset": "modular_fort_01",
+      "prefix": "modular_fort_01_wall_thin_gate_01",
+      "name": "utility_entrance",
+      "xy": [
+        -5.9,
+        3.8
+      ],
+      "scale": [
+        0.48,
+        0.55,
+        0.49
+      ],
+      "yaw": 90,
+      "anchor": "bottom",
+      "z": -0.12
+    },
+    {
+      "asset": "large_castle_door",
+      "prefix": "large_castle_door",
+      "name": "door_in_recess",
+      "xy": [
+        -5.9,
+        2.94
+      ],
+      "scale": [
+        0.76,
+        0.76,
+        0.76
+      ],
+      "yaw": 0,
+      "anchor": "bottom",
+      "z": 0.02
+    },
+    {
+      "asset": "modular_fort_01",
+      "prefix": "modular_fort_01_wall_thin_straight_03",
+      "name": "adjoining_masonry",
+      "xy": [
+        -1.95,
+        4.25
+      ],
+      "scale": [
+        0.5,
+        0.65,
+        0.42
+      ],
+      "yaw": 90,
+      "anchor": "bottom",
+      "z": -0.2
+    },
+    {
+      "asset": "modular_fort_01",
+      "prefix": "modular_fort_01_wall_thin_straight_03",
+      "name": "garden_retaining_wall",
+      "xy": [
+        5.2,
+        4.45
+      ],
+      "scale": [
+        0.46,
+        0.65,
+        0.28
+      ],
+      "yaw": 90,
+      "anchor": "bottom",
+      "z": -0.25
+    },
+    {
+      "asset": "modular_wooden_pier",
+      "prefix": "",
+      "name": "wooden_service_deck",
+      "xy": [
+        3,
+        1.5
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "yaw": 0,
+      "anchor": "top",
+      "z": 0.82,
+      "select": "singleDeck",
+      "targetWidth": 4.2
+    },
+    {
+      "asset": "stone_fire_pit",
+      "prefix": "",
+      "name": "hearth",
+      "xy": [
+        1.5,
+        -0.05
+      ],
+      "scale": [
+        0.92,
+        0.92,
+        0.92
+      ],
+      "yaw": 18,
+      "anchor": "bottom",
+      "z": 0.28
+    },
+    {
+      "asset": "wicker_basket_02",
+      "prefix": "",
+      "name": "basket_at_entrance",
+      "xy": [
+        -4.3,
+        2.65
+      ],
+      "scale": [
+        1.15,
+        1.15,
+        1.15
+      ],
+      "yaw": -12,
+      "anchor": "bottom",
+      "z": 0.12
+    },
+    {
+      "asset": "wooden_barrels_01",
+      "prefix": "wooden_barrels_01_barrel01",
+      "name": "storage_1",
+      "xy": [
+        -7.5,
+        2.6
+      ],
+      "scale": [
+        0.9,
+        0.9,
+        0.9
+      ],
+      "yaw": 13,
+      "anchor": "bottom",
+      "z": 0.1
+    },
+    {
+      "asset": "wooden_barrels_01",
+      "prefix": "wooden_barrels_01_barrel02",
+      "name": "storage_2",
+      "xy": [
+        -8.3,
+        2.8
+      ],
+      "scale": [
+        0.82,
+        0.82,
+        0.82
+      ],
+      "yaw": 79,
+      "anchor": "bottom",
+      "z": 0.1
+    },
+    {
+      "asset": "shrub_02",
+      "prefix": "",
+      "name": "garden_group",
+      "xy": [
+        7.2,
+        3
+      ],
+      "scale": [
+        0.57,
+        0.57,
+        0.57
+      ],
+      "yaw": 9,
+      "anchor": "bottom",
+      "z": 0.09
+    },
+    {
+      "asset": "boulder_01",
+      "prefix": "boulder_01",
+      "name": "garden_edge_1",
+      "xy": [
+        5.5,
+        2.2
+      ],
+      "scale": [
+        0.65,
+        0.65,
+        0.6
+      ],
+      "yaw": 28,
+      "anchor": "bottom",
+      "z": 0.04
+    },
+    {
+      "asset": "boulder_01",
+      "prefix": "boulder_01",
+      "name": "garden_edge_2",
+      "xy": [
+        8,
+        2.35
+      ],
+      "scale": [
+        0.7,
+        0.7,
+        0.64
+      ],
+      "yaw": -33,
+      "anchor": "bottom",
+      "z": 0.04
+    },
+    {
+      "asset": "fern_02",
+      "prefix": "fern_02_b",
+      "name": "fern_1",
+      "xy": [
+        5.55,
+        3.05
+      ],
+      "scale": [
+        1.55,
+        1.55,
+        1.55
+      ],
+      "yaw": 12,
+      "anchor": "bottom",
+      "z": 0.12
+    },
+    {
+      "asset": "fern_02",
+      "prefix": "fern_02_c",
+      "name": "fern_2",
+      "xy": [
+        6.7,
+        2.4
+      ],
+      "scale": [
+        1.25,
+        1.25,
+        1.25
+      ],
+      "yaw": 37,
+      "anchor": "bottom",
+      "z": 0.14
+    },
+    {
+      "asset": "fern_02",
+      "prefix": "fern_02_a",
+      "name": "fern_3",
+      "xy": [
+        -3.3,
+        3.5
+      ],
+      "scale": [
+        1.4,
+        1.4,
+        1.4
+      ],
+      "yaw": -50,
+      "anchor": "bottom",
+      "z": 0.1
+    }
+  ]
+}

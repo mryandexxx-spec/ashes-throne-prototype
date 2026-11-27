@@ -1,0 +1,58 @@
+name: MAP-3D-03B coherent context C1
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: map-3d-03b-coherent-context-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  context:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: 46039132332
+          name: map-3d-03b-coherent-kit-review
+          path: ${{ runner.temp }}/kit
+      - name: Fetch only supplemental same-source actors and licensed ground texture
+        run: python docs/research/map-3d-03b-coherent-context/intake.py "$RUNNER_TEMP/kit"
+      - name: Install proven Blender and browser versions
+        run: |
+          python -m pip install --disable-pip-version-check bpy==4.5.17
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgl1 libxkbcommon0 libxrender1 libxi6 libxxf86vm1
+          npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/context-tools" babylonjs@9.33.2 babylonjs-loaders@9.33.2 playwright@1.56.1
+      - name: Build contextual sample from authored assets
+        run: python docs/research/map-3d-03b-coherent-context/assemble.py "$RUNNER_TEMP/kit" "$RUNNER_TEMP/context-result"
+      - name: Capture actual Babylon frames with Ren
+        run: |
+          repo="$PWD"
+          cd "$RUNNER_TEMP/context-tools"
+          mkdir -p site/hero
+          cp "$RUNNER_TEMP/context-result/pilot.glb" "$RUNNER_TEMP/context-result/pilot.json" site/
+          cp "$repo/docs/research/map-3d-03b-coherent-context/index.html" site/
+          cp "$repo/docs/research/map-3d-03b-coherent-context/browser-review.mjs" .
+          cp "$repo/assets/ren-meshy-mixamo-animated.glb" site/hero/ren.glb
+          cp node_modules/babylonjs/babylon.js node_modules/babylonjs-loaders/babylonjs.loaders.min.js site/
+          ./node_modules/.bin/playwright install --with-deps chromium webkit
+          node browser-review.mjs site "$RUNNER_TEMP/context-result"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-03b-coherent-context-c1
+          path: |
+            ${{ runner.temp }}/context-result/
+            ${{ runner.temp }}/kit/context/
+          if-no-files-found: warn
+          retention-days: 30

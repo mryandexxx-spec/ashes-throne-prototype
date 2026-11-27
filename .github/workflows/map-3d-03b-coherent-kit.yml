@@ -1,0 +1,33 @@
+name: MAP-3D-03B coherent free architecture review
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: map-3d-03b-coherent-kit-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pin and verify licensed dataset, fetch only same-family civilian models
+        run: python docs/research/map-3d-03b-coherent-kit/intake.py "$RUNNER_TEMP/coherent-kit"
+      - name: Install proven Blender version
+        run: |
+          python -m pip install --disable-pip-version-check bpy==4.5.17
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgl1 libxkbcommon0 libxrender1 libxi6 libxxf86vm1
+      - name: Verify actual GLB imports and render two views of each
+        run: python docs/research/map-3d-03b-coherent-kit/review.py "$RUNNER_TEMP/coherent-kit"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-03b-coherent-kit-review
+          path: ${{ runner.temp }}/coherent-kit/
+          if-no-files-found: warn
+          retention-days: 30

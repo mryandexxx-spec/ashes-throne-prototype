@@ -89,7 +89,17 @@ async function run(type,name){
   await open();
   const shot=()=>story.locator(".story-art").getAttribute("data-shot");
   const next=story.locator('[data-field="storyAction"]');
-  const verifyShot=async id=>{assert.equal(await shot(),id);await page.waitForFunction(()=>{const im=document.querySelector(".r2a-path [data-field=storyImage]");return im?.complete&&im.naturalWidth===960&&!im.hidden;},null,{timeout:15000});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);};
+  const frameInfo=()=>story.locator(".story-art").evaluate(host=>{const im=host.querySelector("img"),r=im.getBoundingClientRect();return {shot:host.dataset.shot,load:host.dataset.loadState,src:im.getAttribute("src"),currentSrc:im.currentSrc,complete:im.complete,natural:[im.naturalWidth,im.naturalHeight],hidden:im.hidden,rendered:[r.width,r.height],caption:host.querySelector("small")?.textContent};});
+  const verifyShot=async id=>{
+   assert.equal(await shot(),id);
+   try{
+    await page.waitForFunction(id=>{const host=document.querySelector(".r2a-path .story-art"),im=host?.querySelector("img"),r=im?.getBoundingClientRect();return host?.dataset.shot===id&&host.dataset.loadState==="ready"&&im.complete&&im.naturalWidth>0&&im.naturalHeight>0&&!im.hidden&&r.width>0&&r.height>0&&im.currentSrc.endsWith("/"+id+".svg");},id,{timeout:15000,polling:100});
+   }catch(e){console.error("R2/D3A FRAME FAILURE",name,id,await frameInfo());throw e;}
+   const info=await frameInfo();
+   assert.ok(Math.abs(info.natural[0]/info.natural[1]-16/9)<.02,JSON.stringify(info));
+   console.log("R2/D3A FRAME",name,id,JSON.stringify(info));
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+  };
   for(const id of ["p0","p1","p2"]){await verifyShot(id);assert.equal(await hold.count(),0);await next.tap();}
   await verifyShot("p3");assert.equal(await hold.isEnabled(),true);assert.equal((await snapshot()).wallet,baseline.wallet,"Watching does not write progress");
   await page.locator(".r2a-path-back").tap();await open();await verifyShot("p0");await story.locator("[data-story-skip]").tap();await verifyShot("p3");assert.match(await story.innerText(),/заработок за себя и товарищей/);assert.equal((await snapshot()).wallet,baseline.wallet,"Skipping does not write progress");

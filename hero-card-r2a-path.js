@@ -15,21 +15,29 @@ const R2APath=(()=>{
   const field=id=>dlg.querySelector('[data-field="'+id+'"]');
   const put=(id,t)=>{field(id).textContent=t};
   let node="base",screen="tree",previous=null,storyStep=0,skipped=false;
-  const preloaded=new Set();
   function storyFrame(v){return typeof ArtAdventureStory!=="undefined"?ArtAdventureStory.frame(v,storyStep):null;}
   function setStoryFrame(shot){
-   const img=field("storyImage"),caption=field("storyCaption"),host=img.parentNode;
-   img.onload=img.onerror=null;
-   if(!shot){delete host.dataset.blocking;caption.hidden=true;img.hidden=false;img.alt="Арт";if(img.getAttribute("src")!=="assets/art-portrait-roster.webp")img.src="assets/art-portrait-roster.webp";return;}
-   const src=shot.art||shot.blocking;
-   host.dataset.blocking=String(!shot.art);host.dataset.shot=shot.id;
-   caption.hidden=false;caption.textContent=(shot.art?"":"Эскиз постановки · ")+shot.title;
-   img.alt=shot.alt;img.hidden=false;
-   img.onerror=()=>{if(img.getAttribute("src")!==src)return;img.hidden=true;caption.textContent="Кадр недоступен · "+shot.title;};
-   if(img.getAttribute("src")!==src)img.src=src;
-   else if(img.complete&&!img.naturalWidth)img.onerror();
-   const next=ArtAdventureStory.intro[ArtAdventureStory.intro.indexOf(shot)+1];
-   if(next&&ArtAdventureStory.intro.includes(shot)){const url=next.art||next.blocking;if(!preloaded.has(url)&&typeof Image!=="undefined"){preloaded.add(url);const preload=new Image();preload.src=url;}}
+   const old=field("storyImage"),caption=field("storyCaption"),host=old.parentNode;
+   const src=shot?(shot.art||shot.blocking):"assets/art-portrait-roster.webp";
+   const title=shot?((shot.art?"":"Эскиз постановки · ")+shot.title):"";
+   if(!shot){delete host.dataset.blocking;delete host.dataset.shot;caption.hidden=true;}
+   else{host.dataset.blocking=String(!shot.art);host.dataset.shot=shot.id;caption.hidden=false;}
+   // Repeated UI renders must not reset a pending image or mistake WebKit's
+   // transient complete/naturalWidth state for a network/decode error.
+   if(old.getAttribute("src")===src&&host.dataset.loadState!=="error"&&host.dataset.loadState){return;}
+   old.onload=old.onerror=null;
+   const img=document.createElement("img");
+   img.dataset.field="storyImage";img.alt=shot?shot.alt:"Арт";
+   img.width=shot?960:128;img.height=shot?540:160;
+   img.loading="eager";
+   host.dataset.loadState="loading";caption.textContent=title;
+   const current=()=>img.parentNode===host&&field("storyImage")===img;
+   img.onload=()=>{if(!current())return;host.dataset.loadState="ready";img.hidden=false;caption.textContent=title;};
+   img.onerror=()=>{if(!current())return;host.dataset.loadState="error";img.hidden=true;if(shot)caption.textContent="Кадр недоступен · "+shot.title;};
+   // Install handlers before starting the request, and attach before src.
+   // Stale image events cannot affect a new shot. No speculative detached
+   // SVG preloads: these small blocking frames do not need them.
+   old.replaceWith(img);img.src=src;
   }
   function show(next){screen=next;if(next==="story"){storyStep=0;skipped=false;}field("tree").hidden=screen!=="tree";field("story").hidden=screen!=="story";put("title",screen==="tree"?"Специализация":"Личное приключение");render();}
   function render(){

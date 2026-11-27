@@ -25,8 +25,9 @@ export function createInteractions(adapter){
   }
   for(const [id,b] of Object.entries(nodes)){
    const p=adapter.project([points[id][0],points[id][1]+.55,points[id][2]]);
-   b.hidden=state.phase==='encounter'||state.phase==='complete'||at===id||p.x<45||p.x>innerWidth-45||p.y<65||p.y>innerHeight-65;
-   if(!b.hidden){b.style.left=p.x+'px';b.style.top=p.y+'px';}
+   const y=v.overview?Math.max(76,Math.min(innerHeight-65,p.y)):p.y;
+   b.hidden=state.phase==='encounter'||state.phase==='complete'||at===id||p.x<45||p.x>innerWidth-45||y<65||y>innerHeight-65;
+   if(!b.hidden){b.style.left=p.x+'px';b.style.top=y+'px';}
   }
  }
  return {reset,update,snapshot:()=>({...state}),canMove:()=>state.phase!=='encounter'&&state.phase!=='complete'};

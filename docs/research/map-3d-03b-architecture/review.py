@@ -16,10 +16,14 @@ for row in rows:
         for obj in list(bpy.context.scene.objects):
             if obj.type in {"CAMERA","LIGHT"}:
                 bpy.data.objects.remove(obj,do_unlink=True)
+        if any(lib.is_missing for lib in bpy.data.libraries):
+            raise RuntimeError("Missing linked Blender library")
         bpy.ops.file.find_missing_files(directory=str((root/row["main"]).parent))
         # Do not silently substitute textures or procedural shapes. Legacy material
         # conversion is explicit: record absent texture nodes/packed images and fail.
-        for img in bpy.data.images:
+        used_materials={slot.material for obj in bpy.context.scene.objects if obj.type=="MESH" for slot in obj.material_slots if slot.material}
+        used_images={n.image for m in used_materials if m.use_nodes and m.node_tree for n in m.node_tree.nodes if n.type=="TEX_IMAGE" and n.image}
+        for img in used_images:
             if img.source=="FILE" and not img.packed_file:
                 source=pathlib.Path(bpy.path.abspath(img.filepath))
                 if not source.is_file() or not source.resolve().is_relative_to(root):
@@ -31,7 +35,7 @@ for row in rows:
         for obj in bpy.context.scene.objects:
             if obj.type=="MESH":
                 obj.hide_render=False
-        if not any(m.use_nodes and m.node_tree and any(n.type=="TEX_IMAGE" and n.image for n in m.node_tree.nodes) for m in bpy.data.materials):
+        if not any(m.use_nodes and m.node_tree and any(n.type=="TEX_IMAGE" and n.image for n in m.node_tree.nodes) for m in used_materials):
             raise RuntimeError("Legacy material has no connected image-node candidate; inspect before repair")
         meshes=[o for o in bpy.context.scene.objects if o.type=="MESH"]
         assert meshes

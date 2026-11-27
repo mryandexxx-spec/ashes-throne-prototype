@@ -1,9 +1,5 @@
 name: MAP-3D-03B coherent WALK lab
 on:
-  pull_request:
-    paths:
-      - 'docs/research/map-3d-03b-coherent-walk/**'
-      - '.github/workflows/map-3d-03b-coherent-walk.yml'
   workflow_dispatch:
 permissions:
   contents: read

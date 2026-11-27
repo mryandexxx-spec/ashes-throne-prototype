@@ -88,7 +88,7 @@ for(const [browserName,driver] of [['chromium',chromium],['webkit',webkit]]){
    await page.waitForFunction(z=>window.lab.snapshot().zoom<z-1,before.zoom);
    const zoomed=await snap();assert.equal(zoomed.commands,before.commands);assert.equal(zoomed.walking,false);
    await page.screenshot({path:out+'/'+label+'-zoom.png'});
-   await page.evaluate(()=>window.lab.reset([-6,0,0]));assert((await tap([6,0,0])).last.accepted);
+   await page.evaluate(()=>{window.lab.setFollow(true);window.lab.reset([-6,0,0]);});assert((await tap([6,0,0])).last.accepted);
    await page.waitForFunction(()=>window.lab.snapshot().walking);
    const bad=await tap([0,0,0]);assert.equal(bad.last.accepted,false);assert.equal(bad.walking,false);
    const stopped=bad.pos;await page.waitForTimeout(150);assert.deepEqual((await snap()).pos,stopped);

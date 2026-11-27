@@ -151,7 +151,7 @@ async function run(name,browserType,viewport){
   await page.locator("#mainCampaignResultRetry").tap();
   await page.locator("#squadDisband").tap();
   for(const id of ["ren","art"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
-  assert.match(await page.locator("#squadIntro").innerText(),/Рен — атака, Арт — страховка/);
+  assert.match(await page.locator("#squadIntro").innerText(),/Рен — атака, Арт — прикрытие/);
   await visibleTarget("#squadStart");
   await page.screenshot({path:path.join(dest,key+"-squad.png")});
   assert.equal(await fight(true),"ally","manual basic attacks with the two fresh starters");

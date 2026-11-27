@@ -1,0 +1,35 @@
+name: MAP-3D-01 isolated navigation comparison
+on:
+  pull_request:
+    paths:
+      - 'docs/research/map-3d-01-nav-compare.mjs'
+      - '.github/workflows/map-3d-01-nav.yml'
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install research-only exact versions
+        working-directory: docs/research
+        run: |
+          npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/map-3d" recast-navigation@0.43.1 navcat@0.4.1
+          cp map-3d-01-nav-compare.mjs "$RUNNER_TEMP/map-3d/"
+          cd "$RUNNER_TEMP/map-3d"
+          npm ls --all --json > dependency-tree.json
+          du -sb node_modules/* > package-sizes.txt
+          node map-3d-01-nav-compare.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-01-navigation-results
+          path: |
+            ${{ runner.temp }}/map-3d/map-3d-nav-results.json
+            ${{ runner.temp }}/map-3d/dependency-tree.json
+            ${{ runner.temp }}/map-3d/package-sizes.txt
+          if-no-files-found: warn

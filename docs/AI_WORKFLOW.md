@@ -140,3 +140,6 @@
 Предлагай решения с рисками, не соглашайся автоматически и не вводи неутверждённые механики. Одного ключевого вопроса обычно достаточно. Не говори о выполненной работе, если есть только план. Работай короткими проверяемыми этапами.
 
 **Принцип:** изучить → согласовать принципиальные решения (если нужны) → реализовать → протестировать → PR → самостоятельно слить при зелёных применимых проверках → мобильная приёмка → обновить статус.
+
+## CI ownership — 27.11.2026
+No nesting complete browser suites inside other browser suites. Each journey has exactly one automated owner: squad recovery = GLB/touch/resource/lifecycle; selective First Play = opening/tutorial/reset/calendar/short viewport; aud003-b17-3a = integrated end-to-end live/pilot (including persistent reopen); selective main campaign = loss/retry/reward/proof/replay; native arena = combat input/waves/progression. Scope must retain coverage when removing a nested invocation. Use deterministic launch seeds for fixed-result scenarios, actual native preflight for losing fixtures; never inject winner, skip assertion, or use blind retries. Update assertions when intentional product contracts change. Do not equate PR CI failure with Pages publication failure. New CI ownership contract is tested in Node. Do not run redundant full journeys by nesting, nor disable meaningful release checks to get green. 

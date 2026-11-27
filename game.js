@@ -53,8 +53,11 @@ const $=s=>document.querySelector(s);
 // Never fall back to the live wallet when sessionStorage is unavailable.
 const COMBAT2_PILOT=typeof location!=="undefined"&&/(?:^|[?&])combat2Pilot=1(?:&|$)/.test(location.search);
 function gameStorage(){return COMBAT2_PILOT?window.sessionStorage:window.localStorage;}
-// D2A: actual game route, isolated in the existing Combat2 test wallet until D2B/D3 acceptance.
-const ART_ADVENTURE_PILOT=COMBAT2_PILOT&&/(?:^|[?&])artAdventurePilot=1(?:&|$)/.test(location.search)&&typeof ArtAdventureCore!=="undefined";
+// AUD003-E: normal first-session routes use the verified native engine and
+// persistent profile. The historical explicit pilot still uses sessionStorage.
+// Keep legacy mode outside this scope; an explicit diagnostic rollback is available.
+const FIRST_SESSION_COMBAT2=COMBAT2_PILOT||(typeof location!=="undefined"&&!/(?:^|[?&])firstSessionLegacy=1(?:&|$)/.test(location.search));
+const ART_ADVENTURE_ENABLED=FIRST_SESSION_COMBAT2&&(!COMBAT2_PILOT||/(?:^|[?&])artAdventurePilot=1(?:&|$)/.test(location.search))&&typeof ArtAdventureCore!=="undefined";
 let battleIsArtAdventure=false,artAdventureBattle=null,artAdventureRoute=null,artAdventurePreviousMode=null,artAdventureNotice="";
 const COMBAT2_ARENA=COMBAT2_PILOT&&typeof location!=="undefined"&&/(?:^|[?&])combat2Arena=1(?:&|$)/.test(location.search)&&typeof Combat2ArenaPilot!=="undefined";
 let battleIsCombat2Arena=false,combat2ArenaConfig=null,combat2EntryPending=false,combat2EntryFrames=0;
@@ -234,7 +237,7 @@ function combat2Selection(){
 function clearCombat2Selection(){combat2Choice=-1;}
 function artPersonalId(){
  const actor=state?.fighters?.[state.currentActor];
- return ART_ADVENTURE_PILOT&&actor?.id==="art"&&state.active?state.trustPersonal?.find(id=>["art-intercept","art-reserve"].includes(id)&&CombatCore.personalDefinition(state,actor,id))||null:null;
+ return ART_ADVENTURE_ENABLED&&actor?.id==="art"&&state.active?state.trustPersonal?.find(id=>["art-intercept","art-reserve"].includes(id)&&CombatCore.personalDefinition(state,actor,id))||null:null;
 }
 function personalChoosing(){const id=artPersonalId();return !!id&&selectedAbility===id;}
 function personalTargetReady(id){return !!id&&state.fighters.some((_,i)=>!!CombatCore.personalPreview(state,id,i));}
@@ -361,7 +364,7 @@ function queueAutoAction(){
   const before=state.fighters.map(f=>({...f}));
   // Combat-015B: plan only when the scheduled auto step actually executes.
   const basePlan=AutoDecision.chooseAction(state);
-  const plan=ART_ADVENTURE_PILOT&&battleIsMainCampaign&&state.trustPersonal?.length?ArtAdventureCore.autoPlan(state,basePlan):basePlan;
+  const plan=ART_ADVENTURE_ENABLED&&battleIsMainCampaign&&state.trustPersonal?.length?ArtAdventureCore.autoPlan(state,basePlan):basePlan;
   const tutorialActor=state.fighters[state.currentActor]?.id;
   if(!CombatCore.performAutoAction(state,plan)){setAutoBattle(false);return;}
   if(battleIsFirstPlay&&tutorialActor)firstPlayTaughtActors.add(tutorialActor);
@@ -548,7 +551,7 @@ function mainCampaignWritable(){
 // D2A owns only the attempt and presentation. The shared v3 writer owns progress.
 let artAdventureSession=null;
 function artAdventureAdapter(){
- if(!ART_ADVENTURE_PILOT)return null;
+ if(!ART_ADVENTURE_ENABLED)return null;
  if(!artAdventureSession)artAdventureSession=ArtAdventureCore.create({heroes:ALLIES,storageProvider:()=>gameStorage(),onUnknown:()=>{saveAvailable=false;window.walletWriterHalt?.();}});
  return artAdventureSession;
 }
@@ -732,7 +735,7 @@ async function claimMainCampaignReward(id){
   }
   Object.keys(progress).forEach(key=>delete progress[key]);Object.assign(progress,result.runtime);
   saveAvailable=true;mainCampaignNotice=id===MainCampaignCore.II_ID?
-   "Нада в коллекции. Сдержать обещание · глава III готовится."+(ART_ADVENTURE_PILOT?" В штабе доступно личное приключение Арта.":""):"Награда получена. Следующий путь открыт.";
+   "Нада в коллекции. Сдержать обещание · глава III готовится."+(ART_ADVENTURE_ENABLED?" В штабе доступно личное приключение Арта.":""):"Награда получена. Следующий путь открыт.";
   renderAccountHeader();renderPlayerProfile();renderDailyTasks();renderHeroes();
  }catch(_){window.walletWriterHalt?.();mainCampaignNotice="Проверьте баланс после перезагрузки.";}
  finally{mainCampaignClaiming=false;renderMainCampaign();renderMainCampaignResult();}
@@ -779,8 +782,8 @@ function firstSessionAction(){
  if(initial)return initial;
  // AUD003-E: connect the already implemented episodes on one clean profile.
  // This is a voluntary recommendation, derived from actual existing state.
- // Keep legacy/default routes and rewards unchanged until integrated acceptance.
- if(!ART_ADVENTURE_PILOT||!writable||campaignStatus!=="claimed"||!FirstPlayCore.wonProof(firstPlayState)||!FirstPlayCore.rewardClaimed(progress))return null;
+ // Other modes and reward rules are unchanged; derive guidance from actual receipts.
+ if(!ART_ADVENTURE_ENABLED||!writable||campaignStatus!=="claimed"||!FirstPlayCore.wonProof(firstPlayState)||!FirstPlayCore.rewardClaimed(progress))return null;
  const second=mainCampaignStatus(MainCampaignCore.II_ID);
  if(second==="ready"||second==="claimable")return second==="ready"?"chapter-II":"chapter-II-reward";
  if(second!=="claimed")return null;
@@ -1759,7 +1762,7 @@ function progressedEnemy(enemy){
   defensePenetration:0,debuffPotency:0,debuffResistance:0};
 }
 // Read-only view model: pilot cards describe the candidate, legacy routes keep their own rules.
-function combat2PresentationHero(hero,enabled=COMBAT2_PILOT){
+function combat2PresentationHero(hero,enabled=FIRST_SESSION_COMBAT2){
  return enabled&&hero&&["ren","art","nada","liora","sava"].includes(hero.id)?{...hero,side:"ally",combat2:true}:hero;
 }
 function hasLeaderSkill(id){
@@ -1987,7 +1990,7 @@ function renderSquad(){
  const leaderArt=$(".squad-leader-skill-icon");
  if(leaderArt&&typeof AbilityIconCore!=="undefined")
   leaderArt.innerHTML=leaderHero?AbilityIconCore.markup(leaderHero,"leader")||"✦":"✦";
- const leaderAbility=leaderHero&&typeof AbilityInfo!=="undefined"?AbilityInfo.format(combat2PresentationHero(leaderHero,COMBAT2_PILOT&&squadReturnScreen==="mainCampaign"),"leader"):null;
+ const leaderAbility=leaderHero&&typeof AbilityInfo!=="undefined"?AbilityInfo.format(combat2PresentationHero(leaderHero,FIRST_SESSION_COMBAT2&&squadReturnScreen==="mainCampaign"),"leader"):null;
  const hasSkill=leaderAbility?.status==="available";
  const leaderButton=$("#squadLeaderSkillButton");
  const leaderName=$("#squadLeaderSkillName");
@@ -2030,7 +2033,7 @@ function renderSquad(){
  $("#squadStart").textContent=loreMode?"Начать испытание":"Начать бой";
  const intro=$("#squadIntro");
  if(intro)intro.textContent=loreMode
-  ?(mandatoryIds.length===2?"«Пять теней»: Рен и Нада обязательны. Остальных героев выбираешь ты.":"«Пять теней»: обязательны "+mandatoryNames+". Свободных мест: "+(MAX_SQUAD-mandatoryIds.length)+"."):squadReturnScreen==="mainCampaign"?(chosen.length===1?"Один герой — риск поражения. Рен — атака, Арт — страховка.":"Рен — атака, Арт — страховка. Рекомендуем обоих."):"Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.";
+  ?(mandatoryIds.length===2?"«Пять теней»: Рен и Нада обязательны. Остальных героев выбираешь ты.":"«Пять теней»: обязательны "+mandatoryNames+". Свободных мест: "+(MAX_SQUAD-mandatoryIds.length)+"."):squadReturnScreen==="mainCampaign"?(chosen.length===1?"Один герой — риск поражения. ":"")+(FIRST_SESSION_COMBAT2?"Рен — атака, Арт — прикрытие.":"Рен — атака, Арт — страховка.")+(chosen.length===1?"":" Рекомендуем обоих."):"Выбери от 1 до 5 героев. Это тестовый состав для следующего боя.";
  const disband=$("#squadDisband");
  if(disband)disband.textContent=loreMode?"Убрать остальных":"Распустить";
  $("#squadStart").disabled=chosen.length===0||(loreMode&&!requiredLoreSquadReady());
@@ -2241,9 +2244,9 @@ function showScreen(id){
   lastMissionEnergyRefunded=false;
   missionEntryPaid=false;
   missionResultSaveFailed=false;
-  battleIsArtAdventure=ART_ADVENTURE_PILOT&&squadReturnScreen==="artAdventure"&&!!artAdventureBattle;
+  battleIsArtAdventure=ART_ADVENTURE_ENABLED&&squadReturnScreen==="artAdventure"&&!!artAdventureBattle;
   battleIsCombat2Arena=COMBAT2_ARENA&&squadReturnScreen==="combat2Arena"&&!!combat2ArenaConfig;
-  combat2EntryPending=COMBAT2_PILOT&&(battleIsArtAdventure||battleIsCombat2Arena||squadReturnScreen==="firstPlay"||squadReturnScreen==="mainCampaign");combat2EntryFrames=0;
+  combat2EntryPending=FIRST_SESSION_COMBAT2&&(battleIsArtAdventure||battleIsCombat2Arena||squadReturnScreen==="firstPlay"||squadReturnScreen==="mainCampaign");combat2EntryFrames=0;
   battleIsCampaign=squadReturnScreen==="campaign"&&!!activeMissionId;
    battleIsMainCampaign=squadReturnScreen==="mainCampaign"&&typeof MainCampaignCore!=="undefined";
    battleMainCampaignId=battleIsMainCampaign?mainCampaignPendingId:null;
@@ -3372,9 +3375,9 @@ function renderHeroAbilities(hero){
  const list=$("#heroAbilityList");
  if(!list||typeof AbilityInfo==="undefined")return;
  list.replaceChildren();
- if(COMBAT2_PILOT){
-  const scope="Тест Combat 2.0 · первый сеанс, главы I–II и тестовая арена. Остальные режимы используют прежние правила.";
-  const title=$("#heroAbilitiesTitle");if(title){title.textContent="Умения · тест 2.0";title.title=scope;}
+ if(FIRST_SESSION_COMBAT2){
+  const scope=COMBAT2_PILOT?"Тест Combat 2.0 · первый сеанс, главы I–II и тестовая арена. Остальные режимы используют прежние правила.":"Основная кампания и личное приключение. Отличия умений в остальных режимах указаны в описании.";
+  const title=$("#heroAbilitiesTitle");if(title){title.textContent=COMBAT2_PILOT?"Умения · тест 2.0":"Умения · кампания";title.title=scope;}
   list.setAttribute("aria-label",scope);
  }
  for(const info of AbilityInfo.forHero(combat2PresentationHero(hero))){
@@ -3395,6 +3398,12 @@ function renderHeroAbilities(hero){
   const summary=document.createElement("summary");summary.textContent="Описание";
   const description=document.createElement("p");description.textContent=info.description;
   details.append(summary,description);
+  if(FIRST_SESSION_COMBAT2&&!COMBAT2_PILOT){
+   const legacy=AbilityInfo.format(hero,info.id);
+   if(legacy&&(legacy.description!==info.description||legacy.name!==info.name||legacy.status!==info.status)){
+    const alternate=document.createElement("p");alternate.textContent="Другие режимы: "+legacy.name+" — "+legacy.description;details.append(alternate);
+   }
+  }
   if(info.meta.length){
    const meta=document.createElement("small");meta.className="hero-ability-meta";
    meta.textContent=info.meta.join(" · ");details.append(meta);
@@ -3425,24 +3434,31 @@ function openSkillUpgrade(id){
 function renderSkillUpgrade(){
  const dialog=$("#skillUpgradeDialog");
  if(!dialog||!openedSkillId)return;
- const hero=combat2PresentationHero(progressedHero(ALLIES.find(h=>h.id===selectedHeroId)));
+ const baseHero=progressedHero(ALLIES.find(h=>h.id===selectedHeroId));
+ const hero=combat2PresentationHero(baseHero);
  const current=SkillCore.level(progress,selectedHeroId,openedSkillId);
  const ability=AbilityData.get(hero,openedSkillId);
  const formatAt=level=>{
   const actor={...hero,skillLevels:{...hero.skillLevels,[openedSkillId]:level}};
   return AbilityInfo.format(actor,openedSkillId);
  };
+ const describeLevel=level=>{
+  const main=formatAt(level);
+  if(!FIRST_SESSION_COMBAT2||COMBAT2_PILOT)return main.description;
+  const legacy=AbilityInfo.format({...baseHero,skillLevels:{...baseHero.skillLevels,[openedSkillId]:level}},openedSkillId);
+  return legacy&&legacy.description!==main.description?"Кампания: "+main.description+" Другие режимы: "+legacy.description:main.description;
+ };
  const selected=Math.max(1,Math.min(SkillCore.MAX,skillPreviewLevel));
  const info=formatAt(selected);
  $("#skillUpgradeTitle").textContent=ability?.name||"Умение";
- $("#skillUpgradeSubhead").textContent=(COMBAT2_PILOT?"Тест Combat 2.0 · ":"")+"Уровень "+current+" / "+SkillCore.MAX+
+ $("#skillUpgradeSubhead").textContent=(COMBAT2_PILOT?"Тест Combat 2.0 · ":FIRST_SESSION_COMBAT2?"Кампания / другие режимы · ":"")+"Уровень "+current+" / "+SkillCore.MAX+
   " · "+(AbilityInfo.SLOTS.find(s=>s.id===openedSkillId)?.label||"");
  $("#skillPreviewLabel").textContent="ОПИСАНИЕ НА УРОВНЕ "+selected;
- $("#skillPreviewText").textContent=info.description;
+ $("#skillPreviewText").textContent=describeLevel(selected);
  $("#skillPreviewMeta").textContent=info.meta.join(" · ");
  const next=current<SkillCore.MAX?formatAt(current+1):null;
  $("#skillNextEffect").textContent=next?
-  "Следующий уровень "+(current+1)+": "+next.description:"Умение изучено полностью.";
+  "Следующий уровень "+(current+1)+": "+(next.description===formatAt(current).description&&FIRST_SESSION_COMBAT2&&!COMBAT2_PILOT?"В основной кампании эффект не меняется. ":"")+describeLevel(current+1):"Умение изучено полностью.";
  const buttons=$("#skillLevelButtons");buttons.replaceChildren();
  for(let level=1;level<=SkillCore.MAX;level++){
   const b=document.createElement("button");b.type="button";
@@ -3458,7 +3474,7 @@ function renderSkillUpgrade(){
   const row=document.createElement("div");row.className="skill-level-row"+
    (selected===level?" selected":"");
   const number=document.createElement("span");number.textContent=String(level);
-  const desc=document.createElement("span");desc.textContent=formatAt(level).description;
+  const desc=document.createElement("span");desc.textContent=describeLevel(level);
   row.append(number,desc);list.append(row);
  }
  const c=SkillCore.cost(progress,selectedHeroId,openedSkillId);
@@ -4870,8 +4886,8 @@ function resetBattle(){
  const realHeroFight=allies.length>0&&
   allies.every(f=>["ren","nada","liora","art","sava"].includes(f.id));
  state=CombatCore.createBattle(lineup,waves,{
-  ...(COMBAT2_PILOT&&realHeroFight&&(battleIsFirstPlay||battleIsMainCampaign)?{combat2:true}:{}),
-  ...(ART_ADVENTURE_PILOT&&realHeroFight&&battleIsMainCampaign?ArtAdventureCore.loadout(progress,allies):{}),
+  ...(FIRST_SESSION_COMBAT2&&realHeroFight&&(battleIsFirstPlay||battleIsMainCampaign)?{combat2:true}:{}),
+  ...(ART_ADVENTURE_ENABLED&&realHeroFight&&battleIsMainCampaign?ArtAdventureCore.loadout(progress,allies):{}),
   leaderId:storyTrialParty&&battleIsStoryDemo?null:battleIsLoreRequired?squadSlots()[0]:selectedLeaderId,
   ...(battleIsFirstPlay?{leaderId:null,tacticalObjective:{
    kind:"hold-or-defeat",protectAllyId:"ren",allyActionsToHold:6

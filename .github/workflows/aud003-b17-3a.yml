@@ -2,7 +2,31 @@ name: Combat 2.0 actual first session · mobile browser
 on:
   pull_request:
     branches: [main]
-    paths: ['game.js', 'tests/first-play-closeout-browser.cjs', '.github/workflows/aud003-b17-3a.yml']
+    paths:
+      - 'game.js'
+      - 'index.html'
+      - 'styles.css'
+      - 'first-play*.js'
+      - 'main-campaign-*.js'
+      - 'art-adventure-*.js'
+      - 'hero-card-r2a*'
+      - 'combat-*.js'
+      - 'ability-*.js'
+      - 'skill-core.js'
+      - 'hero-stats-*.js'
+      - 'hero-collection-core.js'
+      - 'star-core.js'
+      - 'progress-*.js'
+      - 'reward-policy-core.js'
+      - 'auto-decision.js'
+      - 'enemy-decision.js'
+      - 'npc-enemy-data.js'
+      - 'initiative-model.js'
+      - 'battle-rng.js'
+      - 'squad-stage-3d.js'
+      - 'assets/cutscenes/**'
+      - 'tests/first-play-closeout-browser.cjs'
+      - '.github/workflows/aud003-b17-3a.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -11,6 +35,10 @@ concurrency:
   cancel-in-progress: true
 jobs:
   pilot:
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [pilot, live]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     container:
@@ -22,9 +50,9 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --no-save --ignore-scripts playwright@1.56.1
-      - name: Real First Play, I, II, Nada receipt; manual, auto, reload and storage isolation
+      - name: Unified First Play through network entry; persistent and isolated profiles
         env:
-          COMBAT2_PILOT: '1'
+          COMBAT2_PILOT: ${{ matrix.mode == 'pilot' && '1' || '0' }}
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/combat2-first-session-http.log 2>&1 &
           sleep 2
@@ -32,6 +60,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: combat2-first-session-evidence
-          path: artifacts/squad-recovery/first-play/aud003-b17-3a/
+          name: combat2-first-session-evidence-${{ matrix.mode }}
+          path: artifacts/squad-recovery/first-play/
           if-no-files-found: ignore

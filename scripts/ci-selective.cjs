@@ -31,7 +31,9 @@ const hero=rosterOwnership||any(f=>/^(hero-card|hero-stats|gear-|tests\/hero-car
 // Roster/save schema changes require the full regression, not only squad/hero smoke.
 const audit=any(f=>f.startsWith(".github/workflows/")||f==="scripts/ci-selective.cjs"||
  ["hero-collection-core.js","progress-v3-core.js","star-core.js","resource-icon-ui.js","first-play-core.js","main-campaign-core.js","tests/campaign-hub-001.test.js"].includes(f));
-const firstplay=any(f=>/^(first-play(?:[-.]|$)|tests\/first-play(?:[-.]|$))/.test(f)||f==="main-campaign-core.js");
+// Preserve the first-boot coverage previously hidden inside the squad job.
+// Separate it from the long unified route, which has its own workflow.
+const firstplay=squad||any(f=>/^(first-play(?:[-.]|$)|tests\/first-play(?:[-.]|$))/.test(f)||f==="main-campaign-core.js"||f==="art-adventure-core.js"||f==="hero-card-r2a-path.js"||f==="art-adventure-story.js");
 const maincampaign=any(f=>/^(main-campaign-|tests\/main-campaign-)/.test(f));
 const scopes={squad,battle,lore,network,hero,audit,firstplay,maincampaign};
 const tests=new Set();

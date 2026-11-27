@@ -381,6 +381,8 @@ async function run(label,engine,viewport){
     await page.locator("#mainCampaignNode").tap();
     await page.locator("#squadDisband").tap();
     for(const id of ["ren","art"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
+    // Seed only the launch, never the winner or progression.
+    await page.evaluate(()=>{const original=resetBattle;resetBattle=function(...args){const now=Date.now;try{Date.now=()=>7;return original.apply(this,args);}finally{Date.now=now;resetBattle=original;}};});
     await page.locator("#squadStart").tap();
     if(await page.locator("#squad.active").isVisible())await page.locator("#squadStart").tap();
     await page.locator("#battle.active").waitFor({state:"visible",timeout:60000});
@@ -402,7 +404,13 @@ async function run(label,engine,viewport){
     assert.equal(await page.locator("#mainCampaignNext").getAttribute("data-unlocked"),"true");
     await page.screenshot({path:path.join(dest,"cam001fp-real-m1-result.png")});
     await homeFromMap();
-    assert.equal(await cta.isVisible(),false);
+    // The integrated first session now deliberately continues to chapter II.
+    assert.equal(await cta.isVisible(),true);
+    assert.match(await cta.innerText(),/Глава II/);
+    await cta.tap();
+    assert.equal(await page.locator("#mainCampaignMap").getAttribute("data-mission"),"II");
+    assert.equal(await page.locator("#mainCampaignClaim").isVisible(),false);
+    await homeFromMap();
    }else await homeFromMap();
    assert.equal(await page.evaluate(()=>JSON.stringify(operationProgress)),opsBefore,"onboarding must not start or mutate OPS");
   }
@@ -501,7 +509,7 @@ async function probeFreshOpening(name,type,viewport){
  }finally{await browser.close();}
 }
 (async()=>{
- await require("./first-play-closeout-browser.cjs")();
+ // Full first-session traversal belongs to aud003-b17-3a.yml, not this suite.
  await run("chromium",chromium,{width:844,height:390});
  await run("webkit",webkit,{width:932,height:430});
  await run("chromium-short",chromium,{width:844,height:320});

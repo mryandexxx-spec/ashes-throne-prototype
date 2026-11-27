@@ -4,8 +4,9 @@
 const {chromium,webkit}=require("playwright");
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path");
 const pilot=process.env.COMBAT2_PILOT==="1";
+const unified=true; // both the ordinary persistent route and isolated pilot
 const origin=new URL(process.env.GAME_ORIGIN||"http://127.0.0.1:8765/");if(pilot){origin.searchParams.set("combat2Pilot","1");origin.searchParams.set("artAdventurePilot","1");}
-const dest=path.join(process.cwd(),"artifacts","squad-recovery","first-play",pilot?"aud003-b17-3a":"aud003-a");fs.mkdirSync(dest,{recursive:true});
+const dest=path.join(process.cwd(),"artifacts","squad-recovery","first-play",pilot?"aud003-b17-3a":"aud003-e-live");fs.mkdirSync(dest,{recursive:true});
 async function tapFighter(page,id,probeOnly=false){
  const handle=await page.waitForFunction(id=>{
   const canvas=document.querySelector("#renderCanvas"),rect=canvas.getBoundingClientRect();
@@ -49,7 +50,8 @@ async function tapFighter(page,id,probeOnly=false){
 
 async function run(name,type,viewport,skip=false){
  const browser=await type.launch(type===chromium?{headless:true,args:["--no-sandbox","--use-gl=angle","--use-angle=swiftshader","--enable-webgl","--disable-dev-shm-usage"]}:{headless:true});
- const page=await browser.newPage({viewport,hasTouch:true,reducedMotion:"reduce"});
+ const context=await browser.newContext({viewport,hasTouch:true,reducedMotion:"reduce"});
+ const page=await context.newPage();
  const key=name+"-"+viewport.width+"x"+viewport.height+(skip?"-skip-auto":"-manual");
  const start=Date.now(),events=[],errors=[];let taps=0;
  page.on("pageerror",e=>errors.push(e.message));
@@ -80,7 +82,7 @@ async function run(name,type,viewport,skip=false){
   await wait("#battle.active");await actorReady();assert.equal(await page.evaluate(()=>state.active),true);
   assert.match(await page.locator("#autoSpeedBtn").innerText(),/1×/);assert.equal(await page.locator("#autoBattleBtn").getAttribute("aria-pressed"),"false");
   const launched=await page.evaluate(()=>({combat2:state.combat2===true,seed:state.rng?.seed,mission:state.mainCampaignMissionId,allies:state.fighters.filter(f=>f.side==="ally").map(f=>({id:f.id,level:f.level})),enemies:state.fighters.filter(f=>f.side==="enemy").map(f=>f.id)}));
-  assert.equal(launched.combat2,pilot);assert.deepEqual(launched.allies.map(f=>f.id).sort(),["art","ren"]);if(!first){assert.equal(launched.seed,7);assert.equal(launched.mission,label==="I"?"main-cam-001-m1":"main-cam-002-m1");assert.equal(launched.allies.find(f=>f.id==="ren").level,2);}
+  assert.equal(launched.combat2,unified);assert.deepEqual(launched.allies.map(f=>f.id).sort(),["art","ren"]);if(!first){assert.equal(launched.seed,7);assert.equal(launched.mission,label==="I"?"main-cam-001-m1":"main-cam-002-m1");assert.equal(launched.allies.find(f=>f.id==="ren").level,2);}
   report(label+"-interactive",launched);await screenshot(label+"-battle");
   const before=Date.now(),t0=taps;let firstActionMs=null,seen=new Set();
   if(automatic){await tap("#autoBattleBtn");}
@@ -109,7 +111,7 @@ async function run(name,type,viewport,skip=false){
  try{
   if(pilot)await page.addInitScript(()=>{for(const key of ["ashes-throne.first-play.v1","ashes-throne.progress.v3"])if(localStorage.getItem(key)===null)localStorage.setItem(key,"pilot-live-sentinel");});
   await page.goto(origin.toString(),{waitUntil:"load",timeout:60000});await ready();await wait("#firstPlay.active");
-  if(pilot)assert.equal(await page.evaluate(()=>gameStorage()===sessionStorage),true);
+  assert.equal(await page.evaluate(pilot=>gameStorage()===(pilot?sessionStorage:localStorage),pilot),true);
   const initial=await inspect();assert.deepEqual(initial.owned,["art","ren"]);assert.equal(initial.phase,"briefing");assert.deepEqual(initial.receipts,[0,0,0]);assert.deepEqual(initial.best,[0,0]);report("cold-first-play",initial);await screenshot("opening");
   if(skip){await tap("#firstPlayStorySkip");await wait("#battle.active");await liveUntouched();await page.reload({waitUntil:"load",timeout:60000});await ready();await wait("#firstPlay.active");assert.equal((await inspect()).phase,"ready");assert.deepEqual((await inspect()).receipts,[0,0,0]);report("skip-reload-ready");await tap("#firstPlayStoryFight");}
   else{for(let i=0;i<4&&!(await page.locator("#firstPlayStoryFight").isVisible());i++)await storyNext();assert.equal(await page.locator("#firstPlayStoryChoices").isVisible(),false);await screenshot("handoff");await tap("#firstPlayStoryFight");}
@@ -130,14 +132,15 @@ async function run(name,type,viewport,skip=false){
   paid=await inspect();assert.equal(paid.nada,1);assert.deepEqual(paid.owned,["art","nada","ren"]);assert.deepEqual(paid.receipts,[1,1,1]);assert.deepEqual(paid.statuses,["claimed","claimed"]);assert.equal(paid.currency,p.currency+40);assert.equal(paid.energy,initial.energy);assert.equal(paid.ops,initial.ops);assert.match(await page.locator("#mainCampaignNotice").innerText(),/глава III готовится/);report("Nada-claimed",paid);await screenshot("II-claimed");
   await tap("#mainCampaignNode");assert.ok(await page.locator('#squadRoster .squad-choice[data-hero-id="nada"]').isEnabled());await tap("#squadBack");await backHome();
   await tap('#home .hq-station[data-screen="collection"]');await wait("#collection.active");await tap('#collection [data-open-hero="nada"]');await wait("#heroDetail.active");assert.equal(await page.evaluate(()=>selectedHeroId),"nada");await screenshot("Nada-card");await tap("#detailHome");await home();
-  if(pilot){
+  if(unified){
    await tap('#home .hq-station[data-screen="collection"]');await wait("#collection.active");
    await tap('#collection [data-open-hero="art"]');await wait("#heroDetail.active");
    const abilityText=slot=>page.locator('#heroAbilityList [data-hero-ability="'+slot+'"]').textContent();
    assert.match(await abilityText("special"),/65%.*физической атаки/);
    assert.match(await abilityText("passive"),/40%.*85%/);
    assert.match(await abilityText("leader"),/Не назначена/);
-   assert.match(await page.locator("#heroAbilityList").getAttribute("aria-label"),/Тест Combat 2.0/);
+   assert.match(await page.locator("#heroAbilityList").getAttribute("aria-label"),pilot?/Тест Combat 2.0/:/Основная кампания/);
+   if(!pilot)assert.match(await abilityText("special"),/Другие режимы/);
    const abilityLayout=await page.evaluate(()=>{
     const list=document.querySelector("#heroAbilityList"),cards=[...list.children];
     const footer=document.querySelector("#app>footer");
@@ -150,7 +153,7 @@ async function run(name,type,viewport,skip=false){
    await screenshot("Art-candidate-card");await tap("#detailHome");await home();
   }
   await liveUntouched();await page.reload({waitUntil:"load",timeout:60000});await home();const final=await inspect();assert.deepEqual(final.receipts,[1,1,1]);assert.deepEqual(final.statuses,["claimed","claimed"]);assert.equal(final.nada,1);assert.equal(final.ren,2);assert.equal(final.currency,paid.currency);await map();await tap("#mainCampaignNext");assert.equal(await page.locator("#mainCampaignClaim").isVisible(),false);await screenshot("persisted-II");
-  if(pilot){
+  if(unified){
    await backHome();
    assert.match(await page.locator("#hqFirstSessionAction").innerText(),/К приключению/);
    await screenshot("HQ-art-next");await tap("#hqFirstSessionAction");
@@ -228,8 +231,22 @@ async function run(name,type,viewport,skip=false){
    await tap("#mainCampaignResultBack");await backHome();assert.match(await page.locator("#hqFirstSessionAction").innerText(),/В разведсеть/);await screenshot("HQ-network-next");
    await tap("#hqFirstSessionAction");await wait("#network.active");await screenshot("Network-entry");
    assert.deepEqual((await inspect()).receipts,[1,1,1]);assert.equal(await page.evaluate(()=>ArtAdventureCore.view(progress).selected),"guardian-2");await liveUntouched();report("UNIFIED-PASS",{...await inspect(),art:await page.evaluate(()=>ArtAdventureCore.view(progress))});
+   if(!pilot){
+    // Close the playing tab, then start a new one in the same browser profile.
+    // sessionStorage cannot survive this; the ordinary wallet must.
+    await page.close();
+    const next=await context.newPage();
+    next.on("pageerror",e=>errors.push(e.message));
+    try{
+     await next.goto(origin.toString(),{waitUntil:"load",timeout:60000});
+     await next.waitForFunction(()=>typeof FirstPlayCore!=="undefined"&&typeof ArtAdventureCore!=="undefined"&&document.querySelector("#walletWriterNotice")?.style.display==="none",null,{timeout:60000});
+     const persisted=await next.evaluate(()=>({normal:gameStorage()===localStorage,phase:firstPlayState.phase,owned:ALLIES.filter(h=>heroOwned(h.id)).map(h=>h.id).sort(),path:ArtAdventureCore.view(progress),receipts:[FirstPlayCore.REWARD_RECEIPT,...MainCampaignCore.MISSIONS.map(m=>m.receipt)].map(id=>progress.rewardReceipts.filter(r=>r.id===id).length)}));
+     assert.equal(persisted.normal,true);assert.equal(persisted.phase,"done");assert.deepEqual(persisted.owned,["art","nada","ren"]);assert.deepEqual(persisted.receipts,[1,1,1]);assert.equal(persisted.path.selected,"guardian-2");
+     report("LIVE-PERSISTENT-REOPEN-PASS",persisted);await next.screenshot({path:path.join(dest,key+"-live-reopen.png")});
+    }finally{await next.close();}
+   }
   }
-  assert.deepEqual(errors,[]);report("PASS",await inspect());
+  assert.deepEqual(errors,[]);report("PASS",page.isClosed()?{persistentReopen:true}:await inspect());
  }catch(e){report("FAIL",{error:String(e)});await page.screenshot({path:path.join(dest,key+"-fail.png")}).catch(()=>{});throw e;}
  finally{await browser.close();}
 }

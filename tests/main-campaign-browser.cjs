@@ -88,15 +88,37 @@ async function run(name,browserType,viewport){
  };
  const fight=async(manual=false,second=false,expectedIds=["ren","art"])=>{
   // Fix only the launch seed, never combat results, clocks during play or saves.
-  // Seed 7 exercises real solo losses and team wins in both chapters.
-  await page.evaluate(()=>{
+  // A fixed legacy losing seed is not necessarily a loss under native combat.
+  // Choose a real losing seed for the actual solo party in detached memory.
+  // The actual browser still has to fight, lose, and preserve its wallet/proof.
+  let seed=7;
+  if(expectedIds.length===1){
+   seed=await page.evaluate(second=>{
+    const id=second?MainCampaignCore.II_ID:MainCampaignCore.ID;
+    const party=selectedParty(),leaderId=selectedLeaderId;
+    for(let n=7;n<407;n++){
+     const b=CombatCore.createBattle([...party.map(f=>({...f})),...MainCampaignCore.enemiesFor(id,NpcEnemyData)],[],{
+      combat2:FIRST_SESSION_COMBAT2,leaderId,rngSeed:n,hitChecks:true,critChecks:true,penetrationChecks:true,statusChecks:true
+     });
+     CombatCore.advanceToPlayerTurn(b);
+     for(let i=0;i<80&&b.active;i++){
+      if(!CombatCore.performAutoAction(b,AutoDecision.chooseAction(b)))throw Error("SOLO_PREFLIGHT_AUTO_FAILED");
+     }
+     if(!b.active&&b.winner==="enemy")return n;
+    }
+    return null;
+   },second);
+   assert.ok(Number.isInteger(seed),"Actual solo party must have a reproducible defeat fixture");
+   console.log("CAMPAIGN_NATIVE_SOLO_LOSS_SEED",key,second?"II":"I",seed);
+  }
+  await page.evaluate(seed=>{
    const original=resetBattle;
    resetBattle=function(...args){
     const now=Date.now;
-    try{Date.now=()=>7;return original.apply(this,args);}
+    try{Date.now=()=>seed;return original.apply(this,args);}
     finally{Date.now=now;resetBattle=original;}
    };
-  });
+  },seed);
   await page.locator("#squadStart").tap();
   if(await page.locator("#squad.active").isVisible())await page.locator("#squadStart").tap();
   await page.locator("#battle.active").waitFor({timeout:30000});
@@ -105,7 +127,7 @@ async function run(name,browserType,viewport){
   assert.deepEqual(launched.allies,[...expectedIds].sort(),"actual battle party, not only the squad UI");
   assert.deepEqual(launched.enemies,second?["npc-cam-m2-guard","npc-cam-m2-interceptor"]:["npc-cam-m1-guard","npc-cam-m1-interceptor"]);
   assert.equal(launched.mission,second?"main-cam-002-m1":"main-cam-001-m1");
-  assert.equal(launched.seed,7,"real battle must use the reproducible fixture seed");
+  assert.equal(launched.seed,seed,"real battle must use the reproducible fixture seed");
   for(const id of await page.evaluate(()=>state.fighters.filter(f=>f.hp>0).map(f=>f.id)))await tapFighter(page,id,true);
   await page.screenshot({path:path.join(dest,key+"-"+(second?"II":"I")+"-"+(manual?"manual":"auto")+"-battle.png")});
   for(let i=0;i<2;i++)await page.locator("#autoSpeedBtn").tap();
@@ -151,7 +173,7 @@ async function run(name,browserType,viewport){
   await page.locator("#mainCampaignResultRetry").tap();
   await page.locator("#squadDisband").tap();
   for(const id of ["ren","art"])await page.locator('#squadRoster .squad-choice[data-hero-id="'+id+'"]').tap();
-  assert.match(await page.locator("#squadIntro").innerText(),/Рен — атака, Арт — страховка/);
+  assert.match(await page.locator("#squadIntro").innerText(),/Рен — атака, Арт — прикрытие/);
   await visibleTarget("#squadStart");
   await page.screenshot({path:path.join(dest,key+"-squad.png")});
   assert.equal(await fight(true),"ally","manual basic attacks with the two fresh starters");
@@ -203,7 +225,7 @@ async function run(name,browserType,viewport){
   if(viewport.height===320){
    await page.locator("#squadDisband").tap();
    await page.locator('#squadRoster .squad-choice[data-hero-id="art"]').tap();
-   assert.equal(await fight(false,true,["art"]),"enemy","one starter should lose chapter II");
+   assert.equal(await fight(false,true,["art"]),"enemy","actual solo defeat fixture in chapter II");
    assert.equal((await inspectII()).proof.best,0);assert.equal((await inspectII()).rank,0);
    assert.equal(await page.locator("#mainCampaignResultClaim").isVisible(),false);
    assert.equal(await page.locator("#mainCampaignResultArt").isVisible(),false,"II defeat must not show the witness");

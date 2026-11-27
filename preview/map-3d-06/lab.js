@@ -10208,7 +10208,11 @@ function objective(s) {
 }
 
 // ../../_temp/preview-tools/interaction.mjs
-var provider = () => window.sessionStorage;
+var durable = new URLSearchParams(location.search).get("durable") === "1";
+var provider = () => {
+  if (!ProgressWriterCore.canPersist()) throw Error("MAP3D_WRITER_REQUIRED");
+  return durable ? Map3DProfile.storage() : window.sessionStorage;
+};
 var names = { spawn: "\u041D\u0430\u0447\u0430\u043B\u043E", direct: "\u041F\u043E\u0441\u0442", court: "\u0414\u0432\u043E\u0440", exit: "\u0412\u044B\u0445\u043E\u0434" };
 var labels = { inspect: "\u041E\u0441\u043C\u043E\u0442\u0440\u0435\u0442\u044C \u043F\u043E\u0441\u0442", scout: "\u041D\u0430\u0439\u0442\u0438 \u043E\u0431\u0445\u043E\u0434", challenge: "\u0417\u0430\u043F\u0440\u043E\u0441\u0438\u0442\u044C \u0431\u043E\u0439", bypass: "\u041F\u0440\u043E\u0439\u0442\u0438 \u0432 \u043E\u0431\u0445\u043E\u0434", fight: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043D\u0430\u0441\u0442\u043E\u044F\u0449\u0438\u0439 \u0431\u043E\u0439", cancel: "\u041E\u0442\u043C\u0435\u043D\u0430", finish: "\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044C \u043C\u0430\u0440\u0448\u0440\u0443\u0442" };
 function createInteractions(adapter) {
@@ -10222,7 +10226,7 @@ function createInteractions(adapter) {
     b.setAttribute("aria-label", "\u0418\u0434\u0442\u0438: " + name);
     b.onclick = () => {
       const v = adapter.view();
-      if (!v.ready || state.phase === "encounter" || state.phase === "complete") return;
+      if (blocked || !v.ready || state.phase === "encounter" || state.phase === "complete") return;
       if (nearby(v.pos, v.walking) !== id) adapter.move(points[id]);
     };
     root.append(b);
@@ -10235,7 +10239,7 @@ function createInteractions(adapter) {
     signature = "";
     panel.hidden = true;
     root.hidden = true;
-    goal.textContent = blocked ? "\u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0435 \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E. \u0421\u0431\u0440\u043E\u0441\u0438\u0442\u044C \u043C\u0430\u0440\u0448\u0440\u0443\u0442." : objective(state);
+    goal.textContent = blocked ? "\u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u0438\u0435 \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E. \u041F\u0440\u043E\u0432\u0435\u0440\u044C \u0432\u043A\u043B\u0430\u0434\u043A\u0438 \u0438 \u043F\u0435\u0440\u0435\u0437\u0430\u0433\u0440\u0443\u0437\u0438." : objective(state);
   }
   function restart() {
     const next = fresh();
@@ -10305,7 +10309,7 @@ function createInteractions(adapter) {
       }
     }
   }
-  return { reset, restart, checkpoint, update, snapshot: () => ({ ...state }), canMove: () => state.phase !== "encounter" && state.phase !== "complete" };
+  return { reset, restart, checkpoint, update, snapshot: () => ({ ...state }), canMove: () => !blocked && state.phase !== "encounter" && state.phase !== "complete" };
 }
 
 // ../../_temp/preview-tools/explorer.mjs
@@ -10440,8 +10444,9 @@ window.addEventListener("pagehide", (e) => {
   } else close();
 });
 window.addEventListener("pageshow", (e) => {
-  if (e.persisted) visibility();
+  if (e.persisted) location.reload();
 });
+window.addEventListener("pagehide", () => ProgressWriterCore.release(), { once: true });
 document.querySelector("#shadows").onclick = () => {
   if (!ready) return;
   quality.shadows = !quality.shadows;
@@ -10844,9 +10849,16 @@ function resourceInventory() {
   if (!scene) return null;
   return { meshes: scene.meshes.length, vertices: scene.meshes.reduce((n, m) => n + m.getTotalVertices(), 0), indices: scene.meshes.reduce((n, m) => n + m.getTotalIndices(), 0), materials: scene.materials.length, skeletons: scene.skeletons.length, animationGroups: scene.animationGroups.length, textures: scene.textures.map((t) => ({ name: t.name?.slice(0, 100), width: t.getSize().width, height: t.getSize().height })), internalTextures: engine.getLoadedTexturesCache().length, renderSize: [engine.getRenderWidth(), engine.getRenderHeight()] };
 }
+var lock = await ProgressWriterCore.acquire();
 var interactions = createInteractions({ view: () => ({ ready, pos, overview, walking: path.length > 0 }), move: select, project, handoff: () => {
   close();
-  location.assign("../../?combat2Pilot=1&skipFirstPlay=1&map3d06=1");
+  location.assign("../../?combat2Pilot=1&skipFirstPlay=1&map3d06=" + (new URLSearchParams(location.search).get("durable") === "1" ? "2" : "1"));
 } });
 window.lab = { open, close, project, pickDestination, resourceInventory, snapshot: () => ({ exploration: interactions.snapshot(), ready, loading, quality: { ...quality }, pos, last, commands, arrivals, unsafe, walking: path.length > 0, clip: activeClip, clipPlaying: groups?.[activeClip]?.isPlaying, events: [...events], visited: [...visited], frames: [...frames], routeCosts: [...routeCosts], updateCosts: [...updateCosts], metrics, engines: B.EngineStore.Instances.length, meshes: scene?.meshes.length, textures: scene?.textures.length, zoom, zoomGoal, overview, cameraSpan, cameraSettled: ready && B.Vector3.Distance(view, V(overview ? [0, 0, -2.5] : pos)) < 0.04 && Math.abs(cameraSpan - (overview ? 12 * engine.getRenderHeight() / engine.getRenderWidth() : zoomGoal)) < 0.04, pointers: pointer.size, heading: holder?.rotation.y, heroScreen: ready ? project(arr(holder.position)) : null }) };
-open().catch(console.error);
+if (lock.ok) open().catch(console.error);
+else {
+  say("\u0418\u0433\u0440\u0430 \u043E\u0442\u043A\u0440\u044B\u0442\u0430 \u0432 \u0434\u0440\u0443\u0433\u043E\u0439 \u0432\u043A\u043B\u0430\u0434\u043A\u0435 \u0438\u043B\u0438 \u0437\u0430\u043F\u0438\u0441\u044C \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u0430");
+  document.querySelector("#restart").textContent = "\u041F\u043E\u0432\u0442\u043E\u0440\u0438\u0442\u044C";
+  document.querySelector("#restart").onclick = () => location.reload();
+  document.querySelector("#objective").textContent = "\u0417\u0430\u043A\u0440\u043E\u0439 \u0434\u0440\u0443\u0433\u0443\u044E \u0432\u043A\u043B\u0430\u0434\u043A\u0443 \u0438 \u043D\u0430\u0436\u043C\u0438 \u041F\u043E\u0432\u0442\u043E\u0440\u0438\u0442\u044C.";
+}

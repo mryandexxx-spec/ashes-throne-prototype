@@ -25,7 +25,8 @@ function clearInput(){const ids=[...pointer.keys()];pointer.clear();down=null;ge
 function visibility(){if(!ready||!engine)return;engine.stopRenderLoop(tick);clearInput();resetFPS();if(!document.hidden){resize();engine.runRenderLoop(tick);} }
 document.addEventListener('visibilitychange',visibility);
 window.addEventListener('pagehide',e=>{if(e.persisted){engine?.stopRenderLoop(tick);clearInput();resetFPS();}else close();});
-window.addEventListener('pageshow',e=>{if(e.persisted)visibility();});
+window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
+window.addEventListener('pagehide',()=>ProgressWriterCore.release(),{once:true});
 document.querySelector('#shadows').onclick=()=>{if(!ready)return;quality.shadows=!quality.shadows;configureShadows();resetFPS();updateButtons();};
 document.querySelector('#resolution').onclick=()=>{if(!ready)return;quality.scale=quality.scale===1?1.5:1;engine.setHardwareScalingLevel(quality.scale);resize();resetFPS();updateButtons();};
 const record=(type,data={})=>{events.push({type,...data});if(events.length>200)events.shift();};
@@ -91,6 +92,7 @@ document.querySelector('#pace').onclick=()=>{pace=pace==='walk'?'run':'walk';doc
 document.querySelector('#stop').onclick=()=>{if(ready&&path.length){stop('Остановлен');record('cancel',{pos:[...pos]});}};
 document.querySelector('#restart').onclick=()=>{if(!loading&&interactions.restart())open().catch(console.error);};
 function resourceInventory(){if(!scene)return null;return {meshes:scene.meshes.length,vertices:scene.meshes.reduce((n,m)=>n+m.getTotalVertices(),0),indices:scene.meshes.reduce((n,m)=>n+m.getTotalIndices(),0),materials:scene.materials.length,skeletons:scene.skeletons.length,animationGroups:scene.animationGroups.length,textures:scene.textures.map(t=>({name:t.name?.slice(0,100),width:t.getSize().width,height:t.getSize().height})),internalTextures:engine.getLoadedTexturesCache().length,renderSize:[engine.getRenderWidth(),engine.getRenderHeight()]};}
-const interactions=createInteractions({view:()=>({ready,pos,overview,walking:path.length>0}),move:select,project,handoff:()=>{close();location.assign('../../?combat2Pilot=1&skipFirstPlay=1&map3d06=1');}});
+const lock=await ProgressWriterCore.acquire();
+const interactions=createInteractions({view:()=>({ready,pos,overview,walking:path.length>0}),move:select,project,handoff:()=>{close();location.assign('../../?combat2Pilot=1&skipFirstPlay=1&map3d06='+(new URLSearchParams(location.search).get('durable')==='1'?'2':'1'));}});
 window.lab={open,close,project,pickDestination,resourceInventory,snapshot:()=>({exploration:interactions.snapshot(),ready,loading,quality:{...quality},pos,last,commands,arrivals,unsafe,walking:path.length>0,clip:activeClip,clipPlaying:groups?.[activeClip]?.isPlaying,events:[...events],visited:[...visited],frames:[...frames],routeCosts:[...routeCosts],updateCosts:[...updateCosts],metrics,engines:B.EngineStore.Instances.length,meshes:scene?.meshes.length,textures:scene?.textures.length,zoom,zoomGoal,overview,cameraSpan,cameraSettled:ready&&B.Vector3.Distance(view,V(overview?[0,0,-2.5]:pos))<.04&&Math.abs(cameraSpan-(overview?12*engine.getRenderHeight()/engine.getRenderWidth():zoomGoal))<.04,pointers:pointer.size,heading:holder?.rotation.y,heroScreen:ready?project(arr(holder.position)):null})};
-open().catch(console.error);
+if(lock.ok)open().catch(console.error);else{say('Игра открыта в другой вкладке или запись недоступна');document.querySelector('#restart').textContent='Повторить';document.querySelector('#restart').onclick=()=>location.reload();document.querySelector('#objective').textContent='Закрой другую вкладку и нажми Повторить.';}

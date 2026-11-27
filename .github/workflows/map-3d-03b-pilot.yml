@@ -1,0 +1,60 @@
+name: MAP-3D-03B authored composition P1
+on:
+  pull_request:
+    paths:
+      - 'docs/research/map-3d-03b-pilot/**'
+      - '.github/workflows/map-3d-03b-pilot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: map-3d-03b-pilot-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  composition:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reuse already verified source kit (no repeat downloads from marketplace)
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: 46029298169
+          name: map-3d-03b-real-asset-kit
+          path: ${{ runner.temp }}/kit
+      - name: Install proven Blender and browser versions
+        run: |
+          python -m pip install --disable-pip-version-check bpy==4.5.17
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgl1 libxkbcommon0 libxrender1 libxi6 libxxf86vm1
+          npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/pilot-tools" babylonjs@9.33.2 babylonjs-loaders@9.33.2 playwright@1.56.1
+      - name: Compose actual CC0 meshes and ground Ren against real geometry
+        run: |
+          python docs/research/map-3d-03b-pilot/assemble.py "$RUNNER_TEMP/kit" "$RUNNER_TEMP/pilot-result"
+      - name: Capture actual Babylon game-camera frames in Chromium and WebKit
+        run: |
+          repo="$PWD"
+          cd "$RUNNER_TEMP/pilot-tools"
+          mkdir -p site/hero
+          cp "$RUNNER_TEMP/pilot-result/pilot.glb" "$RUNNER_TEMP/pilot-result/pilot.json" site/
+          cp "$repo/docs/research/map-3d-03b-pilot/index.html" site/
+          cp "$repo/docs/research/map-3d-03b-pilot/browser-review.mjs" .
+          cp "$repo/assets/ren-meshy-mixamo-animated.glb" site/hero/ren.glb
+          cp node_modules/babylonjs/babylon.js node_modules/babylonjs-loaders/babylonjs.loaders.min.js site/
+          ./node_modules/.bin/playwright install --with-deps chromium webkit
+          node browser-review.mjs site "$RUNNER_TEMP/pilot-result"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-03b-authored-composition-p1
+          path: ${{ runner.temp }}/pilot-result/
+          if-no-files-found: warn
+          retention-days: 30

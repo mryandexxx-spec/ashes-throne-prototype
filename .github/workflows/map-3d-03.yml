@@ -30,6 +30,13 @@ jobs:
           python map-3d-01-blender.py level-output fixture.json
           node map-3d-01-level-validate.mjs level-output
           sha256sum level-output/base/{nav.json,level.json,navmesh.bin} > frozen-nav.sha256
+          mkdir -p materials
+          for asset in rock_06 stone_floor; do
+            for kind in diff nor_gl; do
+              curl --fail --location --retry 2 --connect-timeout 20 --max-time 120 -A 'AshesThrone-art-lab/1.0' "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/$asset/${asset}_${kind}_4k.jpg" -o "materials/${asset}_${kind}.jpg"
+            done
+          done
+          sha256sum materials/*.jpg > material-receipt.sha256
           python art.py level-output/base
           sha256sum -c frozen-nav.sha256
           python presentation.py
@@ -58,5 +65,6 @@ jobs:
             ${{ runner.temp }}/map03/level-output/base/art-source.blend
             ${{ runner.temp }}/map03/level-output/base/level.glb
             ${{ runner.temp }}/map03/frozen-nav.sha256
+            ${{ runner.temp }}/map03/material-receipt.sha256
             ${{ runner.temp }}/map03/level-output/validation.json
           if-no-files-found: warn

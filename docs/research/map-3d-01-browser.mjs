@@ -48,7 +48,7 @@ async function open(name){
  await close();const start=performance.now();adapter=await adapters[name]();buildMs=performance.now()-start;
  engine=new B.Engine(canvas,true,{preserveDrawingBuffer:false,stencil:false});scene=new B.Scene(engine);scene.useRightHandedSystem=true;scene.clearColor=new B.Color4(.11,.15,.18,1);
  camera=new B.ArcRotateCamera('fixed test camera',-Math.PI/2,Math.PI/3,42,new B.Vector3(7,0,0),scene);
- camera.mode=B.Camera.ORTHOGRAPHIC_CAMERA;camera.orthoLeft=-18;camera.orthoRight=18;camera.orthoTop=18*engine.getRenderHeight()/engine.getRenderWidth();camera.orthoBottom=-camera.orthoTop;
+ camera.mode=B.Camera.ORTHOGRAPHIC_CAMERA;camera.orthoLeft=-21;camera.orthoRight=21;camera.orthoTop=21*engine.getRenderHeight()/engine.getRenderWidth();camera.orthoBottom=-camera.orthoTop;
  scene.activeCamera=camera;
  new B.HemisphericLight('light',new B.Vector3(0,1,0),scene);
  terrain=new B.Mesh('exact same walkable mesh',scene);

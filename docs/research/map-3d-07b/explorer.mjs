@@ -49,7 +49,44 @@ document.querySelector('#shadows').onclick=()=>{if(!ready)return;quality.shadows
 document.querySelector('#resolution').onclick=()=>{if(!ready)return;quality.scale=quality.scale===1?1.5:1;engine.setHardwareScalingLevel(quality.scale);resize();resetFPS();updateButtons();};
 const record=(type,data={})=>{events.push({type,...data});if(events.length>200)events.shift();};
 async function bytes(url,expected){const resp=await fetch(url);if(!resp.ok)throw Error('Asset unavailable: '+url);const b=await resp.arrayBuffer();if(expected&&await hash(b)!==expected)throw Error('Asset hash mismatch: '+url);return b;}
-function floor(x,z){const hit=scene.pickWithRay(new B.Ray(new B.Vector3(x,100,z),new B.Vector3(0,-1,0),200),m=>m===proxy);return hit.hit?hit.pickedPoint.y:null;}
+// The existing Recast pathfinder remains authoritative. Height/clearance lookup uses
+// the same 0.5m triangular picking proxy: no O(all triangles) raycast per 0.1m route sample.
+let floorIndex=null;
+const CELL=.5,EPS=1e-7;
+function indexFloor(geometry){
+ const map=new Map(),{positions,indices}=geometry;
+ for(let i=0;i<indices.length;i+=3){
+  const tri=indices.slice(i,i+3).map(v=>positions.slice(v*3,v*3+3));
+  if(tri.some(p=>p.length!==3||p.some(n=>!Number.isFinite(n))))throw Error('Invalid floor triangle');
+  const ix=Math.round(Math.min(...tri.map(p=>p[0]))/CELL),iz=Math.round(Math.min(...tri.map(p=>p[2]))/CELL);
+  if(tri.some(p=>p[0]<ix*CELL-EPS||p[0]>(ix+1)*CELL+EPS||p[2]<iz*CELL-EPS||p[2]>(iz+1)*CELL+EPS))throw Error('Floor triangle outside cell');
+  const key=ix+','+iz,list=map.get(key)||[];list.push(tri);map.set(key,list);
+ }
+ for(const v of map.values())if(v.length!==2)throw Error('Unexpected floor cell topology');
+ return map;
+}
+function floor(x,z){
+ if(!floorIndex||!Number.isFinite(x)||!Number.isFinite(z))return null;
+ const ix=Math.floor(x/CELL),iz=Math.floor(z/CELL);
+ const xs=x-ix*CELL<EPS?[ix,ix-1]:[ix],zs=z-iz*CELL<EPS?[iz,iz-1]:[iz];
+ for(const a of xs)for(const b of zs)for(const [p,q,r] of floorIndex.get(a+','+b)||[]){
+  const det=(q[2]-r[2])*(p[0]-r[0])+(r[0]-q[0])*(p[2]-r[2]);
+  if(Math.abs(det)<EPS)continue;
+  const u=((q[2]-r[2])*(x-r[0])+(r[0]-q[0])*(z-r[2]))/det;
+  const v=((r[2]-p[2])*(x-r[0])+(p[0]-r[0])*(z-r[2]))/det,w=1-u-v;
+  if(u>=-EPS&&v>=-EPS&&w>=-EPS)return u*p[1]+v*q[1]+w*r[1];
+ }
+ return null;
+}
+function verifyFloorLookup(){
+ // Independent Babylon ray oracle at each waypoint and its clearance probes.
+ for(const {position:[x,y,z]} of level.markers)for(const [dx,dz] of [[0,0],[.2,0],[-.2,0],[0,.2],[0,-.2]]){
+  const a=x+dx,b=z+dz,h=scene.pickWithRay(new B.Ray(new B.Vector3(a,100,b),new B.Vector3(0,-1,0),200),m=>m===proxy);
+  const got=floor(a,b);
+  if(!h.hit||got===null||Math.abs(h.pickedPoint.y-got)>1e-4)throw Error('Floor lookup mismatch');
+ }
+ if(floor(-1000,-1000)!==null)throw Error('Floor gap accepted');
+}
 function grounded(p){const y=floor(p[0],p[2]);return y===null?null:[p[0],y,p[2]];}
 function valid(p){return [[0,0],[.2,0],[-.2,0],[0,.2],[0,-.2]].every(([x,z])=>floor(p[0]+x,p[2]+z)!==null);}
 function clip(name){if(activeClip===name)return;groups[activeClip]?.stop();groups[name].start(true);activeClip=name;record('clip',{name});}
@@ -81,7 +118,7 @@ function upEvent(e){if(!pointer.has(e.pointerId))return;const tap=!gesture&&poin
 function cancelEvent(e){if(!pointer.has(e.pointerId))return;gesture=true;upEvent(e);}
 const bindings=[['pointerdown',downEvent],['pointermove',moveEvent],['pointerup',upEvent],['pointercancel',cancelEvent],['lostpointercapture',cancelEvent]];
 window.addEventListener('blur',clearInput);
-function close(){markerLayer.replaceChildren();waypointButtons=[];epoch++;ready=false;loading=false;for(const [n,f] of bindings)canvas.removeEventListener(n,f);window.removeEventListener('resize',resize);clearInput();document.querySelector('#stop').disabled=true;if(engine){engine.stopRenderLoop();shadow?.dispose();scene?.dispose();engine.dispose();}shadow=sun=null;resetFPS();updateButtons();query?.destroy();mesh?.destroy();engine=scene=camera=proxy=holder=query=mesh=groups=route=null;path=[];markers=[];artMeshes=[];level=null;pos=null;view=null;last=null;activeClip=null;return B.EngineStore.Instances.length;}
+function close(){floorIndex=null;markerLayer.replaceChildren();waypointButtons=[];epoch++;ready=false;loading=false;for(const [n,f] of bindings)canvas.removeEventListener(n,f);window.removeEventListener('resize',resize);clearInput();document.querySelector('#stop').disabled=true;if(engine){engine.stopRenderLoop();shadow?.dispose();scene?.dispose();engine.dispose();}shadow=sun=null;resetFPS();updateButtons();query?.destroy();mesh?.destroy();engine=scene=camera=proxy=holder=query=mesh=groups=route=null;path=[];markers=[];artMeshes=[];level=null;pos=null;view=null;last=null;activeClip=null;return B.EngineStore.Instances.length;}
 async function open(){close();const token=epoch;loading=true;document.querySelector('#restart').disabled=true;say('Загрузка…');const start=performance.now(),check=()=>{if(token!==epoch)throw Error('cancelled');};
  try{
  const manifest=await (await fetch('level/manifest.json')).json();if(manifest.schema!==1||manifest.recast!=='0.43.1')throw Error('Incompatible level package');
@@ -94,7 +131,7 @@ async function open(){close();const token=epoch;loading=true;document.querySelec
  scene.fogMode=B.Scene.FOGMODE_LINEAR;scene.fogColor=new B.Color3(.29,.38,.46);scene.fogStart=115;scene.fogEnd=195;
  scene.imageProcessingConfiguration.toneMappingEnabled=true;scene.imageProcessingConfiguration.toneMappingType=B.ImageProcessingConfiguration.TONEMAPPING_ACES;scene.imageProcessingConfiguration.exposure=1.1;scene.imageProcessingConfiguration.contrast=1.05;
  const url=URL.createObjectURL(new Blob([art],{type:'model/gltf-binary'}));try{artMeshes=(await B.SceneLoader.ImportMeshAsync(null,'',url,scene,undefined,'.glb')).meshes;}finally{URL.revokeObjectURL(url);}check();metrics.artReadyMs=performance.now()-start;
- proxy=new B.Mesh('author nav picking proxy',scene);const vd=new B.VertexData();vd.positions=geometry.positions;vd.indices=geometry.indices;vd.normals=[];B.VertexData.ComputeNormals(vd.positions,vd.indices,vd.normals,{useRightHandedSystem:true});vd.applyToMesh(proxy);proxy.visibility=0;proxy.isPickable=true;proxy.computeWorldMatrix(true);
+ proxy=new B.Mesh('author nav picking proxy',scene);const vd=new B.VertexData();vd.positions=geometry.positions;vd.indices=geometry.indices;vd.normals=[];B.VertexData.ComputeNormals(vd.positions,vd.indices,vd.normals,{useRightHandedSystem:true});vd.applyToMesh(proxy);proxy.visibility=0;proxy.isPickable=true;proxy.computeWorldMatrix(true);floorIndex=indexFloor(geometry);verifyFloorLookup();
  markers=level.markers.filter(m=>m.role!=='spawn').map(m=>{const o=B.MeshBuilder.CreateSphere(m.id,{diameter:.5,segments:12},scene);o.position.copyFrom(V(m.position).add(new B.Vector3(0,.25,0)));o.isPickable=false;const mat=new B.StandardMaterial(m.id,scene);mat.emissiveColor=m.role==='exit'?new B.Color3(.3,1,.4):new B.Color3(.9,.65,.2);o.material=mat;o.visibility=0;return o;});
  const hero=await B.SceneLoader.ImportMeshAsync(null,'../../assets/','ren-meshy-mixamo-animated.glb',scene,undefined,'.glb');check();metrics.heroReadyMs=performance.now()-start;
  groups=Object.fromEntries(hero.animationGroups.map(g=>[g.name,g]));for(const g of hero.animationGroups)g.stop();for(const n of ['Idle_4','Walking','Running'])if(!groups[n])throw Error('Missing '+n);

@@ -1,0 +1,34 @@
+{
+  "repository": "codepawl/0ad-art-glb",
+  "revision": "7cd721e286854b78de1a74e79964388a41c060f4",
+  "cardData": {
+    "license": "cc-by-sa-3.0",
+    "license_link": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "pretty_name": "0 A.D. Art GLB",
+    "tags": [
+      "3d",
+      "glb",
+      "gltf",
+      "game-assets",
+      "rts",
+      "low-poly",
+      "animation",
+      "characters",
+      "buildings",
+      "threejs",
+      "webgpu"
+    ],
+    "configs": [
+      {
+        "config_name": "default",
+        "data_files": [
+          {
+            "split": "train",
+            "path": "data/train-*.parquet"
+          }
+        ]
+      }
+    ]
+  },
+  "scope": "research only"
+}

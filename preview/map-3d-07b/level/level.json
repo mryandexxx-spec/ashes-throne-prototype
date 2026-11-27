@@ -1,0 +1,181 @@
+{
+  "markers": [
+    {
+      "id": "spawn",
+      "role": "spawn",
+      "position": [
+        -43,
+        0.0,
+        0
+      ]
+    },
+    {
+      "id": "p01",
+      "role": "point",
+      "position": [
+        -34,
+        0.0,
+        1
+      ]
+    },
+    {
+      "id": "p02",
+      "role": "point",
+      "position": [
+        -24,
+        1.0,
+        0
+      ]
+    },
+    {
+      "id": "fork",
+      "role": "point",
+      "position": [
+        -14,
+        1.0,
+        0
+      ]
+    },
+    {
+      "id": "p03",
+      "role": "point",
+      "position": [
+        -8,
+        1.8399999999999999,
+        -8
+      ]
+    },
+    {
+      "id": "p04",
+      "role": "point",
+      "position": [
+        2,
+        2.4,
+        -8
+      ]
+    },
+    {
+      "id": "p05",
+      "role": "point",
+      "position": [
+        -8,
+        1.8399999999999999,
+        8
+      ]
+    },
+    {
+      "id": "p06",
+      "role": "point",
+      "position": [
+        2,
+        2.4,
+        8
+      ]
+    },
+    {
+      "id": "p07",
+      "role": "point",
+      "position": [
+        12,
+        3.0999999999999996,
+        0
+      ]
+    },
+    {
+      "id": "p08",
+      "role": "point",
+      "position": [
+        21,
+        3.8,
+        0
+      ]
+    },
+    {
+      "id": "p09",
+      "role": "point",
+      "position": [
+        30,
+        4.7,
+        -3
+      ]
+    },
+    {
+      "id": "p10",
+      "role": "point",
+      "position": [
+        38,
+        5.0,
+        -4
+      ]
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": [
+        44,
+        5.0,
+        0
+      ]
+    }
+  ],
+  "edges": [
+    [
+      "spawn",
+      "p01"
+    ],
+    [
+      "p01",
+      "p02"
+    ],
+    [
+      "p02",
+      "fork"
+    ],
+    [
+      "fork",
+      "p03"
+    ],
+    [
+      "p03",
+      "p04"
+    ],
+    [
+      "p04",
+      "p07"
+    ],
+    [
+      "fork",
+      "p05"
+    ],
+    [
+      "p05",
+      "p06"
+    ],
+    [
+      "p06",
+      "p07"
+    ],
+    [
+      "p07",
+      "p08"
+    ],
+    [
+      "p08",
+      "p09"
+    ],
+    [
+      "p09",
+      "p10"
+    ],
+    [
+      "p10",
+      "exit"
+    ]
+  ],
+  "scope": "07B spatial blockout; neutral test waypoints, not approved encounters or geography",
+  "camera": {
+    "alpha": 1.2,
+    "beta": 0.94,
+    "zoom": 7.5
+  }
+}

@@ -82,6 +82,8 @@ assert.equal(JSON.stringify({turn:seeded.turn,events:seeded.events,hp:seeded.fig
 assert.ok(!read("progress-v3-core.js").includes("trial-ren"),"story level cannot leak to save-v3");
 assert.ok(!read("hero-collection-core.js").includes("trial-ren"),"trial Ren not recruited");
 const html=read("index.html");
-assert.ok(html.indexOf('src="combat-status-core.js"')<html.indexOf('src="combat-core.js"'));
+const dependencyIndex=html.indexOf('src="combat-status-core.js"');
+const combatIndex=html.indexOf('src="combat-core.js?v='+require("../package.json").version+'"');
+assert.ok(dependencyIndex>=0&&combatIndex>dependencyIndex);
 assert.match(read("game.js"),/Замедление/);
 console.log("REN-COMBAT-B: trial level 4 slow, lower-level exclusion, own-turn expiry, seeded rejection, death and save isolation");

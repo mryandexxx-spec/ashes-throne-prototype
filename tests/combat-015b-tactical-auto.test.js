@@ -99,7 +99,8 @@ assert.equal(CombatCore.performAutoAction(b,AutoDecision.chooseAction(b)),false)
 
 const index=read("index.html");
 const scripts=[...index.matchAll(/<script src="([^"]+)"/g)].map(match=>match[1]);
-assert.ok(scripts.indexOf("combat-core.js")<scripts.indexOf("auto-decision.js"));
+const combatScript="combat-core.js?v="+__BUILD_VERSION_FOR_TESTS;
+assert.ok(scripts.indexOf(combatScript)>=0&&scripts.indexOf("auto-decision.js")>scripts.indexOf(combatScript));
 assert.ok(scripts.indexOf("auto-decision.js")<scripts.indexOf(("game.js?v="+__BUILD_VERSION_FOR_TESTS)));
 assert.match(index,/id="buildVersion"[^>]*>[^<]*v\d+[.]\d+[.]\d+ · [A-Z][A-Z0-9-]*/);
 assert.equal(JSON.parse(read("package.json")).version,__BUILD_VERSION_FOR_TESTS);

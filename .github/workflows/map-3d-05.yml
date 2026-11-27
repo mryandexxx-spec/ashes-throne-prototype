@@ -1,0 +1,72 @@
+name: MAP-3D-05 exploration preview
+on:
+  pull_request:
+    paths:
+      - 'preview/map-3d-05/**'
+      - 'docs/research/map-3d-05/**'
+      - 'docs/MAP_3D_05.md'
+      - '.github/workflows/map-3d-05.yml'
+permissions:
+  contents: read
+concurrency:
+  group: map-3d-05-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+jobs:
+  movement:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feature/map-3d-05-exploration'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Pinned existing preview tools
+        run: npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/preview-tools" recast-navigation@0.43.1 esbuild@0.25.12 playwright@1.56.1
+      - name: Rebuild and verify exact accepted scene
+        run: |
+          set -euo pipefail
+          node --check docs/research/map-3d-05/explorer.mjs
+          node --check docs/research/map-3d-05/browser-test.mjs
+          node docs/research/map-3d-05/core-test.mjs
+          cp docs/research/map-3d-05/{explorer,interaction,exploration-core}.mjs "$RUNNER_TEMP/preview-tools/"
+          "$RUNNER_TEMP/preview-tools/node_modules/.bin/esbuild" "$RUNNER_TEMP/preview-tools/explorer.mjs" --bundle --platform=browser --format=esm --external:fs --external:path --external:module --external:node:* --loader:.wasm=file --legal-comments=eof --outfile="$RUNNER_TEMP/candidate/lab.js"
+          if test -f preview/map-3d-05/lab.js; then cmp preview/map-3d-05/lab.js "$RUNNER_TEMP/candidate/lab.js"; else cp "$RUNNER_TEMP/candidate/lab.js" preview/map-3d-05/lab.js; fi
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+          const p='preview/map-3d/level/',m=JSON.parse(fs.readFileSync(p+'manifest.json'));
+          assert.equal(m.files['level.glb'],'5b3dba836642df6c7bde7761cb17c4798e76527bf3a44e3e565fafaa472ba899');
+          for(const [name,sha] of Object.entries(m.files))assert.equal(createHash('sha256').update(fs.readFileSync(p+name)).digest('hex'),sha);
+          assert(fs.existsSync('assets/ren-meshy-mixamo-animated.glb'));
+          assert(fs.readFileSync('preview/map-3d-05/index.html','utf8').includes('EXPLORE-05A'));
+          JS
+      - name: Real taps and camera/gesture/lifecycle regression
+        run: |
+          cp docs/research/map-3d-05/browser-test.mjs "$RUNNER_TEMP/preview-tools/"
+          "$RUNNER_TEMP/preview-tools/node_modules/.bin/playwright" install --with-deps chromium webkit
+          node "$RUNNER_TEMP/preview-tools/browser-test.mjs" "$PWD" "$RUNNER_TEMP/evidence"
+      - name: Materialize only tested new preview bundle on the work branch
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if git ls-files --error-unmatch preview/map-3d-05/lab.js >/dev/null 2>&1; then exit 0; fi
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          test "$(git ls-remote origin refs/heads/feature/map-3d-05-exploration | cut -f1)" = "$HEAD_SHA"
+          git add -- preview/map-3d-05/lab.js
+          test "$(git diff --cached --name-only)" = "preview/map-3d-05/lab.js"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "MAP-3D-05: materialize tested preview bundle"
+          git push origin HEAD:refs/heads/feature/map-3d-05-exploration
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-05-evidence
+          path: ${{ runner.temp }}/evidence/
+          if-no-files-found: warn
+          retention-days: 30

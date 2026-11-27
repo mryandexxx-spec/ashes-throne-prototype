@@ -1,0 +1,6 @@
+import assert from 'node:assert/strict';import {fresh,points,act,actions,nearby} from './exploration-core.mjs';
+let s=fresh();const run=(a,p,w=false)=>{s=act(s,a,points[p],w);};
+assert.equal(nearby(points.direct,true),null);run('inspect','spawn');assert.deepEqual(s,fresh());run('inspect','direct',true);assert.deepEqual(s,fresh());run('bypass','exit');assert.deepEqual(s,fresh());
+run('inspect','direct');assert(s.post);const first=s;run('inspect','direct');assert.equal(s,first);assert.deepEqual(actions(s,'exit'),['challenge']);run('challenge','exit');assert.equal(s.phase,'encounter');run('simulate','spawn');assert.equal(s.phase,'encounter');run('cancel','exit');assert.equal(s.phase,'explore');run('challenge','exit');run('simulate','exit');assert.equal(s.route,'encounter');run('finish','exit');assert.equal(s.phase,'return');run('finish','spawn');assert.equal(s.phase,'complete');run('scout','court');assert.equal(s.intel,false);
+s=fresh();run('scout','court');assert.deepEqual(actions(s,'exit'),['bypass']);run('bypass','exit');run('finish','spawn');assert.equal(s.route,'bypass');assert.equal(s.phase,'complete');
+s=fresh();run('inspect','direct');run('scout','court');assert.deepEqual(actions(s,'exit'),['challenge','bypass']);console.log('Exploration core PASS: spatial gates, two routes, cancel, repeat, completion');

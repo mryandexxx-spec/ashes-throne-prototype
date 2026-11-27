@@ -1,0 +1,65 @@
+name: MAP-3D-03B coherent WALK lab
+on:
+  pull_request:
+    paths:
+      - 'docs/research/map-3d-03b-coherent-walk/**'
+      - '.github/workflows/map-3d-03b-coherent-walk.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: map-3d-03b-coherent-walk-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  walk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: 46042427563
+          name: map-3d-03b-coherent-context-c3
+          path: ${{ runner.temp }}/c3
+      - name: Install proven toolchain
+        run: |
+          python -m pip install --disable-pip-version-check bpy==4.5.17
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgl1 libxkbcommon0 libxrender1 libxi6 libxxf86vm1
+          npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/walk" recast-navigation@0.43.1 babylonjs@9.33.2 babylonjs-loaders@9.33.2 esbuild@0.25.12 playwright@1.56.1
+      - name: Repair exact exported atlas and prepare actual-art walkable proxy
+        run: python docs/research/map-3d-03b-coherent-walk/prepare.py "$RUNNER_TEMP/c3/context-result" "$RUNNER_TEMP/walk/site/level"
+      - name: Bake offline Recast and package prior explorer
+        run: |
+          repo="$PWD"
+          cd "$RUNNER_TEMP/walk"
+          mkdir -p site/hero evidence
+          cp "$repo/docs/research/map-3d-03b-coherent-walk/"{bake.mjs,explorer.mjs,browser-test.mjs,index.html} .
+          node bake.mjs site/level
+          cp "$repo/assets/ren-meshy-mixamo-animated.glb" site/hero/ren.glb
+          cp node_modules/babylonjs/babylon.js node_modules/babylonjs-loaders/babylonjs.loaders.min.js site/
+          cp index.html site/
+          ./node_modules/.bin/esbuild explorer.mjs --bundle --platform=browser --format=esm --external:fs --external:path --external:module --external:node:* --loader:.wasm=file --outfile=site/lab.js
+          du -ab site > evidence/payload-bytes.txt
+      - name: Test real mobile taps, both routes, running and reset
+        run: |
+          cd "$RUNNER_TEMP/walk"
+          ./node_modules/.bin/playwright install --with-deps chromium webkit
+          node browser-test.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-03b-coherent-walk-evidence
+          path: |
+            ${{ runner.temp }}/walk/evidence/
+            ${{ runner.temp }}/walk/site/level/
+          if-no-files-found: warn
+          retention-days: 30

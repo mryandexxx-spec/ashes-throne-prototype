@@ -1,0 +1,12 @@
+0 A.D. art by Wildfire Games — https://www.wildfiregames.com/
+CC BY-SA 3.0 — https://creativecommons.org/licenses/by-sa/3.0/
+Converted to GLB by CodePawl: https://huggingface.co/datasets/codepawl/0ad-art-glb/resolve/7cd721e286854b78de1a74e79964388a41c060f4/README.md
+Review-only export and renders; changes distributed under same art license. See source-receipt.json and LICENSE-upstream.txt.
+
+Ground texture source https://opengameart.org/node/38500 ; same CC BY-SA 3.0. Ground adapted via tint and authored route masks, see ground-adapted.jpg and layout.json. All research environment adaptations are CC BY-SA 3.0; no Ren model included in the exported environment.
+
+Walk lab: two stale atlas buffer views replaced with actual C3 adapted PNG. Environment art remains CC BY-SA 3.0.
+
+DEVICE-01: distributed research environment (CC BY-SA 3.0). Changes and editable production history: https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/600 . The separate Ren character is not part of this license grant.
+
+07B art 01: adapted layout, UV surfaces, model transforms and texture resolution. Adapted environment art remains CC BY-SA 3.0; exact source and recipe in docs/research/map-3d-07b-spatial.

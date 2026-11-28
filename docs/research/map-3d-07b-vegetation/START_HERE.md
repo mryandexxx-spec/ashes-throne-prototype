@@ -1,3 +1,6 @@
+# CURRENT — ART-05 v2 / MAP-3D QA
+Read [ART_05_PROGRESS.md](ART_05_PROGRESS.md) first. Owner approved reusable test methodology and mandatory skill, see GAME [PR #615](https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/615), `.agents/skills/ashes-map3d-qa/SKILL.md` (read from that branch until merged, then main). Do not retry local WebGL/CDN or substitute earlier control scene for ART-05. Exact Library GLB SHA in ART_05_PROGRESS; binary runner delivery, candidate Recast, movement, camera art acceptance and iPhone still open. Keep #614 open; no new generation. Prior handoff below is history.
+
 # MAP-3D-07B — актуальная передача ART-04, 28.11.2026
 [В РАЗРАБОТКЕ]. Актуальный локальный художественный кандидат теперь **ART-04 v2**, не VEG-04. Прочитать [ART_04_RESULT.md](ART_04_RESULT.md) и [OWNER_GENERATION_BACKLOG.md](OWNER_GENERATION_BACKLOG.md). Владелец передал девять GLB; GEN-10 отложен, кредит закончился. 8 новых типов в карте, лестница в наборе, не интегрирована. Library receipts, точные SHA256, визуальные сравнения, статические проверки и блокеры в ART_04_RESULT. Не генерировать повторно, не требовать повторной загрузки. Продолжить с ART-04 v2. Бинарники не публиковать до проверки прав; реальная Babylon/Recast/iPhone приёмка не пройдена. #614 открыт, main не менялся.
 ---

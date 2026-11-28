@@ -9,4 +9,4 @@ Walk lab: two stale atlas buffer views replaced with actual C3 adapted PNG. Envi
 
 DEVICE-01: distributed research environment (CC BY-SA 3.0). Changes and editable production history: https://github.com/mryandexxx-spec/ashes-throne-prototype/pull/600 . The separate Ren character is not part of this license grant.
 
-07B art 01: adapted layout, UV surfaces, model transforms and texture resolution. Adapted environment art remains CC BY-SA 3.0; exact source and recipe in docs/research/map-3d-07b-spatial.
+07B art 02: additional authored set pieces, masonry trim, adapted layout, UV surfaces, model transforms and texture resolution. Adapted environment art remains CC BY-SA 3.0; exact source and recipe in docs/research/map-3d-07b-spatial.

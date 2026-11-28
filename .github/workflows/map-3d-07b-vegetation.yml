@@ -1,0 +1,39 @@
+name: MAP-3D-07B vegetation intake
+on:
+  pull_request:
+    paths:
+      - 'docs/research/map-3d-07b-vegetation/**'
+      - '.github/workflows/map-3d-07b-vegetation.yml'
+permissions:
+  contents: read
+concurrency:
+  group: map-3d-07b-vegetation-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+jobs:
+  source-and-review:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'research/map-3d-07b-vegetation'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pinned Blender
+        run: |
+          python -m pip install --disable-pip-version-check bpy==4.5.17
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgl1 libxkbcommon0 libxrender1 libxi6 libxxf86vm1
+      - name: Download verified CC0 source glTF and dependencies
+        run: python docs/research/map-3d-07b-vegetation/intake.py "$RUNNER_TEMP/vegetation"
+      - name: Import, optimize and render actual ready-made vegetation
+        run: python docs/research/map-3d-07b-vegetation/review.py "$RUNNER_TEMP/vegetation"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-07b-vegetation-evidence
+          path: ${{ runner.temp }}/vegetation/
+          if-no-files-found: warn
+          retention-days: 30

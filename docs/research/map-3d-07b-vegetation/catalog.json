@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "items": [
+    {
+      "id": "grass_medium_01",
+      "role": "grass",
+      "targetTriangles": 1800,
+      "resolution": "1k",
+      "source": "https://polyhaven.com/a/grass_medium_01",
+      "license": "CC0-1.0",
+      "licenseURL": "https://polyhaven.com/license"
+    },
+    {
+      "id": "grass_medium_02",
+      "role": "grass",
+      "targetTriangles": 1800,
+      "resolution": "1k",
+      "source": "https://polyhaven.com/a/grass_medium_02",
+      "license": "CC0-1.0",
+      "licenseURL": "https://polyhaven.com/license"
+    },
+    {
+      "id": "shrub_01",
+      "role": "shrub",
+      "targetTriangles": 4000,
+      "resolution": "1k",
+      "source": "https://polyhaven.com/a/shrub_01",
+      "license": "CC0-1.0",
+      "licenseURL": "https://polyhaven.com/license"
+    },
+    {
+      "id": "shrub_02",
+      "role": "shrub",
+      "targetTriangles": 4000,
+      "resolution": "1k",
+      "source": "https://polyhaven.com/a/shrub_02",
+      "license": "CC0-1.0",
+      "licenseURL": "https://polyhaven.com/license"
+    },
+    {
+      "id": "periwinkle_plant",
+      "role": "flower",
+      "targetTriangles": 3000,
+      "resolution": "1k",
+      "source": "https://polyhaven.com/a/periwinkle_plant",
+      "license": "CC0-1.0",
+      "licenseURL": "https://polyhaven.com/license"
+    }
+  ]
+}

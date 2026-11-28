@@ -1,0 +1,41 @@
+name: AS-00B binary transfer pilot
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/as-00-transfer.yml'
+      - 'tools/asset-transfer/**'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: as-00-transfer-pilot
+  cancel-in-progress: false
+jobs:
+  transfer:
+    if: github.repository == 'mryandexxx-spec/ashes-throne-prototype' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'research/as-00-transfer-bridge'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Transfer exact existing artifacts, verify and retry idempotently
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python3 tools/asset-transfer/pilot.py "$RUNNER_TEMP/as-00"
+          python3 tools/asset-transfer/pilot.py "$RUNNER_TEMP/as-00-repeat" --expect-reuse
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: as-00-transfer-receipts
+          path: |
+            ${{ runner.temp }}/as-00/receipt.json
+            ${{ runner.temp }}/as-00-repeat/receipt.json
+          if-no-files-found: warn
+          retention-days: 30

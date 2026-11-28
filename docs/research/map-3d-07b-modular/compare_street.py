@@ -133,6 +133,10 @@ selected['roof']['profile']='paired authored halves' if half_roof else 'single a
 # Five existing building footprints on the upper street, nothing outside the
 # accepted lot and no change to the original terrain/stair/link meshes.
 ids={'home01','home02','home03','home04','home06'}
+# Resolve all original objects before any removal; Blender invalidates RNA handles.
+original_by_lot={lot:[o for o in original if o.name.startswith('building_art_'+lot+'_')] for lot in sorted(ids)}
+assert all(original_by_lot.values()),('Missing ART02 lots',[lot for lot,objects in original_by_lot.items() if not objects])
+replaced=[]
 for b in D['buildings']:
     if b['id'] not in ids:continue
     q=Polygon(b['footprint']);a,c,d,e=b['footprint']
@@ -168,10 +172,13 @@ for b in D['buildings']:
             turn=0 if side*relative<0 else math.pi
             fit('roof','mod_'+b['id']+'_roof_'+str(side),xx,yy,z+wallh-.04,w*.99,dep*.495,roofh,yaw+turn,q)
     else:fit('roof','mod_'+b['id']+'_roof',x,y,z+wallh-.04,w*.99,dep*.99,roofh,yaw,q)
-    old=[o for o in original if o.name.startswith('building_art_'+b['id']+'_')]
-    assert old,('Missing ART02 original',b['id'])
-    for o in old:bpy.data.objects.remove(o,do_unlink=True)
+    replaced.append(b['id'])
+# Finish all replacements and footprint assertions before removing baseline art.
+assert set(replaced)==ids and len(replaced)==len(ids),replaced
+for lot in sorted(ids):
+    for o in original_by_lot[lot]:bpy.data.objects.remove(o,do_unlink=True)
 for o in source_objects:bpy.data.objects.remove(o,do_unlink=True)
+assert not any(o.name.startswith(tuple('building_art_'+lot+'_' for lot in ids)) for o in scene.objects), 'Baseline replacements remain'
 bpy.context.view_layer.update()
 (out/'selected-modules.json').write_text(json.dumps(selected,indent=2))
 (out/'placement-report.json').write_text(json.dumps({'layoutSHA256':sha(layout),'baselineSHA256':sha(base),'replacedLots':sorted(ids),'placements':placements,'scope':'Same camera, five building lots; unapproved candidate only'},indent=2))

@@ -51,7 +51,8 @@ try:
         zip_path = out / (group + ".zip")
         meta = gh("repos/"+REPO+"/actions/artifacts/"+str(aid))
         assert not meta["expired"] and meta["digest"] == "sha256:"+expected
-        curl(API+"/actions/artifacts/"+str(aid)+"/zip", zip_path)
+        print("Download source artifact", aid, flush=True)
+        curl(API+"/actions/artifacts/"+str(aid)+"/zip", zip_path, accept="application/vnd.github+json")
         assert digest(zip_path.read_bytes()) == expected, "source archive checksum"
         receipt["inputs"].append({"artifact": aid, "group": group, "sha256": expected})
         with zipfile.ZipFile(zip_path) as z:
@@ -85,6 +86,7 @@ try:
             for member in [source, result] + ([named("LICENSE-upstream.txt"), named("ATTRIBUTION.txt")] if group == "trees" else []):
                 stage(group+"-"+pathlib.PurePosixPath(member).name, z.read(member), artifact=aid, member=member, kind="provenance")
     # Draft only: a technical quarantine, not a public release or license approval.
+    print("Source verification complete", len(receipt["assets"]), flush=True)
     existing = [r for r in releases() if r["tag_name"] == TAG]
     assert len(existing) <= 1
     if existing:
@@ -103,6 +105,7 @@ try:
     assert set(old) <= {a["name"] for a in receipt["assets"]}, "unexpected release files"
     for row in receipt["assets"]:
         name = row["name"]
+        print("Transfer/readback", name, flush=True)
         if name in old:
             a = old[name]
             row["operation"] = "reused"

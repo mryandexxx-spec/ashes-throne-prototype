@@ -1,0 +1,35 @@
+name: AS-00C Library intake
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/as-00-library.yml'
+      - 'tools/asset-transfer/library_intake.py'
+permissions:
+  contents: read
+concurrency:
+  group: as-00-library-intake
+  cancel-in-progress: false
+jobs:
+  intake:
+    if: github.repository == 'mryandexxx-spec/ashes-throne-prototype' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'research/as-00-transfer-bridge'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Prepare or verify exact input in draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 tools/asset-transfer/library_intake.py "$RUNNER_TEMP/as-00c"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: as-00c-receipt
+          path: ${{ runner.temp }}/as-00c/receipt.json
+          if-no-files-found: warn
+          retention-days: 30

@@ -12,3 +12,10 @@
 
 ## Acceptance
 AS-00B: verified readback and repeat, release still draft. AS-00C/D separate gates. No merge or production rollout of experimental workflow before review. No new billing or secrets. Read workflow receipts and exact run IDs on resume.
+
+## 28.11.2026 — R2 evidence and next gate
+- [РЕАЛИЗОВАНО / ПРОВЕРЕНО] AS-00B: head 319c360, run 46182351834 success, selective CI 46182351833 success. 11 actual GLBs + 6 provenance files, 17/17 byte/hash readbacks, repeat 17/17 reused; draft retained. R1 failed HTTP 415 on artifact API Accept header; R2 corrected. Neither license review nor game/browser acceptance is implied.
+- [ПОДТВЕРЖДЕНО] AS-00D same-GitHub batch gate >=10 reached, idempotent retry reached. Interrupted partial transfer and external batch still separate checks.
+- [INPUT_BLOCKED] AS-00C autonomous outbound: exact Library GLB materialized and independently verified: 24962004 bytes, SHA256 3f2d8bef9b2b0fe7c62232f478be1ea9caeb683c688d6c51a74490c310fc15fa, 251 nodes, 41 images. Local container has no DNS to api.github.com; connector cannot upload release bytes. No external service authorized for this map, no regeneration.
+- Fallback prepared: exact ZIP as00-art05-v2.zip (20069109 bytes, SHA256 eea3f054e6e3e615687a695d91c3b5d8ada451dc0c9ed2ebba189217ef457b13). The independent AS-00C workflow creates a separate draft release and verifies exact ZIP and embedded GLB after manual upload; WAITING_INPUT is not a transfer PASS. Do not publish. Check job logs for draft URL and rerun after upload. Original source and #614 remain unchanged.
+- Prefer production inside standard GitHub runner for future assets whenever possible. Do not claim existing Library ingress is automated. No paid services, token sharing, base64 chunking, public release, or production migration.

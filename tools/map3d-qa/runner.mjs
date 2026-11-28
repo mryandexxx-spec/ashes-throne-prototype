@@ -21,9 +21,10 @@ const results=[],errors=[];const percentile=(a,p)=>{const b=[...a].sort((x,y)=>x
 try{for(const [name,driver] of [['chromium',chromium],['webkit',webkit]]){let browser;try{
 browser=await driver.launch(name==='chromium'?{args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']}:{});const probe=await browser.newPage();await probe.goto(url+'/probe');const ok=await probe.evaluate(()=>!!document.querySelector('canvas').getContext('webgl2'));await probe.close();if(!ok)throw Error('ENVIRONMENT_BLOCKED: blank WebGL2 unavailable');
 for(const [width,height] of [[844,390],[844,320]]){const label=name+'-'+width+'x'+height,page=await browser.newPage({viewport:{width,height},hasTouch:true,isMobile:true,deviceScaleFactor:1}),errs=[];
+const snap=()=>page.evaluate(()=>window.qa?.snapshot());
 page.on('pageerror',e=>errs.push(String(e)));page.on('console',m=>{if(m.type()==='error')errs.push(m.text());});
 try{
-await page.goto(url);const snap=()=>page.evaluate(()=>window.qa?.snapshot());await page.waitForFunction(()=>window.qa?.snapshot().ready||window.qa?.snapshot().error,{},{timeout:60000});
+await page.goto(url);await page.waitForFunction(()=>window.qa?.snapshot().ready||window.qa?.snapshot().error,{},{timeout:60000});
 const initial=await snap();assert(initial.ready,JSON.stringify(initial));assert.equal(initial.engines,1);
 for(const v of manifest.views){const before=(await snap()).frames;const button=page.locator('[data-view='+JSON.stringify(v.id)+']');const b=await button.boundingBox();assert(b&&b.x>=0&&b.y>=0&&b.x+b.width<=width&&b.y+b.height<=height);await button.tap();await page.waitForFunction(([id,f])=>window.qa.snapshot().active===id&&window.qa.snapshot().frames>f+2,[v.id,before]);
 const spread=await page.evaluate(()=>{const c=document.querySelector('canvas'),g=c.getContext('webgl2')||c.getContext('webgl');if(!g)return 0;const p=new Uint8Array(4),colors=new Set();for(let x=1;x<10;x++)for(let y=1;y<10;y++){g.readPixels(Math.floor(c.width*x/10),Math.floor(c.height*y/10),1,1,g.RGBA,g.UNSIGNED_BYTE,p);colors.add(p[0]+','+p[1]+','+p[2]);}return colors.size;});assert(spread>2,'Blank or uniform sampled canvas '+v.id);

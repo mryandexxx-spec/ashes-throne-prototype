@@ -31,7 +31,7 @@ templates={};originals=[];proof=[]
 def bounds(entries):
     pts=[m@Vector(c) for o,m in entries for c in o.bound_box]
     return Vector(tuple(min(p[i] for p in pts) for i in range(3))),Vector(tuple(max(p[i] for p in pts) for i in range(3)))
-for name in ['house','farmstead','storehouse','market','cliff','cliff2','olive','scrub','boulder']:
+for name in ['house','farmstead','storehouse','cliff','cliff2','olive','scrub']:
     path=fetch(name,records[name],'.glb');before=set(bpy.data.objects)
     bpy.ops.import_scene.gltf(filepath=str(path));bpy.context.view_layer.update()
     imported=[o for o in bpy.data.objects if o not in before]
@@ -50,9 +50,13 @@ def place(name,asset,x,y,z,w,d,h,yaw,top=False,limit=1.6):
     # Fit the whole actual model inside the approved oriented footprint.
     rawscale=[w/dim.x,d/dim.y,h/dim.z];low=min(rawscale)
     scale=[min(v,low*limit) for v in rawscale]
-    tr=Matrix.Rotation(yaw,4,'Z')@Matrix.Diagonal(Vector((*scale,1)))
+    tr=Matrix.Diagonal(Vector((*scale,1)))
     e=[(o,tr@m) for o,m in e];lo,hi=bounds(e)
-    move=Matrix.Translation(Vector((x-(lo.x+hi.x)/2,y-(lo.y+hi.y)/2,z-(hi.z if top else lo.z))))
+    # Centre BEFORE yaw: asymmetric authored silhouettes must not shift out of
+    # their approved oriented rectangle when their world-axis AABB changes.
+    center=Matrix.Translation(Vector((-(lo.x+hi.x)/2,-(lo.y+hi.y)/2,-(hi.z if top else lo.z))))
+    e=[(o,Matrix.Rotation(yaw,4,'Z')@center@m) for o,m in e]
+    move=Matrix.Translation(Vector((x,y,z)))
     placed=[]
     for j,(o,m) in enumerate(e):
         c=o.copy();c.parent=None;c.animation_data_clear();c.name=name+'_'+str(j);art.objects.link(c);c.matrix_world=move@m;placed.append((c,c.matrix_world.copy()))

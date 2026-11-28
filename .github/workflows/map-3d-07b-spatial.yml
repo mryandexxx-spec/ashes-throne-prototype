@@ -1,0 +1,51 @@
+name: MAP-3D-07B spatial preview
+on:
+  pull_request:
+    paths:
+      - 'preview/map-3d-07b-spatial/**'
+      - 'docs/research/map-3d-07b-spatial/**'
+      - '.github/workflows/map-3d-07b-spatial.yml'
+permissions:
+  contents: read
+concurrency:
+  group: map-3d-07b-spatial-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+jobs:
+  geometry-and-view:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feature/map-3d-07b-spatial-02'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify the exact accepted source and uploaded mesh
+        run: |
+          echo '8948f06fbc6d86bbc0df62964fb660ae635e51af44eddd66bd422938167e3f02  docs/research/map-3d-07b-spatial/layout.json' | sha256sum --check
+          echo '87c16e287faa6509b6292777e37486673f82630af529c1b54453f34d1eed62bc  preview/map-3d-07b-spatial/gardens_spatial_02.glb' | sha256sum --check
+          python -m pip install --disable-pip-version-check numpy==2.3.5 trimesh==4.11.1 shapely==2.1.2
+          mkdir -p "$RUNNER_TEMP/geometry" "$RUNNER_TEMP/evidence"
+          python docs/research/map-3d-07b-spatial/build_spatial.py docs/research/map-3d-07b-spatial/layout.json "$RUNNER_TEMP/geometry"
+          python docs/research/map-3d-07b-spatial/verify_spatial.py "$RUNNER_TEMP/geometry" docs/research/map-3d-07b-spatial/layout.json
+          cp preview/map-3d-07b-spatial/gardens_spatial_02.glb "$RUNNER_TEMP/geometry/gardens_spatial_02.glb"
+          python docs/research/map-3d-07b-spatial/verify_spatial.py "$RUNNER_TEMP/geometry" docs/research/map-3d-07b-spatial/layout.json
+          cp "$RUNNER_TEMP/geometry/"*report.json "$RUNNER_TEMP/evidence/"
+      - name: Actual Babylon.js preview in mobile browser viewports
+        run: |
+          npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/viewer" playwright@1.56.1
+          cp docs/research/map-3d-07b-spatial/browser-test.mjs "$RUNNER_TEMP/viewer/"
+          "$RUNNER_TEMP/viewer/node_modules/.bin/playwright" install --with-deps chromium webkit
+          node "$RUNNER_TEMP/viewer/browser-test.mjs" "$PWD" "$RUNNER_TEMP/evidence"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-07b-spatial-evidence
+          path: ${{ runner.temp }}/evidence/
+          if-no-files-found: warn
+          retention-days: 30

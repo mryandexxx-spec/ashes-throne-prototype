@@ -1,0 +1,71 @@
+name: MAP-3D-07B authored environment
+on:
+  pull_request:
+    paths:
+      - 'preview/map-3d-07b-art/**'
+      - 'docs/research/map-3d-07b-spatial/assemble_art.py'
+      - 'docs/research/map-3d-07b-spatial/art-browser-test.mjs'
+      - '.github/workflows/map-3d-07b-art.yml'
+permissions:
+  contents: read
+concurrency:
+  group: map-3d-07b-art-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+jobs:
+  assemble-and-review:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feature/map-3d-07b-spatial-02'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Pinned existing Blender pipeline
+        run: |
+          python -m pip install --disable-pip-version-check bpy==4.5.17 shapely==2.1.2 pillow==11.3.0
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgl1 libxkbcommon0 libxrender1 libxi6 libxxf86vm1
+          npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/art-tools" playwright@1.56.1
+      - name: Assemble real authored models over frozen geometry
+        run: |
+          mkdir -p "$RUNNER_TEMP/art-evidence" "$RUNNER_TEMP/art-output"
+          python docs/research/map-3d-07b-spatial/assemble_art.py "$PWD" "$RUNNER_TEMP/art-output"
+          for n in gardens_art_01.glb art-manifest.json ATTRIBUTION.txt LICENSE-upstream.txt README-source.md source-receipt.json supplemental-receipt.json ground-receipt.json dataset-revision.json; do
+            cp "$RUNNER_TEMP/art-output/$n" "preview/map-3d-07b-art/$n"
+          done
+      - name: Real WebGL art inspection at mobile viewports
+        run: |
+          cp docs/research/map-3d-07b-spatial/art-browser-test.mjs "$RUNNER_TEMP/art-tools/"
+          "$RUNNER_TEMP/art-tools/node_modules/.bin/playwright" install --with-deps chromium webkit
+          node "$RUNNER_TEMP/art-tools/art-browser-test.mjs" "$PWD" "$RUNNER_TEMP/art-evidence"
+      - name: Materialize only tested isolated art preview
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          test "$(git ls-remote origin refs/heads/feature/map-3d-07b-spatial-02 | cut -f1)" = "$HEAD_SHA"
+          git add -- preview/map-3d-07b-art/
+          test -z "$(git diff --cached --name-only | grep -v '^preview/map-3d-07b-art/' || true)"
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "MAP-3D-07B: materialize tested authored environment preview"
+          git push origin HEAD:refs/heads/feature/map-3d-07b-spatial-02
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-07b-art-evidence
+          path: |
+            ${{ runner.temp }}/art-output/
+            ${{ runner.temp }}/art-evidence/
+          if-no-files-found: warn
+          retention-days: 30

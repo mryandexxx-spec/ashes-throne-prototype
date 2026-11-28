@@ -1,0 +1,164 @@
+[
+  {
+    "id": "house",
+    "state": "SOURCE_VERIFIED",
+    "main": "sources/house.glb",
+    "sourceFile": "engine/structures-iberians-house/structures-iberians-house.glb",
+    "sourceURL": "https://huggingface.co/datasets/codepawl/0ad-art-glb/resolve/7cd721e286854b78de1a74e79964388a41c060f4/engine/structures-iberians-house/structures-iberians-house.glb",
+    "sourceRevision": "7cd721e286854b78de1a74e79964388a41c060f4",
+    "license": "CC-BY-SA-3.0",
+    "author": "Wildfire Games",
+    "conversion": "CodePawl",
+    "originalSource": "https://gitea.wildfiregames.com/0ad/0ad",
+    "originalRevision": "61a3b9507d974084e6badb88a0826bd89a6d5b8b",
+    "licenseURL": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "files": [
+      {
+        "path": "sources/house.glb",
+        "sha256": "d43041a1e68e7430d2dabd221fb7c8507636d25b2058f724fa382327bfbf503e",
+        "bytes": 3093488
+      }
+    ],
+    "metadata": {
+      "file_name": "engine/structures-iberians-house/structures-iberians-house.glb",
+      "thumbnail": "thumbs/structures-iberians-house.webp",
+      "id": "structures-iberians-house",
+      "title": "Iberians house",
+      "kind": "structures",
+      "license": "CC BY-SA 3.0",
+      "authors": "Wildfire Games (https://www.wildfiregames.com/)",
+      "triangles": 874,
+      "seconds": 0.55,
+      "civ": "iberians",
+      "actor": "structures/iberians/house.xml",
+      "clips": [],
+      "source_url": "https://gitea.wildfiregames.com/0ad/0ad/src/commit/61a3b9507d974084e6badb88a0826bd89a6d5b8b/binaries/data/mods/public/art/actors/structures/iberians/house.xml",
+      "files": {
+        "web": "objects/structures-iberians-house/structures-iberians-house.glb",
+        "ktx2": "objects_ktx2/structures-iberians-house/structures-iberians-house.glb",
+        "lod1": "lods/structures-iberians-house/structures-iberians-house_lod1.glb",
+        "lod2": "lods/structures-iberians-house/structures-iberians-house_lod2.glb",
+        "lod3": "lods/structures-iberians-house/structures-iberians-house_lod3.glb",
+        "mobile": "mobile/structures-iberians-house/structures-iberians-house.glb",
+        "engine": "engine/structures-iberians-house/structures-iberians-house.glb",
+        "collision": "collision/structures-iberians-house/structures-iberians-house_collision.glb"
+      },
+      "web_bytes": 456628,
+      "ktx2_bytes": 696616,
+      "lod1_bytes": 246088,
+      "lod2_bytes": 80092,
+      "lod3_bytes": 34212,
+      "mobile_bytes": 171044,
+      "engine_bytes": 3093488,
+      "collision_bytes": 3128
+    }
+  },
+  {
+    "id": "market",
+    "state": "SOURCE_VERIFIED",
+    "main": "sources/market.glb",
+    "sourceFile": "engine/structures-iberians-market/structures-iberians-market.glb",
+    "sourceURL": "https://huggingface.co/datasets/codepawl/0ad-art-glb/resolve/7cd721e286854b78de1a74e79964388a41c060f4/engine/structures-iberians-market/structures-iberians-market.glb",
+    "sourceRevision": "7cd721e286854b78de1a74e79964388a41c060f4",
+    "license": "CC-BY-SA-3.0",
+    "author": "Wildfire Games",
+    "conversion": "CodePawl",
+    "originalSource": "https://gitea.wildfiregames.com/0ad/0ad",
+    "originalRevision": "61a3b9507d974084e6badb88a0826bd89a6d5b8b",
+    "licenseURL": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "files": [
+      {
+        "path": "sources/market.glb",
+        "sha256": "88758601e0d9a7a86b09ca09f64879a9590c1301ca7d172160b1ccd7b97108ac",
+        "bytes": 4032932
+      }
+    ],
+    "metadata": {
+      "file_name": "engine/structures-iberians-market/structures-iberians-market.glb",
+      "thumbnail": "thumbs/structures-iberians-market.webp",
+      "id": "structures-iberians-market",
+      "title": "Iberians market",
+      "kind": "structures",
+      "license": "CC BY-SA 3.0",
+      "authors": "Wildfire Games (https://www.wildfiregames.com/)",
+      "triangles": 1878,
+      "seconds": 1.07,
+      "civ": "iberians",
+      "actor": "structures/iberians/market.xml",
+      "clips": [],
+      "source_url": "https://gitea.wildfiregames.com/0ad/0ad/src/commit/61a3b9507d974084e6badb88a0826bd89a6d5b8b/binaries/data/mods/public/art/actors/structures/iberians/market.xml",
+      "files": {
+        "web": "objects/structures-iberians-market/structures-iberians-market.glb",
+        "ktx2": "objects_ktx2/structures-iberians-market/structures-iberians-market.glb",
+        "lod1": "lods/structures-iberians-market/structures-iberians-market_lod1.glb",
+        "lod2": "lods/structures-iberians-market/structures-iberians-market_lod2.glb",
+        "lod3": "lods/structures-iberians-market/structures-iberians-market_lod3.glb",
+        "mobile": "mobile/structures-iberians-market/structures-iberians-market.glb",
+        "engine": "engine/structures-iberians-market/structures-iberians-market.glb",
+        "collision": "collision/structures-iberians-market/structures-iberians-market_collision.glb"
+      },
+      "web_bytes": 489892,
+      "ktx2_bytes": 653272,
+      "lod1_bytes": 148700,
+      "lod2_bytes": 56104,
+      "lod3_bytes": 31880,
+      "mobile_bytes": 121492,
+      "engine_bytes": 4032932,
+      "collision_bytes": 3132
+    }
+  },
+  {
+    "id": "farmstead",
+    "state": "SOURCE_VERIFIED",
+    "main": "sources/farmstead.glb",
+    "sourceFile": "engine/structures-iberians-farmstead/structures-iberians-farmstead.glb",
+    "sourceURL": "https://huggingface.co/datasets/codepawl/0ad-art-glb/resolve/7cd721e286854b78de1a74e79964388a41c060f4/engine/structures-iberians-farmstead/structures-iberians-farmstead.glb",
+    "sourceRevision": "7cd721e286854b78de1a74e79964388a41c060f4",
+    "license": "CC-BY-SA-3.0",
+    "author": "Wildfire Games",
+    "conversion": "CodePawl",
+    "originalSource": "https://gitea.wildfiregames.com/0ad/0ad",
+    "originalRevision": "61a3b9507d974084e6badb88a0826bd89a6d5b8b",
+    "licenseURL": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "files": [
+      {
+        "path": "sources/farmstead.glb",
+        "sha256": "b9654ede93608eb7d2d3abb49e0146c066e799e1a9e4cc636613f170835a08f7",
+        "bytes": 2524516
+      }
+    ],
+    "metadata": {
+      "file_name": "engine/structures-iberians-farmstead/structures-iberians-farmstead.glb",
+      "thumbnail": "thumbs/structures-iberians-farmstead.webp",
+      "id": "structures-iberians-farmstead",
+      "title": "Iberians farmstead",
+      "kind": "structures",
+      "license": "CC BY-SA 3.0",
+      "authors": "Wildfire Games (https://www.wildfiregames.com/)",
+      "triangles": 364,
+      "seconds": 6.26,
+      "civ": "iberians",
+      "actor": "structures/iberians/farmstead.xml",
+      "clips": [],
+      "source_url": "https://gitea.wildfiregames.com/0ad/0ad/src/commit/61a3b9507d974084e6badb88a0826bd89a6d5b8b/binaries/data/mods/public/art/actors/structures/iberians/farmstead.xml",
+      "files": {
+        "web": "objects/structures-iberians-farmstead/structures-iberians-farmstead.glb",
+        "ktx2": "objects_ktx2/structures-iberians-farmstead/structures-iberians-farmstead.glb",
+        "lod1": "lods/structures-iberians-farmstead/structures-iberians-farmstead_lod1.glb",
+        "lod2": "lods/structures-iberians-farmstead/structures-iberians-farmstead_lod2.glb",
+        "lod3": "lods/structures-iberians-farmstead/structures-iberians-farmstead_lod3.glb",
+        "mobile": "mobile/structures-iberians-farmstead/structures-iberians-farmstead.glb",
+        "engine": "engine/structures-iberians-farmstead/structures-iberians-farmstead.glb",
+        "collision": "collision/structures-iberians-farmstead/structures-iberians-farmstead_collision.glb"
+      },
+      "web_bytes": 299076,
+      "ktx2_bytes": 533108,
+      "lod1_bytes": 89564,
+      "lod2_bytes": 33820,
+      "lod3_bytes": 21268,
+      "mobile_bytes": 74660,
+      "engine_bytes": 2524516,
+      "collision_bytes": 2564
+    }
+  }
+]

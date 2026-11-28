@@ -1,0 +1,31 @@
+// Isolated 07B spatial model viewer. No game/profile/save or encounter imports.
+(async()=>{
+const B=window.BABYLON,canvas=document.querySelector('canvas'),status=document.querySelector('#status'),buttons=[...document.querySelectorAll('[data-view]')];
+const engine=new B.Engine(canvas,true,{stencil:false,preserveDrawingBuffer:false}),scene=new B.Scene(engine);scene.useRightHandedSystem=true;scene.clearColor=new B.Color4(.20,.27,.29,1);
+const V=(a)=>B.Vector3.FromArray(a);
+const views={overview:{p:[120,163,-182],t:[78,0,-55]},upper:{p:[76,47,-70],t:[30,11,-26]},work:{p:[45,45,-112],t:[51,6,-65]},garden:{p:[105,43,-145],t:[68,2,-94]},east:{p:[170,55,-93],t:[129,9,-51]}};
+const camera=new B.ArcRotateCamera('review',0,1,100,V(views.overview.t),scene);scene.activeCamera=camera;camera.minZ=.15;camera.maxZ=500;camera.lowerRadiusLimit=8;camera.upperRadiusLimit=290;camera.lowerBetaLimit=.13;camera.upperBetaLimit=1.48;camera.wheelDeltaPercentage=.025;camera.pinchDeltaPercentage=.02;camera.panningSensibility=180;camera.attachControl(canvas,true);
+const ambient=new B.HemisphericLight('sky',new B.Vector3(0,1,0),scene);ambient.intensity=.85;ambient.groundColor=new B.Color3(.38,.4,.42);
+const sun=new B.DirectionalLight('sun',new B.Vector3(-.4,-1,.45),scene);sun.intensity=2.3;sun.diffuse=new B.Color3(1,.93,.8);
+scene.imageProcessingConfiguration.toneMappingEnabled=true;scene.imageProcessingConfiguration.toneMappingType=B.ImageProcessingConfiguration.TONEMAPPING_ACES;
+let active='overview',ready=false,disposed=false,error=null,meshes=0,triangles=0,frames=0;
+function view(key){const v=views[key];if(!v||disposed)return;camera.setTarget(V(v.t));camera.setPosition(V(v.p));active=key;for(const b of buttons)b.setAttribute('aria-pressed',String(b.dataset.view===key));}
+view(active);
+for(const button of buttons)button.addEventListener('click',()=>view(button.dataset.view));
+const resize=()=>{if(!disposed)engine.resize();};
+const tick=()=>{if(ready&&!disposed){scene.render();frames++;}};
+function visibility(){if(disposed)return;engine.stopRenderLoop(tick);if(ready&&!document.hidden)engine.runRenderLoop(tick);}
+function close(){if(disposed)return;disposed=true;ready=false;engine.stopRenderLoop(tick);window.removeEventListener('resize',resize);document.removeEventListener('visibilitychange',visibility);scene.dispose();engine.dispose();}
+window.addEventListener('resize',resize);document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',e=>{if(e.persisted)engine.stopRenderLoop(tick);else close();});window.addEventListener('pageshow',e=>{if(e.persisted){resize();visibility();}});
+window.spatialReview={snapshot:()=>({ready,error,meshes,triangles,frames,active,alpha:camera.alpha,beta:camera.beta,radius:camera.radius,engines:B.EngineStore.Instances.length}),close};
+try{
+ const response=await fetch('./gardens_spatial_02.glb');if(!response.ok)throw Error('GLB unavailable');const bytes=await response.arrayBuffer();
+ const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
+ if(digest!=='87c16e287faa6509b6292777e37486673f82630af529c1b54453f34d1eed62bc')throw Error('GLB hash mismatch');
+ const url=URL.createObjectURL(new Blob([bytes],{type:'model/gltf-binary'}));let result;try{result=await B.SceneLoader.ImportMeshAsync(null,'',url,scene,undefined,'.glb');}finally{URL.revokeObjectURL(url);}
+ if(disposed)return;
+ const geometry=result.meshes.filter(m=>m.getTotalVertices()>0);meshes=geometry.length;triangles=geometry.reduce((s,m)=>s+m.getTotalIndices()/3,0);
+ if(!meshes||triangles!==2464)throw Error('Unexpected mesh data: '+triangles);
+ ready=true;status.textContent='5 площадок · 7 переходов';for(const button of buttons)button.disabled=false;resize();scene.render();visibility();
+}catch(e){error=String(e);status.textContent='Ошибка загрузки модели';console.error(e);close();}
+})();

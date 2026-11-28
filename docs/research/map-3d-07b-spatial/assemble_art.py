@@ -31,7 +31,7 @@ templates={};originals=[];proof=[]
 def bounds(entries):
     pts=[m@Vector(c) for o,m in entries for c in o.bound_box]
     return Vector(tuple(min(p[i] for p in pts) for i in range(3))),Vector(tuple(max(p[i] for p in pts) for i in range(3)))
-for name in ['house','farmstead','storehouse','cliff','cliff2','olive','scrub']:
+for name in ['house','farmstead','storehouse','cliff','cliff2','olive','scrub','market','boulder']:
     path=fetch(name,records[name],'.glb');before=set(bpy.data.objects)
     bpy.ops.import_scene.gltf(filepath=str(path));bpy.context.view_layer.update()
     imported=[o for o in bpy.data.objects if o not in before]
@@ -76,10 +76,10 @@ for i,rec in enumerate(D['buildings']):
     x,y=q.centroid.coords[0];z=D['levels'][rec['level']]['z']
     if dep>w:w,dep=dep,w;yaw+=math.pi/2
     # Two distinct residential silhouettes; service buildings use utility models.
-    asset='storehouse' if rec['style']=='store' else ('farmstead' if rec['style']=='shed' else ('house' if i%4!=3 else 'storehouse'))
+    asset='storehouse' if rec['style']=='store' else ('farmstead' if rec['style']=='shed' else 'house')
     # Alternate entrances within the same lot, with the warehouse facing its main courtyard.
     if rec['id']=='warehouse' or i%3==1:yaw+=math.pi
-    hull,lo,hi,_=place('building_art_'+rec['id'],asset,x,y,z-.025,w*.98,dep*.98,rec['height'],yaw)
+    hull,lo,hi,_=place('building_art_'+rec['id'],asset,x,y,z-.025,w*.98,dep*.98,rec['height'],yaw,limit=2.1 if rec['id']=='warehouse' else 1.65)
     assert q.buffer(.015).covers(hull),(rec['id'],'model outside footprint')
     assert abs(lo.z-(z-.025))<.002 and hi.z<=z+rec['height']+.01,rec['id']
     old=[o for o in base if o.name in ('building_'+rec['id']+'_top','building_'+rec['id']+'_sides')]
@@ -103,18 +103,50 @@ for i,(x,y,w,d,h,angle) in enumerate(ridge_lots):
 # at walk height. Shape follows the actual outer lip; stays below all playing levels.
 for i,(x,y,w,d,h,angle) in enumerate([(10,48,16,10,19,65),(18,77,18,11,21,30),(38,88,17,12,23,12),(57,108,22,12,24,9),(81,112,23,15,26,-8),(104,104,19,13,23,-25),(130,85,21,12,24,-15),(149,68,16,10,20,80),(153,40,17,11,19,85),(151,16,19,12,19,35),(110,8,19,12,23,-20),(42,3,22,11,19,5)]):
     place('gorge_stratum_%02d'%i,'cliff2' if i%2 else 'cliff',x,y,-1.0,w,d,h,math.radians(angle),top=True,limit=2.8)
+# ART-02: add actual authored set pieces in manually selected residual lots,
+# preserving the established buildings, planned streets, gardens and links.
+lots={k:unary_union([Polygon(o['footprint']).buffer(.5) for o in D['buildings'] if o['level']==k]) for k in levels}
+beds={k:unary_union([Polygon(c).buffer(.2) for l,c in D['gardens'] if l==k]) for k in levels}
+safe_by_level={k:q.buffer(-.5).difference(routes[k].buffer(.25).union(links.buffer(.15)).union(lots[k]).union(beds[k])) for k,q in levels.items()}
+detail_plan=[
+ ('upper','market',55,14,5,4,3.8,0),('upper','farmstead',15,39,4,3,3.2,0),('upper','olive',39,34,2.4,1.8,4.0,0),
+ ('work','market',55,73,6,4,3.9,0),('work','market',20,53,5,4,3.5,0),('work','farmstead',30,77,5,3,3.2,0),('work','boulder',87,53,3.2,2.4,1.6,0),
+ ('garden','olive',75,85,4.5,3,5.1,0),('garden','olive',91,101,3.8,2.8,4.7,0),('garden','olive',87,89,2.8,1.8,3.8,0),
+ ('east','market',112,73,5,4,3.7,0),('east','olive',134,72,2.7,1.9,3.9,0),('exit','olive',122,33,2.7,1.9,3.5,0),('exit','boulder',150,33,2.7,1.9,1.4,0)
+]
+detail_hulls={k:[] for k in levels}
+for i,(key,asset,x,y,w,d,h,yaw) in enumerate(detail_plan):
+    safe=safe_by_level[key];angle=math.radians(yaw);q=rectangle(x,y,w,d,angle)
+    assert safe.covers(q),(key,'detail lot obstructs planned route',i)
+    assert all(not q.intersects(other) for other in detail_hulls[key]),('detail overlap',i)
+    hull,lo,hi,_=place('detail_%02d_%s'%(i,asset),asset,x,y,D['levels'][key]['z']-.02,w,d,h,angle,limit=1.8)
+    assert q.buffer(.02).covers(hull),('detail model outside lot',i)
+    detail_hulls[key].append(hull.buffer(.25))
+# Extra authored natural strata dress the actual exposed terrain faces.
+# They are entirely below the respective walking surface, never generate
+# collision or alter the frozen geometry. Reject any overlap at a lower terrace.
+for i,(key,x,y,w,d,h,ang) in enumerate([
+ ('upper',17,43,12,5,8,15),('upper',43,47,10,5,8,-8),
+ ('work',21,74,13,6,9,38),('work',69,81,12,6,7,-4),
+ ('garden',47,100,11,6,12,35),('garden',76,109,14,7,15,0),('garden',98,98,12,6,14,-40),
+ ('east',109,78,10,5,10,30),('east',136,76,11,6,11,-45),
+ ('exit',151,39,11,6,9,-65)]):
+    z=D['levels'][key]['z'];angle=math.radians(ang);q=rectangle(x,y,w,d,angle)
+    lower=unary_union([p for k,p in levels.items() if D['levels'][k]['z']<z-.65])
+    if q.intersects(lower.buffer(.35)) or q.intersects(links.buffer(.2)):continue
+    place('face_stratum_%02d'%i,'cliff2' if i%2 else 'cliff',x,y,z-.65,w,d,h,angle,top=True,limit=2.6)
 # Gardens are actual planted pockets, not obstacles scattered through routes.
 for i,(key,coords) in enumerate(D['gardens']):
     q=Polygon(coords);safe=q.intersection(levels[key]).difference(routes[key].union(links))
     if safe.is_empty:continue
-    p=safe.representative_point();rad=min(1.7,p.distance(safe.boundary)*.88);z=D['levels'][key]['z']
+    p=safe.representative_point();rad=min(2.2,p.distance(safe.boundary)*.9);z=D['levels'][key]['z']
     if rad>.65:
         asset='olive' if rad>1.05 else 'scrub'
-        hull,lo,hi,_=place('plant_%02d'%i,asset,p.x,p.y,z-.02,rad*1.35,rad*1.35,3.8 if asset=='olive' else 1.3,0,limit=1.5)
+        hull,lo,hi,_=place('plant_%02d'%i,asset,p.x,p.y,z-.02,rad*1.65,rad*1.65,4.5 if asset=='olive' else 1.5,0,limit=1.5)
         assert safe.buffer(.02).covers(hull)
     # Low shrubs, fitted entirely into the remaining bed.
-    for j,t in enumerate((.25,.75)):
-        x=p.x+(q.centroid.x-p.x)*t+(-1 if j==0 else 1)*.65;y=p.y+(q.centroid.y-p.y)*t
+    for j,t in enumerate((.15,.42,.68,.85)):
+        x=p.x+(q.centroid.x-p.x)*t+(-1 if j%2==0 else 1)*(.75+j*.35);y=p.y+(q.centroid.y-p.y)*t
         if not safe.covers(Point(x,y).buffer(.48)) or math.hypot(x-p.x,y-p.y)<rad*.65+.35:continue
         hull,_,_,_=place('plant_%02d_%d'%(i,j),'scrub',x,y,z,.6,.6,.75,0)
         assert safe.buffer(.02).covers(hull)
@@ -179,6 +211,69 @@ for o in base:
         if abs(poly.normal.z)>.5:return (p.x/3.5,p.y/3.5)
         return ((p.x if abs(poly.normal.y)>.5 else p.y)/4.5,p.z/4.5)
     uv_project(o,proj,mat)
+# Secondary hand-authored architectural trim. Main buildings and cliff meshes
+# remain sourced art; these low masonry pieces are functional level geometry.
+# Build all trim as one mesh per material, not hundreds of individual draw calls.
+from shapely.geometry.polygon import orient
+trim_v=[];trim_f=[];trim_uv=[];coping_v=[];coping_f=[];coping_uv=[]
+def add_prism(poly,z0,z1,vs,fs):
+    p=orient(poly,sign=1);pts=list(p.exterior.coords)[:-1];assert len(pts)==4
+    idx=len(vs);vs.extend([(x,y,z) for z in (z0,z1) for x,y in pts])
+    fs.extend([(idx+4,idx+5,idx+6,idx+7),(idx+3,idx+2,idx+1,idx)])
+    for i in range(4):j=(i+1)%4;fs.append((idx+i,idx+j,idx+4+j,idx+4+i))
+def wall(a,b,z,width,height):
+    line=LineString([a,b]);l=line.length
+    if l<.65:return False
+    x,y=line.interpolate(.5,normalized=True).coords[0];yaw=math.atan2(b[1]-a[1],b[0]-a[0])
+    body=rectangle(x,y,l,width,yaw);cap=rectangle(x,y,l+.025,width+.08,yaw)
+    add_prism(body,z-.02,z+height-.12,trim_v,trim_f);add_prism(cap,z+height-.12,z+height,coping_v,coping_f)
+    return True
+# Garden bed borders emphasize cultivated plots, with open access on one side.
+planter_count=0;parapet_count=0;wall_footprints=[]
+for i,(key,coords) in enumerate(D['gardens']):
+    p=Polygon(coords);z=D['levels'][key]['z'];edges=list(zip(coords,coords[1:]+coords[:1]))
+    for j,(a,b) in enumerate(edges):
+        if j==i%4:continue
+        # Exact boundary, inset .14m; keep the path margin unobstructed.
+        a=tuple(a);b=tuple(b);line=LineString([a,b]);cap=line.buffer(.21,cap_style=2)
+        if not levels[key].buffer(-.025).covers(cap) or cap.intersects(routes[key].union(links).union(lots[key])):continue
+        if wall(a,b,z,.25,.32):planter_count+=1;wall_footprints.append((key,cap))
+# Low retaining/guard walls on exposed ledges only. Omit links and entrances.
+# Sample the true top surfaces rather than fence across ramps or other levels.
+deps=bpy.context.evaluated_depsgraph_get();bpy.context.view_layer.update()
+for key in ['upper','work','garden','east','exit']:
+    q=orient(levels[key],sign=1);z=D['levels'][key]['z'];pts=list(q.exterior.coords)
+    exclusion=routes[key].union(links).union(lots[key]).union(beds[key]).union(unary_union(detail_hulls[key]))
+    for a,b in zip(pts,pts[1:]):
+        dx=b[0]-a[0];dy=b[1]-a[1];L=math.hypot(dx,dy)
+        if L<3:continue
+        nx,ny=-dy/L,dx/L
+        # Avoid walls facing directly into an adjacent terrace or high bedrock.
+        n=max(1,int(L/4.5))
+        for j in range(n):
+            t0=(j+.06)/n;t1=(j+.94)/n
+            A=(a[0]+dx*t0+nx*.65,a[1]+dy*t0+ny*.65);B=(a[0]+dx*t1+nx*.65,a[1]+dy*t1+ny*.65)
+            line=LineString([A,B]);cap=line.buffer(.25,cap_style=2)
+            if not q.buffer(-.05).covers(cap) or cap.intersects(exclusion):continue
+            if any(k==key and cap.intersects(c) for k,c in wall_footprints):continue
+            mid=line.interpolate(.5,normalized=True);outside=Point(mid.x-nx*1.9,mid.y-ny*1.9)
+            if any(k!=key and p.covers(outside) and D['levels'][k]['z']>=z-.8 for k,p in levels.items()):continue
+            if Polygon(D['rock']).covers(outside):continue
+            # Actual physical top must be at that height at both ends and middle.
+            valid=True
+            for x,y in [A,B,(mid.x,mid.y)]:
+                hit,loc,normal,index,obj,matrix=bpy.context.scene.ray_cast(deps,Vector((x,y,z+.5)),Vector((0,0,-1)),distance=.85)
+                if not hit or abs(loc.z-z)>.06 or obj.name!='terrace_'+key+'_top':valid=False;break
+            if not valid:continue
+            if wall(A,B,z,.38,.88):parapet_count+=1;wall_footprints.append((key,cap))
+def trim_object(name,vs,fs,mat):
+    if not fs:return
+    m=bpy.data.meshes.new(name);m.from_pydata(vs,[],fs);m.update()
+    o=bpy.data.objects.new(name,m);art.objects.link(o)
+    uv_project(o,lambda p,poly:((p.x+p.y)/2.3,p.z/1.6) if abs(poly.normal.z)<.5 else (p.x/2.3,p.y/2.3),mat)
+trim_object('secondary_masonry',trim_v,trim_f,rockmat)
+trim_object('secondary_coping',coping_v,coping_f,stone)
+assert planter_count>=8 and parapet_count>=8,(planter_count,parapet_count)
 # Remove replaced masses and obsolete coloured road overlays, not the original terrain.
 removed=[o for o in base if o.hide_render]
 assert len([o for o in removed if o.name.startswith('building_')])==50
@@ -204,8 +299,8 @@ j=json.loads(rawbytes[20:20+n]);assert j['asset']['version']=='2.0'
 tris=sum(j['accessors'][p['indices']]['count']//3 if 'indices' in p else j['accessors'][p['attributes']['POSITION']]['count']//3 for node in j['nodes'] if 'mesh' in node for p in j['meshes'][node['mesh']]['primitives'])
 assert 10000<tris<150000,tris
 assert g.stat().st_size<35*1024*1024,g.stat().st_size
-report={'layoutSHA256':sha(layout),'baselineGLBSHA256':sha(root/'preview/map-3d-07b-spatial/gardens_spatial_02.glb'),'artGLBSHA256':sha(g),'bytes':g.stat().st_size,'trianglesWithInstances':tris,'images':len(j.get('images',[])),'placements':proof,'removedMasses':50,'scope':'Art preview only; exact baseline retained separately; no navmesh or actual traversal.'}
+report={'artRevision':2,'planterSegments':planter_count,'parapetSegments':parapet_count,'detailLots':len(detail_plan),'layoutSHA256':sha(layout),'baselineGLBSHA256':sha(root/'preview/map-3d-07b-spatial/gardens_spatial_02.glb'),'artGLBSHA256':sha(g),'bytes':g.stat().st_size,'trianglesWithInstances':tris,'images':len(j.get('images',[])),'placements':proof,'removedMasses':50,'scope':'Art preview only; exact baseline retained separately; no navmesh or actual traversal.'}
 (out/'art-manifest.json').write_text(json.dumps(report,indent=2))
 for n in ['ATTRIBUTION.txt','LICENSE-upstream.txt','README-source.md','source-receipt.json','supplemental-receipt.json','ground-receipt.json','dataset-revision.json']:shutil.copyfile(src/n,out/n)
-with (out/'ATTRIBUTION.txt').open('a') as f:f.write('\n07B art 01: adapted layout, UV surfaces, model transforms and texture resolution. Adapted environment art remains CC BY-SA 3.0; exact source and recipe in docs/research/map-3d-07b-spatial.\n')
+with (out/'ATTRIBUTION.txt').open('a') as f:f.write('\n07B art 02: additional authored set pieces, masonry trim, adapted layout, UV surfaces, model transforms and texture resolution. Adapted environment art remains CC BY-SA 3.0; exact source and recipe in docs/research/map-3d-07b-spatial.\n')
 print(json.dumps({k:v for k,v in report.items() if k!='placements'},indent=2))

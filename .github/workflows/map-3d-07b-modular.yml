@@ -1,0 +1,39 @@
+name: MAP-3D-07B ART-03 modular street comparison
+on:
+  pull_request:
+    paths:
+      - 'docs/research/map-3d-07b-modular/**'
+      - '.github/workflows/map-3d-07b-modular.yml'
+permissions:
+  contents: read
+concurrency:
+  group: map-3d-07b-modular-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+jobs:
+  compare:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'research/map-3d-07b-modular-street'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pinned Blender and footprint checker
+        run: |
+          python -m pip install --disable-pip-version-check bpy==4.5.17 shapely==2.1.2
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgl1 libxkbcommon0 libxrender1 libxi6 libxxf86vm1
+      - name: Import real CC0 assets and compare the same street
+        run: |
+          mkdir -p "$RUNNER_TEMP/modular-evidence"
+          python docs/research/map-3d-07b-modular/compare_street.py "$PWD" "$RUNNER_TEMP/modular-evidence"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-07b-modular-street-evidence
+          path: ${{ runner.temp }}/modular-evidence/
+          if-no-files-found: warn
+          retention-days: 30

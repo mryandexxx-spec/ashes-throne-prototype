@@ -1,0 +1,158 @@
+{
+  "samples": 7764,
+  "failures": [],
+  "actual_stair_tread_junction_samples": [
+    [
+      "work_north",
+      29.3,
+      53.0,
+      0.1765,
+      "stairs_w_walking_surface"
+    ],
+    [
+      "work_north",
+      29.0,
+      53.0,
+      0.1765,
+      "stairs_w_walking_surface"
+    ],
+    [
+      "garden_loop",
+      51.0,
+      86.0,
+      0.1667,
+      "stairs_g_walking_surface"
+    ],
+    [
+      "garden_loop",
+      50.76,
+      85.83,
+      0.1667,
+      "stairs_g_walking_surface"
+    ],
+    [
+      "garden_loop",
+      50.61,
+      86.03,
+      0.1667,
+      "stairs_g_walking_surface"
+    ],
+    [
+      "exit_road",
+      127.19,
+      36.23,
+      0.1667,
+      "stairs_e_walking_surface"
+    ],
+    [
+      "exit_road",
+      127.38,
+      36.07,
+      0.1667,
+      "stairs_e_walking_surface"
+    ]
+  ],
+  "routes": [
+    {
+      "route": "entry",
+      "samples": 573,
+      "max_error_m": 0.015
+    },
+    {
+      "route": "upper_loop",
+      "samples": 651,
+      "max_error_m": 0.015
+    },
+    {
+      "route": "upper_lane",
+      "samples": 138,
+      "max_error_m": 0.015
+    },
+    {
+      "route": "stairs_w",
+      "samples": 183,
+      "max_error_m": 0.1765
+    },
+    {
+      "route": "ramp_w",
+      "samples": 543,
+      "max_error_m": 0.2412
+    },
+    {
+      "route": "work_main",
+      "samples": 834,
+      "max_error_m": 0.0157
+    },
+    {
+      "route": "work_north",
+      "samples": 216,
+      "max_error_m": 0.1765
+    },
+    {
+      "route": "work_loop",
+      "samples": 621,
+      "max_error_m": 0.015
+    },
+    {
+      "route": "work_south",
+      "samples": 252,
+      "max_error_m": 0.015
+    },
+    {
+      "route": "stairs_g",
+      "samples": 159,
+      "max_error_m": 0.1733
+    },
+    {
+      "route": "garden_loop",
+      "samples": 729,
+      "max_error_m": 0.1667
+    },
+    {
+      "route": "ramp_g",
+      "samples": 411,
+      "max_error_m": 0.0948
+    },
+    {
+      "route": "work_east",
+      "samples": 231,
+      "max_error_m": 0.0321
+    },
+    {
+      "route": "rib",
+      "samples": 348,
+      "max_error_m": 0.021
+    },
+    {
+      "route": "east_court",
+      "samples": 354,
+      "max_error_m": 0.015
+    },
+    {
+      "route": "east_north",
+      "samples": 198,
+      "max_error_m": 0.015
+    },
+    {
+      "route": "stairs_e",
+      "samples": 204,
+      "max_error_m": 0.1667
+    },
+    {
+      "route": "ramp_e",
+      "samples": 522,
+      "max_error_m": 0.0448
+    },
+    {
+      "route": "exit_road",
+      "samples": 372,
+      "max_error_m": 0.1667
+    },
+    {
+      "route": "exit_side",
+      "samples": 225,
+      "max_error_m": 0.015
+    }
+  ],
+  "scope": "GLB top-surface height and occlusion at route center and 0.3m side probes, not physics or navmesh"
+}

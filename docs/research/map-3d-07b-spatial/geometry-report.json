@@ -1,0 +1,229 @@
+{
+  "source_sha256": "8948f06fbc6d86bbc0df62964fb660ae635e51af44eddd66bd422938167e3f02",
+  "levels": {
+    "upper": {
+      "elevation": 12,
+      "top_area_m2": 2210.05
+    },
+    "exit": {
+      "elevation": 12,
+      "top_area_m2": 1059.81
+    },
+    "east": {
+      "elevation": 8,
+      "top_area_m2": 1149.74
+    },
+    "work": {
+      "elevation": 6,
+      "top_area_m2": 2580.31
+    },
+    "garden": {
+      "elevation": 2,
+      "top_area_m2": 1483.64
+    }
+  },
+  "links": {
+    "stairs_w": {
+      "width_m": 2.8,
+      "start_z": 12.0,
+      "end_z": 6.0,
+      "steps": 34,
+      "landing_adjustment_m": 0,
+      "max_grade_pct": 42.4
+    },
+    "ramp_w": {
+      "width_m": 3.4,
+      "start_z": 12.0,
+      "end_z": 6.0,
+      "steps": 0,
+      "landing_adjustment_m": 1.8,
+      "max_grade_pct": 15.9
+    },
+    "stairs_g": {
+      "width_m": 2.7,
+      "start_z": 6.0,
+      "end_z": 2.0,
+      "steps": 24,
+      "landing_adjustment_m": 0,
+      "max_grade_pct": 32.9
+    },
+    "ramp_g": {
+      "width_m": 3.0,
+      "start_z": 2.0,
+      "end_z": 6.000000000000001,
+      "steps": 0,
+      "landing_adjustment_m": 0,
+      "max_grade_pct": 12.2
+    },
+    "rib": {
+      "width_m": 3.4,
+      "start_z": 6.0,
+      "end_z": 8.0,
+      "steps": 0,
+      "landing_adjustment_m": 0,
+      "max_grade_pct": 8.7
+    },
+    "stairs_e": {
+      "width_m": 2.8,
+      "start_z": 8.0,
+      "end_z": 12.0,
+      "steps": 24,
+      "landing_adjustment_m": 0,
+      "max_grade_pct": 24.8
+    },
+    "ramp_e": {
+      "width_m": 3.2,
+      "start_z": 8.0,
+      "end_z": 12.0,
+      "steps": 0,
+      "landing_adjustment_m": 0,
+      "max_grade_pct": 9.5
+    }
+  },
+  "buildings": {
+    "home01": {
+      "level": "upper",
+      "height_m": 4.8,
+      "area_m2": 35.0
+    },
+    "home02": {
+      "level": "upper",
+      "height_m": 5.5,
+      "area_m2": 40.0
+    },
+    "home03": {
+      "level": "upper",
+      "height_m": 4.7,
+      "area_m2": 35.0
+    },
+    "home04": {
+      "level": "upper",
+      "height_m": 6.3,
+      "area_m2": 40.0
+    },
+    "home05": {
+      "level": "upper",
+      "height_m": 5.1,
+      "area_m2": 28.0
+    },
+    "home06": {
+      "level": "upper",
+      "height_m": 5.0,
+      "area_m2": 28.0
+    },
+    "home07": {
+      "level": "upper",
+      "height_m": 6.0,
+      "area_m2": 35.0
+    },
+    "home08": {
+      "level": "upper",
+      "height_m": 5.4,
+      "area_m2": 36.0
+    },
+    "home09": {
+      "level": "upper",
+      "height_m": 3.4,
+      "area_m2": 12.25
+    },
+    "home10": {
+      "level": "upper",
+      "height_m": 4.2,
+      "area_m2": 32.5
+    },
+    "home11": {
+      "level": "upper",
+      "height_m": 3.5,
+      "area_m2": 24.05
+    },
+    "shed01": {
+      "level": "work",
+      "height_m": 3.5,
+      "area_m2": 40.0
+    },
+    "warehouse": {
+      "level": "work",
+      "height_m": 5.2,
+      "area_m2": 67.2
+    },
+    "shed03": {
+      "level": "work",
+      "height_m": 3.7,
+      "area_m2": 28.0
+    },
+    "shed04": {
+      "level": "work",
+      "height_m": 4.1,
+      "area_m2": 32.0
+    },
+    "shed05": {
+      "level": "work",
+      "height_m": 3.5,
+      "area_m2": 20.0
+    },
+    "gardenhut": {
+      "level": "garden",
+      "height_m": 2.7,
+      "area_m2": 17.5
+    },
+    "shed06": {
+      "level": "work",
+      "height_m": 3.5,
+      "area_m2": 26.0
+    },
+    "east01": {
+      "level": "east",
+      "height_m": 5.5,
+      "area_m2": 35.0
+    },
+    "east02": {
+      "level": "east",
+      "height_m": 4.0,
+      "area_m2": 20.0
+    },
+    "east03": {
+      "level": "east",
+      "height_m": 3.6,
+      "area_m2": 17.5
+    },
+    "east04": {
+      "level": "east",
+      "height_m": 4.5,
+      "area_m2": 20.0
+    },
+    "upper_e1": {
+      "level": "exit",
+      "height_m": 4.3,
+      "area_m2": 30.0
+    },
+    "upper_e2": {
+      "level": "exit",
+      "height_m": 5.0,
+      "area_m2": 40.0
+    },
+    "upper_e3": {
+      "level": "exit",
+      "height_m": 4.1,
+      "area_m2": 20.0
+    }
+  },
+  "warnings": [],
+  "mesh_count": 103,
+  "triangles": 2464,
+  "bounds_y_up": [
+    [
+      -1.0,
+      -30.0,
+      -110.0
+    ],
+    [
+      157.0,
+      19.881759402537035,
+      -1.0
+    ]
+  ],
+  "scope": "Geometry only. No navigable runtime, no final art, no battle assignment. Stair treads require independent navigation proxy in game.",
+  "glb_sha256": "87c16e287faa6509b6292777e37486673f82630af529c1b54453f34d1eed62bc",
+  "glb_bytes": 136468,
+  "roundtrip": "PASS"
+}

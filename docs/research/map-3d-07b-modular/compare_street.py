@@ -21,6 +21,7 @@ if not archive.exists():
             n=0
             while chunk:=response.read(1024*1024):
                 n+=len(chunk);assert n<180_000_000;f.write(chunk)
+assert sha(archive)=='58c3e1b9713ee85749ade230c36e1195af5d96951435532b4411e993b46387bd','Unexpected source archive change'
 src=cache/'extracted';src.mkdir(exist_ok=True)
 with zipfile.ZipFile(archive) as z:
     infos=z.infolist();assert len(infos)<10000 and sum(i.file_size for i in infos)<800_000_000
@@ -79,7 +80,13 @@ def bounds(e):
     pts=[m@Vector(c) for o,m in e for c in o.bound_box]
     return Vector(tuple(min(p[i] for p in pts) for i in range(3))),Vector(tuple(max(p[i] for p in pts) for i in range(3)))
 def acquire(kind,required=True):
-    candidates=sorted([p for p in files if role(p,kind)],key=lambda p:rank(p,kind))
+    # Exact modules from the downloaded, hash-pinned inventory. No substring
+    # search: Overhang_Roof was a canopy, not a closed roof.
+    exact={'wall':'Wall_Plaster_Straight','doorwall':'Wall_Plaster_Door_Flat',
+           'windowwall':'Wall_Plaster_Window_Wide_Flat','roof':'Roof_RoundTiles_6x4',
+           'gable':'Roof_Front_Brick4','door':'Door_1_Flat',
+           'window':'WindowShutters_Wide_Flat_Closed'}
+    candidates=[p for p in files if p.stem==exact[kind]]
     diagnostics=[]
     for p in candidates[:12]:
         before=set(bpy.data.objects)
@@ -93,7 +100,7 @@ def acquire(kind,required=True):
             lo,hi=bounds(e);dim=hi-lo
             if min(dim)<.015 or not all(o.data.materials for o,_ in e):raise ValueError('invalid dimensions/materials')
             if kind in {'wall','doorwall','windowwall','door','window'} and (dim.y>dim.x*.65 or dim.y>dim.z*.65):raise ValueError('not a vertical panel')
-            if kind=='roof' and (dim.z>max(dim.x,dim.y)*1.25 or dim.z<.05):raise ValueError('not roof profile')
+            if kind=='roof' and (dim.z>max(dim.x,dim.y)*1.25 or dim.z<.35):raise ValueError('not full roof profile')
             templates[kind]=e;source_objects.extend(objects)
             for o in objects:
                 for c in list(o.users_collection):c.objects.unlink(o)
@@ -106,11 +113,8 @@ def acquire(kind,required=True):
     if required:
         (out/'selected-modules.json').write_text(json.dumps(selected,indent=2));raise RuntimeError('No valid authored '+kind+' module; inspect inventory')
     return False
-acquire('wall');acquire('roof')
-has_door=acquire('doorwall',False)
-if not has_door:acquire('door')
-has_window=acquire('windowwall',False)
-if not has_window:acquire('window')
+acquire('wall');acquire('roof');acquire('gable');acquire('door');acquire('window')
+has_door=acquire('doorwall');has_window=acquire('windowwall')
 (out/'selected-modules.json').write_text(json.dumps(selected,indent=2))
 placements=[]
 def fit(kind,name,x,y,z,w,d,h,yaw,lot):
@@ -128,8 +132,45 @@ def fit(kind,name,x,y,z,w,d,h,yaw,lot):
 roof=templates['roof'];rlo,rhi=bounds(roof);rd=rhi-rlo
 high=[m@v.co for o,m in roof for v in o.data.vertices if (m@v.co).z>rhi.z-.10*rd.z]
 high_y=sum(p.y for p in high)/max(1,len(high));relative=(high_y-(rhi.y+rlo.y)/2)/rd.y
-half_roof=abs(relative)>.20
-selected['roof']['profile']='paired authored halves' if half_roof else 'single authored roof'
+half_roof=False
+# Determine the ridge axis from actual high vertices rather than name/width.
+# A complete roof has a ridge running along one of its horizontal axes.
+if high:
+    xrange=max(p.x for p in high)-min(p.x for p in high);yrange=max(p.y for p in high)-min(p.y for p in high)
+    if yrange>xrange:
+        templates['roof']=[(o,Matrix.Rotation(math.pi/2,4,'Z')@m) for o,m in roof]
+selected['roof']['profile']='full authored pitched roof'
+# Sample actual panel openings in source coordinates. Find the central
+# connected clear rectangle; use the corresponding authored closure.
+from mathutils.bvhtree import BVHTree
+def opening(kind):
+    e=templates[kind];lo,hi=bounds(e);dim=hi-lo
+    vs=[];fs=[]
+    for o,m in e:
+        k=len(vs);vs.extend([m@v.co for v in o.data.vertices]);fs.extend([tuple(k+i for i in p.vertices) for p in o.data.polygons])
+    tree=BVHTree.FromPolygons(vs,fs,all_triangles=False)
+    N=64
+    def empty(ix,iz):
+        x=lo.x+(ix+.5)*dim.x/N;z=lo.z+(iz+.5)*dim.z/N
+        hit=tree.ray_cast(Vector((x,lo.y-1,z)),Vector((0,1,0)),dim.y+2)[0]
+        return hit is None
+    # At centre of width, take the longest contiguous hole in the lower
+    # two-thirds for a door, or middle height for a window.
+    spans=[];start=None
+    for iz in range(N+1):
+        good=iz<N and empty(N//2,iz)
+        if good and start is None:start=iz
+        if not good and start is not None:spans.append((start,iz));start=None
+    candidates=[(a,b) for a,b in spans if b-a>=5 and b<N-2 and (a<8 if kind=='doorwall' else a>=5)]
+    assert candidates,(kind,'no actual panel opening',spans)
+    a,b=max(candidates,key=lambda v:v[1]-v[0]);mid=(a+b)//2
+    left=N//2;right=N//2
+    while left>0 and empty(left-1,mid):left-=1
+    while right<N-1 and empty(right+1,mid):right+=1
+    assert left>0 and right<N-1 and right-left>=5,(kind,left,right)
+    return ((left+right+1)/(2*N)-.5,a/N,(right-left+1)/N,(b-a)/N)
+openings={kind:opening(kind) for kind in ('doorwall','windowwall')}
+selected['openingFractions']=openings
 # Five existing building footprints on the upper street, nothing outside the
 # accepted lot and no change to the original terrain/stair/link meshes.
 ids={'home01','home02','home03','home04','home06'}
@@ -162,6 +203,9 @@ for b in D['buildings']:
                 xx,yy=world(*offset(pos));fit('door','mod_'+b['id']+'_door',xx,yy,z,gap,th*.75,min(wallh,2.2),yaw+angle,q)
                 continue
             xx,yy=world(*offset(pos));fit(kind,'mod_'+b['id']+'_wall_'+str(angle)+'_'+str(j),xx,yy,z,panel*.997,th,wallh,yaw+angle,q)
+            if kind in openings:
+                u,v,uw,vh=openings[kind];xx,yy=world(*offset(pos+u*panel))
+                fit('door' if kind=='doorwall' else 'window','mod_'+b['id']+'_closure_'+str(angle)+'_'+str(j),xx,yy,z+max(0,v-.012)*wallh,panel*min(.98,uw+.035),th*.82,wallh*min(1-v,vh+.025),yaw+angle,q)
     facade(w-.25,lambda u:(u,-dep/2+.24),0,True)
     facade(w-.25,lambda u:(-u,dep/2-.24),math.pi)
     facade(dep-.85,lambda u:(w/2-.24,u),math.pi/2)
@@ -171,7 +215,13 @@ for b in D['buildings']:
             xx,yy=world(0,side*dep/4)
             turn=0 if side*relative<0 else math.pi
             fit('roof','mod_'+b['id']+'_roof_'+str(side),xx,yy,z+wallh-.04,w*.99,dep*.495,roofh,yaw+turn,q)
-    else:fit('roof','mod_'+b['id']+'_roof',x,y,z+wallh-.04,w*.99,dep*.99,roofh,yaw,q)
+    else:
+        fit('roof','mod_'+b['id']+'_roof',x,y,z+wallh-.04,w*.99,dep*.99,roofh,yaw,q)
+        # Fill both ends with original triangular brick gables at the ends
+        # of the ridge; slight inset avoids z-fighting with roof edge.
+        for sign in (-1,1):
+            xx,yy=world(sign*(w/2-.24),0)
+            fit('gable','mod_'+b['id']+'_gable_'+str(sign),xx,yy,z+wallh-.10,dep*.94,.30,roofh*.98,yaw+sign*math.pi/2,q)
     replaced.append(b['id'])
 # Finish all replacements and footprint assertions before removing baseline art.
 assert set(replaced)==ids and len(replaced)==len(ids),replaced
@@ -182,6 +232,18 @@ assert not any(o.name.startswith(tuple('building_art_'+lot+'_' for lot in ids)) 
 bpy.context.view_layer.update()
 (out/'selected-modules.json').write_text(json.dumps(selected,indent=2))
 (out/'placement-report.json').write_text(json.dumps({'layoutSHA256':sha(layout),'baselineSHA256':sha(base),'replacedLots':sorted(ids),'placements':placements,'scope':'Same camera, five building lots; unapproved candidate only'},indent=2))
+# Cap only oversized new source textures. Keep baseline textures, original
+# mesh data and normal/ORM color spaces. Save/pack resampled image bytes
+# so glTF exporter cannot silently reuse the original 2k PNG.
+texture_report=[]
+for im in bpy.data.images:
+    if im.users<1 or max(im.size)<=1024:continue
+    before=list(im.size);k=1024/max(im.size)
+    im.scale(max(1,round(im.size[0]*k)),max(1,round(im.size[1]*k)))
+    p=out/('texture_'+hashlib.sha256(im.name.encode()).hexdigest()[:12]+'.png')
+    im.filepath_raw=str(p);im.file_format='PNG';im.save();im.pack()
+    texture_report.append({'image':im.name,'before':before,'after':list(im.size),'sha256':sha(p)})
+(out/'texture-report.json').write_text(json.dumps(texture_report,indent=2))
 render('candidate')
 # Editable source and exact GLB for independent inspection; never publish to main.
 bpy.data.objects.remove(camera,do_unlink=True);bpy.data.objects.remove(sun,do_unlink=True)
@@ -192,6 +254,6 @@ import struct
 data=g.read_bytes();n,kind=struct.unpack_from('<II',data,12);assert kind==0x4e4f534a
 j=json.loads(data[20:20+n]);tris=sum(j['accessors'][p['indices']]['count']//3 if 'indices' in p else j['accessors'][p['attributes']['POSITION']]['count']//3 for node in j['nodes'] if 'mesh' in node for p in j['meshes'][node['mesh']]['primitives'])
 (out/'candidate-metrics.json').write_text(json.dumps({'bytes':len(data),'triangles':tris,'sha256':sha(g),'images':len(j.get('images',[])),'replacedLots':len(ids),'artStatus':'unreviewed'},indent=2))
-assert tris<180000 and len(data)<45*1024*1024,'Candidate outside provisional mobile budget'
+assert tris<180000 and len(data)<45*1024*1024,('Candidate outside provisional mobile budget',tris,len(data))
 shutil.copyfile(root/'preview/map-3d-07b-art/ATTRIBUTION.txt',out/'ATTRIBUTION.txt')
 with (out/'ATTRIBUTION.txt').open('a') as f:f.write('\nNew pilot modules: Quaternius, Medieval Village MegaKit Standard, CC0 1.0; '+receipt['authorPage']+'; original archive and module hashes in source-receipt.json and selected-modules.json.\n')

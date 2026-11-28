@@ -48,3 +48,6 @@ This integration adds instructions and licensed text only; no `package.json`, `i
 
 ## MAP-3D — research skill
 - [ashes-level-design](../.agents/skills/ashes-level-design/SKILL.md) — project-owned research draft, use for MAP-3D blockouts, Blender source/GLB/nav/markers, gameplay routes and independent visual/browser acceptance. No new mechanics adopted. Use with ashes-babylonjs and performance-optimization. No external skill files or new dependencies vendored in this step.
+
+## MAP-3D QA — mandatory
+- [ashes-map3d-qa](../.agents/skills/ashes-map3d-qa/SKILL.md): mandatory for every 3D map/art/GLB/nav/browser QA task. Reuse local Babylon, exact candidate manifest, proven CI, no repeated blocked-environment experiments. Distinguish art, controller, candidate nav and device gates. [Reusable runner](../tools/map3d-qa/README.md).

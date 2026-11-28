@@ -1,0 +1,38 @@
+name: MAP-3D reusable art QA
+on:
+  pull_request:
+    paths:
+      - 'tools/map3d-qa/**'
+      - '.github/workflows/map3d-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: map3d-qa-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+jobs:
+  control:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Pinned tools and syntax
+        run: |
+          npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund --prefix "$RUNNER_TEMP/qa" playwright@1.56.1
+          cp tools/map3d-qa/{runner.mjs,viewer.js,index.html} "$RUNNER_TEMP/qa/"
+          node --check "$RUNNER_TEMP/qa/runner.mjs"
+          node --check "$RUNNER_TEMP/qa/viewer.js"
+          "$RUNNER_TEMP/qa/node_modules/.bin/playwright" install --with-deps chromium webkit
+      - name: Known-good control, not ART-05 acceptance
+        run: node "$RUNNER_TEMP/qa/runner.mjs" "$PWD" preview/map-3d/level/level.glb tools/map3d-qa/control.json "$RUNNER_TEMP/evidence"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map3d-qa-control
+          path: ${{ runner.temp }}/evidence/
+          if-no-files-found: warn

@@ -1,0 +1,49 @@
+{
+  "id": "MOVE-04A-control",
+  "sha256": "5b3dba836642df6c7bde7761cb17c4798e76527bf3a44e3e565fafaa472ba899",
+  "views": [
+    {
+      "id": "overview",
+      "target": [
+        0,
+        0,
+        -2.5
+      ],
+      "offset": [
+        10,
+        13,
+        16
+      ],
+      "span": 12
+    },
+    {
+      "id": "street",
+      "target": [
+        -3.8,
+        0,
+        1.55
+      ],
+      "offset": [
+        5,
+        9,
+        10
+      ],
+      "span": 5.5
+    },
+    {
+      "id": "court",
+      "target": [
+        -2,
+        0,
+        -6.6
+      ],
+      "offset": [
+        5,
+        9,
+        10
+      ],
+      "span": 5.5
+    }
+  ],
+  "scope": "control only, not ART-05"
+}

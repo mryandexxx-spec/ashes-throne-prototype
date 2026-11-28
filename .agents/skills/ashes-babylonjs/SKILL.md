@@ -62,3 +62,6 @@ Pick the relevant test set from [browser regression matrix](references/browser-r
 For code changes run targeted Node tests + Chromium/WebKit browser scenarios where they apply; CI selective may skip unrelated jobs, so manually request the relevant suite if the selector misses it. Include screenshots/console errors, re-entry and failed-load path. Before PR, record exactly what ran; distinguish static inspection, automated tests, browser emulation, physical iPhone and owner approval.
 
 **Do not:** silently upgrade Babylon.js, replace the browser's static delivery with a bundler, overwrite GDD rules, add magic assets to fix logic, introduce gameplay changes, or claim that a skill makes the app faster by itself.
+
+## MAP-3D specific QA
+Mandatory: read [ashes-map3d-qa](../ashes-map3d-qa/SKILL.md) before every map preview/browser test. For isolated map previews use the repository-local Babylon and loader, not the production CDN path described above. Reuse proven runner; separate art import from candidate navigation and mobile acceptance.

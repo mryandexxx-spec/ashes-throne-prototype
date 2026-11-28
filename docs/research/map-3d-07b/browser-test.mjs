@@ -31,7 +31,7 @@ for(const [name,driver,branch] of [['chromium',chromium,'p03'],['webkit',webkit,
   const commanded=await snap();assert(commanded.last.accepted,JSON.stringify(commanded.last));await wait(()=>!window.lab.snapshot().walking);
   const end=await snap();assert(Math.hypot(...end.pos.map((v,i)=>v-p[i]))<.75,JSON.stringify(end.pos));assert.equal(end.unsafe,0);assert.equal(end.clip,'Idle_4');
  }
- await go('fork');await go(branch);
+ await go('fork');await go(branch);await go(branch==='p03'?'p04':'p06');await go('p07');await go('p08');await go('p09');await go('exit');
  await page.locator('#overview').tap();await wait(()=>window.lab.snapshot().cameraSettled);
  await page.screenshot({path:out+'/'+label+'-branch.png'});
  const metrics=await page.evaluate(()=>window.lab.resourceInventory());

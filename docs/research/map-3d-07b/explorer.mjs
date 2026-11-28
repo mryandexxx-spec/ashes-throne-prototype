@@ -9,8 +9,8 @@ let shadow=null,sun=null,quality={shadows:false,scale:1},fpsStart=0,fpsCount=0,s
 const fpsNode=document.querySelector('#fps');
 const markerLayer=document.querySelector('#waypoints');
 let waypointButtons=[];
-const overviewCenter=[0,-2,0];
-const overviewSpan=()=>Math.max(33,58*engine.getRenderHeight()/engine.getRenderWidth());
+const overviewCenter=[0,1.5,0];
+const overviewSpan=()=>Math.max(20,54*engine.getRenderHeight()/engine.getRenderWidth());
 function buildWaypoints(){
  markerLayer.replaceChildren();waypointButtons=level.markers.filter(m=>m.role!=='spawn').map(m=>{
   const button=document.createElement('button');button.type='button';button.dataset.waypoint=m.id;
@@ -125,11 +125,11 @@ async function open(){close();const token=epoch;loading=true;document.querySelec
  const [meta,nav,bin,art]=await Promise.all(['level.json','nav.json','navmesh.bin','level.glb'].map(n=>bytes('level/'+n,manifest.files[n])));check();
  level=JSON.parse(new TextDecoder().decode(meta));const geometry=JSON.parse(new TextDecoder().decode(nav));await init();check();mesh=importNavMesh(new Uint8Array(bin)).navMesh;query=new NavMeshQuery(mesh);metrics={navReadyMs:performance.now()-start};
  engine=new B.Engine(canvas,true,{preserveDrawingBuffer:true,stencil:false});engine.setHardwareScalingLevel(quality.scale);scene=new B.Scene(engine);scene.useRightHandedSystem=true;scene.clearColor=new B.Color4(.29,.38,.46,1);
- camera=new B.ArcRotateCamera('explorer',1.20,.94,100,new B.Vector3(0,0,0),scene);camera.mode=B.Camera.ORTHOGRAPHIC_CAMERA;camera.minZ=.1;camera.maxZ=300;scene.activeCamera=camera;
- const hemi=new B.HemisphericLight('ambient',new B.Vector3(0,1,0),scene);hemi.intensity=.65;hemi.groundColor=new B.Color3(.38,.34,.31);
- sun=new B.DirectionalLight('sun',new B.Vector3(-.9,-.7,-.5),scene);sun.intensity=2.8;sun.diffuse=new B.Color3(1,.92,.79);sun.position=new B.Vector3(30,24,16);
+ camera=new B.ArcRotateCamera('explorer',1.45,.94,100,new B.Vector3(0,0,0),scene);camera.mode=B.Camera.ORTHOGRAPHIC_CAMERA;camera.minZ=.1;camera.maxZ=300;scene.activeCamera=camera;
+ const hemi=new B.HemisphericLight('ambient',new B.Vector3(0,1,0),scene);hemi.intensity=.52;hemi.groundColor=new B.Color3(.38,.34,.31);
+ sun=new B.DirectionalLight('sun',new B.Vector3(-.9,-.7,-.5),scene);sun.intensity=2.4;sun.diffuse=new B.Color3(1,.92,.79);sun.position=new B.Vector3(30,24,16);
  scene.fogMode=B.Scene.FOGMODE_LINEAR;scene.fogColor=new B.Color3(.29,.38,.46);scene.fogStart=115;scene.fogEnd=195;
- scene.imageProcessingConfiguration.toneMappingEnabled=true;scene.imageProcessingConfiguration.toneMappingType=B.ImageProcessingConfiguration.TONEMAPPING_ACES;scene.imageProcessingConfiguration.exposure=1.1;scene.imageProcessingConfiguration.contrast=1.05;
+ scene.imageProcessingConfiguration.toneMappingEnabled=true;scene.imageProcessingConfiguration.toneMappingType=B.ImageProcessingConfiguration.TONEMAPPING_ACES;scene.imageProcessingConfiguration.exposure=1.0;scene.imageProcessingConfiguration.contrast=1.05;
  const url=URL.createObjectURL(new Blob([art],{type:'model/gltf-binary'}));try{artMeshes=(await B.SceneLoader.ImportMeshAsync(null,'',url,scene,undefined,'.glb')).meshes;}finally{URL.revokeObjectURL(url);}check();metrics.artReadyMs=performance.now()-start;
  proxy=new B.Mesh('author nav picking proxy',scene);const vd=new B.VertexData();vd.positions=geometry.positions;vd.indices=geometry.indices;vd.normals=[];B.VertexData.ComputeNormals(vd.positions,vd.indices,vd.normals,{useRightHandedSystem:true});vd.applyToMesh(proxy);proxy.visibility=0;proxy.isPickable=true;proxy.computeWorldMatrix(true);floorIndex=indexFloor(geometry);verifyFloorLookup();
  markers=level.markers.filter(m=>m.role!=='spawn').map(m=>{const o=B.MeshBuilder.CreateSphere(m.id,{diameter:.5,segments:12},scene);o.position.copyFrom(V(m.position).add(new B.Vector3(0,.25,0)));o.isPickable=false;const mat=new B.StandardMaterial(m.id,scene);mat.emissiveColor=m.role==='exit'?new B.Color3(.3,1,.4):new B.Color3(.9,.65,.2);o.material=mat;o.visibility=0;return o;});
@@ -138,7 +138,7 @@ async function open(){close();const token=epoch;loading=true;document.querySelec
  configureShadows();
  const root=hero.meshes[0];root.computeWorldMatrix(true);const bounds=root.getHierarchyBoundingVectors(true),height=bounds.max.y-bounds.min.y;if(!(height>0))throw Error('Invalid character height');
  holder=new B.TransformNode('navigation owner',scene);root.parent=holder;holder.scaling.setAll(1.7/height);groundOffset=-bounds.min.y*1.7/height;
- pos=level.markers.find(m=>m.role==='spawn').position;holder.position.set(pos[0],pos[1]+groundOffset,pos[2]);view=V(pos);overview=false;document.querySelector('#overview').textContent='Обзор';document.querySelector('#overview').setAttribute('aria-pressed','false');zoom=zoomGoal=cameraSpan=7.5;pace='walk';document.querySelector('#pace').textContent='Бег';frames=[];events=[];routeCosts=[];updateCosts=[];visited=new Set();commands=arrivals=unsafe=0;last=null;activeClip=null;clip('Idle_4');for(const [n,f] of bindings)canvas.addEventListener(n,f);window.addEventListener('resize',resize);ready=true;loading=false;buildWaypoints();document.querySelector('#restart').disabled=false;updateButtons();updateCamera(100);scene.render();updateWaypoints();resetFPS();if(!document.hidden)engine.runRenderLoop(tick);metrics.readyMs=performance.now()-start;say('Коснись места назначения');
+ pos=level.markers.find(m=>m.role==='spawn').position;holder.position.set(pos[0],pos[1]+groundOffset,pos[2]);view=V(pos);overview=false;document.querySelector('#overview').textContent='Обзор';document.querySelector('#overview').setAttribute('aria-pressed','false');zoom=zoomGoal=cameraSpan=5.8;pace='walk';document.querySelector('#pace').textContent='Бег';frames=[];events=[];routeCosts=[];updateCosts=[];visited=new Set();commands=arrivals=unsafe=0;last=null;activeClip=null;clip('Idle_4');for(const [n,f] of bindings)canvas.addEventListener(n,f);window.addEventListener('resize',resize);ready=true;loading=false;buildWaypoints();document.querySelector('#restart').disabled=false;updateButtons();updateCamera(100);scene.render();updateWaypoints();resetFPS();if(!document.hidden)engine.runRenderLoop(tick);metrics.readyMs=performance.now()-start;say('Коснись места назначения');
  }catch(e){if(token===epoch){close();document.querySelector('#restart').disabled=false;say('Ошибка загрузки: '+e.message);throw e;}}
 }
 function project(p){const v=B.Vector3.Project(V(p),B.Matrix.Identity(),scene.getTransformMatrix(),camera.viewport.toGlobal(engine.getRenderWidth(),engine.getRenderHeight())),rect=canvas.getBoundingClientRect();return {x:rect.left+v.x*rect.width/engine.getRenderWidth(),y:rect.top+v.y*rect.height/engine.getRenderHeight()};}

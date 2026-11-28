@@ -1,6 +1,8 @@
 """07B authored layout, verified 0 A.D. assets. Blender 4.5, no hero in environment."""
 import bpy, json, pathlib, sys, math, hashlib, urllib.request, shutil
 from mathutils import Vector, Matrix
+from PIL import Image,ImageDraw,ImageFilter,ImageEnhance
+
 root=pathlib.Path(sys.argv[1]).resolve();out=pathlib.Path(sys.argv[2]).resolve();out.mkdir(parents=True,exist_ok=True)
 src=root/"preview/map-3d/level"
 plan=json.loads(pathlib.Path(__file__).with_name("layout.json").read_text())
@@ -66,12 +68,43 @@ for i,x in enumerate(range(-44,49,8)):
     ys=[y/4 for y in range(-65,65) if inside(min(47.9,x),y/4)]
     if not ys:continue
     a,b=min(ys),max(ys);asset="cliff" if i%2 else "cliff2"
-    place("front_rock_%02d"%i,asset,x,a-1.6,elevation(x)-.2,fit=[7.8,11,15],yaw=90+(-1)**i*5,top=True)
-    place("back_rock_%02d"%i,asset,x,b+3.0,elevation(x)-5.5,fit=[9,12,14],yaw=90+(-1)**i*9)
-    if i%2==0:place("depth_rock_%02d"%i,asset,x,a-10,elevation(x)-12,fit=[12,15,20],yaw=83,top=True)
+    # Reuse the authored rock kit with irregular overlapping strata, not a row of pillars.
+    phase=(i%4); frontH=[12,17,14,19][phase]
+    place("front_rock_%02d"%i,asset,x,a-2.6,elevation(x)-.5,fit=[9,13,frontH],yaw=[72,95,115,82][phase],top=True)
+    place("back_rock_%02d"%i,asset,x,b+4.4,elevation(x)-6.5,fit=[11,15,[13,19,15,22][phase]],yaw=[76,104,121,88][phase])
+    place("deep_rock_%02d"%i,"cliff2" if i%2 else "cliff",x+1,a-8.5,elevation(x)-10,fit=[14,17,[19,25,22,28][phase]],yaw=[65,110,85,125][phase],top=True)
 for o in originals:bpy.data.objects.remove(o,do_unlink=True)
 # Use original licensed terrain texture, not invented primary art.
-gr=json.loads((src/"ground-receipt.json").read_text());img=bpy.data.images.load(str(fetch("ground",gr,".png")))
+gr=json.loads((src/"ground-receipt.json").read_text());source_ground=fetch("ground",gr,".png")
+# Hand-authored ground composition using the same licensed texture pixels.
+# A light route surface, darker courtyards, planted central island; no painted fake buildings.
+xmin,ymin,xmax,ymax=-48,-16,48,16
+W,H=3072,1024
+base=Image.open(source_ground).convert("RGB").resize((128,128))
+surface=Image.new("RGB",(W,H))
+for yy in range(0,H,128):
+    for xx in range(0,W,128):surface.paste(base,(xx,yy))
+def pixel(p):return (round((p[0]-xmin)/(xmax-xmin)*(W-1)),round((ymax-p[1])/(ymax-ymin)*(H-1)))
+def tone(factors,sat):
+    im=ImageEnhance.Color(surface).enhance(sat)
+    return Image.merge("RGB",tuple(c.point(lambda v:min(255,round(v*f))) for c,f in zip(im.split(),factors)))
+def polygon_mask(polys):
+    mask=Image.new("L",(W,H));d=ImageDraw.Draw(mask)
+    for poly in polys:d.polygon([pixel(p) for p in poly],fill=240)
+    return mask.filter(ImageFilter.GaussianBlur(12))
+ground_pixels=tone((.72,.73,.68),.67)
+courts=[[(-41,-4),(-30,-4),(-29,4),(-41,4)],[(-29,-4),(-19,-4),(-19,4),(-29,4)],[(8,-4),(16,-4),(16,4),(8,4)],[(32,0),(44,-2),(46,5),(36,7)]]
+ground_pixels=Image.composite(tone((.83,.82,.77),.48),ground_pixels,polygon_mask(courts))
+gardens=[[(-11,-3),(-7,4),(4,4),(8,0),(5,-4),(-5,-4)],[(-31,-12),(-22,-12),(-21,-7),(-30,-6)],[(31,-7),(44,-7),(42,-2),(33,-2)]]
+ground_pixels=Image.composite(tone((.53,.67,.48),.72),ground_pixels,polygon_mask(gardens))
+mask=Image.new("L",(W,H));d=ImageDraw.Draw(mask)
+for a,b in plan["edges"]:
+    d.line([pixel(pts[a]),pixel(pts[b])],fill=255,width=92)
+for x,y in pts.values():
+    px,py=pixel((x,y));d.ellipse((px-76,py-76,px+76,py+76),fill=235)
+ground_pixels=Image.composite(tone((.96,.94,.87),.38),ground_pixels,mask.filter(ImageFilter.GaussianBlur(14)))
+ground_path=out/"ground-adapted.jpg";ground_pixels.save(ground_path,quality=91,subsampling=0)
+img=bpy.data.images.load(str(ground_path))
 mat=bpy.data.materials.new("Wildfire Games ground CC BY-SA");mat.use_nodes=True
 nt=mat.node_tree;tex=nt.nodes.new("ShaderNodeTexImage");tex.image=img
 bsdf=nt.nodes.get("Principled BSDF");nt.links.new(tex.outputs["Color"],bsdf.inputs["Base Color"]);bsdf.inputs["Roughness"].default_value=.94
@@ -93,7 +126,17 @@ mesh=bpy.data.meshes.new("Hand-authored terrace support");mesh.from_pydata(verts
 ground=bpy.data.objects.new("walkable_support_07B",mesh);art.objects.link(ground);mesh.materials.append(mat)
 uv=mesh.uv_layers.new(name="Ground UV")
 for loop in mesh.loops:
-    x,y,z=verts[loop.vertex_index];uv.data[loop.index].uv=(x/4,(y+z*.18)/4)
+    x,y,z=verts[loop.vertex_index];uv.data[loop.index].uv=((x-xmin)/(xmax-xmin),(y-ymin)/(ymax-ymin))
+# Preserve exposed rock texture on the nonwalkable support skirt instead of sand walls.
+rock_material=next((o.data.materials[0] for o in art.objects if o.name.startswith("front_rock_") and o.data.materials),None)
+if rock_material:
+    mesh.materials.append(rock_material)
+    for poly in mesh.polygons:
+        if abs(poly.normal.z)<.5:
+            poly.material_index=1
+            for li in poly.loop_indices:
+                x,y,z=verts[mesh.loops[li].vertex_index]
+                uv.data[li].uv=((x+y)/5,z/5)
 # Raycast actual art clearance on independent proxy; never infer walkability from all art geometry.
 bpy.context.view_layer.update();scene=bpy.context.scene;deps=bpy.context.evaluated_depsgraph_get();cacheclear={}
 def free(x,y):
@@ -118,6 +161,7 @@ for name,x,y in plan["points"]:
 (out/"level.json").write_text(json.dumps({"markers":markers,"edges":plan["edges"],"scope":plan["scope"],"camera":{"alpha":1.2,"beta":.94,"zoom":7.5}},indent=2))
 # Asset reuse, shared materials, and bounded image sizes for the first mobile blockout.
 for im in bpy.data.images:
+    if im==img:continue # authored 3k x 1k terrain atlas, reviewed separately
     if im.size[0]>1024 or im.size[1]>1024:
         k=1024/max(im.size);im.scale(max(1,round(im.size[0]*k)),max(1,round(im.size[1]*k)))
 bpy.ops.file.pack_all()

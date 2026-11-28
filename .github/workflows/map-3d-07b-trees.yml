@@ -1,0 +1,39 @@
+name: MAP-3D-07B VEG-03 tree canopy review
+on:
+  pull_request:
+    paths:
+      - 'docs/research/map-3d-07b-vegetation/trees/**'
+      - '.github/workflows/map-3d-07b-trees.yml'
+permissions:
+  contents: read
+concurrency:
+  group: map-3d-07b-trees-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+jobs:
+  source-and-review:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'research/map-3d-07b-vegetation'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pinned Blender
+        run: |
+          python -m pip install --disable-pip-version-check bpy==4.5.17
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgl1 libxkbcommon0 libxrender1 libxi6 libxxf86vm1
+      - name: Fetch real broadleaf trees from pinned 0AD metadata
+        run: python docs/research/map-3d-07b-vegetation/trees/intake.py "$RUNNER_TEMP/tree-review"
+      - name: Import and render actual tree canopy candidates
+        run: python docs/research/map-3d-07b-vegetation/trees/review.py "$RUNNER_TEMP/tree-review"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: map-3d-07b-tree-evidence
+          path: ${{ runner.temp }}/tree-review/
+          if-no-files-found: warn
+          retention-days: 30

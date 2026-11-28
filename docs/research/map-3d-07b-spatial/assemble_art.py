@@ -142,7 +142,7 @@ for i,(key,coords) in enumerate(D['gardens']):
     p=safe.representative_point();rad=min(2.2,p.distance(safe.boundary)*.9);z=D['levels'][key]['z']
     if rad>.65:
         asset='olive' if rad>1.05 else 'scrub'
-        hull,lo,hi,_=place('plant_%02d'%i,asset,p.x,p.y,z-.02,rad*1.65,rad*1.65,4.5 if asset=='olive' else 1.5,0,limit=1.5)
+        hull,lo,hi,_=place('plant_%02d'%i,asset,p.x,p.y,z-.02,rad*1.4,rad*1.4,4.5 if asset=='olive' else 1.5,0,limit=1.5)
         assert safe.buffer(.02).covers(hull)
     # Low shrubs, fitted entirely into the remaining bed.
     for j,t in enumerate((.15,.42,.68,.85)):
@@ -281,6 +281,23 @@ for o in removed:bpy.data.objects.remove(o,do_unlink=True)
 for o in originals:bpy.data.objects.remove(o,do_unlink=True)
 # Strip any orphan glTF roots, but retain real mesh transforms.
 bpy.context.view_layer.update()
+# Adapt the specific source market player-colour atlas, using the earlier
+# accepted C3 palette operation. Keep source neutral stone and alpha intact.
+import array,colorsys
+palette=[]
+for im in bpy.data.images:
+    if 'iber_struct_player_28588' not in im.name:continue
+    pix=array.array('f',[0])*len(im.pixels);im.pixels.foreach_get(pix);count=0
+    for i in range(0,len(pix),4):
+        r,g,b=pix[i:i+3]
+        if b>r*1.25 and b>g*1.15 and b-r>.12:
+            h,ss,v=colorsys.rgb_to_hsv(max(0,r),max(0,g),max(0,b))
+            nr,ng,nb=colorsys.hsv_to_rgb(.087,min(.46,ss*.7),v*.94)
+            pix[i:i+3]=array.array('f',[nr,ng,nb]);count+=1
+    if count:
+        im.pixels.foreach_set(pix);im.update()
+        p=out/'market-cloth-adapted.png';im.filepath_raw=str(p);im.file_format='PNG';im.save();im.pack()
+        palette.append({'image':im.name,'recoloredPixels':count,'sha256':sha(p)})
 # Freeze all texture inputs with portable packed bytes. Source images are original
 # licensed art; resample only oversized images, never manufacture fake models.
 for im in list(bpy.data.images):
@@ -299,7 +316,7 @@ j=json.loads(rawbytes[20:20+n]);assert j['asset']['version']=='2.0'
 tris=sum(j['accessors'][p['indices']]['count']//3 if 'indices' in p else j['accessors'][p['attributes']['POSITION']]['count']//3 for node in j['nodes'] if 'mesh' in node for p in j['meshes'][node['mesh']]['primitives'])
 assert 10000<tris<150000,tris
 assert g.stat().st_size<35*1024*1024,g.stat().st_size
-report={'artRevision':2,'planterSegments':planter_count,'parapetSegments':parapet_count,'detailLots':len(detail_plan),'layoutSHA256':sha(layout),'baselineGLBSHA256':sha(root/'preview/map-3d-07b-spatial/gardens_spatial_02.glb'),'artGLBSHA256':sha(g),'bytes':g.stat().st_size,'trianglesWithInstances':tris,'images':len(j.get('images',[])),'placements':proof,'removedMasses':50,'scope':'Art preview only; exact baseline retained separately; no navmesh or actual traversal.'}
+report={'artRevision':2,'planterSegments':planter_count,'parapetSegments':parapet_count,'detailLots':len(detail_plan),'palette':palette,'layoutSHA256':sha(layout),'baselineGLBSHA256':sha(root/'preview/map-3d-07b-spatial/gardens_spatial_02.glb'),'artGLBSHA256':sha(g),'bytes':g.stat().st_size,'trianglesWithInstances':tris,'images':len(j.get('images',[])),'placements':proof,'removedMasses':50,'scope':'Art preview only; exact baseline retained separately; no navmesh or actual traversal.'}
 (out/'art-manifest.json').write_text(json.dumps(report,indent=2))
 for n in ['ATTRIBUTION.txt','LICENSE-upstream.txt','README-source.md','source-receipt.json','supplemental-receipt.json','ground-receipt.json','dataset-revision.json']:shutil.copyfile(src/n,out/n)
 with (out/'ATTRIBUTION.txt').open('a') as f:f.write('\n07B art 02: additional authored set pieces, masonry trim, adapted layout, UV surfaces, model transforms and texture resolution. Adapted environment art remains CC BY-SA 3.0; exact source and recipe in docs/research/map-3d-07b-spatial.\n')

@@ -2,9 +2,9 @@
   "schema": 1,
   "recast": "0.43.1",
   "files": {
-    "level.glb": "7fce3c87713ff5aa364ddcc0b83bb4e2d48b428e0194317d0656087e4eca5de1",
-    "level.json": "20d00dd45062477e6f27404661673fd1ef180a91225181141b9ceac9e67ec0be",
-    "nav.json": "9f47d51f40f28b3d204ba5dea3372a606fd372bd8265c943311e126ff79f4f1f",
-    "navmesh.bin": "7e7744e252ccb70a9036194419514945cb4bd68748470e6c54c600d40bd92d86"
+    "level.glb": "1cda27054cd5eac75710824642cd019c7181538cb91b124a351451ad6c1d0c5e",
+    "level.json": "94d435554716f5eacd2998df9056169f54ce6bef48067846e7837e0dc7a57a68",
+    "nav.json": "cdb50abf18a5380655fe82855413f6f5eb04378000c42feb1d53ebb9c3abd49a",
+    "navmesh.bin": "12f27ccb2905ae5ecface3992ae1257d7906b231f45ad09fe076e4e06c8b0695"
   }
 }

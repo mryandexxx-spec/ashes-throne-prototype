@@ -10193,8 +10193,8 @@ var cameraSpan = 5.5;
 var fpsNode = document.querySelector("#fps");
 var markerLayer = document.querySelector("#waypoints");
 var waypointButtons = [];
-var overviewCenter = [0, -2, 0];
-var overviewSpan = () => Math.max(33, 58 * engine.getRenderHeight() / engine.getRenderWidth());
+var overviewCenter = [0, 1.5, 0];
+var overviewSpan = () => Math.max(20, 54 * engine.getRenderHeight() / engine.getRenderWidth());
 function buildWaypoints() {
   markerLayer.replaceChildren();
   waypointButtons = level.markers.filter((m) => m.role !== "spawn").map((m) => {
@@ -10609,16 +10609,16 @@ async function open() {
     scene = new B.Scene(engine);
     scene.useRightHandedSystem = true;
     scene.clearColor = new B.Color4(0.29, 0.38, 0.46, 1);
-    camera = new B.ArcRotateCamera("explorer", 1.2, 0.94, 100, new B.Vector3(0, 0, 0), scene);
+    camera = new B.ArcRotateCamera("explorer", 1.45, 0.94, 100, new B.Vector3(0, 0, 0), scene);
     camera.mode = B.Camera.ORTHOGRAPHIC_CAMERA;
     camera.minZ = 0.1;
     camera.maxZ = 300;
     scene.activeCamera = camera;
     const hemi = new B.HemisphericLight("ambient", new B.Vector3(0, 1, 0), scene);
-    hemi.intensity = 0.65;
+    hemi.intensity = 0.52;
     hemi.groundColor = new B.Color3(0.38, 0.34, 0.31);
     sun = new B.DirectionalLight("sun", new B.Vector3(-0.9, -0.7, -0.5), scene);
-    sun.intensity = 2.8;
+    sun.intensity = 2.4;
     sun.diffuse = new B.Color3(1, 0.92, 0.79);
     sun.position = new B.Vector3(30, 24, 16);
     scene.fogMode = B.Scene.FOGMODE_LINEAR;
@@ -10627,7 +10627,7 @@ async function open() {
     scene.fogEnd = 195;
     scene.imageProcessingConfiguration.toneMappingEnabled = true;
     scene.imageProcessingConfiguration.toneMappingType = B.ImageProcessingConfiguration.TONEMAPPING_ACES;
-    scene.imageProcessingConfiguration.exposure = 1.1;
+    scene.imageProcessingConfiguration.exposure = 1;
     scene.imageProcessingConfiguration.contrast = 1.05;
     const url = URL.createObjectURL(new Blob([art], { type: "model/gltf-binary" }));
     try {
@@ -10680,7 +10680,7 @@ async function open() {
     overview = false;
     document.querySelector("#overview").textContent = "\u041E\u0431\u0437\u043E\u0440";
     document.querySelector("#overview").setAttribute("aria-pressed", "false");
-    zoom = zoomGoal = cameraSpan = 7.5;
+    zoom = zoomGoal = cameraSpan = 5.8;
     pace = "walk";
     document.querySelector("#pace").textContent = "\u0411\u0435\u0433";
     frames = [];

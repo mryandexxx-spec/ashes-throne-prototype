@@ -172,7 +172,7 @@
       "exit"
     ]
   ],
-  "scope": "07B spatial blockout; neutral test waypoints, not approved encounters or geography",
+  "scope": "07B v2 spatial blockout; neutral test waypoints, not approved encounters or geography",
   "camera": {
     "alpha": 1.2,
     "beta": 0.94,

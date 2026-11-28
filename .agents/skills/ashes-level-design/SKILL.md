@@ -14,3 +14,6 @@ Read MAP_3D_PLAN.md, MAP_3D_01_RESEARCH.md, current status, actual code and rele
 6. Only after blockout pass produce modular art, import optimized GLBs, test performance and navigation parity. Separate character animation ownership and root motion from navigation. Update existing progression only after idempotent mission handoff/return and reload tests. Preserve current campaign until replacement passes.
 ## Evidence / sources
 Project-owned adaptation, not copied external skill code. Read upstream [level-design](https://github.com/gamedev-skills/awesome-gamedev-agent-skills/blob/main/skills/disciplines/level-design/SKILL.md) for concepts; upstream [Apache-2.0](https://github.com/gamedev-skills/awesome-gamedev-agent-skills/blob/main/LICENSE) and NOTICE if ever vendoring. No Godot/Unity editor snippets, procedural generation, paid plugins or CLI installations implied. Game Development Studio plugin skills reviewed for provenance and visual evidence; local game-dev CLI not available in research environment. Project contract prevails.
+
+## Required map QA
+Read [ashes-map3d-qa](../ashes-map3d-qa/SKILL.md) before any map art/navigation/browser test. Exact candidate hash and matching NAV required; use shared runner, do not restart failed environment research.
